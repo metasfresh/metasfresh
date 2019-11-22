@@ -1,10 +1,10 @@
 package de.metas.material.cockpit.stock;
 
+import com.google.common.collect.ImmutableList;
+
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
-
-import java.util.List;
 
 /*
  * #%L
@@ -33,5 +33,5 @@ import java.util.List;
 public class StockDataMultiQuery
 {
 	@Singular("stockDataQuery")
-	List<StockDataQuery> stockDataQueries;
+	ImmutableList<StockDataQuery> stockDataQueries;
 }

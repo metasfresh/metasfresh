@@ -1,5 +1,7 @@
 package de.metas.allocation.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,28 +15,23 @@ package de.metas.allocation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.allocation.api.DefaultAllocationBuilder;
 import de.metas.allocation.api.IAllocationBuilder;
@@ -43,46 +40,44 @@ public class AllocationBuilderTest
 {
 	static IContextAware ctxProvider;
 
-	@BeforeClass
-	public static void staticInit()
+	@BeforeAll
+	public static void beforeAll()
 	{
 		AdempiereTestHelper.get().staticInit();
 		ctxProvider = InterfaceWrapperHelper.getContextAware(InterfaceWrapperHelper.create(Env.getCtx(), I_C_Greeting.class, "trxName"));
 	}
 
-	@Before
-	public void enableUnitTestMode()
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 	}
-	
+
 	@Test
 	public void testDefaultBuilderImpl()
 	{
 		final AllocationBL allocationBL = new AllocationBL();
 
 		final IAllocationBuilder builder = allocationBL.newBuilder(ctxProvider);
-		assertThat(builder, instanceOf(DefaultAllocationBuilder.class));
+		assertThat(builder).isInstanceOf(DefaultAllocationBuilder.class);
 	}
-	
 
 	static class CustomAllocationBuilderInclClass extends DefaultAllocationBuilder
 	{
 		public CustomAllocationBuilderInclClass(IContextAware contextProvider)
 		{
 			super(contextProvider);
-			assertThat(contextProvider, sameInstance(ctxProvider));
+			assertThat(contextProvider).isInstanceOf(ctxProvider.getClass());
 		}
 	}
-	
+
 	@Test
 	public void testOwnBuilderImplIncl()
 	{
 		final AllocationBL allocationBL = new AllocationBL();
 
 		final IAllocationBuilder builder = allocationBL.newBuilder(ctxProvider, CustomAllocationBuilderInclClass.class);
-		assertThat(builder, instanceOf(CustomAllocationBuilderInclClass.class));
-		
+		assertThat(builder).isInstanceOf(CustomAllocationBuilderInclClass.class);
 	}
 }

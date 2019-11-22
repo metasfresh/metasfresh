@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -53,8 +52,6 @@ public interface IPPOrderDAO extends ISingletonService
 	 * @return manufacturing orders
 	 */
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
-
-	Optional<I_PP_Order> retrieveOpenPickingOrderForSalesOrderLine(OrderLineId salesOrderLineId);
 
 	/**
 	 * @param orderLineId

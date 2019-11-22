@@ -7,23 +7,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
 
@@ -33,13 +34,13 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
@@ -47,14 +48,11 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -71,13 +69,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
-		createPickingOrderIfNeeded(orderLine);
+		final PPOrderId pickingOrderId = createPickingOrderIfNeeded(orderLine);
 
-		final I_M_ShipmentSchedule shipmentSchedule = createShipmentScheduleForOrderLine(orderLine);
+		final I_M_ShipmentSchedule shipmentSchedule = createShipmentScheduleForOrderLine(orderLine, pickingOrderId);
 		return ImmutableList.of(shipmentSchedule);
 	}
 
-	private I_M_ShipmentSchedule createShipmentScheduleForOrderLine(@NonNull final I_C_OrderLine orderLine)
+	private I_M_ShipmentSchedule createShipmentScheduleForOrderLine(
+			@NonNull final I_C_OrderLine orderLine,
+			@Nullable final PPOrderId pickingOrderId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
@@ -141,6 +141,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// only display item products
 		final boolean display = Services.get(IProductBL.class).isItem(productId);
 		newSched.setIsDisplayed(display);
+
+		newSched.setPickFrom_Order_ID(PPOrderId.toRepoId(pickingOrderId));
 
 		InterfaceWrapperHelper.save(newSched);
 
@@ -230,13 +232,13 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
 			{
 				shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
-				shipmentScheduleInvalidateBL.invalidateSegmentForOrderLine(ol);
+				shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
 			}
 		}
 		else
 		{
 			shipmentScheduleInvalidateBL.invalidateJustForOrderLine(orderLine);
-			shipmentScheduleInvalidateBL.invalidateSegmentForOrderLine(orderLine);
+			shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(orderLine);
 		}
 	}
 
@@ -284,9 +286,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return salesOrderLine::getQtyOrdered;
 	}
 
-	private void createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
+	private PPOrderId createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
 	{
-		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+		final PickingBOMService pickingBOMService = SpringContextHolder.instance.getBean(PickingBOMService.class);
 		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
 		final IProductBL productsService = Services.get(IProductBL.class);
 
@@ -294,57 +296,25 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final WarehouseId warehouseId = getWarehouseId(salesOrderLine);
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(salesOrderLine.getM_AttributeSetInstance_ID());
-
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.find(ProductPlanningQuery.builder()
-				.orgId(orgId)
-				.warehouseId(warehouseId)
-				// .plantId(plantId)
-				.productId(productId)
-				.attributeSetInstanceId(asiId)
-				.build())
-				.orElse(null);
-		if (productPlanning == null)
+		final PickingOrderConfig config = pickingBOMService.getPickingOrderConfig(orgId, warehouseId, productId, asiId).orElse(null);
+		if (config == null)
 		{
-			return;
-		}
-		if (!StringUtils.toBoolean(productPlanning.getIsManufactured()))
-		{
-			return;
-		}
-		if (!productPlanning.isPickingOrder())
-		{
-			return;
-		}
-
-		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
-		if (plantId == null)
-		{
-			throw new FillMandatoryException("PP_Plant_ID")
-					.setParameter("productPlanning", productPlanning)
-					.appendParametersToMessage();
-		}
-
-		final ProductBOMId bomId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
-		if (bomId == null)
-		{
-			throw new FillMandatoryException("PP_Product_BOM_ID")
-					.setParameter("productPlanning", productPlanning)
-					.appendParametersToMessage();
+			return null;
 		}
 
 		final I_C_UOM stockUOM = productsService.getStockUOM(productId);
 		final Quantity qtyOrdered = Quantity.of(salesOrderLine.getQtyOrdered(), stockUOM);
 
-		ppOrdersService.createOrder(PPOrderCreateRequest.builder()
+		final I_PP_Order ppOrder = ppOrdersService.createOrder(PPOrderCreateRequest.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
-				.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()))
+				.productPlanningId(config.getProductPlanningId())
 				// .materialDispoGroupId(null)
 				//
-				.plantId(plantId)
+				.plantId(config.getPlantId())
 				.warehouseId(warehouseId)
-				.plannerId(UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID()))
+				.plannerId(config.getPlannerId())
 				//
-				.bomId(bomId)
+				.bomId(config.getBomId())
 				.productId(productId)
 				.attributeSetInstanceId(asiId)
 				.qtyRequired(qtyOrdered)
@@ -361,5 +331,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.completeDocument(true)
 				//
 				.build());
+
+		return PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 	}
 }

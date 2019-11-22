@@ -1184,6 +1184,33 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
+	 * Set Pick From Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPickFrom_Order_ID (int PickFrom_Order_ID);
+
+	/**
+	 * Get Pick From Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPickFrom_Order_ID();
+
+	public org.eevolution.model.I_PP_Order getPickFrom_Order();
+
+	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order);
+
+    /** Column definition for PickFrom_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order> COLUMN_PickFrom_Order_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order>(I_M_ShipmentSchedule.class, "PickFrom_Order_ID", org.eevolution.model.I_PP_Order.class);
+    /** Column name PickFrom_Order_ID */
+    public static final String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
+
+	/**
 	 * Set Referenz.
 	 * Referenz-Nummer des Kunden
 	 *

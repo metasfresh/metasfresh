@@ -1,11 +1,14 @@
 package org.eevolution.api;
 
+import java.util.Optional;
+
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
@@ -98,4 +101,6 @@ public interface IPPOrderBL extends ISingletonService
 	void closeAllActivities(PPOrderId orderId);
 
 	void voidOrderRouting(PPOrderId orderId);
+
+	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
 }

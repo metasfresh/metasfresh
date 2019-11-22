@@ -102,7 +102,7 @@ public class M_InOutLine_HandlerTest
 
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
 		bPartnerLocation.setIsBillTo(true);
-		bPartnerLocation.setC_BPartner(bPartner);
+		bPartnerLocation.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		save(bPartnerLocation);
 
 		inout = newInstance(I_M_InOut.class);

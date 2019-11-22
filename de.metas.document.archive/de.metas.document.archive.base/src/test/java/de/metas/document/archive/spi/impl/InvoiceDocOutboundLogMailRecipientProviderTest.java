@@ -67,7 +67,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		saveRecord(bPartnerRecord);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		bPartnerLocationRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		save(bPartnerLocationRecord);
 
 		final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);

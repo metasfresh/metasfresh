@@ -11,8 +11,8 @@ import java.time.ZonedDateTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.interfaces.I_C_OrderLine;
 import lombok.Builder;
@@ -42,7 +42,7 @@ import lombok.NonNull;
 
 public class ShipmentScheduleOrderReferenceProviderTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

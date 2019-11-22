@@ -120,7 +120,7 @@ public class PriceListDAOTest
 
 		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class);
 		bpl.setC_Location(location);
-		bpl.setC_BPartner(bpartner);
+		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		save(bpl);
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
@@ -157,7 +157,7 @@ public class PriceListDAOTest
 
 		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class);
 		bpl.setC_Location(location);
-		bpl.setC_BPartner(bpartner);
+		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		save(bpl);
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(

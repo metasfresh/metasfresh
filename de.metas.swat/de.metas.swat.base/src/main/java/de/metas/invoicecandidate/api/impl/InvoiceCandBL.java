@@ -3,6 +3,7 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -378,16 +379,19 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
-			final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ic);
+			final Optional<IPair<StockQtyAndUOMQty, Money>> qtyAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(ic);
+			// Might be not presend, if the IC's price could not be computed. In that case there is not invoiced data to be set.
+			if (qtyAndNetAmtInvoiced.isPresent())
+			{
+				final StockQtyAndUOMQty qtysInvoiced = qtyAndNetAmtInvoiced.get().getLeft();
+				final Quantity stockQty = qtysInvoiced.getStockQty();
 
-			final StockQtyAndUOMQty qtysInvoiced = qtyAndNetAmtInvoiced.getLeft();
-			final Quantity stockQty = qtysInvoiced.getStockQty();
+				ic.setQtyInvoiced(stockQty.toBigDecimal());
+				ic.setQtyInvoicedInUOM(qtysInvoiced.getUOMQtyOpt().orElse(stockQty).toBigDecimal());
 
-			ic.setQtyInvoiced(stockQty.toBigDecimal());
-			ic.setQtyInvoicedInUOM(qtysInvoiced.getUOMQtyOpt().orElse(stockQty).toBigDecimal());
-
-			final Money netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
-			ic.setNetAmtInvoiced(netAmtInvoiced.toBigDecimal());
+				final Money netAmtInvoiced = qtyAndNetAmtInvoiced.get().getRight();
+				ic.setNetAmtInvoiced(netAmtInvoiced.toBigDecimal());
+			}
 		}
 
 		updateProcessedFlag(ic); // #243: also update the processed flag if isToClear=Y. It might be the case that Processed_Override was set
@@ -401,13 +405,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Sum up 'QtyInvoiced' and 'NetAmtInvoiced'.
-	 * Note that QtyInvoiced is in the <code>M_Product.C_UOM</code>'s and <code>NetAmtInvoiced</code> in <code>C_Invoice_Candidate.Price_UOM</code>.
-	 *
-	 * @param ilas
-	 * @return
+	 * Note that <code>NetAmtInvoiced</code> is in <code>C_Invoice_Candidate.Price_UOM</code>.
 	 */
-	/* package */IPair<StockQtyAndUOMQty, Money> sumupQtyInvoicedAndNetAmtInvoiced(final I_C_Invoice_Candidate ic)
+	/* package */Optional<IPair<StockQtyAndUOMQty, Money>> sumupQtyInvoicedAndNetAmtInvoiced(final I_C_Invoice_Candidate ic)
 	{
+		if (ic.getC_Currency_ID() <= 0 || ic.getC_UOM_ID() <= 0)
+		{
+			// if those two columns are not yet set, then for sure nothing is invoiced yet either
+			return Optional.empty();
+		}
+
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 
@@ -469,7 +476,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 // @formatter:on
 		}
 		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoiced, netAmtInvoiced);
-		return qtyAndNetAmtInvoiced;
+		return Optional.of(qtyAndNetAmtInvoiced);
 	}
 
 	private static void setQtyInvoiced(
@@ -1313,8 +1320,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// task 08927: it could be that il's original qtyInvoiced was already subtracted (maybe partially)
 					// we only want to subtract the qty that was not yet subtracted
-					final IPair<StockQtyAndUOMQty, Money> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
-					final StockQtyAndUOMQty qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.getLeft();
+					final Optional<IPair<StockQtyAndUOMQty, Money>> qtyInvoicedAndNetAmtInvoiced = sumupQtyInvoicedAndNetAmtInvoiced(invoiceCandidate);
+					assume(qtyInvoicedAndNetAmtInvoiced.isPresent(), "Since the il of this ic is reversed, the ic is supposed to to have an invoiced quantity (even if zero); il={}; ic={}", il, invoiceCandidate);
+
+					final StockQtyAndUOMQty qtyInvoicedForIc = qtyInvoicedAndNetAmtInvoiced.get().getLeft();
 
 					// examples:
 					// reversalQtyInvoiced = -5, qtyInvoicedForIc = 3 (because of partial reinvoicable credit memo with qty 2) => overlap=-2 => create Ila with qty -5-(-2)=-3

@@ -7,13 +7,12 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
+import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +37,7 @@ import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -333,22 +332,15 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)
 	{
-		final List<I_M_ShipmentSchedule> createdShipmentCands = createMissingShipmentSchedules(flatrateTerm);
+		final Set<ShipmentScheduleId> createdShipmentCandidateIds = inOutCandHandlerBL.createMissingCandidates(Env.getCtx());
 		if (isActiveFT)
 		{
-			assertThat(createdShipmentCands).hasSize(1);
+			assertThat(createdShipmentCandidateIds).hasSize(1);
 		}
 		else
 		{
-			assertThat(createdShipmentCands).hasSize(0);
+			assertThat(createdShipmentCandidateIds).hasSize(0);
 		}
 
 	}
-
-	private List<I_M_ShipmentSchedule> createMissingShipmentSchedules(final I_C_Flatrate_Term flatrateTerm)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
-		return inOutCandHandlerBL.createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
-	}
-
 }

@@ -40,7 +40,6 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
@@ -70,45 +69,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	IAutoCloseable postponeMissingSchedsCreationUntilClose();
 
 	/**
-	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns:
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
-	 *
-	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
-	 *
-	 *
-	 * @param olsAndScheds
-	 *
-	 * @param trxName
-	 */
-	void updateSchedules(
-			Properties ctx,
-			List<OlAndSched> olsAndScheds,
-			String trxName);
-
-	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
-
-	/**
 	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
 	 *
 	 * @param sched
 	 */
 	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
-
-	/**
-	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
-	 *
-	 * @param sched
-	 */
-	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
@@ -185,6 +150,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
+
+	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 

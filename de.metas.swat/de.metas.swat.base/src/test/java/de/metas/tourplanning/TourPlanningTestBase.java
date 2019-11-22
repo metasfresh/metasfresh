@@ -3,6 +3,7 @@ package de.metas.tourplanning;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
@@ -50,16 +51,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
@@ -89,6 +86,7 @@ import de.metas.util.time.SystemTime;
  * @author tsa
  *
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public abstract class TourPlanningTestBase
 {
 	protected IContextAware contextProvider;
@@ -112,11 +110,8 @@ public abstract class TourPlanningTestBase
 	protected I_C_BPartner_Location bpLocation;
 	protected ProductId productId;
 
-	@Rule
-	public TestWatcher testWatchman = new AdempiereTestWatcher();
-
-	@Before
-	public void init()
+	@BeforeEach
+	public final void beforeEachTest()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -125,8 +120,6 @@ public abstract class TourPlanningTestBase
 		trxManager.setThreadInheritedTrxName(trxName);
 
 		this.contextProvider = PlainContextAware.newWithThreadInheritedTrx();
-
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 
 		//
 		// Model Interceptors
@@ -161,8 +154,8 @@ public abstract class TourPlanningTestBase
 
 	protected abstract void afterInit();
 
-	@After
-	public void resetSystemTime()
+	@AfterEach
+	public final void afterEachTest()
 	{
 		SystemTime.resetTimeSource();
 	}
@@ -240,15 +233,14 @@ public abstract class TourPlanningTestBase
 	{
 		for (final I_M_DeliveryDay dd : deliveryDays)
 		{
-			final boolean processedActual = dd.isProcessed();
-			Assert.assertEquals("Invalid Processed: " + dd, processedExpected, processedActual);
+			assertThat(dd.isProcessed()).as("processed flag of " + dd).isEqualTo(processedExpected);
 		}
 	}
 
 	protected void assertProcessed(final boolean processedExpected, final I_M_Tour_Instance tourInstance)
 	{
-		Assert.assertNotNull("tour instance shall not be null", tourInstance);
-		Assert.assertEquals("Invalid Processed: " + tourInstance, processedExpected, tourInstance.isProcessed());
+		assertThat(tourInstance).as("tourInstance").isNotNull();
+		assertThat(tourInstance.isProcessed()).as("processed flag of " + tourInstance).isEqualTo(processedExpected);
 
 		final List<I_M_DeliveryDay> deliveryDays = deliveryDayDAO.retrieveDeliveryDaysForTourInstance(tourInstance);
 		assertProcessed(processedExpected, deliveryDays);
@@ -265,12 +257,12 @@ public abstract class TourPlanningTestBase
 		final IDeliveryDayAllocable deliveryDayAllocable = shipmentScheduleDeliveryDayBL.asDeliveryDayAllocable(shipmentSchedule);
 
 		final I_M_DeliveryDay_Alloc alloc = deliveryDayDAO.retrieveDeliveryDayAllocForModel(contextProvider, deliveryDayAllocable);
-		Assert.assertNotNull("Delivery Day allocation shall exist for " + shipmentSchedule, alloc);
+		assertThat(alloc).as("Delivery Day allocation for " + shipmentSchedule).isNotNull();
 
 		final I_M_DeliveryDay deliveryDayActual = alloc.getM_DeliveryDay();
-		Assert.assertEquals("Invalid delivery day for " + shipmentSchedule,
-				deliveryDayExpected == null ? -1 : deliveryDayExpected.getM_DeliveryDay_ID(),
-				deliveryDayActual == null ? -1 : deliveryDayActual.getM_DeliveryDay_ID());
+		assertThat(deliveryDayActual == null ? -1 : deliveryDayActual.getM_DeliveryDay_ID())
+				.as("delivery day for " + shipmentSchedule)
+				.isEqualTo(deliveryDayExpected == null ? -1 : deliveryDayExpected.getM_DeliveryDay_ID());
 
 		return alloc;
 	}
@@ -289,7 +281,7 @@ public abstract class TourPlanningTestBase
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setIsActive(true);
-		deliveryDay.setC_BPartner(bpLocation.getC_BPartner());
+		deliveryDay.setC_BPartner_ID(bpLocation.getC_BPartner_ID());
 		deliveryDay.setC_BPartner_Location(bpLocation);
 		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
 		deliveryDay.setBufferHours(bufferHours);
@@ -301,7 +293,7 @@ public abstract class TourPlanningTestBase
 		deliveryDay.setProcessed(false);
 
 		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
-		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
+		assertThat(deliveryDay.getDeliveryDateTimeMax()).as("DeliveryDateTimeMax").isNotNull();
 
 		InterfaceWrapperHelper.save(deliveryDay);
 

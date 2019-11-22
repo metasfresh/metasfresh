@@ -676,7 +676,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(columnName, true)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, address.getC_BPartner_ID())
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, address.getC_BPartner_ID())
 				.create()
 				.match();
 	}
@@ -1038,7 +1038,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, bpartnerId);
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId);
 		if (query.isApplyTypeStrictly())
 		{
 			queryBuilder.addEqualsFilter(typeFilterColumnName, true);
@@ -1392,10 +1392,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public boolean isActionPriceAllowed(@NonNull final BPartnerId bpartnerId)
+	public boolean isCampaignPriceAllowed(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = getById(bpartnerId);
-
 		return bpartner.isAllowActionPrice();
 	}
 

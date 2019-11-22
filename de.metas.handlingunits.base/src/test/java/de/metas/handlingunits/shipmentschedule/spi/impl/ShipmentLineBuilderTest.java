@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_C_UOM_Conversion;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -29,9 +29,9 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -74,7 +74,7 @@ public class ShipmentLineBuilderTest
 
 	private HUTestHelper huTestHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		huTestHelper = new HUTestHelper();
@@ -122,7 +122,7 @@ public class ShipmentLineBuilderTest
 		saveRecord(catchUOMConversionRecord);
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 	}
 
 	@Test

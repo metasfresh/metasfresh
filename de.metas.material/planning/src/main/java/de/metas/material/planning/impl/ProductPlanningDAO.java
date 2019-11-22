@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,8 +42,10 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
@@ -231,5 +234,20 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			productPlanningRecord.setPP_Product_BOM_ID(bomId.getRepoId());
 			save(productPlanningRecord);
 		}
+	}
+
+	@Override
+	public Set<ProductBOMId> retrieveAllPickingBOMIds()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsPickingOrder, true)
+				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID)
+				.create()
+				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, Integer.class)
+				.stream()
+				.map(ProductBOMId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

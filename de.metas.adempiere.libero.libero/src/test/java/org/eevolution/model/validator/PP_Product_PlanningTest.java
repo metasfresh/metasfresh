@@ -75,7 +75,7 @@ public class PP_Product_PlanningTest
 		productPlanning.setM_AttributeSetInstance(asi);
 		save(productPlanning);
 
-		PP_Product_Planning.INSTANCE.updateStorageAttributesKey(productPlanning);
+		new PP_Product_Planning().updateStorageAttributesKey(productPlanning);
 
 		final AttributesKey storageAttributesKeyExpected = AttributesKey.ofAttributeValueIds(attributeValue1.getId(), attributeValue2.getId());
 		assertThat(productPlanning.getStorageAttributesKey()).isEqualTo(storageAttributesKeyExpected.getAsString());

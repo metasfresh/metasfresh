@@ -67,7 +67,7 @@ public class BPartnerBL_RetrieveContactOrNullTests
 		bpartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
 
 		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		saveRecord(bPartnerLocationRecord);
 		bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bPartnerLocationRecord.getC_BPartner_Location_ID());
 

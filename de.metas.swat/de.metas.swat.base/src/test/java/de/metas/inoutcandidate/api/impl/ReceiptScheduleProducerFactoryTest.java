@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +29,7 @@ import java.util.List;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -62,14 +61,14 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	{
 		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
-		
+
 		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		final I_M_ReceiptSchedule rc = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 12);
 		receiptSchedules.add(rc);
-		
+
 		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		final List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, receiptSchedules);
-		
+
 		Assert.assertEquals(1, rcs.size());
 	}
 
@@ -78,7 +77,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	{
 		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
-		
+
 		List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		I_M_ReceiptSchedule rc = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 12);
 		I_M_ReceiptSchedule rc2 = createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 12);
@@ -97,7 +96,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	{
 		final I_C_Order order = createOrder(warehouse1);
 		final I_C_OrderLine ol = createOrderLine(order, product1_wh1);
-		
+
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
 		Assert.assertEquals(1, rcs.size());
@@ -118,7 +117,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 	{
 		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1);
-		
+
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
 		Assert.assertEquals(1, rcs.size());

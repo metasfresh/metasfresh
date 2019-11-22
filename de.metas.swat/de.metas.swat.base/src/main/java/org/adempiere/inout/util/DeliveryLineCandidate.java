@@ -6,6 +6,7 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
@@ -52,7 +53,8 @@ public class DeliveryLineCandidate
 	@Getter(AccessLevel.NONE)
 	private final I_M_ShipmentSchedule shipmentSchedule;
 
-	private final int shipmentScheduleId;
+	@NonNull
+	private final ShipmentScheduleId shipmentScheduleId;
 
 	@NonNull
 	private BigDecimal qtyToDeliver = BigDecimal.ZERO;
@@ -64,13 +66,13 @@ public class DeliveryLineCandidate
 	private CompleteStatus completeStatus;
 
 	public DeliveryLineCandidate(
-			@NonNull final DeliveryGroupCandidate group, 
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule, 
+			@NonNull final DeliveryGroupCandidate group,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final CompleteStatus completeStatus)
 	{
 		this.group = group;
 		this.shipmentSchedule = shipmentSchedule;
-		this.shipmentScheduleId = shipmentSchedule.getM_ShipmentSchedule_ID();
+		this.shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 		this.completeStatus = completeStatus;
 	}
 
@@ -78,33 +80,33 @@ public class DeliveryLineCandidate
 	{
 		return shipmentSchedule.getM_Product_ID();
 	}
-	
+
 	public TableRecordReference getReferenced()
 	{
 		return TableRecordReference.ofReferenced(shipmentSchedule);
 	}
-	
+
 	public BigDecimal getQtyToDeliverOverride()
 	{
 		return shipmentSchedule.getQtyToDeliver_Override();
 	}
-	
+
 	public int getBillBPartnerId()
 	{
 		return shipmentSchedule.getBill_BPartner_ID();
 	}
-	
+
 	public DeliveryRule getDeliveryRule()
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return shipmentScheduleBL.getDeliveryRule(shipmentSchedule);
 	}
-	
+
 	public void setDiscarded()
 	{
 		this.discarded = true;
 	}
-	
+
 	public void removeFromGroup()
 	{
 		group.removeLine(this);

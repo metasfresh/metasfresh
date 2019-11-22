@@ -79,6 +79,7 @@ public class BPartnerBL implements IBPartnerBL
 		this.userRepository = userRepository;
 	}
 
+	@Override
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
@@ -336,13 +337,20 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(
 				bpLocation.getC_Location(),
-				bpLocation.getC_BPartner(),
+				Services.get(IBPartnerDAO.class).getById(bpLocation.getC_BPartner_ID()),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
 
 		bpLocation.setAddress(address);
 
+	}
+
+	@Override
+	public boolean isAllowConsolidateInOutEffective(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
+	{
+		I_C_BPartner bpartner = getById(bpartnerId);
+		return isAllowConsolidateInOutEffective(bpartner, soTrx);
 	}
 
 	@Override
@@ -460,7 +468,7 @@ public class BPartnerBL implements IBPartnerBL
 		//
 		// BPartner location
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpLocation.setC_BPartner(bpartner);
+		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpLocation.setC_Location_ID(template.getC_Location_ID());
 		bpLocation.setIsBillTo(true);
 		bpLocation.setIsBillToDefault(true);

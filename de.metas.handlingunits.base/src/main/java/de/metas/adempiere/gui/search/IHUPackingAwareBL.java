@@ -103,4 +103,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 	void updateQtyIfNeeded(IHUPackingAware record, int qtyPacks, BigDecimal qtyCU);
 
 	void computeAndSetQtysForNewHuPackingAware(final PlainHUPackingAware huPackingAware, final BigDecimal quickInputQty);
+
+	boolean isInfiniteCapacityTU(IHUPackingAware huPackingAware);
 }

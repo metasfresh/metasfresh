@@ -1,15 +1,11 @@
 package de.metas.inoutcandidate.api.impl;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -17,9 +13,10 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -46,8 +43,6 @@ import de.metas.util.Services;
 @UtilityClass
 /* package */class ShipmentScheduleQtysHelper
 {
-	private final static Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
-
 	@VisibleForTesting
 	static final String MSG_DeliveryStopStatus = "ShipmentSchedule_DeliveryStop_Status";
 
@@ -59,14 +54,13 @@ import de.metas.util.Services;
 			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
 		if (sched.isClosed() || sched.isDeliveryStop())
 		{
 			setZeroQtyToDeliverAndRelatedStatuses(sched);
 			return;
 		}
 
-		final DeliveryLineCandidate lineCandidate = shipmentCandidates.getLineCandidateForShipmentScheduleId(sched.getM_ShipmentSchedule_ID());
+		final DeliveryLineCandidate lineCandidate = shipmentCandidates.getLineCandidateForShipmentScheduleId(olAndSched.getShipmentScheduleId());
 		if (lineCandidate == null)
 		{
 			ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
@@ -74,10 +68,10 @@ import de.metas.util.Services;
 		else
 		{
 			sched.setQtyToDeliver(lineCandidate.getQtyToDeliver());
-			sched.setStatus(mkStatus(lineCandidate, shipmentCandidates));
+			sched.setStatus(computeShipmentScheduleStatus(lineCandidate, shipmentCandidates));
 		}
 
-		final BigDecimal newQtyToDeliverOverrideFulfilled = mkQtyToDeliverOverrideFulFilled(olAndSched);
+		final BigDecimal newQtyToDeliverOverrideFulfilled = computeQtyToDeliverOverrideFulFilled(olAndSched);
 		if (olAndSched.getQtyOverride() != null)
 		{
 			if (newQtyToDeliverOverrideFulfilled.compareTo(olAndSched.getQtyOverride()) >= 0)
@@ -141,7 +135,7 @@ import de.metas.util.Services;
 			final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(discardedShipmentSchedule);
 
 			// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
-			discardedShipmentSchedule.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList()));
+			discardedShipmentSchedule.setQtyToDeliver(computeQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList()));
 		}
 	}
 
@@ -152,7 +146,7 @@ import de.metas.util.Services;
 	 * @param shipmentCandidates
 	 * @return
 	 */
-	private static String mkStatus(
+	private static String computeShipmentScheduleStatus(
 			@NonNull final DeliveryLineCandidate deliveryLineCandidate,
 			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates)
 	{
@@ -166,26 +160,15 @@ import de.metas.util.Services;
 		return shipmentCandidates.getStatusInfos(deliveryLineCandidate);
 	}
 
-	public static BigDecimal mkQtyToDeliver(
+	public static BigDecimal computeQtyToDeliver(
 			@NonNull final BigDecimal qtyRequired,
 			@NonNull final BigDecimal unconfirmedShippedQty)
 	{
-		final StringBuilder logInfo = new StringBuilder("Unconfirmed Qty=" + unconfirmedShippedQty + " - ToDeliver=" + qtyRequired + "->");
-
-		BigDecimal toDeliver = qtyRequired.subtract(unconfirmedShippedQty);
-
-		logInfo.append(toDeliver);
-
-		if (toDeliver.signum() < 0)
-		{
-			toDeliver = BigDecimal.ZERO;
-			logInfo.append(" (set to 0)");
-		}
-		logger.debug("{}", logInfo);
-		return toDeliver;
+		BigDecimal qtyToDeliver = qtyRequired.subtract(unconfirmedShippedQty);
+		return qtyToDeliver.signum() > 0 ? qtyToDeliver : BigDecimal.ZERO;
 	}
 
-	public static BigDecimal mkQtyToDeliverOverrideFulFilled(final OlAndSched olAndSched)
+	public static BigDecimal computeQtyToDeliverOverrideFulFilled(final OlAndSched olAndSched)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
 

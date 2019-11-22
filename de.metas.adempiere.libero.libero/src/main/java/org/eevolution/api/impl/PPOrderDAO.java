@@ -28,16 +28,13 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -55,7 +52,7 @@ import lombok.NonNull;
 public class PPOrderDAO implements IPPOrderDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
 	{
@@ -72,36 +69,6 @@ public class PPOrderDAO implements IPPOrderDAO
 	public List<I_PP_Order> getByIds(final Set<PPOrderId> orderIds)
 	{
 		return loadByRepoIdAwares(orderIds, I_PP_Order.class);
-	}
-
-	@Override
-	public Optional<I_PP_Order> retrieveOpenPickingOrderForSalesOrderLine(@NonNull final OrderLineId salesOrderLineId)
-	{
-		final List<I_PP_Order> ppOrders = queryBL.createQueryBuilderOutOfTrx(I_PP_Order.class)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_ID, salesOrderLineId)
-				.addEqualsFilter(I_PP_Order.COLUMN_IsPickingOrder, true)
-				//
-				// Only Releases Manufacturing orders:
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Order.COLUMN_Processed, true)
-				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Completed)
-				//
-				.create()
-				.list(I_PP_Order.class);
-
-		if (ppOrders.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else if (ppOrders.size() == 1)
-		{
-			return Optional.of(ppOrders.get(0));
-		}
-		else
-		{
-			final String documentNos = ppOrders.stream().map(I_PP_Order::getDocumentNo).collect(Collectors.joining(", "));
-			throw new AdempiereException("More than one picking order found: " + documentNos);
-		}
 	}
 
 	@Override
