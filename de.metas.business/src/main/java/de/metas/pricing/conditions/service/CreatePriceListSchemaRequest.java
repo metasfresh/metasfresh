@@ -34,7 +34,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -62,7 +62,7 @@ public class CreatePriceListSchemaRequest
 	TaxCategoryId taxCategoryTargetId;
 
 	@NonNull
-	Timestamp conversionDate;
+	LocalDate conversionDate;
 
 	@NonNull
 	String list_Base;

@@ -112,7 +112,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 					.taxCategoryTargetId(getTaxCategoryId(split[INDEX_Target_Taxcategory]))
 
 					// mandatory fields where the default value is set
-					.conversionDate(SystemTime.asTimestamp())
+					.conversionDate(SystemTime.asLocalDate())
 					.list_Base(X_M_DiscountSchemaLine.LIST_BASE_Listenpreis)
 
 					.conversionTypeId(DEFAULT_CONVERSION_TYPE_ID)

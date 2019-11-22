@@ -30,6 +30,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_DiscountSchemaLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -52,7 +53,7 @@ public class PriceListSchemaRepository
 		schemaLine.setStd_Rounding(request.getStd_Rounding());
 		schemaLine.setC_TaxCategory_Target_ID(getRepoIdOrDefault(request.getTaxCategoryTargetId()));
 
-		schemaLine.setConversionDate(request.getConversionDate());
+		schemaLine.setConversionDate(TimeUtil.asTimestamp(request.getConversionDate()));
 		schemaLine.setList_Base(request.getList_Base());
 
 		schemaLine.setC_ConversionType_ID(getRepoIdOrDefault(request.getConversionTypeId()));
