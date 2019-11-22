@@ -25,6 +25,7 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
+import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
@@ -123,7 +124,7 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 
 	public Optional<OrderId> getOrderId()
 	{
-		return rowsData.getOrderId();
+		return rowsData.getOrder().map(Order::getOrderId);
 	}
 
 	public Optional<BPartnerId> getBpartnerId()
@@ -157,12 +158,9 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@"));
 	}
 
-	public List<ProductsProposalRow> getRowsWithQtySet()
+	public List<ProductsProposalRow> getAllRows()
 	{
-		return getRows()
-				.stream()
-				.filter(ProductsProposalRow::isQtySet)
-				.collect(ImmutableList.toImmutableList());
+		return ImmutableList.copyOf(getRows());
 	}
 
 	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
