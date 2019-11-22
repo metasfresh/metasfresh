@@ -696,10 +696,12 @@ public class PriceListDAO implements IPriceListDAO
 
 		final I_M_PriceList_Version newCustomerPLV = copy()
 				.setSkipCalculatedColumns(true)
-				.setFrom(oldCustomerPLV)
+				.setFrom(newBasePLV)
 				.copyToNew(I_M_PriceList_Version.class);
 
 		newCustomerPLV.setValidFrom(newBasePLV.getValidFrom());
+		newCustomerPLV.setM_DiscountSchema_ID(newBasePLV.getM_DiscountSchema_ID());
+		newCustomerPLV.setM_Pricelist_Version_Base_ID(oldCustomerPLV.getM_PriceList_Version_ID());
 		saveRecord(newCustomerPLV);
 
 		final PriceListVersionId newCustomerPLVId = PriceListVersionId.ofRepoId(newCustomerPLV.getM_PriceList_Version_ID());
@@ -708,7 +710,6 @@ public class PriceListDAO implements IPriceListDAO
 
 		cloneASIs(newCustomerPLVId);
 
-		newCustomerPLV.setM_Pricelist_Version_Base_ID(newBasePLV.getM_Pricelist_Version_Base_ID());
 		save(newCustomerPLV);
 
 	}
