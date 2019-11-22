@@ -397,6 +397,10 @@
     border: 0;
 }
 
+.mapComponent {
+    padding-right: 0;
+}
+
 .product-order-summary {
     width: 100%;
 
