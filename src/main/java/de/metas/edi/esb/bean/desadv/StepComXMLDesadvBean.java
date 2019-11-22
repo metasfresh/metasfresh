@@ -44,6 +44,7 @@ import com.google.common.collect.Multimaps;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
@@ -89,14 +90,13 @@ public class StepComXMLDesadvBean
 	private static final String DEFAULT_PACK_DETAIL = "1";
 	private static final ObjectFactory DESADV_objectFactory = new ObjectFactory();
 
-	public final void createXMLEDIData(final Exchange exchange)
+	public final void createXMLEDIData(@NonNull final Exchange exchange)
 	{
 		final StepComDesadvValidation validation = new StepComDesadvValidation();
 
 		// validate mandatory exchange properties
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		final Document desadvDocument = createDesadvDocumentFromXMLBean(xmlDesadv, exchange);
-
 		exchange
 				.getIn()
 				.setBody(DESADV_objectFactory.createDocument(desadvDocument));
@@ -360,50 +360,63 @@ public class StepComXMLDesadvBean
 		final String lineNumber = formatNumber(ediExpDesadvLineType.getLine(), decimalFormat);
 		detail.setLINENUMBER(lineNumber);
 
-		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getEANCU()))
+		if (settings.isDesadvLineEANCRequired())
 		{
+			final String eanc = ValidationHelper.validateString(ediExpDesadvLineType.getEANCU(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @EANCU@");
+
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.EANC.toString());
 			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(ediExpDesadvLineType.getEANCU());
+			eancProdInfo.setPRODUCTID(eanc);
 			detail.getDPRIN1().add(eancProdInfo);
 		}
-		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getEANTU()))
+		if (settings.isDesadvLineEANTRequired())
 		{
+			final String eant = ValidationHelper.validateString(ediExpDesadvLineType.getEANTU(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @EANTU@");
+
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.EANT.toString());
 			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(ediExpDesadvLineType.getEANTU());
+			eancProdInfo.setPRODUCTID(eant);
 			detail.getDPRIN1().add(eancProdInfo);
 		}
-		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getGTIN()))
+		if (settings.isDesadvLineGTINRequired())
 		{
+			final String gtin = ValidationHelper.validateString(ediExpDesadvLineType.getGTIN(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @GTIN@");
+
 			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
 			gtinProdInfo.setDOCUMENTID(documentId);
 			gtinProdInfo.setPRODUCTQUAL(ProductQual.GTIN.toString());
 			gtinProdInfo.setLINENUMBER(lineNumber);
-			gtinProdInfo.setPRODUCTID(ediExpDesadvLineType.getGTIN());
+			gtinProdInfo.setPRODUCTID(gtin);
 			detail.getDPRIN1().add(gtinProdInfo);
 		}
-
-		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getUPC()))
+		if (settings.isDesadvLineUPCCRequired())
 		{
+			final String upcc = ValidationHelper.validateString(ediExpDesadvLineType.getUPC(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @UPC@");
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
 			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(ediExpDesadvLineType.getUPC());
+			eancProdInfo.setPRODUCTID(upcc);
 			detail.getDPRIN1().add(eancProdInfo);
 		}
-		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getUPCTU()))
+		if (settings.isDesadvLineUPCCRequired())
 		{
+			final String upct = ValidationHelper.validateString(ediExpDesadvLineType.getUPCTU(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @UPCTU@");
+
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCT.toString());
 			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(ediExpDesadvLineType.getUPCTU());
+			eancProdInfo.setPRODUCTID(upct);
 			detail.getDPRIN1().add(eancProdInfo);
 		}
 

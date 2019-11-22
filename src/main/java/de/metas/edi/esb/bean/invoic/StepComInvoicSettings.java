@@ -59,8 +59,12 @@ public class StepComInvoicSettings
 				.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
 				.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
 
-				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
 				.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
+				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
+				.invoicLineEANTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANT.required", "false"))
+				.invoicLineUPCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCC.required", "false"))
+				.invoicLineUPCTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCT.required", "false"))
+
 				.invoicLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
 				.build();
 	}
@@ -85,8 +89,13 @@ public class StepComInvoicSettings
 	boolean invoicIVCECityRequired;
 	boolean invoicIVCEPostaCodeRequired;
 
-	boolean invoicLineEANCRequired;
 	boolean invoicLineGTINRequired;
+
+	boolean invoicLineEANCRequired;
+	boolean invoicLineEANTRequired;
+
+	boolean invoicLineUPCCRequired;
+	boolean invoicLineUPCTRequired;
 
 	String invoicLineRequiredMEASUREMENTUNIT;
 
