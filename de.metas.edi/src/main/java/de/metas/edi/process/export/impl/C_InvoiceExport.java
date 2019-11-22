@@ -28,12 +28,15 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 
 public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
@@ -42,6 +45,8 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 	 * EXP_Format.Value for exporting Invoice EDI documents
 	 */
 	private static final String CST_INVOICE_EXP_FORMAT = "EDI_cctop_invoic_v";
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public C_InvoiceExport(final I_C_Invoice invoice, final String tableIdentifier, final ClientId clientId)
 	{
@@ -76,9 +81,11 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 		}
 		catch (final Exception e)
 		{
-			final String errmsg = e.getLocalizedMessage();
 			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
-			document.setEDIErrorMsg(errmsg);
+
+			final ITranslatableString errorMsgTrl = msgBL.parseTranslatableString(e.getLocalizedMessage());
+			document.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
+
 			InterfaceWrapperHelper.save(document);
 
 			throw new AdempiereException(e);
