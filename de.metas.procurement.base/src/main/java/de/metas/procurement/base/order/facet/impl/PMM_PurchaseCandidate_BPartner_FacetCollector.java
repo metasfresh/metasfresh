@@ -51,7 +51,7 @@ public class PMM_PurchaseCandidate_BPartner_FacetCollector extends SingleFacetCa
 	protected List<IFacet<I_PMM_PurchaseCandidate>> collectFacets(final IQueryBuilder<I_PMM_PurchaseCandidate> queryBuilder)
 	{
 		final List<Map<String, Object>> bpartners = queryBuilder
-				.andCollect(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID)
+				.andCollect(I_PMM_PurchaseCandidate.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
 				.create()
 				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BPartner.COLUMNNAME_Name, I_C_BPartner.COLUMNNAME_Value);
 
@@ -74,7 +74,7 @@ public class PMM_PurchaseCandidate_BPartner_FacetCollector extends SingleFacetCa
 				.append(" - ")
 				.append(row.get(I_C_BPartner.COLUMNNAME_Name))
 				.toString();
-		final Facet<I_PMM_PurchaseCandidate> facet = Facet.<I_PMM_PurchaseCandidate> builder()
+		final Facet<I_PMM_PurchaseCandidate> facet = Facet.<I_PMM_PurchaseCandidate>builder()
 				.setFacetCategory(facetCategoryBPartners)
 				.setDisplayName(bpartnerName)
 				.setFilter(TypedSqlQueryFilter.of(I_PMM_PurchaseCandidate.COLUMNNAME_C_BPartner_ID + "=" + bpartnerId))

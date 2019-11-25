@@ -59,7 +59,6 @@ import de.metas.util.lang.CoalesceUtil;
  * Processes {@link I_PMM_QtyReport_Event}s and creates/updates {@link I_PMM_PurchaseCandidate}s.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_QtyReport_Event, Void>
 {
@@ -209,7 +208,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 	private void updateC_Flatrate_DataEntry(final I_PMM_QtyReport_Event qtyReportEvent)
 	{
-		final I_C_Flatrate_Term flatrateTerm = qtyReportEvent.getC_Flatrate_Term();
+		final I_C_Flatrate_Term flatrateTerm = InterfaceWrapperHelper.load(qtyReportEvent.getC_Flatrate_Term_ID(), I_C_Flatrate_Term.class);
 		if (flatrateTerm == null)
 		{
 			// we are called, because qtyReportEvent has a contractLine_uuid. So if there is no term then something is wrong
@@ -231,7 +230,7 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 			return;
 		}
 
-		qtyReportEvent.setC_Flatrate_DataEntry(dataEntryForProduct);
+		qtyReportEvent.setC_Flatrate_DataEntry_ID(dataEntryForProduct.getC_Flatrate_DataEntry_ID());
 	}
 
 	private final void markProcessed(final I_PMM_QtyReport_Event event, final I_PMM_PurchaseCandidate candidate)

@@ -19,6 +19,7 @@ import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.process.ImportProduct;
 
 /*
  * #%L
@@ -30,12 +31,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,9 +45,8 @@ import de.metas.util.Services;
 
 /**
  * Wraps a {@link I_PMM_PurchaseCandidate} and behaves like an {@link IPMMPricingAware}.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 {
@@ -56,14 +56,14 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	}
 
 	private final I_PMM_PurchaseCandidate candidate;
-	
+
 	private PMMPricingAware_PurchaseCandidate(final I_PMM_PurchaseCandidate candidate)
 	{
 		super();
 		Check.assumeNotNull(candidate, "candidate not null");
 		this.candidate = candidate;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -81,7 +81,7 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	@Override
 	public I_C_BPartner getC_BPartner()
 	{
-		return candidate.getC_BPartner();
+		return InterfaceWrapperHelper.load(candidate.getC_BPartner_ID(), I_C_BPartner.class);
 	}
 
 	@Override
@@ -92,7 +92,7 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 		{
 			return false;
 		}
-		
+
 		// Consider that we have a contracted product only if the data entry has the Price or the QtyPlanned set (FRESH-568)
 		return Services.get(IPMMContractsBL.class).hasPriceOrQty(flatrateDataEntry);
 	}
@@ -100,9 +100,9 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	@Override
 	public I_M_Product getM_Product()
 	{
-		return candidate.getM_Product();
+		return InterfaceWrapperHelper.load(candidate.getM_Product_ID(), I_M_Product.class);
 	}
-	
+
 	@Override
 	public int getProductId()
 	{
@@ -112,14 +112,14 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		return candidate.getC_UOM();
+		return InterfaceWrapperHelper.load(candidate.getC_UOM_ID(), I_C_UOM.class);
 	}
 
 	@Override
 	public I_C_Flatrate_Term getC_Flatrate_Term()
 	{
 		final I_C_Flatrate_DataEntry flatrateDataEntry = getC_Flatrate_DataEntry();
-		if(flatrateDataEntry == null)
+		if (flatrateDataEntry == null)
 		{
 			return null;
 		}
@@ -129,7 +129,8 @@ class PMMPricingAware_PurchaseCandidate implements IPMMPricingAware
 	@Override
 	public I_C_Flatrate_DataEntry getC_Flatrate_DataEntry()
 	{
-		return InterfaceWrapperHelper.create(candidate.getC_Flatrate_DataEntry(), I_C_Flatrate_DataEntry.class);
+		I_C_Flatrate_DataEntry flatrateDataEntry = InterfaceWrapperHelper.load(candidate.getC_Flatrate_DataEntry_ID(), I_C_Flatrate_DataEntry.class);
+		return InterfaceWrapperHelper.create(flatrateDataEntry, I_C_Flatrate_DataEntry.class);
 	}
 
 	@Override

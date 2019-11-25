@@ -74,7 +74,7 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 				.create()
 				.anyMatch();
 	}
-	
+
 	private final IQueryBuilder<I_PMM_PurchaseCandidate> queryFor(final PMMPurchaseCandidateSegment pmmSegment, final Date day, final IQueryFilterModifier dayModifier)
 	{
 		Check.assumeNotNull(pmmSegment, "pmmSegment not null");
@@ -86,8 +86,8 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 				.addOnlyActiveRecordsFilter()
 				//
 				// Segment
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_BPartner_ID, pmmSegment.getC_BPartner_ID() > 0 ? pmmSegment.getC_BPartner_ID() : null)
-				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID, pmmSegment.getM_Product_ID() > 0 ? pmmSegment.getM_Product_ID() : null)
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMNNAME_C_BPartner_ID, pmmSegment.getC_BPartner_ID() > 0 ? pmmSegment.getC_BPartner_ID() : null)
+				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMNNAME_M_Product_ID, pmmSegment.getM_Product_ID() > 0 ? pmmSegment.getM_Product_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_AttributeSetInstance_ID, pmmSegment.getM_AttributeSetInstance_ID() > 0 ? pmmSegment.getM_AttributeSetInstance_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_M_HU_PI_Item_Product_ID, pmmSegment.getM_HU_PI_Item_Product_ID() > 0 ? pmmSegment.getM_HU_PI_Item_Product_ID() : null)
 				.addEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_C_Flatrate_DataEntry_ID, pmmSegment.getC_Flatrate_DataEntry_ID() > 0 ? pmmSegment.getC_Flatrate_DataEntry_ID() : null)

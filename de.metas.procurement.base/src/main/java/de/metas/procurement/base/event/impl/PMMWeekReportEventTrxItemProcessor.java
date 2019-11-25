@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -187,7 +188,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 	/**
 	 * Create an planning {@link I_PMM_QtyReport_Event}, for 2 weeks ago.
-	 *
+	 * <p>
 	 * The main reason for doing this is because when the user is reporting a trend, we want to see that trend in PMM Purchase Candidates window. So we are creating an ZERO planning QtyReport event
 	 * which will trigger the candidate creation if is not already there. And yes, we report for 2 weeks ago because in the candidates window we display the planning for next 2 weeks.
 	 *
@@ -197,7 +198,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 	private final void createWeeklyPlanningQtyReportEvents(final I_PMM_WeekReport_Event weekReportEvent)
 	{
 		final SyncProductSupply syncProductSupply_TwoWeeksAgo = new SyncProductSupply();
-		syncProductSupply_TwoWeeksAgo.setBpartner_uuid(SyncUUIDs.toUUIDString(weekReportEvent.getC_BPartner()));
+		syncProductSupply_TwoWeeksAgo.setBpartner_uuid(SyncUUIDs.toUUIDString(InterfaceWrapperHelper.load(weekReportEvent.getC_BPartner_ID(), I_C_BPartner.class)));
 		syncProductSupply_TwoWeeksAgo.setProduct_uuid(SyncUUIDs.toUUIDString(weekReportEvent.getPMM_Product()));
 		syncProductSupply_TwoWeeksAgo.setContractLine_uuid(null); // unknown
 		syncProductSupply_TwoWeeksAgo.setQty(BigDecimal.ZERO);

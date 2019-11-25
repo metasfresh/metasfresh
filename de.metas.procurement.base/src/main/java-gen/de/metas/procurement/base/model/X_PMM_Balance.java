@@ -4,7 +4,6 @@ package de.metas.procurement.base.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PMM_Balance
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -328862649L;
+	private static final long serialVersionUID = 1765725868L;
 
     /** Standard Constructor */
     public X_PMM_Balance (Properties ctx, int PMM_Balance_ID, String trxName)
@@ -26,19 +25,14 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
         {
 			setC_BPartner_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
-			setM_Product_ID (0);
 			setMonthDate (new Timestamp( System.currentTimeMillis() ));
+			setM_Product_ID (0);
 			setPMM_Balance_ID (0);
-			setQtyDelivered (Env.ZERO);
-// 0
-			setQtyOrdered (Env.ZERO);
-// 0
-			setQtyOrdered_TU (Env.ZERO);
-// 0
-			setQtyPromised (Env.ZERO);
-// 0
-			setQtyPromised_TU (Env.ZERO);
-// 0
+			setQtyDelivered (BigDecimal.ZERO); // 0
+			setQtyOrdered (BigDecimal.ZERO); // 0
+			setQtyOrdered_TU (BigDecimal.ZERO); // 0
+			setQtyPromised (BigDecimal.ZERO); // 0
+			setQtyPromised_TU (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -56,18 +50,6 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -94,18 +76,6 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.contracts.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class);
-	}
-
-	@Override
-	public void setC_Flatrate_DataEntry(de.metas.contracts.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
-	}
-
 	/** Set Abrechnungssatz.
 		@param C_Flatrate_DataEntry_ID Abrechnungssatz	  */
 	@Override
@@ -129,7 +99,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -140,9 +110,9 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -153,8 +123,8 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -165,20 +135,8 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
-	}
-
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -188,8 +146,8 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{
@@ -199,16 +157,20 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		return ii.intValue();
 	}
 
+	/** Set Monatserster.
+		@param MonthDate Monatserster	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setMonthDate (java.sql.Timestamp MonthDate)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		set_ValueNoCheck (COLUMNNAME_MonthDate, MonthDate);
 	}
 
+	/** Get Monatserster.
+		@return Monatserster	  */
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public java.sql.Timestamp getMonthDate () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MonthDate);
 	}
 
 	/** Set Produkt.
@@ -234,22 +196,6 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Monatserster.
-		@param MonthDate Monatserster	  */
-	@Override
-	public void setMonthDate (java.sql.Timestamp MonthDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_MonthDate, MonthDate);
-	}
-
-	/** Get Monatserster.
-		@return Monatserster	  */
-	@Override
-	public java.sql.Timestamp getMonthDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MonthDate);
 	}
 
 	/** Set PMM balance.
@@ -292,13 +238,13 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -306,15 +252,15 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -336,7 +282,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -355,7 +301,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -374,7 +320,7 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

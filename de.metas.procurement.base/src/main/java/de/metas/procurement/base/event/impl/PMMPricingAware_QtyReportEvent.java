@@ -42,9 +42,8 @@ import de.metas.util.Check;
 
 /**
  * Wraps a {@link I_PMM_QtyReport_Event} and behaves like an {@link IPMMPricingAware}.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 {
@@ -70,7 +69,7 @@ public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 				.add("qtyReportEvent", qtyReportEvent)
 				.toString();
 	}
-	
+
 	@Override
 	public Properties getCtx()
 	{
@@ -80,7 +79,7 @@ public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 	@Override
 	public I_C_BPartner getC_BPartner()
 	{
-		return qtyReportEvent.getC_BPartner();
+		return InterfaceWrapperHelper.load(qtyReportEvent.getC_BPartner_ID(), I_C_BPartner.class);
 	}
 
 	@Override
@@ -93,9 +92,9 @@ public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 	@Override
 	public I_M_Product getM_Product()
 	{
-		return qtyReportEvent.getM_Product();
+		return InterfaceWrapperHelper.load(qtyReportEvent.getM_Product_ID(), I_M_Product.class);
 	}
-	
+
 	@Override
 	public int getProductId()
 	{
@@ -105,19 +104,19 @@ public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		return qtyReportEvent.getC_UOM();
+		return InterfaceWrapperHelper.load(qtyReportEvent.getC_UOM_ID(), I_C_UOM.class);
 	}
 
 	@Override
 	public I_C_Flatrate_Term getC_Flatrate_Term()
 	{
-		return qtyReportEvent.getC_Flatrate_Term();
+		return InterfaceWrapperHelper.load(qtyReportEvent.getC_Flatrate_Term_ID(), I_C_Flatrate_Term.class);
 	}
 
 	@Override
 	public I_C_Flatrate_DataEntry getC_Flatrate_DataEntry()
 	{
-		return InterfaceWrapperHelper.create(qtyReportEvent.getC_Flatrate_DataEntry(), I_C_Flatrate_DataEntry.class);
+		return InterfaceWrapperHelper.create(qtyReportEvent.getC_Flatrate_DataEntry_ID(), I_C_Flatrate_DataEntry.class);
 	}
 
 	@Override

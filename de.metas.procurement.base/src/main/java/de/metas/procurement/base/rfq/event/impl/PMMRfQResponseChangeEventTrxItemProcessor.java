@@ -119,7 +119,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 	{
 		updateC_RfQResponseLine(event);
 		assertRfqResponseNotClosed(event);
-		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
+		final I_C_RfQResponseLine rfqResponseLine = InterfaceWrapperHelper.load(event.getC_RfQResponseLine_ID(), I_C_RfQResponseLine.class);
 
 		final BigDecimal priceOld = rfqResponseLine.getPrice();
 		rfqResponseLine.setPrice(event.getPrice());
@@ -135,7 +135,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 	{
 		updateC_RfQResponseLine(event);
 		assertRfqResponseNotClosed(event);
-		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
+		final I_C_RfQResponseLine rfqResponseLine = InterfaceWrapperHelper.load(event.getC_RfQResponseLine_ID(), I_C_RfQResponseLine.class);
 
 		final Timestamp date = event.getDatePromised();
 		I_C_RfQResponseLineQty rfqResponseLineQty = pmmRfqDAO.retrieveResponseLineQty(rfqResponseLine, date);
@@ -156,7 +156,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		//
 		// Update event
 		event.setQty_Old(qtyOld);
-		event.setC_RfQResponseLineQty(rfqResponseLineQty);
+		event.setC_RfQResponseLineQty_ID(rfqResponseLineQty.getC_RfQResponseLineQty_ID());
 		markProcessed(event);
 	}
 
@@ -169,7 +169,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 
 	private void assertRfqResponseNotClosed(final I_PMM_RfQResponse_ChangeEvent event)
 	{
-		final I_C_RfQResponseLine rfqResponseLine = event.getC_RfQResponseLine();
+		final I_C_RfQResponseLine rfqResponseLine = InterfaceWrapperHelper.load(event.getC_RfQResponseLine_ID(), I_C_RfQResponseLine.class);
 		Check.assumeNotNull(rfqResponseLine, "rfqResponseLine not null");
 
 		if (pmmRfqBL.isCompletedOrClosed(rfqResponseLine))

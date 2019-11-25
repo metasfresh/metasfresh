@@ -4,7 +4,6 @@ package de.metas.procurement.base.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PMM_PurchaseCandidate
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1305797989L;
+	private static final long serialVersionUID = -167106460L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate (Properties ctx, int PMM_PurchaseCandidate_ID, String trxName)
@@ -32,20 +31,14 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 			setM_PricingSystem_ID (0);
 			setM_Product_ID (0);
 			setPMM_PurchaseCandidate_ID (0);
-			setPrice (Env.ZERO);
-			setProcessed (false);
-// N
-			setQtyOrdered (Env.ZERO);
-// 0
-			setQtyOrdered_TU (Env.ZERO);
-// 0
-			setQtyPromised (Env.ZERO);
-			setQtyPromised_TU (Env.ZERO);
-// 0
-			setQtyToOrder (Env.ZERO);
-// 0
-			setQtyToOrder_TU (Env.ZERO);
-// 0
+			setPrice (BigDecimal.ZERO);
+			setProcessed (false); // N
+			setQtyOrdered (BigDecimal.ZERO); // 0
+			setQtyOrdered_TU (BigDecimal.ZERO); // 0
+			setQtyPromised (BigDecimal.ZERO);
+			setQtyPromised_TU (BigDecimal.ZERO); // 0
+			setQtyToOrder (BigDecimal.ZERO); // 0
+			setQtyToOrder_TU (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -63,18 +56,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -99,18 +80,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -138,18 +107,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.contracts.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class);
-	}
-
-	@Override
-	public void setC_Flatrate_DataEntry(de.metas.contracts.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
-	}
-
 	/** Set Abrechnungssatz.
 		@param C_Flatrate_DataEntry_ID Abrechnungssatz	  */
 	@Override
@@ -170,18 +127,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -245,7 +190,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public de.metas.procurement.base.model.I_PMM_QtyReport_Event getLast_QtyReport_Event() throws RuntimeException
+	public de.metas.procurement.base.model.I_PMM_QtyReport_Event getLast_QtyReport_Event()
 	{
 		return get_ValueAsPO(COLUMNNAME_Last_QtyReport_Event_ID, de.metas.procurement.base.model.I_PMM_QtyReport_Event.class);
 	}
@@ -279,7 +224,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -290,9 +235,9 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -303,8 +248,8 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -315,20 +260,8 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
-	}
-
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -338,8 +271,8 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{
@@ -347,18 +280,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_Override_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product_Override(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_Override_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product_Override);
 	}
 
 	/** Set Packvorschrift-Produkt Zuordnung abw..
@@ -381,18 +302,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_PriceList getM_PriceList() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class);
-	}
-
-	@Override
-	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class, M_PriceList);
 	}
 
 	/** Set Preisliste.
@@ -420,18 +329,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
-	}
-
 	/** Set Preissystem.
 		@param M_PricingSystem_ID 
 		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
@@ -457,18 +354,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -492,18 +377,6 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -625,7 +498,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -644,7 +517,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -696,9 +569,9 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		return false;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -706,15 +579,15 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -736,7 +609,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -754,7 +627,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU_NextWeek);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -772,7 +645,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU_ThisWeek);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -791,7 +664,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -810,7 +683,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -828,7 +701,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU_NextWeek);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -846,7 +719,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised_TU_ThisWeek);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -865,7 +738,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToOrder);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -884,7 +757,7 @@ public class X_PMM_PurchaseCandidate extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToOrder_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

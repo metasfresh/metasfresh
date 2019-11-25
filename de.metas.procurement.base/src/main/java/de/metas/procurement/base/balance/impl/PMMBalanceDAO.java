@@ -81,8 +81,8 @@ public class PMMBalanceDAO implements IPMMBalanceDAO
 		I_PMM_Balance balanceRecord = Services.get(IQueryBL.class).createQueryBuilder(I_PMM_Balance.class, context)
 				//
 				// BPartner + Product segment
-				.addEqualsFilter(I_PMM_Balance.COLUMN_C_BPartner_ID, segment.getC_BPartner_ID())
-				.addEqualsFilter(I_PMM_Balance.COLUMN_M_Product_ID, segment.getM_Product_ID())
+				.addEqualsFilter(I_PMM_Balance.COLUMNNAME_C_BPartner_ID, segment.getC_BPartner_ID())
+				.addEqualsFilter(I_PMM_Balance.COLUMNNAME_M_Product_ID, segment.getM_Product_ID())
 				.addEqualsFilter(I_PMM_Balance.COLUMN_M_AttributeSetInstance_ID, segment.getM_AttributeSetInstance_ID() > 0 ? segment.getM_AttributeSetInstance_ID() : null)
 				// .addEqualsFilter(I_PMM_Balance.COLUMN_M_HU_PI_Item_Product_ID, segment.getM_HU_PI_Item_Product_ID() > 0 ? segment.getM_HU_PI_Item_Product_ID() : null)
 				.addEqualsFilter(I_PMM_Balance.COLUMN_C_Flatrate_DataEntry_ID, segment.getC_Flatrate_DataEntry_ID() > 0 ? segment.getC_Flatrate_DataEntry_ID() : null)

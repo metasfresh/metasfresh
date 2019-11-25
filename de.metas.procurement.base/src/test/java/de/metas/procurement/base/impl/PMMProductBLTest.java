@@ -399,11 +399,11 @@ public class PMMProductBLTest
 			final Timestamp validTo)
 	{
 		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.newInstance(I_PMM_Product.class);
-		pmmProduct.setM_Product(product);
-		pmmProduct.setC_BPartner(partner);
-		pmmProduct.setM_HU_PI_Item_Product(hupip);
+		pmmProduct.setM_Product_ID(product.getM_Product_ID());
+		pmmProduct.setC_BPartner_ID(partner.getC_BPartner_ID());
+		pmmProduct.setM_HU_PI_Item_Product_ID(hupip.getM_HU_PI_Item_Product_ID());
 		pmmProduct.setM_AttributeSetInstance(asi);
-		pmmProduct.setM_Warehouse(warehouse);
+		pmmProduct.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		pmmProduct.setValidFrom(validFrom);
 		pmmProduct.setValidTo(validTo);
 		InterfaceWrapperHelper.save(pmmProduct);

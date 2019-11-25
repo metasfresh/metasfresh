@@ -14,6 +14,7 @@ import de.metas.organization.OrgId;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.process.ImportProduct;
 
 /*
  * #%L
@@ -41,7 +42,6 @@ import de.metas.util.Services;
  * {@link I_PMM_Product} ProductName builder.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PMMProductNameBuilder
 {
@@ -96,8 +96,8 @@ public class PMMProductNameBuilder
 			{
 				final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
-				final I_C_BPartner bpartner = pmmProduct.getC_BPartner();
-				final I_M_Product product = pmmProduct.getM_Product();
+				final I_C_BPartner bpartner = InterfaceWrapperHelper.load(pmmProduct.getC_BPartner_ID(), I_C_BPartner.class);
+				final I_M_Product product = InterfaceWrapperHelper.load(pmmProduct.getM_Product_ID(), I_M_Product.class);
 				final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 				bpartnerProduct = InterfaceWrapperHelper.create(bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product, orgId), I_C_BPartner_Product.class);
@@ -106,7 +106,7 @@ public class PMMProductNameBuilder
 					bpartnerProduct = null;
 				}
 			}
-			
+
 			_bpartnerProduct = Optional.fromNullable(bpartnerProduct);
 		}
 
@@ -145,7 +145,7 @@ public class PMMProductNameBuilder
 
 		//
 		// Get form M_Product.Name
-		if (Check.isEmpty(productNamePart, true) && pmmProduct.getM_Product() != null)
+		if (Check.isEmpty(productNamePart, true) && pmmProduct.getM_Product_ID() > 0)
 		{
 			if (_productNamePartIfUsingMProductSet)
 			{
@@ -153,7 +153,8 @@ public class PMMProductNameBuilder
 			}
 			else
 			{
-				productNamePart = pmmProduct.getM_Product().getName();
+				final I_M_Product product = InterfaceWrapperHelper.load(pmmProduct.getM_Product_ID(), I_M_Product.class);
+				productNamePart = product.getName();
 			}
 		}
 

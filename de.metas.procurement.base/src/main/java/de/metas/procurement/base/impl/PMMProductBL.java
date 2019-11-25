@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import de.metas.material.event.commons.AttributesKey;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeInstance;
@@ -50,7 +53,7 @@ public class PMMProductBL implements IPMMProductBL
 	{
 		//
 		// Update PMM_Product from M_HU_PI_Item_Product
-		final I_M_HU_PI_Item_Product huPiItemProd = pmmProduct.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product huPiItemProd = InterfaceWrapperHelper.load(pmmProduct.getM_HU_PI_Item_Product_ID(), I_M_HU_PI_Item_Product.class);
 		if (huPiItemProd != null)
 		{
 			pmmProduct.setValidFrom(huPiItemProd.getValidFrom());
@@ -64,7 +67,7 @@ public class PMMProductBL implements IPMMProductBL
 		{
 			pmmProduct.setValidFrom(null);
 			pmmProduct.setValidTo(null);
-			pmmProduct.setC_BPartner(null);
+			pmmProduct.setC_BPartner_ID(0);
 			pmmProduct.setPackDescription(null);
 		}
 
@@ -93,7 +96,7 @@ public class PMMProductBL implements IPMMProductBL
 
 		for (final I_PMM_Product pmmProduct : pmmProducts)
 		{
-			pmmProduct.setM_HU_PI_Item_Product(huPIItemProduct); // optimization
+			pmmProduct.setM_HU_PI_Item_Product_ID(huPIItemProduct.getM_HU_PI_Item_Product_ID()); // optimization
 			update(pmmProduct);
 		}
 	}
@@ -224,7 +227,7 @@ public class PMMProductBL implements IPMMProductBL
 					break;
 				}
 
-				if (!Objects.equals(pmmStringValue,instanceStringValue))
+				if (!Objects.equals(pmmStringValue, instanceStringValue))
 				{
 					// not valid
 					isValid = false;

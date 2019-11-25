@@ -270,9 +270,9 @@ public class PMMWeekReportEventTrxItemProcessorTest
 	private I_PMM_Product createPMM_Product(final I_M_Product product, final I_M_AttributeSetInstance asi, final I_C_BPartner bpartner)
 	{
 		final I_PMM_Product pmmProduct = InterfaceWrapperHelper.create(Env.getCtx(), I_PMM_Product.class, ITrx.TRXNAME_ThreadInherited);
-		pmmProduct.setM_Product(product);
+		pmmProduct.setM_Product_ID(product.getM_Product_ID());
 		pmmProduct.setM_AttributeSetInstance(asi);
-		pmmProduct.setC_BPartner(bpartner);
+		pmmProduct.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 
 		InterfaceWrapperHelper.save(pmmProduct);
 		return pmmProduct;
@@ -326,7 +326,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 	{
 		for (final I_PMM_WeekReport_Event event : POJOLookupMap.get().getRecords(I_PMM_WeekReport_Event.class))
 		{
-			Assert.assertEquals("Processed: "+event, true, event.isProcessed());
+			Assert.assertEquals("Processed: " + event, true, event.isProcessed());
 		}
 	}
 

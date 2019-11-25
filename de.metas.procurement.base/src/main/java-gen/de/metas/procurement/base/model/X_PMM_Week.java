@@ -14,7 +14,7 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -489352562L;
+	private static final long serialVersionUID = 1239230106L;
 
     /** Standard Constructor */
     public X_PMM_Week (Properties ctx, int PMM_Week_ID, String trxName)
@@ -25,8 +25,7 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 			setC_BPartner_ID (0);
 			setM_Product_ID (0);
 			setPMM_Week_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
 			setWeekDate (new Timestamp( System.currentTimeMillis() ));
         } */
     }
@@ -45,18 +44,6 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -100,7 +87,7 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 	}
 
 	@Override
-	public de.metas.procurement.base.model.I_PMM_WeekReport_Event getLast_WeekReport_Event() throws RuntimeException
+	public de.metas.procurement.base.model.I_PMM_WeekReport_Event getLast_WeekReport_Event()
 	{
 		return get_ValueAsPO(COLUMNNAME_Last_WeekReport_Event_ID, de.metas.procurement.base.model.I_PMM_WeekReport_Event.class);
 	}
@@ -134,7 +121,7 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -145,9 +132,9 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -158,8 +145,8 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -170,20 +157,8 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
-	}
-
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -193,8 +168,8 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{
@@ -202,18 +177,6 @@ public class X_PMM_Week extends org.compiere.model.PO implements I_PMM_Week, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

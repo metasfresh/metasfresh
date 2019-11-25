@@ -50,7 +50,7 @@ public class PMMProductDAO implements IPMMProductDAO
 		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, null)
-				.addNotEqualsFilter(I_PMM_Product.COLUMN_M_Warehouse_ID, null);
+				.addNotEqualsFilter(I_PMM_Product.COLUMNNAME_M_Warehouse_ID, null);
 
 		//
 		// ValidFrom
@@ -87,7 +87,7 @@ public class PMMProductDAO implements IPMMProductDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_PMM_Product.class, product)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
 				.list();
 	}
@@ -98,7 +98,7 @@ public class PMMProductDAO implements IPMMProductDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_PMM_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PMM_Product.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.list();
 	}
@@ -108,7 +108,7 @@ public class PMMProductDAO implements IPMMProductDAO
 	{
 		return retrievePMMProductsValidOnDateQuery(date)
 				.addInArrayOrAllFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) // for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)
-				.addEqualsFilter(I_PMM_Product.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_PMM_Product.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_PMM_Product.COLUMN_M_HU_PI_Item_Product_ID, huPIPId)
 				.orderBy()
 				.addColumn(I_PMM_Product.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.First)

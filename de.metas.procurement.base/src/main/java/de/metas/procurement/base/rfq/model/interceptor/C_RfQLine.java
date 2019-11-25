@@ -6,6 +6,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -58,7 +59,7 @@ public class C_RfQLine
 		rfqLine.setM_Product_ID(pmmProduct.getM_Product_ID());
 		// rfqLine.setM_AttributeSetInstance_ID(pmmProduct.getM_AttributeSetInstance_ID()); // don't set it because we want to prevent changing it
 
-		final I_M_HU_PI_Item_Product huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product huPIItemProduct = InterfaceWrapperHelper.load(pmmProduct.getM_HU_PI_Item_Product_ID(), I_M_HU_PI_Item_Product.class);
 		if (huPIItemProduct != null)
 		{
 			rfqLine.setC_UOM_ID(huPIItemProduct.getC_UOM_ID());

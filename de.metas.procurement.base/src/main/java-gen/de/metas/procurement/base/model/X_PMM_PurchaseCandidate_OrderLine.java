@@ -4,7 +4,6 @@ package de.metas.procurement.base.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PMM_PurchaseCandidate_OrderLine
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -842330716L;
+	private static final long serialVersionUID = -1526874375L;
 
     /** Standard Constructor */
     public X_PMM_PurchaseCandidate_OrderLine (Properties ctx, int PMM_PurchaseCandidate_OrderLine_ID, String trxName)
@@ -27,9 +26,8 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 			setC_OrderLine_ID (0);
 			setPMM_PurchaseCandidate_ID (0);
 			setPMM_PurchaseCandidate_OrderLine_ID (0);
-			setQtyOrdered (Env.ZERO);
-			setQtyOrdered_TU (Env.ZERO);
-// 0
+			setQtyOrdered (BigDecimal.ZERO);
+			setQtyOrdered_TU (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -49,7 +47,7 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
     }
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -86,7 +84,7 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public de.metas.procurement.base.model.I_PMM_PurchaseCandidate getPMM_PurchaseCandidate() throws RuntimeException
+	public de.metas.procurement.base.model.I_PMM_PurchaseCandidate getPMM_PurchaseCandidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_PMM_PurchaseCandidate_ID, de.metas.procurement.base.model.I_PMM_PurchaseCandidate.class);
 	}
@@ -141,9 +139,9 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -151,15 +149,15 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -181,7 +179,7 @@ public class X_PMM_PurchaseCandidate_OrderLine extends org.compiere.model.PO imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

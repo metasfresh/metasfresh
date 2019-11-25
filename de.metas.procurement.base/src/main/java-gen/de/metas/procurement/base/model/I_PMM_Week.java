@@ -32,10 +32,6 @@ public interface I_PMM_Week
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_Client>(I_PMM_Week.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_PMM_Week
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,18 +49,12 @@ public interface I_PMM_Week
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_Org>(I_PMM_Week.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -88,12 +78,6 @@ public interface I_PMM_Week
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_C_BPartner>(I_PMM_Week.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -122,8 +106,6 @@ public interface I_PMM_Week
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_User>(I_PMM_Week.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -203,8 +185,8 @@ public interface I_PMM_Week
     public static final String COLUMNNAME_Last_WeekReport_Event_ID = "Last_WeekReport_Event_ID";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -213,8 +195,8 @@ public interface I_PMM_Week
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -232,7 +214,7 @@ public interface I_PMM_Week
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -241,7 +223,7 @@ public interface I_PMM_Week
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -249,12 +231,8 @@ public interface I_PMM_Week
 	 */
 	public int getM_HU_PI_Item_Product_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
-
     /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Week, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_PMM_Week.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_PMM_Week, Object> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Week, Object>(I_PMM_Week.class, "M_HU_PI_Item_Product_ID", null);
     /** Column name M_HU_PI_Item_Product_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
@@ -278,12 +256,6 @@ public interface I_PMM_Week
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_M_Product>(I_PMM_Week.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -383,8 +355,6 @@ public interface I_PMM_Week
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PMM_Week, org.compiere.model.I_AD_User>(I_PMM_Week.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

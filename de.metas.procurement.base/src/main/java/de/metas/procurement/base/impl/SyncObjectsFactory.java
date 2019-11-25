@@ -376,7 +376,7 @@ public class SyncObjectsFactory
 	{
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
 
-		final I_M_Product product = pmmProduct.getM_Product();
+		final I_M_Product product = InterfaceWrapperHelper.load(pmmProduct.getM_Product_ID(), I_M_Product.class);
 
 		String productName = pmmProduct.getProductName();
 		// Fallback to M_Product.Name (shall not happen)

@@ -5,19 +5,17 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-
 /** Generated Model for PMM_RfQResponse_ChangeEvent
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO implements I_PMM_RfQResponse_ChangeEvent, org.compiere.model.I_Persistent
+public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO implements I_PMM_RfQResponse_ChangeEvent, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1927670784L;
+	private static final long serialVersionUID = 2071129600L;
 
     /** Standard Constructor */
     public X_PMM_RfQResponse_ChangeEvent (Properties ctx, int PMM_RfQResponse_ChangeEvent_ID, String trxName)
@@ -25,11 +23,9 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
       super (ctx, PMM_RfQResponse_ChangeEvent_ID, trxName);
       /** if (PMM_RfQResponse_ChangeEvent_ID == 0)
         {
-			setIsError (false);
-// N
+			setIsError (false); // N
 			setPMM_RfQResponse_ChangeEvent_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
 			setType (null);
         } */
     }
@@ -49,94 +45,95 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
       return poi;
     }
 
-    @Override
-    public org.compiere.model.I_AD_Issue getAD_Issue() throws RuntimeException
-    {
-    	return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
-    }
-
-    @Override
-    public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
-    {
-    	set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
-    }
-
-    /** Set System-Problem.
-    	@param AD_Issue_ID
-    	Automatically created or manually entered System Issue
-      */
-    @Override
-    public void setAD_Issue_ID (int AD_Issue_ID)
-    {
-    	if (AD_Issue_ID < 1)
-		{
-			set_Value (COLUMNNAME_AD_Issue_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
-		}
-    }
-
-    /** Get System-Problem.
-    	@return Automatically created or manually entered System Issue
-      */
-    @Override
-    public int getAD_Issue_ID ()
-    {
-    	Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
-    	if (ii == null)
-		{
-			return 0;
-		}
-    	return ii.intValue();
-    }
-
 	@Override
-	public de.metas.rfq.model.I_C_RfQResponseLine getC_RfQResponseLine() throws RuntimeException
+	public org.compiere.model.I_AD_Issue getAD_Issue()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_RfQResponseLine_ID, de.metas.rfq.model.I_C_RfQResponseLine.class);
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
 	}
 
 	@Override
-	public void setC_RfQResponseLine(de.metas.rfq.model.I_C_RfQResponseLine C_RfQResponseLine)
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
 	{
-		set_ValueFromPO(COLUMNNAME_C_RfQResponseLine_ID, de.metas.rfq.model.I_C_RfQResponseLine.class, C_RfQResponseLine);
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set RfQ Response Line.
-		@param C_RfQResponseLine_ID
+		@param C_RfQResponseLine_ID 
 		Request for Quotation Response Line
 	  */
 	@Override
 	public void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID)
 	{
-		if (C_RfQResponseLine_ID < 1)
-		{
+		if (C_RfQResponseLine_ID < 1) 
 			set_Value (COLUMNNAME_C_RfQResponseLine_ID, null);
-		}
-		else
-		{
+		else 
 			set_Value (COLUMNNAME_C_RfQResponseLine_ID, Integer.valueOf(C_RfQResponseLine_ID));
-		}
 	}
 
 	/** Get RfQ Response Line.
 		@return Request for Quotation Response Line
 	  */
 	@Override
-	public int getC_RfQResponseLine_ID ()
+	public int getC_RfQResponseLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQResponseLine_ID);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set RfQ Response Line Qty.
+		@param C_RfQResponseLineQty_ID 
+		Request for Quotation Response Line Quantity
+	  */
+	@Override
+	public void setC_RfQResponseLineQty_ID (int C_RfQResponseLineQty_ID)
+	{
+		if (C_RfQResponseLineQty_ID < 1) 
+			set_Value (COLUMNNAME_C_RfQResponseLineQty_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_RfQResponseLineQty_ID, Integer.valueOf(C_RfQResponseLineQty_ID));
+	}
+
+	/** Get RfQ Response Line Qty.
+		@return Request for Quotation Response Line Quantity
+	  */
+	@Override
+	public int getC_RfQResponseLineQty_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQResponseLineQty_ID);
+		if (ii == null)
+			 return 0;
 		return ii.intValue();
 	}
 
 	/** Set RfQ Response Line (UUID).
-		@param C_RfQResponseLine_UUID
+		@param C_RfQResponseLine_UUID 
 		Request for Quotation Response Line (UUID)
 	  */
 	@Override
@@ -149,56 +146,13 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 		@return Request for Quotation Response Line (UUID)
 	  */
 	@Override
-	public java.lang.String getC_RfQResponseLine_UUID ()
+	public java.lang.String getC_RfQResponseLine_UUID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_C_RfQResponseLine_UUID);
 	}
 
-	@Override
-	public de.metas.rfq.model.I_C_RfQResponseLineQty getC_RfQResponseLineQty() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_RfQResponseLineQty_ID, de.metas.rfq.model.I_C_RfQResponseLineQty.class);
-	}
-
-	@Override
-	public void setC_RfQResponseLineQty(de.metas.rfq.model.I_C_RfQResponseLineQty C_RfQResponseLineQty)
-	{
-		set_ValueFromPO(COLUMNNAME_C_RfQResponseLineQty_ID, de.metas.rfq.model.I_C_RfQResponseLineQty.class, C_RfQResponseLineQty);
-	}
-
-	/** Set RfQ Response Line Qty.
-		@param C_RfQResponseLineQty_ID
-		Request for Quotation Response Line Quantity
-	  */
-	@Override
-	public void setC_RfQResponseLineQty_ID (int C_RfQResponseLineQty_ID)
-	{
-		if (C_RfQResponseLineQty_ID < 1)
-		{
-			set_Value (COLUMNNAME_C_RfQResponseLineQty_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_C_RfQResponseLineQty_ID, Integer.valueOf(C_RfQResponseLineQty_ID));
-		}
-	}
-
-	/** Get RfQ Response Line Qty.
-		@return Request for Quotation Response Line Quantity
-	  */
-	@Override
-	public int getC_RfQResponseLineQty_ID ()
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_RfQResponseLineQty_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
-	}
-
 	/** Set Zugesagter Termin.
-		@param DatePromised
+		@param DatePromised 
 		Zugesagter Termin für diesen Auftrag
 	  */
 	@Override
@@ -211,7 +165,7 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 		@return Zugesagter Termin für diesen Auftrag
 	  */
 	@Override
-	public java.sql.Timestamp getDatePromised ()
+	public java.sql.Timestamp getDatePromised () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
 	}
@@ -227,7 +181,7 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	/** Get Fehlermeldung.
 		@return Fehlermeldung	  */
 	@Override
-	public java.lang.String getErrorMsg ()
+	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
@@ -243,13 +197,13 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	/** Get Event UUID.
 		@return Event UUID	  */
 	@Override
-	public java.lang.String getEvent_UUID ()
+	public java.lang.String getEvent_UUID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Event_UUID);
 	}
 
 	/** Set Fehler.
-		@param IsError
+		@param IsError 
 		Ein Fehler ist bei der Durchführung aufgetreten
 	  */
 	@Override
@@ -262,22 +216,20 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 		@return Ein Fehler ist bei der Durchführung aufgetreten
 	  */
 	@Override
-	public boolean isError ()
+	public boolean isError () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsError);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			}
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	@Override
-	public de.metas.procurement.base.model.I_PMM_Product getPMM_Product() throws RuntimeException
+	public de.metas.procurement.base.model.I_PMM_Product getPMM_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_PMM_Product_ID, de.metas.procurement.base.model.I_PMM_Product.class);
 	}
@@ -293,26 +245,20 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	@Override
 	public void setPMM_Product_ID (int PMM_Product_ID)
 	{
-		if (PMM_Product_ID < 1)
-		{
+		if (PMM_Product_ID < 1) 
 			set_Value (COLUMNNAME_PMM_Product_ID, null);
-		}
-		else
-		{
+		else 
 			set_Value (COLUMNNAME_PMM_Product_ID, Integer.valueOf(PMM_Product_ID));
-		}
 	}
 
 	/** Get Lieferprodukt.
 		@return Lieferprodukt	  */
 	@Override
-	public int getPMM_Product_ID ()
+	public int getPMM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PMM_Product_ID);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
 		return ii.intValue();
 	}
 
@@ -321,31 +267,25 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	@Override
 	public void setPMM_RfQResponse_ChangeEvent_ID (int PMM_RfQResponse_ChangeEvent_ID)
 	{
-		if (PMM_RfQResponse_ChangeEvent_ID < 1)
-		{
+		if (PMM_RfQResponse_ChangeEvent_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PMM_RfQResponse_ChangeEvent_ID, null);
-		}
-		else
-		{
+		else 
 			set_ValueNoCheck (COLUMNNAME_PMM_RfQResponse_ChangeEvent_ID, Integer.valueOf(PMM_RfQResponse_ChangeEvent_ID));
-		}
 	}
 
 	/** Get RfQ Response Change Event.
 		@return RfQ Response Change Event	  */
 	@Override
-	public int getPMM_RfQResponse_ChangeEvent_ID ()
+	public int getPMM_RfQResponse_ChangeEvent_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PMM_RfQResponse_ChangeEvent_ID);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
 		return ii.intValue();
 	}
 
 	/** Set Preis.
-		@param Price
+		@param Price 
 		Preis
 	  */
 	@Override
@@ -358,13 +298,11 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 		@return Preis
 	  */
 	@Override
-	public java.math.BigDecimal getPrice ()
+	public java.math.BigDecimal getPrice () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-		{
-			return Env.ZERO;
-		}
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -379,19 +317,17 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	/** Get Preis (old).
 		@return Preis (old)	  */
 	@Override
-	public java.math.BigDecimal getPrice_Old ()
+	public java.math.BigDecimal getPrice_Old () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price_Old);
 		if (bd == null)
-		{
-			return Env.ZERO;
-		}
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	/** Set Verarbeitet.
-		@param Processed
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -400,18 +336,16 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
 	@Override
-	public boolean isProcessed ()
+	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			}
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -428,13 +362,13 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	/** Get Produkt UUID.
 		@return Produkt UUID	  */
 	@Override
-	public java.lang.String getProduct_UUID ()
+	public java.lang.String getProduct_UUID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Product_UUID);
 	}
 
 	/** Set Menge.
-		@param Qty
+		@param Qty 
 		Menge
 	  */
 	@Override
@@ -447,13 +381,11 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 		@return Menge
 	  */
 	@Override
-	public java.math.BigDecimal getQty ()
+	public java.math.BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-		{
-			return Env.ZERO;
-		}
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -468,17 +400,15 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	/** Get Menge (old).
 		@return Menge (old)	  */
 	@Override
-	public java.math.BigDecimal getQty_Old ()
+	public java.math.BigDecimal getQty_Old () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Old);
 		if (bd == null)
-		{
-			return Env.ZERO;
-		}
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/**
+	/** 
 	 * Type AD_Reference_ID=540660
 	 * Reference name: PMM_RfQResponse_ChangeEvent_Type
 	 */
@@ -488,9 +418,7 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	/** Quantity = Q */
 	public static final String TYPE_Quantity = "Q";
 	/** Set Art.
-		@param Type
-		Type of Validation (SQL, Java Script, Java Language)
-	  */
+		@param Type Art	  */
 	@Override
 	public void setType (java.lang.String Type)
 	{
@@ -499,10 +427,9 @@ public class X_PMM_RfQResponse_ChangeEvent extends org.compiere.model.PO impleme
 	}
 
 	/** Get Art.
-		@return Type of Validation (SQL, Java Script, Java Language)
-	  */
+		@return Art	  */
 	@Override
-	public java.lang.String getType ()
+	public java.lang.String getType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Type);
 	}

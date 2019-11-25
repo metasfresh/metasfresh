@@ -32,10 +32,6 @@ public interface I_PMM_Balance
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_Client>(I_PMM_Balance.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_PMM_Balance
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,18 +49,12 @@ public interface I_PMM_Balance
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_Org>(I_PMM_Balance.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -88,12 +78,6 @@ public interface I_PMM_Balance
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_C_BPartner>(I_PMM_Balance.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -115,12 +99,8 @@ public interface I_PMM_Balance
 	 */
 	public int getC_Flatrate_DataEntry_ID();
 
-	public de.metas.contracts.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry();
-
-	public void setC_Flatrate_DataEntry(de.metas.contracts.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry);
-
     /** Column definition for C_Flatrate_DataEntry_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.contracts.model.I_C_Flatrate_DataEntry> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.contracts.model.I_C_Flatrate_DataEntry>(I_PMM_Balance.class, "C_Flatrate_DataEntry_ID", de.metas.contracts.model.I_C_Flatrate_DataEntry.class);
+    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, Object> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, Object>(I_PMM_Balance.class, "C_Flatrate_DataEntry_ID", null);
     /** Column name C_Flatrate_DataEntry_ID */
     public static final String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
 
@@ -149,8 +129,6 @@ public interface I_PMM_Balance
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_User>(I_PMM_Balance.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -180,8 +158,8 @@ public interface I_PMM_Balance
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -190,8 +168,8 @@ public interface I_PMM_Balance
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -209,7 +187,7 @@ public interface I_PMM_Balance
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -218,7 +196,7 @@ public interface I_PMM_Balance
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -226,43 +204,10 @@ public interface I_PMM_Balance
 	 */
 	public int getM_HU_PI_Item_Product_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
-
     /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_PMM_Balance.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, Object> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, Object>(I_PMM_Balance.class, "M_HU_PI_Item_Product_ID", null);
     /** Column name M_HU_PI_Item_Product_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-
-	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_M_Product>(I_PMM_Balance.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Monatserster.
@@ -286,6 +231,29 @@ public interface I_PMM_Balance
     public static final org.adempiere.model.ModelColumn<I_PMM_Balance, Object> COLUMN_MonthDate = new org.adempiere.model.ModelColumn<I_PMM_Balance, Object>(I_PMM_Balance.class, "MonthDate", null);
     /** Column name MonthDate */
     public static final String COLUMNNAME_MonthDate = "MonthDate";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set PMM balance.
@@ -336,8 +304,8 @@ public interface I_PMM_Balance
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -346,8 +314,8 @@ public interface I_PMM_Balance
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -456,8 +424,6 @@ public interface I_PMM_Balance
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PMM_Balance, org.compiere.model.I_AD_User>(I_PMM_Balance.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

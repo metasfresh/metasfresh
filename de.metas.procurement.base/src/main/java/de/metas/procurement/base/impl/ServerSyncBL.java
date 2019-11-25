@@ -224,8 +224,8 @@ public class ServerSyncBL implements IServerSyncBL
 			return;
 		}
 
-		final I_M_HU_PI_Item_Product huPIItemProduct = pmmProduct.getM_HU_PI_Item_Product();
-		final I_M_Product product = pmmProduct.getM_Product();
+		final I_M_HU_PI_Item_Product huPIItemProduct = InterfaceWrapperHelper.load(pmmProduct.getM_HU_PI_Item_Product_ID(), I_M_HU_PI_Item_Product.class);
+		final I_M_Product product = InterfaceWrapperHelper.load(pmmProduct.getM_Product_ID(), I_M_Product.class);
 		final I_C_UOM uom;
 		if (huPIItemProduct != null)
 		{
@@ -238,9 +238,9 @@ public class ServerSyncBL implements IServerSyncBL
 		}
 
 		// Product, UOM, PI Item Product
-		qtyReportEvent.setM_Product(product);
-		qtyReportEvent.setM_HU_PI_Item_Product(huPIItemProduct);
-		qtyReportEvent.setC_UOM(uom);
+		qtyReportEvent.setM_Product_ID(product.getM_Product_ID());
+		qtyReportEvent.setM_HU_PI_Item_Product_ID(huPIItemProduct.getM_HU_PI_Item_Product_ID());
+		qtyReportEvent.setC_UOM_ID(uom.getC_UOM_ID());
 
 		// ASI
 		if (pmmProduct.getM_AttributeSetInstance_ID() > 0)
@@ -319,7 +319,7 @@ public class ServerSyncBL implements IServerSyncBL
 			throw new AdempiereException("No C_BPartner found for " + syncWeeklySupply);
 		}
 		event.setC_BPartner_ID(bpartnerId);
-		final I_C_BPartner bpartner = event.getC_BPartner();
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(event.getC_BPartner_ID(), I_C_BPartner.class);
 		if (bpartner == null)
 		{
 			throw new AdempiereException("No C_BPartner found for ID=" + bpartnerId);

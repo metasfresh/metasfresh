@@ -25,12 +25,12 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ public class PMM_PurchaseCandidate_Product_FacetCollector extends SingleFacetCat
 	protected List<IFacet<I_PMM_PurchaseCandidate>> collectFacets(final IQueryBuilder<I_PMM_PurchaseCandidate> queryBuilder)
 	{
 		final List<Map<String, Object>> bpartners = queryBuilder
-				.andCollect(I_PMM_PurchaseCandidate.COLUMN_M_Product_ID)
+				.andCollect(I_PMM_PurchaseCandidate.COLUMNNAME_M_Product_ID, I_M_Product.class)
 				.create()
 				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_Name, I_M_Product.COLUMNNAME_Value);
 
@@ -74,7 +74,7 @@ public class PMM_PurchaseCandidate_Product_FacetCollector extends SingleFacetCat
 				.append(" - ")
 				.append(row.get(I_M_Product.COLUMNNAME_Name))
 				.toString();
-		final Facet<I_PMM_PurchaseCandidate> facet = Facet.<I_PMM_PurchaseCandidate> builder()
+		final Facet<I_PMM_PurchaseCandidate> facet = Facet.<I_PMM_PurchaseCandidate>builder()
 				.setFacetCategory(facetCategoryBPartners)
 				.setDisplayName(bpartnerName)
 				.setFilter(TypedSqlQueryFilter.of(I_PMM_PurchaseCandidate.COLUMNNAME_M_Product_ID + "=" + bpartnerId))

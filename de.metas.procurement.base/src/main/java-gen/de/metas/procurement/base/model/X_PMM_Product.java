@@ -14,7 +14,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1783161338L;
+	private static final long serialVersionUID = -153948714L;
 
     /** Standard Constructor */
     public X_PMM_Product (Properties ctx, int PMM_Product_ID, String trxName)
@@ -42,16 +42,20 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
       return poi;
     }
 
+	/** Set AttributeSetInstanceAllAttributes.
+		@param ASIAllAttributes AttributeSetInstanceAllAttributes	  */
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public void setASIAllAttributes (java.lang.String ASIAllAttributes)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		set_Value (COLUMNNAME_ASIAllAttributes, ASIAllAttributes);
 	}
 
+	/** Get AttributeSetInstanceAllAttributes.
+		@return AttributeSetInstanceAllAttributes	  */
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	public java.lang.String getASIAllAttributes () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+		return (java.lang.String)get_Value(COLUMNNAME_ASIAllAttributes);
 	}
 
 	/** Set Geschäftspartner.
@@ -80,7 +84,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -91,9 +95,9 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -104,8 +108,8 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -116,20 +120,8 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
-	}
-
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -139,8 +131,8 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{
@@ -148,18 +140,6 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -185,18 +165,6 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -283,7 +251,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 
 	/** Set Produktschlüssel.
 		@param ProductValue 
-		Schlüssel des Produktes
+		Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	  */
 	@Override
 	public void setProductValue (java.lang.String ProductValue)
@@ -291,7 +259,7 @@ public class X_PMM_Product extends org.compiere.model.PO implements I_PMM_Produc
 		throw new IllegalArgumentException ("ProductValue is virtual column");	}
 
 	/** Get Produktschlüssel.
-		@return Schlüssel des Produktes
+		@return Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	  */
 	@Override
 	public java.lang.String getProductValue () 

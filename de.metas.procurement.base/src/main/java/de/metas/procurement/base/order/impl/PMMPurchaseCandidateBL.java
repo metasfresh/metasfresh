@@ -6,6 +6,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 /*
  * #%L
@@ -87,7 +88,7 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Effective(final I_PMM_PurchaseCandidate candidate)
 	{
-		final I_M_HU_PI_Item_Product hupipOverride = candidate.getM_HU_PI_Item_Product_Override();
+		final I_M_HU_PI_Item_Product hupipOverride = InterfaceWrapperHelper.load(candidate.getM_HU_PI_Item_Product_Override_ID(), I_M_HU_PI_Item_Product.class);
 
 		if (hupipOverride != null)
 		{
@@ -96,9 +97,9 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 		}
 
 		// return M_HU_PI_Item_Product
-		return candidate.getM_HU_PI_Item_Product();
+		return InterfaceWrapperHelper.load(candidate.getM_HU_PI_Item_Product_ID(), I_M_HU_PI_Item_Product.class);
 	}
-	
+
 	@Override
 	public int getM_HU_PI_Item_Product_Effective_ID(final I_PMM_PurchaseCandidate candidate)
 	{
