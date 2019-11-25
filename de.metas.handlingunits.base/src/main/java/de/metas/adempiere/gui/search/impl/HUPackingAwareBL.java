@@ -103,7 +103,9 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	{
 		if (qtyPacks < 0)
 		{
-			throw new AdempiereException("@QtyPacks@ < 0");
+			throw new AdempiereException("@QtyPacks@ < 0")
+					.appendParametersToMessage()
+					.setParameter("huPackingAware", record);
 		}
 
 		final Capacity capacity = calculateCapacity(record);
@@ -111,13 +113,12 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		{
 			return null;
 		}
-		final CapacityInterface capacityMult = capacity.multiply(qtyPacks);
-
-		if (capacityMult.isInfiniteCapacity())
+		if (capacity.isInfiniteCapacity())
 		{
 			return null;
 		}
 
+		final CapacityInterface capacityMult = capacity.multiply(qtyPacks);
 		return capacityMult.toQuantity();
 	}
 
@@ -144,6 +145,11 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		{
 			return null;
 		}
+		final BigDecimal qty = record.getQty();
+		if (qty == null || qty.signum() <= 0)
+		{
+			return null;
+		}
 
 		final Integer qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record));
 		if (qtyTU == null)
@@ -157,12 +163,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	@Override
 	public Capacity calculateCapacity(@NonNull final IHUPackingAware record)
 	{
-		final BigDecimal qty = record.getQty();
-		if (qty == null || qty.signum() <= 0)
-		{
-			return null;
-		}
-
 		final I_M_HU_PI_Item_Product huPiItemProduct = extractHUPIItemProductOrNull(record);
 		if (huPiItemProduct == null)
 		{
@@ -185,7 +185,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 
 		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, productId, uom);
-
 		return capacityDef;
 	}
 
