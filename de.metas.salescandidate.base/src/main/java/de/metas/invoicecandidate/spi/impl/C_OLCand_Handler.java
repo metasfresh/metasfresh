@@ -135,7 +135,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		return dao.retrieveMissingCandidatesQuery(ctx, trxName)
 				.addEqualsFilter(I_C_OLCand.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private I_C_Invoice_Candidate createInvoiceCandidateForOLCand(@NonNull final I_C_OLCand olc)

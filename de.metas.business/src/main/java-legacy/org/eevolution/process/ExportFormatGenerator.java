@@ -16,8 +16,7 @@
 package org.eevolution.process;
 
 import java.util.Hashtable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
@@ -146,7 +145,7 @@ public class ExportFormatGenerator extends JavaProcess
 		
 		String where=" value = ? ";
 		Query sql = new Query(getCtx(),MEXPFormat.Table_Name,where,null).setParameters(new Object[]{formatValue});
-		if(sql.match())
+		if(sql.anyMatch())
 		{
 			format = (MEXPFormat) sql.first();
 			m_formats.put(format.getValue(), format);

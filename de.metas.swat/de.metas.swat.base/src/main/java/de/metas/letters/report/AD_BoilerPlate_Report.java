@@ -79,7 +79,7 @@ public class AD_BoilerPlate_Report extends JavaProcess
 				+ " AND " + I_AD_Process.COLUMNNAME_JasperReport + " IS NOT NULL";
 		return new Query(getCtx(), I_AD_Process.Table_Name, whereClause, get_TrxName())
 				.setParameters(getProcessInfo().getAdProcessId())
-				.match();
+				.anyMatch();
 	}
 
 	private void startJasper() throws Exception

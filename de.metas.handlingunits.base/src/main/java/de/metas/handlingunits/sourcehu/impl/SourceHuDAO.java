@@ -59,7 +59,7 @@ public class SourceHuDAO implements ISourceHuDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, huId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

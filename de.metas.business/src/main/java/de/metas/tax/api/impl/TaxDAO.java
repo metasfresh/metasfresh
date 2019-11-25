@@ -95,7 +95,7 @@ public class TaxDAO implements ITaxDAO
 		boolean match = new Query(ctx, I_C_VAT_SmallBusiness.Table_Name, whereClause, trxName)
 				.setParameters(bPartnerId, dateTrunc, dateTrunc)
 				.setOnlyActiveRecords(true)
-				.match();
+				.anyMatch();
 
 		return match;
 	}

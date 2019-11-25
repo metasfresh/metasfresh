@@ -60,7 +60,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, ol.getC_OrderLine_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

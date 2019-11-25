@@ -522,7 +522,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		return createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

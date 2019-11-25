@@ -671,7 +671,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(columnName, true)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, address.getC_BPartner_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -683,7 +683,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
 				.addOnlyContextClient()
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Nullable
@@ -1404,7 +1404,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID, pricingSystemId.getRepoId())
 				.create()
-				.match();
+				.anyMatch();
 
 		return belongsToCustomerForMutation;
 	}

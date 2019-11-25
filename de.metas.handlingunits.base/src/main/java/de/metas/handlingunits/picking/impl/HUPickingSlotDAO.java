@@ -263,7 +263,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		//
 		// PickingSlot-HU assignments are empty if there's no entry found (d'uh)
-		final boolean isEmpty = !queryPickingSlotHU.match();
+		final boolean isEmpty = !queryPickingSlotHU.anyMatch();
 		return isEmpty;
 	}
 

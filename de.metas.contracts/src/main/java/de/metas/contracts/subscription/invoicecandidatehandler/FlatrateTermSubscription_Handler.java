@@ -72,7 +72,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, true /* ignoreDateFilters */)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTerm.getC_Flatrate_Term_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

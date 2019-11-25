@@ -171,6 +171,6 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 				.addEqualsFilter(I_PP_Order_Qty.COLUMN_M_HU_ID, huId)
 				.addNotNull(I_PP_Order_Qty.COLUMN_PP_Order_BOMLine_ID) // it's actually an issue (and not a receipt)
 				.create()
-				.match();
+				.anyMatch();
 	}
 }
