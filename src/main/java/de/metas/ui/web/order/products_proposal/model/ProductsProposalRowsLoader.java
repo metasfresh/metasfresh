@@ -168,7 +168,8 @@ public final class ProductsProposalRowsLoader
 	{
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
-				.sorted(Comparator.comparing(ProductsProposalRow::getProductName))
+				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
+						.thenComparing(ProductsProposalRow::getProductName))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -203,6 +204,7 @@ public final class ProductsProposalRowsLoader
 				.price(extractProductProposalPrice(record))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
+				.seqNo(record.getSeqNo())
 				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
 				.build()
 				//
