@@ -257,7 +257,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			orderLineBL.updatePrices(orderLinePriceUpdateRequest);
 		}
 
-		orderLineBL.updateLineNetAmt(orderLineRecord);
+		orderLineBL.updateLineNetAmtFromQtyEntered(orderLineRecord);
 		orderLineBL.setTaxAmtInfo(orderLineRecord);
 
 		InterfaceWrapperHelper.save(orderLineRecord);
