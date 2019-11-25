@@ -301,7 +301,8 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			shipmentServiceData.setProductAndServiceData(productAndServiceData);
 			{
 				// only works with E12 product
-				productAndServiceData.setSaturdayDelivery(DpdShipperProduct.DPD_E12.equals(deliveryOrder.getShipperProduct()));
+				// Saturday delivery is disabled for now. Maybe in the future :)
+				// productAndServiceData.setSaturdayDelivery(DpdShipperProduct.DPD_E12.equals(deliveryOrder.getShipperProduct()));
 			}
 			{
 				// Shipper Product

@@ -83,7 +83,7 @@ public interface IQuery<T>
 
 	/**
 	 * Default value for {@link #OPTION_GuaranteedIteratorRequired}.
-	 *
+	 * <p>
 	 * Currently it's <code>true</code> because most of the business logic relies on guaranteed iterator.
 	 */
 	boolean DEFAULT_OPTION_GuaranteedIteratorRequired = true;
@@ -95,7 +95,6 @@ public interface IQuery<T>
 	String getTrxName();
 
 	/**
-	 *
 	 * @return a copy of this object
 	 */
 	IQuery<T> copy();
@@ -162,7 +161,9 @@ public interface IQuery<T>
 
 	<ET extends T> ET first() throws DBException;
 
-	/** @return first record or null */
+	/**
+	 * @return first record or null
+	 */
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
 	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
@@ -216,9 +217,9 @@ public interface IQuery<T>
 
 	/**
 	 * Sets a nonSQL filter which will be applied right before retrieving records from database.
-	 *
+	 * <p>
 	 * Using this method you can combine pure SQL where clause with pure Java filters in a seamless way.
-	 *
+	 * <p>
 	 * NOTE: using post-filters is introducing some limitations mainly on {@link #setLimit(int)} and {@link #iterate(Class)} methods.
 	 *
 	 * @param postQueryFilter
@@ -233,7 +234,7 @@ public interface IQuery<T>
 	IQuery<T> setOptions(Map<String, Object> options);
 
 	/**
-	 * Check if there items for query criteria
+	 * Check if there items for query criteria. Same functionality as {@link #anyExist()} ()}
 	 *
 	 * @return true if exists, false otherwise
 	 * @throws DBException
@@ -241,8 +242,16 @@ public interface IQuery<T>
 	boolean match() throws DBException;
 
 	/**
-	 * Returns an {@link Iterator} over current query selection.
+	 * Check if there items for query criteria. Same functionality as {@link #match()}
 	 *
+	 * @return true if exists, false otherwise
+	 * @throws DBException
+	 */
+	boolean anyExist() throws DBException;
+
+	/**
+	 * Returns an {@link Iterator} over current query selection.
+	 * <p>
 	 * The iterator will be guaranteed or not based on option {@link #OPTION_GuaranteedIteratorRequired}'s value. If the option is not set then {@link #DEFAULT_OPTION_GuaranteedIteratorRequired} will
 	 * be considered.
 	 *
@@ -262,14 +271,14 @@ public interface IQuery<T>
 
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
-	 *
+	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 */
 	IQuery<T> setOnlySelection(PInstanceId pisntanceId);
 
 	/**
 	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
-	 *
+	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 *
 	 * @param AD_PInstance_ID
@@ -330,7 +339,9 @@ public interface IQuery<T>
 		return aggregate(columnName, aggregateType, returnType);
 	}
 
-	/** @return maximum int of <code>columnName</code> or ZERO */
+	/**
+	 * @return maximum int of <code>columnName</code> or ZERO
+	 */
 	default int maxInt(final String columnName)
 	{
 		return aggregate(columnName, Aggregate.MAX, Integer.class);
@@ -347,22 +358,22 @@ public interface IQuery<T>
 
 	/**
 	 * Sets query LIMIT to be used.
-	 *
+	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
 	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 *              page size.
 	 * @return this
 	 */
 	IQuery<T> setLimit(int limit);
 
 	/**
 	 * Sets query LIMIT and OFFSET to be used.
-	 *
+	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 * @param limit  integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 *               page size.
 	 * @param offset integer greater than zero or {@link #NO_LIMIT}
 	 * @return this
 	 */
@@ -370,9 +381,9 @@ public interface IQuery<T>
 
 	/**
 	 * Directly execute DELETE FROM database.
-	 *
+	 * <p>
 	 * Models, won't be loaded so no model validators will be triggered.
-	 *
+	 * <p>
 	 * NOTE: please call it when you know what are you doing.
 	 *
 	 * @return how many records were deleted
@@ -393,9 +404,9 @@ public interface IQuery<T>
 
 	/**
 	 * Update records which are matched by this query.
-	 *
+	 * <p>
 	 * If <code>queryUpdater</code> implements {@link ISqlQueryUpdater} then an SQL "UPDATE" will be issued directly.
-	 *
+	 * <p>
 	 * Else, records will be updated one by one, by using {@link #update(IQueryUpdater)}.
 	 *
 	 * @param queryUpdater
@@ -405,9 +416,9 @@ public interface IQuery<T>
 
 	/**
 	 * Update records which are matched by this query.
-	 *
+	 * <p>
 	 * The records will be updated one by one, by issuing {@link IQueryUpdater#update(Object)}.
-	 *
+	 * <p>
 	 * In the {@link IQueryUpdater} implementation, there is no need to save the record, because the API will save it after {@link IQueryUpdater#update(Object)} call.
 	 *
 	 * @param queryUpdater
@@ -448,13 +459,12 @@ public interface IQuery<T>
 	 * Selects DISTINCT given column and return the result as a list.
 	 *
 	 * @param columnName
-	 * @param valueType value type
+	 * @param valueType  value type
 	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
-	 *
 	 * @param columnName
 	 * @param valueType
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
@@ -502,7 +512,7 @@ public interface IQuery<T>
 
 	/**
 	 * "Appends" the given {@code query} to {@code this} query be joined as UNION ALL/DISTINCT.
-	 *
+	 * <p>
 	 * WARNING: atm, the implementation is minimal and was tested only with {@link #list()} methods.
 	 */
 	IQuery<T> addUnion(IQuery<T> query, boolean distinct);
@@ -513,7 +523,9 @@ public interface IQuery<T>
 		return this;
 	}
 
-	/** @return UNION DISTINCT {@link IQuery} reducer */
+	/**
+	 * @return UNION DISTINCT {@link IQuery} reducer
+	 */
 	static <T> BinaryOperator<IQuery<T>> unionDistict()
 	{
 		return (previousDBQuery, dbQuery) -> {
