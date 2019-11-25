@@ -128,7 +128,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 		final boolean allowCopyToSameSchema = true;
 
 		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(queryFilter,
-				PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId),
+				PricingConditionsId.ofRepoId(p_PricingConditionsId),
 				ProductId.ofRepoId(p_ProductId),
 				allowCopyToSameSchema);
 
