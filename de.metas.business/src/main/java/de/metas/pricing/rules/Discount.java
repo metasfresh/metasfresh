@@ -131,7 +131,7 @@ public class Discount implements IPricingRule
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		final Percent bpartnerFlatDiscount = Percent.of(bpartner.getFlatDiscount());
 
-		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(bpartnerBL.getDiscountSchemaId(bpartner, soTrx));
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(bpartnerBL.getDiscountSchemaId(bpartner, soTrx));
 		if (pricingConditionsId == null)
 		{
 			return null;

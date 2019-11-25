@@ -107,6 +107,6 @@ public class PricingConditionsTestData1
 
 	private static PricingConditionsId idOf(final I_M_DiscountSchema record)
 	{
-		return PricingConditionsId.ofDiscountSchemaId(record.getM_DiscountSchema_ID());
+		return PricingConditionsId.ofRepoId(record.getM_DiscountSchema_ID());
 	}
 }
