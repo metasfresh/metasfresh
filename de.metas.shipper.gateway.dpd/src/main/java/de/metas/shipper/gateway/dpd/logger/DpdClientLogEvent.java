@@ -100,7 +100,7 @@ public class DpdClientLogEvent
 	 */
 	@NonNull
 	@VisibleForTesting
-	public String cleanupPdfData(@NonNull final String s)
+	static String cleanupPdfData(@NonNull final String s)
 	{
 		return s.replaceAll(PARCELLABELS_PDF_REGEX, PARCELLABELS_PDF_REPLACEMENT_TEXT);
 	}

@@ -99,7 +99,7 @@ public class DhlClientLogEvent
 	 */
 	@NonNull
 	@VisibleForTesting
-	public String cleanupPdfData(@NonNull final String s)
+	static String cleanupPdfData(@NonNull final String s)
 	{
 		return s.replaceAll(LABEL_DATA_REGEX, LABEL_DATA_REPLACEMENT_TEXT);
 	}
