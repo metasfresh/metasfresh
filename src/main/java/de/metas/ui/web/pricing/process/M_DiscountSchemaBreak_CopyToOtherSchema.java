@@ -62,7 +62,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema extends ViewBasedProcessTem
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		pricingConditionsRepo.copyDiscountSchemaBreaks(queryFilter, PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId));
+		pricingConditionsRepo.copyDiscountSchemaBreaks(queryFilter, PricingConditionsId.ofRepoId(p_PricingConditionsId));
 
 		return MSG_OK;
 	}

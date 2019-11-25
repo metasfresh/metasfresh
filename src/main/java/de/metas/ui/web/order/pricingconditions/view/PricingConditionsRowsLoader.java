@@ -192,7 +192,7 @@ class PricingConditionsRowsLoader
 			return null;
 		}
 
-		return PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
+		return PricingConditionsId.ofRepoId(discountSchemaId);
 	}
 
 	private Stream<PricingConditionsRow> createPricingConditionsRows(final PricingConditionsBreak pricingConditionsBreak)
@@ -248,7 +248,7 @@ class PricingConditionsRowsLoader
 		}
 
 		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.getSoTrx());
-		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(discountSchemaId);
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(discountSchemaId);
 
 		final Money priceEntered = sourceDocumentLine.getPriceEntered();
 
