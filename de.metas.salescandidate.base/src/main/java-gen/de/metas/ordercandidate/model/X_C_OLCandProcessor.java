@@ -14,7 +14,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2108067950L;
+	private static final long serialVersionUID = 894687494L;
 
     /** Standard Constructor */
     public X_C_OLCandProcessor (Properties ctx, int C_OLCandProcessor_ID, String trxName)
@@ -174,18 +174,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
 	/** Set Zahlungsbedingung.

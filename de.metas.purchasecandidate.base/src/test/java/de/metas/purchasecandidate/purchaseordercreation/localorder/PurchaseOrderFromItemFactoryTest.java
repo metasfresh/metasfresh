@@ -200,6 +200,7 @@ public class PurchaseOrderFromItemFactoryTest
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setName("product.name");
 		product.setValue("product.value");
+		product.setC_UOM_ID(EACH.getC_UOM_ID());
 		save(product);
 
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);

@@ -26,8 +26,6 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 
 /**
  * General note: implementations do not just set the error flag, but also a lot of other data.
- *
- *
  */
 public interface IOLCandValidator
 {
@@ -35,12 +33,7 @@ public interface IOLCandValidator
 	int getSeqNo();
 
 	/**
-	 * Validate the given <code>olCand</code>.
-	 * <p>
-	 * Change {@link I_C_OLCand#COLUMN_IsError IsError} and {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg} accordingly, but <b>do not</b> save.
-	 *
-	 * @param olCand
-	 * @return <code>true</code> if the validation was successful
+	 * Validate the given <code>olCand</code>. Throw an informative exception if things went wrong.
 	 */
-	boolean validate(I_C_OLCand olCand);
+	void validate(I_C_OLCand olCand);
 }

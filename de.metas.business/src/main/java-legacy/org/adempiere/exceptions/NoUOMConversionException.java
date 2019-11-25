@@ -24,15 +24,13 @@ import de.metas.util.Services;
 
 /**
  * Any exception that occurs when no UOM conversion rate was found
- * 
+ *
  * @author Teo Sarca, http://www.arhipac.ro
  */
 public class NoUOMConversionException extends AdempiereException
 {
 	public static final String AD_Message = "NoUOMConversion";
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -4868882017576097089L;
 
 	public NoUOMConversionException(ProductId productId, UomId fromUomId, UomId toUomId)
@@ -101,5 +99,4 @@ public class NoUOMConversionException extends AdempiereException
 
 		return uom.getUOMSymbol();
 	}
-
 }

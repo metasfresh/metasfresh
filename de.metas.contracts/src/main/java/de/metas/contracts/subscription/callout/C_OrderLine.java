@@ -31,7 +31,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -51,13 +50,14 @@ import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID })
 	public void onFlatrateConditions(final I_C_OrderLine ol, final ICalloutField field)
 	{
@@ -78,14 +78,10 @@ public class C_OrderLine
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 		if (subscriptionId <= 0)
 		{
-			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-			final BigDecimal qtyEntered = ol.getQtyEntered();
-
-			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(ol.getC_UOM_ID());
-			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
+			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal();
 			ol.setQtyOrdered(qtyOrdered);
 
-			Services.get(IOrderLineBL.class).updatePrices(OrderLinePriceUpdateRequest.builder()
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
 					.resultUOM(ResultUOM.PRICE_UOM)
 					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
@@ -151,21 +147,21 @@ public class C_OrderLine
 				ITrx.TRXNAME_None);
 
 		final Quantity qtyEntered = orderLineBL.getQtyEntered(ol);
-		final Quantity qtyEnteredInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, productId);
+		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, productId);
 
-		final Quantity qtyPerRun;
+		final Quantity qtyOrderedPerRun;
 		if (matching != null && matching.getQtyPerDelivery().signum() > 0)
 		{
-			final Quantity qtyPerDelivery = Quantity.of(matching.getQtyPerDelivery(), qtyEnteredInProductUOM.getUOM());
-			qtyPerRun = qtyPerDelivery.min(qtyEnteredInProductUOM);
+			final Quantity qtyPerDelivery = Quantity.of(matching.getQtyPerDelivery(), qtyOrdered.getUOM());
+			qtyOrderedPerRun = qtyPerDelivery.min(qtyOrdered);
 		}
 		else
 		{
-			qtyPerRun = qtyEnteredInProductUOM;
+			qtyOrderedPerRun = qtyOrdered;
 		}
 
 		// priceQty is the qty do be delivered during one complete subscription term
-		final Quantity priceQty = qtyPerRun.multiply(numberOfRuns);
+		final Quantity priceQty = qtyOrderedPerRun.multiply(numberOfRuns);
 
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()

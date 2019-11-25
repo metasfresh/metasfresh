@@ -10,12 +10,12 @@ package de.metas.ordercandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import de.metas.util.Services;
 
 /**
  * Keeps the olCand's ASI up to date after changes in the product or the pricing.
- * 
+ *
  * @author ts
  * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
  */
@@ -78,8 +78,8 @@ public class OLCandPricingASIListener implements IModelAttributeSetInstanceListe
 	 * <li>We do <b>not</b> care if the attribute set of the olCand's product matches the attribute values of the pricing result. Rationale: we assume that the pricing result was created for this
 	 * olCand and its quantity, PIIP, date etc. and in particular also for its product.
 	 * </ul>
-	 * 
-	 * @see OLCandPriceValidator#DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT
+	 *
+	 * @see DefaultOLCandValidator#getPreviouslyCalculatedPricingResultOrNull(I_C_OLCand)
 	 */
 	@Override
 	public void modelChanged(final Object model)

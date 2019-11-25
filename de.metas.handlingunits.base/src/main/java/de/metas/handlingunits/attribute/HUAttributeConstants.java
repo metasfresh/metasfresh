@@ -31,7 +31,8 @@ import de.metas.util.Check;
 import lombok.experimental.UtilityClass;
 
 /**
- * HU Attributes constants
+ * HU Attributes constants.
+ * IMPORTANT: before adding a constant here, please check if it was already added to {@link AttributeConstants}.
  */
 @UtilityClass
 public final class HUAttributeConstants

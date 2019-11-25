@@ -47,14 +47,20 @@ public class HUCapacityBL implements IHUCapacityBL
 {
 
 	@Override
-	public Capacity getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
+	public Capacity getCapacity(
+			@NonNull final I_M_HU_PI_Item_Product itemDefProduct,
+			final I_M_Product product,
+			@NonNull final I_C_UOM uom)
 	{
 		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
 		return getCapacity(itemDefProduct, productId, uom);
 	}
 
 	@Override
-	public Capacity getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final ProductId productId, final I_C_UOM uom)
+	public Capacity getCapacity(
+			@NonNull final I_M_HU_PI_Item_Product itemDefProduct,
+			final ProductId productId,
+			@NonNull final I_C_UOM uom)
 	{
 		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())

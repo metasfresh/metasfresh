@@ -102,11 +102,6 @@ public class Scheduler extends AdempiereServer
 	 */
 	private static final String MSG_PROCESS_RUN_ERROR = "ProcessRunError";
 
-	/**
-	 * Scheduler
-	 *
-	 * @param model model
-	 */
 	public Scheduler(final MScheduler model)
 	{
 		super(model, 240);		// nap

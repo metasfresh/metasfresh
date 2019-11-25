@@ -31,7 +31,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -60,14 +59,13 @@ import de.metas.util.Services;
  * @task 08147: validate if the C_OLCand's PIIP is OK
  */
 @Component
-public class OLCandPIIPValidator implements IOLCandValidator
+public class OLCandPIIPPriceValidator implements IOLCandValidator
 {
 
-	/** @return {@code 20}; needs to run after {@link DefaultOLCandValidator} because it needs that valdators */
+	/** @return {@code 20}; needs to run after {@link DefaultOLCandValidator} because it needs that validator's results. (concrete example: PricingsystemId) */
 	@Override
 	public int getSeqNo()
 	{
-		// TODO Auto-generated method stub
 		return 20;
 	}
 
@@ -79,39 +77,21 @@ public class OLCandPIIPValidator implements IOLCandValidator
 	 * </ul>
 	 */
 	@Override
-	public boolean validate(final I_C_OLCand olCand)
+	public void validate(final I_C_OLCand olCand)
 	{
-		try
+		// If there is a PIIP, then verify that there is pricing info for the packing material. Otherwise, completing the order will fail later on.
+		final OLCandHUPackingAware huPackingWare = new OLCandHUPackingAware(olCand);
+		final I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(huPackingWare);
+		if (huPIItemProduct != null)
 		{
-			final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-
-			// 1.
-			// Run calculate QtyTU just to make sure everything is ok.
-			// In case of any errors, an exception will be thrown
-			final OLCandHUPackingAware huPackingWare = new OLCandHUPackingAware(olCand);
-			huPackingAwareBL.calculateQtyTU(huPackingWare);
-
-			// 2.
-			// If there is a PIIP, then verify that there is pricing info for the packing material. Otherwise, completing the order will fail later on.
-			final I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(huPackingWare);
-			if (huPIItemProduct != null)
+			final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+			final List<I_M_HU_PackingMaterial> packingMaterials = packingMaterialDAO.retrievePackingMaterials(huPIItemProduct);
+			for (final I_M_HU_PackingMaterial pm : packingMaterials)
 			{
-				IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-				final List<I_M_HU_PackingMaterial> packingMaterials = packingMaterialDAO.retrievePackingMaterials(huPIItemProduct);
-				for (I_M_HU_PackingMaterial pm : packingMaterials)
-				{
-					final ProductId packingMaterialProductId = ProductId.ofRepoIdOrNull(pm.getM_Product_ID());
-					checkForPrice(olCand, packingMaterialProductId);
-				}
+				final ProductId packingMaterialProductId = ProductId.ofRepoIdOrNull(pm.getM_Product_ID());
+				checkForPrice(olCand, packingMaterialProductId);
 			}
 		}
-		catch (final AdempiereException e)
-		{
-			olCand.setErrorMsg(e.getLocalizedMessage());
-			olCand.setIsError(true);
-			return false;
-		}
-		return true;
 	}
 
 	private I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(final IHUPackingAware huPackingAware)
