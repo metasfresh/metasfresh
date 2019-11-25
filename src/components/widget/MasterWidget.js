@@ -268,7 +268,7 @@ class MasterWidget extends Component {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { handleBackdropLock } = this.props;
+    const { handleBackdropLock, onClickOutside } = this.props;
     const { updated, data } = this.state;
     const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
@@ -279,7 +279,7 @@ class MasterWidget extends Component {
         data={data}
         handleFocus={() => handleFocusFn(true)}
         handleBlur={() => handleFocusFn(false)}
-        onClickOutside={this.props.onClickOutside}
+        onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
@@ -306,6 +306,20 @@ MasterWidget.propTypes = {
   handleBackdropLock: PropTypes.func,
   updatePropertyValue: PropTypes.func,
   openModal: PropTypes.func.isRequired,
+  data: PropTypes.object,
+  widgetData: PropTypes.array,
+  widgetType: PropTypes.string,
+  dataId: PropTypes.string,
+  windowType: PropTypes.string,
+  patch: PropTypes.func,
+  rowId: PropTypes.string,
+  tabId: PropTypes.string,
+  onChange: PropTypes.func,
+  relativeDocId: PropTypes.number,
+  isAdvanced: PropTypes.bool,
+  viewId: PropTypes.bool,
+  entity: PropTypes.string,
+  precision: PropTypes.bool,
 };
 
 export default connect(

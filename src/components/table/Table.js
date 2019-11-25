@@ -319,8 +319,12 @@ class Table extends Component {
     this.selectRangeProduct(leafsIds);
   };
 
-  changeListen = listenOnKeys => {
-    this.setState({ listenOnKeys: !!listenOnKeys });
+  setListenTrue = () => {
+    this.setState({ listenOnKeys: true });
+  };
+
+  setListenFalse = () => {
+    this.setState({ listenOnKeys: false });
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
@@ -1045,8 +1049,8 @@ class Table extends Component {
         onDoubleClick={this.handleDoubleClick}
         onClick={this.handleClick}
         handleRightClick={this.handleRightClick}
-        changeListenOnTrue={() => this.changeListen(true)}
-        changeListenOnFalse={() => this.changeListen(false)}
+        changeListenOnTrue={this.setListenTrue}
+        changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
         isSelected={
           (selected &&
@@ -1349,6 +1353,7 @@ const clickOutsideConfig = {
   excludeScrollbar: true,
 };
 
+export { Table };
 export default connect(
   mapStateToProps,
   false,

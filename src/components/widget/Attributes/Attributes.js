@@ -148,11 +148,9 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleKeyDown = e => {
-    switch (e.key) {
-      case 'Escape':
-        e.preventDefault();
-        this.handleCompletion();
-        break;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      this.handleCompletion();
     }
   };
 
