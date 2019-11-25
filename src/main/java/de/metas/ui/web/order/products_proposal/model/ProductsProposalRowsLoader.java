@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.model;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -125,7 +126,10 @@ public final class ProductsProposalRowsLoader
 		final PriceListVersionId basePriceListVersionId;
 		if (singlePriceListVersionId != null)
 		{
-			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId);
+
+			final ZonedDateTime datePromised = order.getDatePromised();
+			// if order is null, use system tipe TODO
+			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId, datePromised);
 		}
 		else
 		{
