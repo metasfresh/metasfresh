@@ -673,18 +673,11 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList_Version newBasePLV = getPriceListVersionById(newBasePLVId);
 
-		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(newBasePLV.getM_Pricelist_Version_Base_ID());
-		if (basePriceListVersionId == null)
-		{
-			// nothing to do
-			return;
-		}
+		final PriceListId basePricelistId = PriceListId.ofRepoId(newBasePLV.getM_PriceList_ID());
 
-		final I_M_PriceList_Version oldPLV = getPriceListVersionById(basePriceListVersionId);
+		final List<I_M_PriceList_Version> versionsForBasePriceList = retrieveCustomPLVsToMutate(basePricelistId);
 
-		final List<I_M_PriceList_Version> versionsForOldBase = retrieveCustomPLVsToMutate(oldPLV);
-
-		for (final I_M_PriceList_Version oldCustPLV : versionsForOldBase)
+		for (final I_M_PriceList_Version oldCustPLV : versionsForBasePriceList)
 		{
 			createNewPLV(oldCustPLV, newBasePLV, userId);
 		}
@@ -696,7 +689,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		final I_M_PriceList_Version newCustomerPLV = copy()
 				.setSkipCalculatedColumns(true)
-				.setFrom(newBasePLV)
+				.setFrom(oldCustomerPLV)
 				.copyToNew(I_M_PriceList_Version.class);
 
 		newCustomerPLV.setValidFrom(newBasePLV.getValidFrom());
@@ -765,7 +758,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@VisibleForTesting
-	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
+	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final PriceListId basePriceListId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -794,10 +787,11 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
 				.create();
 
-		final I_M_PriceList basePriceList = getById(basePLV.getM_PriceList_ID());
+		final I_M_PriceList basePriceList = getById(basePriceListId);
 
 		final List<I_M_PriceList_Version> newestVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
 
+				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePriceListId)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Currency_ID, basePriceList.getC_Currency_ID())
 
@@ -808,8 +802,7 @@ public class PriceListDAO implements IPriceListDAO
 				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
 				.addOnlyActiveRecordsFilter()
 
-				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
-				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
+				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)
 				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
 
 				.filter(maxValidFromFilter)
