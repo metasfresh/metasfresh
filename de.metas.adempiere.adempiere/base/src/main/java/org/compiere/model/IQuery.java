@@ -147,7 +147,7 @@ public interface IQuery<T>
 	}
 
 	/**
-	 * Return first ID. If there are more results and exception is thrown.
+	 * Return first ID. If there are more results, an exception is thrown.
 	 *
 	 * @return first ID or -1 if not found
 	 * @throws DBException
