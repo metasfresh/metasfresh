@@ -242,14 +242,6 @@ public interface IQuery<T>
 	boolean match() throws DBException;
 
 	/**
-	 * Check if there items for query criteria. Same functionality as {@link #match()}
-	 *
-	 * @return true if exists, false otherwise
-	 * @throws DBException
-	 */
-	boolean anyExist() throws DBException;
-
-	/**
 	 * Returns an {@link Iterator} over current query selection.
 	 * <p>
 	 * The iterator will be guaranteed or not based on option {@link #OPTION_GuaranteedIteratorRequired}'s value. If the option is not set then {@link #DEFAULT_OPTION_GuaranteedIteratorRequired} will

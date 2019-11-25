@@ -179,34 +179,19 @@ public class BPartnerDAO implements IBPartnerDAO
 		return loadByRepoIdAwaresOutOfTrx(bpartnerIds, I_C_BPartner.class);
 	}
 
-	@NonNull
 	@Override
-	public BPartnerId getBPartnerIdByValue(@NonNull final String value)
+	public Optional<BPartnerId> getBPartnerIdByValue(@NonNull final String value)
 	{
 		final String valueFixed = value.trim();
 
-		final BPartnerId bpartnerId = getBPartnerIdByValueOrNull(valueFixed);
-
-		if (bpartnerId == null)
-		{
-			throw new AdempiereException("@NotFound@ @BPValue@: " + valueFixed);
-		}
-
-		return bpartnerId;
-	}
-
-	@Nullable
-	@Override
-	public BPartnerId getBPartnerIdByValueOrNull(final String value)
-	{
-		final String valueFixed = value.trim();
-
-		return Services.get(IQueryBL.class)
+		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, valueFixed)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(bpartnerId);
 	}
 
 	@Override
