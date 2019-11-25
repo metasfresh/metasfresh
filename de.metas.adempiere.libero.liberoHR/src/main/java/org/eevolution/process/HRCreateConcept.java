@@ -65,6 +65,6 @@ public class HRCreateConcept extends JavaProcess
 		final String whereClause = "HR_Payroll_ID=? AND HR_Concept_ID=?";
 		return new Query(getCtx(), MHRPayrollConcept.Table_Name, whereClause, get_TrxName())
 			.setParameters(new Object[]{p_HR_Payroll_ID, HR_Concept_ID})
-			.match();
+			.anyMatch();
 	}
 }	//	Create Concept of the current Payroll

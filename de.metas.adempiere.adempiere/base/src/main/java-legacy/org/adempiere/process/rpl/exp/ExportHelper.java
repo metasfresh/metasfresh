@@ -229,7 +229,7 @@ public class ExportHelper
 		{
 			final String whereClause = "(" + po.get_WhereClause(true) + ") AND (" + exportFormat.getWhereClause() + ")";
 			final boolean match = new Query(po.getCtx(), po.get_TableName(), whereClause, po.get_TrxName())
-					.match();
+					.anyMatch();
 			if (!match)
 			{
 				log.info("Object " + po + " does not match export format where clause (" + whereClause + ")");

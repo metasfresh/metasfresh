@@ -236,7 +236,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 		final String whereClause = "C_DunningRunEntry_ID=? AND C_Invoice_ID IS NOT NULL";
 		return new Query(getCtx(), I_C_DunningRunLine.Table_Name, whereClause, get_TrxName())
 				.setParameters(getC_DunningRunEntry_ID())
-				.match();
+				.anyMatch();
 	}	// hasInvoices
 
 	/**

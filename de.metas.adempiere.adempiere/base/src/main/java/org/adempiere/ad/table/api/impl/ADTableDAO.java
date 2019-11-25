@@ -92,7 +92,7 @@ public class ADTableDAO implements IADTableDAO
 		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
-				.match();
+				.anyMatch();
 	}
 
 	@Override

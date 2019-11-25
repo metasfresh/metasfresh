@@ -183,7 +183,7 @@ class TablePrimaryKeyGenerator
 				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, table.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Column.COLUMN_IsKey, true)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private List<String> getParentColumnNames(final int adTableId)

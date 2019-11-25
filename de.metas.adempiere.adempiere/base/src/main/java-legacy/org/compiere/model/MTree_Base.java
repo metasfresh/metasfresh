@@ -841,7 +841,7 @@ public class MTree_Base extends X_AD_Tree
 		{
 			final Query query = new Query(getCtx(), nodeTableName, "AD_Tree_ID=? AND Node_ID=?", get_TrxName())
 					.setParameters(getAD_Tree_ID(), ROOT_Node_ID);
-			if (!query.match())
+			if (!query.anyMatch())
 			{
 				createNode(ROOT_Node_ID, ROOT_Node_ID);
 				log.info(getName() + " Root Node Created");

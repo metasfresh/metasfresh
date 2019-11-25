@@ -57,7 +57,7 @@ public class MResourceUnAvailable extends X_S_ResourceUnAvailable
 				+ " AND TRUNC(" + COLUMNNAME_DateTo + ") >= ?";
 		return new Query(Env.getCtx(), MResourceUnAvailable.Table_Name, whereClause, ITrx.TRXNAME_ThreadInherited)
 				.setParameters(new Object[] { resourceRepoId, date, date })
-				.match();
+				.anyMatch();
 	}
 
 	/**

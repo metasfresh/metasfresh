@@ -317,7 +317,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

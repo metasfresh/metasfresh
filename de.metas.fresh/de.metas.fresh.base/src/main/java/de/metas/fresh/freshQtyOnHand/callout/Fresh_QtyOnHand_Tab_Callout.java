@@ -74,6 +74,6 @@ public class Fresh_QtyOnHand_Tab_Callout extends TabCalloutAdapter
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_DateDoc, dateDocToUse)
 				.create()
-				.match();
+				.anyMatch();
 	}
 }

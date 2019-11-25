@@ -98,7 +98,7 @@ public class DesadvDAO implements IDesadvDAO
 	public boolean hasInOuts(I_EDI_Desadv desadv)
 	{
 		return createAllInOutsQuery(desadv)
-				.match();
+				.anyMatch();
 	}
 
 	private IQuery<I_M_InOut> createAllInOutsQuery(final I_EDI_Desadv desadv)
@@ -120,7 +120,7 @@ public class DesadvDAO implements IDesadvDAO
 	public boolean hasInOutLines(I_EDI_DesadvLine desadvLine)
 	{
 		return createAllInOutLinesQuery(desadvLine)
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -128,7 +128,7 @@ public class DesadvDAO implements IDesadvDAO
 	{
 		return createAllOrderLinesQuery(desadvLine)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -143,14 +143,14 @@ public class DesadvDAO implements IDesadvDAO
 	public boolean hasDesadvLines(I_EDI_Desadv desadv)
 	{
 		return createAllDesadvLinesQuery(desadv)
-				.match();
+				.anyMatch();
 	}
 
 	@Override
 	public boolean hasOrders(I_EDI_Desadv desadv)
 	{
 		return createAllOrdersQuery(desadv)
-				.match();
+				.anyMatch();
 	}
 
 	@Override

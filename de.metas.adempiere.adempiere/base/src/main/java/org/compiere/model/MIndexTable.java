@@ -566,7 +566,7 @@ public class MIndexTable extends X_AD_Index_Table
 
 		final String tableName = getTableName();
 		final boolean matched = new Query(ctx, tableName, whereClauseFinal.toString(), trxName)
-				.match();
+				.anyMatch();
 
 		return matched;
 	}
