@@ -27,6 +27,7 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRe
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.view.IEditableView;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -103,6 +104,12 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ViewHeaderProperties getHeaderProperties()
+	{
+		return rowsData.getHeaderProperties();
 	}
 
 	@Override

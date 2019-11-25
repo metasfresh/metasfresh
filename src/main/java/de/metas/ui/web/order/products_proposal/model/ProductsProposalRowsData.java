@@ -31,6 +31,7 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRe
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
@@ -84,6 +85,9 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Getter
 	private final SOTrx soTrx;
 
+	@Getter
+	private final ViewHeaderProperties headerProperties;
+
 	private ProductsProposalViewFilter filter = ProductsProposalViewFilter.ANY;
 
 	@Builder
@@ -97,6 +101,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
 			//
+			@Nullable final ViewHeaderProperties headerProperties,
+			//
 			@NonNull final List<ProductsProposalRow> rows)
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
@@ -107,6 +113,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		this.order = Optional.ofNullable(order);
 		this.bpartnerId = Optional.ofNullable(bpartnerId);
 		this.soTrx = soTrx;
+
+		this.headerProperties = headerProperties != null ? headerProperties : ViewHeaderProperties.EMPTY;
 
 		rowIdsOrdered = rows.stream()
 				.map(ProductsProposalRow::getId)

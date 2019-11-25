@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -54,6 +55,13 @@ public class OrderProductProposalsService
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
+	private final IBPartnerBL bpartnersService;
+
+	public OrderProductProposalsService(
+			@NonNull final IBPartnerBL bpartnersService)
+	{
+		this.bpartnersService = bpartnersService;
+	}
 
 	public Order getOrderById(@NonNull final OrderId orderId)
 	{
@@ -64,11 +72,15 @@ public class OrderProductProposalsService
 		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
 		final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(priceListId, TimeUtil.asLocalDate(datePromised));
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+		final String bpartnerName = bpartnersService.getBPartnerName(bpartnerId);
+
 		return Order.builder()
 				.orderId(orderId)
 				.soTrx(SOTrx.ofBoolean(orderRecord.isSOTrx()))
 				.datePromised(datePromised)
-				.bpartnerId(BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()))
+				.bpartnerId(bpartnerId)
+				.bpartnerName(bpartnerName)
 				.pricingSystemId(priceListsRepo.getPricingSystemId(priceListId))
 				.priceListId(priceListId)
 				.priceListVersionId(priceListVersionId)
