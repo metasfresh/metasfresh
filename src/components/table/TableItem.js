@@ -206,7 +206,10 @@ class TableItem extends PureComponent {
     return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
   };
 
-  onCellChange = (rowId, property, value, ret) => {
+  /*
+   * This function is called when cell's value changes
+   */
+  handleCellValueChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
     const editedCells = { ...this.state.editedCells };
 
@@ -389,7 +392,7 @@ class TableItem extends PureComponent {
                 isEdited={isEdited}
                 handleDoubleClick={this.handleEditProperty}
                 onClickOutside={this.handleClickOutside}
-                onCellChange={this.onCellChange}
+                onCellChange={this.handleCellValueChange}
                 onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
@@ -585,6 +588,28 @@ TableItem.propTypes = {
   caption: PropTypes.string,
   dataHash: PropTypes.string.isRequired,
   key: PropTypes.string,
+  changeListenOnTrue: PropTypes.func,
+  handleRowCollapse: PropTypes.func,
+  handleRightClick: PropTypes.func,
+  fieldsByName: PropTypes.object,
+  indent: PropTypes.array,
+  rowId: PropTypes.string,
+  onItemChange: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
+  changeListenOnFalse: PropTypes.func,
+  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  mainTable: PropTypes.bool,
+  newRow: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  entity: PropTypes.string,
+  getSizeClass: PropTypes.func,
+  colspan: PropTypes.string,
+  viewId: PropTypes.string,
+  docId: PropTypes.string,
+  windowId: PropTypes.string,
+  lastChild: PropTypes.string,
+  includedDocuments: PropTypes.string,
+  contextType: PropTypes.string,
 };
 
 export default connect(
