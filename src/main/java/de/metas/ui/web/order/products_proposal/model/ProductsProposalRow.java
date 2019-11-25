@@ -116,6 +116,8 @@ public class ProductsProposalRow implements IViewRow
 
 	private final DocumentId id;
 	@Getter
+	private final int seqNo;
+	@Getter
 	private HUPIItemProductId packingMaterialId;
 	@Getter
 	private final ProductPriceId productPriceId;
@@ -147,6 +149,7 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final LocalDate lastSalesInvoiceDate,
 			@Nullable final String description,
+			final int seqNo,
 			@Nullable final ProductPriceId productPriceId,
 			@Nullable final ProductPriceId copiedFromProductPriceId,
 			@Nullable final OrderLineId existingOrderLineId)
@@ -172,6 +175,7 @@ public class ProductsProposalRow implements IViewRow
 
 		this.description = description;
 
+		this.seqNo = seqNo;
 		this.productPriceId = productPriceId;
 		this.copiedFromProductPriceId = copiedFromProductPriceId;
 
