@@ -158,6 +158,8 @@
 
 		<module>de.metas.swat</module>
 
+		<module>de.metas.serviceprovider</module>
+
 		<module>de.metas.shipper.gateway.commons</module>
 		<module>de.metas.shipper.gateway.spi</module>
 		<module>de.metas.shipper.gateway.go</module>

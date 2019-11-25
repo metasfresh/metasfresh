@@ -282,6 +282,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.salescandidate</groupId>
+			<artifactId>de.metas.salescandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.serviceprovider</groupId>
+			<artifactId>de.metas.serviceprovider.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
 			<version>${metasfresh.version}</version>
