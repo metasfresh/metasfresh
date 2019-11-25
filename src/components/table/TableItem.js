@@ -107,6 +107,14 @@ class TableItem extends PureComponent {
           changeListenOnTrue();
         }
         break;
+      default: {
+        const inp = String.fromCharCode(e.keyCode);
+        if (/[a-zA-Z0-9]/.test(inp)) {
+          this.listenOnKeysTrue();
+          this.handleEditProperty(e, property, true, widgetData);
+        }
+        break;
+      }
     }
   };
 

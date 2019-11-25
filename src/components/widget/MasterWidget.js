@@ -315,9 +315,9 @@ MasterWidget.propTypes = {
   rowId: PropTypes.string,
   tabId: PropTypes.string,
   onChange: PropTypes.func,
-  relativeDocId: PropTypes.number,
+  relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
-  viewId: PropTypes.bool,
+  viewId: PropTypes.string,
   entity: PropTypes.string,
   precision: PropTypes.bool,
 };
