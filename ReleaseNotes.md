@@ -10,6 +10,23 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.129
+## Features
+* metasfresh 
+  * [#5626](https://github.com/metasfresh/metasfresh/issues/5626) Support C_OLCands without UOM
+  * [#5679](https://github.com/metasfresh/metasfresh/issues/5679) Trading BOM
+  * [#5786](https://github.com/metasfresh/metasfresh/issues/5786) Endpoint: get invoice PDF
+  * [#5797](https://github.com/metasfresh/metasfresh/issues/5797) Fix DB-function altercolumn to not fail on materialized views
+  * [#5801](https://github.com/metasfresh/metasfresh/pull/5801) make invoice candidate updating robust to missing price
+  * [#5804](https://github.com/metasfresh/metasfresh/issues/5804) BPartner Name overwrite in BPartner Location
+  * [#5814](https://github.com/metasfresh/metasfresh/issues/5814) Introduce C_OrderLine.ExplodedFrom_BOMLine_ID
+
+* metasfresh-webui-api
+  * [#1303](https://github.com/metasfresh/metasfresh-webui-api/issues/1303) shipment schedules edit modal: order rows by order and order line
+  * [#1305](https://github.com/metasfresh/metasfresh-webui-api/issues/1305) shipment schedule editor: pimp layout + show packing instructions
+  * [#1307](https://github.com/metasfresh/metasfresh-webui-api/issues/1307) products proposal: optimize layout for better usability
+  * [#1311](https://github.com/metasfresh/metasfresh-webui-api/issues/1311) product proposal: add Description field and make it editable
+
 # metasfresh 5.128
 ## Features
 * metasfresh 

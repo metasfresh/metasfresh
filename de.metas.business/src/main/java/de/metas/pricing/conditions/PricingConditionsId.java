@@ -3,10 +3,15 @@ package de.metas.pricing.conditions;
 import java.util.Collection;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -31,37 +36,46 @@ import lombok.Value;
  */
 
 @Value
-public class PricingConditionsId
+public class PricingConditionsId implements RepoIdAware
 {
-	public static final PricingConditionsId ofDiscountSchemaId(final int discountSchemaId)
+
+	public static PricingConditionsId ofRepoId(final int discountSchemaId)
 	{
 		return new PricingConditionsId(discountSchemaId);
 	}
 
-	public static final PricingConditionsId ofDiscountSchemaIdOrNull(final int discountSchemaId)
+	@Nullable
+	public static PricingConditionsId ofRepoIdOrNull(final int discountSchemaId)
 	{
 		return discountSchemaId > 0 ? new PricingConditionsId(discountSchemaId) : null;
 	}
 
-	public static final Set<PricingConditionsId> ofDiscountSchemaIds(final Collection<Integer> discountSchemaIds)
+	public static Set<PricingConditionsId> ofDiscountSchemaIds(@NonNull final Collection<Integer> discountSchemaIds)
 	{
 		return discountSchemaIds.stream()
-				.map(PricingConditionsId::ofDiscountSchemaId)
+				.map(PricingConditionsId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static final Set<Integer> toDiscountSchemaIds(final Collection<PricingConditionsId> ids)
+	public static Set<Integer> toDiscountSchemaIds(@NonNull final Collection<PricingConditionsId> ids)
 	{
 		return ids.stream()
-				.map(PricingConditionsId::getDiscountSchemaId)
+				.map(PricingConditionsId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private final int discountSchemaId;
+	private final int repoId;
 
 	private PricingConditionsId(final int discountSchemaId)
 	{
 		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
-		this.discountSchemaId = discountSchemaId;
+		this.repoId = discountSchemaId;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
