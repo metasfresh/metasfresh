@@ -59,6 +59,8 @@ public class Order
 	@NonNull
 	BPartnerId bpartnerId;
 
+	String bpartnerName;
+
 	@NonNull
 	PricingSystemId pricingSystemId;
 

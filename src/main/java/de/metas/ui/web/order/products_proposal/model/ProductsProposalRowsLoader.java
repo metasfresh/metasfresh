@@ -29,6 +29,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -40,6 +41,9 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.view.ViewHeaderProperties;
+import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
+import de.metas.ui.web.view.ViewHeaderProperty;
 import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -80,6 +84,7 @@ public final class ProductsProposalRowsLoader
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final CampaignPriceProvider campaignPriceProvider;
 	private final LookupDataSource productLookup;
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
@@ -136,6 +141,17 @@ public final class ProductsProposalRowsLoader
 			basePriceListVersionId = null;
 		}
 
+		//
+		final ViewHeaderPropertiesBuilder headerProperties = ViewHeaderProperties.builder();
+
+		if (order != null)
+		{
+			headerProperties.entry(ViewHeaderProperty.builder()
+					.caption(msgBL.translatable("C_BPartner_ID"))
+					.value(order.getBpartnerName())
+					.build());
+		}
+
 		return ProductsProposalRowsData.builder()
 				.nextRowIdSequence(nextRowIdSequence)
 				.campaignPriceProvider(campaignPriceProvider)
@@ -145,6 +161,7 @@ public final class ProductsProposalRowsLoader
 				.order(order)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
+				.headerProperties(headerProperties.build())
 				//
 				.rows(rows)
 				//
@@ -155,7 +172,8 @@ public final class ProductsProposalRowsLoader
 	{
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
-				.sorted(Comparator.comparing(ProductsProposalRow::getProductName))
+				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
+						.thenComparing(ProductsProposalRow::getProductName))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -190,6 +208,7 @@ public final class ProductsProposalRowsLoader
 				.price(extractProductProposalPrice(record))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
+				.seqNo(record.getSeqNo())
 				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
 				.build()
 				//

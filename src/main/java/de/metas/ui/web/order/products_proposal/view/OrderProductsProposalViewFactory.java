@@ -61,7 +61,7 @@ import lombok.NonNull;
 @ViewFactory(windowId = OrderProductsProposalViewFactory.WINDOW_ID_STRING)
 public class OrderProductsProposalViewFactory extends ProductsProposalViewFactoryTemplate
 {
-	public static final String WINDOW_ID_STRING = "orderProductsProposal";
+	static final String WINDOW_ID_STRING = "orderProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -132,6 +132,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.order(order)
 				.bpartnerId(order.getBpartnerId())
 				.soTrx(order.getSoTrx())
+				//
 				.build();
 	}
 
