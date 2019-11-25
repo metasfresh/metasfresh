@@ -467,12 +467,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public boolean anyExist() throws DBException
-	{
-		return match();
-	}
-
-	@Override
 	public boolean match() throws DBException
 	{
 		return count() > 0;

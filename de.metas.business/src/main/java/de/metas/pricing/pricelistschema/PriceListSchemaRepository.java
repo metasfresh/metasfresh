@@ -93,6 +93,6 @@ public class PriceListSchemaRepository
 				.addEqualsFilter(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID, priceListSchemaId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.anyExist();
+				.match();
 	}
 }
