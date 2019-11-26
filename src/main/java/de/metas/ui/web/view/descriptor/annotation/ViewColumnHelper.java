@@ -315,7 +315,7 @@ public final class ViewColumnHelper
 			return Services.get(ISysConfigBL.class)
 					.getBooleanValue(
 							sysConfigKey,
-							false,
+							viewColumnLayout.defaultDisplaySysConfig(),
 							Env.getAD_Client_ID(),
 							Env.getAD_Org_ID(Env.getCtx()));
 		}
