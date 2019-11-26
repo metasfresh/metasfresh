@@ -1,8 +1,6 @@
 package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -48,7 +46,4 @@ public class ShipmentScheduleUserChangeRequest
 
 	@Nullable
 	AttributeSetInstanceId asiId;
-
-	@Nullable
-	LocalDate bestBeforeDate;
 }

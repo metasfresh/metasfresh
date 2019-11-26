@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
@@ -49,6 +50,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Base context and helpers for all {@link IModelAttributeSetInstanceListener}s which are about updating the document line's ASI.
@@ -170,9 +172,13 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		return inoutLine;
 	}
 
-	public void assertAttributeValue(final String expectedAttributeValue, final I_M_AttributeSetInstance asi, final I_M_Attribute attribute)
+	public void assertAttributeValue(
+			final String expectedAttributeValue,
+			@NonNull final I_M_AttributeSetInstance asi,
+			final I_M_Attribute attribute)
 	{
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (expectedAttributeValue == null)
 		{
 			Assert.assertNull("No AI expected", ai);
