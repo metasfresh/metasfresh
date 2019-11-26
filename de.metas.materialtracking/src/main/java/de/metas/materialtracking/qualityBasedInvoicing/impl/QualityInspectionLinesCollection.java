@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,22 +30,23 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLinesCollection;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
+import lombok.NonNull;
 
 public class QualityInspectionLinesCollection implements IQualityInspectionLinesCollection
 {
-	private final List<IQualityInspectionLine> lines;
-	
+	private final ImmutableList<IQualityInspectionLine> lines;
+
 	private final IQualityInspectionOrder qiOrder;
 
-	/* package */ QualityInspectionLinesCollection(final List<IQualityInspectionLine> lines, final IQualityInspectionOrder qiOrder)
+	/* package */ QualityInspectionLinesCollection(@NonNull final List<IQualityInspectionLine> lines, final IQualityInspectionOrder qiOrder)
 	{
-		super();
-		Check.assumeNotNull(lines, "lines not null");
-		this.lines = new ArrayList<>(lines);
+		this.lines = ImmutableList.copyOf(lines);
 		this.qiOrder = qiOrder;
 	}
 
