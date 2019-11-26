@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.compiere.model.I_C_AllocationLine;
@@ -42,6 +43,8 @@ import de.metas.util.ISingletonService;
 public interface IPaymentDAO extends ISingletonService
 {
 	I_C_Payment getById(PaymentId paymentId);
+
+	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
 
 	/**
 	 * @param payment
