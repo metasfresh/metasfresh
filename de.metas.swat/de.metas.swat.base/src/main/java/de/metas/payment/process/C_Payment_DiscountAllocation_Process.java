@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,12 +40,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * task 09373
@@ -118,7 +120,8 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 
 	private final void paymentWriteOff(final I_C_Payment payment)
 	{
-		final BigDecimal paymentOpenAmt = paymentDAO.getAvailableAmount(payment);
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		final BigDecimal paymentOpenAmt = paymentDAO.getAvailableAmount(paymentId);
 
 		// Skip this payment if the open amount is above given limit
 		if (paymentOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
