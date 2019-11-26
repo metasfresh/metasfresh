@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -36,7 +37,7 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public final class ResetStockPInstanceId
+public final class ResetStockPInstanceId implements RepoIdAware
 {
 	@JsonCreator
 	public static ResetStockPInstanceId ofRepoId(final int repoId)
