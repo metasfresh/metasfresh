@@ -42,7 +42,8 @@ class TableItem extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { multilineText } = this.state;
+    const { multilineText, activeCell } = this.state;
+    const { focusOnFieldName, isSelected } = this.props;
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
@@ -52,6 +53,12 @@ class TableItem extends PureComponent {
       this.setState({
         editedCells: {},
       });
+    }
+
+    if (focusOnFieldName && isSelected && this.autofocusCell && !activeCell) {
+      // eslint-disable-next-line react/no-find-dom-node
+      ReactDOM.findDOMNode(this.autofocusCell).focus();
+      this.focusCell();
     }
   }
 
@@ -118,7 +125,12 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleEditProperty = (e, property, callback, item) => {
+  handleEditProperty = (e, property, focus, item) => {
+    this.focusCell();
+    this.editProperty(e, property, focus, item, select);
+  };
+
+  focusCell = () => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
@@ -127,8 +139,6 @@ class TableItem extends PureComponent {
         activeCell: elem,
       });
     }
-
-    this.editProperty(e, property, callback, item);
   };
 
   prepareWidgetData = item => {
@@ -138,7 +148,7 @@ class TableItem extends PureComponent {
     return widgetData;
   };
 
-  editProperty = (e, property, callback, item) => {
+  editProperty = (e, property, focus, item) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e.stopPropagation();
 
@@ -147,7 +157,7 @@ class TableItem extends PureComponent {
           edited: property,
         },
         () => {
-          if (callback) {
+          if (focus) {
             const elem = document.activeElement.getElementsByClassName(
               'js-input-field'
             )[0];
@@ -610,6 +620,7 @@ TableItem.propTypes = {
   lastChild: PropTypes.string,
   includedDocuments: PropTypes.string,
   contextType: PropTypes.string,
+  focusOnFieldName: PropTypes.string,
 };
 
 export default connect(
