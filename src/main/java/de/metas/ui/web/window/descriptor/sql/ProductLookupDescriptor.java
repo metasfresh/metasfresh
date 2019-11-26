@@ -426,7 +426,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId);
+		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
 
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
