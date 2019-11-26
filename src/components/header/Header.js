@@ -51,28 +51,15 @@ class Header extends Component {
   udRef = React.createRef();
   inboxRef = React.createRef();
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method
-   */
   componentDidMount() {
     this.initEventListeners();
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method
-   */
   componentWillUnmount() {
     this.toggleScrollScope(false);
     this.removeEventListeners();
   }
 
-  /**
-   * @method UNSAFE_componentWillUpdate
-   * @summary ToDo: Describe the method
-   * @prop {object} nextProps
-   */
   UNSAFE_componentWillUpdate(nextProps) {
     const { dropzoneFocused } = this.props;
 
@@ -84,25 +71,12 @@ class Header extends Component {
     }
   }
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method
-   * @param {object} prevProps
-   * @param {object} prevState
-   */
   componentDidUpdate(prevProps, prevState) {
-    // const {dispatch, pathname} = this.props;
-
     if (
       prevProps.me.language !== undefined &&
       JSON.stringify(prevProps.me.language) !==
         JSON.stringify(this.props.me.language)
     ) {
-      /*
-            dispatch(replace(''));
-            dispatch(replace(pathname));
-            */
-
       // Need to reload page completely when current locale gets changed
       window.location.reload(false);
     } else if (
