@@ -1594,3 +1594,16 @@ UPDATE AD_Window SET EntityType='D',Updated=TO_TIMESTAMP('2019-11-26 19:32:54','
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Tab SET EntityType='D',Updated=TO_TIMESTAMP('2019-11-26 19:32:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542127
 
+
+
+-- 2019-11-26T18:02:57.230Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2019-11-26 20:02:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=1137
+;
+
+-- 2019-11-26T18:06:13.388Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET WhereClause='exists (select 1 from C_element e where e.IsActive=''Y'' and C_ElementValue.C_element_id = e.C_element_id)',Updated=TO_TIMESTAMP('2019-11-26 20:06:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=542127
+;
+
+
