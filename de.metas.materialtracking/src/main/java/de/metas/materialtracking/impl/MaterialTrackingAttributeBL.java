@@ -2,6 +2,8 @@ package de.metas.materialtracking.impl;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -294,9 +296,9 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	}
 
 	@Override
-	public I_M_Material_Tracking getMaterialTrackingOrNull(@NonNull final AttributeSetInstanceId asiId)
+	public I_M_Material_Tracking getMaterialTrackingOrNull(@Nullable final AttributeSetInstanceId asiId)
 	{
-		if (asiId.isNone())
+		if (asiId == null || asiId.isNone())
 		{
 			return null;
 		}

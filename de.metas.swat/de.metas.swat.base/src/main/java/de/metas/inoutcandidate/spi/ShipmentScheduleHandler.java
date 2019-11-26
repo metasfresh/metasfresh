@@ -214,7 +214,7 @@ public abstract class ShipmentScheduleHandler
 			return true;
 		}
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
 
 		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
 				.retrieveAttributeInstance(

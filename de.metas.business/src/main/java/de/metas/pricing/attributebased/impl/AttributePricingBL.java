@@ -54,7 +54,7 @@ public class AttributePricingBL implements IAttributePricingBL
 		{
 			if (pricingAttribute.getAttributeValue() != null)
 			{
-				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(asiAware.getM_AttributeSetInstance_ID());
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
 				attributeSetInstanceBL.getCreateAttributeInstance(asiId, pricingAttribute.getAttributeValue());
 			}
 		}

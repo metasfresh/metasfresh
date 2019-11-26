@@ -70,7 +70,7 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 			return null;
 		}
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, qualityInspectionCycleAttributeId);
 		if (qualityInspectionCycleAttributeInstance == null)
 		{

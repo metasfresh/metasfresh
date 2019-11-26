@@ -66,11 +66,6 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 */
 	private final Set<IPackingMaterialDocumentLineSource> sourcesWithoutPackingMaterials = new HashSet<>();
 
-	public AbstractPackingMaterialDocumentLinesBuilder()
-	{
-		super();
-	}
-
 	@Override
 	public boolean isEmpty()
 	{

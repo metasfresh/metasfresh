@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -51,11 +50,13 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(referencedModel, I_M_AttributeSetInstance.class);
+
+		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(referencedModel, I_M_AttributeSetInstance.class); // not 100% sure that referencedModel and thus asi aren't null
+
 		final String trxName = InterfaceWrapperHelper.getTrxName(huTrxAttribute);
 		final AttributeId attributeId = AttributeId.ofRepoId(huTrxAttribute.getM_Attribute_ID());
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi == null ? -1 : asi.getM_AttributeSetInstance_ID());
 		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (ai == null)
 		{
