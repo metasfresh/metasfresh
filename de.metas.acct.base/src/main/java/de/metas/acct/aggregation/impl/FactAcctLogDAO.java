@@ -87,7 +87,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 	{
 		return retrieveForTagQuery(ctx, processingTag)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private final IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)

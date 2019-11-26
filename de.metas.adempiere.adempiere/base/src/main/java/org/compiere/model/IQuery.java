@@ -234,20 +234,12 @@ public interface IQuery<T>
 	IQuery<T> setOptions(Map<String, Object> options);
 
 	/**
-	 * Check if there items for query criteria. Same functionality as {@link #anyExist()} ()}
+	 * Check if there items for query criteria.
 	 *
 	 * @return true if exists, false otherwise
 	 * @throws DBException
 	 */
-	boolean match() throws DBException;
-
-	/**
-	 * Check if there items for query criteria. Same functionality as {@link #match()}
-	 *
-	 * @return true if exists, false otherwise
-	 * @throws DBException
-	 */
-	boolean anyExist() throws DBException;
+	boolean anyMatch() throws DBException;
 
 	/**
 	 * Returns an {@link Iterator} over current query selection.

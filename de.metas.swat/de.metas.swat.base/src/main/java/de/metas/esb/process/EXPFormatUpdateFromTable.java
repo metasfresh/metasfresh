@@ -92,7 +92,7 @@ public class EXPFormatUpdateFromTable extends JavaProcess
 				+ " AND " + I_EXP_FormatLine.COLUMNNAME_AD_Column_ID + "=?";
 		return new Query(getCtx(), I_EXP_FormatLine.Table_Name, whereClause, get_TrxName())
 				.setParameters(format.getEXP_Format_ID(), column.getAD_Column_ID())
-				.match();
+				.anyMatch();
 	}
 
 	private I_EXP_FormatLine createFormatLine(I_EXP_Format format, I_AD_Column col, int position, boolean force) throws Exception

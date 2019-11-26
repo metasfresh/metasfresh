@@ -85,7 +85,7 @@ public interface IProductDAO extends ISingletonService
 
 	ProductId retrieveProductIdBy(ProductQuery query);
 
-	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(String categoryValue);
+	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	@Value
 	public static class ProductQuery

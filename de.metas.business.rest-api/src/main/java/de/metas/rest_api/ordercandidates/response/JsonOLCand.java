@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -71,6 +72,11 @@ public class JsonOLCand
 
 	private BigDecimal qty;
 	private int uomId;
+
+	@ApiModelProperty(value="Effective number of items - in the product's stock UOM - the order line candidate was created with.")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private BigDecimal qtyItemCapacity;
+
 	private int huPIItemProductId;
 
 	private int pricingSystemId;
@@ -102,6 +108,7 @@ public class JsonOLCand
 			@JsonProperty("productDescription") final String productDescription,
 			@JsonProperty("qty") final BigDecimal qty,
 			@JsonProperty("uomId") final int uomId,
+			@JsonProperty("qtyItemCapacity") final BigDecimal qtyItemCapacity,
 			@JsonProperty("huPIItemProductId") final int huPIItemProductId,
 			@JsonProperty("pricingSystemId") final int pricingSystemId,
 			@JsonProperty("price") final BigDecimal price,
@@ -124,6 +131,7 @@ public class JsonOLCand
 		this.productDescription = productDescription;
 		this.qty = qty;
 		this.uomId = uomId;
+		this.qtyItemCapacity = qtyItemCapacity;
 		this.huPIItemProductId = huPIItemProductId;
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;

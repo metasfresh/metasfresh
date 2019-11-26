@@ -15,6 +15,8 @@ CREATE OR REPLACE FUNCTION getMatchingDiscountSchemaLine_ID
 RETURNS numeric
 AS
 $BODY$
+            -- Warning about this function: if a line (discount schema line) with a small seqno exists and has no product/category/anything, it will be selected for all the products which appear below it (have greater seqno)!
+            -- in other words: be careful about having empty lines as first lines!
 			select dsl.M_DiscountSchemaLine_ID
 			from M_DiscountSchemaLine dsl
 			where dsl.M_DiscountSchema_ID=p_M_DiscountSchema_ID

@@ -1,5 +1,6 @@
 package de.metas.order.impl;
 
+import static de.metas.util.Check.assume;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -59,6 +61,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -82,6 +85,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
@@ -104,12 +108,16 @@ public class OrderLineBL implements IOrderLineBL
 
 	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
+	private transient final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private transient final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private transient final IProductBL productBL = Services.get(IProductBL.class);
+
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
 		if (uomId != null)
 		{
-			return Services.get(IUOMDAO.class).getById(uomId);
+			return uomDAO.getById(uomId);
 		}
 
 		// fallback to stocking UOM
@@ -118,12 +126,11 @@ public class OrderLineBL implements IOrderLineBL
 
 	private I_C_UOM getStockingUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
 		return productBL.getStockUOM(orderLine.getM_Product_ID());
 	}
 
 	@Override
-	public Quantity getQtyEntered(final org.compiere.model.I_C_OrderLine orderLine)
+	public Quantity getQtyEntered(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final BigDecimal qty = orderLine.getQtyEntered();
 		final I_C_UOM uom = getUOM(orderLine);
@@ -314,26 +321,34 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	public void updateLineNetAmtFromQtyEntered(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		updateLineNetAmt(orderLine, getQtyEntered(orderLine));
+		final Quantity qtyInPriceUOM = convertQtyEnteredToPriceUOM(orderLine);
+		updateLineNetAmtFromQtyInPriceUOM(orderLine, qtyInPriceUOM);
 	}
 
-	void updateLineNetAmt(
-			@NonNull final org.compiere.model.I_C_OrderLine ol,
-			@NonNull final Quantity qty)
+	@Override
+	public void updateLineNetAmtFromQty(
+			@NonNull final Quantity qtyOverride,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final Quantity qtyInPriceUOM = convertToPriceUOM(qty, ol);
+		final Quantity qtyInPriceUOM = convertQtyToPriceUOM(qtyOverride, orderLine);
+		updateLineNetAmtFromQtyInPriceUOM(orderLine, qtyInPriceUOM);
+	}
 
-		final I_C_Order order = ol.getC_Order();
+	private void updateLineNetAmtFromQtyInPriceUOM(
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine,
+			@NonNull final Quantity qtyInPriceUOM)
+	{
+		final I_C_Order order = orderLine.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
 		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
 
-		BigDecimal lineNetAmt = qtyInPriceUOM.toBigDecimal().multiply(ol.getPriceActual());
+		BigDecimal lineNetAmt = qtyInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual());
 		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);
 
-		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
-		ol.setLineNetAmt(lineNetAmt);
+		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, orderLine);
+		orderLine.setLineNetAmt(lineNetAmt);
 	}
 
 	@Override
@@ -390,7 +405,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = orderLine.getC_Order();
 		final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
-		if(!orderDocStatus.isInProgressCompletedOrClosed())
+		if (!orderDocStatus.isInProgressCompletedOrClosed())
 		{
 			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.", order, orderLine, orderDocStatus);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
@@ -501,61 +516,118 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public BigDecimal convertQtyEnteredToPriceUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	public Quantity convertQtyEnteredToPriceUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final Quantity qtyEntered = getQtyEntered(orderLine);
-		return convertToPriceUOM(qtyEntered, orderLine).toBigDecimal();
+		return convertQtyToPriceUOM(getQtyEntered(orderLine), orderLine);
 	}
 
 	@Override
-	public BigDecimal convertQtyEnteredToInternalUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	public Quantity convertQtyEnteredToStockUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
 		final BigDecimal qtyEntered = orderLine.getQtyEntered();
 
+		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+
+		assume(uomId != null || productId != null,
+				"For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
 		if (productId == null)
 		{
-			return qtyEntered;
+			return Quantitys.create(qtyEntered, uomId);
 		}
-
-		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
 		if (uomId == null)
 		{
-			return qtyEntered;
+			final UomId stockUOMId = productBL.getStockUOMId(productId);
+			return Quantitys.create(qtyEntered, stockUOMId);
 		}
 
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
-		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
+		if (uomDAO.isUOMForTUs(uomId))
+		{
+			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is coming from order line's CU-TU (M_HU_PI_Item_Product)
+			return Quantitys.create(computeQtyOrderedUsingQtyItemCapacity(orderLine), productId);
+		}
+		else
+		{
+			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, qtyEntered, uomId);
+			return Quantitys.create(qtyOrdered, productId);
+		}
+	}
+
+	private BigDecimal computeQtyOrderedUsingQtyItemCapacity(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
+		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
+		{
+			throw new AdempiereException(TranslatableStrings.constant("for TU-UOM's, we must have qtyItemCapacity"));// TODO: nice user message
+		}
+		final BigDecimal qtyOrdered = orderLine.getQtyEntered().multiply(qtyItemCapacity);
 		return qtyOrdered;
 	}
 
-	Quantity convertToPriceUOM(@NonNull final Quantity qtyEntered, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	@Override
+	public Quantity convertQtyToPriceUOM(
+			@NonNull final Quantity quantity,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
-		if (priceUOMId == null)
+		if (priceUOMId == null || priceUOMId.equals(quantity.getUomId()))
 		{
-			return qtyEntered;
+			return quantity;
 		}
 
-		final int qtyUOMId = qtyEntered.getUOMId();
-		if (qtyUOMId == priceUOMId.getRepoId())
+		if (Objects.equals(quantity.getUomId(), priceUOMId))
 		{
-			return qtyEntered;
+			return quantity;
 		}
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		if (uomDAO.isUOMForTUs(quantity.getUomId()))
+		{
+			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is originally coming from order line's CU-TU (M_HU_PI_Item_Product)
+			// therefore we take the detour via qtyOrdered
+			// IMPORTANT: we we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
+			// and we don't want this to be our concern here
+			final BigDecimal qtyOrdered = computeQtyOrderedUsingQtyItemCapacity(orderLine);
+
+			final Quantity qtyInQtockUOM = Quantitys.create(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			assume(!uomDAO.isUOMForTUs(qtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", qtyInQtockUOM, orderLine);
+
+			return convertQtyToPriceUOM(qtyInQtockUOM, orderLine);
+		}
+
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
-		final I_C_UOM priceUOM = Services.get(IUOMDAO.class).getById(priceUOMId);
-		return uomConversionBL.convertQuantityTo(qtyEntered, conversionCtx, priceUOM);
+		return uomConversionBL.convertQuantityTo(quantity, conversionCtx, priceUOMId);
+	}
+
+	@Override
+	public Quantity convertQtyToUOM(
+			@NonNull final Quantity quantity,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if (uomId == null || uomId.equals(quantity.getUomId()))
+		{
+			return quantity;
+		}
+
+		if (uomDAO.isUOMForTUs(quantity.getUomId()))
+		{
+			final BigDecimal qtyOrdered = computeQtyOrderedUsingQtyItemCapacity(orderLine);
+
+			// like in convertQtyToPriceUOM we need to take the detour via qtyOrdered; see comment there
+			final Quantity qtyInQtockUOM = Quantitys.create(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			assume(!uomDAO.isUOMForTUs(qtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", qtyInQtockUOM, orderLine);
+
+			final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
+			return uomConversionBL.convertQuantityTo(qtyInQtockUOM, conversionCtx, uomId);
+		}
+
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
+		return uomConversionBL.convertQuantityTo(quantity, conversionCtx, UomId.ofRepoId(orderLine.getC_UOM_ID()));
 	}
 
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		Check.assumeNotNull(orderLine, "orderLine not null");
-
 		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(orderLine.getC_Tax_ID());
 
 		final I_C_Order order = orderLine.getC_Order();

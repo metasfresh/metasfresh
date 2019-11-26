@@ -45,6 +45,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -85,6 +88,8 @@ public class OrderGroupRepository implements GroupRepository
 	// NOTE: we cannot have it here because the impl is not in the same package and unit tests are failing
 	// private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	// private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
@@ -329,13 +334,13 @@ public class OrderGroupRepository implements GroupRepository
 				.groupTemplateLineId(GroupTemplateLineId.ofRepoIdOrNull(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
 				.seqNo(groupOrderLine.getLine())
 				.productId(ProductId.ofRepoId(groupOrderLine.getM_Product_ID()))
+				.qtyEntered(groupOrderLine.getQtyEntered())
 				.uomId(UomId.ofRepoId(groupOrderLine.getC_UOM_ID()))
 				.type(GroupCompensationType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationType()))
 				.amtType(GroupCompensationAmtType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationAmtType()))
 				.percentage(Percent.of(groupOrderLine.getGroupCompensationPercentage()))
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
-				.qtyEntered(groupOrderLine.getQtyEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.build();
 	}
@@ -398,17 +403,21 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
 
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId().getRepoId());
-		compensationLinePO.setC_UOM_ID(compensationLine.getUomId().getRepoId());
 
-		compensationLinePO.setQtyEntered(compensationLine.getQtyEntered());
-		compensationLinePO.setQtyOrdered(compensationLine.getQtyEntered());
+		final Quantity qtyEntered = Quantitys.create(compensationLine.getQtyEntered(), compensationLine.getUomId());
+		compensationLinePO.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
+		compensationLinePO.setQtyEntered(qtyEntered.toBigDecimal());
+
+		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, compensationLine.getProductId());
+		compensationLinePO.setQtyOrdered(qtyOrdered.toBigDecimal());
+
 		compensationLinePO.setIsManualPrice(true);
 		compensationLinePO.setPriceEntered(compensationLine.getPrice());
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
 
-		Services.get(IOrderLineBL.class).updateLineNetAmt(compensationLinePO);
+		Services.get(IOrderLineBL.class).updateLineNetAmtFromQtyEntered(compensationLinePO);
 	}
 
 	@Override

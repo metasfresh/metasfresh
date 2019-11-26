@@ -43,7 +43,7 @@ public class C_Aggregation
 		final boolean hasItems = Services.get(IAggregationDAO.class)
 				.retrieveAllItemsQuery(aggregation)
 				.create()
-				.match();
+				.anyMatch();
 
 		if (hasItems)
 		{

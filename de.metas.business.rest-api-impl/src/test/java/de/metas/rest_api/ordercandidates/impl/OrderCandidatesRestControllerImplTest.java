@@ -53,11 +53,13 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.quantity.Quantity;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
@@ -178,10 +180,14 @@ public class OrderCandidatesRestControllerImplTest
 	// NOTE: Shall be called programatically by each test
 	private void startInterceptors()
 	{
+		final DefaultOLCandValidator defaultOLCandValidator = new DefaultOLCandValidator(
+				olCandBL,
+				new DummyOLCandWithUOMForTUsCapacityProvider());
+
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
-				Optional.of(ImmutableList.of(new DefaultOLCandValidator(olCandBL))));
+				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
@@ -631,5 +637,20 @@ public class OrderCandidatesRestControllerImplTest
 
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
+	}
+
+	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
+	{
+		@Override
+		public boolean isProviderNeededForOLCand(I_C_OLCand olCand)
+		{
+			return false;
+		}
+
+		@Override
+		public Quantity computeQtyItemCapacity(I_C_OLCand olCand)
+		{
+			return null;
+		}
 	}
 }

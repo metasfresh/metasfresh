@@ -77,7 +77,7 @@ public class C_Invoice_Candidate_Misc_FacetCollector extends SingleFacetCategory
 		final boolean hasICApprovedForInvoicing = queryBuilderWithDefaultFilters
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, true)
 				.create()
-				.match();
+				.anyMatch();
 		if (hasICApprovedForInvoicing)
 		{
 			facets.add(facetApprovalForInvoicing);

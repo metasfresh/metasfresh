@@ -72,7 +72,7 @@ public class PMMPurchaseCandidateDAO implements IPMMPurchaseCandidateDAO
 	{
 		return queryFor(pmmSegment, weekDate, DateTruncQueryFilterModifier.WEEK)
 				.create()
-				.match();
+				.anyMatch();
 	}
 	
 	private final IQueryBuilder<I_PMM_PurchaseCandidate> queryFor(final PMMPurchaseCandidateSegment pmmSegment, final Date day, final IQueryFilterModifier dayModifier)

@@ -516,7 +516,7 @@ public class RequisitionPOCreate extends JavaProcess
 		//
 		boolean match = new Query(getCtx(), MBPartner.Table_Name, "C_BPartner_ID=? AND C_BP_Group_ID=?", get_TrxName())
 				.setParameters(new Object[] { C_BPartner_ID, p_C_BP_Group_ID })
-				.match();
+				.anyMatch();
 		if (!match)
 		{
 			m_excludedVendors.add(C_BPartner_ID);
@@ -540,7 +540,7 @@ public class RequisitionPOCreate extends JavaProcess
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, C_BPartner_ID)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
-				.match();
+				.anyMatch();
 
 	}
 
@@ -550,7 +550,7 @@ public class RequisitionPOCreate extends JavaProcess
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, M_PriceList_ID)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, false)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 }	// RequisitionPOCreate

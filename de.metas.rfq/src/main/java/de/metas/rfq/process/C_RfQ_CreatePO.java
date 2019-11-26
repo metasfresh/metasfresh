@@ -14,8 +14,6 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.exceptions.NoCompletedRfQResponsesFoundException;
@@ -24,7 +22,6 @@ import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -65,6 +62,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@Param(parameterName = "C_DocType_ID")
 	private int p_C_DocType_ID;
@@ -184,8 +182,6 @@ public class C_RfQ_CreatePO extends JavaProcess
 					final I_C_RfQLineQty rfqLineQty = qty.getC_RfQLineQty();
 					if (rfqLineQty.isActive() && rfqLineQty.isPurchaseQty())
 					{
-						final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 						final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
 						ol.setM_Product_ID(line.getC_RfQLine().getM_Product_ID());
@@ -222,8 +218,6 @@ public class C_RfQ_CreatePO extends JavaProcess
 			return;
 		}
 
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
 		final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
@@ -240,7 +234,6 @@ public class C_RfQ_CreatePO extends JavaProcess
 			@NonNull final I_C_RfQResponseLineQty rfqResponseLineQty,
 			@NonNull final I_C_OrderLine ol)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(ol);
 		final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(rfqResponseLineQty);
@@ -252,13 +245,8 @@ public class C_RfQ_CreatePO extends JavaProcess
 			@NonNull final I_C_RfQLineQty rfqLineQty,
 			@NonNull final I_C_OrderLine ol)
 	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		ol.setQtyEntered(rfqLineQty.getQty());
-
-		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
-		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(
-				Quantity.of(rfqLineQty.getQty(), rfqLineQty.getC_UOM()),
-				productId);
-		ol.setQtyOrdered(qtyOrdered.toBigDecimal());
+		ol.setC_UOM_ID(rfqLineQty.getC_UOM_ID());
+		ol.setQtyOrdered(orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal());
 	}
 }

@@ -29,8 +29,10 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMConversionBL;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,16 +77,17 @@ import lombok.NonNull;
 	/**
 	 * Sets both QtyOrdered and QtyEntered of the wrapped order line.
 	 *
-	 * @param qty QtyOrdered which will also be converted to qtyEntered.
+	 * @param qtyOrdered ordered quantity in stock UOM, which is also converted to qtyEntered.
 	 */
 	@Override
-	protected void setQty(final BigDecimal qty)
+	protected void setQty(final BigDecimal qtyOrdered)
 	{
-		orderLine.setQtyOrdered(qty);
+		orderLine.setQtyOrdered(qtyOrdered);
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(getProductId(), getUOM(), qty);
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final Quantity qtyInStockUOM = Quantitys.create(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
 
-		orderLine.setQtyEntered(qtyEntered);
+		final Quantity qtyEntered = orderLineBL.convertQtyToUOM(qtyInStockUOM, orderLine);
+		orderLine.setQtyEntered(qtyEntered.toBigDecimal());
 	}
 }

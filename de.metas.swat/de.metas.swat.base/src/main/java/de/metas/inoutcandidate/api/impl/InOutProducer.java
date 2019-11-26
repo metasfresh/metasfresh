@@ -516,9 +516,6 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Helper method to update receipt line with values from given {@link I_M_ReceiptSchedule}.
-	 *
-	 * @param line
-	 * @param rs
 	 */
 	protected void updateReceiptLine(final I_M_InOutLine line, final I_M_ReceiptSchedule rs)
 	{

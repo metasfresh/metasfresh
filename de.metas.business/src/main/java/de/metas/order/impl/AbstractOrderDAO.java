@@ -194,7 +194,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addInArrayOrAllFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -210,7 +210,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return retrieveInOutsQuery(order)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private IQueryBuilder<I_M_InOut> retrieveInOutsQuery(final I_C_Order order)

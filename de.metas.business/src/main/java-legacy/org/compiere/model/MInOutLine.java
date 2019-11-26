@@ -77,7 +77,7 @@ public class MInOutLine extends X_M_InOutLine
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -89,7 +89,7 @@ public class MInOutLine extends X_M_InOutLine
 
 	/**
 	 * Parent Constructor
-	 * 
+	 *
 	 * @param inout parent
 	 */
 	public MInOutLine(MInOut inout)
@@ -152,7 +152,7 @@ public class MInOutLine extends X_M_InOutLine
 			{
 				setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
 			}
-			
+
 			//
 			if (Services.get(IProductBL.class).isItem(productId))
 			{
@@ -273,7 +273,7 @@ public class MInOutLine extends X_M_InOutLine
 
 	/**
 	 * Set (default) Locator based on qty.
-	 * 
+	 *
 	 * @param Qty quantity
 	 *            Assumes Warehouse is set
 	 */
@@ -574,19 +574,20 @@ public class MInOutLine extends X_M_InOutLine
 			int ii = DB.getSQLValueEx(get_TrxName(), sql, getM_InOut_ID());
 			setLine(ii);
 		}
-		// UOM
-		if (getC_UOM_ID() == 0)
-		{
-			setC_UOM_ID(Env.getContextAsInt(getCtx(), "#C_UOM_ID"));
-		}
-		if (getC_UOM_ID() == 0)
-		{
-			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
-			if (C_UOM_ID > 0)
-			{
-				setC_UOM_ID(C_UOM_ID);
-			}
-		}
+// UOM
+// if we don't have an UOM at this stage, there is a problem! *do not try to guess!*
+//		if (getC_UOM_ID() == 0)
+//		{
+//			setC_UOM_ID(Env.getContextAsInt(getCtx(), "#C_UOM_ID"));
+//		}
+//		if (getC_UOM_ID() == 0)
+//		{
+//			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
+//			if (C_UOM_ID > 0)
+//			{
+//				setC_UOM_ID(C_UOM_ID);
+//			}
+//		}
 		// Qty Precision
 		if (newRecord || is_ValueChanged("QtyEntered"))
 		{

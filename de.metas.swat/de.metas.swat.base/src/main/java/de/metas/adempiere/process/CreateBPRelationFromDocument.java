@@ -241,7 +241,7 @@ public class CreateBPRelationFromDocument extends JavaProcess
 			final boolean match = new Query(getCtx(), I_C_BP_Relation.Table_Name, whereClause, get_TrxName())
 					.setParameters(nameCurrent.toString(), rel.getC_BP_Relation_ID())
 					.setClient_ID()
-					.match();
+					.anyMatch();
 			if (!match)
 			{
 				rel.setName(nameCurrent.toString());

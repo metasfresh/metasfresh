@@ -75,7 +75,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	public boolean hasPackingMaterialLines(final I_M_InOut inOut)
 	{
 		return retrievePackingMaterialLinesQuery(inOut)
-				.match();
+				.anyMatch();
 	}
 
 	/**

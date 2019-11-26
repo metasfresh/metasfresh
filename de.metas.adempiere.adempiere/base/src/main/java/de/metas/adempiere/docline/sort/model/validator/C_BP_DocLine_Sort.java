@@ -86,7 +86,7 @@ public class C_BP_DocLine_Sort
 
 		final boolean existsDuplicateBPConfig = bpQueryBuilder
 				.create()
-				.match();
+				.anyMatch();
 		if (existsDuplicateBPConfig)
 		{
 			throw new AdempiereException("@DuplicateBPDocLineSort@");

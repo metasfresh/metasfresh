@@ -67,20 +67,20 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	public void setM_Product_ID(final int productId)
 	{
 		olCand.setM_Product_Override_ID(productId);
-		values.setM_Product_ID(productId);
+		values.setProductId(ProductId.ofRepoIdOrNull(productId));
 	}
 
 	@Override
 	public void setQty(final BigDecimal qty)
 	{
-		olCand.setQty(qty);
+		olCand.setQtyEntered(qty);
 		values.setQty(qty);
 	}
 
 	@Override
 	public BigDecimal getQty()
 	{
-		return olCand.getQty();
+		return olCand.getQtyEntered();
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	public int getC_UOM_ID()
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getC_UOM_Effective_ID(olCand);
+		return olCandEffectiveValuesBL.getEffectiveUomId(olCand).getRepoId();
 	}
 
 	@Override

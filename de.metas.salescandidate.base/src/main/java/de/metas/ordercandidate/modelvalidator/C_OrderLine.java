@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -35,6 +36,7 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_C_OrderLine.class)
+@Component
 public class C_OrderLine
 {
 	/**

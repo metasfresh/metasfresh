@@ -171,7 +171,7 @@ public class TourInstanceDAO implements ITourInstanceDAO
 				// Delivery days for our tour instance
 				.addEqualsFilter(I_M_DeliveryDay.COLUMN_M_Tour_Instance_ID, tourInstanceId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	public I_M_Tour_Instance retrieveTourInstanceForShipperTransportation(final I_M_ShipperTransportation shipperTransportation)

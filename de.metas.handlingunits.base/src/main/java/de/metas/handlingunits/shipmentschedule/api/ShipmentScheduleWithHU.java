@@ -354,7 +354,7 @@ public class ShipmentScheduleWithHU
 	}
 
 	/**
-	 * Gets the underlying LU or TU or VHU, depends on which is the first not null
+	 * Gets the underlying LU or TU or VHU, depending on which is the first not null
 	 *
 	 * @return LU/TU/VHU
 	 */

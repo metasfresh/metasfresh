@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
@@ -53,29 +54,29 @@ public final class JsonOLCandCreateRequest
 	JsonOrganization org;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.externalLineId</code>.\n"
-					+ "<code>externalLineId</code> and <code>dataSourceInternalName</code> together need to be unique.")
+			required = true, //
+			value = "This translates to `C_OLCand.externalLineId`.\n"
+					+ "`externalLineId` and `dataSourceInternalName` together need to be unique.")
 	String externalLineId;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.externalHeaderId</code>.\n"
-					+ "<code>externalHeaderId</code> and <code>dataSourceInternalName</code> together denote the unique group of olCands that were added in one bulk.")
+			required = true, //
+			value = "This translates to `C_OLCand.externalHeaderId`.\n"
+					+ "`externalHeaderId` and `dataSourceInternalName` together denote the unique group of olCands that were added in one bulk.")
 	String externalHeaderId;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this OLCand came from.")
+			required = true, //
+			value = "Internal name of the `AD_InputDataSource` record that tells where this OLCand came from.")
 	String dataSourceInternalName;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Internal name of the <code>AD_InputDataSource</code> record that tells what shall be happen with this OLCand.")
+			required = true, //
+			value = "Internal name of the `AD_InputDataSource` record that tells what shall be happen with this OLCand.")
 	private String dataDestInternalName;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
+			required = true, //
 			value = " This translates to `C_OLCand.C_BPartner_ID`, `C_OLCand.C_BPartner_Location_ID` and `C_OLCand.AD_User_ID`.\n"
 					+ "It's the business partner that places/placed the order which this candidate is about.\n"
 					+ "\n"
@@ -84,47 +85,47 @@ public final class JsonOLCandCreateRequest
 	private JsonRequestBPartnerLocationAndContact bpartner;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = " This translates to <code>C_OLCand.Bill_BPartner_ID</code>.\n"
+			required = false, //
+			value = " This translates to `C_OLCand.Bill_BPartner_ID`.\n"
 					+ "It's the business partner that shall receive the invoice.\n"
-					+ "Optional; if empty, then <code>bpartner</code> will receive the invoice.")
+					+ "Optional; if empty, then `bpartner` will receive the invoice.")
 	@JsonInclude(Include.NON_NULL)
 	private JsonRequestBPartnerLocationAndContact billBPartner;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = " This translates to <code>C_OLCand.Dropship_BPartner_ID</code>.\n"
+			required = false, //
+			value = " This translates to `C_OLCand.Dropship_BPartner_ID`.\n"
 					+ "It's the business partner that shall receive the shipment.\n"
-					+ "Optional; if empty, then <code>bpartner</code> will receive the shipment.")
+					+ "Optional; if empty, then `bpartner` will receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
 	private JsonRequestBPartnerLocationAndContact dropShipBPartner;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = " This translates to <code>C_OLCand.HandOver_BPartner_ID</code>.\n"
+			required = false, //
+			value = " This translates to `C_OLCand.HandOver_BPartner_ID`.\n"
 					+ "It's an intermediate partner that shall receive the shipment and forward it to the eventual recipient.\n"
-					+ "Optional; if empty, then <code>dropShipBPartner</code> or <code>bpartner</code> will directly receive the shipment.")
+					+ "Optional; if empty, then `dropShipBPartner` or `bpartner` will directly receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
 	private JsonRequestBPartnerLocationAndContact handOverBPartner;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "This translates to <code>C_OLCand.DateOrdered</code>.")
+			required = false, //
+			value = "This translates to `C_OLCand.DateOrdered`.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateOrdered;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "This translates to <code>C_OLCand.datePromised</code>.\n"
+			required = false, //
+			value = "This translates to `C_OLCand.datePromised`.\n"
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
-					+ "Note: may be empty, if is <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>")
+					+ "Note: may be empty, if is `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate dateRequired;
 
 	private int flatrateConditionsId;
 
-	@ApiModelProperty(value = "This translates to <code>C_OLCand.M_Product_ID</code>.")
+	@ApiModelProperty(value = "This translates to `C_OLCand.M_Product_ID`.")
 	private JsonProductInfo product;
 
 	@JsonInclude(Include.NON_NULL)
@@ -132,14 +133,18 @@ public final class JsonOLCandCreateRequest
 
 	private BigDecimal qty;
 
-	@ApiModelProperty(value = "This translates to <code>C_UOM.X12DE355</code>.\n"
-			+ "The respective UOM needs to exist in metasfresh and its ID is set as <code>C_OLCand.C_UOM_ID</code>.\n"
-			+ "If not set, then the respective product's UOM is used.\n"
-			+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
+	@ApiModelProperty(required = false, //
+			value = "This translates to `C_UOM.X12DE355`.\n"
+					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_OLCand.C_UOM_ID`.\n"
+					+ "If not provided here, then the respective product's UOM is used instead.\n"
+					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
 	@JsonInclude(Include.NON_NULL)
 	private String uomCode;
 
-	private int packingMaterialId;
+	@ApiModelProperty(required = false, //
+			value = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	private MetasfreshId packingMaterialId;
 
 	@ApiModelProperty(value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
 			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
@@ -149,14 +154,13 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	private String pricingSystemCode;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
+	@ApiModelProperty(required = false, //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
 	@JsonInclude(Include.NON_NULL)
 	private BigDecimal price;
 
 	@ApiModelProperty( //
-			value = "If a (manual) <code>price</code> is provided, then also a currencyCode needs be given.")
+			value = "If a (manual) `price` is provided, then also a currencyCode needs be given.")
 	@JsonInclude(Include.NON_NULL)
 	private String currencyCode; // shall come from pricingSystem/priceList
 
@@ -169,32 +173,28 @@ public final class JsonOLCandCreateRequest
 			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	private String poReference;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "Translates to C_OLCand.M_Warehouse_Dest_ID.")
+	@ApiModelProperty(required = false, //
+			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	private String warehouseDestCode;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
+	@ApiModelProperty(required = false, //
 			value = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
 					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
-					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
+					+ "Therefore, please make sure to have `dataDestInternalName='DEST.de.metas.invoicecandidate'`.\n"
 					+ "Otherwise, this property will be ignored\n"
 					+ "\n"
-					+ "Note for healthcare-ch users: set <code>docBaseType</code> to <code>ARI</code> (sales invoice) "
-					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
+					+ "Note for healthcare-ch users: set `docBaseType` to `ARI` (sales invoice) "
+					+ "and `docSubType` to one of `EA` (\"Patient\"), `GM` (\"Gemeinde\" or `KV` (\"Krankenversicherung\"")
 	@JsonInclude(Include.NON_NULL)
 	private JsonDocTypeInfo invoiceDocType;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
+	@ApiModelProperty(required = false, //
 			value = "Can be set if the invoice's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate presetDateInvoiced;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
+	@ApiModelProperty(required = false, //
 			value = "Can be set if the shipment's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
@@ -219,7 +219,7 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("productDescription") final @Nullable String productDescription,
 			@JsonProperty("qty") final BigDecimal qty,
 			@JsonProperty("uomCode") final @Nullable String uomCode,
-			@JsonProperty("packingMaterialId") final int packingMaterialId,
+			@JsonProperty("packingMaterialId") final MetasfreshId packingMaterialId,
 			@JsonProperty("pricingSystemCode") final String pricingSystemCode,
 			@JsonProperty("price") final @Nullable BigDecimal price,
 			@JsonProperty("currencyCode") final @Nullable String currencyCode,

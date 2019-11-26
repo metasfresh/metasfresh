@@ -99,7 +99,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection)
 				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID());
 		return queryBuilder.create()
-				.match();
+				.anyMatch();
 	}
 
 	private final IQueryBuilder<I_C_PaySelectionLine> createQueryBuilder(final I_C_PaySelection paySelection)

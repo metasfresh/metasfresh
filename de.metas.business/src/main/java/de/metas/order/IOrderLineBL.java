@@ -58,9 +58,6 @@ public interface IOrderLineBL extends ISingletonService
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
-	 *
-	 * @param order
-	 * @return
 	 */
 	I_C_OrderLine createOrderLine(org.compiere.model.I_C_Order order);
 
@@ -74,8 +71,6 @@ public interface IOrderLineBL extends ISingletonService
 
 	/**
 	 * Set Defaults from Order. Does not set C_Order_ID. Also invoked by the createOrderLine methods
-	 *
-	 * @param order order
 	 */
 	void setOrder(org.compiere.model.I_C_OrderLine ol, I_C_Order order);
 
@@ -159,7 +154,9 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
 
-	void updateLineNetAmt(org.compiere.model.I_C_OrderLine orderLine);
+	void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
+
+	void updateLineNetAmtFromQty(Quantity qty, org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
@@ -175,22 +172,21 @@ public interface IOrderLineBL extends ISingletonService
 	 * Generally used for internal pricing calculations.
 	 * <p>
 	 * Note: the method does <b>not</b> change the given <code>orderLine</code>.
-	 *
-	 * @param orderLine
-	 * @return
 	 */
-	BigDecimal convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine orderLine);
+	Quantity convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine orderLine);
+
+	Quantity convertQtyToPriceUOM(Quantity qty, org.compiere.model.I_C_OrderLine orderLine);
+
+	/** Convert the given quantity to the orderLine's {@code C_UOM_ID}. */
+	Quantity convertQtyToUOM(Quantity qty, org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Calculates the given <code>orderLine</code>'s <code>QtyOrdered</code> by converting it's <code>QtyEntered</code> value from the orderLine's UOM to the UOM of the orderLine's product.<br>
 	 * If the given orderLine has no product or no UOM set, then method returns <code>QtyEntered</code>.
 	 * <p>
 	 * Note: the method does <b>not</b> change the given <code>orderLine</code>.
-	 *
-	 * @param orderLine
-	 * @return
 	 */
-	BigDecimal convertQtyEnteredToInternalUOM(org.compiere.model.I_C_OrderLine orderLine);
+	Quantity convertQtyEnteredToStockUOM(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Is Tax Included in Amount. Calls {@link IOrderBL#isTaxIncluded(org.compiere.model.I_C_Order, org.compiere.model.I_C_Tax)} for the given <code>orderLine</code>'s <code>C_Tax</code> and
