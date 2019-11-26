@@ -1,10 +1,15 @@
 package de.metas.payment;
 
+import java.util.Collection;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -46,6 +51,26 @@ public class PaymentId implements RepoIdAware
 	public static int toRepoId(final PaymentId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static ImmutableSet<PaymentId> fromIntSet(@NonNull final Collection<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return repoIds.stream().map(PaymentId::ofRepoIdOrNull).filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<PaymentId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return ids.stream().map(PaymentId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	int repoId;
