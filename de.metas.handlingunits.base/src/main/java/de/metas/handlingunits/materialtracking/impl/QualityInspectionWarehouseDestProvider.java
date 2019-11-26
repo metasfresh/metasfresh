@@ -2,6 +2,7 @@ package de.metas.handlingunits.materialtracking.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -38,7 +39,7 @@ import de.metas.util.Services;
 
 /**
  * Provides the destination warehouse based on ASI's {@link IHUMaterialTrackingBL#ATTRIBUTENAME_QualityInspectionCycle} attribute value.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -68,8 +69,9 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 		{
 			return null;
 		}
-		
-		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, qualityInspectionCycleAttributeId);
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, qualityInspectionCycleAttributeId);
 		if (qualityInspectionCycleAttributeInstance == null)
 		{
 			return null;

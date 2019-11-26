@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -9,8 +10,6 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -25,12 +24,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,7 +65,7 @@ public class LotNumberAttributeUpdater
 		{
 			return;
 		}
-		
+
 		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
 		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, lotNoAttributeId);
 		if (attribute == null)
@@ -74,17 +73,17 @@ public class LotNumberAttributeUpdater
 			return;
 		}
 
-		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
+		attributeSetInstanceBL.getCreateASI(asiAware);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, lotNoAttributeId);
 
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, lotNoAttributeId);
-	
 		if (ai != null)
 		{
 			// If it was set, just leave it as it is
 			return;
 		}
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, lotNoAttributeId);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, lotNoAttributeId);
 	}
 
 	public LotNumberAttributeUpdater setSourceModel(final Object sourceModel)

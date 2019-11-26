@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -213,9 +214,11 @@ public abstract class ShipmentScheduleHandler
 			return true;
 		}
 
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
+
 		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
 				.retrieveAttributeInstance(
-						asiAware.getM_AttributeSetInstance(),
+						asiId,
 						attributeConfigToUse.getAttributeId());
 
 		final boolean referencedRecordAsiContainsAttribute = attributeInstance != null;
@@ -226,11 +229,11 @@ public abstract class ShipmentScheduleHandler
 
 		return hasNonNullAttributeListValue(attributeInstance);
 	}
-	
+
 	private boolean hasNonNullAttributeListValue(final I_M_AttributeInstance attributeInstance)
 	{
 		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
-		if(attributeValueId == null)
+		if (attributeValueId == null)
 		{
 			return false;
 		}

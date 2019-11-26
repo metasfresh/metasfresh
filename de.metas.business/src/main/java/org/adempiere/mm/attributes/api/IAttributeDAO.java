@@ -89,7 +89,7 @@ public interface IAttributeDAO extends ISingletonService
 	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
 
 	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
-	
+
 	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
 
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
@@ -102,7 +102,7 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
-	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
+	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);
 
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.

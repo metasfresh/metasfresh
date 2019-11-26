@@ -38,7 +38,10 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -525,6 +528,20 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		if (from.getAsiId() != null)
 		{
 			record.setM_AttributeSetInstance_ID(from.getAsiId().getRepoId());
+		}
+
+		if (from.getBestBeforeDate() != null)
+		{
+			final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+			AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+			if (asiId.isNone())
+			{
+				final I_M_AttributeSetInstance asiNew = attributeSetInstanceBL.createASI(ProductId.ofRepoId(record.getM_Product_ID()));
+				asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
+				record.setM_AttributeSetInstance_ID(asiId.getRepoId());
+			}
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, from.getBestBeforeDate());
 		}
 	}
 

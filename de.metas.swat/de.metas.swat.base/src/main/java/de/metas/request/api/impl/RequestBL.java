@@ -1,6 +1,7 @@
 package de.metas.request.api.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_AttributeInstance;
@@ -111,7 +112,8 @@ public class RequestBL implements IRequestBL
 			return null;
 		}
 
-		final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(line.getM_AttributeSetInstance(), qualityNoteAttributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiId, qualityNoteAttributeId);
 		if (qualityNoteAI == null)
 		{
 			// nothing to do. The Quality Note is not in the attribute instance

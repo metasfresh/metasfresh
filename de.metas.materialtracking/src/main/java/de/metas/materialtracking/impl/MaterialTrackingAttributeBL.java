@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
@@ -185,7 +186,9 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, materialTrackingAttributeId.get());
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
 
 		if (materialTrackingAttributeInstance != null)
 		{
@@ -364,7 +367,9 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, materialTrackingAttributeId.get());
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
 
 		return materialTrackingAttributeInstance != null;
 	}
