@@ -102,6 +102,11 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
+	/**
+	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
+	 *
+	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
+	 */
 	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);
 
 	/**
