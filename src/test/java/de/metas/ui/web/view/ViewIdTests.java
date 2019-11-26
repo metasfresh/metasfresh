@@ -8,6 +8,7 @@ import java.util.Random;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -51,22 +52,26 @@ public class ViewIdTests
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
-	@Test
-	public void test_deriveWithWindowId_StandardCase()
+	@Nested
+	public class withWindowId
 	{
-		final ViewId viewId = ViewId.ofViewIdString("123-abcde");
-		assertViewIdMatching(viewId, "123", "abcde");
+		@Test
+		public void standardCase()
+		{
+			final ViewId viewId = ViewId.ofViewIdString("123-abcde");
+			assertViewIdMatching(viewId, "123", "abcde");
 
-		final ViewId viewId2 = viewId.deriveWithWindowId(WindowId.of(456));
-		assertViewIdMatching(viewId2, "456", "abcde");
-	}
+			final ViewId viewId2 = viewId.withWindowId(WindowId.of(456));
+			assertViewIdMatching(viewId2, "456", "abcde");
+		}
 
-	@Test
-	public void test_deriveWithWindowId_SameWindowId()
-	{
-		final ViewId viewId = ViewId.ofViewIdString("123-abcde");
-		final ViewId viewId2 = viewId.deriveWithWindowId(WindowId.of(123));
-		assertThat(viewId).isSameAs(viewId2);
+		@Test
+		public void sameWindowId()
+		{
+			final ViewId viewId = ViewId.ofViewIdString("123-abcde");
+			final ViewId viewId2 = viewId.withWindowId(WindowId.of(123));
+			assertThat(viewId).isSameAs(viewId2);
+		}
 	}
 
 	private static final void assertViewIdMatching(final ViewId viewId, final String windowIdStr, final String viewIdPart)
@@ -227,15 +232,5 @@ public class ViewIdTests
 		{
 			throw new AdempiereException("Failed deserializing:\n" + json, e);
 		}
-	}
-
-	@Test
-	public void withWindowId()
-	{
-		final ViewId viewId = ViewId.fromJson("1-999");
-		assertThat(viewId.getWindowId()).isEqualTo(WindowId.of(1));
-
-		assertThat(viewId.withWindowId(WindowId.of(1))).isSameAs(viewId);
-		assertThat(viewId.withWindowId(WindowId.of(2))).isEqualTo(ViewId.fromJson("2-999"));
 	}
 }
