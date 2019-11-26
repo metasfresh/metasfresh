@@ -2,10 +2,19 @@ package de.metas.currency;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -82,6 +91,26 @@ public final class Amount implements Comparable<Amount>
 				throw new AdempiereException("Amounts shall have the same currency: " + Arrays.asList(amounts));
 			}
 		}
+	}
+
+	public static CurrencyCode getCommonCurrencyCodeOfAll(@NonNull final Amount... amounts)
+	{
+		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
+
+		final Iterator<Amount> moneysIterator = Stream.of(amounts)
+				.filter(Predicates.notNull())
+				.iterator();
+		final ImmutableListMultimap<CurrencyCode, Amount> amountsByCurrencyCode = Multimaps.index(moneysIterator, Amount::getCurrencyCode);
+		if (amountsByCurrencyCode.isEmpty())
+		{
+			throw new AdempiereException("The given moneys may not be empty");
+		}
+
+		final ImmutableSet<CurrencyCode> currencyCodes = amountsByCurrencyCode.keySet();
+		Check.errorIf(currencyCodes.size() > 1,
+				"at least two money instances have different currencies: {}", amountsByCurrencyCode);
+
+		return CollectionUtils.singleElement(currencyCodes.asList());
 	}
 
 	@Override
