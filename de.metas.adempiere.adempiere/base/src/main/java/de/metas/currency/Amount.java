@@ -47,6 +47,11 @@ public final class Amount implements Comparable<Amount>
 		return new Amount(value, currencyCode);
 	}
 
+	public static Amount zero(@NonNull final CurrencyCode currencyCode)
+	{
+		return new Amount(BigDecimal.ZERO, currencyCode);
+	}
+
 	@Getter(AccessLevel.NONE)
 	BigDecimal value;
 	CurrencyCode currencyCode;
@@ -56,7 +61,7 @@ public final class Amount implements Comparable<Amount>
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyCode = currencyCode;
 	}
-	
+
 	public BigDecimal getAsBigDecimal()
 	{
 		return value;
@@ -94,5 +99,10 @@ public final class Amount implements Comparable<Amount>
 	public Amount min(@NonNull final Amount other)
 	{
 		return compareTo(other) <= 0 ? this : other;
+	}
+
+	public int signum()
+	{
+		return getAsBigDecimal().signum();
 	}
 }
