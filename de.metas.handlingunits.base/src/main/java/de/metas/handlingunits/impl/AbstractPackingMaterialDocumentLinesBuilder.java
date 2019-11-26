@@ -138,7 +138,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	}
 
 
-	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
+	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final I_M_HU_PackingMaterial packingMaterial)
 	{
 		final ProductId productId = ProductId.ofRepoId(packingMaterial.getM_Product_ID());
 		final ArrayKey pmKey = createPackingMaterialKey(productId);

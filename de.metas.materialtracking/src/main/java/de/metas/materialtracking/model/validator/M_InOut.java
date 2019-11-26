@@ -10,12 +10,12 @@ package de.metas.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,8 +27,8 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.inout.IInOutBL;
@@ -101,13 +101,13 @@ public class M_InOut extends MaterialTrackableDocumentByASIInterceptor<I_M_InOut
 		// fall-back in case the M_Material_Tracking_ID is not (yet) set
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 
-		final I_M_AttributeSetInstance asi = iolExt.getM_AttributeSetInstance();
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(iolExt.getM_AttributeSetInstance_ID());
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asiId);
 		return materialTracking;
 	}
 
 	@Override
-	protected I_M_AttributeSetInstance getM_AttributeSetInstance(final I_M_InOutLine documentLine)
+	protected AttributeSetInstanceId getM_AttributeSetInstance(final I_M_InOutLine documentLine)
 	{
 		// shall not be called because we implement "getMaterialTrackingFromDocumentLineASI"
 		throw new IllegalStateException("shall not be called");

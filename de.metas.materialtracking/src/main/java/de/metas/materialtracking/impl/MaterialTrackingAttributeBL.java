@@ -168,9 +168,11 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		return sb.toString();
 	}
 
-	private I_M_AttributeInstance getMaterialTrackingAttributeInstanceOrNull(final I_M_AttributeSetInstance asi, final boolean createIfNotFound)
+	private I_M_AttributeInstance getMaterialTrackingAttributeInstanceOrNull(
+			@NonNull final AttributeSetInstanceId asiId,
+			final boolean createIfNotFound)
 	{
-		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
+		if (asiId.isNone())
 		{
 			return null;
 		}
@@ -186,10 +188,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
-
 		if (materialTrackingAttributeInstance != null)
 		{
 			return materialTrackingAttributeInstance;
@@ -202,9 +201,8 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		//
 		// Create a new one
-		final I_M_AttributeInstance materialTrackingAttributeInstanceNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
-		materialTrackingAttributeInstanceNew.setAD_Org_ID(asi.getAD_Org_ID());
-		materialTrackingAttributeInstanceNew.setM_AttributeSetInstance(asi);
+		final I_M_AttributeInstance materialTrackingAttributeInstanceNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class);
+		materialTrackingAttributeInstanceNew.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		materialTrackingAttributeInstanceNew.setM_Attribute_ID(materialTrackingAttributeId.get().getRepoId());
 		// NOTE: don't save it
 
@@ -275,7 +273,9 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
 		final boolean createAttributeInstanceIfNotFound = materialTracking != null;
-		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(asi, createAttributeInstanceIfNotFound);
+		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(
+				AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID()),
+				createAttributeInstanceIfNotFound);
 		if (materialTrackingAttributeInstance == null)
 		{
 			return;
@@ -294,14 +294,14 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	}
 
 	@Override
-	public I_M_Material_Tracking getMaterialTrackingOrNull(final I_M_AttributeSetInstance asi)
+	public I_M_Material_Tracking getMaterialTrackingOrNull(@NonNull final AttributeSetInstanceId asiId)
 	{
-		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
+		if (asiId.isNone())
 		{
 			return null;
 		}
 
-		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(asi, false); // createIfNotFound=false
+		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(asiId, false); // createIfNotFound=false
 		if (materialTrackingAttributeInstance == null)
 		{
 			return null;
@@ -358,8 +358,13 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	}
 
 	@Override
-	public boolean hasMaterialTrackingAttribute(final I_M_AttributeSetInstance asi)
+	public boolean hasMaterialTrackingAttribute(@NonNull final AttributeSetInstanceId asiId)
 	{
+		if (asiId.isNone())
+		{
+			return false;
+		}
+
 		final Optional<AttributeId> materialTrackingAttributeId = getMaterialTrackingAttributeId();
 		if (!materialTrackingAttributeId.isPresent())
 		{
@@ -367,8 +372,6 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
 
 		return materialTrackingAttributeInstance != null;

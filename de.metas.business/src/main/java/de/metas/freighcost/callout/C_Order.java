@@ -76,7 +76,6 @@ public class C_Order
 		{
 			return;
 		}
-
 		orderFreightCostService.updateFreightAmt(order);
 	}
 }
