@@ -198,11 +198,21 @@ public interface IFlatrateBL extends ISingletonService
 	void voidIt(I_C_Flatrate_Term term);
 
 	/**
-	 * Check if there are terms for the same that have a time period overlapping with the given term and match with the same product or product category.
+	 * Return {@code true} if the given term (by virtue of its conditions-type) does not define a set of invoice candidates that "belong" to it.
+	 * Examples for ICs that belong to a contract in this sense are e.g. ICs that shall trigger a refund, a commission payment or are empties (e.g. empty pallets).
+	 * In all this cases, a completed term matches a set of ICs and for every given ICs, we need to make sure that max. one term matches it.
 	 *
+	 * Also see {@link #hasOverlappingTerms(I_C_Flatrate_Term)}.
+	 */
+	boolean isAllowedToOverlapWithOtherTerms(I_C_Flatrate_Term term);
+
+	/**
+	 * Check if there are terms for the same bPartner that have a time period overlapping with the given term and match with the same product or product category.
+	 * <p>
+	 * Note that overlapping need to be prevented for those types of terms (like refund contracts or refundable contracts) to which newly created invoice candidates need to be mapped.
+	 * Overlapping is no problem for subscription contracts.
 	 *
-	 * @param term
-	 * @return
+	 * Also see {@link #isAllowedToOverlapWithOtherTerms(I_C_Flatrate_Term)}.
 	 */
 	boolean hasOverlappingTerms(final I_C_Flatrate_Term term);
 

@@ -1553,17 +1553,19 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void completeIfValid(final I_C_Flatrate_Term term)
 	{
-		final boolean hasOverlappingTerms = hasOverlappingTerms(term);
-		if (hasOverlappingTerms)
+		if (!isAllowedToOverlapWithOtherTerms(term))
 		{
+			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
+			if (hasOverlappingTerms)
+			{
 
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
-					Env.getCtx(),
-					MSG_HasOverlapping_Term,
-					new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
-			return;
+				Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
+						Env.getCtx(),
+						MSG_HasOverlapping_Term,
+						new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
+				return;
+			}
 		}
-
 		complete(term);
 	}
 
@@ -1573,6 +1575,18 @@ public class FlatrateBL implements IFlatrateBL
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
 		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
+	}
+
+	@Override
+	public boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
+	{
+		final String typeConditions = term.getType_Conditions();
+
+		// These contract types do not match "other" ICs such as ICs that trigger a commission, or IC that belong to a vendor's empty package (pallette/TU).
+		// Therefore they can overlap without causing us any problems.
+		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions);
+		return allowedToOverlapWithOtherTerms;
 	}
 
 	@Override

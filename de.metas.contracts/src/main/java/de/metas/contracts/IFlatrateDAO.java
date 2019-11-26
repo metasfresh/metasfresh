@@ -155,7 +155,7 @@ public interface IFlatrateDAO extends ISingletonService
 	void updateQtyActualFromDataEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	/**
-	 * Retrieves the flatrate term matching the given invoice candidate or <code>null</code>.<br>
+	 * Retrieves the flatrate term matching the given invoice candidate (or {@code code>}) by using {@link I_C_Flatrate_Matching} Records.<br>
 	 * Basically calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)}, but discards all terms that have <code>IsSimulation=Y</code>.
 	 *
 	 * @return the term or <code>null</code>
