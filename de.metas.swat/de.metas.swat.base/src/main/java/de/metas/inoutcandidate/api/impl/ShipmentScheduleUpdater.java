@@ -354,12 +354,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				if (deliveryRuleIsForced)
 				{
 					sched.setQtyToDeliver(BigDecimal.ZERO);
-					shipmentSchedulePA.save(sched);
 				}
 				else
 				{
 					Check.errorUnless(sched.getQtyToDeliver().signum() == 0, "{} has QtyToDeliver = {} (should be zero)", sched, sched.getQtyToDeliver());
 				}
+				
+				shipmentSchedulePA.save(sched);
+				
 				continue;
 			}
 
