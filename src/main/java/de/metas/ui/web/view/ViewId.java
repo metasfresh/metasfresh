@@ -132,6 +132,18 @@ public final class ViewId
 		this.parts = parts;
 	}
 
+	private ViewId(
+			@NonNull final ViewId from,
+			@NonNull final WindowId windowId)
+	{
+		this.windowId = windowId;
+		this.parts = ImmutableList.<String> builder()
+				.add(windowId.toJson()) // 0
+				.addAll(from.parts.subList(1, from.parts.size()))
+				.build();
+		this.viewId = JOINER.join(this.parts);
+	}
+
 	/**
 	 * @return never {@code null}
 	 */
@@ -213,5 +225,12 @@ public final class ViewId
 		{
 			throw new AdempiereException("" + this + " does not have expected windowId: " + expectedWindowId);
 		}
+	}
+
+	public ViewId withWindowId(final WindowId windowId)
+	{
+		return !this.windowId.equals(windowId)
+				? new ViewId(this, windowId)
+				: this;
 	}
 }
