@@ -116,7 +116,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 		if (foundHUAssignments)
 		{
 			throw new HUException("@HUAssignmentsFoundForModelError@: " + model);
@@ -314,7 +314,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -339,7 +339,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, luAssignment.getVHU_ID()) // 08564 : also check the vhu
 				//
 				.create()
-				.match();
+				.anyMatch();
 
 	}
 
@@ -393,7 +393,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	{
 		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -405,7 +405,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				//
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private final IQueryBuilder<I_M_HU_Assignment> getDerivedTradingUnitAssignmentsQueryBuilder(final Properties ctx,

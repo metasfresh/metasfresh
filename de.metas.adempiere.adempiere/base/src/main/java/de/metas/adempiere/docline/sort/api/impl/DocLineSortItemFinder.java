@@ -84,7 +84,7 @@ import de.metas.util.Services;
 
 		final boolean existsBPDocLineSortConfig = docLineQueryBuilder
 				.create()
-				.match();
+				.anyMatch();
 		if (existsBPDocLineSortConfig)
 		{
 			return docLineQueryBuilder

@@ -189,6 +189,6 @@ public class HUDDOrderDAO implements IHUDDOrderDAO
 		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 }

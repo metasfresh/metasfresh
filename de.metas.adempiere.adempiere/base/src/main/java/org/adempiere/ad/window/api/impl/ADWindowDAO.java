@@ -196,7 +196,7 @@ public class ADWindowDAO implements IADWindowDAO
 		final int AD_Tab_ID = adTab.getAD_Tab_ID();
 		return retrieveUISectionsQuery(ctx, AD_Tab_ID)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private IQueryBuilder<I_AD_UI_Section> retrieveUISectionsQuery(final Properties ctx, final int AD_Tab_ID)

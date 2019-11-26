@@ -99,6 +99,6 @@ public class MaterialTrackingPPOrderDAO implements IMaterialTrackingPPOrderDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, true)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Material_Tracking_ID, materialTrackingRecord.getM_Material_Tracking_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 }

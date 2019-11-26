@@ -123,7 +123,7 @@ public class PhonecallScheduleService
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMax, TimeUtil.asTimestamp(schemaVersionLine.getEndTime()))
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallDate, TimeUtil.asTimestamp(currentPhonecallDate))
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private void createPhonecallSchedule(final PhonecallSchemaVersionLine schemaVersionLine, final LocalDate currentPhonecallDate)

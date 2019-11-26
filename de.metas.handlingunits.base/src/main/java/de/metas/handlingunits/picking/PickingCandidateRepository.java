@@ -329,7 +329,7 @@ public class PickingCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
-				.match();
+				.anyMatch();
 
 	}
 
@@ -340,7 +340,7 @@ public class PickingCandidateRepository
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
 				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	public void inactivateForHUIds(@NonNull final Collection<HuId> huIds)
@@ -457,7 +457,7 @@ public class PickingCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
-				.match();
+				.anyMatch();
 		return isAlreadyPicked;
 	}
 

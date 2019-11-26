@@ -120,7 +120,7 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 		return new TypedSqlQuery<I_AD_TreeBar>(getCtx(), I_AD_TreeBar.class, whereClause, get_TrxName())
 				.setOnlyActiveRecords(true)
 				.setParameters(AD_User_ID, Node_ID)
-				.match();
+				.anyMatch();
 	}
 
 }

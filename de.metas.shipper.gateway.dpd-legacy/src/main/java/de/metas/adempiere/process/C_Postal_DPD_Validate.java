@@ -127,7 +127,7 @@ public class C_Postal_DPD_Validate extends JavaProcess
 
 		boolean found = new Query(Env.getCtx(), I_DPD_Route.Table_Name, SQL_WhereClause_DPD_Route_ByCountryAndPostal, null)
 				.setParameters(countryCode, postal)
-				.match();
+				.anyMatch();
 		log.debug("Found: " + found);
 		return found;
 	}

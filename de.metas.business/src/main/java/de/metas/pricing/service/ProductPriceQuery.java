@@ -124,7 +124,7 @@ public class ProductPriceQuery
 	/** @return true if there is at least one product price that matches */
 	boolean matches()
 	{
-		return toQuery().match();
+		return toQuery().anyMatch();
 	}
 
 	public <T extends I_M_ProductPrice> T retrieveStrictDefault(@NonNull final Class<T> type)

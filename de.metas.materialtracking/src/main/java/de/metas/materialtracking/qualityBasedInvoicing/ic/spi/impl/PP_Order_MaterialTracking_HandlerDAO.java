@@ -116,7 +116,7 @@ public class PP_Order_MaterialTracking_HandlerDAO
 				.filter(invoiceableFilter)
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.create()
-				.match();
+				.anyMatch();
 
 	}
 

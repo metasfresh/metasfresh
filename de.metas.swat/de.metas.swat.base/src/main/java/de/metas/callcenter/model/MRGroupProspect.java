@@ -96,7 +96,7 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		;
 		boolean match = new Query(ctx, Table_Name, whereClause, trxName)
 		.setParameters(new Object[]{R_Group_ID, C_BPartner_ID})
-		.match();
+		.anyMatch();
 		return match;
 	}
 	
