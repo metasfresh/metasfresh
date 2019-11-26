@@ -489,11 +489,13 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public List<PriceListVersionId> getPriceListVersionIdsUpToBase(@NonNull final PriceListVersionId startPriceListVersionId)
+	public List<PriceListVersionId> getPriceListVersionIdsUpToBase(@NonNull final PriceListVersionId startPriceListVersionId, @NonNull final ZonedDateTime date)
 	{
 		final Object[] arr = DB.getSQLValueArrayEx(ITrx.TRXNAME_None,
-				"SELECT getPriceListVersionsUpToBase(?)",
-				startPriceListVersionId);
+				"SELECT getPriceListVersionsUpToBase_ForPricelistVersion(?, ?)",
+				startPriceListVersionId,
+				date
+				);
 		if (arr == null || arr.length == 0)
 		{
 			logger.warn("Got null/empty price list version array for {}. Returning same price list version.", startPriceListVersionId);

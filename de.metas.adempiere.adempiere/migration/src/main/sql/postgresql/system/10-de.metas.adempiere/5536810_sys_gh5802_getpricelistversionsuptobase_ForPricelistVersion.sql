@@ -1,29 +1,10 @@
-drop function if exists getPriceListVersionsUpToBase
-(
-	/* p_Start_PriceList_Version_ID */ numeric
-);
-drop function if exists getPriceListVersionsUpToBase
-(
-	/* p_M_PriceList_ID */ numeric,
-    /* p_Date */ timestamp with time zone
-);
+drop function if exists getpricelistversionsuptobase(numeric) ;
 
-drop function if exists getpricelistversionsuptobase_ForPricelistVersion
-(
-	/* p_start_pricelist_version_id */  numeric,
-	/* p_datePromised */  timestamp with time zone
-);
-
-create or replace function getpricelistversionsuptobase_ForPricelistVersion
-(
-	p_start_pricelist_version_id numeric, 
-	p_datePromised timestamp with time zone
-)
-returns numeric[]
-as
+CREATE OR REPLACE FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(p_start_pricelist_version_id numeric, p_datePromised timestamp with time zone)
+  RETURNS numeric[] AS
 $BODY$
     with recursive priceListVersion as (
-        select
+select
             1 as SeqNo,
             plv1.M_PriceList_Version_ID,
             basePLV1.M_PriceList_Version_ID as basePLVID,
@@ -40,18 +21,19 @@ $BODY$
 									and M_Pricelist_ID = basePL1.M_Pricelist_ID
 									and validFrom <= p_datePromised)
         where
+			
             plv1. M_PriceList_Version_ID=p_Start_PriceList_Version_ID
             and plv1.IsActive='Y'
         --
         union all
         --
         select
-			plv2.SeqNo + 1 as SeqNo,
-			plv2.M_PriceList_Version_ID,
-			basePLV2.M_PriceList_Version_ID as basePLVID,
-			plv2.M_Pricelist_ID,
+            plv2.SeqNo + 1 as SeqNo,
+            plv2.M_PriceList_Version_ID,
+            basePLV2.M_PriceList_Version_ID as basePLVID,
+            plv2.M_Pricelist_ID,
 			plv2.validFrom,
-			plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
+            (plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
         from priceListVersion as plv2
         inner join M_Pricelist pl2 on plv2.M_Pricelist_ID = pl2.M_Pricelist_ID
 		inner join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
@@ -62,15 +44,20 @@ $BODY$
 									and M_Pricelist_ID = basePL2.M_Pricelist_ID
 									and validFrom <= p_datePromised)
         where
+			
             basePLV2.IsActive='Y'
             and NOT plv2.path @> ARRAY[basePLV2.M_PriceList_Version_ID] -- stop recursing if we already saw the current base-plv's M_PriceList_Version_ID
     )
     select array_agg(M_PriceList_Version_ID order by SeqNo) from priceListVersion;
 $BODY$
-LANGUAGE SQL
-;
-COMMENT ON FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(numeric, timestamp with time zone) 
-IS 'Gets an array starting with your given price list version and the pricing date and then recursively all base price list versions to fallback for pricing. Robost against loops.';
+  LANGUAGE sql VOLATILE
+  COST 100;
+ALTER FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(numeric, timestamp with time zone)
+  OWNER TO metasfresh;
+COMMENT ON FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(numeric, timestamp with time zone) IS 'Gets an array starting with your given price list version and then recursively all base price list versions to fallback for pricing. Robost against loops.';
+
+
+
 
 
 create or replace function getPriceListVersionsUpToBase
@@ -100,7 +87,6 @@ $BODY$
 $BODY$
 LANGUAGE SQL
 ;
-
 
 
 
