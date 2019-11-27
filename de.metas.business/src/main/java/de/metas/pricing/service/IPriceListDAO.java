@@ -190,4 +190,6 @@ public interface IPriceListDAO extends ISingletonService
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
+
+	String createPLVName(PriceListId pricelistId);
 }

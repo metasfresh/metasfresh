@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -78,6 +79,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class PriceListDAO implements IPriceListDAO
@@ -494,8 +496,7 @@ public class PriceListDAO implements IPriceListDAO
 		final Object[] arr = DB.getSQLValueArrayEx(ITrx.TRXNAME_None,
 				"SELECT getPriceListVersionsUpToBase_ForPricelistVersion(?, ?)",
 				startPriceListVersionId,
-				date
-				);
+				date);
 		if (arr == null || arr.length == 0)
 		{
 			logger.warn("Got null/empty price list version array for {}. Returning same price list version.", startPriceListVersionId);
@@ -697,6 +698,11 @@ public class PriceListDAO implements IPriceListDAO
 		newCustomerPLV.setValidFrom(newBasePLV.getValidFrom());
 		newCustomerPLV.setM_DiscountSchema_ID(newBasePLV.getM_DiscountSchema_ID());
 		newCustomerPLV.setM_Pricelist_Version_Base_ID(oldCustomerPLV.getM_PriceList_Version_ID());
+
+		final String plvName = createPLVName(PriceListId.ofRepoId(oldCustomerPLV.getM_PriceList_ID()));
+
+		newCustomerPLV.setName(plvName);
+
 		saveRecord(newCustomerPLV);
 
 		final PriceListVersionId newCustomerPLVId = PriceListVersionId.ofRepoId(newCustomerPLV.getM_PriceList_Version_ID());
@@ -706,6 +712,26 @@ public class PriceListDAO implements IPriceListDAO
 		cloneASIs(newCustomerPLVId);
 
 		save(newCustomerPLV);
+
+	}
+
+	@Override
+	public String createPLVName(final PriceListId pricelistId)
+	{
+		final LocalDate today = SystemTime.asLocalDate();
+		final String formattedDate = today.format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+		final I_M_PriceList pricelist = getById(pricelistId);
+
+		final String pricelsitName = pricelist.getName();
+
+		final String plvName = new StringBuilder()
+				.append(pricelsitName)
+				.append(" ")
+				.append(formattedDate)
+				.toString();
+
+		return plvName;
 
 	}
 
