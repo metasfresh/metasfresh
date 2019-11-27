@@ -13,24 +13,22 @@ package de.metas.banking.payment.paymentallocation.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -39,9 +37,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -53,6 +49,10 @@ import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.ListUtils;
@@ -76,14 +76,13 @@ public class PaymentAllocationBuilder
 	// private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 	// Parameters
-	private Properties _ctx;
-	private int _adOrgId;
-	private int _currencyId;
-	// tasl 09643
+	private OrgId _adOrgId;
+	private CurrencyId _currencyId;
+	// task 09643
 	// separate transaction date from the accounting date
-	private Date _dateTrx;
-	private Date _dateAcct;
-	private ImmutableList<IPayableDocument> _payableDocuments = ImmutableList.of();
+	private LocalDate _dateTrx;
+	private LocalDate _dateAcct;
+	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean _allowOnlyOneVendorDoc = true;
 
@@ -93,42 +92,24 @@ public class PaymentAllocationBuilder
 
 	private PaymentAllocationBuilder()
 	{
-		super();
 	}
 
 	/**
 	 * @return result message (to be displayed in UI status bar)
 	 * @throws PaymentAllocationException in case of any error
 	 */
-	public String build()
+	public void build()
 	{
 		markAsBuilt();
 
 		try
 		{
-			trxManager.runInNewTrx(new TrxRunnableAdapter()
-			{
-				@Override
-				public void run(final String localTrxName)
-				{
-					buildInTrx();
-				}
-			});
+			trxManager.runInNewTrx(this::buildInTrx);
 		}
 		catch (Exception e)
 		{
-			final PaymentAllocationException pae = PaymentAllocationException.wrapToPaymentAllocationExceptionIfNeeded(e);
-			throw pae;
+			throw PaymentAllocationException.wrapToPaymentAllocationExceptionIfNeeded(e);
 		}
-
-		return getSummary();
-	}
-
-	private String getSummary()
-	{
-		// Check.assumeNotNull(_allocationHdr, "_allocationHdr not null");
-		// return docActionBL.getSummary(_allocationHdr);
-		return ""; // TODO
 	}
 
 	private final void buildInTrx()
@@ -161,24 +142,22 @@ public class PaymentAllocationBuilder
 	 */
 	private final void createAndCompleteAllocation(final AllocationLineCandidate line)
 	{
-		final int adOrgId = getAD_Org_ID();
-		final int currencyId = getC_Currency_ID();
+		final OrgId adOrgId = getOrgId();
+		final CurrencyId currencyId = getCurrencyId();
 		final Timestamp dateTrx = TimeUtil.asTimestamp(getDateTrx());
 		final Timestamp dateAcct = TimeUtil.asTimestamp(getDateAcct());
 
-		final IContextAware context = new PlainContextAware(getCtx(), ITrx.TRXNAME_ThreadInherited);
-		final String description = Env.getContext(getCtx(), "#AD_User_Name");
+		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx();
 		final IAllocationBuilder allocationBuilder = allocationBL.newBuilder(context)
-				.setAD_Org_ID(adOrgId)
-				.setC_Currency_ID(currencyId)
+				.setAD_Org_ID(adOrgId.getRepoId())
+				.setC_Currency_ID(currencyId.getRepoId())
 				.setDateAcct(dateAcct)
 				.setDateTrx(dateTrx)
-				.setManual(true) // flag it as manually created by user
-				.setDescription(description);
+				.setManual(true); // flag it as manually created by user
 
 		final IAllocationLineBuilder payableLineBuilder = allocationBuilder.addLine()
-				.setAD_Org_ID(adOrgId)
-				.setC_BPartner_ID(line.getC_BPartner_ID())
+				.setAD_Org_ID(adOrgId.getRepoId())
+				.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
 				//
 				// Amounts
 				.setAmount(line.getAmount())
@@ -187,9 +166,9 @@ public class PaymentAllocationBuilder
 				.setOverUnderAmt(line.getOverUnderAmt())
 				.setSkipIfAllAmountsAreZero();
 
-		final ITableRecordReference payableDocRef = line.getPayableDocument();
+		final ITableRecordReference payableDocRef = line.getPayableDocumentRef();
 		final String payableDocTableName = payableDocRef.getTableName();
-		final ITableRecordReference paymentDocRef = line.getPaymentDocument();
+		final ITableRecordReference paymentDocRef = line.getPaymentDocumentRef();
 		final String paymentDocTableName = paymentDocRef == null ? null : paymentDocRef.getTableName();
 
 		//
@@ -208,8 +187,8 @@ public class PaymentAllocationBuilder
 
 			// Credit memo line
 			allocationBuilder.addLine()
-					.setAD_Org_ID(adOrgId)
-					.setC_BPartner_ID(line.getC_BPartner_ID())
+					.setAD_Org_ID(adOrgId.getRepoId())
+					.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
 					//
 					// Amounts
 					.setAmount(line.getAmount().negate())
@@ -233,8 +212,8 @@ public class PaymentAllocationBuilder
 			payableLineBuilder.setC_Payment_ID(payableDocRef.getRecord_ID());
 			// Incoming payment line
 			allocationBuilder.addLine()
-					.setAD_Org_ID(adOrgId)
-					.setC_BPartner_ID(line.getC_BPartner_ID())
+					.setAD_Org_ID(adOrgId.getRepoId())
+					.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
 					//
 					// Amounts
 					.setAmount(line.getAmount().negate())
@@ -252,8 +231,7 @@ public class PaymentAllocationBuilder
 
 		//
 		final List<I_C_AllocationLine> lines = allocationBuilder.getC_AllocationLines();
-		setCounter_AllocationLine_ID(lines);
-
+		updateCounter_AllocationLine_ID(lines);
 	}
 
 	/**
@@ -262,7 +240,7 @@ public class PaymentAllocationBuilder
 	 *
 	 * @param lines
 	 */
-	private void setCounter_AllocationLine_ID(List<I_C_AllocationLine> lines)
+	private static void updateCounter_AllocationLine_ID(List<I_C_AllocationLine> lines)
 	{
 		if (lines.size() != 2)
 		{
@@ -290,7 +268,7 @@ public class PaymentAllocationBuilder
 	{
 		//
 		// Make sure we have something to allocate
-		final List<IPayableDocument> payableDocuments = getPayableDocuments();
+		final List<PayableDocument> payableDocuments = getPayableDocuments();
 		final List<IPaymentDocument> paymentDocuments = getPaymentDocuments();
 		if (payableDocuments.isEmpty() && paymentDocuments.isEmpty())
 		{
@@ -336,7 +314,7 @@ public class PaymentAllocationBuilder
 	 * @param payableDocuments
 	 * @param paymentDocuments
 	 */
-	private void assertOnlyOneVendorDocType(final List<IPayableDocument> payableDocuments,
+	private void assertOnlyOneVendorDocType(final List<PayableDocument> payableDocuments,
 			final List<IPaymentDocument> paymentDocuments)
 	{
 		if (!isAllowOnlyOneVendorDoc())
@@ -357,7 +335,7 @@ public class PaymentAllocationBuilder
 		//
 		// filter invoices and credit memos
 		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
-		final List<IPayableDocument> payableVendorDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
+		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
 			if (payable.isCreditMemo() && payable.isVendorDocument())
 			{
 				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
@@ -389,7 +367,7 @@ public class PaymentAllocationBuilder
 	 * @param paymentDocuments
 	 * @return created allocation candidates
 	 */
-	private final List<AllocationLineCandidate> createAllocationLineCandidates(final List<IPayableDocument> payableDocuments, final List<IPaymentDocument> paymentDocuments)
+	private final List<AllocationLineCandidate> createAllocationLineCandidates(final List<PayableDocument> payableDocuments, final List<IPaymentDocument> paymentDocuments)
 	{
 		if (payableDocuments.isEmpty() || paymentDocuments.isEmpty())
 		{
@@ -402,7 +380,7 @@ public class PaymentAllocationBuilder
 		// First, loop through all Invoices, then, in every single Invoice loop, loop through all Payments.
 		// Allocate the value of every Payment with the Invoice, until the Invoice value is reached.
 		// In most cases this should only be one Payment.
-		for (final IPayableDocument payable : payableDocuments)
+		for (final PayableDocument payable : payableDocuments)
 		{
 			for (final IPaymentDocument payment : paymentDocuments)
 			{
@@ -426,41 +404,39 @@ public class PaymentAllocationBuilder
 
 				//
 				// Calculate the amounts to allocate:
-				final BigDecimal amountToAllocate = calculateAmountToAllocate(payable, payment);
-				final BigDecimal payableDiscountAmtToAllocate = payable.getDiscountAmtToAllocate();
-				final BigDecimal payableWriteOffAmtToAllocate = payable.getWriteOffAmtToAllocate();
-				final BigDecimal payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amountToAllocate, payableDiscountAmtToAllocate, payableWriteOffAmtToAllocate);
-				final BigDecimal paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(amountToAllocate);
+				final AllocationAmounts payableAmountsToAllocate = calculateAmountToAllocate(payable, payment);
+				final Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(payableAmountsToAllocate);
+				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(payableAmountsToAllocate.getPayAmt());
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
-						.setC_BPartner_ID(payable.getC_BPartner_ID())
+						.bpartnerId(payable.getBpartnerId())
 						//
-						.setPayableDocument(payable.getReference())
-						.setPaymentDocument(payment.getReference())
+						.payableDocumentRef(payable.getReference())
+						.paymentDocumentRef(payment.getReference())
 						// Amounts:
-						.setAmount(amountToAllocate)
-						.setDiscountAmt(payableDiscountAmtToAllocate)
-						.setWriteOffAmt(payableWriteOffAmtToAllocate)
-						.setOverUnderAmt(payableOverUnderAmt)
-						.setPaymentOverUnderAmt(paymentOverUnderAmt)
+						.amount(payableAmountsToAllocate.getPayAmt().toBigDecimal())
+						.discountAmt(payableAmountsToAllocate.getDiscountAmt().toBigDecimal())
+						.writeOffAmt(payableAmountsToAllocate.getWriteOffAmt().toBigDecimal())
+						.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
+						.paymentOverUnderAmt(paymentOverUnderAmt.toBigDecimal())
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
 
 				// Update how much was allocated on current invoice and payment.
-				payable.addAllocatedAmounts(amountToAllocate, payableDiscountAmtToAllocate, payableWriteOffAmtToAllocate);
-				payment.addAllocatedAmt(amountToAllocate);
+				payable.addAllocatedAmounts(payableAmountsToAllocate);
+				payment.addAllocatedAmt(payableAmountsToAllocate.getPayAmt());
 			}	// loop through payments for invoice
 		}   // invoice loop
 
 		return allocationLineCandidates;
 	}
 
-	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<IPayableDocument> payableDocuments)
+	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<PayableDocument> payableDocuments)
 	{
 		final List<IPaymentDocument> paymentDocuments_CreditMemos = new ArrayList<>();
-		final List<IPayableDocument> payableDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
+		final List<PayableDocument> payableDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
 			if (payable.isCreditMemo())
 			{
 				paymentDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
@@ -472,10 +448,10 @@ public class PaymentAllocationBuilder
 		return createAllocationLineCandidates(payableDocuments_NoCreditMemos, paymentDocuments_CreditMemos);
 	}
 
-	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<IPayableDocument> payableDocuments)
+	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<PayableDocument> payableDocuments)
 	{
 		final List<IPaymentDocument> paymentDocuments_PurchaseInvoices = new ArrayList<>();
-		final List<IPayableDocument> payableDocuments_SaleInvoices = ListUtils.copyAndFilter(payableDocuments, payable -> {
+		final List<PayableDocument> payableDocuments_SaleInvoices = ListUtils.copyAndFilter(payableDocuments, payable -> {
 			// do not support credit memo
 			if (payable.isCreditMemo())
 			{
@@ -542,23 +518,23 @@ public class PaymentAllocationBuilder
 					continue;
 				}
 
-				final BigDecimal paymentOut_amtToAllocate = paymentOut.getAmountToAllocate(); // => negative
-				final BigDecimal paymentIn_amtToAllocate = paymentIn.getAmountToAllocate().negate(); // => negative
-				final BigDecimal amtToAllocate = paymentIn_amtToAllocate.max(paymentOut_amtToAllocate);
+				final Money paymentOut_amtToAllocate = paymentOut.getAmountToAllocate(); // => negative
+				final Money paymentIn_amtToAllocate = paymentIn.getAmountToAllocate().negate(); // => negative
+				final Money amtToAllocate = paymentIn_amtToAllocate.max(paymentOut_amtToAllocate);
 
-				final BigDecimal payableOverUnderAmt = paymentOut.calculateProjectedOverUnderAmt(amtToAllocate);
-				final BigDecimal paymentOverUnderAmt = paymentIn.calculateProjectedOverUnderAmt(amtToAllocate.negate()).negate();
+				final Money payableOverUnderAmt = paymentOut.calculateProjectedOverUnderAmt(amtToAllocate);
+				final Money paymentOverUnderAmt = paymentIn.calculateProjectedOverUnderAmt(amtToAllocate.negate()).negate();
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
-						.setC_BPartner_ID(paymentOut.getC_BPartner_ID())
+						.bpartnerId(paymentOut.getBpartnerId())
 						//
-						.setPayableDocument(paymentOut.getReference())
-						.setPaymentDocument(paymentIn.getReference())
+						.payableDocumentRef(paymentOut.getReference())
+						.paymentDocumentRef(paymentIn.getReference())
 						// Amounts:
-						.setAmount(amtToAllocate)
-						.setOverUnderAmt(payableOverUnderAmt)
-						.setPaymentOverUnderAmt(paymentOverUnderAmt)
+						.amount(amtToAllocate.toBigDecimal())
+						.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
+						.paymentOverUnderAmt(paymentOverUnderAmt.toBigDecimal())
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
@@ -578,7 +554,7 @@ public class PaymentAllocationBuilder
 	 * @param payableDocuments
 	 * @return created allocation candidates.
 	 */
-	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(List<IPayableDocument> payableDocuments)
+	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(List<PayableDocument> payableDocuments)
 	{
 		if (payableDocuments.isEmpty())
 		{
@@ -586,33 +562,31 @@ public class PaymentAllocationBuilder
 		}
 
 		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
-		for (final IPayableDocument payable : payableDocuments)
+		for (final PayableDocument payable : payableDocuments)
 		{
-			final BigDecimal amtToAllocated = BigDecimal.ZERO;
-			final BigDecimal discountAmt = payable.getDiscountAmtToAllocate();
-			final BigDecimal writeOffAmt = payable.getWriteOffAmtToAllocate();
-			if (discountAmt.signum() == 0 && writeOffAmt.signum() == 0)
+			final AllocationAmounts amountsToAllocate = payable.getAmountsToAllocate().withZeroPayAmt();
+			if (amountsToAllocate.isZero())
 			{
 				continue;
 			}
 
-			BigDecimal payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amtToAllocated, discountAmt, writeOffAmt);
+			Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amountsToAllocate);
 			final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
-					.setC_BPartner_ID(payable.getC_BPartner_ID())
+					.bpartnerId(payable.getBpartnerId())
 					//
-					.setPayableDocument(payable.getReference())
-					.setPaymentDocument(null) // nop
+					.payableDocumentRef(payable.getReference())
+					.paymentDocumentRef(null) // nop
 					// Amounts:
-					.setAmount(amtToAllocated)
-					.setDiscountAmt(discountAmt)
-					.setWriteOffAmt(writeOffAmt)
-					.setOverUnderAmt(payableOverUnderAmt)
-					.setPaymentOverUnderAmt(BigDecimal.ZERO)
+					.amount(amountsToAllocate.getPayAmt().toBigDecimal())
+					.discountAmt(amountsToAllocate.getDiscountAmt().toBigDecimal())
+					.writeOffAmt(amountsToAllocate.getWriteOffAmt().toBigDecimal())
+					.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
+					.paymentOverUnderAmt(BigDecimal.ZERO)
 					//
 					.build();
 			allocationLineCandidates.add(allocationLine);
 
-			payable.addAllocatedAmounts(amtToAllocated, discountAmt, writeOffAmt);
+			payable.addAllocatedAmounts(amountsToAllocate);
 		}
 
 		return allocationLineCandidates;
@@ -626,8 +600,8 @@ public class PaymentAllocationBuilder
 		//
 		// Check payables (invoices, prepaid orders etc)
 		{
-			final List<IPayableDocument> payableDocumentsNotFullyAllocated = new ArrayList<>();
-			for (final IPayableDocument payable : getPayableDocuments())
+			final List<PayableDocument> payableDocumentsNotFullyAllocated = new ArrayList<>();
+			for (final PayableDocument payable : getPayableDocuments())
 			{
 				// Skip fully allocated invoices
 				if (payable.isFullyAllocated())
@@ -671,7 +645,7 @@ public class PaymentAllocationBuilder
 	 * @param payment
 	 * @return true if the invoice and payment are compatible and we could try to do an allocation
 	 */
-	private final boolean isCompatible(final IPayableDocument payable, final IPaymentDocument payment)
+	private final boolean isCompatible(final PayableDocument payable, final IPaymentDocument payment)
 	{
 		// Given payment does not support payable's type
 		if (!payment.canPay(payable))
@@ -681,7 +655,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Check invoice-payment compatibility: same sign
-		final boolean positiveInvoiceAmtToAllocate = payable.getAmountToAllocateInitial().signum() >= 0;
+		final boolean positiveInvoiceAmtToAllocate = payable.getAmountsToAllocateInitial().getPayAmt().signum() >= 0;
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positiveInvoiceAmtToAllocate != positivePaymentAmtToAllocate)
 		{
@@ -702,22 +676,24 @@ public class PaymentAllocationBuilder
 	 * @param payment
 	 * @return how much we maximum allocate between given invoice and given payment.
 	 */
-	private final BigDecimal calculateAmountToAllocate(final IPayableDocument invoice, final IPaymentDocument payment)
+	private final AllocationAmounts calculateAmountToAllocate(final PayableDocument invoice, final IPaymentDocument payment)
 	{
-		final BigDecimal invoiceAmountToAllocate = invoice.getAmountToAllocate();
-		final BigDecimal paymentAmountToAllocate = payment.getAmountToAllocate();
+		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
+		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
+		final Money paymentAmountToAllocate = payment.getAmountToAllocate();
 
-		if (invoiceAmountToAllocate.signum() >= 0)
+		if (invoicePayAmtToAllocate.signum() >= 0)
 		{
 			// Invoice(+), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
-				return invoiceAmountToAllocate.min(paymentAmountToAllocate);
+				final Money payAmt = invoicePayAmtToAllocate.min(paymentAmountToAllocate);
+				return invoiceAmountsToAllocate.withPayAmt(payAmt);
 			}
 			// Invoice(+), Payment(-)
 			else
 			{
-				return BigDecimal.ZERO;
+				return invoiceAmountsToAllocate.withZeroPayAmt();
 			}
 		}
 		else
@@ -725,12 +701,13 @@ public class PaymentAllocationBuilder
 			// Invoice(-), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
-				return BigDecimal.ZERO;
+				return invoiceAmountsToAllocate.withZeroPayAmt();
 			}
 			// Invoice(-), Payment(-)
 			else
 			{
-				return invoiceAmountToAllocate.max(paymentAmountToAllocate);
+				final Money payAmt = invoicePayAmtToAllocate.max(paymentAmountToAllocate);
+				return invoiceAmountsToAllocate.withPayAmt(payAmt);
 			}
 		}
 	}
@@ -746,124 +723,87 @@ public class PaymentAllocationBuilder
 		Check.assume(!_built, "Not already built");
 	}
 
-	private final Properties getCtx()
-	{
-		Check.assumeNotNull(_ctx, "ctx not null");
-		return _ctx;
-	}
-
-	public PaymentAllocationBuilder setCtx(final Properties ctx)
-	{
-		assertNotBuilt();
-		_ctx = ctx;
-		return this;
-	}
-
-	public PaymentAllocationBuilder setAD_Org_ID(final int adOrgId)
+	public PaymentAllocationBuilder orgId(final OrgId adOrgId)
 	{
 		assertNotBuilt();
 		_adOrgId = adOrgId;
 		return this;
 	}
 
-	private final int getAD_Org_ID()
+	private final OrgId getOrgId()
 	{
-		if (_adOrgId <= 0)
+		if (_adOrgId == null || !_adOrgId.isRegular())
 		{
 			throw new PaymentAllocationException("@Org0NotAllowed@");
 		}
 		return _adOrgId;
 	}
 
-	private final int getC_Currency_ID()
+	private final CurrencyId getCurrencyId()
 	{
-		Check.assume(_currencyId > 0, "currencyId > 0");
+		Check.assumeNotNull(_currencyId, "currencyId shall be set");
 		return _currencyId;
 	}
 
 	/** Sets the currency of all invoices and payments set. */
-	public PaymentAllocationBuilder setC_Currency_ID(final int currencyId)
+	public PaymentAllocationBuilder currencyId(final CurrencyId currencyId)
 	{
 		assertNotBuilt();
 		_currencyId = currencyId;
 		return this;
 	}
 
-	private final Date getDateTrx()
+	private final LocalDate getDateTrx()
 	{
 		Check.assumeNotNull(_dateTrx, "date not null");
 		return _dateTrx;
 	}
 
-	public PaymentAllocationBuilder setDateTrx(final Date dateTrx)
+	public PaymentAllocationBuilder dateTrx(final LocalDate dateTrx)
 	{
 		assertNotBuilt();
 		_dateTrx = dateTrx;
 		return this;
 	}
 
-	private final Date getDateAcct()
+	private final LocalDate getDateAcct()
 	{
 		Check.assumeNotNull(_dateAcct, "date not null");
 		return _dateAcct;
 	}
 
-	public PaymentAllocationBuilder setDateAcct(final Date dateAcct)
+	public PaymentAllocationBuilder dateAcct(final LocalDate dateAcct)
 	{
 		assertNotBuilt();
 		_dateAcct = dateAcct;
 		return this;
 	}
 
-	public boolean isAllowOnlyOneVendorDoc()
+	private boolean isAllowOnlyOneVendorDoc()
 	{
 		return _allowOnlyOneVendorDoc;
 	}
 
-	public PaymentAllocationBuilder setAllowOnlyOneVendorDoc(boolean AllowOnlyOneVendorDoc)
+	public PaymentAllocationBuilder allowOnlyOneVendorDoc(boolean AllowOnlyOneVendorDoc)
 	{
 		assertNotBuilt();
 		this._allowOnlyOneVendorDoc = AllowOnlyOneVendorDoc;
 		return this;
 	}
 
-	public PaymentAllocationBuilder setPayableDocuments(final Collection<IPayableDocument> payableDocuments)
+	public PaymentAllocationBuilder payableDocuments(final Collection<PayableDocument> payableDocuments)
 	{
 		this._payableDocuments = ImmutableList.copyOf(payableDocuments);
 		return this;
 	}
 
-	public PaymentAllocationBuilder setPaymentDocuments(final Collection<IPaymentDocument> paymentDocuments)
+	public PaymentAllocationBuilder paymentDocuments(final Collection<IPaymentDocument> paymentDocuments)
 	{
 		this._paymentDocuments = ImmutableList.copyOf(paymentDocuments);
 		return this;
 	}
 
-	// /** Sets invoices to allocate */
-	// public PaymentAllocationBuilder setInvoicesAndPayments(final Collection<IInvoiceRow> invoiceRows, final Collection<IPaymentRow> paymentRows)
-	// {
-	// assertNotBuilt();
-	//
-	// final List<IPayableDocument> payableDocuments = new ArrayList<>();
-	// final List<IPaymentDocument> paymentDocuments = new ArrayList<>();
-	//
-	// for (final IInvoiceRow invoiceRow : invoiceRows)
-	// {
-	// payableDocuments.add(invoiceRow.copyAsPayableDocument());
-	// }
-	//
-	// for (final IPaymentRow paymentRow : paymentRows)
-	// {
-	// paymentDocuments.add(paymentRow.copyAsPaymentDocument());
-	// }
-	//
-	// this._payableDocuments = ImmutableList.copyOf(payableDocuments);
-	// this._paymentDocuments = ImmutableList.copyOf(paymentDocuments);
-	//
-	// return this;
-	// }
-
-	private final List<IPayableDocument> getPayableDocuments()
+	private final List<PayableDocument> getPayableDocuments()
 	{
 		return _payableDocuments;
 	}

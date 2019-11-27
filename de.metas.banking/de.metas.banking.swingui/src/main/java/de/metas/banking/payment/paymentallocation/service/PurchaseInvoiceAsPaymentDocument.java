@@ -1,51 +1,31 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-/*
- * #%L
- * de.metas.banking.swingui
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-import java.math.BigDecimal;
-
-import org.adempiere.util.lang.ITableRecordReference;
-
-import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
+import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 {
-	public static final PurchaseInvoiceAsPaymentDocument wrap(final IPayableDocument creditMemoPayableDoc)
+	public static final PurchaseInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
 	{
 		return new PurchaseInvoiceAsPaymentDocument(creditMemoPayableDoc);
 	}
 
-	private final IPayableDocument purchaseInvoicePayableDoc;
+	private final PayableDocument purchaseInvoicePayableDoc;
 
-	private PurchaseInvoiceAsPaymentDocument(final IPayableDocument purchasePayableDoc)
+	private PurchaseInvoiceAsPaymentDocument(@NonNull final PayableDocument purchasePayableDoc)
 	{
-		super();
-		Check.assumeNotNull(purchasePayableDoc, "purchasePayableDoc not null");
 		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {}", purchasePayableDoc);
 		Check.assume(purchasePayableDoc.isVendorDocument(), "is vendor document: {}", purchasePayableDoc);
 		this.purchaseInvoicePayableDoc = purchasePayableDoc;
@@ -58,9 +38,9 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public BPartnerId getBpartnerId()
 	{
-		return purchaseInvoicePayableDoc.getC_BPartner_ID();
+		return purchaseInvoicePayableDoc.getBpartnerId();
 	}
 
 	@Override
@@ -70,27 +50,27 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public ITableRecordReference getReference()
+	public TableRecordReference getReference()
 	{
 		return purchaseInvoicePayableDoc.getReference();
 	}
 
 	@Override
-	public BigDecimal getAmountToAllocateInitial()
+	public Money getAmountToAllocateInitial()
 	{
-		return purchaseInvoicePayableDoc.getAmountToAllocateInitial().negate();
+		return purchaseInvoicePayableDoc.getAmountsToAllocateInitial().getPayAmt().negate();
 	}
 
 	@Override
-	public BigDecimal getAmountToAllocate()
+	public Money getAmountToAllocate()
 	{
-		return purchaseInvoicePayableDoc.getAmountToAllocate().negate();
+		return purchaseInvoicePayableDoc.getAmountsToAllocate().getPayAmt().negate();
 	}
 
 	@Override
-	public void addAllocatedAmt(BigDecimal allocatedAmtToAdd)
+	public void addAllocatedAmt(Money allocatedAmtToAdd)
 	{
-		purchaseInvoicePayableDoc.addAllocatedAmounts(allocatedAmtToAdd.negate(), BigDecimal.ZERO, BigDecimal.ZERO);
+		purchaseInvoicePayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedAmtToAdd.negate()));
 	}
 
 	@Override
@@ -100,13 +80,13 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public BigDecimal calculateProjectedOverUnderAmt(BigDecimal amountToAllocate)
+	public Money calculateProjectedOverUnderAmt(Money amountToAllocate)
 	{
-		return purchaseInvoicePayableDoc.calculateProjectedOverUnderAmt(amountToAllocate.negate(), BigDecimal.ZERO, BigDecimal.ZERO);
+		return purchaseInvoicePayableDoc.calculateProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
 	}
 
 	@Override
-	public boolean canPay(IPayableDocument payable)
+	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		if (payable.getType() != PayableDocumentType.Invoice)
 		{
@@ -124,7 +104,7 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 		}
 
 		// if currency differs, do not allow payment
-		if (payable.getC_Currency_ID() != purchaseInvoicePayableDoc.getC_Currency_ID())
+		if (!CurrencyId.equals(payable.getCurrencyId(), purchaseInvoicePayableDoc.getCurrencyId()))
 		{
 			return false;
 		}
@@ -143,12 +123,10 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	{
 		return purchaseInvoicePayableDoc.isVendorDocument();
 	}
-	
-	@Override
-	public int getC_Currency_ID()
-	{
-		return purchaseInvoicePayableDoc.getC_Currency_ID();
-	}
-	
 
+	@Override
+	public CurrencyId getCurrencyId()
+	{
+		return purchaseInvoicePayableDoc.getCurrencyId();
+	}
 }
