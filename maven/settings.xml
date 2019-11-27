@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Licensed under http://www.apache.org/licenses/LICENSE-2.0 -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <!-- localRepository
+     The path to the local repository maven will use to store artifacts.
+       Default: ~/.m2/repository
+       If you have more than one local (eclipse-)workspace, it might make sense to have one local repo per-workspace, to avoid inconsistencies.
+      <localRepository>${user.home}\.m2\mvn-eclipse-ws-1</localRepository>
+    -->
+    <profiles>
+        <profile>
+            <id>env-dev</id>
+            <properties>
+                <!--
+                The maven repo does not contain any metasfresh artifact with this version, so m2e will just download various maven-metadata.xml files,
+                but not the binary artifacts.
+                -->
+                <metasfresh.version>10.0.0</metasfresh.version>
+            </properties>
+
+            <repositories>
+                <!--
+                3rd-party libs which are not in the public central maven repository
+                -->
+                <repository>
+                    <id>metasfresh-3rdparty</id>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>daily</updatePolicy>
+                        <checksumPolicy>warn</checksumPolicy>
+                    </releases>
+                    <url>https://repo.metasfresh.com/content/groups/mvn-3rdparty-all/</url>
+                </repository>
+            </repositories>
+        </profile>
+
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>env-dev</activeProfile>
+    </activeProfiles>
+</settings>
