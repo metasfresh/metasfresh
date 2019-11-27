@@ -52,7 +52,7 @@ public class DpdClientConfigRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DPD_Shipper_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
-				.first();
+				.firstOnly(I_DPD_Shipper_Config.class); // we have a UC on M_Shipper_ID
 		if (configPO == null)
 		{
 			throw new AdempiereException("No DPD shipper configuration found for shipperId=" + shipperId);

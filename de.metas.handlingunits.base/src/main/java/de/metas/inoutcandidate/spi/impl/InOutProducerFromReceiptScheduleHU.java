@@ -38,6 +38,7 @@ import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -280,7 +281,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			return;
 		}
 
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityNoteAttributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, qualityNoteAttributeId);
 
 		if (ai == null)
 		{

@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_Attribute;
@@ -62,11 +63,12 @@ public class InventoryTestHelper
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		saveRecord(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, av1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, av2);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, av3);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, av1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, av2);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, av3);
 		return asi;
 	}
 

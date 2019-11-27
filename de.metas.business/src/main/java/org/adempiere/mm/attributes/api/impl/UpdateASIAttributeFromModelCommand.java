@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -8,8 +9,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -95,9 +94,9 @@ final class UpdateASIAttributeFromModelCommand
 			return;
 		}
 
-		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
-
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		attributeSetInstanceBL.getCreateASI(asiAware);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(asiAware.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 
 		if (ai != null)
 		{
@@ -105,6 +104,6 @@ final class UpdateASIAttributeFromModelCommand
 			return;
 		}
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeId);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeId);
 	}
 }
