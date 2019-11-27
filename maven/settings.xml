@@ -14,16 +14,32 @@
             <id>env-dev</id>
             <properties>
                 <!--
+                Go with 10.0.0.0 if you have all metasfresh projects in your workspace anyways
                 The maven repo does not contain any metasfresh artifact with this version, so m2e will just download various maven-metadata.xml files,
-                but not the binary artifacts.
+                but not the binary artifacts
                 -->
                 <metasfresh.version>10.0.0</metasfresh.version>
+                <!--
+                Use this version range if you have only a few metasfresh projects in your workspace
+                *or* if from time to time you need to build individual modules from command line
+                m2e will download the ones that are missing from the repository, but prefer the ones that are in your workspace
+        Warning: those ranges can give the m2e plugin even more problems than the fixed version
+                <metasfresh.version>[1,10.0.0]</metasfresh.version>
+                -->
             </properties>
 
             <repositories>
                 <!--
-                3rd-party libs which are not in the public central maven repository
-                -->
+                    <repository>
+                        <id>metasfresh-repo</id>
+                        <releases>
+                            <enabled>true</enabled>
+                            <updatePolicy>always</updatePolicy>
+                            <checksumPolicy>warn</checksumPolicy>
+                        </releases>
+                        <url>https://repo.metasfresh.com/content/groups/mvn-master/</url>
+                    </repository>
+                 -->
                 <repository>
                     <id>metasfresh-3rdparty</id>
                     <releases>
@@ -38,6 +54,7 @@
 
     </profiles>
 
+    <!-- List of profiles that are active for all builds. -->
     <activeProfiles>
         <activeProfile>env-dev</activeProfile>
     </activeProfiles>
