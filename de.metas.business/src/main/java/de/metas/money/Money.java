@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -24,17 +23,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
-import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -167,22 +162,42 @@ public final class Money
 
 	public static CurrencyId getCommonCurrencyIdOfAll(@NonNull final Money... moneys)
 	{
-		Check.assumeNotEmpty(moneys, "The given moneys may not be empty");
-
-		final Iterator<Money> moneysIterator = Stream.of(moneys)
-				.filter(Predicates.notNull())
-				.iterator();
-		final ImmutableListMultimap<CurrencyId, Money> currency2moneys = Multimaps.index(moneysIterator, Money::getCurrencyId);
-		if (currency2moneys.isEmpty())
+		if (moneys.length == 0)
 		{
 			throw new AdempiereException("The given moneys may not be empty");
 		}
+		else if (moneys.length == 1)
+		{
+			return moneys[0].getCurrencyId();
+		}
+		else
+		{
+			CurrencyId commonCurrencyId = null;
+			for (final Money money : moneys)
+			{
+				if (money == null)
+				{
+					continue;
+				}
 
-		final ImmutableSet<CurrencyId> currencyIds = currency2moneys.keySet();
-		Check.errorIf(currencyIds.size() > 1,
-				"at least two money instances have different currencies: {}", currency2moneys);
+				final CurrencyId currencyId = money.getCurrencyId();
+				if (commonCurrencyId == null)
+				{
+					commonCurrencyId = currencyId;
+				}
+				else if (!CurrencyId.equals(commonCurrencyId, currencyId))
+				{
+					throw new AdempiereException("All given Money instances shall have the same currency: " + Arrays.asList(moneys));
+				}
+			}
 
-		return CollectionUtils.singleElement(currencyIds.asList());
+			if (commonCurrencyId == null)
+			{
+				throw new AdempiereException("At least one non null Money instance was expected: " + Arrays.asList(moneys));
+			}
+
+			return commonCurrencyId;
+		}
 	}
 
 	public static boolean isSameCurrency(@NonNull final Money... moneys)
