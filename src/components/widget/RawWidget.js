@@ -36,9 +36,23 @@ export class RawWidget extends Component {
   constructor(props) {
     super(props);
 
+    const { widgetData } = props;
+    let cachedValue = undefined;
+
+    if (widgetData && widgetData[0]) {
+      if (widgetData[0].value !== undefined) {
+        cachedValue = widgetData[0].value;
+      } else if (
+        widgetData[0].status &&
+        widgetData[0].status.value !== undefined
+      ) {
+        cachedValue = widgetData[0].status.value;
+      }
+    }
+
     this.state = {
       isEdited: false,
-      cachedValue: undefined,
+      cachedValue,
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
@@ -173,12 +187,47 @@ export class RawWidget extends Component {
     }
   };
 
-  // isForce will be used for Datepicker
-  // Datepicker is checking the cached value in datepicker component itself
-  // and send a patch request only if date is changed
+  /**
+   * @method willPatch
+   * @summary Checks if the value has actually changed between what was cached before.
+   * @param {*} property
+   * @param {*} value
+   * @param {*} valueTo
+   */
+  willPatch = (property, value, valueTo) => {
+    const { widgetData } = this.props;
+    const { cachedValue } = this.state;
+
+    // if there's no widget value, then nothing could've changed. Unless
+    // it's a widget for actions (think ActionButton)
+    const isValue =
+      widgetData[0].value !== undefined ||
+      (widgetData[0].status && widgetData[0].status.value !== undefined);
+    let fieldData = widgetData.find(widget => widget.field === property);
+    if (!fieldData) {
+      fieldData = widgetData[0];
+    }
+
+    let allowPatching =
+      (isValue &&
+        (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
+          JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
+      JSON.stringify(cachedValue) != JSON.stringify(value);
+
+    if (!cachedValue && !value) {
+      allowPatching = false;
+    }
+
+    return allowPatching;
+  };
+
   /**
    * @method handlePatch
-   * @summary ToDo: Describe the method.
+   * @summary Method for handling the actual patching from the widget(input), which in turn
+   *          calls the parent method (usually from MasterWidget) if the requirements are met
+   *          (value changed and patching is not in progress). `isForce` will be used for Datepicker
+   *          Datepicker is checking the cached value in datepicker component itself
+   *          and send a patch request only if date is changed
    * @param {*} property
    * @param {*} value
    * @param {*} id
@@ -235,36 +284,6 @@ export class RawWidget extends Component {
     this.setState({
       errorPopup: value,
     });
-  };
-
-  /**
-   * @method willPatch
-   * @summary ToDo: Describe the method.
-   * @param {*} property
-   * @param {*} value
-   * @param {*} valueTo
-   */
-  willPatch = (property, value, valueTo) => {
-    const { widgetData } = this.props;
-    const { cachedValue } = this.state;
-
-    // if there's no widget value, then nothing could've changed. Unless
-    // it's a widget for actions (think ActionButton)
-    const isValue =
-      widgetData[0].value !== undefined ||
-      (widgetData[0].status && widgetData[0].status.value !== undefined);
-    let fieldData = widgetData.find(widget => widget.field === property);
-    if (!fieldData) {
-      fieldData = widgetData[0];
-    }
-
-    let allowPatching =
-      (isValue &&
-        (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
-          JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
-      JSON.stringify(cachedValue) != JSON.stringify(value);
-
-    return allowPatching;
   };
 
   /**
