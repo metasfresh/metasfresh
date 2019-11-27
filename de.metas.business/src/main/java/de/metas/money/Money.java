@@ -151,6 +151,11 @@ public final class Money
 		return new Money(value.negate(), currencyId);
 	}
 
+	public Money negateIf(boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
 	public Money toZero()
 	{
 		if (isZero())
