@@ -10,14 +10,14 @@ package de.metas.handlingunits.materialtracking.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,8 +26,8 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -44,24 +44,23 @@ public class M_ReceiptSchedule
 {
 	/**
 	 * Updates the M_Material_Tracking attribute of the assigned HUs which are still in the planning status.
-	 * 
+	 *
 	 * @param rs
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
-			ifColumnsChanged = I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID)
 	public void onMaterialTrackingASIChange(final I_M_ReceiptSchedule rs)
 	{
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		// get the old and current material tracking (if any) and check if there was a change
-		final I_M_AttributeSetInstance asi = rs.getM_AttributeSetInstance();
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asi); // might be null
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(rs.getM_AttributeSetInstance_ID());
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asiId); // might be null
 		final int materialTrackingId = materialTracking == null ? -1 : materialTracking.getM_Material_Tracking_ID();
 
 		final I_M_ReceiptSchedule rsOld = InterfaceWrapperHelper.createOld(rs, I_M_ReceiptSchedule.class);
-		final I_M_AttributeSetInstance asiOld = rsOld.getM_AttributeSetInstance();
-		final I_M_Material_Tracking materialTrackingOld = materialTrackingAttributeBL.getMaterialTrackingOrNull(asiOld);
+		final AttributeSetInstanceId asiOldId = AttributeSetInstanceId.ofRepoIdOrNone(rsOld.getM_AttributeSetInstance_ID());
+		final I_M_Material_Tracking materialTrackingOld = materialTrackingAttributeBL.getMaterialTrackingOrNull(asiOldId);
 		final int materialTrackingOldId = materialTrackingOld == null ? -1 : materialTrackingOld.getM_Material_Tracking_ID();
 
 		if (materialTrackingOldId == materialTrackingId)

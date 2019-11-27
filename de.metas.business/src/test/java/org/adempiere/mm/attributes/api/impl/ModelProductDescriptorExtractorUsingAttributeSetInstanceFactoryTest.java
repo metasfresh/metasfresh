@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -174,15 +175,17 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-		final I_M_AttributeInstance ai1 = attributeSetInstanceBL.getCreateAttributeInstance(asi, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+
+		final I_M_AttributeInstance ai1 = attributeSetInstanceBL.getCreateAttributeInstance(asiId, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		ai1.setM_AttributeValue_ID(attributeValue1.getId().getRepoId());
 		ai1.setValue("value1");
 		save(ai1);
-		final I_M_AttributeInstance ai2 = attributeSetInstanceBL.getCreateAttributeInstance(asi, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
+		final I_M_AttributeInstance ai2 = attributeSetInstanceBL.getCreateAttributeInstance(asiId, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
 		ai2.setM_AttributeValue_ID(attributeValue2.getId().getRepoId());
 		ai2.setValue("value2");
 		save(ai2);
-		final I_M_AttributeInstance ai3 = attributeSetInstanceBL.getCreateAttributeInstance(asi, AttributeId.ofRepoId(attribute3.getM_Attribute_ID()));
+		final I_M_AttributeInstance ai3 = attributeSetInstanceBL.getCreateAttributeInstance(asiId, AttributeId.ofRepoId(attribute3.getM_Attribute_ID()));
 		ai3.setM_AttributeValue_ID(attributeValue3.getId().getRepoId());
 		ai3.setValue("value3");
 		save(ai3);

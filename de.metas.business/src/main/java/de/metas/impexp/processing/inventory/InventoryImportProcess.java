@@ -213,37 +213,35 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		}
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		//
 		// Lot
 		if (!Check.isEmpty(importRecord.getLot(), true))
 		{
 			final AttributeId lotNumberAttrId = lotNumberDateAttributeDAO.getLotNumberAttributeId();
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttrId, importRecord.getLot());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, lotNumberAttrId, importRecord.getLot());
 		}
 
 		//
 		// BestBeforeDate
 		if (importRecord.getHU_BestBeforeDate() != null)
 		{
-			final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate);
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, bestBeforeDateAttr, importRecord.getHU_BestBeforeDate());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, importRecord.getHU_BestBeforeDate());
 		}
 
 		//
 		// TE
 		if (!Check.isEmpty(importRecord.getTE(), true))
 		{
-			final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_TE);
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, TEAttr, importRecord.getTE());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
 		}
 
 		//
 		// DateReceived
 		if (importRecord.getDateReceived() != null)
 		{
-			final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_DateReceived);
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, dateReceivedAttr, importRecord.getDateReceived());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_DateReceived, importRecord.getDateReceived());
 		}
 
 		//
@@ -303,7 +301,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 
 		//
 		// Get/Create/Update Attribute Instance
-		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
+		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
 			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
