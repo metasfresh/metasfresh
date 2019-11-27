@@ -8,6 +8,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -46,7 +47,7 @@ public class M_PricelistVersion_TabCallout extends TabCalloutAdapter
 			// name was already set. Do nothing
 			return;
 		}
-		final String plvName = pricelistDAO.createPLVName(PriceListId.ofRepoId(version.getM_PriceList_ID()));
+		final String plvName = pricelistDAO.createPLVName(PriceListId.ofRepoId(version.getM_PriceList_ID()), SystemTime.asLocalDate());
 
 		version.setName(plvName);
 	}

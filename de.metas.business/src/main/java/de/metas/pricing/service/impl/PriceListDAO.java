@@ -79,7 +79,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class PriceListDAO implements IPriceListDAO
@@ -699,7 +698,7 @@ public class PriceListDAO implements IPriceListDAO
 		newCustomerPLV.setM_DiscountSchema_ID(newBasePLV.getM_DiscountSchema_ID());
 		newCustomerPLV.setM_Pricelist_Version_Base_ID(oldCustomerPLV.getM_PriceList_Version_ID());
 
-		final String plvName = createPLVName(PriceListId.ofRepoId(oldCustomerPLV.getM_PriceList_ID()));
+		final String plvName = createPLVName(PriceListId.ofRepoId(oldCustomerPLV.getM_PriceList_ID()), TimeUtil.asLocalDate(newBasePLV.getValidFrom()));
 
 		newCustomerPLV.setName(plvName);
 
@@ -716,10 +715,9 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String createPLVName(final PriceListId pricelistId)
+	public String createPLVName(final PriceListId pricelistId, LocalDate date)
 	{
-		final LocalDate today = SystemTime.asLocalDate();
-		final String formattedDate = today.format(DateTimeFormatter.ISO_LOCAL_DATE);
+		final String formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
 		final I_M_PriceList pricelist = getById(pricelistId);
 

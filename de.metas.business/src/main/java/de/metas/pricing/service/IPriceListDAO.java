@@ -191,5 +191,5 @@ public interface IPriceListDAO extends ISingletonService
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
 
-	String createPLVName(PriceListId pricelistId);
+	String createPLVName(PriceListId pricelistId, LocalDate date);
 }
