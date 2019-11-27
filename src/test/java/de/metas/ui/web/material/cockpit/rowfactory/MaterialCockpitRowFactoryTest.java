@@ -185,8 +185,8 @@ public class MaterialCockpitRowFactoryTest
 		final AttributeSetInstanceId asiId1 = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId1, attr1_value1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId1, attr2_value1);
 
 		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys
 				.createAttributesKeyFromASIAllAttributes(asiId1)

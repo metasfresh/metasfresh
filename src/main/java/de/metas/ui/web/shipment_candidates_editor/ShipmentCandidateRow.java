@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
-
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -102,15 +101,17 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
-	private final Quantity qtyToDeliverStockInitial;
-	private final BigDecimal qtyToDeliverCatchOverrideInitial;
-	private final AttributeSetInstanceId asiIdInitial;
 	private final int salesOrderLineNo;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
 	private final ImmutableMap<String, ViewEditorRenderMode> fieldNameAndJsonValues;
 
 	private boolean catchWeight;
+
+	// also store the editable value's initial values, so we know what was changed and can be persisted
+	private final Quantity qtyToDeliverStockInitial;
+	private final BigDecimal qtyToDeliverCatchOverrideInitial;
+	private final AttributeSetInstanceId asiIdInitial;
 
 	/**
 	 * If {@code catchUOM} is null, then the user is not supposed to enter a catch weight override quantity.
@@ -237,7 +238,6 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		{
 			builder.asi(userChanges.getAsi());
 		}
-
 		return builder.build();
 	}
 
@@ -291,24 +291,31 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 	private boolean qtyToDeliverCatchOverrideIsChanged()
 	{
-		final boolean wasNull = qtyToDeliverCatchOverrideInitial == null;
-		final boolean isNull = qtyToDeliverCatchOverride == null;
+		final Optional<Boolean> nullValuechanged = isNullValuesChanged(qtyToDeliverCatchOverrideInitial, qtyToDeliverCatchOverride);
+		return nullValuechanged.orElseGet(() -> qtyToDeliverCatchOverrideInitial.compareTo(qtyToDeliverCatchOverride) != 0);
+	}
+
+	private Optional<Boolean> isNullValuesChanged(
+			@Nullable final Object initital,
+			@Nullable final Object current)
+	{
+		final boolean wasNull = initital == null;
+		final boolean isNull = current == null;
 
 		if (wasNull)
 		{
 			if (isNull)
 			{
-				return false;
+				return Optional.of(false);
 			}
-			return true; // was null and is not null anymore
+			return Optional.of(true); // was null and is not null anymore
 		}
 
 		if (isNull)
 		{
-			return true; // was not null and is now
+			return Optional.of(true); // was not null and is now
 		}
 
-		// was not null and still is not null
-		return qtyToDeliverCatchOverrideInitial.compareTo(qtyToDeliverCatchOverride) != 0;
+		return Optional.empty(); // was not null and still is not null; will need to compare the current values
 	}
 }

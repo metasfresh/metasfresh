@@ -106,8 +106,9 @@ public @interface ViewColumn
 
 			/**
 			 * The column shall <b>not</b> be displayed,<br>
-			 * unless the sysconfig with key = "{@link ViewColumnLayout#displayedSysConfigPrefix()}.fieldName" validates to {@code true}.
-			 * If there is no sysConfig that can be validated a boolean, then {@link #FALSE} is assumed.
+			 * unless the sys-config with key = "{@link ViewColumnLayout#displayedSysConfigPrefix()}.fieldName" validates to {@code true}.
+			 * The sysconfig may be overridden on client or org-level.
+			 * If there is no sys-config that can be validated to a boolean, then {@link #defaultDisplaySysConfig()} is assumed.
 			 */
 			SYSCONFIG
 		}
@@ -116,10 +117,10 @@ public @interface ViewColumn
 
 		Displayed displayed() default Displayed.TRUE;
 
-		boolean defaultDisplaySysConfig() default false;
-
-		/** See {@link Displayed#SYSCONFIG}. Null or empty strings mean {@link Displayed#FALSE}. */
+		/** See {@link Displayed#SYSCONFIG}. If it evaluates to {@code null} or empty string, then go with {@link #defaultDisplaySysConfig()}. */
 		String displayedSysConfigPrefix() default "";
+
+		boolean defaultDisplaySysConfig() default false;
 
 		/** Display sequence number */
 		int seqNo();
