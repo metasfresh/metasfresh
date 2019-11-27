@@ -28,7 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
  */
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -492,25 +492,25 @@ public class OrderLineBL implements IOrderLineBL
 	 * @param order
 	 * @return
 	 */
-	static LocalDate getPriceDate(
+	static ZonedDateTime getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		LocalDate date = TimeUtil.asLocalDate(orderLine.getDatePromised());
+		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
 		// if null, then get date promised from order
 		if (date == null)
 		{
-			date = TimeUtil.asLocalDate(order.getDatePromised());
+			date = TimeUtil.asZonedDateTime(order.getDatePromised());
 		}
 		// still null, then get date ordered from order line
 		if (date == null)
 		{
-			date = TimeUtil.asLocalDate(orderLine.getDateOrdered());
+			date = TimeUtil.asZonedDateTime(orderLine.getDateOrdered());
 		}
 		// still null, then get date ordered from order
 		if (date == null)
 		{
-			date = TimeUtil.asLocalDate(order.getDateOrdered());
+			date = TimeUtil.asZonedDateTime(order.getDateOrdered());
 		}
 		return date;
 	}

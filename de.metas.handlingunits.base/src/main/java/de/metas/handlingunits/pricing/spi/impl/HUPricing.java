@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUPIItemProductId;
@@ -23,6 +24,7 @@ import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -84,7 +86,8 @@ public class HUPricing extends AttributePricing
 		final ProductId productId = pricingCtx.getProductId();
 		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
 				ctxPriceListVersion,
-				priceListVersion -> findMatchingProductPriceOrNull(priceListVersion, productId, attributeSetInstance, packingMaterialId));
+				priceListVersion -> findMatchingProductPriceOrNull(priceListVersion, productId, attributeSetInstance, packingMaterialId),
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
 
 		if (productPrice == null)
 		{
@@ -160,7 +163,8 @@ public class HUPricing extends AttributePricing
 						.onlyAttributePricing()
 						.onlyValidPrices(true)
 						.matching(HUPIItemProductMatcher_Any)
-						.retrieveStrictDefault(I_M_ProductPrice.class));
+						.retrieveStrictDefault(I_M_ProductPrice.class),
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
 		if (defaultPrice == null)
 		{
 			return null;

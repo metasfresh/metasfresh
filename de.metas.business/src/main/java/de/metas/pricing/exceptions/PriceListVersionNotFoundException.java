@@ -1,6 +1,6 @@
 package de.metas.pricing.exceptions;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -11,12 +11,12 @@ import de.metas.util.Services;
 @SuppressWarnings("serial")
 public class PriceListVersionNotFoundException extends AdempiereException
 {
-	public PriceListVersionNotFoundException(final PriceListId priceListId, final LocalDate date)
+	public PriceListVersionNotFoundException(final PriceListId priceListId, final ZonedDateTime date)
 	{
 		super(buildMessage(toPriceListName(priceListId), date));
 	}
 
-	private static String buildMessage(final String priceListName, final LocalDate date)
+	private static String buildMessage(final String priceListName, final ZonedDateTime date)
 	{
 		final StringBuilder sb = new StringBuilder("@NotFound@: @M_PriceList_Version_ID@");
 		sb.append("\n@M_PriceList_ID@: ").append(priceListName != null ? priceListName : "-");

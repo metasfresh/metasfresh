@@ -154,7 +154,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
 				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 				CountryId.ofRepoId(inOut.getC_BPartner_Location().getC_Location().getC_Country_ID()),
-				TimeUtil.asLocalDate(inOut.getMovementDate()),
+				TimeUtil.asZonedDateTime(inOut.getMovementDate()),
 				SOTrx.ofBoolean(inOut.isSOTrx()),
 				processedPLVFiltering);
 		ic.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
