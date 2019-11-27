@@ -72,10 +72,11 @@ public class ImmutableAttributeSetTest
 		save(asi);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeStringValue);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeStringNullValue);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeStringValue);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeStringNullValue);
+
 		final ImmutableAttributeSet attributeSet = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
 		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue);
@@ -97,20 +98,18 @@ public class ImmutableAttributeSetTest
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1Id, attributeStringValue1);
 
 		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
-
-		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 
 		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
-
-		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 
@@ -128,21 +127,18 @@ public class ImmutableAttributeSetTest
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1Id, attributeStringValue1);
 
 		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue2");
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
-
-		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 
 		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
-
-		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
-
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 
 		assertThat(attributeSet1).isNotEqualTo(attributeSet2);
@@ -158,22 +154,20 @@ public class ImmutableAttributeSetTest
 
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1Id, attributeStringValue1);
 
 		final I_M_Attribute attrStringWithValue2 = attributesTestHelper.createM_Attribute("AttrStringWithValue2", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue1");
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
-
-		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
 
 		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
-
-		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 
@@ -201,21 +195,19 @@ public class ImmutableAttributeSetTest
 
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue2);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1Id, attributeStringValue1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1Id, attributeStringValue2);
 
 		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi2);
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue1);
-
-		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue2);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2Id, attributeStringValue1);
 
 		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
-
-		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
 
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 

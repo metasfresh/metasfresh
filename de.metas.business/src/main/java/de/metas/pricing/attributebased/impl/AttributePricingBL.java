@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -25,7 +26,6 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,10 +36,8 @@ public class AttributePricingBL implements IAttributePricingBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 	@Override
-	public void addToASI(final IAttributeSetInstanceAware asiAware, final List<IPricingAttribute> pricingAttributes)
+	public void addToASI(@NonNull final IAttributeSetInstanceAware asiAware, final List<IPricingAttribute> pricingAttributes)
 	{
-		Check.assumeNotNull(asiAware, "Param 'asiAware is not null");
-
 		if (asiAware.getM_AttributeSetInstance_ID() <= 0)
 		{
 			return;
@@ -56,7 +54,8 @@ public class AttributePricingBL implements IAttributePricingBL
 		{
 			if (pricingAttribute.getAttributeValue() != null)
 			{
-				attributeSetInstanceBL.getCreateAttributeInstance(asi, pricingAttribute.getAttributeValue());
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asiAware.getM_AttributeSetInstance_ID());
+				attributeSetInstanceBL.getCreateAttributeInstance(asiId, pricingAttribute.getAttributeValue());
 			}
 		}
 		attributeSetInstanceBL.setDescription(asi);

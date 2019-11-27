@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -330,7 +331,8 @@ public class DesadvBL implements IDesadvBL
 				final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
 				if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 				{
-					attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
+					final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
+					desadvLine.setBestBeforeDate(TimeUtil.asTimestamp(bestBeforeDate));
 				}
 			}
 

@@ -6,6 +6,7 @@ import java.util.Date;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -43,12 +44,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -100,11 +101,13 @@ public class PMMProductBLTest
 		final I_M_Attribute attribute1 = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		InterfaceWrapperHelper.save(attribute1);
 
-		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance1.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance1);
 
-		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance2.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
@@ -143,11 +146,13 @@ public class PMMProductBLTest
 		final I_M_Attribute attribute1 = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		InterfaceWrapperHelper.save(attribute1);
 
-		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance1.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance1);
 
-		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance2.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
@@ -190,15 +195,17 @@ public class PMMProductBLTest
 		final I_M_Attribute attribute2 = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		InterfaceWrapperHelper.save(attribute2);
 
-		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance1.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance1);
 
-		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance2.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
-		final I_M_AttributeInstance attributeInstance3 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
+		final I_M_AttributeInstance attributeInstance3 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
 		attributeInstance3.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance3);
 
@@ -240,15 +247,17 @@ public class PMMProductBLTest
 		final I_M_Attribute attribute2 = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		InterfaceWrapperHelper.save(attribute2);
 
-		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance1.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance1);
 
-		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance2.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
-		final I_M_AttributeInstance attributeInstance3 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
+		final I_M_AttributeInstance attributeInstance3 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
 		attributeInstance3.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance3);
 
@@ -291,18 +300,21 @@ public class PMMProductBLTest
 		final I_M_Attribute attribute2 = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		InterfaceWrapperHelper.save(attribute2);
 
-		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance1 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance1.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance1);
-		final I_M_AttributeInstance attributeInstance3 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
+		final I_M_AttributeInstance attributeInstance3 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi1Id, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
 		attributeInstance3.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance3);
 
-		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance2 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi2Id, AttributeId.ofRepoId(attribute1.getM_Attribute_ID()));
 		attributeInstance2.setValue("Attr1Value");
 		InterfaceWrapperHelper.save(attributeInstance2);
 
-		final I_M_AttributeInstance attributeInstance4 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi3, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
+		final AttributeSetInstanceId asi3Id = AttributeSetInstanceId.ofRepoId(asi3.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance4 = Services.get(IAttributeSetInstanceBL.class).getCreateAttributeInstance(asi3Id, AttributeId.ofRepoId(attribute2.getM_Attribute_ID()));
 		attributeInstance4.setValue("Attr2Value");
 		InterfaceWrapperHelper.save(attributeInstance4);
 
@@ -340,10 +352,10 @@ public class PMMProductBLTest
 		// change seqNO
 		pmmProduct1.setSeqNo(20);
 		InterfaceWrapperHelper.save(pmmProduct1);
-		
+
 		pmmProduct2.setSeqNo(10);
 		InterfaceWrapperHelper.save(pmmProduct2);
-		
+
 		pmmProductActual = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				date,
 				product1.getM_Product_ID(),

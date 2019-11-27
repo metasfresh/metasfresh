@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;

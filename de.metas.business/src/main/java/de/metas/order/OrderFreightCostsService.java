@@ -260,6 +260,10 @@ public class OrderFreightCostsService
 		{
 			return Optional.empty();
 		}
+		if (salesOrder.getC_BPartner_ID() <= 0)
+		{
+			return Optional.empty(); // order is not yet completely set up
+		}
 
 		final FreightCostContext freightCostContext = extractFreightCostContext(salesOrder);
 		if (freightCostService.checkIfFree(freightCostContext))
