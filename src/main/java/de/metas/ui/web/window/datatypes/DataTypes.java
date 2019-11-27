@@ -425,6 +425,22 @@ public final class DataTypes
 				return lookupValue;
 			}
 		}
+		else if (value instanceof RepoIdAware)
+		{
+			final int valueInt = ((RepoIdAware)value).getRepoId();
+			if (lookupDataSource != null)
+			{
+				final LookupValue lookupValue = lookupDataSource.findById(valueInt);
+				return toIntegerLookupValue(lookupValue);
+			}
+			else
+			{
+				throw new ValueConversionException()
+						.setFromValue(value)
+						.setTargetType(IntegerLookupValue.class)
+						.setLookupDataSource(lookupDataSource);
+			}
+		}
 		else if (value instanceof Number)
 		{
 			final int valueInt = ((Number)value).intValue();
@@ -436,7 +452,10 @@ public final class DataTypes
 			}
 			else
 			{
-				throw new ValueConversionException();
+				throw new ValueConversionException()
+						.setFromValue(value)
+						.setTargetType(IntegerLookupValue.class)
+						.setLookupDataSource(lookupDataSource);
 			}
 		}
 		else if (value instanceof String)
