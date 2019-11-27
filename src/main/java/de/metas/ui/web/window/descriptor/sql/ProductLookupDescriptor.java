@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -427,7 +426,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId);
+		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
 
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
@@ -507,15 +506,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return null;
 		}
 
-		final LocalDate date = getEffectivePricingDate(evalCtx);
+		final ZonedDateTime date = getEffectivePricingDate(evalCtx);
 		return Services.get(IPriceListDAO.class).retrievePriceListVersionIdOrNull(priceListId, date);
 	}
 
-	private LocalDate getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
+	private ZonedDateTime getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
 		return CoalesceUtil.coalesceSuppliers(
-				() -> param_PricingDate.getValueAsLocalDate(evalCtx),
-				() -> SystemTime.asLocalDate());
+				() -> param_PricingDate.getValueAsZonedDateTime(evalCtx),
+				() -> SystemTime.asZonedDateTime());
 	}
 
 	@Override
