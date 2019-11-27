@@ -1358,5 +1358,5 @@ export default connect(
   mapStateToProps,
   false,
   false,
-  { withRef: true }
+  { forwardRef: true }
 )(onClickOutside(Table, clickOutsideConfig));

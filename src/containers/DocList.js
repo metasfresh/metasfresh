@@ -158,7 +158,7 @@ class DocList extends Component {
           <DocumentList
             ref={element => {
               this.masterDocumentList = element
-                ? element.getWrappedInstance()
+                ? element
                 : null;
             }}
             type="grid"

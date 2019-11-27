@@ -23,10 +23,6 @@ const DLpropTypes = {
   isModal: PropTypes.bool,
 };
 
-const DLcontextTypes = {
-  store: PropTypes.object.isRequired,
-};
-
 const DLmapStateToProps = (state, props) => ({
   selections: state.windowHandler.selections,
   selected: getSelectionInstant(
@@ -114,7 +110,6 @@ const getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
 
 export {
   DLpropTypes,
-  DLcontextTypes,
   DLmapStateToProps,
   NO_SELECTION,
   NO_VIEW,
