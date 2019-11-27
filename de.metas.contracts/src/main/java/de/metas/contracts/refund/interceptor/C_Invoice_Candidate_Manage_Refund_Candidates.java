@@ -89,7 +89,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		}
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
-		if (invoicableFromDate == null)
+		if (invoicableFromDate == null || invoiceCandidateRecord.getC_Currency_ID() <= 0)
 		{
 			return; // it's not yet ready
 		}

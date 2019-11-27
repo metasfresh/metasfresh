@@ -60,22 +60,19 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	I_M_AttributeSetInstance getCreateASI(IAttributeSetInstanceAware asiAware);
 
 	/**
-	 * Get/Create {@link I_M_AttributeInstance} for given <code>asi</code>. If a new ai is created, if is also saved.
+	 * Get/Create {@link I_M_AttributeInstance} for given <code>asiId</code>. If a new ai is created, it is also saved.
 	 *
-	 * @param asi
-	 * @param attributeId
 	 * @return attribute instance; never return null
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeId attributeId);
+	I_M_AttributeInstance getCreateAttributeInstance(AttributeSetInstanceId asiId, AttributeId attributeId);
 
 	/**
 	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link AttributeListValue}.
 	 *
-	 * @param asi
 	 * @param attributeValue attribute value to set; must be not null
 	 * @return created/updated attribute instance
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeListValue attributeValue);
+	I_M_AttributeInstance getCreateAttributeInstance(AttributeSetInstanceId asiId, AttributeListValue attributeValue);
 
 	/**
 	 * If both the given <code>to</code> and <code>from</code> can be converted to {@link IAttributeSetInstanceAware}s and if <code>from</code>'s ASI-aware has an M_AttributeSetInstance,
@@ -102,15 +99,15 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * set in {@link I_M_AttributeInstance} the correct value for given <code>asi</code> and given <code>attribute</code>
 	 * <br>
 	 * the ai is also saved.
-	 *
-	 * @param asi
-	 * @param attribute
-	 * @param value
-	 * @return
 	 */
-	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeId attributeId, Object value);
 
-	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
+	/**
+	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, but the {@link AttributeId} is loaded from the given {@code attributeValue}.
+	 *
+	 * @param attributeValue {@code M_Attribute.Value} of the attribute for which an attribute instance shall be created.
+	 */
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, String attributeValue, Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 

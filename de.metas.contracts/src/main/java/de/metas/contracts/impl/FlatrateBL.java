@@ -1712,7 +1712,12 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
 	{
-		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
+		final String typeConditions = term.getType_Conditions();
+
+		// These contract types do not match "other" ICs such as ICs that trigger a commission, or IC that belong to a vendor's empty package (pallette/TU).
+		// Therefore they can overlap without causing us any problems.
+		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions);
 		return allowedToOverlapWithOtherTerms;
 	}
 
