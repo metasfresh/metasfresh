@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.ui.web.view.IViewRow;
@@ -76,7 +79,7 @@ public class InvoiceRow implements IViewRow
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt)
 	{
-		rowId = DocumentId.of(invoiceId);
+		rowId = convertInvoiceIdToDocumentId(invoiceId);
 		this.documentNo = documentNo;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
@@ -87,6 +90,17 @@ public class InvoiceRow implements IViewRow
 				.toThreeLetterCode();
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(InvoiceRow.class);
+	}
+
+	private static DocumentId convertInvoiceIdToDocumentId(@NonNull final InvoiceId invoiceId)
+	{
+		return DocumentId.of(invoiceId);
+	}
+
+	public static DocumentId convertRecordRefToDocumentId(@NonNull final TableRecordReference recordRef)
+	{
+		final InvoiceId invoiceId = recordRef.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
+		return convertInvoiceIdToDocumentId(invoiceId);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package de.metas.ui.web.payment_allocation;
 
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -31,6 +32,11 @@ import lombok.Builder;
 
 public class InvoicesView extends AbstractCustomView<InvoiceRow>
 {
+	public static InvoicesView cast(final IView view)
+	{
+		return (InvoicesView)view;
+	}
+
 	@Builder
 	private InvoicesView(
 			final ViewId viewId,
