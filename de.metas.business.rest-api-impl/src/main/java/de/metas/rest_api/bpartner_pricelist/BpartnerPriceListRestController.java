@@ -2,11 +2,12 @@ package de.metas.rest_api.bpartner_pricelist;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,7 +107,7 @@ public class BpartnerPriceListRestController
 	{
 		try
 		{
-			final ZonedDateTime date = !Check.isEmpty(dateStr) ? ZonedDateTime.parse(dateStr) : SystemTime.asZonedDateTime();
+			final LocalDate date = !Check.isEmpty(dateStr) ? TimeUtil.asLocalDate(dateStr) : SystemTime.asLocalDate();
 
 			final JsonResponsePriceList result = GetPriceListCommand.builder()
 					.servicesFacade(servicesFacade)
