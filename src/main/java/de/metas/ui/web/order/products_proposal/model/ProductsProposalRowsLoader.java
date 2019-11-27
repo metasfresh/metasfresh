@@ -50,6 +50,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -131,9 +132,8 @@ public final class ProductsProposalRowsLoader
 		final PriceListVersionId basePriceListVersionId;
 		if (singlePriceListVersionId != null)
 		{
+			final ZonedDateTime datePromised = order == null? SystemTime.asZonedDateTime() : order.getDatePromised();
 
-			final ZonedDateTime datePromised = order.getDatePromised();
-			// if order is null, use system tipe TODO
 			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId, datePromised);
 		}
 		else
