@@ -805,7 +805,6 @@ public class PriceListDAO implements IPriceListDAO
 				.addOnlyActiveRecordsFilter()
 
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)
-				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
 
 				.filter(maxValidFromFilter)
 				.create()
