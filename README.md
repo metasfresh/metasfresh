@@ -6,6 +6,12 @@
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 
+![GitHub repo size](https://img.shields.io/github/repo-size/metasfresh/metasfresh)
+![GitHub contributors](https://img.shields.io/github/contributors/metasfresh/metasfresh)
+![GitHub stars](https://img.shields.io/github/stars/metasfresh/metasfresh?style=social)
+![GitHub forks](https://img.shields.io/github/forks/metasfresh/metasfresh?style=social)
+![Twitter Follow](https://img.shields.io/twitter/follow/metasfresh?style=social)
+
 
 metasfresh is a responsive, Free and Open Source ERP System. Our aim is to create fast and easy-to-use enterprise software with an outstanding user experience.
 
