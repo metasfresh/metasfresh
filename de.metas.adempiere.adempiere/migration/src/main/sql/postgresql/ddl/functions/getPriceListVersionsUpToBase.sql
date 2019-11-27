@@ -32,8 +32,8 @@ $BODY$
             ARRAY[plv1.M_PriceList_Version_ID]::numeric(10,0)[] as path -- used to prevent running forever in case of cycles
         from M_PriceList_Version plv1
 		inner join M_Pricelist pl1 on plv1.M_Pricelist_ID = pl1.M_Pricelist_ID
-		inner join M_Pricelist basePL1 on pl1.basePricelist_ID = basePL1.M_PriceList_ID
-		inner join M_Pricelist_Version basePLV1 on basePLV1.M_Pricelist_ID = basePL1.M_Pricelist_ID
+		left join M_Pricelist basePL1 on pl1.basePricelist_ID = basePL1.M_PriceList_ID
+		left join M_Pricelist_Version basePLV1 on basePLV1.M_Pricelist_ID = basePL1.M_Pricelist_ID
 		and basePLV1.validFrom = (select max(ValidFrom) 
 									from M_Pricelist_Version 
 									where isActive = 'Y' 
@@ -54,8 +54,8 @@ $BODY$
 			plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
         from priceListVersion as plv2
         inner join M_Pricelist pl2 on plv2.M_Pricelist_ID = pl2.M_Pricelist_ID
-		inner join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
-		inner join M_Pricelist_Version basePLV2 on basePLV2.M_Pricelist_ID = basePL2.M_Pricelist_ID
+		left join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
+		left join M_Pricelist_Version basePLV2 on basePLV2.M_Pricelist_ID = basePL2.M_Pricelist_ID
 		and basePLV2.validFrom = (select max(ValidFrom) 
 									from M_Pricelist_Version 
 									where isActive = 'Y' 
