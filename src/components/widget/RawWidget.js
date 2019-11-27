@@ -406,7 +406,9 @@ export class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e => handleChange && handleChange(widgetField, e.target.value, cachedValue || widgetValue),
+      onChange: e =>
+        handleChange &&
+        handleChange(widgetField, e.target.value, cachedValue || widgetValue),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),

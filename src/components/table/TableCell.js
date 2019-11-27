@@ -221,7 +221,7 @@ class TableCell extends PureComponent {
 
   clearValue = reset => {
     this.clearWidgetValue = reset == null ? true : false;
-  }
+  };
 
   render() {
     const {
@@ -408,4 +408,9 @@ const mapStateToProps = state => ({
     : false,
 });
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(TableCell);
+export default connect(
+  mapStateToProps,
+  null,
+  null,
+  { forwardRef: true }
+)(TableCell);

@@ -1137,9 +1137,7 @@ export class DocumentList extends Component {
             <div className="row table-row">
               <Table
                 entity="documentView"
-                ref={c =>
-                  (this.table = c)
-                }
+                ref={c => (this.table = c)}
                 rowData={rowDataMap}
                 cols={layout.elements}
                 collapsible={layout.collapsible}

@@ -143,7 +143,6 @@ class TableItem extends PureComponent {
       default: {
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp)) {
-
           this.listenOnKeysTrue();
 
           this.handleEditProperty(e, property, true, widgetData, true);
@@ -173,7 +172,6 @@ class TableItem extends PureComponent {
   editProperty = (e, property, focus, item, select) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e.stopPropagation();
-
 
       if (select && this.selectedCell) {
         this.selectedCell.clearValue();
@@ -421,7 +419,7 @@ class TableItem extends PureComponent {
                     }
                     if (activeCellName === property) {
                       this.selectedCell = c;
-                    }                 
+                    }
                   }
                 }}
                 tdValue={

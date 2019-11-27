@@ -157,9 +157,7 @@ class DocList extends Component {
         >
           <DocumentList
             ref={element => {
-              this.masterDocumentList = element
-                ? element
-                : null;
+              this.masterDocumentList = element ? element : null;
             }}
             type="grid"
             updateUri={this.updateUriCallback}

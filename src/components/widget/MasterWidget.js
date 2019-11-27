@@ -156,7 +156,7 @@ class MasterWidget extends Component {
    * @param {*} property
    * @param {*} val
    */
-  handleChange = (property, val, cachedVal) => {
+  handleChange = (property, val) => {
     const {
       updatePropertyValue,
       tabId,
