@@ -200,3 +200,36 @@ UPDATE AD_Ref_Table SET WhereClause='',Updated=TO_TIMESTAMP('2019-11-27 15:14:36
 
 
 
+
+
+
+
+
+
+-- 2019-11-27T15:07:01.165Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=574111, Description='Kontenelemente verwalten', Help='Das Fenster "Kontenelement" dient zur Verwaltung von Kontenelementen und nutzerdefinierten Elementen. Eines der Kontensegmente ist Ihr Basiskontensegment (Kontenplan). Sie können Kontenelemente hinzufügen, um weitere Berichte zu erstellen oder für nutzerdefinierte Buchführungssegmente.', Name='Kontenrahmen',Updated=TO_TIMESTAMP('2019-11-27 17:07:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=591953
+;
+
+-- 2019-11-27T15:07:01.168Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(574111) 
+;
+
+-- 2019-11-27T15:07:01.208Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=591953
+;
+
+-- 2019-11-27T15:07:01.221Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(591953)
+;
+
+-- 2019-11-27T15:08:58.973Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Window_ID=540761,Updated=TO_TIMESTAMP('2019-11-27 17:08:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=132
+;
+
+
+
