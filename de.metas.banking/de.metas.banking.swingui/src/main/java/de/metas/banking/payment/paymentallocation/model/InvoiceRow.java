@@ -28,21 +28,19 @@ import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
-import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -502,19 +500,19 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	public PayableDocument copyAsPayableDocument()
 	{
 		final IInvoiceRow invoiceRow = this;
-		final TableRecordReference reference;
-		final PayableDocumentType type;
+		final InvoiceId invoiceId;
+		final OrderId prepayOrderId;
 		final boolean creditMemo;
 		if (invoiceRow.getC_Invoice_ID() > 0)
 		{
-			type = PayableDocumentType.Invoice;
-			reference = new TableRecordReference(I_C_Invoice.Table_Name, invoiceRow.getC_Invoice_ID());
+			invoiceId = InvoiceId.ofRepoId(invoiceRow.getC_Invoice_ID());
+			prepayOrderId = null;
 			creditMemo = invoiceRow.isCreditMemo();
 		}
 		else if (invoiceRow.getC_Order_ID() > 0)
 		{
-			type = PayableDocumentType.PrepaidOrder;
-			reference = new TableRecordReference(I_C_Order.Table_Name, invoiceRow.getC_Order_ID());
+			invoiceId = null;
+			prepayOrderId = OrderId.ofRepoId(invoiceRow.getC_Order_ID());
 			creditMemo = false;
 		}
 		else
@@ -526,10 +524,10 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode()).getId();
 
 		return PayableDocument.builder()
+				.invoiceId(invoiceId)
+				.prepayOrderId(prepayOrderId)
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(invoiceRow.getC_BPartner_ID()))
 				.isSOTrx(invoiceRow.isCustomerDocument())
-				.type(type)
-				.reference(reference)
 				.creditMemo(creditMemo)
 				.documentNo(invoiceRow.getDocumentNo())
 				//

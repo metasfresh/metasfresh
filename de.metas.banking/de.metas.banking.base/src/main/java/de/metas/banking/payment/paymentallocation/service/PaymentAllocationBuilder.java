@@ -47,8 +47,6 @@ import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
-import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
-import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -58,7 +56,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.ListUtils;
 
 /**
- * Builds one {@link I_C_AllocationHdr} of all given {@link IInvoiceRow}s and {@link IPaymentRow}s.
+ * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link IPaymentDocument}s.
  *
  * @author tsa
  *
@@ -73,13 +71,10 @@ public class PaymentAllocationBuilder
 	// services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
-	// private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
 	// Parameters
 	private OrgId _adOrgId;
 	private CurrencyId _currencyId;
-	// task 09643
-	// separate transaction date from the accounting date
 	private LocalDate _dateTrx;
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();

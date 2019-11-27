@@ -28,7 +28,6 @@ import java.util.Date;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
@@ -37,6 +36,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
@@ -234,8 +234,8 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode()).getId();
 
 		return PaymentDocument.builder()
+				.paymentId(PaymentId.ofRepoId(paymentRow.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(paymentRow.getC_BPartner_ID()))
-				.reference(TableRecordReference.of(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID()))
 				.isSOTrx(paymentRow.isCustomerDocument())
 				.documentNo(paymentRow.getDocumentNo())
 				.openAmt(Money.of(paymentRow.getOpenAmtConv_APAdjusted(), currencyId))

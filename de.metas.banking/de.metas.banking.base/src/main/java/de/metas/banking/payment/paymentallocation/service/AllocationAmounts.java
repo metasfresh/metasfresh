@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -67,6 +69,17 @@ public class AllocationAmounts
 		this.currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt, writeOffAmt);
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("payAmt", payAmt.toBigDecimal())
+				.add("discountAmt", discountAmt.toBigDecimal())
+				.add("writeOffAmt", writeOffAmt.toBigDecimal())
+				.add("currencyId", currencyId.getRepoId())
+				.toString();
+	}
+
 	public AllocationAmounts addPayAmt(@NonNull final Money payAmtToAdd)
 	{
 		final Money newPayAmt = this.payAmt.add(payAmtToAdd);
@@ -126,6 +139,25 @@ public class AllocationAmounts
 				.payAmt(this.payAmt.subtract(other.payAmt))
 				.discountAmt(this.discountAmt.subtract(other.discountAmt))
 				.writeOffAmt(this.writeOffAmt.subtract(other.writeOffAmt))
+				.build();
+	}
+
+	public AllocationAmounts negateIf(final boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
+	public AllocationAmounts negate()
+	{
+		if (isZero())
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.payAmt(this.payAmt.negate())
+				.discountAmt(this.discountAmt.negate())
+				.writeOffAmt(this.writeOffAmt.negate())
 				.build();
 	}
 

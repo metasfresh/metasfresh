@@ -3,10 +3,12 @@ package de.metas.banking.payment.paymentallocation.service;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Payment;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -27,6 +29,8 @@ import lombok.ToString;
 public class PaymentDocument implements IPaymentDocument
 {
 	@Getter
+	private final PaymentId paymentId;
+	@Getter
 	private final BPartnerId bpartnerId;
 	private final String documentNo;
 	@Getter
@@ -43,17 +47,18 @@ public class PaymentDocument implements IPaymentDocument
 
 	@Builder
 	private PaymentDocument(
+			@NonNull final PaymentId paymentId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
-			@NonNull final TableRecordReference reference,
 			final boolean isSOTrx,
 			//
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate)
 	{
+		this.paymentId = paymentId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
-		this.reference = reference;
+		this.reference = TableRecordReference.of(I_C_Payment.Table_Name, paymentId);
 		this.isSOTrx = isSOTrx;
 		//
 		Money.getCommonCurrencyIdOfAll(openAmt, amountToAllocate);
