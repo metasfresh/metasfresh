@@ -5,10 +5,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_PriceList_Version
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_PriceList_Version, org.compiere.model.I_Persistent 
+public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_PriceList_Version, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -57,32 +57,9 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set Fallback to Base Price List prices.
-		@param FallbackToBasePriceListPrices Fallback to Base Price List prices	  */
-	@Override
-	public void setFallbackToBasePriceListPrices (boolean FallbackToBasePriceListPrices)
-	{
-		set_Value (COLUMNNAME_FallbackToBasePriceListPrices, Boolean.valueOf(FallbackToBasePriceListPrices));
-	}
-
-	/** Get Fallback to Base Price List prices.
-		@return Fallback to Base Price List prices	  */
-	@Override
-	public boolean isFallbackToBasePriceListPrices () 
-	{
-		Object oo = get_Value(COLUMNNAME_FallbackToBasePriceListPrices);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	@Override
@@ -98,15 +75,15 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	}
 
 	/** Set Rabatt Schema.
-		@param M_DiscountSchema_ID 
+		@param M_DiscountSchema_ID
 		Schema um den prozentualen Rabatt zu berechnen
 	  */
 	@Override
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
 	{
-		if (M_DiscountSchema_ID < 1) 
+		if (M_DiscountSchema_ID < 1)
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
 	}
 
@@ -114,7 +91,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		@return Schema um den prozentualen Rabatt zu berechnen
 	  */
 	@Override
-	public int getM_DiscountSchema_ID () 
+	public int getM_DiscountSchema_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
 		if (ii == null)
@@ -135,15 +112,15 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	}
 
 	/** Set Preisliste.
-		@param M_PriceList_ID 
+		@param M_PriceList_ID
 		Unique identifier of a Price List
 	  */
 	@Override
 	public void setM_PriceList_ID (int M_PriceList_ID)
 	{
-		if (M_PriceList_ID < 1) 
+		if (M_PriceList_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_PriceList_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
 	}
 
@@ -151,7 +128,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		@return Unique identifier of a Price List
 	  */
 	@Override
-	public int getM_PriceList_ID () 
+	public int getM_PriceList_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
 		if (ii == null)
@@ -172,15 +149,15 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	}
 
 	/** Set Basis-Preislistenversion.
-		@param M_Pricelist_Version_Base_ID 
+		@param M_Pricelist_Version_Base_ID
 		Basis für Preiskalkulationen
 	  */
 	@Override
 	public void setM_Pricelist_Version_Base_ID (int M_Pricelist_Version_Base_ID)
 	{
-		if (M_Pricelist_Version_Base_ID < 1) 
+		if (M_Pricelist_Version_Base_ID < 1)
 			set_Value (COLUMNNAME_M_Pricelist_Version_Base_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Pricelist_Version_Base_ID, Integer.valueOf(M_Pricelist_Version_Base_ID));
 	}
 
@@ -188,7 +165,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		@return Basis für Preiskalkulationen
 	  */
 	@Override
-	public int getM_Pricelist_Version_Base_ID () 
+	public int getM_Pricelist_Version_Base_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Pricelist_Version_Base_ID);
 		if (ii == null)
@@ -197,15 +174,15 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	}
 
 	/** Set Version Preisliste.
-		@param M_PriceList_Version_ID 
+		@param M_PriceList_Version_ID
 		Identifies a unique instance of a Price List
 	  */
 	@Override
 	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
 	{
-		if (M_PriceList_Version_ID < 1) 
+		if (M_PriceList_Version_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_PriceList_Version_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_PriceList_Version_ID, Integer.valueOf(M_PriceList_Version_ID));
 	}
 
@@ -213,7 +190,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		@return Identifies a unique instance of a Price List
 	  */
 	@Override
-	public int getM_PriceList_Version_ID () 
+	public int getM_PriceList_Version_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID);
 		if (ii == null)
@@ -222,7 +199,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	}
 
 	/** Set Name.
-		@param Name 
+		@param Name
 		Alphanumeric identifier of the entity
 	  */
 	@Override
@@ -235,7 +212,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		@return Alphanumeric identifier of the entity
 	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
@@ -251,14 +228,14 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	/** Get Erstellen.
 		@return Erstellen	  */
 	@Override
-	public java.lang.String getProcCreate () 
+	public java.lang.String getProcCreate ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProcCreate);
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -267,23 +244,23 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Gültig ab.
-		@param ValidFrom 
+		@param ValidFrom
 		Valid from including this date (first day)
 	  */
 	@Override
@@ -296,7 +273,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		@return Valid from including this date (first day)
 	  */
 	@Override
-	public java.sql.Timestamp getValidFrom () 
+	public java.sql.Timestamp getValidFrom ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}

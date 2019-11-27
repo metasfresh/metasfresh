@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -178,7 +179,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 		return SalesOrderCandidate.builder()
 				.priceListId(PriceListId.ofRepoId(fromQuotation.getM_PriceList_ID()))
-				.datePromised(TimeUtil.asLocalDate(fromQuotation.getDatePromised()))
+				.datePromised(TimeUtil.asZonedDateTime(fromQuotation.getDatePromised()))
 				.fromQuotation(fromQuotation)
 				//
 				.lines(lines)
@@ -296,7 +297,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		if (line.isAddProductToPriceList())
 		{
 			final PriceListId priceListId = candidate.getPriceListId();
-			final LocalDate priceDate = candidate.getDatePromised();
+			final ZonedDateTime priceDate = candidate.getDatePromised();
 			final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(priceListId, priceDate);
 
 			priceListsRepo.addProductPrice(AddProductPriceRequest.builder()
@@ -498,7 +499,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		private final PriceListId priceListId;
 
 		@NonNull
-		private final LocalDate datePromised;
+		private final ZonedDateTime datePromised;
 
 		@NonNull
 		private final I_C_Order fromQuotation;

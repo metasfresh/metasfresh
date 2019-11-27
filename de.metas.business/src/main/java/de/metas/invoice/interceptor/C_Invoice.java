@@ -24,6 +24,7 @@ package de.metas.invoice.interceptor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -119,10 +120,10 @@ public class C_Invoice // 03771
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_PriceList_ID })
 	public void removeMaterialLinesNotCorrespondingToPriceList(final I_C_Invoice invoice)
 	{
-		LocalDate invoiceDate = TimeUtil.asLocalDate(invoice.getDateInvoiced());
+		ZonedDateTime invoiceDate = TimeUtil.asZonedDateTime(invoice.getDateInvoiced());
 		if (invoiceDate == null)
 		{
-			invoiceDate = SystemTime.asLocalDate();
+			invoiceDate = SystemTime.asZonedDateTime();
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
