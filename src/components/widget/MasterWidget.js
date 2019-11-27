@@ -31,23 +31,16 @@ class MasterWidget extends Component {
     data: '',
   };
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
-    const { data, widgetData } = this.props;
+    const { data, widgetData, clearValue } = this.props;
 
+    // `clearValue` removes current field value for the widget. This is used when
+    // user focuses on table cell and starts typing
     this.setState({
-      data: data || widgetData[0].value,
+      data: data || (clearValue ? '' : widgetData[0].value),
     });
   }
 
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method.
-   * @param {*} nextProps
-   */
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { widgetData, widgetType } = this.props;
     const { edited, data } = this.state;
@@ -81,10 +74,6 @@ class MasterWidget extends Component {
     }
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
@@ -157,7 +146,7 @@ class MasterWidget extends Component {
   };
 
   //
-  // This method may looks like a redundant for this one above,
+  // This method may look like a redundant for this one above,
   // but is need to handle controlled components if
   // they patch on other event than onchange
   //
@@ -167,7 +156,7 @@ class MasterWidget extends Component {
    * @param {*} property
    * @param {*} val
    */
-  handleChange = (property, val) => {
+  handleChange = (property, val, cachedVal) => {
     const {
       updatePropertyValue,
       tabId,
@@ -330,5 +319,5 @@ export default connect(
     updatePropertyValue: windowActions.updatePropertyValue,
   },
   null,
-  { withRef: true }
+  { forwardRef: true }
 )(MasterWidget);

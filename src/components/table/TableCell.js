@@ -1,7 +1,7 @@
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
-import React, { PureComponent } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
@@ -126,6 +126,10 @@ class TableCell extends PureComponent {
   constructor(props) {
     super(props);
 
+    this.widget = createRef();
+
+    this.clearWidgetValue = false;
+
     this.state = {
       tooltipToggled: false,
     };
@@ -214,6 +218,10 @@ class TableCell extends PureComponent {
       handleDoubleClick(e, property, true, widgetData[0]);
     }
   };
+
+  clearValue = reset => {
+    this.clearWidgetValue = reset == null ? true : false;
+  }
 
   render() {
     const {
@@ -337,6 +345,7 @@ class TableCell extends PureComponent {
               listenOnKeysTrue,
               onClickOutside,
             }}
+            clearValue={true}
             entity={entityEffective}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
@@ -347,9 +356,7 @@ class TableCell extends PureComponent {
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
             onChange={mainTable ? onCellChange : null}
-            ref={c => {
-              this.widget = c && c.getWrappedInstance();
-            }}
+            ref={this.widget}
           />
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>
@@ -394,9 +401,11 @@ TableCell.propTypes = {
   isGerman: PropTypes.bool,
 };
 
-export default connect(state => ({
+const mapStateToProps = state => ({
   modalVisible: state.windowHandler.modal.visible,
   isGerman: state.appHandler.me.language
     ? state.appHandler.me.language.key.includes('de')
     : false,
-}))(TableCell);
+});
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(TableCell);

@@ -33,6 +33,7 @@ class TableItem extends PureComponent {
     this.state = {
       edited: '',
       activeCell: '',
+      activeCellName: null,
       updatedRow: false,
       listenOnKeys: true,
       editedCells: {},
@@ -70,6 +71,31 @@ class TableItem extends PureComponent {
       ReactDOM.findDOMNode(this.autofocusCell).focus();
     }
   }
+
+  isAllowedFieldEdit = item =>
+    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
+
+  isEditableOnDemand = item => {
+    const { fieldsByName } = this.props;
+    const { editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
+    const property = item.fields ? item.fields[0].field : item.field;
+
+    return (
+      (cells &&
+        cells[property] &&
+        cells[property].viewEditorRenderMode ===
+          VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
+      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
+    );
+  };
+
+  prepareWidgetData = item => {
+    const { fieldsByName } = this.props;
+    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
+
+    return widgetData;
+  };
 
   initPropertyEditor = fieldName => {
     const { cols, fieldsByName } = this.props;
@@ -117,40 +143,41 @@ class TableItem extends PureComponent {
       default: {
         const inp = String.fromCharCode(e.keyCode);
         if (/[a-zA-Z0-9]/.test(inp)) {
+
           this.listenOnKeysTrue();
-          this.handleEditProperty(e, property, true, widgetData);
+
+          this.handleEditProperty(e, property, true, widgetData, true);
         }
         break;
       }
     }
   };
 
-  handleEditProperty = (e, property, focus, item) => {
-    this.focusCell();
-    this.editProperty(e, property, focus, item, select);
-  };
-
-  focusCell = () => {
+  focusCell = property => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
       this.setState({
         activeCell: elem,
+        activeCellName: property,
       });
     }
   };
 
-  prepareWidgetData = item => {
-    const { fieldsByName } = this.props;
-    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
-
-    return widgetData;
+  handleEditProperty = (e, property, focus, item, select) => {
+    this.focusCell(property);
+    this.editProperty(e, property, focus, item, select);
   };
 
-  editProperty = (e, property, focus, item) => {
+  editProperty = (e, property, focus, item, select) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e.stopPropagation();
+
+
+      if (select && this.selectedCell) {
+        this.selectedCell.clearValue();
+      }
 
       this.setState(
         {
@@ -210,10 +237,6 @@ class TableItem extends PureComponent {
     this.listenOnKeysTrue();
 
     activeCell && activeCell.focus();
-  };
-
-  isAllowedFieldEdit = item => {
-    return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
   };
 
   /*
@@ -286,6 +309,11 @@ class TableItem extends PureComponent {
             displayed: true,
             readonly: false,
           };
+        } else {
+          cellWidget = {
+            ...cellWidget,
+            readonly: true,
+          };
         }
 
         if (cellWidget) {
@@ -331,6 +359,7 @@ class TableItem extends PureComponent {
       cellsExtended,
       multilineText,
       multilineTextLines,
+      activeCellName,
     } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
 
@@ -386,8 +415,13 @@ class TableItem extends PureComponent {
                   keyProperty,
                 }}
                 ref={c => {
-                  if (c && isSelected && focusOnFieldName === property) {
-                    this.autofocusCell = c;
+                  if (c && isSelected) {
+                    if (focusOnFieldName === property) {
+                      this.autofocusCell = c;
+                    }
+                    if (activeCellName === property) {
+                      this.selectedCell = c;
+                    }                 
                   }
                 }}
                 tdValue={
@@ -627,5 +661,5 @@ export default connect(
   false,
   false,
   false,
-  { withRef: true }
+  { forwardRef: true }
 )(TableItem);

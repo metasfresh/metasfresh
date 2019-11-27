@@ -179,6 +179,8 @@ export class RawWidget extends Component {
       closeTableField();
       e.preventDefault();
 
+      this.handleBlur();
+
       return this.handlePatch(property, value, null, null, true);
     }
 
@@ -375,7 +377,7 @@ export class RawWidget extends Component {
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
-    const { isEdited } = this.state;
+    const { isEdited, cachedValue } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
@@ -404,7 +406,7 @@ export class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e => handleChange && handleChange(widgetField, e.target.value),
+      onChange: e => handleChange && handleChange(widgetField, e.target.value, cachedValue || widgetValue),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
