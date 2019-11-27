@@ -698,9 +698,15 @@ public class PriceListDAO implements IPriceListDAO
 		newCustomerPLV.setM_DiscountSchema_ID(newBasePLV.getM_DiscountSchema_ID());
 		newCustomerPLV.setM_Pricelist_Version_Base_ID(oldCustomerPLV.getM_PriceList_Version_ID());
 
-		final String plvName = createPLVName(PriceListId.ofRepoId(oldCustomerPLV.getM_PriceList_ID()), TimeUtil.asLocalDate(newBasePLV.getValidFrom()));
+		final PriceListId pricelistId = PriceListId.ofRepoId(oldCustomerPLV.getM_PriceList_ID());
+		final LocalDate validFrom = TimeUtil.asLocalDate(newBasePLV.getValidFrom());
 
-		newCustomerPLV.setName(plvName);
+		if (pricelistId != null && validFrom != null)
+		{
+			final String plvName = createPLVName(pricelistId, validFrom);
+
+			newCustomerPLV.setName(plvName);
+		}
 
 		saveRecord(newCustomerPLV);
 

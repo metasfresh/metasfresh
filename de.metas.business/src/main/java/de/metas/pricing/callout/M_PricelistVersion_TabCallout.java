@@ -1,5 +1,7 @@
 package de.metas.pricing.callout;
 
+import java.time.LocalDate;
+
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.compiere.model.I_M_PriceList_Version;
@@ -47,9 +49,16 @@ public class M_PricelistVersion_TabCallout extends TabCalloutAdapter
 			// name was already set. Do nothing
 			return;
 		}
-		final String plvName = pricelistDAO.createPLVName(PriceListId.ofRepoId(version.getM_PriceList_ID()), SystemTime.asLocalDate());
 
-		version.setName(plvName);
+		final PriceListId pricelistId = PriceListId.ofRepoIdOrNull(version.getM_PriceList_ID());
+		final LocalDate today = SystemTime.asLocalDate();
+
+		if (pricelistId != null && today != null)
+		{
+			final String plvName = pricelistDAO.createPLVName(pricelistId, today);
+
+			version.setName(plvName);
+		}
 	}
 
 }
