@@ -61,7 +61,7 @@
     "babel-eslint": "10.0.1",
     "babel-jest": "24.7.1",
     "babel-loader": "8.0.6",
-    "babel-plugin-dynamic-import-node": "2.2.0",
+    "babel-plugin-dynamic-import-node": "2.3.0",
     "better-docs": "^1.1.6",
     "common-tags": "1.4.0",
     "css-loader": "1.0.1",
