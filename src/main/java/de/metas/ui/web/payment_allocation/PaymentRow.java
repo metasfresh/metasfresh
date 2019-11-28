@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -16,6 +19,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -43,6 +47,7 @@ import lombok.NonNull;
 public class PaymentRow implements IViewRow
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
+	@Getter
 	private final String documentNo;
 
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateTrx")
@@ -58,22 +63,33 @@ public class PaymentRow implements IViewRow
 	private final String currencyCode;
 
 	private final DocumentId rowId;
+	@Getter
+	private final PaymentId paymentId;
+	@Getter
+	private OrgId orgId;
+	@Getter
+	private boolean inboundPayment;
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
 	@Builder
 	private PaymentRow(
 			@NonNull final PaymentId paymentId,
+			@NonNull final OrgId orgId,
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateTrx,
 			@NonNull final LookupValue bpartner,
-			@NonNull final Amount amount)
+			@NonNull final Amount amount,
+			final boolean inboundPayment)
 	{
 		rowId = DocumentId.of(paymentId);
+		this.paymentId = paymentId;
+		this.orgId = orgId;
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
 		this.bpartner = bpartner;
 		this.amount = amount.getAsBigDecimal();
 		this.currencyCode = amount.getCurrencyCode().toThreeLetterCode();
+		this.inboundPayment = inboundPayment;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
 	}
@@ -106,5 +122,15 @@ public class PaymentRow implements IViewRow
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
 		return values.get(this);
+	}
+
+	public BPartnerId getBPartnerId()
+	{
+		return bpartner.getIdAs(BPartnerId::ofRepoId);
+	}
+
+	public Amount getAmount()
+	{
+		return Amount.of(amount, CurrencyCode.ofThreeLetterCode(currencyCode));
 	}
 }

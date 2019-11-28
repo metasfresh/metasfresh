@@ -7,8 +7,11 @@ import java.util.Set;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -19,6 +22,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -46,6 +50,7 @@ import lombok.NonNull;
 public class InvoiceRow implements IViewRow
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
+	@Getter
 	private final String documentNo;
 
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateInvoiced")
@@ -66,6 +71,12 @@ public class InvoiceRow implements IViewRow
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
 	private final String currencyCode;
 
+	@Getter
+	private final InvoiceId invoiceId;
+	@Getter
+	private SOTrx soTrx;
+	@Getter
+	private boolean creditMemo;
 	private final DocumentId rowId;
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
@@ -75,14 +86,19 @@ public class InvoiceRow implements IViewRow
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
+			@NonNull final SOTrx soTrx,
+			final boolean creditMemo,
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt)
 	{
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
+		this.invoiceId = invoiceId;
 		this.documentNo = documentNo;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
+		this.soTrx = soTrx;
+		this.creditMemo = creditMemo;
 		this.grandTotal = grandTotal.getAsBigDecimal();
 		this.openAmt = openAmt.getAsBigDecimal();
 		this.discountAmt = discountAmt.getAsBigDecimal();
@@ -131,5 +147,20 @@ public class InvoiceRow implements IViewRow
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
 		return values.get(this);
+	}
+
+	public BPartnerId getBPartnerId()
+	{
+		return bpartner.getIdAs(BPartnerId::ofRepoId);
+	}
+
+	public Amount getOpenAmt()
+	{
+		return Amount.of(openAmt, CurrencyCode.ofThreeLetterCode(currencyCode));
+	}
+
+	public Amount getDiscountAmt()
+	{
+		return Amount.of(discountAmt, CurrencyCode.ofThreeLetterCode(currencyCode));
 	}
 }
