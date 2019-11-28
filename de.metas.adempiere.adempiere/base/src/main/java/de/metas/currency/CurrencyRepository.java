@@ -42,6 +42,13 @@ public class CurrencyRepository
 		return getById(CurrencyId.ofRepoId(currencyId));
 	}
 
+	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
+	{
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+		final Currency currency = currencyDAO.getByCurrencyCode(currencyCode);
+		return currency.getId();
+	}
+
 	public CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
 	{
 		return getById(currencyId).getCurrencyCode();
