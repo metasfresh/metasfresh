@@ -209,6 +209,11 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return expectedViewClass.isAssignableFrom(view.getClass());
 	}
 
+	protected final void invalidateView(@NonNull final IView view)
+	{
+		viewsRepo.invalidateView(view);
+	}
+
 	protected final void invalidateView(@NonNull final ViewId viewId)
 	{
 		viewsRepo.invalidateView(viewId);
