@@ -100,7 +100,7 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 				.collect(ImmutableList.toImmutableList());
 
 		final LocalDate dateTrx = SystemTime.asLocalDate();
-		final Money paymentOpenAmt = moneyService.toMoney(paymentRow.getAmount());
+		final Money paymentOpenAmt = moneyService.toMoney(paymentRow.getOpenAmt());
 
 		return PaymentAllocationBuilder.newBuilder()
 				.orgId(paymentRow.getClientAndOrgId().getOrgId())
@@ -132,7 +132,7 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 
 	private PaymentDocument toPaymentDocument(final PaymentRow row)
 	{
-		final Money openAmt = moneyService.toMoney(row.getAmount());
+		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 
 		return PaymentDocument.builder()
 				.paymentId(row.getPaymentId())

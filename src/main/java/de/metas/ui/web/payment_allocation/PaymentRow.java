@@ -1,12 +1,10 @@
 package de.metas.ui.web.payment_allocation;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.IViewRow;
@@ -56,10 +54,15 @@ public class PaymentRow implements IViewRow
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")
 	private final LookupValue bpartner;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Amount")
-	private final BigDecimal amount;
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "PayAmt")
+	@Getter
+	private final Amount payAmt;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "OpenAmt")
+	@Getter
+	private final Amount openAmt;
+
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
 	private final String currencyCode;
 
 	private final DocumentId rowId;
@@ -79,7 +82,8 @@ public class PaymentRow implements IViewRow
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateTrx,
 			@NonNull final LookupValue bpartner,
-			@NonNull final Amount amount,
+			@NonNull final Amount payAmt,
+			@NonNull final Amount openAmt,
 			final boolean inboundPayment)
 	{
 		rowId = convertPaymentIdToDocumentId(paymentId);
@@ -88,8 +92,9 @@ public class PaymentRow implements IViewRow
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
 		this.bpartner = bpartner;
-		this.amount = amount.getAsBigDecimal();
-		this.currencyCode = amount.getCurrencyCode().toThreeLetterCode();
+		this.payAmt = payAmt;
+		this.openAmt = openAmt;
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(payAmt, openAmt).toThreeLetterCode();
 		this.inboundPayment = inboundPayment;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
@@ -133,10 +138,5 @@ public class PaymentRow implements IViewRow
 	public BPartnerId getBPartnerId()
 	{
 		return bpartner.getIdAs(BPartnerId::ofRepoId);
-	}
-
-	public Amount getAmount()
-	{
-		return Amount.of(amount, CurrencyCode.ofThreeLetterCode(currencyCode));
 	}
 }

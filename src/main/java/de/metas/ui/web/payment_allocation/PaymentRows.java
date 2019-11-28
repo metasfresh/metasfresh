@@ -1,5 +1,6 @@
 package de.metas.ui.web.payment_allocation;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.util.lang.SynchronizedMutable;
@@ -7,12 +8,12 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -40,15 +41,18 @@ import lombok.NonNull;
 
 public class PaymentRows implements IRowsData<PaymentRow>
 {
+	private final PaymentAndInvoiceRowsRepo repository;
+	private final ZonedDateTime evaluationDate;
 	private final SynchronizedMutable<ImmutableRowsIndex<PaymentRow>> rowsHolder;
 
 	@Builder
 	private PaymentRows(
 			@NonNull PaymentAndInvoiceRowsRepo repository,
-			@NonNull final List<PaymentRow> initialRows)
+			@NonNull final List<PaymentRow> initialRows,
+			@NonNull final ZonedDateTime evaluationDate)
 	{
-		Check.assumeNotEmpty(initialRows, "initialRows is not empty");
-
+		this.repository = repository;
+		this.evaluationDate = evaluationDate;
 		rowsHolder = SynchronizedMutable.of(new ImmutableRowsIndex<>(initialRows));
 	}
 
@@ -71,13 +75,18 @@ public class PaymentRows implements IRowsData<PaymentRow>
 	@Override
 	public void invalidateAll()
 	{
+		invalidate(DocumentIdsSelection.ALL);
 		// nothing
 	}
 
 	@Override
 	public void invalidate(final DocumentIdsSelection rowIds)
 	{
-		// TODO Auto-generated method stub
-		invalidateAll();
+		final ImmutableSet<PaymentId> paymentIds = rowsHolder.getValue().streamRows(rowIds)
+				.map(PaymentRow::getPaymentId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<PaymentRow> newRows = repository.getPaymentRowsListByInvoiceId(paymentIds, evaluationDate);
+		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
 	}
 }
