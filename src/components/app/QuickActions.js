@@ -460,5 +460,5 @@ export default connect(
   false,
   false,
   false,
-  { withRef: true }
+  { forwardRef: true }
 )(QuickActions);

@@ -294,6 +294,11 @@
     tbody tr:last-child {
         border-bottom: 1px solid $brand-border-color;
     }
+
+    .table-wrapper .table-flex-wrapper:first-child {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
 }
 
 .tabs-wrapper,

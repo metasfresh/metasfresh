@@ -218,7 +218,7 @@ export default class App extends Component {
         <ShortcutProvider>
           <Translation>
             <NotificationHandler>
-              <CustomRouter store={store} history={history} auth={this.auth} />
+              <CustomRouter history={history} auth={this.auth} />
             </NotificationHandler>
           </Translation>
         </ShortcutProvider>

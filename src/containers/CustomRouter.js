@@ -1,13 +1,16 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Router } from 'react-router';
-import { connect } from 'react-redux';
+import { connect, ReactReduxContext } from 'react-redux';
 
 import { getRoutes } from '../routes.js';
 
 class CustomRouter extends PureComponent {
+  static contextType = ReactReduxContext;
+
   UNSAFE_componentWillMount() {
-    const { plugins, store, auth } = this.props;
+    const { plugins, auth } = this.props;
+    const store = this.context.store;
 
     this.routes = getRoutes(store, auth, plugins);
   }
@@ -20,7 +23,6 @@ class CustomRouter extends PureComponent {
 }
 
 CustomRouter.propTypes = {
-  store: PropTypes.object.isRequired,
   auth: PropTypes.object.isRequired,
   plugins: PropTypes.array,
 };

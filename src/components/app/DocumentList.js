@@ -37,7 +37,6 @@ import { parseToDisplay, getRowsData } from '../../utils/documentListHelper';
 import { getSelectionDirect } from '../../reducers/windowHandler';
 import {
   DLpropTypes,
-  DLcontextTypes,
   DLmapStateToProps,
   NO_SELECTION,
   NO_VIEW,
@@ -1092,7 +1091,7 @@ export class DocumentList extends Component {
                 className="header-element align-items-center"
                 processStatus={processStatus}
                 ref={c => {
-                  this.quickActionsComponent = c && c.getWrappedInstance();
+                  this.quickActionsComponent = c;
                 }}
                 selected={selected}
                 viewId={viewId}
@@ -1138,12 +1137,7 @@ export class DocumentList extends Component {
             <div className="row table-row">
               <Table
                 entity="documentView"
-                ref={c =>
-                  (this.table =
-                    c &&
-                    c.getWrappedInstance() &&
-                    c.getWrappedInstance().instanceRef)
-                }
+                ref={c => (this.table = c)}
                 rowData={rowDataMap}
                 cols={layout.elements}
                 collapsible={layout.collapsible}
@@ -1230,15 +1224,9 @@ export class DocumentList extends Component {
  */
 DocumentList.propTypes = { ...DLpropTypes };
 
-/**
- * @typedef {object} Props Component context
- * @prop {object} DLcontextTypes
- */
-DocumentList.contextTypes = { ...DLcontextTypes };
-
 export default connect(
   DLmapStateToProps,
   null,
   null,
-  { withRef: true }
+  { forwardRef: true }
 )(DocumentList);
