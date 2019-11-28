@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -227,7 +228,8 @@ public class ProductPrices
 
 	public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
-			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper)
+			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
+			@NonNull ZonedDateTime priceDate)
 	{
 		if (startPriceListVersion == null)
 		{
@@ -253,7 +255,8 @@ public class ProductPrices
 				return productPrice;
 			}
 
-			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion);
+
+			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion, priceDate);
 		}
 
 		return null;

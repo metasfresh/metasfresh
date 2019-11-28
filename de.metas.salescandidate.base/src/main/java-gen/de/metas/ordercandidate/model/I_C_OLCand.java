@@ -2069,28 +2069,51 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Menge.
-	 * Menge
+	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	public void setQtyEntered (java.math.BigDecimal QtyEntered);
 
 	/**
 	 * Get Menge.
-	 * Menge
+	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	public java.math.BigDecimal getQtyEntered();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+    /** Column definition for QtyEntered */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "QtyEntered", null);
+    /** Column name QtyEntered */
+    public static final String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
+	 * Set Verpackungskapazität.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Verpackungskapazität.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyItemCapacity();
+
+    /** Column definition for QtyItemCapacity */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "QtyItemCapacity", null);
+    /** Column name QtyItemCapacity */
+    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
 	 * Set Datensatz-ID.

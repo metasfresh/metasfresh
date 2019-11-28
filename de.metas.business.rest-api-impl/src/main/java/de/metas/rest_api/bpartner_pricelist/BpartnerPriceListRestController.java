@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,7 +107,7 @@ public class BpartnerPriceListRestController
 	{
 		try
 		{
-			final LocalDate date = !Check.isEmpty(dateStr) ? LocalDate.parse(dateStr) : SystemTime.asLocalDate();
+			final LocalDate date = !Check.isEmpty(dateStr) ? TimeUtil.asLocalDate(dateStr) : SystemTime.asLocalDate();
 
 			final JsonResponsePriceList result = GetPriceListCommand.builder()
 					.servicesFacade(servicesFacade)

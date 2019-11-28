@@ -141,7 +141,7 @@ public class ContractsDAO implements IContractsDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, term.getC_Flatrate_Term_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

@@ -22,6 +22,8 @@ package de.metas.process;
  * #L%
  */
 
+import lombok.NonNull;
+
 /**
  * Let your process implement this interface if you want to:
  * <ul>
@@ -30,7 +32,6 @@ package de.metas.process;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @FunctionalInterface
 public interface IProcessPrecondition
@@ -45,5 +46,5 @@ public interface IProcessPrecondition
 	 * @param context
 	 * @return precondition resolution
 	 */
-	ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context);
+	ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context);
 }

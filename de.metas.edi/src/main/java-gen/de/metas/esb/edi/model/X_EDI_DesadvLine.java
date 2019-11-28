@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1278266102L;
+	private static final long serialVersionUID = -933578745L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -46,6 +46,22 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Mindesthaltbarkeitsdatum.
+		@param BestBeforeDate Mindesthaltbarkeitsdatum	  */
+	@Override
+	public void setBestBeforeDate (java.sql.Timestamp BestBeforeDate)
+	{
+		set_Value (COLUMNNAME_BestBeforeDate, BestBeforeDate);
+	}
+
+	/** Get Mindesthaltbarkeitsdatum.
+		@return Mindesthaltbarkeitsdatum	  */
+	@Override
+	public java.sql.Timestamp getBestBeforeDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_BestBeforeDate);
+	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 

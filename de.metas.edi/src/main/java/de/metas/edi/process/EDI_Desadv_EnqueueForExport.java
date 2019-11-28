@@ -10,14 +10,14 @@ package de.metas.edi.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,7 +37,6 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.adempiere.form.IClientUI;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -199,19 +198,19 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 			return;
 		}
 
-		// total number of desadv entries in selection
-		final int totalCounter = countTotalLines();
-
-		final boolean performEnqueuing = Services.get(IClientUI.class).ask()
-				.setParentWindowNo(getProcessInfo().getWindowNo())
-				.setAD_Message(MSG_DESADV_PerformEnqueuing, totalCounter, counterQty0)
-				.setDefaultAnswer(false)
-				.getAnswer();
-		if (!performEnqueuing)
-		{
-			throw new ProcessCanceledException();
-		}
-
+		// this currently doesn't work with the webui
+		// // total number of desadv entries in selection
+		// final int totalCounter = countTotalLines();
+		//
+		// final boolean performEnqueuing = Services.get(IClientUI.class).ask()
+		// .setParentWindowNo(getProcessInfo().getWindowNo())
+		// .setAD_Message(MSG_DESADV_PerformEnqueuing, totalCounter, counterQty0)
+		// .setDefaultAnswer(false)
+		// .getAnswer();
+		// if (!performEnqueuing)
+		// {
+		// throw new ProcessCanceledException();
+		// }
 	}
 
 	private Iterator<I_EDI_Desadv> createIterator()

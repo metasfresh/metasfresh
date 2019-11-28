@@ -214,6 +214,6 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addEqualsFilter(I_M_DeliveryDay_Alloc.COLUMN_M_DeliveryDay_ID, deliveryDay.getM_DeliveryDay_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 	}
 }

@@ -17,7 +17,7 @@ public interface IPricingConditionsRepository extends ISingletonService
 
 	default PricingConditions getPricingConditionsById(final int discountSchemaId)
 	{
-		return getPricingConditionsById(PricingConditionsId.ofDiscountSchemaId(discountSchemaId));
+		return getPricingConditionsById(PricingConditionsId.ofRepoId(discountSchemaId));
 	}
 
 	Collection<PricingConditions> getPricingConditionsByIds(Collection<PricingConditionsId> pricingConditionIds);

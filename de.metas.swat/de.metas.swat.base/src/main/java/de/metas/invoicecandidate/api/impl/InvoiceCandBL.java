@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -906,7 +907,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (partnerLocation != null)
 		{
-			final LocalDate date = TimeUtil.asLocalDate(ic.getDateOrdered());
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(ic.getDateOrdered());
 			final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
 
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
@@ -1350,10 +1351,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
-	 *
-	 * @param invoiceCandidateId
-	 * @param qtyToInvoiceOverride
-	 * @param priceEnteredOverride
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{

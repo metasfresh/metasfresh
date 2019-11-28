@@ -1,6 +1,6 @@
 package de.metas.invoice.callout;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -85,10 +85,10 @@ public class C_Invoice
 
 		//
 		// Get current dateInvoiced or use current time if it's not set
-		LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
+		ZonedDateTime dateInvoiced = TimeUtil.asZonedDateTime(invoice.getDateInvoiced());
 		if (dateInvoiced == null)
 		{
-			dateInvoiced = SystemTime.asLocalDate();
+			dateInvoiced = SystemTime.asZonedDateTime();
 		}
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);

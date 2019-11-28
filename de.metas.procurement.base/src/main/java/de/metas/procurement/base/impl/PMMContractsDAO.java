@@ -101,7 +101,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 		return retrieveAllRunningContractsOnDateQuery(date)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bpartner.getC_BPartner_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 		return retrieveAllRunningContractsOnDateQuery(date)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID, pmmProduct.getPMM_Product_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

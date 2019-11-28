@@ -1,6 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -21,11 +20,9 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.MNote;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -59,7 +56,11 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -207,6 +208,7 @@ class OLCandOrderFactory
 		de.metas.invoice_gateway.spi.model.BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
 		order.setC_BPartner_SalesRep_ID(salesRepId ==null? -1 : salesRepId.getRepoId());
 
+
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
@@ -289,9 +291,13 @@ class OLCandOrderFactory
 		//
 		// Quantity
 		{
-			final BigDecimal newQty = currentOrderLine.getQtyOrdered().add(candidate.getQty());
-			currentOrderLine.setQtyEntered(newQty);
-			currentOrderLine.setQtyOrdered(newQty);
+			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
+			final Quantity newQty = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
+			currentOrderLine.setQtyEntered(newQty.toBigDecimal());
+			currentOrderLine.setQtyItemCapacity(candidate.getQtyItemCapacity());
+
+			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
+			currentOrderLine.setQtyOrdered(qtyOrdered);
 		}
 
 		//
@@ -357,8 +363,7 @@ class OLCandOrderFactory
 			order = newOrder(candToProcess);
 		}
 
-		final I_C_OrderLine orderLine = create(new MOrderLine(LegacyAdapters.convertToPO(order)), I_C_OrderLine.class);
-
+		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order);
 		if (candToProcess.getC_Charge_ID() > 0)
 		{
 			orderLine.setC_Charge_ID(candToProcess.getC_Charge_ID());
@@ -371,7 +376,7 @@ class OLCandOrderFactory
 				throw new FillMandatoryException(I_C_OLCand.COLUMNNAME_M_Product_ID);
 			}
 			orderLine.setM_Product_ID(productId);
-			orderLine.setC_UOM_ID(candToProcess.getC_UOM_ID());
+			orderLine.setC_UOM_ID(candToProcess.getQty().getUomId().getRepoId());
 			orderLine.setM_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
 		}
 
@@ -390,7 +395,6 @@ class OLCandOrderFactory
 	// future we can have m:n if we want to)
 	private void createOla(final OLCand candidate, final I_C_OrderLine orderLine)
 	{
-		// Check.assume(Env.getAD_Client_ID(ctx) == orderCand.getAD_Client_ID(), "AD_Client_ID of " + orderCand + " and of its CTX are the same");
 		final int orderLineId = orderLine.getC_OrderLine_ID();
 
 		final I_C_Order_Line_Alloc newOla = InterfaceWrapperHelper.newInstance(I_C_Order_Line_Alloc.class);
@@ -398,7 +402,7 @@ class OLCandOrderFactory
 
 		newOla.setC_OLCand_ID(candidate.getId());
 		newOla.setC_OrderLine_ID(orderLineId);
-		newOla.setQtyOrdered(candidate.getQty());
+		newOla.setQtyOrdered(orderLine.getQtyOrdered());
 		newOla.setC_OLCandProcessor_ID(olCandProcessorId);
 
 		InterfaceWrapperHelper.save(newOla);

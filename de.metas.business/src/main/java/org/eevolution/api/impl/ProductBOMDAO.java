@@ -161,7 +161,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

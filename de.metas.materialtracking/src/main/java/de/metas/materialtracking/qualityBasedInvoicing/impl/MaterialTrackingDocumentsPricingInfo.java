@@ -1,6 +1,6 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -268,7 +268,7 @@ import lombok.NonNull;
 				return null;
 			}
 
-			final LocalDate movementDate = TimeUtil.asLocalDate(inOutLine.getM_InOut().getMovementDate());
+			final ZonedDateTime movementDate = TimeUtil.asZonedDateTime(inOutLine.getM_InOut().getMovementDate());
 			final I_M_PriceList priceList = priceLists.next();
 			final Boolean processedPLVFiltering = true; // task 09533: in material-tracking we work only with PLVs that are cleared
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
@@ -314,7 +314,7 @@ import lombok.NonNull;
 
 			final ProductId productId = ProductId.ofRepoId(_materialTracking.getM_Product_ID());
 			final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-			
+
 			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(product);
 			vendorReceipt.setPlv(plv);
 

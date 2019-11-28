@@ -180,7 +180,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public BPartnerId getBPartnerIdByValue(@NonNull final String value)
+	public Optional<BPartnerId> getBPartnerIdByValue(@NonNull final String value)
 	{
 		final String valueFixed = value.trim();
 
@@ -191,12 +191,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
 
-		if (bpartnerId == null)
-		{
-			throw new AdempiereException("@NotFound@ @BPValue@: " + valueFixed);
-		}
-
-		return bpartnerId;
+		return Optional.ofNullable(bpartnerId);
 	}
 
 	@Override
@@ -577,15 +572,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
 	 *
-	 *
 	 * @param bPartnerId the ID of the BPartner for which we need the pricing system id
-	 * @param soTrx
-	 *            <ul>
-	 *            <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
-	 *            <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
-	 *            <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
-	 *            <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
-	 *            </ul>
+	 * @param soTrx      <ul>
+	 *                   <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
+	 *                   <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
+	 *                   <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
+	 *                   <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
+	 *                   </ul>
 	 */
 	private PricingSystemId retrievePricingSystemIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
@@ -678,7 +671,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(columnName, true)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, address.getC_BPartner_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -690,9 +683,10 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
 				.addOnlyContextClient()
 				.create()
-				.match();
+				.anyMatch();
 	}
 
+	@Nullable
 	@Override
 	public I_C_BPartner retrieveBPartnerByValue(final Properties ctx, final String value)
 	{
@@ -1193,9 +1187,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	public ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(@NonNull final BPartnerQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
-		// .addOnlyContextClient()
-		// .addOnlyActiveRecordsFilter() also load inactive records!
-		;
+				// .addOnlyContextClient()
+				// .addOnlyActiveRecordsFilter() also load inactive records!
+				;
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{
@@ -1410,7 +1404,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID, pricingSystemId.getRepoId())
 				.create()
-				.match();
+				.anyMatch();
 
 		return belongsToCustomerForMutation;
 	}

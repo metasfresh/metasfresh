@@ -117,7 +117,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final boolean recordHasInvoiceCandidate = createICsThatReferenceSharesQueryBuilder()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, commissionShareRecord.getC_Commission_Share_ID())
 				.create()
-				.match();
+				.anyMatch();
 		return recordHasInvoiceCandidate;
 	}
 

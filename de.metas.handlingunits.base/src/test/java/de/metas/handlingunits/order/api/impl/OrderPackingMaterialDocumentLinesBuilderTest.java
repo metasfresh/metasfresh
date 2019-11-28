@@ -170,7 +170,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		olRecord2.setIsPackagingMaterial(true);
 		olRecord2.setM_HU_PI_Item_Product_ID(101);
 		olRecord2.setM_Product_ID(packageProduct.getM_Product_ID());
-		olRecord2.setC_UOM_ID(materialProduct.getC_UOM_ID());
+		olRecord2.setC_UOM_ID(packageProduct.getC_UOM_ID());
 		olRecord2.setDatePromised(TimeUtil.parseTimestamp("2018-10-21")); // has outdated values
 		olRecord2.setDateOrdered(TimeUtil.parseTimestamp("2018-10-20"));
 		saveRecord(olRecord2);

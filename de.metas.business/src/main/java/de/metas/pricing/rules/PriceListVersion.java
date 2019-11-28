@@ -1,8 +1,11 @@
 package de.metas.pricing.rules;
 
+import java.time.ZonedDateTime;
+
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.BooleanWithReason;
@@ -23,6 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -53,7 +57,10 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(), ctxPriceListVersion);
+		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
+				ctxPriceListVersion,
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+
 		if (productPrice == null)
 		{
 			logger.trace("Not found (PLV)");
@@ -106,11 +113,14 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 				: BooleanWithReason.falseBecause(reason);
 	}
 
-	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId, final I_M_PriceList_Version ctxPriceListVersion)
+	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
+			final I_M_PriceList_Version ctxPriceListVersion,
+			final ZonedDateTime promisedDate)
 	{
 		return ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
 				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId));
+				priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId),
+				promisedDate);
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(
@@ -136,7 +146,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(
 				pricingCtx.getPriceListId(),
-				pricingCtx.getPriceDate(),
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()),
 				(Boolean)null // processed
 		);
 

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -66,10 +67,11 @@ public class PP_Product_PlanningTest
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		save(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue2);
 
 		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
 		productPlanning.setM_AttributeSetInstance(asi);

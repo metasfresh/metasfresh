@@ -1,5 +1,6 @@
 package de.metas.contracts.flatrate.callout;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -89,7 +90,7 @@ public class OrderLine extends CalloutEngine
 	// metas
 	public String subscriptionLocation(final ICalloutField calloutField)
 	{
-		
+
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final I_C_Order order = ol.getC_Order();
 		final boolean IsSOTrx = order.isSOTrx();
@@ -98,9 +99,10 @@ public class OrderLine extends CalloutEngine
 		if (IsSOTrx && !isSubscription)
 		{
 			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-			
+
 			final Quantity qty = orderLineBL.getQtyEntered(ol);
-			ol.setQtyOrdered(qty.getQty());
+			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal();
+			ol.setQtyOrdered(qtyOrdered);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)

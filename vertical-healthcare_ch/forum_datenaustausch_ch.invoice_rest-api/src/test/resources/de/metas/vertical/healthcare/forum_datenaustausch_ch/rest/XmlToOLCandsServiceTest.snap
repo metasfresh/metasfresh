@@ -66,7 +66,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -144,7 +143,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -222,7 +220,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -300,7 +297,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2527.12,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -378,7 +374,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 95.93,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -456,7 +451,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : -306.99,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -534,7 +528,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -612,7 +605,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -690,7 +682,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -768,7 +759,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -846,7 +836,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -924,7 +913,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1002,7 +990,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1080,7 +1067,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 20.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1158,7 +1144,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 4.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1236,7 +1221,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1314,7 +1298,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 1.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1392,7 +1375,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 2,
-    "packingMaterialId" : 0,
     "price" : 1.10,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1470,7 +1452,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 8.70,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1548,7 +1529,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 29.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1626,7 +1606,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 10.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1709,7 +1688,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1787,7 +1765,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1865,7 +1842,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1943,7 +1919,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2527.12,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2021,7 +1996,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 95.93,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2099,7 +2073,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : -306.99,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2177,7 +2150,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2255,7 +2227,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2333,7 +2304,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2411,7 +2381,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2489,7 +2458,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2567,7 +2535,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2645,7 +2612,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2723,7 +2689,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 20.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2801,7 +2766,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 4.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2879,7 +2843,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2957,7 +2920,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 1.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3035,7 +2997,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 2,
-    "packingMaterialId" : 0,
     "price" : 1.10,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3113,7 +3074,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 8.70,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3191,7 +3151,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 29.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3269,7 +3228,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 10.0,
     "currencyCode" : "CHF",
     "discount" : 0,

@@ -502,7 +502,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			whereClauseEffective.append(" AND ( ").append(keyColumnName).append("=").append(zoomSource.getRecord_ID()).append(" )");
 
 			final boolean match = new Query(zoomSource.getCtx(), zoomSource.getTableName(), whereClauseEffective.toString(), zoomSource.getTrxName())
-					.match();
+					.anyMatch();
 
 			logger.debug("whereClause='{}' matches source='{}': {}", parsedWhere, zoomSource, match);
 			return match;

@@ -38,17 +38,17 @@ import de.metas.util.Services;
 public class OLCandDAO implements IOLCandDAO
 {
 	// makes no sense: we can't assume uniqueness among different external systems.
-//	@Override
-//	public OptionalInt getOLCandIdByExternalId(@NonNull final String olCandExternalId)
-//	{
-//		final int olCandId = Services.get(IQueryBL.class)
-//				.createQueryBuilder(I_C_OLCand.class)
-//				.addEqualsFilter(I_C_OLCand.COLUMN_ExternalId, olCandExternalId)
-//				.create()
-//				.firstIdOnly();
-//
-//		return olCandId > 0 ? OptionalInt.of(olCandId) : OptionalInt.empty();
-//	}
+	// @Override
+	// public OptionalInt getOLCandIdByExternalId(@NonNull final String olCandExternalId)
+	// {
+	// final int olCandId = Services.get(IQueryBL.class)
+	// .createQueryBuilder(I_C_OLCand.class)
+	// .addEqualsFilter(I_C_OLCand.COLUMN_ExternalId, olCandExternalId)
+	// .create()
+	// .firstIdOnly();
+	//
+	// return olCandId > 0 ? OptionalInt.of(olCandId) : OptionalInt.empty();
+	// }
 
 	@Override
 	public List<I_C_OLCand> retrieveReferencing(final Properties ctx, final String tableName, final int recordId, final String trxName)
@@ -61,7 +61,9 @@ public class OLCandDAO implements IOLCandDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_AD_Table_ID, tableId)
+
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Record_ID, recordId)
+
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_OLCand.COLUMNNAME_C_OLCand_ID)

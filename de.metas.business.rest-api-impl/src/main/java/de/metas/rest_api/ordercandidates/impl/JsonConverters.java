@@ -1,5 +1,7 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -21,6 +23,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilde
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonPaymentInfo;
@@ -32,7 +35,10 @@ import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -63,6 +69,7 @@ class JsonConverters
 {
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -96,6 +103,7 @@ class JsonConverters
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
+
 		final String dataSourceIdentifier = request.getDataSource();
 
 		if (Check.isEmpty(dataSourceIdentifier))
@@ -127,6 +135,17 @@ class JsonConverters
 
 
 		JsonPaymentInfo paymentInfo = request.getPaymentInfo();
+
+		final UomId uomId;
+		if (!isEmpty(request.getUomCode(), true))
+		{
+			uomId = uomDAO.getUomIdByX12DE355(request.getUomCode());
+		}
+		else
+		{
+			uomId = productInfo.getUomId();
+		}
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -157,8 +176,8 @@ class JsonConverters
 				.productId(productInfo.getProductId())
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
-				.uomId(productInfo.getUomId())
-				.huPIItemProductId(request.getPackingMaterialId())
+				.uomId(uomId)
+				.huPIItemProductId(MetasfreshId.toValue(request.getPackingMaterialId()))
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -205,7 +224,9 @@ class JsonConverters
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-	private JsonOLCand toJson(final OLCand olCand, final MasterdataProvider masterdataProvider)
+	private JsonOLCand toJson(
+			@NonNull final OLCand olCand,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -226,8 +247,9 @@ class JsonConverters
 				//
 				.productId(olCand.getM_Product_ID())
 				.productDescription(olCand.getProductDescription())
-				.qty(olCand.getQty())
-				.uomId(olCand.getC_UOM_ID())
+				.qty(olCand.getQty().toBigDecimal())
+				.uomId(olCand.getQty().getUomId().getRepoId())
+				.qtyItemCapacity(olCand.getQtyItemCapacity())
 				.huPIItemProductId(olCand.getHUPIProductItemId())
 				//
 				.pricingSystemId(PricingSystemId.toRepoId(olCand.getPricingSystemId()))

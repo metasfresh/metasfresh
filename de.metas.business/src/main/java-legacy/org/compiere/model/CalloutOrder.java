@@ -887,9 +887,10 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		/***** Price Calculation see also qty ****/
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		orderLine.setQtyOrdered(orderLineBL.convertQtyEnteredToStockUOM(orderLine).toBigDecimal());
 
-		orderLine.setQtyOrdered(orderLine.getQtyEntered());
+		orderLineBL.updatePrices(orderLine);
 
 		handleIndividualDescription(orderLine);
 
@@ -1123,7 +1124,7 @@ public class CalloutOrder extends CalloutEngine
 		//
 		// Update order line
 		priceAndDiscount.applyTo(orderLine);
-		orderLineBL.updateLineNetAmt(orderLine);
+		orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
 
 		//

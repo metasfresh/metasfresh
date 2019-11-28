@@ -23,6 +23,7 @@ package de.metas.tax.api;
  */
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.compiere.model.I_C_BPartner;
@@ -38,6 +39,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 public interface ITaxDAO extends ISingletonService
 {
 	int C_TAX_ID_NO_TAX_FOUND = 100;
@@ -52,7 +55,6 @@ public interface ITaxDAO extends ISingletonService
 
 	/**
 	 * getDefaultTax Get the default tax id associated with this tax category
-	 *
 	 */
 	I_C_Tax getDefaultTax(I_C_TaxCategory taxCategory);
 
@@ -77,6 +79,8 @@ public interface ITaxDAO extends ISingletonService
 	I_C_TaxCategory getTaxCategoryById(TaxCategoryId id);
 
 	ITranslatableString getTaxCategoryNameById(TaxCategoryId id);
+
+	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
 	@Builder
 	@Value

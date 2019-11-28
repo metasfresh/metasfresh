@@ -13,11 +13,11 @@ package de.metas.handlingunits.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,11 +41,11 @@ import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_DD_OrderLine;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
-/**
- * @author al
- */
 @Validator(I_DD_OrderLine.class)
 @Callout(value = I_DD_OrderLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class DD_OrderLine
@@ -244,8 +244,7 @@ public class DD_OrderLine
 
 		// update the QtyCU only if the QtyTU requires it. If the QtyCU is already fine and fits the QtyTU and M_HU_PI_Item_Product, leave it like it is.
 		final Integer qtyPacks = packingAware.getQtyTU().intValue();
-		final BigDecimal qtyCU = packingAware.getQty();
+		final Quantity qtyCU = Quantitys.create(packingAware.getQty(), UomId.ofRepoId(packingAware.getC_UOM_ID()));
 		Services.get(IHUPackingAwareBL.class).updateQtyIfNeeded(packingAware, qtyPacks, qtyCU);
-
 	}
 }

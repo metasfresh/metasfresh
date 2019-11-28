@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1022426465L;
+	private static final long serialVersionUID = -1061256606L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -36,7 +36,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 			setIsExplicitProductPriceAttribute (false); // N
 			setIsManualDiscount (false); // N
 			setIsManualPrice (false); // N
-			setQty (BigDecimal.ZERO);
+			setQtyEntered (BigDecimal.ZERO);
         } */
     }
 
@@ -1958,22 +1958,41 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	/** Set Menge.
-		@param Qty 
-		Menge
+		@param QtyEntered 
+		Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQtyEntered (java.math.BigDecimal QtyEntered)
 	{
-		set_Value (COLUMNNAME_Qty, Qty);
+		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
 	/** Get Menge.
-		@return Menge
+		@return Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public java.math.BigDecimal getQtyEntered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Verpackungskapazität.
+		@param QtyItemCapacity Verpackungskapazität	  */
+	@Override
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	{
+		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
+	}
+
+	/** Get Verpackungskapazität.
+		@return Verpackungskapazität	  */
+	@Override
+	public java.math.BigDecimal getQtyItemCapacity () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyItemCapacity);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

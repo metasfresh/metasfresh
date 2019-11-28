@@ -76,7 +76,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
-	BPartnerId getBPartnerIdByValue(String bpartnerValue);
+	/** @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.*/
+	@Deprecated
+	Optional<BPartnerId> getBPartnerIdByValue(String bpartnerValue);
 
 	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode);
 
@@ -156,19 +158,18 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param value
 	 * @return C_BPartner_Location object or null
 	 */
+	@Nullable
 	I_C_BPartner retrieveBPartnerByValue(Properties ctx, String value);
 
 	/**
 	 * Retrieve partner by exact value or by the ending string.
-	 *
+	 * <p>
 	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
 	 *
 	 * @param ctx
-	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
+	 * @param bpValue                 an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
-	 *
 	 * @return a single bPartner or <code>null</code>
-	 *
 	 * @throws org.adempiere.exceptions.DBMoreThenOneRecordsFoundException if there is more than one matching partner.
 	 */
 	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
@@ -207,7 +208,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	/**
 	 * Retrieve all (active) ship to locations.
-	 *
+	 * <p>
 	 * NOTE: the default ship to location will be the first.
 	 *
 	 * @param bpartner
@@ -230,7 +231,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param ctx
 	 * @param bPartnerId
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *            that relation's bPartner location.
+	 *                              that relation's bPartner location.
 	 * @param trxName
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead

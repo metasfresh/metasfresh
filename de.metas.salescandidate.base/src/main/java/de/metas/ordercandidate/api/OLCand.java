@@ -26,6 +26,8 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
@@ -106,7 +108,15 @@ public final class OLCand implements IProductPriceAware
 	private final InvoiceRule invoiceRule;
 
 	@Getter
+
 	private final BPartnerId salesRepId;
+
+	@Getter
+	private final Quantity qty;
+
+	@Getter
+	private final BigDecimal qtyItemCapacity;
+
 
 	@Builder
 	private OLCand(
@@ -160,6 +170,12 @@ public final class OLCand implements IProductPriceAware
 		this.paymentTermId = paymentTermId;
 		this.pricingSystemId = pricingSystemId;
 
+		this.qty = Quantitys.create(
+				olCandRecord.getQtyEntered(),
+				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
+
+		this.qtyItemCapacity = olCandRecord.getQtyItemCapacity();
+
 		this.shipperId = shipperId;
 
 		this.salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
@@ -204,11 +220,6 @@ public final class OLCand implements IProductPriceAware
 	public int getM_Product_ID()
 	{
 		return ProductId.toRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
-	}
-
-	public int getC_UOM_ID()
-	{
-		return olCandEffectiveValuesBL.getC_UOM_Effective_ID(olCandRecord);
 	}
 
 	public int getM_AttributeSet_ID()
@@ -281,11 +292,6 @@ public final class OLCand implements IProductPriceAware
 		olCandRecord.setIsError(true);
 		olCandRecord.setErrorMsg(errorMsg);
 		olCandRecord.setAD_Note_ID(adNoteId);
-	}
-
-	public BigDecimal getQty()
-	{
-		return olCandRecord.getQty();
 	}
 
 	public String getPOReference()

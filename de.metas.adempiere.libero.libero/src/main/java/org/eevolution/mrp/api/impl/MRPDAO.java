@@ -141,7 +141,7 @@ public class MRPDAO implements IMRPDAO
 				.addEqualsFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.addNotEqualsFilter(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	/**
