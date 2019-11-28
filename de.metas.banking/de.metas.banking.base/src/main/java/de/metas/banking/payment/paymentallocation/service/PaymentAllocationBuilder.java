@@ -798,6 +798,11 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
+	public PaymentAllocationBuilder paymentDocument(final IPaymentDocument paymentDocument)
+	{
+		return paymentDocuments(ImmutableList.of(paymentDocument));
+	}
+
 	private final List<PayableDocument> getPayableDocuments()
 	{
 		return _payableDocuments;
