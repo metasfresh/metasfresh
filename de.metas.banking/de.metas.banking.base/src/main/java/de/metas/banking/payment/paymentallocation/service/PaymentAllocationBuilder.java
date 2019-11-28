@@ -39,19 +39,20 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
-import de.metas.banking.model.I_C_Payment;
+import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.OptionalDeferredException;
 import de.metas.util.Services;
 import de.metas.util.collections.ListUtils;
 
@@ -80,10 +81,10 @@ public class PaymentAllocationBuilder
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean _allowOnlyOneVendorDoc = true;
+	private boolean dryRun = false;
 
 	// Status
 	private boolean _built = false;
-	private List<AllocationLineCandidate> _allocationLineCandidates = ImmutableList.of();
 
 	private PaymentAllocationBuilder()
 	{
@@ -93,49 +94,66 @@ public class PaymentAllocationBuilder
 	 * @return result message (to be displayed in UI status bar)
 	 * @throws PaymentAllocationException in case of any error
 	 */
-	public void build()
+	public PaymentAllocationResult build()
 	{
 		markAsBuilt();
 
-		try
-		{
-			trxManager.runInNewTrx(this::buildInTrx);
-		}
-		catch (Exception e)
-		{
-			throw PaymentAllocationException.wrapToPaymentAllocationExceptionIfNeeded(e);
-		}
-	}
-
-	private final void buildInTrx()
-	{
 		//
 		// Create allocation candidates
-		this._allocationLineCandidates = createAllocationLineCandidates();
-		if (_allocationLineCandidates.isEmpty())
+		final ImmutableList<AllocationLineCandidate> candidates = createAllocationLineCandidates();
+		final OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck = checkFullyAllocated();
+
+		if (!dryRun)
 		{
-			return;
+			fullyAllocatedCheck.throwIfError();
 		}
 
 		//
-		// Add allocation lines
-		for (final AllocationLineCandidate line : _allocationLineCandidates)
+		// Create & process allocation documents
+		final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
+		if (!candidates.isEmpty() && !dryRun)
 		{
-			createAndCompleteAllocation(line);
+			try
+			{
+				paymentAllocationIds = trxManager.callInNewTrx(() -> createAndCompleteAllocations(candidates));
+			}
+			catch (final Exception ex)
+			{
+				throw PaymentAllocationException.wrapIfNeeded(ex);
+			}
 		}
+		else
+		{
+			paymentAllocationIds = ImmutableSet.of();
+		}
+
+		return PaymentAllocationResult.builder()
+				.candidates(candidates)
+				.fullyAllocatedCheck(fullyAllocatedCheck)
+				.paymentAllocationIds(paymentAllocationIds)
+				.build();
 	}
 
-	/** @return created allocation candidates */
-	@VisibleForTesting
-	List<AllocationLineCandidate> getAllocationLineCandidates()
+	private final ImmutableSet<PaymentAllocationId> createAndCompleteAllocations(final List<AllocationLineCandidate> lines)
 	{
-		return _allocationLineCandidates;
+		final ImmutableSet.Builder<PaymentAllocationId> paymentAllocationIds = ImmutableSet.builder();
+
+		for (final AllocationLineCandidate line : lines)
+		{
+			final PaymentAllocationId paymentAllocationId = createAndCompleteAllocation(line);
+			if (paymentAllocationId != null)
+			{
+				paymentAllocationIds.add(paymentAllocationId);
+			}
+		}
+
+		return paymentAllocationIds.build();
 	}
 
 	/**
 	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
 	 */
-	private final void createAndCompleteAllocation(final AllocationLineCandidate line)
+	private final PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate line)
 	{
 		final OrgId adOrgId = getOrgId();
 		final CurrencyId currencyId = getCurrencyId();
@@ -168,7 +186,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Invoice - Payment
-		if (I_C_Invoice.Table_Name.equals(payableDocTableName) && I_C_Payment.Table_Name.equals(paymentDocTableName))
+		if (I_C_Invoice.Table_Name.equals(payableDocTableName) && org.compiere.model.I_C_Payment.Table_Name.equals(paymentDocTableName))
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
 			payableLineBuilder.setC_Payment_ID(paymentDocRef.getRecord_ID());
@@ -202,7 +220,7 @@ public class PaymentAllocationBuilder
 		}
 		//
 		// Outgoing payment - Incoming payment
-		else if (I_C_Payment.Table_Name.equals(payableDocTableName) && I_C_Payment.Table_Name.equals(paymentDocTableName))
+		else if (org.compiere.model.I_C_Payment.Table_Name.equals(payableDocTableName) && org.compiere.model.I_C_Payment.Table_Name.equals(paymentDocTableName))
 		{
 			payableLineBuilder.setC_Payment_ID(payableDocRef.getRecord_ID());
 			// Incoming payment line
@@ -222,11 +240,17 @@ public class PaymentAllocationBuilder
 			throw new InvalidDocumentsPaymentAllocationException(payableDocRef, paymentDocRef);
 		}
 
-		allocationBuilder.createAndComplete();
+		final I_C_AllocationHdr allocationHdr = allocationBuilder.createAndComplete();
+		if (allocationHdr == null)
+		{
+			return null;
+		}
 
 		//
 		final List<I_C_AllocationLine> lines = allocationBuilder.getC_AllocationLines();
 		updateCounter_AllocationLine_ID(lines);
+
+		return PaymentAllocationId.ofRepoId(allocationHdr.getC_AllocationHdr_ID());
 	}
 
 	/**
@@ -235,7 +259,7 @@ public class PaymentAllocationBuilder
 	 *
 	 * @param lines
 	 */
-	private static void updateCounter_AllocationLine_ID(List<I_C_AllocationLine> lines)
+	private static void updateCounter_AllocationLine_ID(final List<I_C_AllocationLine> lines)
 	{
 		if (lines.size() != 2)
 		{
@@ -259,7 +283,7 @@ public class PaymentAllocationBuilder
 	 *
 	 * @return created allocation candidates
 	 */
-	private List<AllocationLineCandidate> createAllocationLineCandidates()
+	private ImmutableList<AllocationLineCandidate> createAllocationLineCandidates()
 	{
 		//
 		// Make sure we have something to allocate
@@ -274,7 +298,7 @@ public class PaymentAllocationBuilder
 		// Make sure that we allow allocation one document per type for vendor documents
 		assertOnlyOneVendorDocType(payableDocuments, paymentDocuments);
 
-		final List<AllocationLineCandidate> allocationCandidates = new ArrayList<>();
+		final ImmutableList.Builder<AllocationLineCandidate> allocationCandidates = ImmutableList.builder();
 
 		//
 		// Try to allocate credit memos to regular invoices
@@ -298,9 +322,7 @@ public class PaymentAllocationBuilder
 		// Try allocate the payable remaining Discounts and WriteOffs.
 		allocationCandidates.addAll(createAllocationLineCandidates_DiscountAndWriteOffs(payableDocuments));
 
-		assertAllFullyAllocated();
-
-		return allocationCandidates;
+		return allocationCandidates.build();
 	}
 
 	/***
@@ -549,7 +571,7 @@ public class PaymentAllocationBuilder
 	 * @param payableDocuments
 	 * @return created allocation candidates.
 	 */
-	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(List<PayableDocument> payableDocuments)
+	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(final List<PayableDocument> payableDocuments)
 	{
 		if (payableDocuments.isEmpty())
 		{
@@ -565,7 +587,7 @@ public class PaymentAllocationBuilder
 				continue;
 			}
 
-			Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amountsToAllocate);
+			final Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amountsToAllocate);
 			final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 					.bpartnerId(payable.getBpartnerId())
 					//
@@ -587,50 +609,45 @@ public class PaymentAllocationBuilder
 		return allocationLineCandidates;
 	}
 
-	/**
-	 * Check all payable and payment documents and make sure all of them were allocated.
-	 */
-	private final void assertAllFullyAllocated()
+	private final OptionalDeferredException<PaymentAllocationException> checkFullyAllocated()
 	{
 		//
 		// Check payables (invoices, prepaid orders etc)
 		{
-			final List<PayableDocument> payableDocumentsNotFullyAllocated = new ArrayList<>();
-			for (final PayableDocument payable : getPayableDocuments())
-			{
-				// Skip fully allocated invoices
-				if (payable.isFullyAllocated())
-				{
-					continue;
-				}
-				payableDocumentsNotFullyAllocated.add(payable);
-			}
+			final List<PayableDocument> payableDocumentsNotFullyAllocated = getPayableDocumentsNotFullyAllocated();
 			if (!payableDocumentsNotFullyAllocated.isEmpty())
 			{
-				throw new PayableDocumentNotAllocatedException(payableDocumentsNotFullyAllocated);
+				return OptionalDeferredException.of(() -> new PayableDocumentNotAllocatedException(payableDocumentsNotFullyAllocated));
 			}
 		}
 
 		//
 		// Check payments
 		{
-			final List<IPaymentDocument> paymentDocumentsNotFullyAllocated = new ArrayList<>();
-			for (final IPaymentDocument payment : getPaymentDocuments())
-			{
-				// Skip fully allocated invoices
-				if (payment.isFullyAllocated())
-				{
-					continue;
-				}
-
-				paymentDocumentsNotFullyAllocated.add(payment);
-			}
+			final List<IPaymentDocument> paymentDocumentsNotFullyAllocated = getPaymentDocumentsNotFullyAllocated();
 			if (!paymentDocumentsNotFullyAllocated.isEmpty())
 			{
-				throw new PaymentDocumentNotAllocatedException(paymentDocumentsNotFullyAllocated);
+				return OptionalDeferredException.of(() -> new PaymentDocumentNotAllocatedException(paymentDocumentsNotFullyAllocated));
 			}
 		}
 
+		return OptionalDeferredException.noError();
+	}
+
+	private List<IPaymentDocument> getPaymentDocumentsNotFullyAllocated()
+	{
+		return getPaymentDocuments()
+				.stream()
+				.filter(payment -> !payment.isFullyAllocated())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<PayableDocument> getPayableDocumentsNotFullyAllocated()
+	{
+		return getPayableDocuments()
+				.stream()
+				.filter(payable -> !payable.isFullyAllocated())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -779,22 +796,28 @@ public class PaymentAllocationBuilder
 		return _allowOnlyOneVendorDoc;
 	}
 
-	public PaymentAllocationBuilder allowOnlyOneVendorDoc(boolean AllowOnlyOneVendorDoc)
+	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean AllowOnlyOneVendorDoc)
 	{
 		assertNotBuilt();
-		this._allowOnlyOneVendorDoc = AllowOnlyOneVendorDoc;
+		_allowOnlyOneVendorDoc = AllowOnlyOneVendorDoc;
+		return this;
+	}
+
+	public PaymentAllocationBuilder dryRun()
+	{
+		this.dryRun = true;
 		return this;
 	}
 
 	public PaymentAllocationBuilder payableDocuments(final Collection<PayableDocument> payableDocuments)
 	{
-		this._payableDocuments = ImmutableList.copyOf(payableDocuments);
+		_payableDocuments = ImmutableList.copyOf(payableDocuments);
 		return this;
 	}
 
-	public PaymentAllocationBuilder paymentDocuments(final Collection<IPaymentDocument> paymentDocuments)
+	public PaymentAllocationBuilder paymentDocuments(final Collection<? extends IPaymentDocument> paymentDocuments)
 	{
-		this._paymentDocuments = ImmutableList.copyOf(paymentDocuments);
+		_paymentDocuments = ImmutableList.copyOf(paymentDocuments);
 		return this;
 	}
 

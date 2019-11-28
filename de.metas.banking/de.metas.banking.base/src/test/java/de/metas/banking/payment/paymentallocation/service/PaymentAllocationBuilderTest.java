@@ -457,14 +457,15 @@ public class PaymentAllocationBuilderTest
 
 	private final void assertExpected(final List<AllocationLineCandidate> candidatesExpected, final PaymentAllocationBuilder builder)
 	{
-		builder.build();
-		final List<AllocationLineCandidate> candidatesActual = builder.getAllocationLineCandidates();
-		assertExpected(candidatesExpected, candidatesActual);
+		final PaymentAllocationResult result = builder.build();
+		assertExpected(candidatesExpected, result.getCandidates());
 
 		assertAllocationHdrCount(candidatesExpected.size());
 	}
 
-	private final void assertExpected(final List<AllocationLineCandidate> candidatesExpected, final List<AllocationLineCandidate> candidatesActual)
+	private final void assertExpected(
+			final List<AllocationLineCandidate> candidatesExpected,
+			final List<AllocationLineCandidate> candidatesActual)
 	{
 		dumpCandidates("Actual candidates", candidatesActual);
 		dumpCandidates("Expected candidates", candidatesExpected);

@@ -1,6 +1,7 @@
 package de.metas.banking.payment.paymentallocation;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -8,7 +9,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,8 +42,14 @@ import lombok.Value;
 @Builder
 public class InvoiceToAllocate
 {
+	// invoiceId or preparyOrderId shall non null
+	@Nullable
 	InvoiceId invoiceId;
+	@Nullable
 	OrderId prepayOrderId;
+
+	@NonNull
+	ClientAndOrgId clientAndOrgId;
 
 	@NonNull
 	String documentNo;
@@ -56,7 +65,11 @@ public class InvoiceToAllocate
 	LocalDate dateAcct;
 
 	@NonNull
-	CurrencyCode currencyCode;
+	CurrencyCode documentCurrencyCode;
+
+	/** Date used to calculate the currency conversion and discount */
+	@NonNull
+	ZonedDateTime evaluationDate;
 
 	@NonNull
 	Amount grandTotal;
@@ -67,6 +80,8 @@ public class InvoiceToAllocate
 	@NonNull
 	Amount discountAmountConverted;
 
+	@NonNull
+	SOTrx soTrx;
 	boolean creditMemo;
 
 	@Nullable

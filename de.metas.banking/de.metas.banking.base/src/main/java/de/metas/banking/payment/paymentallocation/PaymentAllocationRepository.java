@@ -3,13 +3,12 @@ package de.metas.banking.payment.paymentallocation;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.compiere.apps.search.FindHelper;
 import org.compiere.util.DB;
@@ -23,11 +22,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -57,13 +58,6 @@ import lombok.NonNull;
 public class PaymentAllocationRepository
 {
 	private static final Logger logger = LogManager.getLogger(PaymentAllocationRepository.class);
-	private final CurrencyRepository currencyRepo;
-
-	public PaymentAllocationRepository(
-			@NonNull final CurrencyRepository currencyRepo)
-	{
-		this.currencyRepo = currencyRepo;
-	}
 
 	public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final Set<InvoiceToAllocateQuery> queries)
 	{
@@ -92,15 +86,12 @@ public class PaymentAllocationRepository
 
 	public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final InvoiceToAllocateQuery query)
 	{
-		final CurrencyId convertToCurrencyId = query.getCurrencyId();
-		final CurrencyCode convertToCurrencyCode = convertToCurrencyId != null
-				? currencyRepo.getCurrencyCodeById(convertToCurrencyId)
-				: null;
-
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSelectInvoiceToAllocateSql(query, sqlParams);
 
-		return DB.retrieveRows(sql, sqlParams, rs -> retrieveInvoiceRowOrNull(rs, convertToCurrencyCode));
+		final ZonedDateTime evaluationDate = query.getEvaluationDate();
+
+		return DB.retrieveRows(sql, sqlParams, rs -> retrieveInvoiceToAllocateOrNull(rs, evaluationDate));
 	}
 
 	private static String buildSelectInvoiceToAllocateSql(
@@ -110,39 +101,49 @@ public class PaymentAllocationRepository
 		final CurrencyId convertToCurrencyId = query.getCurrencyId();
 		final boolean multiCurrency = convertToCurrencyId == null;
 
+		final ClientAndOrgId clientAndOrgId = query.getClientAndOrgId();
+		final OrgId orgId = clientAndOrgId != null ? clientAndOrgId.getOrgId() : null;
+
 		final StringBuilder sql = new StringBuilder();
 
 		//
 		// Main query
-		sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
-		sqlParams.addAll(Arrays.asList(
-				query.getBpartnerId(),
-				convertToCurrencyId,
-				multiCurrency, // multicurrency
-				query.getOrgId(),
-				query.getDate(),
-				null, // C_Invoice_ID
-				null // C_Order_ID
-		));
-
-		if (!Check.isEmpty(query.getPoReference(), true))
+		if (query.getBpartnerId() != null)
 		{
-			sql.append(" WHERE ");
-			sql.append(FindHelper.buildStringRestriction("POReference", query.getPoReference(), true, sqlParams));
+			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
+			sqlParams.addAll(Arrays.asList(
+					query.getBpartnerId(),
+					convertToCurrencyId,
+					multiCurrency, // multicurrency
+					orgId,
+					query.getEvaluationDate(),
+					null, // C_Invoice_ID
+					null // C_Order_ID
+			));
+
+			if (!Check.isEmpty(query.getPoReference(), true))
+			{
+				sql.append(" WHERE ");
+				sql.append(FindHelper.buildStringRestriction("POReference", query.getPoReference(), true, sqlParams));
+			}
 		}
 
 		//
 		// Add particular invoices mentioned to be included
 		for (final InvoiceId invoiceId : query.getAdditionalInvoiceIdsToInclude())
 		{
-			sql.append(" UNION ");
+			if (sql.length() > 0)
+			{
+				sql.append(" UNION ");
+			}
+
 			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					null, // no C_BPartner_ID
 					convertToCurrencyId,
 					multiCurrency, // multicurrency
-					query.getOrgId(),
-					query.getDate(),
+					orgId,
+					query.getEvaluationDate(),
 					invoiceId, // C_Invoice_ID
 					null // C_Order_ID
 			));
@@ -152,29 +153,38 @@ public class PaymentAllocationRepository
 		// Add particular prepay orders mentioned to be included
 		for (final OrderId prepayOrderId : query.getAdditionalPrepayOrderIdsToInclude())
 		{
-			sql.append(" UNION ");
+			if (sql.length() > 0)
+			{
+				sql.append(" UNION ");
+			}
+
 			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					null, // no C_BPartner_ID
 					convertToCurrencyId,
 					multiCurrency, // multicurrency
-					query.getOrgId(),
-					query.getDate(),
+					orgId,
+					query.getEvaluationDate(),
 					null, // C_Invoice_ID
 					prepayOrderId // C_Order_ID
 			));
+		}
+
+		if (sql.length() <= 0)
+		{
+			return null;
 		}
 
 		//
 		// Builder the final outer SQL:
 		sql.insert(0, "SELECT * FROM ( ").append(") i");
 
-		sql.append(" WHERE i.AD_Client_ID=?");
-		sqlParams.add(query.getAdClientId());
+		sql.append(" WHERE TRUE");
 
-		if (!query.getConsiderOnlyInvoiceIds().isEmpty())
+		if (clientAndOrgId != null)
 		{
-			sql.append(" AND ").append(DB.buildSqlList("i.C_Invoice_ID", query.getConsiderOnlyInvoiceIds(), sqlParams));
+			sql.append(" AND i.AD_Client_ID=?");
+			sqlParams.add(clientAndOrgId.getClientId());
 		}
 
 		if (!query.getExcludeInvoiceIds().isEmpty())
@@ -182,14 +192,14 @@ public class PaymentAllocationRepository
 			sql.append(" AND NOT (").append(DB.buildSqlList("i.C_Invoice_ID", query.getExcludeInvoiceIds(), sqlParams)).append(")");
 		}
 
-		sql.append(" ORDER BY i.invoiceDate, i.DocNo ");
+		sql.append(" ORDER BY i.InvoiceDate, i.DocNo ");
 
 		return sql.toString();
 	}
 
-	private InvoiceToAllocate retrieveInvoiceRowOrNull(
+	private InvoiceToAllocate retrieveInvoiceToAllocateOrNull(
 			@NonNull final ResultSet rs,
-			@Nullable final CurrencyCode convertedToCurrencyCode) throws SQLException
+			@NonNull final ZonedDateTime evaluationDate) throws SQLException
 	{
 		final boolean isPaid = false;  // assumed in above query where clause
 
@@ -214,19 +224,20 @@ public class PaymentAllocationRepository
 		// Fetch amounts
 		// NOTE: we assume those amounts are already CreditMemo adjusted but not AP adjusted
 		final CurrencyCode documentCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("iso_code"));
-		final Amount grandTotalOrig = retrieveAmount(rs, "orig_total", documentCurrencyCode);
-		final Amount grandTotalConv = convertedToCurrencyCode != null
-				? retrieveAmount(rs, "conv_total", convertedToCurrencyCode)
-				: null;
-		final Amount openAmtConv = convertedToCurrencyCode != null
-				? retrieveAmount(rs, "conv_open", convertedToCurrencyCode)
-				: Amount.zero(documentCurrencyCode);
+		final CurrencyCode convertedToCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("ConvertTo_Currency_ISO_Code"));
 
-		// final BigDecimal multiplierAP = rs.getBigDecimal("multiplierap"); // Vendor=-1, Customer=+1
+		final Amount grandTotal = retrieveAmount(rs, "orig_total", documentCurrencyCode);
+		final Amount grandTotalConv = retrieveAmount(rs, "conv_total", convertedToCurrencyCode);
+		final Amount openAmtConv = retrieveAmount(rs, "conv_open", convertedToCurrencyCode);
+		final Amount discountAmountConv = retrieveAmount(rs, "discount", convertedToCurrencyCode);
+
+		final BigDecimal multiplierAP = rs.getBigDecimal("multiplierap"); // Vendor=-1, Customer=+1
+		final SOTrx soTrx = multiplierAP.signum() < 0 ? SOTrx.PURCHASE : SOTrx.SALES;
+
 		final BigDecimal multiplierCreditMemo = rs.getBigDecimal("multiplier"); // CreditMemo=-1, Regular Invoice=+1
 		final boolean isCreditMemo = multiplierCreditMemo.signum() < 0 || grandTotalConv.signum() < 0; // task 09429: also if grandTotal<0
 
-		if (!isPrePayOrder && grandTotalOrig.signum() == 0 && !isPaid)
+		if (!isPrePayOrder && grandTotal.signum() == 0 && !isPaid)
 		{
 			// nothing - i.e. allow zero amount invoices to be visible for allocation
 			// see: http://dewiki908/mediawiki/index.php/01955:_Fenster_Zahlung-Zuordnung_zeigt_Gutschrift_nicht_an_%282011080910000037%29
@@ -237,24 +248,22 @@ public class PaymentAllocationRepository
 			return null;
 		}
 
-		final Amount discountAmountConv = convertedToCurrencyCode != null
-				? retrieveAmount(rs, "discount", convertedToCurrencyCode)
-				: Amount.zero(documentCurrencyCode);
-
 		return InvoiceToAllocate.builder()
 				.invoiceId(invoiceId)
 				.prepayOrderId(prepayOrderId)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(rs.getInt("AD_Client_ID"), rs.getInt("AD_Org_ID")))
 				.documentNo(documentNo)
 				.bpartnerId(BPartnerId.ofRepoId(rs.getInt("C_BPartner_ID")))
 				.bpartnerName(rs.getString("bpartnername"))
 				.dateInvoiced(TimeUtil.asLocalDate(rs.getTimestamp("invoicedate")))
 				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("dateacct"))) // task 09643
-				.currencyCode(documentCurrencyCode)
-				.grandTotal(grandTotalOrig)
+				.documentCurrencyCode(documentCurrencyCode)
+				.evaluationDate(evaluationDate)
+				.grandTotal(grandTotal)
 				.grandTotalConverted(grandTotalConv)
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
-				// .setMultiplierAP(multiplierAP)
+				.soTrx(soTrx)
 				.creditMemo(isCreditMemo)
 				.poReference(rs.getString("POReference"))
 				.build();

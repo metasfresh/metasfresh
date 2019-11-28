@@ -43,7 +43,7 @@ import lombok.Value;
  *
  */
 @Value
-final class AllocationLineCandidate
+public final class AllocationLineCandidate
 {
 	private final BPartnerId bpartnerId;
 

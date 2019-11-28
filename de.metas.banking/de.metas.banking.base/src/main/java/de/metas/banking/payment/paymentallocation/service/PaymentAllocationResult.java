@@ -1,19 +1,12 @@
-package de.metas.banking.payment.paymentallocation;
+package de.metas.banking.payment.paymentallocation.service;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceId;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
+import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.util.OptionalDeferredException;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -39,34 +32,18 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class InvoiceToAllocateQuery
+@Builder
+public class PaymentAllocationResult
 {
-	@Nullable
-	BPartnerId bpartnerId;
-
-	@Nullable
-	CurrencyId currencyId;
-
-	@Nullable
-	ClientAndOrgId clientAndOrgId;
-
-	/** Date used to calculate the currency conversion and discount */
 	@NonNull
-	ZonedDateTime evaluationDate;
-
-	@Nullable
-	String poReference;
-
+	private ImmutableList<AllocationLineCandidate> candidates;
 	@NonNull
-	@Singular("additionalInvoiceIdToInclude")
-	ImmutableSet<InvoiceId> additionalInvoiceIdsToInclude;
-
+	private OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
 	@NonNull
-	@Singular
-	ImmutableSet<InvoiceId> excludeInvoiceIds;
+	private final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
 
-	@NonNull
-	@Singular("additionalPrepayOrderIdToInclude")
-	ImmutableSet<OrderId> additionalPrepayOrderIdsToInclude;
+	public boolean isFullyAllocated()
+	{
+		return fullyAllocatedCheck.isNoError();
+	}
 }
