@@ -309,6 +309,7 @@ MasterWidget.propTypes = {
   viewId: PropTypes.string,
   entity: PropTypes.string,
   precision: PropTypes.bool,
+  clearValue: PropTypes.bool,
 };
 
 export default connect(
