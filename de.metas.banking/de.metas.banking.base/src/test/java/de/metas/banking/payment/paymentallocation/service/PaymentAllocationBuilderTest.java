@@ -34,8 +34,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -53,17 +54,10 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
-// import de.metas.banking.payment.paymentallocation.model.IAllocableDocRow;
-// import de.metas.banking.payment.paymentallocation.model.PayableDocument;
-// import de.metas.banking.payment.paymentallocation.model.PaymentDocument;
-// import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
-// import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -83,6 +77,7 @@ import lombok.Getter;
 public class PaymentAllocationBuilderTest
 {
 	// services
+	private ISysConfigBL sysConfigs;
 	private IAllocationDAO allocationDAO;
 	private IPaymentDAO paymentDAO;
 	private IInvoiceBL invoiceBL;
@@ -92,9 +87,9 @@ public class PaymentAllocationBuilderTest
 	private int nextInvoiceId = 1;
 	private int nextPaymentId = 1;
 	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
-	final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
-
+	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
 	private Currency currency;
+	private Map<InvoiceType, I_C_DocType> invoiceDocTypes;
 
 	private static final boolean IsReceipt_Yes = true;
 	private static final boolean IsReceipt_No = false;
@@ -105,19 +100,21 @@ public class PaymentAllocationBuilderTest
 		AdempiereTestHelper.get().init();
 
 		// services
+		sysConfigs = Services.get(ISysConfigBL.class);
 		allocationDAO = Services.get(IAllocationDAO.class);
 		paymentDAO = Services.get(IPaymentDAO.class);
 		invoiceBL = Services.get(IInvoiceBL.class);
 		invoicesDAO = Services.get(IInvoiceDAO.class);
 
 		currency = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF);
+		invoiceDocTypes = new HashMap<>();
 
 		setAllowSalesPurchaseInvoiceCompensation(true);
 	}
 
 	private final void setAllowSalesPurchaseInvoiceCompensation(final boolean allow)
 	{
-		Services.get(ISysConfigBL.class).setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, 0);
+		sysConfigs.setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, 0);
 	}
 
 	@Test
@@ -128,12 +125,12 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_OneInvoice_NoPayments_JustDiscountAndWriteOff() throws Exception
+	public void test_OneInvoice_NoPayments_JustDiscountAndWriteOff()
 	{
 		final PayableDocument invoice1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
 				// Payments
@@ -143,7 +140,7 @@ public class PaymentAllocationBuilderTest
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), null, "0", "-100", "-200", "-7700", "0"));
 
@@ -155,23 +152,23 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_OneVendorInvoice_OneVendorPayment() throws Exception
+	public void test_OneVendorInvoice_OneVendorPayment()
 	{
 		final PaymentDocument payment1;
 		final PayableDocument invoice1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "8000", "5000", "100", "200"))
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						payment1 = newPaymentRow(IsReceipt_No, "5000", "5000")));
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "-5000", "-100", "-200", "-2700", "0"));
 
@@ -191,14 +188,14 @@ public class PaymentAllocationBuilderTest
 				// Invoices
 				Arrays.<PayableDocument> asList()
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						payment1 = newPaymentRow(IsReceipt_No, "5000", "5000"),
 						payment2 = newPaymentRow(IsReceipt_Yes, "5000", "5000")));
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(payment1.getReference(), payment2.getReference(), "-5000", "0", "0", "0", "0"));
 
@@ -217,13 +214,13 @@ public class PaymentAllocationBuilderTest
 				// Invoices
 				Arrays.<PayableDocument> asList()
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						payment1 = newPaymentRow(IsReceipt_No, "5000", "5000"), payment2 = newPaymentRow(IsReceipt_Yes, "3000", "3000"), payment3 = newPaymentRow(IsReceipt_Yes, "2000", "2000")));
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(payment1.getReference(), payment2.getReference(), "-3000", "0", "0", "-2000", "0"), //
 				newAllocationCandidate(payment1.getReference(), payment3.getReference(), "-2000", "0", "0", "0", "0"));
@@ -237,12 +234,12 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_InvoiceAndCreditMemo_NoPayments() throws Exception
+	public void test_InvoiceAndCreditMemo_NoPayments()
 	{
 		final PayableDocument invoice1, invoice2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
 						invoice2 = newInvoice(CustomerCreditMemo, "1000", "1000", "0", "0") // CreditMemo
@@ -252,7 +249,7 @@ public class PaymentAllocationBuilderTest
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
 
@@ -268,12 +265,12 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_SalesInvoiceAndPurchaseInvoice_NoPayments() throws Exception
+	public void test_SalesInvoiceAndPurchaseInvoice_NoPayments()
 	{
 		final PayableDocument invoice1, invoice2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
 						invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
@@ -283,7 +280,7 @@ public class PaymentAllocationBuilderTest
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
 
@@ -299,7 +296,7 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_Vendor_MultiInvoice_MultiPayment() throws Exception
+	public void test_Vendor_MultiInvoice_MultiPayment()
 	{
 		// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 		final PaymentDocument payment1 = newPaymentRow(IsReceipt_No, "5000", "5000");
@@ -311,22 +308,22 @@ public class PaymentAllocationBuilderTest
 
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(invoice1, invoice2)
+				ImmutableList.of(invoice1, invoice2)
 				// Payments
-				, Arrays.asList(payment1, payment2));
+				, ImmutableList.of(payment1, payment2));
 
 		assertThatThrownBy(() -> builder.build())
 				.isInstanceOf(MultipleVendorDocumentsException.class);
 	}
 
 	@Test
-	public void test_Sales_MultiInvoice_MultiPayment() throws Exception
+	public void test_Sales_MultiInvoice_MultiPayment()
 	{
 		final PaymentDocument payment1, payment2;
 		final PayableDocument invoice1, invoice2, invoice3, invoice4;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "8000", "6000", "1599", "1"),
 						invoice2 = newInvoice(CustomerInvoice, "7100", "3000", "50", "50"),
@@ -334,14 +331,14 @@ public class PaymentAllocationBuilderTest
 						invoice4 = newInvoice(CustomerCreditMemo, "500", "500", "0", "0") // i.e. CreditMemo
 				)
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						payment1 = newPaymentRow(IsReceipt_Yes, "5000", "5000"),
 						payment2 = newPaymentRow(IsReceipt_Yes, "5000", "5000")));
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), invoice4.getReference(), "500", "1599", "1", "5900", "0")
 				//
@@ -374,23 +371,23 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_CreditMemoInvoice_Payment() throws Exception
+	public void test_CreditMemoInvoice_Payment()
 	{
 		final PaymentDocument payment1;
 		final PayableDocument invoice1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorCreditMemo, "100", "30", "0", "0"))
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						payment1 = newPaymentRow(IsReceipt_Yes, "50", "30")));
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "30", "0", "0", "70", "20"));
 
@@ -405,25 +402,25 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_RegularInvoice_CreditMemoInvoice_Payment() throws Exception
+	public void test_RegularInvoice_CreditMemoInvoice_Payment()
 	{
 		final PaymentDocument payment1;
 		final PayableDocument invoice1;
 		final PayableDocument invoice2;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "165", "100", "10", "5"),
 						invoice2 = newInvoice(VendorCreditMemo, "80", "80", "0", "0"))
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						payment1 = newPaymentRow(IsReceipt_No, "20", "20")));
 
 		//
 		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = Arrays.asList(
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
 				newAllocationCandidate(invoice1.getReference(), invoice2.getReference(), "-80", "-10", "-5", "-70", "0"),
 				newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "-20", "0", "0", "-50", "0"));
@@ -442,15 +439,15 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Test
-	public void test_VendorInvoice_CustomerReceipt() throws Exception
+	public void test_VendorInvoice_CustomerReceipt()
 	{
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
-				Arrays.asList(
+				ImmutableList.of(
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						newInvoice(VendorInvoice, "100", "100", "0", "0"))
 				// Payments
-				, Arrays.asList(
+				, ImmutableList.of(
 						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
 						newPaymentRow(IsReceipt_Yes, "100", "100")));
 
@@ -502,7 +499,6 @@ public class PaymentAllocationBuilderTest
 			final String appliedAmtStr,
 			final String discountAmtStr,
 			final String writeOffAmtStr)
-			throws ExecutionException
 	{
 		final CurrencyId currencyId = currency.getId();
 
@@ -525,7 +521,7 @@ public class PaymentAllocationBuilderTest
 		//
 		// Create the invoice record (needed for the BL which calculates how much was allocated)
 		final int invoiceId = nextInvoiceId++;
-		final I_C_DocType docType = invoiceType2docType.get(invoiceType);
+		final I_C_DocType docType = getInvoiceDocType(invoiceType);
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_Invoice_ID(invoiceId);
 		invoice.setDocumentNo("Doc" + invoiceId);
@@ -550,15 +546,10 @@ public class PaymentAllocationBuilderTest
 				.build();
 	}
 
-	private final LoadingCache<InvoiceType, I_C_DocType> invoiceType2docType = CacheBuilder.newBuilder()
-			.build(new CacheLoader<InvoiceType, I_C_DocType>()
-			{
-				@Override
-				public I_C_DocType load(final InvoiceType invoiceType)
-				{
-					return createInvoiceDocType(invoiceType);
-				}
-			});
+	private I_C_DocType getInvoiceDocType(final InvoiceType invoiceType)
+	{
+		return invoiceDocTypes.computeIfAbsent(invoiceType, this::createInvoiceDocType);
+	}
 
 	private final I_C_DocType createInvoiceDocType(final InvoiceType invoiceType)
 	{
