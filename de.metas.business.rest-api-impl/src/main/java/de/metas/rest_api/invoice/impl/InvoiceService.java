@@ -12,6 +12,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -40,7 +42,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class InvoicePDFService
+public class InvoiceService
 {
 	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
@@ -49,7 +51,6 @@ public class InvoicePDFService
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
 		final Optional<I_AD_Archive> lastArchive = getLastArchive(invoiceId);
-
 		return lastArchive.isPresent() ? Optional.of(archiveBL.getBinaryData(lastArchive.get())) : Optional.empty();
 	}
 
@@ -67,12 +68,18 @@ public class InvoicePDFService
 			return Optional.empty();
 		}
 
-		List<I_AD_Archive> lastArchive = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(invoiceRecord), 1);
+		final List<I_AD_Archive> lastArchive = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(invoiceRecord), 1);
 		if (Check.isEmpty(lastArchive))
 		{
 			return Optional.empty();
 		}
 		return Optional.of(lastArchive.get(0));
+	}
+
+	public void reverseInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		final I_C_Invoice documentRecord = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+		Services.get(IDocumentBL.class).processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
 
 }
