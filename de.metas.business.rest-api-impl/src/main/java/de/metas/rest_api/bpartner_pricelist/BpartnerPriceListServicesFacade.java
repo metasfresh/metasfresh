@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -56,7 +56,7 @@ import lombok.NonNull;
 
 /**
  * Facade of all services on which this REST endpoints depends
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -90,7 +90,7 @@ public class BpartnerPriceListServicesFacade
 		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}
 
-	public PriceListVersionId getPriceListVersionId(final PriceListId priceListId, final LocalDate date)
+	public PriceListVersionId getPriceListVersionId(final PriceListId priceListId, final ZonedDateTime date)
 	{
 		return priceListsRepo.retrievePriceListVersionId(priceListId, date);
 	}

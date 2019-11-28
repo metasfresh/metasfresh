@@ -5,7 +5,6 @@ import java.time.ZonedDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -100,7 +99,7 @@ final class ProductPriceMasterDataProvider
 
 		final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(
 				priceListId,
-				TimeUtil.asLocalDate(date));
+				date);
 
 		priceListsRepo.addProductPrice(AddProductPriceRequest.builder()
 				.priceListVersionId(priceListVersionId)

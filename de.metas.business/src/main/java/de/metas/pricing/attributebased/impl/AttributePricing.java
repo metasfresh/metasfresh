@@ -15,6 +15,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.BooleanWithReason;
@@ -38,6 +39,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class AttributePricing implements IPricingRule
@@ -277,7 +279,9 @@ public class AttributePricing implements IPricingRule
 						.onlyValidPrices(true)
 						.matching(_defaultMatchers)
 						.matchingAttributes(attributeSetInstance)
-						.firstMatching());
+						.firstMatching(),
+
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
 
 		if (productPrice == null)
 		{
