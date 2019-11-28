@@ -32,6 +32,16 @@ export function browseViewRequest({
   );
 }
 
+export function locationSearchRequest({ windowId, viewId }) {
+  return get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/geoLocations?limit=0`
+  );
+}
+
+export function locationConfigRequest() {
+  return get(`${config.API_URL}/geolocation/config`);
+}
+
 export function deleteView(windowId, viewId, action) {
   return del(
     `${config.API_URL}/documentView/${windowId}/${viewId}${

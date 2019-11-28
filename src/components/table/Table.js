@@ -176,10 +176,10 @@ class Table extends Component {
   }
 
   showSelectedIncludedView = selected => {
-    const { showIncludedViewOnSelect } = this.props;
+    const { showIncludedViewOnSelect, openIncludedViewOnSelect } = this.props;
     const { rows } = this.state;
 
-    if (selected.length === 1) {
+    if (openIncludedViewOnSelect && selected.length === 1) {
       rows.forEach(item => {
         if (item.id === selected[0]) {
           showIncludedViewOnSelect({
@@ -319,8 +319,12 @@ class Table extends Component {
     this.selectRangeProduct(leafsIds);
   };
 
-  changeListen = listenOnKeys => {
-    this.setState({ listenOnKeys: !!listenOnKeys });
+  setListenTrue = () => {
+    this.setState({ listenOnKeys: true });
+  };
+
+  setListenFalse = () => {
+    this.setState({ listenOnKeys: false });
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
@@ -981,6 +985,7 @@ class Table extends Component {
       collapsible,
       viewId,
       supportOpenRecord,
+      focusOnFieldName,
     } = this.props;
 
     const {
@@ -1023,6 +1028,7 @@ class Table extends Component {
           viewId,
           supportOpenRecord,
           item,
+          focusOnFieldName,
         }}
         dataHash={dataHash}
         key={`${i}-${viewId}`}
@@ -1043,12 +1049,14 @@ class Table extends Component {
         onDoubleClick={this.handleDoubleClick}
         onClick={this.handleClick}
         handleRightClick={this.handleRightClick}
-        changeListenOnTrue={() => this.changeListen(true)}
-        changeListenOnFalse={() => this.changeListen(false)}
+        changeListenOnTrue={this.setListenTrue}
+        changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
         isSelected={
-          selected &&
-          (selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all')
+          (selected &&
+            (selected.indexOf(item[keyProperty]) > -1 ||
+              selected[0] === 'all')) ||
+          (selected && !selected[0] && focusOnFieldName && i === 0)
         }
         handleSelect={this.selectRangeProduct}
         contextType={item.type}
@@ -1121,6 +1129,7 @@ class Table extends Component {
       disablePaginationShortcuts,
       hasIncluded,
       blurOnIncludedView,
+      toggleState,
     } = this.props;
 
     const {
@@ -1138,9 +1147,16 @@ class Table extends Component {
     }
 
     return (
-      <div ref={ref => (this.wrapper = ref)} className="row table-flex-wrapper">
+      <div
+        ref={ref => (this.wrapper = ref)}
+        className={classnames('table-flex-wrapper', {
+          'col-12': toggleState === 'grid' || toggleState == null,
+          'col-6': toggleState === 'all',
+          'd-none': toggleState === 'map',
+        })}
+      >
         <div
-          className={classnames('col-12', {
+          className={classnames({
             'table-flex-wrapper-row': mainTable,
           })}
         >
@@ -1337,9 +1353,10 @@ const clickOutsideConfig = {
   excludeScrollbar: true,
 };
 
+export { Table };
 export default connect(
   mapStateToProps,
   false,
   false,
-  { withRef: true }
+  { forwardRef: true }
 )(onClickOutside(Table, clickOutsideConfig));

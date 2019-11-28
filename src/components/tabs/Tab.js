@@ -48,18 +48,21 @@ class Tab extends Component {
   render() {
     const { children } = this.props;
 
-    return <div>{children}</div>;
+    return <div className="row table-wrapper">{children}</div>;
   }
 }
 
 Tab.propTypes = {
+  children: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
   onChange: PropTypes.func,
-  children: PropTypes.any,
   singleRowView: PropTypes.bool,
   windowId: PropTypes.string,
   tabId: PropTypes.string,
   docId: PropTypes.string,
+  queryOnActivate: PropTypes.bool,
+  orderBy: PropTypes.array,
 };
 
+export { Tab };
 export default connect()(Tab);

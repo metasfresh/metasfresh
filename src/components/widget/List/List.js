@@ -354,11 +354,16 @@ ListWidget.propTypes = {
   initialFocus: PropTypes.any,
   doNotOpenOnFocus: PropTypes.bool,
   setNextProperty: PropTypes.func,
-  disableAutoFocus: PropTypes.func,
+  disableAutofocus: PropTypes.func,
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
+  widgetField: PropTypes.string,
+  id: PropTypes.string,
+  field: PropTypes.string,
+  mandatory: PropTypes.bool,
+  lastProperty: PropTypes.string,
 };
 
 const mapStateToProps = state => ({
@@ -369,5 +374,5 @@ export default connect(
   mapStateToProps,
   false,
   false,
-  { withRef: true }
+  { forwardRef: true }
 )(ListWidget);

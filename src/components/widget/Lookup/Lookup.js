@@ -528,7 +528,7 @@ class Lookup extends Component {
                   <List
                     ref={c => {
                       if (c) {
-                        this.linkedList.push(c.getWrappedInstance());
+                        this.linkedList.push(c);
                       }
                     }}
                     field={item.field}

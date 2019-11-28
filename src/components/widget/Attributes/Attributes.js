@@ -148,11 +148,9 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleKeyDown = e => {
-    switch (e.key) {
-      case 'Escape':
-        e.preventDefault();
-        this.handleCompletion();
-        break;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      this.handleCompletion();
     }
   };
 
@@ -262,11 +260,6 @@ export default class Attributes extends Component {
     });
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const {
       widgetData,

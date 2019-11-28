@@ -1,14 +1,17 @@
 import counterpart from 'counterpart';
-import classnames from 'classnames';
+import cx from 'classnames';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { Map, List, Set } from 'immutable';
 import currentDevice from 'current-device';
+import { get } from 'lodash';
 
 import {
   getViewLayout,
   browseViewRequest,
+  locationSearchRequest,
+  locationConfigRequest,
   createViewRequest,
   deleteStaticFilter,
   filterViewRequest,
@@ -34,11 +37,11 @@ import { parseToDisplay, getRowsData } from '../../utils/documentListHelper';
 import { getSelectionDirect } from '../../reducers/windowHandler';
 import {
   DLpropTypes,
-  DLcontextTypes,
   DLmapStateToProps,
   NO_SELECTION,
   NO_VIEW,
   PANEL_WIDTHS,
+  GEO_PANEL_STATES,
   getSortingQuery,
   redirectToNewDocument,
   doesSelectionExist,
@@ -54,6 +57,7 @@ import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
+import GeoMap from '../maps/GeoMap';
 
 /**
  * @file Class based component.
@@ -77,6 +81,8 @@ export class DocumentList extends Component {
       layout: null,
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
+      toggleState: GEO_PANEL_STATES[0],
+      mapConfig: null,
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
@@ -96,27 +102,25 @@ export class DocumentList extends Component {
     this.fetchLayoutAndData();
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
+  UNSAFE_componentWillMount() {
+    locationConfigRequest().then(resp => {
+      if (resp.data.provider === 'GoogleMaps') {
+        this.setState({
+          mapConfig: resp.data,
+        });
+      }
+    });
+  }
+
   componentDidMount = () => {
     this.mounted = true;
   };
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     this.mounted = false;
     disconnectWS.call(this);
   }
 
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method.
-   */
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       defaultPage: nextDefaultPage,
@@ -180,6 +184,7 @@ export class DocumentList extends Component {
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
           triggerSpinner: true,
+          toggleState: 0,
         },
         () => {
           if (included) {
@@ -220,18 +225,10 @@ export class DocumentList extends Component {
     }
   }
 
-  /**
-   * @method shouldComponentUpdate
-   * @summary ToDo: Describe the method.
-   */
   shouldComponentUpdate(nextProps, nextState) {
     return !!nextState.layout && !!nextState.data;
   }
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method.
-   */
   componentDidUpdate(prevProps, prevState) {
     const { setModalDescription } = this.props;
     const { data } = this.state;
@@ -379,7 +376,7 @@ export class DocumentList extends Component {
    * @method fetchLayoutAndData
    * @summary ToDo: Describe the method.
    */
-  fetchLayoutAndData = isNewFilter => {
+  fetchLayoutAndData = (isNewFilter, locationAreaSearch) => {
     const {
       windowType,
       type,
@@ -410,7 +407,7 @@ export class DocumentList extends Component {
                 if (!isNewFilter) {
                   this.browseView();
                 } else {
-                  this.filterView();
+                  this.filterView(locationAreaSearch);
                 }
               } else {
                 this.createView();
@@ -437,14 +434,15 @@ export class DocumentList extends Component {
 
   /**
    * @method browseView
-   * @summary If viewId exist, than browse that view.
+   * @summary If viewId exists, than browse that view.
    */
   browseView = () => {
-    const { viewId, page, sort } = this.state;
+    const { viewId, page, sort, filtersActive } = this.state;
+    const locationSearchFilter = filtersActive.has(`location-area-search`);
 
     // in case of redirect from a notification, first call will have viewId empty
     if (viewId) {
-      this.getData(viewId, page, sort).catch(err => {
+      this.getData(viewId, page, sort, locationSearchFilter).catch(err => {
         if (err.response && err.response.status === 404) {
           this.createView();
         }
@@ -454,7 +452,7 @@ export class DocumentList extends Component {
 
   /**
    * @method createView
-   * @summary ToDo: Describe the method.
+   * @summary Create a new view, on visiting the page for the first time
    */
   createView = () => {
     const {
@@ -475,29 +473,33 @@ export class DocumentList extends Component {
       refDocId: refId,
       refTabId,
       refRowIds,
-    }).then(response => {
-      this.mounted &&
-        this.setState(
-          {
-            data: {
-              ...response.data,
+    })
+      .then(response => {
+        this.mounted &&
+          this.setState(
+            {
+              data: {
+                ...response.data,
+              },
+              viewId: response.data.viewId,
+              triggerSpinner: false,
             },
-            viewId: response.data.viewId,
-            triggerSpinner: false,
-          },
-          () => {
-            this.connectWebSocket(response.data.viewId);
-            this.getData(response.data.viewId, page, sort);
-          }
-        );
-    });
+            () => {
+              this.connectWebSocket(response.data.viewId);
+              this.getData(response.data.viewId, page, sort);
+            }
+          );
+      })
+      .catch(() => {
+        this.setState({ triggerSpinner: false });
+      });
   };
 
   /**
    * @method filterView
-   * @summary ToDo: Describe the method.
+   * @summary apply filters and re-fetch layout, data. Then rebuild the page
    */
-  filterView = () => {
+  filterView = locationAreaSearch => {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
 
@@ -505,34 +507,38 @@ export class DocumentList extends Component {
       windowType,
       viewId,
       filtersActive.toIndexedSeq().toArray()
-    ).then(response => {
-      const viewId = response.data.viewId;
+    )
+      .then(response => {
+        const viewId = response.data.viewId;
 
-      if (isIncluded) {
-        dispatch(setListIncludedView({ windowType, viewId }));
-      }
+        if (isIncluded) {
+          dispatch(setListIncludedView({ windowType, viewId }));
+        }
 
-      this.mounted &&
-        this.setState(
-          {
-            data: {
-              ...response.data,
+        this.mounted &&
+          this.setState(
+            {
+              data: {
+                ...response.data,
+              },
+              viewId: viewId,
+              triggerSpinner: false,
             },
-            viewId: viewId,
-            triggerSpinner: false,
-          },
-          () => {
-            this.getData(viewId, page, sort);
-          }
-        );
-    });
+            () => {
+              this.getData(viewId, page, sort, locationAreaSearch);
+            }
+          );
+      })
+      .catch(() => {
+        this.setState({ triggerSpinner: false });
+      });
   };
 
   /**
    * @method getData
    * @summary Loads view/included tab data from REST endpoint
    */
-  getData = (id, page, sortingQuery) => {
+  getData = (id, page, sortingQuery, locationAreaSearch) => {
     const {
       dispatch,
       windowType,
@@ -561,80 +567,132 @@ export class DocumentList extends Component {
       page: page,
       pageLength: this.pageLength,
       orderBy: sortingQuery,
-    }).then(response => {
-      const result = List(response.data.result);
-      result.hashCode();
+    })
+      .then(response => {
+        const result = List(response.data.result);
+        result.hashCode();
 
-      const selection = getSelectionDirect(selections, windowType, viewId);
-      const forceSelection =
-        (type === 'includedView' || isIncluded) &&
-        response.data &&
-        result.size > 0 &&
-        (selection.length === 0 ||
-          !doesSelectionExist({
+        const resultById = {};
+        const selection = getSelectionDirect(selections, windowType, viewId);
+        const forceSelection =
+          (type === 'includedView' || isIncluded) &&
+          response.data &&
+          result.size > 0 &&
+          (selection.length === 0 ||
+            !doesSelectionExist({
+              data: {
+                ...response.data,
+                result,
+              },
+              rowDataMap: Map({ 1: result }),
+              selected: selection,
+            }));
+
+        result.map(row => {
+          const parsed = parseToDisplay(row.fieldsByName);
+          resultById[`${row.id}`] = parsed;
+          row.fieldsByName = parsed;
+        });
+
+        const pageColumnInfosByFieldName = response.data.columnsByFieldName;
+        mergeColumnInfosIntoViewRows(
+          pageColumnInfosByFieldName,
+          response.data.result
+        );
+
+        if (this.mounted) {
+          const newState = {
             data: {
               ...response.data,
               result,
+              resultById,
             },
             rowDataMap: Map({ 1: result }),
-            selected: selection,
-          }));
+            pageColumnInfosByFieldName: pageColumnInfosByFieldName,
+            triggerSpinner: false,
+          };
 
-      result.map(row => {
-        row.fieldsByName = parseToDisplay(row.fieldsByName);
-      });
-
-      const pageColumnInfosByFieldName = response.data.columnsByFieldName;
-      mergeColumnInfosIntoViewRows(
-        pageColumnInfosByFieldName,
-        response.data.result
-      );
-
-      if (this.mounted) {
-        const newState = {
-          data: {
-            ...response.data,
-            result,
-          },
-          rowDataMap: Map({ 1: result }),
-          pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-          triggerSpinner: false,
-        };
-
-        if (response.data.filters) {
-          newState.filtersActive = filtersToMap(response.data.filters);
-        }
-
-        this.setState({ ...newState }, () => {
-          if (forceSelection && response.data && result && result.size > 0) {
-            const selection = [result.get(0).id];
-
-            dispatch(
-              selectTableItems({
-                windowType,
-                viewId,
-                ids: selection,
-              })
-            );
+          if (response.data.filters) {
+            newState.filtersActive = filtersToMap(response.data.filters);
           }
-        });
 
-        // process modal specific
-        const {
-          parentViewId,
-          parentWindowId,
-          headerProperties,
-        } = response.data;
-        dispatch(
-          updateRawModal(windowType, {
+          // we have map search results
+          if (
+            locationAreaSearch ||
+            (newState.filtersActive &&
+              newState.filtersActive.has(`location-area-search`))
+          ) {
+            this.getLocationData(resultById);
+          }
+
+          this.setState({ ...newState }, () => {
+            if (forceSelection && response.data && result && result.size > 0) {
+              const selection = [result.get(0).id];
+
+              dispatch(
+                selectTableItems({
+                  windowType,
+                  viewId,
+                  ids: selection,
+                })
+              );
+            }
+          });
+
+          // process modal specific
+          const {
             parentViewId,
             parentWindowId,
             headerProperties,
-          })
+          } = response.data;
+          dispatch(
+            updateRawModal(windowType, {
+              parentViewId,
+              parentWindowId,
+              headerProperties,
+            })
+          );
+        }
+
+        dispatch(indicatorState('saved'));
+      })
+      .catch(() => {
+        this.setState({ triggerSpinner: false });
+      });
+  };
+
+  getLocationData = resultById => {
+    const { windowType } = this.props;
+    const { viewId, mapConfig } = this.state;
+
+    locationSearchRequest({ windowId: windowType, viewId }).then(({ data }) => {
+      const locationData = data.locations.map(location => {
+        const name = get(
+          resultById,
+          [location.rowId, 'C_BPartner_ID', 'value', 'caption'],
+          location.rowId
         );
+
+        return {
+          ...location,
+          name,
+        };
+      });
+
+      const newState = {
+        data: {
+          ...this.state.data,
+          locationData,
+        },
+      };
+
+      if (mapConfig && mapConfig.provider) {
+        // for mobile show map
+        // for desktop show half-n-half
+        newState.toggleState = GEO_PANEL_STATES[1];
       }
 
-      dispatch(indicatorState('saved'));
+      this.setState(newState);
     });
   };
 
@@ -695,6 +753,8 @@ export class DocumentList extends Component {
    * @summary ToDo: Describe the method.
    */
   handleFilterChange = activeFilters => {
+    const locationSearchFilter = activeFilters.has(`location-area-search`);
+
     this.setState(
       {
         filtersActive: activeFilters,
@@ -702,7 +762,7 @@ export class DocumentList extends Component {
         triggerSpinner: true,
       },
       () => {
-        this.fetchLayoutAndData(true);
+        this.fetchLayoutAndData(true, locationSearchFilter);
       }
     );
   };
@@ -759,6 +819,16 @@ export class DocumentList extends Component {
 
     this.setState({
       toggleWidth: widthIdx,
+    });
+  };
+
+  collapseGeoPanels = () => {
+    const stateIdx = GEO_PANEL_STATES.indexOf(this.state.toggleState);
+    const newStateIdx =
+      stateIdx + 1 === GEO_PANEL_STATES.length ? 0 : stateIdx + 1;
+
+    this.setState({
+      toggleState: GEO_PANEL_STATES[newStateIdx],
     });
   };
 
@@ -885,9 +955,11 @@ export class DocumentList extends Component {
       refreshSelection,
       supportAttribute,
       toggleWidth,
+      toggleState,
       rowEdited,
       initialValuesNulled,
       rowDataMap,
+      mapConfig,
     } = this.state;
     let { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -926,19 +998,27 @@ export class DocumentList extends Component {
     }
 
     const showQuickActions = true;
+    const showModalResizeBtn =
+      layout && isModal && hasIncluded && hasShowIncluded;
+    const showGeoResizeBtn =
+      layout &&
+      layout.supportGeoLocations &&
+      data &&
+      data.locationData &&
+      mapConfig.provider !== 'OpenStreetMap';
 
     return (
       <div
-        className={classnames('document-list-wrapper', {
+        className={cx('document-list-wrapper', {
           'document-list-included': isShowIncluded || isIncluded,
           'document-list-has-included': hasShowIncluded || hasIncluded,
         })}
         style={styleObject}
       >
-        {layout && isModal && hasIncluded && hasShowIncluded && (
+        {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button
-              className={classnames(
+              className={cx(
                 'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
                 {
                   normal: toggleWidth === 0,
@@ -952,8 +1032,15 @@ export class DocumentList extends Component {
         )}
 
         {layout && !readonly && (
-          <div className="panel panel-primary panel-spaced panel-inline document-list-header">
-            <div className={hasIncluded ? 'disabled' : ''}>
+          <div
+            className={cx(
+              'panel panel-primary panel-spaced panel-inline document-list-header',
+              {
+                posRelative: showGeoResizeBtn,
+              }
+            )}
+          >
+            <div className={cx('header-element', { disabled: hasIncluded })}>
               {layout.supportNewRecord && !isModal && (
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
@@ -988,11 +1075,35 @@ export class DocumentList extends Component {
               )}
             </div>
 
+            {showGeoResizeBtn && (
+              <div className="header-element pane-size-button ignore-react-onclickoutside">
+                <button
+                  className={cx(
+                    'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside'
+                  )}
+                  onClick={this.collapseGeoPanels}
+                >
+                  <i
+                    className={cx('icon icon-grid', {
+                      greyscaled: toggleState === 'map',
+                    })}
+                  />
+                  <i className="icon text-middle">/</i>
+                  <i
+                    className={cx('icon icon-map', {
+                      greyscaled: toggleState === 'grid',
+                    })}
+                  />
+                </button>
+              </div>
+            )}
+
             {data && showQuickActions && (
               <QuickActions
+                className="header-element align-items-center"
                 processStatus={processStatus}
                 ref={c => {
-                  this.quickActionsComponent = c && c.getWrappedInstance();
+                  this.quickActionsComponent = c;
                 }}
                 selected={selected}
                 viewId={viewId}
@@ -1035,79 +1146,83 @@ export class DocumentList extends Component {
 
         {layout && data && (
           <div className="document-list-body">
-            <Table
-              entity="documentView"
-              ref={c =>
-                (this.table =
-                  c &&
-                  c.getWrappedInstance() &&
-                  c.getWrappedInstance().instanceRef)
-              }
-              rowData={rowDataMap}
-              cols={layout.elements}
-              collapsible={layout.collapsible}
-              expandedDepth={layout.expandedDepth}
-              tabId={1}
-              windowId={windowType}
-              emptyText={layout.emptyResultText}
-              emptyHint={layout.emptyResultHint}
-              readonly={true}
-              supportOpenRecord={layout.supportOpenRecord}
-              rowEdited={rowEdited}
-              onRowEdited={this.setTableRowEdited}
-              keyProperty="id"
-              onDoubleClick={this.redirectToDocument}
-              size={data.size}
-              pageLength={this.pageLength}
-              handleChangePage={this.handleChangePage}
-              onSelectionChanged={updateParentSelectedIds}
-              mainTable={true}
-              updateDocList={this.fetchLayoutAndData}
-              sort={this.sortData}
-              orderBy={data.orderBy}
-              tabIndex={0}
-              indentSupported={layout.supportTree}
-              disableOnClickOutside={clickOutsideLock}
-              limitOnClickOutside={isModal}
-              defaultSelected={selected}
-              refreshSelection={refreshSelection}
-              queryLimitHit={data.queryLimitHit}
-              showIncludedViewOnSelect={this.showIncludedViewOnSelect}
-              openIncludedViewOnSelect={
-                layout.includedView && layout.includedView.openOnSelect
-              }
-              blurOnIncludedView={blurWhenOpen}
-              {...{
-                isIncluded,
-                disconnectFromState,
-                autofocus,
-                open,
-                page,
-                closeOverlays,
-                inBackground,
-                disablePaginationShortcuts,
-                isModal,
-                hasIncluded,
-                viewId,
-                windowType,
-              }}
-            >
-              {layout.supportAttributes && !isIncluded && !hasIncluded && (
-                <DataLayoutWrapper
-                  className="table-flex-wrapper attributes-selector js-not-unselect"
-                  entity="documentView"
-                  {...{ windowType, viewId }}
-                  onRowEdited={this.setTableRowEdited}
-                >
-                  <SelectionAttributes
-                    supportAttribute={supportAttribute}
-                    setClickOutsideLock={this.setClickOutsideLock}
-                    selected={selectionValid ? selected : undefined}
-                    shouldNotUpdate={inBackground}
-                  />
-                </DataLayoutWrapper>
-              )}
-            </Table>
+            <div className="row table-row">
+              <Table
+                entity="documentView"
+                ref={c => (this.table = c)}
+                rowData={rowDataMap}
+                cols={layout.elements}
+                collapsible={layout.collapsible}
+                expandedDepth={layout.expandedDepth}
+                tabId={1}
+                windowId={windowType}
+                emptyText={layout.emptyResultText}
+                emptyHint={layout.emptyResultHint}
+                readonly={true}
+                supportOpenRecord={layout.supportOpenRecord}
+                rowEdited={rowEdited}
+                onRowEdited={this.setTableRowEdited}
+                keyProperty="id"
+                onDoubleClick={this.redirectToDocument}
+                size={data.size}
+                pageLength={this.pageLength}
+                handleChangePage={this.handleChangePage}
+                onSelectionChanged={updateParentSelectedIds}
+                mainTable={true}
+                updateDocList={this.fetchLayoutAndData}
+                sort={this.sortData}
+                orderBy={data.orderBy}
+                tabIndex={0}
+                indentSupported={layout.supportTree}
+                disableOnClickOutside={clickOutsideLock}
+                limitOnClickOutside={isModal}
+                defaultSelected={selected}
+                refreshSelection={refreshSelection}
+                queryLimitHit={data.queryLimitHit}
+                showIncludedViewOnSelect={this.showIncludedViewOnSelect}
+                openIncludedViewOnSelect={
+                  layout.includedView && layout.includedView.openOnSelect
+                }
+                blurOnIncludedView={blurWhenOpen}
+                focusOnFieldName={layout.focusOnFieldName}
+                {...{
+                  isIncluded,
+                  disconnectFromState,
+                  autofocus,
+                  open,
+                  page,
+                  closeOverlays,
+                  inBackground,
+                  disablePaginationShortcuts,
+                  isModal,
+                  hasIncluded,
+                  viewId,
+                  windowType,
+                  toggleState,
+                }}
+              >
+                {layout.supportAttributes && !isIncluded && !hasIncluded && (
+                  <DataLayoutWrapper
+                    className="table-flex-wrapper attributes-selector js-not-unselect"
+                    entity="documentView"
+                    {...{ windowType, viewId }}
+                    onRowEdited={this.setTableRowEdited}
+                  >
+                    <SelectionAttributes
+                      supportAttribute={supportAttribute}
+                      setClickOutsideLock={this.setClickOutsideLock}
+                      selected={selectionValid ? selected : undefined}
+                      shouldNotUpdate={inBackground}
+                    />
+                  </DataLayoutWrapper>
+                )}
+              </Table>
+              <GeoMap
+                toggleState={toggleState}
+                mapConfig={mapConfig}
+                data={data.locationData}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -1121,15 +1236,9 @@ export class DocumentList extends Component {
  */
 DocumentList.propTypes = { ...DLpropTypes };
 
-/**
- * @typedef {object} Props Component context
- * @prop {object} DLcontextTypes
- */
-DocumentList.contextTypes = { ...DLcontextTypes };
-
 export default connect(
   DLmapStateToProps,
   null,
   null,
-  { withRef: true }
+  { forwardRef: true }
 )(DocumentList);

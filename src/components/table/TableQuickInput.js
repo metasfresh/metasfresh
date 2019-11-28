@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import cx from 'classnames';
 
 import { addNotification } from '../../actions/AppActions';
 import {
@@ -171,9 +172,15 @@ class TableQuickInput extends Component {
 
     this.rawWidgets = [];
 
+    const layoutFieldsAmt = layout ? layout.length : 2;
     const stylingLayout = [
       {
-        formGroup: `col-12 col-lg-4 col-xl-5`,
+        formGroup: cx(`col-12`, {
+          'col-lg-5': layoutFieldsAmt === 2,
+          'col-xl-6': layoutFieldsAmt === 2,
+          'col-lg-4': layoutFieldsAmt === 3,
+          'col-xl-5': layoutFieldsAmt === 3,
+        }),
         label: `col-12 col-lg-3 quickInput-label`,
         field: `col-12 col-lg-9`,
       },

@@ -72,6 +72,8 @@ describe('QuickActions standalone component', () => {
       );
 
       return promise.then(() => {
+        wrapper.update();
+
         expect(wrapper.find(QuickActions).instance().state.actions).toHaveLength(1);
         expect(wrapper.html()).toContain('quick-actions-wrapper');
       });

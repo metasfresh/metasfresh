@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
+import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { merge } from 'lodash';
@@ -32,6 +33,7 @@ class TableItem extends PureComponent {
     this.state = {
       edited: '',
       activeCell: '',
+      activeCellName: null,
       updatedRow: false,
       listenOnKeys: true,
       editedCells: {},
@@ -41,7 +43,8 @@ class TableItem extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { multilineText } = this.state;
+    const { multilineText, activeCell } = this.state;
+    const { focusOnFieldName, isSelected } = this.props;
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
@@ -52,7 +55,47 @@ class TableItem extends PureComponent {
         editedCells: {},
       });
     }
+
+    if (focusOnFieldName && isSelected && this.autofocusCell && !activeCell) {
+      // eslint-disable-next-line react/no-find-dom-node
+      ReactDOM.findDOMNode(this.autofocusCell).focus();
+      this.focusCell();
+    }
   }
+
+  componentDidMount() {
+    const { focusOnFieldName, isSelected } = this.props;
+
+    if (focusOnFieldName && isSelected && this.autofocusCell) {
+      // eslint-disable-next-line react/no-find-dom-node
+      ReactDOM.findDOMNode(this.autofocusCell).focus();
+    }
+  }
+
+  isAllowedFieldEdit = item =>
+    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
+
+  isEditableOnDemand = item => {
+    const { fieldsByName } = this.props;
+    const { editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
+    const property = item.fields ? item.fields[0].field : item.field;
+
+    return (
+      (cells &&
+        cells[property] &&
+        cells[property].viewEditorRenderMode ===
+          VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
+      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
+    );
+  };
+
+  prepareWidgetData = item => {
+    const { fieldsByName } = this.props;
+    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
+
+    return widgetData;
+  };
 
   initPropertyEditor = fieldName => {
     const { cols, fieldsByName } = this.props;
@@ -97,39 +140,49 @@ class TableItem extends PureComponent {
           changeListenOnTrue();
         }
         break;
+      default: {
+        const inp = String.fromCharCode(e.keyCode);
+        if (/[a-zA-Z0-9]/.test(inp)) {
+          this.listenOnKeysTrue();
+
+          this.handleEditProperty(e, property, true, widgetData, true);
+        }
+        break;
+      }
     }
   };
 
-  handleEditProperty = (e, property, callback, item) => {
+  focusCell = property => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
       this.setState({
         activeCell: elem,
+        activeCellName: property,
       });
     }
-
-    this.editProperty(e, property, callback, item);
   };
 
-  prepareWidgetData = item => {
-    const { fieldsByName } = this.props;
-    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
-
-    return widgetData;
+  handleEditProperty = (e, property, focus, item, select) => {
+    this.focusCell(property);
+    this.editProperty(e, property, focus, item, select);
   };
 
-  editProperty = (e, property, callback, item) => {
+  editProperty = (e, property, focus, item, select) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e.stopPropagation();
+
+      if (select && this.selectedCell) {
+        this.selectedCell.clearValue();
+      }
 
       this.setState(
         {
           edited: property,
         },
         () => {
-          if (callback) {
+          if (focus) {
             const elem = document.activeElement.getElementsByClassName(
               'js-input-field'
             )[0];
@@ -184,11 +237,10 @@ class TableItem extends PureComponent {
     activeCell && activeCell.focus();
   };
 
-  isAllowedFieldEdit = item => {
-    return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
-  };
-
-  onCellChange = (rowId, property, value, ret) => {
+  /*
+   * This function is called when cell's value changes
+   */
+  handleCellValueChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
     const editedCells = { ...this.state.editedCells };
 
@@ -255,6 +307,11 @@ class TableItem extends PureComponent {
             displayed: true,
             readonly: false,
           };
+        } else {
+          cellWidget = {
+            ...cellWidget,
+            readonly: true,
+          };
         }
 
         if (cellWidget) {
@@ -290,6 +347,7 @@ class TableItem extends PureComponent {
       viewId,
       keyProperty,
       isSelected,
+      focusOnFieldName,
     } = this.props;
     const {
       edited,
@@ -299,6 +357,7 @@ class TableItem extends PureComponent {
       cellsExtended,
       multilineText,
       multilineTextLines,
+      activeCellName,
     } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
 
@@ -353,6 +412,16 @@ class TableItem extends PureComponent {
                   handleRightClick,
                   keyProperty,
                 }}
+                ref={c => {
+                  if (c && isSelected) {
+                    if (focusOnFieldName === property) {
+                      this.autofocusCell = c;
+                    }
+                    if (activeCellName === property) {
+                      this.selectedCell = c;
+                    }
+                  }
+                }}
                 tdValue={
                   widgetData[0].value
                     ? JSON.stringify(widgetData[0].value)
@@ -365,7 +434,7 @@ class TableItem extends PureComponent {
                 isEdited={isEdited}
                 handleDoubleClick={this.handleEditProperty}
                 onClickOutside={this.handleClickOutside}
-                onCellChange={this.onCellChange}
+                onCellChange={this.handleCellValueChange}
                 onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
@@ -561,11 +630,34 @@ TableItem.propTypes = {
   caption: PropTypes.string,
   dataHash: PropTypes.string.isRequired,
   key: PropTypes.string,
+  changeListenOnTrue: PropTypes.func,
+  handleRowCollapse: PropTypes.func,
+  handleRightClick: PropTypes.func,
+  fieldsByName: PropTypes.object,
+  indent: PropTypes.array,
+  rowId: PropTypes.string,
+  onItemChange: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
+  changeListenOnFalse: PropTypes.func,
+  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  mainTable: PropTypes.bool,
+  newRow: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  entity: PropTypes.string,
+  getSizeClass: PropTypes.func,
+  colspan: PropTypes.string,
+  viewId: PropTypes.string,
+  docId: PropTypes.string,
+  windowId: PropTypes.string,
+  lastChild: PropTypes.string,
+  includedDocuments: PropTypes.string,
+  contextType: PropTypes.string,
+  focusOnFieldName: PropTypes.string,
 };
 
 export default connect(
   false,
   false,
   false,
-  { withRef: true }
+  { forwardRef: true }
 )(TableItem);

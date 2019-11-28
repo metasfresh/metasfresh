@@ -16,7 +16,7 @@ class ActionButton extends Component {
     dispatch: PropTypes.func.isRequired,
     docId: PropTypes.string,
     tabIndex: PropTypes.number,
-    children: PropTypes.element,
+    children: PropTypes.any,
     showTooltip: PropTypes.func,
     hideTooltip: PropTypes.func,
   };

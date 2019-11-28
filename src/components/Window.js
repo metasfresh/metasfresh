@@ -49,10 +49,6 @@ class Window extends PureComponent {
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
   }
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method.
-   */
   componentMountUpdate() {
     this._setInitialSectionsState();
   }

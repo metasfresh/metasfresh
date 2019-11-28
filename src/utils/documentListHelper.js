@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map } from 'immutable';
 import Moment from 'moment-timezone';
+import currentDevice from 'current-device';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
@@ -20,10 +21,6 @@ const DLpropTypes = {
   parentSelected: PropTypes.array.isRequired,
   selected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
-};
-
-const DLcontextTypes = {
-  store: PropTypes.object.isRequired,
 };
 
 const DLmapStateToProps = (state, props) => ({
@@ -54,6 +51,12 @@ const DLmapStateToProps = (state, props) => ({
 const NO_SELECTION = [];
 const NO_VIEW = {};
 const PANEL_WIDTHS = ['1', '.2', '4'];
+const GEO_PANEL_STATES = ['grid', 'all', 'map'];
+
+// for mobile devices we only want to show either map or grid
+if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+  GEO_PANEL_STATES.splice(1, 1);
+}
 
 const filtersToMap = function(filtersArray) {
   let filtersMap = Map();
@@ -107,11 +110,11 @@ const getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
 
 export {
   DLpropTypes,
-  DLcontextTypes,
   DLmapStateToProps,
   NO_SELECTION,
   NO_VIEW,
   PANEL_WIDTHS,
+  GEO_PANEL_STATES,
   getSortingQuery,
   redirectToNewDocument,
   filtersToMap,
