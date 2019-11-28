@@ -10,7 +10,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.payment_allocation.PaymentViewFactory;
+import de.metas.ui.web.payment_allocation.PaymentsViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewsRepository;
@@ -64,7 +64,7 @@ public class PaymentView_Launcher extends ViewBasedProcessTemplate implements IP
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentViewFactory.WINDOW_ID)
+		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentsViewFactory.WINDOW_ID)
 				.setFilterOnlyIds(PaymentId.toIntSet(paymentIds))
 				.build())
 				.getViewId();

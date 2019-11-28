@@ -1,6 +1,13 @@
 package de.metas.ui.web.payment_allocation;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.TranslatableStrings;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
@@ -41,13 +48,16 @@ public class PaymentsView extends AbstractCustomView<PaymentRow> implements IVie
 		return (PaymentsView)view;
 	}
 
+	private ImmutableList<RelatedProcessDescriptor> processes;
+
 	@Getter
 	private InvoicesView invoicesView;
 
 	@Builder
 	private PaymentsView(
 			@NonNull final ViewId paymentViewId,
-			final PaymentAndInvoiceRows rows)
+			final PaymentAndInvoiceRows rows,
+			@Nullable final List<RelatedProcessDescriptor> processes)
 	{
 		super(paymentViewId,
 				TranslatableStrings.empty(),
@@ -58,6 +68,8 @@ public class PaymentsView extends AbstractCustomView<PaymentRow> implements IVie
 				.viewId(paymentViewId.withWindowId(InvoicesViewFactory.WINDOW_ID))
 				.rows(rows.getInvoiceRows())
 				.build();
+
+		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
 	}
 
 	@Override
@@ -72,4 +84,9 @@ public class PaymentsView extends AbstractCustomView<PaymentRow> implements IVie
 		return invoicesView.getViewId();
 	}
 
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return processes;
+	}
 }

@@ -59,12 +59,7 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 
 	private DocumentIdsSelection getSelectedInvoiceRowIds()
 	{
-		final DocumentIdsSelection invoiceRowIds = getProcessInfo()
-				.getSelectedIncludedRecords()
-				.stream()
-				.map(InvoiceRow::convertRecordRefToDocumentId)
-				.collect(DocumentIdsSelection.toDocumentIdsSelection());
-		return invoiceRowIds;
+		return getChildViewSelectedRowIds();
 	}
 
 	//
@@ -75,6 +70,20 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 	{
 		final DocumentId rowId = getSelectedPaymentRowIds().getSingleDocumentId();
 		return getPaymentsView().getById(rowId);
+	}
+
+	protected final PaymentRow getSingleSelectedPaymentRowOrNull()
+	{
+		final DocumentIdsSelection selectedPaymentRowIds = getSelectedPaymentRowIds();
+		if (selectedPaymentRowIds.isSingleDocumentId())
+		{
+			final DocumentId rowId = selectedPaymentRowIds.getSingleDocumentId();
+			return getPaymentsView().getById(rowId);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	protected final List<InvoiceRow> getSelectedInvoiceRows()

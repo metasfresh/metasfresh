@@ -1,18 +1,19 @@
 package de.metas.ui.web.payment_allocation;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.I_C_Invoice;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -40,37 +41,52 @@ import lombok.NonNull;
 
 public class InvoiceRows implements IRowsData<InvoiceRow>
 {
-	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
-	private final ImmutableMap<DocumentId, InvoiceRow> rowsById;
+	private final PaymentAndInvoiceRowsRepo repository;
+	private final ZonedDateTime evaluationDate;
+	private final SynchronizedMutable<ImmutableRowsIndex<InvoiceRow>> rowsHolder;
 
 	@Builder
 	private InvoiceRows(
-			@NonNull final List<InvoiceRow> rows)
+			@NonNull PaymentAndInvoiceRowsRepo repository,
+			@NonNull final List<InvoiceRow> initialRows,
+			@NonNull final ZonedDateTime evaluationDate)
 	{
-		rowIds = rows.stream()
-				.map(InvoiceRow::getId)
-				.collect(ImmutableList.toImmutableList());
-
-		rowsById = Maps.uniqueIndex(rows, InvoiceRow::getId);
+		this.repository = repository;
+		this.evaluationDate = evaluationDate;
+		rowsHolder = SynchronizedMutable.of(new ImmutableRowsIndex<>(initialRows));
 	}
 
 	@Override
 	public Map<DocumentId, InvoiceRow> getDocumentId2TopLevelRows()
 	{
-		return rowIds.stream()
-				.map(rowsById::get)
-				.collect(GuavaCollectors.toImmutableMapByKey(InvoiceRow::getId));
+		final ImmutableRowsIndex<InvoiceRow> rows = rowsHolder.getValue();
+		return rows.getDocumentId2TopLevelRows();
 	}
 
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		return DocumentIdsSelection.EMPTY;
+		final ImmutableRowsIndex<InvoiceRow> rows = rowsHolder.getValue();
+		return recordRefs.streamIds(I_C_Invoice.Table_Name, InvoiceId::ofRepoId)
+				.map(InvoiceRow::convertInvoiceIdToDocumentId)
+				.filter(rows::containsRowId)
+				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
 	@Override
 	public void invalidateAll()
 	{
-		// nothing
+		invalidate(DocumentIdsSelection.ALL);
+	}
+
+	@Override
+	public void invalidate(final DocumentIdsSelection rowIds)
+	{
+		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder.getValue().streamRows(rowIds)
+				.map(InvoiceRow::getInvoiceId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate);
+		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
 	}
 }

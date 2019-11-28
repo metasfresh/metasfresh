@@ -7,7 +7,7 @@ import java.util.Set;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -66,24 +66,25 @@ public class PaymentRow implements IViewRow
 	@Getter
 	private final PaymentId paymentId;
 	@Getter
-	private OrgId orgId;
+	private final ClientAndOrgId clientAndOrgId;
 	@Getter
-	private boolean inboundPayment;
+	private final boolean inboundPayment;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
 	@Builder
 	private PaymentRow(
 			@NonNull final PaymentId paymentId,
-			@NonNull final OrgId orgId,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateTrx,
 			@NonNull final LookupValue bpartner,
 			@NonNull final Amount amount,
 			final boolean inboundPayment)
 	{
-		rowId = DocumentId.of(paymentId);
+		rowId = convertPaymentIdToDocumentId(paymentId);
 		this.paymentId = paymentId;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
 		this.bpartner = bpartner;
@@ -92,6 +93,11 @@ public class PaymentRow implements IViewRow
 		this.inboundPayment = inboundPayment;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
+	}
+
+	static DocumentId convertPaymentIdToDocumentId(final PaymentId paymentId)
+	{
+		return DocumentId.of(paymentId);
 	}
 
 	@Override

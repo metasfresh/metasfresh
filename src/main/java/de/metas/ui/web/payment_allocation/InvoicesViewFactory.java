@@ -47,16 +47,17 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_String);
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private IViewsRepository viewsRepository;
+	private final PaymentsViewFactory paymentsViewFactory;
 
-	public InvoicesViewFactory()
+	public InvoicesViewFactory(@NonNull final PaymentsViewFactory paymentsViewFactory)
 	{
+		this.paymentsViewFactory = paymentsViewFactory;
 	}
 
 	@Override
 	public void setViewsRepository(@NonNull final IViewsRepository viewsRepository)
 	{
-		this.viewsRepository = viewsRepository;
+		// nothing
 	}
 
 	@Override
@@ -92,7 +93,7 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 	public InvoicesView getByIdOrNull(final ViewId invoicesViewId)
 	{
 		final ViewId paymentsViewId = toPaymentsViewId(invoicesViewId);
-		final PaymentsView paymentsView = PaymentsView.cast(viewsRepository.getViewIfExists(paymentsViewId));
+		final PaymentsView paymentsView = paymentsViewFactory.getByIdOrNull(paymentsViewId);
 		return paymentsView != null
 				? paymentsView.getInvoicesView()
 				: null;
@@ -100,7 +101,7 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 
 	private static ViewId toPaymentsViewId(final ViewId invoicesViewId)
 	{
-		return invoicesViewId.withWindowId(PaymentViewFactory.WINDOW_ID);
+		return invoicesViewId.withWindowId(PaymentsViewFactory.WINDOW_ID);
 	}
 
 	@Override
@@ -111,7 +112,9 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 	@Override
 	public Stream<IView> streamAllViews()
 	{
-		return Stream.empty();
+		return paymentsViewFactory.streamAllViews()
+				.map(PaymentsView::cast)
+				.map(PaymentsView::getInvoicesView);
 	}
 
 	@Override
@@ -123,5 +126,4 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 			invoicesView.invalidateAll();
 		}
 	}
-
 }

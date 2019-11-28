@@ -10,9 +10,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.util.time.SystemTime;
@@ -39,33 +42,73 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-public class PaymentsView_Allocate extends PaymentsViewBasedProcess
+public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements IProcessPrecondition
 {
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	@Override
+	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	{
+		final PaymentAllocationBuilder builder = preparePaymentAllocationBuilder();
+		if (builder == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("invalid");
+		}
+
+		final PaymentAllocationResult result = builder
+				.dryRun()
+				.build();
+
+		if (result.getCandidates().isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to allocate");
+		}
+		if (!result.isFullyAllocated())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not fully allocated");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
 	protected String doIt()
 	{
-		final PaymentRow paymentRow = getSingleSelectedPaymentRow();
+		preparePaymentAllocationBuilder()
+				.build();
+
+		// TODO: invalidate views and kick out what was fully allocated
+
+		return MSG_OK;
+	}
+
+	private PaymentAllocationBuilder preparePaymentAllocationBuilder()
+	{
+		final PaymentRow paymentRow = getSingleSelectedPaymentRowOrNull();
+		if (paymentRow == null)
+		{
+			return null;
+		}
+
+		final List<PaymentDocument> paymentDocuments = paymentRow != null
+				? ImmutableList.of(toPaymentDocument(paymentRow))
+				: ImmutableList.of();
+
 		final List<InvoiceRow> invoiceRows = getSelectedInvoiceRows();
+		final ImmutableList<PayableDocument> invoiceDocuments = invoiceRows.stream()
+				.map(this::toPayableDocument)
+				.collect(ImmutableList.toImmutableList());
 
 		final LocalDate dateTrx = SystemTime.asLocalDate();
 		final Money paymentOpenAmt = moneyService.toMoney(paymentRow.getAmount());
 
-		PaymentAllocationBuilder.newBuilder()
-				.orgId(paymentRow.getOrgId())
+		return PaymentAllocationBuilder.newBuilder()
+				.orgId(paymentRow.getClientAndOrgId().getOrgId())
 				.currencyId(paymentOpenAmt.getCurrencyId())
 				.dateTrx(dateTrx)
 				.dateAcct(dateTrx)
-				.paymentDocument(toPaymentDocument(paymentRow))
-				.payableDocuments(invoiceRows.stream()
-						.map(this::toPayableDocument)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-
-		// TODO: invalidate views and kick out what was fully allocated
-		
-		return MSG_OK;
+				.paymentDocuments(paymentDocuments)
+				.payableDocuments(invoiceDocuments);
 	}
 
 	private PayableDocument toPayableDocument(final InvoiceRow row)

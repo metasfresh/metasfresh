@@ -1,19 +1,18 @@
 package de.metas.ui.web.payment_allocation;
 
 import java.util.List;
-import java.util.Map;
 
+import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.I_C_Payment;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
+import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -41,39 +40,44 @@ import lombok.NonNull;
 
 public class PaymentRows implements IRowsData<PaymentRow>
 {
-	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
-	private final ImmutableMap<DocumentId, PaymentRow> rowsById;
+	private final SynchronizedMutable<ImmutableRowsIndex<PaymentRow>> rowsHolder;
 
 	@Builder
 	private PaymentRows(
-			@NonNull final List<PaymentRow> rows)
+			@NonNull PaymentAndInvoiceRowsRepo repository,
+			@NonNull final List<PaymentRow> initialRows)
 	{
-		Check.assumeNotEmpty(rows, "rows is not empty");
+		Check.assumeNotEmpty(initialRows, "initialRows is not empty");
 
-		rowIds = rows.stream()
-				.map(PaymentRow::getId)
-				.collect(ImmutableList.toImmutableList());
-
-		rowsById = Maps.uniqueIndex(rows, PaymentRow::getId);
+		rowsHolder = SynchronizedMutable.of(new ImmutableRowsIndex<>(initialRows));
 	}
 
 	@Override
-	public Map<DocumentId, PaymentRow> getDocumentId2TopLevelRows()
+	public ImmutableMap<DocumentId, PaymentRow> getDocumentId2TopLevelRows()
 	{
-		return rowIds.stream()
-				.map(rowsById::get)
-				.collect(GuavaCollectors.toImmutableMapByKey(PaymentRow::getId));
+		return rowsHolder.getValue().getDocumentId2TopLevelRows();
 	}
 
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		return DocumentIdsSelection.EMPTY;
+		final ImmutableRowsIndex<PaymentRow> rows = rowsHolder.getValue();
+		return recordRefs.streamIds(I_C_Payment.Table_Name, PaymentId::ofRepoId)
+				.map(PaymentRow::convertPaymentIdToDocumentId)
+				.filter(rows::containsRowId)
+				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
 	@Override
 	public void invalidateAll()
 	{
 		// nothing
+	}
+
+	@Override
+	public void invalidate(final DocumentIdsSelection rowIds)
+	{
+		// TODO Auto-generated method stub
+		invalidateAll();
 	}
 }

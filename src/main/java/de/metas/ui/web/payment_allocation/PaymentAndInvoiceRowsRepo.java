@@ -1,10 +1,10 @@
 package de.metas.ui.web.payment_allocation;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -22,8 +22,9 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -74,10 +75,12 @@ public class PaymentAndInvoiceRowsRepo
 	{
 		Check.assumeNotEmpty(paymentIds, "paymentIds is not empty");
 
+		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+
 		final List<I_C_Payment> paymentRecords = paymentsService.getByIds(paymentIds);
 
 		final PaymentRows paymentRows = toPaymentRows(paymentRecords);
-		final InvoiceRows invoiceRows = retrieveInvoiceRows(paymentRecords);
+		final InvoiceRows invoiceRows = retrieveInvoiceRowsByPaymentRecords(paymentRecords, evaluationDate);
 
 		return PaymentAndInvoiceRows.builder()
 				.paymentRows(paymentRows)
@@ -94,7 +97,8 @@ public class PaymentAndInvoiceRowsRepo
 				.collect(ImmutableList.toImmutableList());
 
 		return PaymentRows.builder()
-				.rows(rows)
+				.repository(this)
+				.initialRows(rows)
 				.build();
 	}
 
@@ -111,23 +115,24 @@ public class PaymentAndInvoiceRowsRepo
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_ID());
 		final CurrencyCode currencyCode = currenciesRepo.getCurrencyCodeById(currencyId);
 
-		Amount.of(record.getPayAmt(), currencyCode);
-
 		return PaymentRow.builder()
 				.paymentId(PaymentId.ofRepoId(record.getC_Payment_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.documentNo(record.getDocumentNo())
 				.bpartner(bpartnersLookup.findById(bpartnerId))
 				.dateTrx(TimeUtil.asLocalDate(record.getDateTrx()))
 				.amount(Amount.of(record.getPayAmt(), currencyCode))
+				.inboundPayment(record.isReceipt())
 				.build();
 	}
 
-	private InvoiceRows retrieveInvoiceRows(final List<I_C_Payment> paymentRecords)
+	private InvoiceRows retrieveInvoiceRowsByPaymentRecords(
+			final List<I_C_Payment> paymentRecords,
+			final ZonedDateTime evaluationDate)
 	{
-		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		final ImmutableSet<InvoiceToAllocateQuery> queries = paymentRecords.stream()
 				.map(paymentRecord -> prepareInvoiceToAllocateQuery(paymentRecord)
-						.date(date)
+						.evaluationDate(evaluationDate)
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -137,7 +142,9 @@ public class PaymentAndInvoiceRowsRepo
 				.collect(ImmutableList.toImmutableList());
 
 		return InvoiceRows.builder()
-				.rows(rows)
+				.repository(this)
+				.evaluationDate(evaluationDate)
+				.initialRows(rows)
 				.build();
 	}
 
@@ -146,20 +153,42 @@ public class PaymentAndInvoiceRowsRepo
 		return InvoiceToAllocateQuery.builder()
 				.bpartnerId(BPartnerId.ofRepoId(paymentRecord.getC_BPartner_ID()))
 				.currencyId(CurrencyId.ofRepoId(paymentRecord.getC_Currency_ID()))
-				.adClientId(ClientId.ofRepoId(paymentRecord.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(paymentRecord.getAD_Org_ID()));
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(paymentRecord.getAD_Client_ID(), paymentRecord.getAD_Org_ID()));
 	}
 
 	private InvoiceRow toInvoiceRow(final InvoiceToAllocate invoiceToAllocate)
 	{
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.documentNo(invoiceToAllocate.getDocumentNo())
 				.dateInvoiced(invoiceToAllocate.getDateInvoiced())
 				.bpartner(bpartnersLookup.findById(invoiceToAllocate.getBpartnerId()))
+				.soTrx(invoiceToAllocate.getSoTrx())
+				.creditMemo(invoiceToAllocate.isCreditMemo())
 				.grandTotal(invoiceToAllocate.getGrandTotal())
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
 				.build();
+	}
+
+	public List<InvoiceRow> getInvoiceRowsListByInvoiceId(
+			@NonNull final Collection<InvoiceId> invoiceIds,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		if (invoiceIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final InvoiceToAllocateQuery query = InvoiceToAllocateQuery.builder()
+				.evaluationDate(evaluationDate)
+				.additionalInvoiceIdsToInclude(invoiceIds)
+				.build();
+
+		return paymentAllocationRepo.retrieveInvoicesToAllocate(query)
+				.stream()
+				.map(this::toInvoiceRow)
+				.collect(ImmutableList.toImmutableList());
 	}
 }
