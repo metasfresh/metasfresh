@@ -6,6 +6,7 @@ import currentDevice from 'current-device';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
+import { TIME_REGEX_TEST } from '../constants/Constants';
 
 const DLpropTypes = {
   // from parent
@@ -252,9 +253,18 @@ export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
+export function convertTimeStringToMoment(value) {
+  if (value.match(TIME_REGEX_TEST)) {
+    return Moment(value, 'hh:mm');
+  }
+  return value;
+}
+
 // This doesn't set the TZ anymore, as we're handling this globally/in datepicker
 export function parseDateWithCurrentTimezone(value) {
   if (value) {
+    value = convertTimeStringToMoment(value);
+
     if (Moment.isMoment(value)) {
       return value;
     }
