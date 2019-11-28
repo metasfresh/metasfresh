@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -933578745L;
+	private static final long serialVersionUID = -1040316650L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -26,7 +26,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			setC_UOM_ID (0);
 			setEDI_Desadv_ID (0);
 			setEDI_DesadvLine_ID (0);
-			setIsManual_IPA_SSCC18 (false); // N
 			setIsSubsequentDeliveryPlanned (false);
 			setM_Product_ID (0);
         } */
@@ -46,22 +45,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	/** Set Mindesthaltbarkeitsdatum.
-		@param BestBeforeDate Mindesthaltbarkeitsdatum	  */
-	@Override
-	public void setBestBeforeDate (java.sql.Timestamp BestBeforeDate)
-	{
-		set_Value (COLUMNNAME_BestBeforeDate, BestBeforeDate);
-	}
-
-	/** Get Mindesthaltbarkeitsdatum.
-		@return Mindesthaltbarkeitsdatum	  */
-	@Override
-	public java.sql.Timestamp getBestBeforeDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_BestBeforeDate);
-	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
@@ -192,48 +175,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
-	/** Set SSCC18.
-		@param IPA_SSCC18 SSCC18	  */
-	@Override
-	public void setIPA_SSCC18 (java.lang.String IPA_SSCC18)
-	{
-		set_Value (COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
-	}
-
-	/** Get SSCC18.
-		@return SSCC18	  */
-	@Override
-	public java.lang.String getIPA_SSCC18 () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_IPA_SSCC18);
-	}
-
-	/** Set manuelle SSCC18.
-		@param IsManual_IPA_SSCC18 
-		Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
-	  */
-	@Override
-	public void setIsManual_IPA_SSCC18 (boolean IsManual_IPA_SSCC18)
-	{
-		set_Value (COLUMNNAME_IsManual_IPA_SSCC18, Boolean.valueOf(IsManual_IPA_SSCC18));
-	}
-
-	/** Get manuelle SSCC18.
-		@return Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
-	  */
-	@Override
-	public boolean isManual_IPA_SSCC18 () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsManual_IPA_SSCC18);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Spätere Nachlieferung.
 		@param IsSubsequentDeliveryPlanned 
 		Falls "ja", wird das Feld "Abweichungscode" in der DESADV-Datei auf "BP" (back order to follow) gesetzt, d.h. es wird signalisiert, das später noch eine Nachliefrung erfolgen wird.
@@ -280,102 +221,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
-	@Override
-	public void setM_HU_ID (int M_HU_ID)
-	{
-		if (M_HU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
-	}
-
-	/** Get Handling Unit.
-		@return Handling Unit	  */
-	@Override
-	public int getM_HU_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set LU Verpackungscode.
-		@param M_HU_PackagingCode_LU_ID LU Verpackungscode	  */
-	@Override
-	public void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID)
-	{
-		if (M_HU_PackagingCode_LU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, Integer.valueOf(M_HU_PackagingCode_LU_ID));
-	}
-
-	/** Get LU Verpackungscode.
-		@return LU Verpackungscode	  */
-	@Override
-	public int getM_HU_PackagingCode_LU_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set M_HU_PackagingCode_LU_Text.
-		@param M_HU_PackagingCode_LU_Text M_HU_PackagingCode_LU_Text	  */
-	@Override
-	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text)
-	{
-		throw new IllegalArgumentException ("M_HU_PackagingCode_LU_Text is virtual column");	}
-
-	/** Get M_HU_PackagingCode_LU_Text.
-		@return M_HU_PackagingCode_LU_Text	  */
-	@Override
-	public java.lang.String getM_HU_PackagingCode_LU_Text () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_Text);
-	}
-
-	/** Set TU Verpackungscode.
-		@param M_HU_PackagingCode_TU_ID TU Verpackungscode	  */
-	@Override
-	public void setM_HU_PackagingCode_TU_ID (int M_HU_PackagingCode_TU_ID)
-	{
-		if (M_HU_PackagingCode_TU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, Integer.valueOf(M_HU_PackagingCode_TU_ID));
-	}
-
-	/** Get TU Verpackungscode.
-		@return TU Verpackungscode	  */
-	@Override
-	public int getM_HU_PackagingCode_TU_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_TU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set M_HU_PackagingCode_TU_Text.
-		@param M_HU_PackagingCode_TU_Text M_HU_PackagingCode_TU_Text	  */
-	@Override
-	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text)
-	{
-		throw new IllegalArgumentException ("M_HU_PackagingCode_TU_Text is virtual column");	}
-
-	/** Get M_HU_PackagingCode_TU_Text.
-		@return M_HU_PackagingCode_TU_Text	  */
-	@Override
-	public java.lang.String getM_HU_PackagingCode_TU_Text () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_TU_Text);
 	}
 
 	/** Set Bewegungs-Menge.

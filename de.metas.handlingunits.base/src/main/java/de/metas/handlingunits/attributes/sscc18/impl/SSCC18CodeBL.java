@@ -13,27 +13,34 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {
 	/**
@@ -46,16 +53,40 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	 */
 	private final int EXTENDED_DIGIT = 0;
 
-	protected String getManufacturerCode(final Properties ctx)
+	private final NextSerialNumberProvider nextSerialNumberProvider;
+	/** for debugging */
+	private boolean hasCustomNextSerialNumberProvider;
+
+	public SSCC18CodeBL()
 	{
+		this.hasCustomNextSerialNumberProvider = false;
+		this.nextSerialNumberProvider = () -> DB.getNextID(
+				ClientId.SYSTEM.getRepoId(),
+				I_M_HU.Table_Name, /* the particular table name doesn't even matter to me right now */
+				ITrx.TRXNAME_None);
+	}
+
+	/** Then unit testing, you can use this constructor to register an instances to services where you provide the next serial number. */
+	@VisibleForTesting
+	public SSCC18CodeBL(@NonNull final NextSerialNumberProvider nextSerialNumberProvider)
+	{
+		this.hasCustomNextSerialNumberProvider = true;
+		this.nextSerialNumberProvider = nextSerialNumberProvider;
+	}
+
+	protected String getManufacturerCode()
+	{
+		final Properties ctx = Env.getCtx();
 		final String manufacturerCode_SysConfig = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ManufacturerCode, null, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		return manufacturerCode_SysConfig;
 	}
 
+	/**
+	 * @return true if the check digit is correct, false otherwise
+	 */
 	@Override
 	public boolean isCheckDigitValid(final SSCC18 sscc18)
 	{
-
 		final int extentionDigit = sscc18.getExtensionDigit();
 		final String manufacturerCode = sscc18.getManufacturerCode().trim();
 		final String serialNumber = sscc18.getSerialNumber().trim();
@@ -88,12 +119,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 			// odd
 			if (i % 2 != 0)
 			{
-				sumOdd += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i-1)));
+				sumOdd += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i - 1)));
 			}
 
 			else
 			{
-				sumEven += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i-1)));
+				sumEven += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i - 1)));
 			}
 		}
 
@@ -104,13 +135,19 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	}
 
 	@Override
-	public SSCC18 generate(final Properties ctx, final int serialNumber)
+	public SSCC18 generate()
+	{
+		return generate(nextSerialNumberProvider.provideNextSerialNumber());
+	}
+
+	@Override
+	public SSCC18 generate(final int serialNumber)
 	{
 		Check.assume(serialNumber > 0, "serialNumber > 0");
 
 		//
 		// Retrieve and validate ManufacturerCode
-		final String manufacturerCode_SysConfig = getManufacturerCode(ctx);
+		final String manufacturerCode_SysConfig = getManufacturerCode();
 		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} is not a number", manufacturerCode_SysConfig);
 		final int manufacturerCodeSize = manufacturerCode_SysConfig.length();
 		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {}", manufacturerCode_SysConfig);
@@ -180,5 +217,11 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		{
 			throw new IllegalStateException("Not implemented");
 		}
+	}
+
+	@FunctionalInterface
+	public interface NextSerialNumberProvider
+	{
+		int provideNextSerialNumber();
 	}
 }

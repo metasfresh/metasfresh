@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IPair;
+import org.compiere.SpringContextHolder;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.swing.CPanel;
@@ -54,6 +55,7 @@ import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
 
 /**
@@ -280,8 +282,10 @@ public class EDI_DesadvLine_PrintSSCC18s_FormPanel implements FormPanel
 
 	private void doCreateAndPrintSSCC18Labels()
 	{
-		new DesadvLineSSCC18Generator()
-				.setContext(new PlainContextAware(getCtx()))
+		final SSCC18CodeBL sscc18CodeService = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
+
+		new DesadvLineSSCC18Generator(sscc18CodeService)
+				.setContext(PlainContextAware.newOutOfTrxAllowThreadInherited(getCtx()))
 				.setPrintExistingLabels(isPrintExistingSSCCs())
 				.generateAndEnqueuePrinting(desadvLinesTableModel.getSelectedRows())
 				.printAll();

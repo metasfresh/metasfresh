@@ -1,5 +1,9 @@
 package de.metas.edi.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.edi
@@ -24,10 +28,12 @@ package de.metas.edi.api.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,30 +67,41 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
+import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.expiry.HUWithExpiryDates;
 import de.metas.handlingunits.expiry.HUWithExpiryDatesRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfo;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.report.server.ReportConstants;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 public class DesadvBL implements IDesadvBL
@@ -153,7 +170,7 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(buyerBPartnerId);
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
@@ -220,24 +237,38 @@ public class DesadvBL implements IDesadvBL
 
 		//
 		// set infos from M_HU_PI_Item_Product
-		final I_M_HU_PI_Item_Product materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
-				productId,
-				buyerBPartnerId,
-				TimeUtil.asZonedDateTime(order.getDateOrdered()),
-				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
+		final I_M_HU_PI_Item_Product materialItemProduct = extractHUPIItemProduct(order, orderLine);
 		if (materialItemProduct != null)
 		{
 			newDesadvLine.setGTIN(materialItemProduct.getGTIN());
 			newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
-
-			newDesadvLine.setM_HU_PackagingCode_TU_ID(materialItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID());
-			newDesadvLine.setM_HU_PackagingCode_LU_ID(materialItemProduct.getM_HU_PackagingCode_LU_Fallback_ID());
 		}
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
 		InterfaceWrapperHelper.save(newDesadvLine);
 		return newDesadvLine;
+	}
+
+	private I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
+	{
+		final I_M_HU_PI_Item_Product materialItemProduct;
+		if (orderLine.getM_HU_PI_Item_Product_ID() > 0)
+		{
+			materialItemProduct = orderLine.getM_HU_PI_Item_Product();
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+
+			materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
+					productId,
+					buyerBPartnerId,
+					TimeUtil.asZonedDateTime(order.getDateOrdered()),
+					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
+		}
+		return materialItemProduct;
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
@@ -304,81 +335,192 @@ public class DesadvBL implements IDesadvBL
 			{
 				continue;
 			}
-
-			final I_EDI_DesadvLine desadvLine = InterfaceWrapperHelper
-					.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class)
-					.getEDI_DesadvLine();
-
-			final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLine);
-
-			// don't throw an error; it might prevent users from creating shipments
-			// Check.errorIf(topLevelHUs.size() != 1, "Expecting one top level HU for M_InOutLine {}, but got this: {}", inOutLine, topLevelHUs);
-			if (topLevelHUs.size() == 1)
-			{
-				final I_M_HU hu = CollectionUtils.singleElement(topLevelHUs);
-				addHUToDesadvLine(desadvLine, hu, inOutLine);
-			}
-
-			// check if we got the value
-			if (Check.isEmpty(desadvLine.getIPA_SSCC18(), true))
-			{
-				desadvLine.setIsManual_IPA_SSCC18(true); // someone will need to enter a manual SSCC18
-			}
-
-			if (desadvLine.getBestBeforeDate() == null)
-			{
-				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLine.getM_AttributeSetInstance_ID());
-				final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
-				if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-				{
-					final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
-					desadvLine.setBestBeforeDate(TimeUtil.asTimestamp(bestBeforeDate));
-				}
-			}
-
-			final BigDecimal newMovementQty = desadvLine.getMovementQty().add(inOutLine.getMovementQty());
-			setQty(desadvLine, newMovementQty);
-			InterfaceWrapperHelper.save(desadvLine);
-
-			inOutLine.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
-			InterfaceWrapperHelper.save(inOutLine);
+			addInOutLine(inOutLine);
 		}
-
 		return desadv;
 	}
 
-	private void addHUToDesadvLine(
-			@NonNull final I_EDI_DesadvLine desadvLine,
-			@NonNull final I_M_HU hu,
-			@NonNull final I_M_InOutLine inOutLine)
+	@VisibleForTesting
+	void addInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		desadvLine.setM_HU_ID(hu.getM_HU_ID());
+		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
-		final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
+		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
 
-		final HUWithExpiryDatesRepository huWithExpiryDatesRepository = SpringContextHolder.instance.getBean(HUWithExpiryDatesRepository.class);
-		final HUWithExpiryDates huWithExpiryDates = huWithExpiryDatesRepository.getById(HuId.ofRepoId(hu.getM_HU_ID()));
+		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
 
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
-		desadvLine.setBestBeforeDate(TimeUtil.asTimestamp(huWithExpiryDates.getBestBeforeDate(), timeZone));
 
-		final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(hu, sscc18AttributeId);
-		// don't throw an error; it might prevent users from creating shipments
-		// Check.errorIf(sscc18HUAttribute == null, "M_HU {} has no SSCC18 attrbute (tried to retrieve with M_Attribute = {})", hu, sscc18Attribute);
-		if (sscc18HUAttribute != null)
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		Quantity remainingQty = Quantitys.create(inOutLineRecord.getMovementQty(), productId);
+
+		for (final I_M_HU topLevelHU : topLevelHUs)
 		{
-			desadvLine.setIPA_SSCC18(sscc18HUAttribute.getValue());
-			desadvLine.setIsManual_IPA_SSCC18(false);
+			final Quantity huQty = addPackInfoToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU);
+			remainingQty = remainingQty.subtract(huQty);
 		}
 
-		final int packagingCodeLU_ID = extractPackagingCodeId(hu);
-		desadvLine.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+		if (remainingQty.signum() > 0)
+		{
 
-		final int packagingCodeTU_ID = CollectionUtils.extractSingleElementOrDefault(
-				huAssignmentDAO.retrieveTUHUsForModel(inOutLine),
-				this::extractPackagingCodeId,
-				-1);
-		desadvLine.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+			final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
+			final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
+			final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
+
+			final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+					tuPIItemProduct,
+					productId,
+					remainingQty.getUOM(),
+					BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
+					false/* noLUForVirtualTU */);
+			final int requiredLUQty = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, remainingQty.toBigDecimal(), remainingQty.getUOM());
+
+			for (int i = 0; i < requiredLUQty; i++)
+			{
+				final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
+
+				// BestBefore
+				final Optional<Timestamp> bestBeforeDate = extractBestBeforeDate(inOutLineRecord);
+				bestBeforeDate.ifPresent(ssccRecord::setBestBeforeDate);
+
+				// SSCC18
+				final String sscc18 = computeSSCC18();
+				ssccRecord.setIPA_SSCC18(sscc18);
+
+				// PackagingCodes
+				final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
+				ssccRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+
+				final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
+				ssccRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+
+				final Quantity maxQtyCU = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfiguration);
+
+				// Qtys
+				ssccRecord.setQtyCUsPerLU(lutuConfiguration.getQtyCU());
+				ssccRecord.setQtyCU(lutuConfiguration.getQtyCU());
+				ssccRecord.setQtyTU(lutuConfiguration.getQtyTU().intValue());
+
+				saveRecord(ssccRecord);
+			}
+		}
+
+		final BigDecimal newMovementQty = desadvLineRecord.getMovementQty().add(inOutLineRecord.getMovementQty());
+		setQty(desadvLineRecord, newMovementQty);
+		InterfaceWrapperHelper.save(desadvLineRecord);
+
+		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
+		InterfaceWrapperHelper.save(inOutLineRecord);
+	}
+
+	/** @return the CU-Qty in stock-UOM of the given {@code huRecord} that was added to the created pack. */
+	private Quantity addPackInfoToLineUsingHU(
+			@NonNull final I_EDI_DesadvLine desadvLineRecord,
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final I_M_HU huRecord)
+	{
+		final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
+		ssccRecord.setM_HU_ID(huRecord.getM_HU_ID());
+
+		// BestBefore
+		final HUWithExpiryDatesRepository huWithExpiryDatesRepository = SpringContextHolder.instance.getBean(HUWithExpiryDatesRepository.class);
+		final HUWithExpiryDates huWithExpiryDates = huWithExpiryDatesRepository.getById(HuId.ofRepoId(huRecord.getM_HU_ID()));
+		if (huWithExpiryDates != null && huWithExpiryDates.getBestBeforeDate() != null)
+		{
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+			final Timestamp bestBeforeDate = TimeUtil.asTimestamp(huWithExpiryDates.getBestBeforeDate(), timeZone);
+			ssccRecord.setBestBeforeDate(bestBeforeDate);
+		}
+		else
+		{
+			final Optional<Timestamp> bestBeforeDate = extractBestBeforeDate(inOutLineRecord);
+			bestBeforeDate.ifPresent(ssccRecord::setBestBeforeDate);
+		}
+
+		// SSCC18
+		final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
+		final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(huRecord, sscc18AttributeId);
+		final boolean huHasSSCC18 = sscc18HUAttribute != null;
+		final String sscc18;
+		ssccRecord.setIsManual_IPA_SSCC18(!huHasSSCC18);
+		if (huHasSSCC18)
+		{
+			sscc18 = sscc18HUAttribute.getValue();
+		}
+		else
+		{
+			sscc18 = computeSSCC18();
+		}
+		ssccRecord.setIPA_SSCC18(sscc18);
+
+		// PackgingCodes
+		final int packagingCodeLU_ID = extractPackagingCodeId(huRecord);
+		ssccRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+
+		// TODO - get TU-PackagingCode from HU!
+		// final int packagingCodeTU_ID = CollectionUtils.extractSingleElementOrDefault(
+		// huAssignmentDAO.retrieveTUHUsForModel(inOutLineRecord),
+		// this::extractPackagingCodeId,
+		// -1/* defaultValue */);
+
+		// Qtys
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+
+		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
+		final IHUStorage storage = storageFactory.getStorage(huRecord);
+		final IHUProductStorage productStorage = storage.getProductStorage(productId);
+
+		final Quantity overallQtyCU = productStorage.getQtyInStockingUOM();
+
+		final int qtyTU;
+		if (handlingUnitsBL.isLoadingUnit(huRecord))
+		{
+			qtyTU = handlingUnitsBL.countIncludedHUs(huRecord);
+		}
+		else
+		{
+			qtyTU = 1;
+		}
+		ssccRecord.setQtyCUsPerLU(overallQtyCU.toBigDecimal());
+
+
+
+		ssccRecord.setQtyCU(qtyCU);
+		ssccRecord.setQtyTU(qtyTU);
+
+		saveRecord(ssccRecord);
+		return overallQtyCU;
+	}
+
+	private String computeSSCC18()
+	{
+		final ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
+
+		final SSCC18 sscc18 = sscc18CodeService.generate();
+		final String ipaSSCC18 = sscc18CodeService.toString(sscc18, false); // humanReadable=false
+		return ipaSSCC18;
+	}
+
+	private I_EDI_DesadvLine_SSCC createNewSSCC18Record(final I_EDI_DesadvLine desadvLineRecord)
+	{
+		final I_EDI_DesadvLine_SSCC ssccRecord = newInstance(I_EDI_DesadvLine_SSCC.class);
+		ssccRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
+		ssccRecord.setEDI_Desadv_ID(desadvLineRecord.getEDI_Desadv_ID());
+
+		return ssccRecord;
+	}
+
+	private Optional<Timestamp> extractBestBeforeDate(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
+		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+		{
+			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
+			Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
+		}
+		return Optional.empty();
 	}
 
 	private int extractPackagingCodeId(@NonNull final I_M_HU hu)

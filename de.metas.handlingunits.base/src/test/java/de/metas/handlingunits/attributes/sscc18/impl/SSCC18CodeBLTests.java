@@ -18,44 +18,37 @@ import java.util.Map;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.util.Services;
 
 public class SSCC18CodeBLTests
 {
-	private Properties ctx;
-	private SSCC18CodeBL sscc18CodeBL;
+	private SSCC18CodeBL sscc18CodeService;
+
+	static int nextSSCC18SerialNumber = 0;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		ctx = Env.getCtx();
-
-		// BL under test
-		sscc18CodeBL = (SSCC18CodeBL)Services.get(ISSCC18CodeBL.class);
+		sscc18CodeService = new SSCC18CodeBL(() -> ++nextSSCC18SerialNumber);
 	}
 
 	public static void setManufacturerCode(final String manufacturerCode)
@@ -74,7 +67,7 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18 = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 
-		final boolean isCorrectCheckDigit = sscc18CodeBL.isCheckDigitValid(sscc18);
+		final boolean isCorrectCheckDigit = sscc18CodeService.isCheckDigitValid(sscc18);
 		Assert.assertTrue("Check Digit is not correct: " + sscc18, isCorrectCheckDigit);
 	}
 
@@ -88,7 +81,7 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18 = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 
-		final boolean isCorrectCheckDigit = sscc18CodeBL.isCheckDigitValid(sscc18);
+		final boolean isCorrectCheckDigit = sscc18CodeService.isCheckDigitValid(sscc18);
 		Assert.assertTrue("Check Digit is not correct: " + sscc18, isCorrectCheckDigit);
 	}
 
@@ -102,7 +95,7 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18 = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 
-		final boolean isCorrectCheckDigit = sscc18CodeBL.isCheckDigitValid(sscc18);
+		final boolean isCorrectCheckDigit = sscc18CodeService.isCheckDigitValid(sscc18);
 		Assert.assertFalse("Check Digit is not correct: " + sscc18, isCorrectCheckDigit);
 	}
 
@@ -111,7 +104,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeService.generate(1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"01000000", // expected,
@@ -124,7 +117,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("0000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeService.generate(1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -137,7 +130,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeService.generate(1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -150,7 +143,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("2");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeService.generate(1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -172,7 +165,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		sscc18CodeService.validate(sscc18ToValidate);
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -184,7 +177,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		sscc18CodeService.validate(sscc18ToValidate);
 
 		StaticHUAssert.assertMock("mock");
 	}
@@ -198,7 +191,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		sscc18CodeService.validate(sscc18ToValidate);
 
 		StaticHUAssert.assertMock("mock");
 	}
@@ -212,7 +205,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		sscc18CodeService.validate(sscc18ToValidate);
 
 		StaticHUAssert.assertMock("mock");
 	}
@@ -226,7 +219,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		sscc18CodeService.validate(sscc18ToValidate);
 
 		StaticHUAssert.assertMock("mock");
 	}
@@ -242,7 +235,7 @@ public class SSCC18CodeBLTests
 		SSCC18_Codes.put("03764013001000018", 4);
 
 		SSCC18_Codes.forEach((stringSSCC18ToVerify, expectedCheckDigit) -> {
-			final int checkDigit = sscc18CodeBL.computeCheckDigit(stringSSCC18ToVerify);
+			final int checkDigit = sscc18CodeService.computeCheckDigit(stringSSCC18ToVerify);
 			assertThat(expectedCheckDigit).isEqualTo(checkDigit);
 		});
 	}

@@ -30,11 +30,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -49,6 +44,12 @@ import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC18Labels
 {
@@ -69,10 +70,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 	private TotalQtyCUBreakdownCalculator huQtysCalculator;
 
-	private PrintableDesadvLineSSCC18Labels(final Builder builder)
+	private PrintableDesadvLineSSCC18Labels(@NonNull final Builder builder)
 	{
-		super();
-
 		this.desadvLine = builder.getEDI_DesadvLine();
 
 		this.lineNo = builder.getLineNo();
@@ -160,7 +159,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		private Builder()
 		{
-			super();
 		}
 
 		public PrintableDesadvLineSSCC18Labels build()
@@ -211,7 +209,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 		{
 			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_SSCC>>()
 			{
-
 				@Override
 				public List<I_EDI_DesadvLine_SSCC> get()
 				{
@@ -232,7 +229,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			{
 				return requiredSSCC18Count;
 			}
-
 			return getHUQtysCalculator().getAvailableLUs();
 		}
 

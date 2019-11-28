@@ -47,7 +47,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -830,5 +829,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				}).iterate(hu);
 
 		return vhus;
+	}
+
+	@Override
+	public int countIncludedHUs(@NonNull final I_M_HU luRecord)
+	{
+		// NOTE: we need to iterate the HUs and count them (instead of doing a COUNT directly on database),
+		// because we rely on HU&Items caching
+		// and also because in case of aggregated HUs, we need special handling
+
+		final IncludedHUsCounter includedHUsCounter = new IncludedHUsCounter(luRecord);
+
+		final HUIterator huIterator = new HUIterator();
+		huIterator.setListener(includedHUsCounter.toHUIteratorListener());
+		huIterator.setEnableStorageIteration(false);
+		huIterator.iterate(luRecord);
+
+		return includedHUsCounter.getHUsCount();
 	}
 }

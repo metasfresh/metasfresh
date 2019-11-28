@@ -180,8 +180,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
-		// NOTE: for caching to work, don't make it final
-		/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
+	// NOTE: for caching to work, don't make it final
+	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
 	{
 		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId)
@@ -543,7 +543,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			+ "#by"
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_IsCurrent)
-		/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
+	/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
 			final @CacheCtx Properties ctx,
 			final HuPackingInstructionsId piId,
 			final @CacheTrx String trxName)
