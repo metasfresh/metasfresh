@@ -41,9 +41,9 @@ public class PayableDocumentNotAllocatedException extends PaymentAllocationExcep
 	private static final long serialVersionUID = 1L;
 	private static final String MSG = "PaymentAllocation.CannotAllocatePayableDocumentsException";
 
-	private final Collection<IPayableDocument> payables;
+	private final Collection<PayableDocument> payables;
 
-	PayableDocumentNotAllocatedException(final Collection<IPayableDocument> payables)
+	PayableDocumentNotAllocatedException(final Collection<PayableDocument> payables)
 	{
 		super("");
 		this.payables = ImmutableList.copyOf(payables);
@@ -56,7 +56,7 @@ public class PayableDocumentNotAllocatedException extends PaymentAllocationExcep
 
 		if (payables != null && !payables.isEmpty())
 		{
-			for (final IPayableDocument payable : payables)
+			for (final PayableDocument payable : payables)
 			{
 				if (payable == null)
 				{
