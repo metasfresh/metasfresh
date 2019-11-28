@@ -688,7 +688,7 @@ public class PaymentAllocationBuilderTest
 	}
 
 	@Getter
-	public enum InvoiceType
+	enum InvoiceType
 	{
 		VendorInvoice(SOTrx.PURCHASE, false),//
 		VendorCreditMemo(SOTrx.PURCHASE, true),//
