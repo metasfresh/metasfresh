@@ -82,6 +82,12 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 		return MSG_OK;
 	}
 
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		invalidatePaymentsAndInvoicesViews();
+	}
+
 	private PaymentAllocationBuilder preparePaymentAllocationBuilder()
 	{
 		final PaymentRow paymentRow = getSingleSelectedPaymentRowOrNull();
