@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.model;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -130,7 +132,9 @@ public final class ProductsProposalRowsLoader
 		final PriceListVersionId basePriceListVersionId;
 		if (singlePriceListVersionId != null)
 		{
-			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId);
+			final ZonedDateTime datePromised = order == null? SystemTime.asZonedDateTime() : order.getDatePromised();
+
+			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId, datePromised);
 		}
 		else
 		{

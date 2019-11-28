@@ -1,11 +1,10 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 
@@ -17,6 +16,7 @@ import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -44,12 +44,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -119,7 +119,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@");
 		}
 
-		final LocalDate today = SystemTime.asLocalDate();
+		final ZonedDateTime today = SystemTime.asZonedDateTime();
 		final Set<PriceListVersionId> priceListVersionIds = priceListsRepo.retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
 				.filterAndStreamIds(countryIds)
 				.map(priceListId -> priceListsRepo.retrievePriceListVersionId(priceListId, today))
