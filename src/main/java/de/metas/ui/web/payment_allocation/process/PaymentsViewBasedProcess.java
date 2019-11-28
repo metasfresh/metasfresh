@@ -94,4 +94,10 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 				.streamByIds(invoiceRowIds)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	protected final void invalidatePaymentsAndInvoicesViews()
+	{
+		invalidateView(getInvoicesView());
+		invalidateView(getPaymentsView());
+	}
 }
