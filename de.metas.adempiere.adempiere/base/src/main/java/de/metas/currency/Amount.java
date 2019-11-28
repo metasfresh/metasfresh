@@ -134,4 +134,17 @@ public final class Amount implements Comparable<Amount>
 	{
 		return getAsBigDecimal().signum();
 	}
+
+	public Amount negate()
+	{
+		return signum() == 0
+				? this
+				: new Amount(value.negate(), currencyCode);
+	}
+
+	public Amount negateIf(final boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
 }
