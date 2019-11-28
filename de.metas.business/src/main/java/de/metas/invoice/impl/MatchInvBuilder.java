@@ -85,7 +85,7 @@ import de.metas.util.Services;
 		if (invoiceLine.getM_Product_ID() != inoutLine.getM_Product_ID())
 		{
 			throw new MatchInvException("@Invalid@ @M_Product_ID@"
-					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceLine.getM_Product()
+					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceLine.getM_Product_ID()
 					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product_ID());
 		}
 

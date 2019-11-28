@@ -37,6 +37,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.lang.Percent;
@@ -77,6 +78,9 @@ import lombok.ToString;
 
 	@Getter @Setter
 	private ProductPrice priceEntered;
+
+	@Getter @Setter
+	private InvoicableQtyBasedOn invoicableQtyBasedOn;
 
 	@Getter @Setter
 	private Percent discount;

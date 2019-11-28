@@ -32,10 +32,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_Client>(I_C_BPartner_Product_Stats.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -59,12 +55,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_Org>(I_C_BPartner_Product_Stats.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -88,12 +78,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_C_BPartner>(I_C_BPartner_Product_Stats.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -145,8 +129,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_User>(I_C_BPartner_Product_Stats.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -199,6 +181,52 @@ public interface I_C_BPartner_Product_Stats
     public static final String COLUMNNAME_LastReceiptDate = "LastReceiptDate";
 
 	/**
+	 * Set Abr. Menge basierte auf.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSalesInvoicableQtyBasedOn (java.lang.String LastSalesInvoicableQtyBasedOn);
+
+	/**
+	 * Get Abr. Menge basierte auf.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLastSalesInvoicableQtyBasedOn();
+
+    /** Column definition for LastSalesInvoicableQtyBasedOn */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, Object> COLUMN_LastSalesInvoicableQtyBasedOn = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, Object>(I_C_BPartner_Product_Stats.class, "LastSalesInvoicableQtyBasedOn", null);
+    /** Column name LastSalesInvoicableQtyBasedOn */
+    public static final String COLUMNNAME_LastSalesInvoicableQtyBasedOn = "LastSalesInvoicableQtyBasedOn";
+
+	/**
+	 * Set Datum letzter Preis.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastSalesInvoiceDate (java.sql.Timestamp LastSalesInvoiceDate);
+
+	/**
+	 * Get Datum letzter Preis.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLastSalesInvoiceDate();
+
+    /** Column definition for LastSalesInvoiceDate */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, Object> COLUMN_LastSalesInvoiceDate = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, Object>(I_C_BPartner_Product_Stats.class, "LastSalesInvoiceDate", null);
+    /** Column name LastSalesInvoiceDate */
+    public static final String COLUMNNAME_LastSalesInvoiceDate = "LastSalesInvoiceDate";
+
+	/**
 	 * Set Letzte Debitoren Rechnung.
 	 *
 	 * <br>Type: Search
@@ -224,29 +252,6 @@ public interface I_C_BPartner_Product_Stats
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_C_Invoice> COLUMN_LastSales_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_C_Invoice>(I_C_BPartner_Product_Stats.class, "LastSales_Invoice_ID", org.compiere.model.I_C_Invoice.class);
     /** Column name LastSales_Invoice_ID */
     public static final String COLUMNNAME_LastSales_Invoice_ID = "LastSales_Invoice_ID";
-
-	/**
-	 * Set Last Sales Invoice Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLastSalesInvoiceDate (java.sql.Timestamp LastSalesInvoiceDate);
-
-	/**
-	 * Get Last Sales Invoice Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getLastSalesInvoiceDate();
-
-    /** Column definition for LastSalesInvoiceDate */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, Object> COLUMN_LastSalesInvoiceDate = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, Object>(I_C_BPartner_Product_Stats.class, "LastSalesInvoiceDate", null);
-    /** Column name LastSalesInvoiceDate */
-    public static final String COLUMNNAME_LastSalesInvoiceDate = "LastSalesInvoiceDate";
 
 	/**
 	 * Set Letzter VK.
@@ -293,12 +298,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getLastSalesPrice_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getLastSalesPrice_Currency();
-
-	public void setLastSalesPrice_Currency(org.compiere.model.I_C_Currency LastSalesPrice_Currency);
-
-    /** Column definition for LastSalesPrice_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_C_Currency> COLUMN_LastSalesPrice_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_C_Currency>(I_C_BPartner_Product_Stats.class, "LastSalesPrice_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name LastSalesPrice_Currency_ID */
     public static final String COLUMNNAME_LastSalesPrice_Currency_ID = "LastSalesPrice_Currency_ID";
 
@@ -345,12 +344,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_M_Product>(I_C_BPartner_Product_Stats.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -379,8 +372,6 @@ public interface I_C_BPartner_Product_Stats
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats, org.compiere.model.I_AD_User>(I_C_BPartner_Product_Stats.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

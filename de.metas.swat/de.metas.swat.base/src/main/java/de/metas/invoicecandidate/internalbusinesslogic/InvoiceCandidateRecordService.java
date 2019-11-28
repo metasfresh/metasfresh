@@ -88,7 +88,7 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
 			invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight; // for purchase candidates it's *always* nominal weight

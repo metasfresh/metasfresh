@@ -7,6 +7,7 @@ import java.util.Set;
 import org.compiere.model.I_C_Tax;
 
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.lang.Percent;
@@ -43,6 +44,10 @@ public interface IInvoiceLineRW
 	int getM_Product_ID();
 
 	void setM_Product_ID(int M_Product_ID);
+
+	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
+
+	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);
 
 	ProductPrice getPriceEntered();
 

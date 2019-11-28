@@ -154,6 +154,8 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		sb.append("/" + numberFormat.format(priceActualAmt));
 		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActualAmt));
 
+		sb.append("/" + ic.getInvoicableQtyBasedOn());
+
 		//
 		// 06718: Use UOM in aggregation
 		if (ic.getC_UOM_ID() > 0)

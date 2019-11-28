@@ -15,7 +15,7 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1330595114L;
+	private static final long serialVersionUID = -1632173656L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product_Stats (Properties ctx, int C_BPartner_Product_Stats_ID, String trxName)
@@ -43,18 +43,6 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -119,8 +107,50 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastReceiptDate);
 	}
 
+	/** 
+	 * LastSalesInvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int LASTSALESINVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String LASTSALESINVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String LASTSALESINVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basierte auf.
+		@param LastSalesInvoicableQtyBasedOn Abr. Menge basierte auf	  */
 	@Override
-	public org.compiere.model.I_C_Invoice getLastSales_Invoice() throws RuntimeException
+	public void setLastSalesInvoicableQtyBasedOn (java.lang.String LastSalesInvoicableQtyBasedOn)
+	{
+
+		set_Value (COLUMNNAME_LastSalesInvoicableQtyBasedOn, LastSalesInvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basierte auf.
+		@return Abr. Menge basierte auf	  */
+	@Override
+	public java.lang.String getLastSalesInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LastSalesInvoicableQtyBasedOn);
+	}
+
+	/** Set Datum letzter Preis.
+		@param LastSalesInvoiceDate Datum letzter Preis	  */
+	@Override
+	public void setLastSalesInvoiceDate (java.sql.Timestamp LastSalesInvoiceDate)
+	{
+		set_Value (COLUMNNAME_LastSalesInvoiceDate, LastSalesInvoiceDate);
+	}
+
+	/** Get Datum letzter Preis.
+		@return Datum letzter Preis	  */
+	@Override
+	public java.sql.Timestamp getLastSalesInvoiceDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastSalesInvoiceDate);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getLastSales_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_LastSales_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -153,22 +183,6 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
-	/** Set Last Sales Invoice Date.
-		@param LastSalesInvoiceDate Last Sales Invoice Date	  */
-	@Override
-	public void setLastSalesInvoiceDate (java.sql.Timestamp LastSalesInvoiceDate)
-	{
-		set_Value (COLUMNNAME_LastSalesInvoiceDate, LastSalesInvoiceDate);
-	}
-
-	/** Get Last Sales Invoice Date.
-		@return Last Sales Invoice Date	  */
-	@Override
-	public java.sql.Timestamp getLastSalesInvoiceDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastSalesInvoiceDate);
-	}
-
 	/** Set Letzter VK.
 		@param LastSalesPrice 
 		letzter Verkaufspreis
@@ -189,18 +203,6 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getLastSalesPrice_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_LastSalesPrice_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setLastSalesPrice_Currency(org.compiere.model.I_C_Currency LastSalesPrice_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_LastSalesPrice_Currency_ID, org.compiere.model.I_C_Currency.class, LastSalesPrice_Currency);
 	}
 
 	/** Set Letzter VK Währung.
@@ -242,18 +244,6 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 	public java.sql.Timestamp getLastShipDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastShipDate);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

@@ -137,6 +137,7 @@ public class AggregationBL implements IAggregationBL
 		result.setNetLineAmt(template.getNetLineAmt());
 		result.setPriceActual(template.getPriceActual());
 		result.setPriceEntered(template.getPriceEntered());
+		result.setInvoicableQtyBasedOn(template.getInvoicableQtyBasedOn());
 		result.setPrinted(template.isPrinted());
 		result.setQtysToInvoice(template.getQtysToInvoice());
 		result.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
@@ -201,7 +202,7 @@ public class AggregationBL implements IAggregationBL
 		}
 
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		
+
 		final I_M_AttributeSetInstance attributeSetInstance = inOutLine.getM_AttributeSetInstance();
 		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(attributeSetInstance);
 

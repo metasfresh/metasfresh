@@ -1,6 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
 import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -49,6 +50,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
@@ -101,6 +103,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -944,7 +947,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (productId > 0)
 		{
 			invoiceLine.setM_Product_ID(productId);
-			invoiceLine.setC_UOM_ID(invoiceLine.getM_Product().getC_UOM_ID());
+			final UomId stockUOMId = Services.get(IProductBL.class).getStockUOMId(invoiceLine.getM_Product_ID());
+			invoiceLine.setC_UOM_ID(stockUOMId.getRepoId());
 		}
 		else
 		{
@@ -987,7 +991,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.toBigDecimal());
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, UomId.ofRepoId(invoiceLine.getC_UOM_ID()), stockQty.toBigDecimal());
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
@@ -1031,13 +1035,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			I_C_Tax stdTax = null;
 
-			if (invoiceLine.getM_Product() != null)
+			if (invoiceLine.getM_Product_ID() > 0)
 			{
-				if (invoiceLine.getC_Charge() != null)	// Charge
+				if (invoiceLine.getC_Charge_ID() > 0)	// Charge
 				{
-					stdTax = createTax(ctx, taxDAO.getDefaultTax(invoiceLine.getC_Charge().getC_TaxCategory()).getC_Tax_ID(), trxName);
+					final I_C_Charge chargeRecord = loadOutOfTrx(invoiceLine.getC_Charge_ID(), I_C_Charge.class);
+					stdTax = createTax(ctx, taxDAO.getDefaultTax(chargeRecord.getC_TaxCategory()).getC_Tax_ID(), trxName);
 				}
-
 			}
 			else
 			// Product
@@ -1076,10 +1080,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+
 		// setLineNetAmt();
-		final I_C_Tax tax = invoiceLine.getC_Tax();
+		final I_C_Tax taxRecord = taxDAO.getTaxById(invoiceLine.getC_Tax_ID());
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		if (tax.isDocumentLevel() && invoice.isSOTrx())
+		if (taxRecord.isDocumentLevel() && invoice.isSOTrx())
 		{
 			return;
 		}
@@ -1087,7 +1094,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = taxBL.calculateTax(taxRecord, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1126,14 +1133,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * @return
 	 */
 	@Override
-	public final boolean isTaxIncluded(final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
-		Check.assumeNotNull(invoiceLine, "invoiceLine not null");
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
-		final I_C_Tax tax = invoiceLine.getC_Tax();
+		final I_C_Tax taxRecord = taxDAO.getTaxById(invoiceLine.getC_Tax_ID());
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
-		return isTaxIncluded(invoice, tax);
+		return isTaxIncluded(invoice, taxRecord);
 	}
 
 	@Override
@@ -1407,7 +1414,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// In case we have a charge, use the tax category from charge
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
+			final I_C_Charge chargeRecord = loadOutOfTrx(invoiceLine.getC_Charge_ID(), I_C_Charge.class);
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final IPricingContext pricingCtx = Services.get(IInvoiceLineBL.class).createPricingContext(invoiceLine);

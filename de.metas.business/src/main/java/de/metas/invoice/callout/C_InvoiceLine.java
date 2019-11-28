@@ -92,8 +92,7 @@ public class C_InvoiceLine
 		if (InterfaceWrapperHelper.isNull(invoiceLine, I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID))
 		{
 			// set the product to null if the orderline was set to null
-			invoiceLine.setM_Product(null);
-
+			invoiceLine.setM_Product_ID(-1);
 			return;
 		}
 

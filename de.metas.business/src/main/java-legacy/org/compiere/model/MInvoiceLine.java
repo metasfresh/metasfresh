@@ -41,6 +41,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.util.Services;
@@ -265,8 +266,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// Do not change the tax (or tax category) if it was already set
 
-		final I_C_Tax tax = getC_Tax();
-		if (tax == null)
+		final int taxId = getC_Tax_ID();
+		if (taxId <= 0)
 		{
 			setC_Tax_ID(oLine.getC_Tax_ID());
 			setC_TaxCategory_ID(oLine.getC_TaxCategory_ID());
@@ -274,7 +275,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		else
 		{
-			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+			final I_C_Tax taxRecord = Services.get(ITaxDAO.class).getTaxById(taxId);
+			setC_TaxCategory_ID(taxRecord.getC_TaxCategory_ID());
 		}
 		setLineNetAmt(oLine.getLineNetAmt());
 		//
@@ -285,8 +287,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// Do not change the activity if it was already set
 
-		final I_C_Activity activity = getC_Activity();
-		if (activity == null)
+		final int activityId = getC_Activity_ID();
+		if (activityId <= 0)
 		{
 			setC_Activity_ID(oLine.getC_Activity_ID());
 		}
@@ -308,8 +310,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		// 07442
 		// get tax and activity. they will be checked in several places in this method
-		final I_C_Tax tax = getC_Tax();
-		final I_C_Activity activity = getC_Activity();
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final I_C_Tax taxRecord = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
 
 		setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 		setC_OrderLine_ID(sLine.getC_OrderLine_ID());
@@ -366,8 +368,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			// 07442
 			// Do not change the tax (or tax category) if it was already set
-
-			if (tax == null)
+			if (taxRecord == null)
 			{
 				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
 				setC_Tax_ID(oLine.getC_Tax_ID());
@@ -376,7 +377,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			else
 			{
-				setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				setC_TaxCategory_ID(taxRecord.getC_TaxCategory_ID());
 			}
 			setLineNetAmt(oLine.getLineNetAmt());
 			setC_Project_ID(oLine.getC_Project_ID());
@@ -391,14 +392,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			setPrice(rmaLine.getAmt());
 			setC_Tax_ID(rmaLine.getC_Tax_ID());
 
-			if (tax == null)
+			if (taxRecord == null)
 			{
 				final I_C_Tax rmaTax = InterfaceWrapperHelper.create(getCtx(), rmaLine.getC_Tax_ID(), I_C_Tax.class, get_TrxName());
-				setC_TaxCategory(rmaTax.getC_TaxCategory());
+				setC_TaxCategory_ID(rmaTax.getC_TaxCategory_ID());
 			}
 			else
 			{
-				setC_TaxCategory(tax.getC_TaxCategory());
+				setC_TaxCategory_ID(taxRecord.getC_TaxCategory_ID());
 			}
 			setLineNetAmt(rmaLine.getLineNetAmt());
 		}
@@ -413,7 +414,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setC_ProjectTask_ID(sLine.getC_ProjectTask_ID());
 		// 07442
 		// Do not change the activity if it was already set
-		if (activity == null)
+		if (getC_Activity_ID() <= 0)
 		{
 			setC_Activity_ID(sLine.getC_Activity_ID());
 		}
@@ -1681,17 +1682,18 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// Do not change the tax if it was already set
 
-		final I_C_Tax tax = getC_Tax();
-		if (tax == null)
+		final int taxRepoId = getC_Tax_ID();
+		if (taxRepoId <= 0)
 		{
 			setC_Tax_ID(rmaLine.getC_Tax_ID());
 
 			final I_C_Tax rmaTax = InterfaceWrapperHelper.create(getCtx(), rmaLine.getC_Tax_ID(), I_C_Tax.class, get_TrxName());
-			setC_TaxCategory(rmaTax.getC_TaxCategory());
+			setC_TaxCategory_ID(rmaTax.getC_TaxCategory_ID());
 		}
 		else
 		{
-			setC_TaxCategory(tax.getC_TaxCategory());
+			final I_C_Tax taxRecord = Services.get(ITaxDAO.class).getTaxByIdOrNull(taxRepoId);
+			setC_TaxCategory_ID(taxRecord.getC_TaxCategory_ID());
 		}
 
 		setPrice(rmaLine.getAmt());
@@ -1708,8 +1710,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// Do not change the activity if it was already set
 
-		final I_C_Activity activity = getC_Activity();
-		if (activity == null)
+		if (getC_Activity_ID() <= 0)
 		{
 			setC_Activity_ID(rmaLine.getC_Activity_ID());
 		}

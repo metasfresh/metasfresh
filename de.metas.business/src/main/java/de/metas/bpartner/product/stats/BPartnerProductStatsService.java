@@ -95,7 +95,6 @@ public class BPartnerProductStatsService
 				{
 					stats.updateLastReceiptDate(movementDate);
 				}
-
 				statsRepo.save(stats);
 			}
 		}
@@ -146,6 +145,7 @@ public class BPartnerProductStatsService
 				.invoiceId(event.getInvoiceId())
 				.invoiceDate(event.getInvoiceDate())
 				.price(event.getProductPrice(productId))
+				.invoicableQtyBasedOn(event.getInvoicableQtyBasedOn(productId))
 				.build();
 	}
 }

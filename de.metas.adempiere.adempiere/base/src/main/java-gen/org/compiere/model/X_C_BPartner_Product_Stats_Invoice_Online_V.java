@@ -15,7 +15,7 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2040866059L;
+	private static final long serialVersionUID = -1052580018L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product_Stats_Invoice_Online_V (Properties ctx, int C_BPartner_Product_Stats_Invoice_Online_V_ID, String trxName)
@@ -41,18 +41,6 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -76,18 +64,6 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -116,7 +92,7 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -153,7 +129,7 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
 	}
 
 	@Override
-	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine() throws RuntimeException
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class);
 	}
@@ -208,6 +184,35 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvoiced);
 	}
 
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public java.lang.String getInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
 	/** Set Sales Transaction.
 		@param IsSOTrx 
 		This is a Sales Transaction
@@ -232,18 +237,6 @@ public class X_C_BPartner_Product_Stats_Invoice_Online_V extends org.compiere.mo
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

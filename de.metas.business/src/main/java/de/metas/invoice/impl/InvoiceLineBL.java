@@ -35,6 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -48,6 +49,8 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.costing.ChargeId;
+import de.metas.costing.IChargeDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.location.CountryId;
@@ -65,6 +68,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.uom.IUOMConversionBL;
@@ -159,8 +163,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			logger.info("Changing C_Tax_ID to " + taxId + " for " + il);
 			il.setC_Tax_ID(taxId);
 
-			final I_C_Tax tax = il.getC_Tax();
-			il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+			final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+			final I_C_Tax taxRecord = taxDAO.getTaxById(il.getC_Tax_ID());
+			il.setC_TaxCategory_ID(taxRecord.getC_TaxCategory_ID());
 		}
 		return taxChange;
 	}
@@ -185,7 +190,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
+			final IChargeDAO chargeDAO = Services.get(IChargeDAO.class);
+			final I_C_Charge chargeRecord = chargeDAO.getById(ChargeId.ofRepoId(invoiceLine.getC_Charge_ID()));
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();

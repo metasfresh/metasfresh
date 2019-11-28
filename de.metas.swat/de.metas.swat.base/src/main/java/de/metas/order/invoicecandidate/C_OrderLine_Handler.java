@@ -387,7 +387,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
-				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.ofCode(orderLine.getInvoicableQtyBasedOn()))
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
 				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))

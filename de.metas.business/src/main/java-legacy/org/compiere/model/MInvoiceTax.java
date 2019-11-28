@@ -29,11 +29,9 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Services;
 
 /**
@@ -106,15 +104,17 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		}
 
 		final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(line);
-		final I_C_Tax tax = line.getC_Tax();
+
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final I_C_Tax taxRecord = taxDAO.getTaxById(line.getC_Tax_ID());
 
 		// Create New
 		retValue = new MInvoiceTax(line.getCtx(), 0, trxName);
 		retValue.set_TrxName(trxName);
 		retValue.setClientOrg(line);
 		retValue.setC_Invoice_ID(line.getC_Invoice_ID());
-		retValue.setC_Tax(tax);
-		retValue.setIsWholeTax(tax.isWholeTax());
+		retValue.setC_Tax_ID(line.getC_Tax_ID());
+		retValue.setIsWholeTax(taxRecord.isWholeTax());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
 		s_log.debug("(new) " + retValue);

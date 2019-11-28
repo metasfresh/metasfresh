@@ -87,7 +87,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setPriceListVersionId(resultPriceListVersionId);
 		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
-		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(productPrice.getInvoicableQtyBasedOn()));
+		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.ofCode(productPrice.getInvoicableQtyBasedOn()));
 		result.setCalculated(true);
 
 		//

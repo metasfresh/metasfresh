@@ -1,3 +1,4 @@
+
 drop view if exists C_BPartner_Product_Stats_Invoice_Online_V;
 create or replace view C_BPartner_Product_Stats_Invoice_Online_V as
 select
@@ -7,6 +8,7 @@ select
 	i.DateInvoiced,
 	i.C_Currency_ID,
 	i.PriceActual,
+    i.InvoicableQtyBasedOn,
 	--
 	i.C_Invoice_ID,
 	i.C_InvoiceLine_ID,
@@ -23,6 +25,7 @@ from (
 		il.M_Product_ID,
 		il.C_InvoiceLine_ID,
 		il.PriceActual,
+		il.InvoicableQtyBasedOn,
 		--
 		row_number()
 			over (
@@ -37,7 +40,3 @@ from (
 ) i
 where rownum=1
 ;
-
--- select * from C_BPartner_Product_Stats_Invoice_Online_V
-
-

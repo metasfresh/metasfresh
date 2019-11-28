@@ -34,6 +34,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -72,8 +73,8 @@ class BPartnerProductStatsRepository
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
-				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMN_C_BPartner_ID, bpartnerId)
-				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds)
+				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_C_BPartner_Product_Stats.class)
 				.map(record -> toBPartnerProductStats(record))
@@ -86,7 +87,7 @@ class BPartnerProductStatsRepository
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
-				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds)
+				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_C_BPartner_Product_Stats.class)
 				.map(record -> toBPartnerProductStats(record))
@@ -129,10 +130,13 @@ class BPartnerProductStatsRepository
 			return null;
 		}
 
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(record.getLastSalesInvoicableQtyBasedOn());
+
 		return LastInvoiceInfo.builder()
 				.invoiceId(invoiceId)
 				.invoiceDate(invoiceDate)
 				.price(price)
+				.invoicableQtyBasedOn(invoicableQtyBasedOn)
 				.build();
 	}
 
@@ -234,6 +238,7 @@ class BPartnerProductStatsRepository
 		return LastInvoiceInfo.builder()
 				.invoiceId(invoiceId)
 				.invoiceDate(invoiceDate)
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.ofCode(record.getInvoicableQtyBasedOn()))
 				.price(price)
 				.build();
 	}
@@ -247,8 +252,8 @@ class BPartnerProductStatsRepository
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats_Invoice_Online_V.class)
-				.addEqualsFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_C_BPartner_ID, bpartnerId)
-				.addInArrayFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_M_Product_ID, productIds)
+				.addEqualsFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addInArrayFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMNNAME_M_Product_ID, productIds)
 				.addEqualsFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_IsSOTrx, soTrx.toBoolean())
 				.create()
 				.list(I_C_BPartner_Product_Stats_Invoice_Online_V.class);
@@ -312,5 +317,8 @@ class BPartnerProductStatsRepository
 		final Money price = lastSalesInvoiceInfo != null ? lastSalesInvoiceInfo.getPrice() : null;
 		record.setLastSalesPrice(price != null ? price.toBigDecimal() : null);
 		record.setLastSalesPrice_Currency_ID(price != null ? price.getCurrencyId().getRepoId() : -1);
+
+		InvoicableQtyBasedOn invoicableQtyBasedOn = lastSalesInvoiceInfo != null ? lastSalesInvoiceInfo.getInvoicableQtyBasedOn() : null;
+		record.setLastSalesInvoicableQtyBasedOn(InvoicableQtyBasedOn.asCode(invoicableQtyBasedOn));
 	}
 }

@@ -64,9 +64,6 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Creates a new {@link IInvoiceLineRW}, and set every properties of that line from the given <code>template</code>.
-	 *
-	 * @param template
-	 * @return
 	 */
 	IInvoiceLineRW mkInvoiceLine(IInvoiceLineRW template);
 

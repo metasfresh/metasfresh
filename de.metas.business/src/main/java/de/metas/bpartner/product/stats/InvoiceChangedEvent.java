@@ -19,6 +19,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
@@ -113,6 +114,16 @@ public class InvoiceChangedEvent
 		return productPrice.getPrice();
 	}
 
+	public InvoicableQtyBasedOn getInvoicableQtyBasedOn(@NonNull final ProductId productId)
+	{
+		final ProductPrice productPrice = productPricesByProductId.get(productId);
+		if (productPrice == null)
+		{
+			throw new AdempiereException("No product price found for " + productId + " in " + this);
+		}
+		return productPrice.getInvoicableQtyBasedOn();
+	}
+
 	@Value
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	public static class ProductPrice
@@ -123,14 +134,19 @@ public class InvoiceChangedEvent
 		@JsonProperty("price")
 		Money price;
 
+		@JsonProperty("invoicableQtyBasedOn")
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
+
 		@Builder
 		@JsonCreator
 		private ProductPrice(
 				@JsonProperty("productId") @NonNull final ProductId productId,
-				@JsonProperty("price") @NonNull final Money price)
+				@JsonProperty("price") @NonNull final Money price,
+				@JsonProperty("invoicableQtyBasedOn") @NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 		{
 			this.productId = productId;
 			this.price = price;
+			this.invoicableQtyBasedOn = invoicableQtyBasedOn;
 		}
 
 	}

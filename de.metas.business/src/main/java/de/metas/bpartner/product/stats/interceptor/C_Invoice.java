@@ -20,8 +20,11 @@ import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,12 +36,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -103,25 +106,30 @@ public class C_Invoice
 				.build();
 	}
 
-	private ImmutableList<ProductPrice> extractProductPrices(final I_C_Invoice invoice)
+	private ImmutableList<ProductPrice> extractProductPrices(@NonNull final I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
-		final ImmutableMap<ProductId, Money> pricesByProductId = invoicesRepo.retrieveLines(invoice)
+		final ImmutableMap<ProductId, PriceInfo> pricesByProductId = invoicesRepo.retrieveLines(invoice)
 				.stream()
 				.filter(invoiceLine -> invoiceLine.getM_Product_ID() > 0)
 				.collect(ImmutableMap.toImmutableMap(
 						invoiceLine -> ProductId.ofRepoId(invoiceLine.getM_Product_ID()), // keyMapper
-						invoiceLine -> Money.of(invoiceLine.getPriceActual(), currencyId), // valueMapper
-						Money::max)); // mergeFunction
+						invoiceLine -> new PriceInfo(
+								ProductId.ofRepoId(invoiceLine.getM_Product_ID()),
+								Money.of(invoiceLine.getPriceActual(), currencyId),
+								InvoicableQtyBasedOn.ofCode(invoiceLine.getInvoicableQtyBasedOn())), // valueMapper
+						PriceInfo::max)); // mergeFunction
 
 		return pricesByProductId.keySet()
 				.stream()
-				.map(productId -> ProductPrice.builder()
-						.productId(productId)
-						.price(pricesByProductId.get(productId))
+				.map(pricesByProductId::get)
+				.map(priceInfo -> ProductPrice.builder()
+						.productId(priceInfo.getProductId())
+						.price(priceInfo.getMoney())
+						.invoicableQtyBasedOn(priceInfo.getInvoicableQtyBasedOn())
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -131,5 +139,20 @@ public class C_Invoice
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		return invoiceBL.isCreditMemo(invoice);
+	}
+
+	@Value
+	private static class PriceInfo
+	{
+		ProductId productId;
+
+		Money money;
+
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
+
+		public PriceInfo max(@NonNull final PriceInfo other)
+		{
+			return this.getMoney().toBigDecimal().compareTo(other.getMoney().toBigDecimal()) >= 0 ? this : other;
+		}
 	}
 }

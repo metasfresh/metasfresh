@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_M_ProductPrice;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 
 /*
@@ -31,7 +32,7 @@ import lombok.Getter;
  * #L%
  */
 
-public enum InvoicableQtyBasedOn
+public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
 {
 	/** Please keep in sync with {@link X_M_ProductPrice#INVOICABLEQTYBASEDON_CatchWeight}. */
 	CatchWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_CatchWeight),
@@ -39,7 +40,16 @@ public enum InvoicableQtyBasedOn
 	/** Please keep in sync with {@link X_M_ProductPrice#INVOICABLEQTYBASEDON_Nominal}. */
 	NominalWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_Nominal);
 
-	public static InvoicableQtyBasedOn fromRecordString(@Nullable final String invoicableQtyBasedOn)
+	public static String asCode(@Nullable final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		if (invoicableQtyBasedOn == null)
+		{
+			return null;
+		}
+		return invoicableQtyBasedOn.getCode();
+	}
+
+	public static InvoicableQtyBasedOn ofCode(@Nullable final String invoicableQtyBasedOn)
 	{
 		if (isEmpty(invoicableQtyBasedOn, true))
 		{
@@ -53,15 +63,14 @@ public enum InvoicableQtyBasedOn
 		{
 			return NominalWeight;
 		}
-
 		throw new AdempiereException("Unsupported invoicableQtyBasedOn value: " + invoicableQtyBasedOn);
 	}
 
 	@Getter
-	private final String recordString;
+	private final String code;
 
-	private InvoicableQtyBasedOn(String recordString)
+	private InvoicableQtyBasedOn(String code)
 	{
-		this.recordString = recordString;
+		this.code = code;
 	}
 }

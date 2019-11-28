@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -49,6 +51,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -146,6 +149,7 @@ import lombok.ToString;
 		invoiceLine.setPriceActual(getPriceActual());
 		invoiceLine.setPriceEntered(getPriceEntered());
 		invoiceLine.setDiscount(getDiscount());
+		invoiceLine.setInvoicableQtyBasedOn(getInvoicableQtyBasedOn());
 		invoiceLine.setQtysToInvoice(getQtysToInvoice());
 		invoiceLine.setNetLineAmt(getLineNetAmt());
 		invoiceLine.setDescription(getDescription());
@@ -492,6 +496,11 @@ import lombok.ToString;
 		return _discount;
 	}
 
+	private InvoicableQtyBasedOn getInvoicableQtyBasedOn()
+	{
+		return InvoicableQtyBasedOn.ofCode(getFirstInvoiceCandidate().getInvoicableQtyBasedOn());
+	}
+
 	private final void setC_OrderLine_ID(final int candOrderLineId)
 	{
 		//
@@ -577,10 +586,10 @@ import lombok.ToString;
 
 	private int getC_PaymentTerm_ID()
 	{
-		final Integer valueOrNull = InterfaceWrapperHelper.getValueOverrideOrValue(
-				getFirstInvoiceCandidate(),
-				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
-		return valueOrNull == null ? 0 : valueOrNull;
+		final I_C_Invoice_Candidate icRecord = getFirstInvoiceCandidate();
+
+		final int paymentTermRepoId = firstGreaterThanZero(icRecord.getC_PaymentTerm_Override_ID(), icRecord.getC_PaymentTerm_ID());
+		return paymentTermRepoId;
 	}
 
 	/** @return effective tax to use in invoice line */

@@ -133,7 +133,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, invoice);
 		invoiceLine.setC_Invoice(invoice);
-		invoiceLine.setM_Product(product);
+		invoiceLine.setM_Product_ID(product.getM_Product_ID());
 		InterfaceWrapperHelper.save(invoiceLine);
 		return invoiceLine;
 	}

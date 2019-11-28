@@ -607,13 +607,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final I_C_Tax tax = ilVO.getC_Tax();
 				if (tax != null)  // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
 				{
-					invoiceLine.setC_Tax(tax);
-					invoiceLine.setC_TaxCategory(tax.getC_TaxCategory());
+					invoiceLine.setC_Tax_ID(tax.getC_Tax_ID());
+					invoiceLine.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 				}
 
 				// Set Line Net Amount and Tax Amount
 				invoiceBL.setLineNetAmt(invoiceLine);
 				invoiceBL.setTaxAmt(invoiceLine);
+
+				invoiceLine.setInvoicableQtyBasedOn(ilVO.getInvoicableQtyBasedOn().getCode());
 
 				final List<I_C_Invoice_Candidate> candsForIlVO = aggregate.getCandsFor(ilVO);
 

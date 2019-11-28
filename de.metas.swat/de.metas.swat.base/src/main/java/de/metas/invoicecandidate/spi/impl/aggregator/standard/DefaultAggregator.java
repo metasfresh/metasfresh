@@ -107,12 +107,12 @@ public class DefaultAggregator implements IAggregator
 
 	private String mkLineAggregationKeyToUse(@NonNull final IInvoiceLineAggregationRequest request)
 	{
-		final I_C_Invoice_Candidate ic = request.getC_Invoice_Candidate();
-		InterfaceWrapperHelper.refresh(ic); // make sure it's up to date
+		final I_C_Invoice_Candidate icRecord = request.getC_Invoice_Candidate();
+		InterfaceWrapperHelper.refresh(icRecord); // make sure it's up to date
 		//
-		final String lineAggregationKeyStr = ic.getLineAggregationKey();
-		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || Services.get(IInvoiceCandDAO.class).isToRecompute(ic),
-				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
+		final String lineAggregationKeyStr = icRecord.getLineAggregationKey();
+		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || Services.get(IInvoiceCandDAO.class).isToRecompute(icRecord),
+				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", icRecord);
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();
 
@@ -122,14 +122,14 @@ public class DefaultAggregator implements IAggregator
 			// don't aggregate it with any other candidate
 			// Note: we don't care for the LineAggregationKey_Suffix
 			aggregationKeyToUse.append("UniqueIC_");
-			aggregationKeyToUse.append(ic.getC_Invoice_Candidate_ID());
+			aggregationKeyToUse.append(icRecord.getC_Invoice_Candidate_ID());
 		}
 		else
 		{
 			//
 			// Parse IC's LineAggregationKey
 			{
-				final AggregationId lineAggregationKeyBuilderId = AggregationId.ofRepoIdOrNull(ic.getLineAggregationKeyBuilder_ID());
+				final AggregationId lineAggregationKeyBuilderId = AggregationId.ofRepoIdOrNull(icRecord.getLineAggregationKeyBuilder_ID());
 				final AggregationKey lineAggregationKeyUnparsed = new AggregationKey(lineAggregationKeyStr, lineAggregationKeyBuilderId);
 
 				final I_C_InvoiceCandidate_InOutLine iciol = request.getC_InvoiceCandidate_InOutLine();
@@ -143,7 +143,7 @@ public class DefaultAggregator implements IAggregator
 				aggregationKeyToUse.append(lineAggregationKey.getAggregationKeyString());
 			}
 
-			final String lineAggregationKey_Suffix = ic.getLineAggregationKey_Suffix();
+			final String lineAggregationKey_Suffix = icRecord.getLineAggregationKey_Suffix();
 			if (!Check.isEmpty(lineAggregationKey_Suffix))
 			{
 				aggregationKeyToUse.append("_");
