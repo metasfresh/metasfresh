@@ -21,20 +21,10 @@ class SpinnerOverlay extends Component {
     };
   }
 
-  /**
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   UNSAFE_componentWillMount() {
     this.ID = uuid();
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   componentDidMount() {
     const { showSpinner, spinnerDisplayed, delay, parent } = this.props;
 
@@ -56,8 +46,6 @@ class SpinnerOverlay extends Component {
    * @summary This whole wizardry here is to force showing the spinner, when timeout
    * already finished but the parent component is not updating (because waiting
    * for data or doing some other operations).
-   * @param {*} unannotatedFilters
-   * @todo Write the documentation
    */
   componentDidUpdate() {
     const {
@@ -91,11 +79,6 @@ class SpinnerOverlay extends Component {
     }
   }
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { iconSize } = this.props;
     const { show } = this.state;
@@ -148,12 +131,6 @@ SpinnerOverlay.propTypes = {
   hideSpinner: PropTypes.func.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {*} windowHandler
- * @todo Write the documentation
- */
 const mapStateToProps = ({ windowHandler }) => ({
   spinnerDisplayed: windowHandler.spinner,
 });
