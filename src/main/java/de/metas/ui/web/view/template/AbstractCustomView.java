@@ -305,7 +305,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 			return; // nothing to do
 		}
 
-		rowsData.invalidateAll();
+		rowsData.invalidate(documentIdsToInvalidate);
 		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectRowsChanged(this, documentIdsToInvalidate);
 	}
