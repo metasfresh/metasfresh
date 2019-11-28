@@ -383,6 +383,12 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
+	public void invalidateView(final IView view)
+	{
+		invalidateView(view.getViewId());
+	}
+
+	@Override
 	@Async
 	public void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
 	{

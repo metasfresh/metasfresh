@@ -190,7 +190,7 @@ public final class ViewId
 		return parts.size() > 2 ? parts.subList(2, parts.size()) : ImmutableList.of();
 	}
 
-	public ViewId deriveWithWindowId(@NonNull final WindowId newWindowId)
+	public ViewId withWindowId(@NonNull final WindowId newWindowId)
 	{
 		if (windowId.equals(newWindowId))
 		{

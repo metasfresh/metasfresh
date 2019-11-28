@@ -86,6 +86,8 @@ public interface IViewsRepository
 
 	void invalidateView(ViewId viewId);
 
+	void invalidateView(IView view);
+
 	List<IView> getViews();
 
 	/**
