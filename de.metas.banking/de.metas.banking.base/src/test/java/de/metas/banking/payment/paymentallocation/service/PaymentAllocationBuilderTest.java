@@ -72,7 +72,6 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.Getter;
 
 public class PaymentAllocationBuilderTest
 {
@@ -688,7 +687,6 @@ public class PaymentAllocationBuilderTest
 				.isEqualTo(expectedCount);
 	}
 
-	@Getter
 	enum InvoiceType
 	{
 		VendorInvoice(SOTrx.PURCHASE, false),//
@@ -704,6 +702,16 @@ public class PaymentAllocationBuilderTest
 		{
 			this.soTrx = soTrx.toBoolean();
 			this.creditMemo = creditMemo;
+		}
+
+		public boolean isSoTrx()
+		{
+			return soTrx;
+		}
+
+		public boolean isCreditMemo()
+		{
+			return creditMemo;
 		}
 	}
 
