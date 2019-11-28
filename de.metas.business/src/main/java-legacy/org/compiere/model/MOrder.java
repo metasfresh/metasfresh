@@ -949,12 +949,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// No Bill - get from Ship
 		if (getBill_BPartner_ID() <= 0)
 		{
-			setBill_BPartner_ID(getC_BPartner_ID());
-			setBill_Location_ID(getC_BPartner_Location_ID());
-		}
-		if (getBill_Location_ID() == 0)
-		{
-			setBill_Location_ID(getC_BPartner_Location_ID());
+			orderBL.setBillLocation(this);
 		}
 
 		//
