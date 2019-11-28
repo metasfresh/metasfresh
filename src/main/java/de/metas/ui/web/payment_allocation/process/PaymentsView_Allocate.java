@@ -77,7 +77,8 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 		preparePaymentAllocationBuilder()
 				.build();
 
-		// TODO: invalidate views and kick out what was fully allocated
+		// NOTE: the payment and invoice rows will be automatically invalidated (via a cache reset),
+		// when the payment allocation is processed
 
 		return MSG_OK;
 	}
@@ -85,6 +86,8 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 	@Override
 	protected void postProcess(final boolean success)
 	{
+		// FIXME: until https://github.com/metasfresh/me03/issues/3388 is fixed,
+		// as a workaround we have to invalidate the whole views
 		invalidatePaymentsAndInvoicesViews();
 	}
 
