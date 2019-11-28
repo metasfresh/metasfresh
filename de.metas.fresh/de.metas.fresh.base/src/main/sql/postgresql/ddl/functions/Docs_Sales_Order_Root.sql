@@ -6,6 +6,7 @@ RETURNS TABLE
 	ad_org_id numeric(10,0),
 	docstatus character(2),
 	printname character varying(60),
+	C_Currency_ID numeric,
 	displayhu text
 	)
 AS
@@ -15,6 +16,7 @@ SELECT
 	o.AD_Org_ID,
 	o.DocStatus,
 	dt.PrintName,
+	o.C_Currency_ID,
 	CASE
 		WHEN
 		EXISTS(
