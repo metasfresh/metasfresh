@@ -1,4 +1,4 @@
-import Moment from 'moment';
+import Moment from 'moment-timezone';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import React, { PureComponent, createRef } from 'react';
@@ -13,8 +13,10 @@ import {
   DATE_FIELD_TYPES,
   TIME_FIELD_TYPES,
   DATE_FIELD_FORMATS,
+  TIME_FORMAT,
 } from '../../constants/Constants';
 import WidgetTooltip from '../widget/WidgetTooltip';
+import { TIME_REGEX_TEST } from '../../utils/documentListHelper';
 
 class TableCell extends PureComponent {
   static getAmountFormatByPrecision = precision =>
@@ -26,10 +28,17 @@ class TableCell extends PureComponent {
 
   static getDateFormat = fieldType => DATE_FIELD_FORMATS[fieldType];
 
-  static createDate = (fieldValue, fieldType) =>
-    fieldValue
-      ? Moment(fieldValue).format(TableCell.getDateFormat(fieldType))
-      : '';
+  static createDate = (fieldValue, fieldType) => {
+    if (fieldValue) {
+      return fieldValue.match(TIME_REGEX_TEST)
+        ? Moment.utc(Moment.duration(fieldValue).asMilliseconds()).format(
+            TIME_FORMAT
+          )
+        : Moment(fieldValue).format(TableCell.getDateFormat(fieldType));
+    }
+
+    return '';
+  };
 
   static createAmount = (fieldValue, precision, isGerman) => {
     if (fieldValue) {
