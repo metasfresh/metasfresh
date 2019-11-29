@@ -1,6 +1,7 @@
 package de.metas.payment.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 /*
  * #%L
@@ -25,12 +26,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -40,7 +39,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationLine;
@@ -49,8 +47,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -68,6 +64,12 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
 		return load(paymentId, I_C_Payment.class);
+	}
+
+	@Override
+	public List<I_C_Payment> getByIds(@NonNull final Set<PaymentId> paymentIds)
+	{
+		return loadByRepoIdAwares(paymentIds, I_C_Payment.class);
 	}
 
 	@Override
@@ -197,5 +199,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	 * - have the `PlainPaymentDAO ` implementation return "plain" instances of `I_C_InvoiceOpenAmounts`
 	 * - that way, one can write a unit test where they first create one or two plain `I_C_InvoiceOpenAmounts`s and then query them in their test
 	 */
+	@Override
 	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

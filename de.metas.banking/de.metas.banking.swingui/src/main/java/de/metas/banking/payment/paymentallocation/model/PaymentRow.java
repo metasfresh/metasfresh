@@ -31,9 +31,12 @@ import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.currency.Currency;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
@@ -147,7 +150,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	{
 		return currencyISOCode != null ? currencyISOCode.toThreeLetterCode() : null;
 	}
-	
+
 	public CurrencyCode getCurrencyISOCode()
 	{
 		return currencyISOCode;
@@ -226,18 +229,17 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	public IPaymentDocument copyAsPaymentDocument()
 	{
 		final PaymentRow paymentRow = this;
-		
+
 		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		final Currency currency = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode());
+		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode()).getId();
 
 		return PaymentDocument.builder()
-				.setC_BPartner_ID(paymentRow.getC_BPartner_ID())
-				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
-				.setC_Currency_ID(currency.getId().getRepoId())
-				.setOpenAmt(paymentRow.getOpenAmtConv_APAdjusted())
-				.setIsSOTrx(paymentRow.isCustomerDocument())
-				.setDocumentNo(paymentRow.getDocumentNo())
-				.setAmountToAllocate(paymentRow.getAppliedAmt_APAdjusted())
+				.paymentId(PaymentId.ofRepoId(paymentRow.getC_Payment_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(paymentRow.getC_BPartner_ID()))
+				.isSOTrx(paymentRow.isCustomerDocument())
+				.documentNo(paymentRow.getDocumentNo())
+				.openAmt(Money.of(paymentRow.getOpenAmtConv_APAdjusted(), currencyId))
+				.amountToAllocate(Money.of(paymentRow.getAppliedAmt_APAdjusted(), currencyId))
 				.build();
 
 	}

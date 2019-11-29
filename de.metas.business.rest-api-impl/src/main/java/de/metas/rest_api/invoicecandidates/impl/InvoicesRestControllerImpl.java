@@ -8,13 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.invoice.InvoiceId;
-import de.metas.rest_api.invoice.impl.InvoicePDFService;
+import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
@@ -61,20 +62,20 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
 	private final EnqueueForInvoicingService enqueueForInvoicingService;
 	private final CloseInvoiceCandidatesService closeInvoiceCandidatesService;
-	private final InvoicePDFService invoicePDFService;
+	private final InvoiceService invoiceService;
 
 	public InvoicesRestControllerImpl(
 			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
 			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
 			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService,
-			@NonNull final InvoicePDFService invoicePDFService)
+			@NonNull final InvoiceService invoicePDFService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
 		this.enqueueForInvoicingService = enqueueForInvoicingService;
 		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
-		this.invoicePDFService = invoicePDFService;
+		this.invoiceService = invoicePDFService;
 	}
 
 	@ApiOperation("Create new invoice candidates")
@@ -134,10 +135,31 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			@ApiResponse(code = 401, message = "You are not authorized to see the invoice PDF"),
 			@ApiResponse(code = 404, message = "No archive found for the invoice")
 	})
-	@GetMapping(path = "/{InvoiceId}/pdf")
+	@GetMapping(path = "/{invoiceId}/pdf")
 	@Override
 	public ResponseEntity<byte[]> getInvoicePDF(
-			@PathVariable("InvoiceId") @ApiParam(required = true, value = "InvoiceId") final int invoiceRecordId)
+			@ApiParam(required = true, value = "metasfreshId of the invoice to get the PDF of") //
+			@PathVariable("invoiceId") final int invoiceRecordId)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
+		if (invoiceId == null)
+		{
+			return ResponseEntity.notFound().build();
+		}
+
+		final Optional<byte[]> invoicePDF = invoiceService.getInvoicePDF(invoiceId);
+
+		if (invoicePDF.isPresent())
+		{
+			return ResponseEntity.ok(invoicePDF.get());
+		}
+
+		return ResponseEntity.notFound().build();
+	}
+
+	@PutMapping(path = "/{invoiceId}/revert")
+	public ResponseEntity<?> revertInvoice(
+			@PathVariable("invoiceId") @ApiParam(required = true, value = "metasfreshId of the invoice to revert") final int invoiceRecordId)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
 
@@ -146,16 +168,6 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			return ResponseEntity.notFound().build();
 		}
 
-		final Optional<byte[]> invoicePDF = invoicePDFService.getInvoicePDF(invoiceId);
-
-		if (invoicePDF.isPresent())
-		{
-
-			return ResponseEntity.ok(invoicePDF.get());
-		}
-
-		return ResponseEntity.notFound().build();
-
+		return invoiceService.reverseInvoice(invoiceId);
 	}
-
 }

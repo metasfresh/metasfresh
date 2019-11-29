@@ -2,7 +2,9 @@ package de.metas.banking.payment;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
@@ -10,6 +12,7 @@ import org.compiere.model.I_C_Payment;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -45,4 +48,6 @@ public interface IPaySelectionDAO extends ISingletonService
 	I_C_PaySelection retrievePaySelection(I_C_Payment payment);
 
 	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, int paymentId);
+
+	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
 }

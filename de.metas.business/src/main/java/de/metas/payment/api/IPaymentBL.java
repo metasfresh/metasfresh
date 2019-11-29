@@ -27,17 +27,24 @@ package de.metas.payment.api;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
 
 public interface IPaymentBL extends ISingletonService
 {
+	I_C_Payment getById(PaymentId paymentId);
+
+	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
+
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
 	DefaultPaymentBuilder newOutboundPaymentBuilder();
