@@ -24,6 +24,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
@@ -140,6 +141,7 @@ public class AttributePricing implements IPricingRule
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
+		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(productPrice.getInvoicableQtyBasedOn()));
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
