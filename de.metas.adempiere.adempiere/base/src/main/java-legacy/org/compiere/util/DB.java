@@ -1998,7 +1998,7 @@ public final class DB
 			throw new DBException("Unknown parameter type: " + param + " (" + param.getClass() + ")");
 		}
 	}
-	
+
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
 		return Database.TO_DATE(zdt);
@@ -2860,27 +2860,47 @@ public final class DB
 	@FunctionalInterface
 	public interface ResultSetRowLoader<T>
 	{
-		T retrieveRow(ResultSet rs) throws SQLException;
+		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
 	public static <T> List<T> retrieveRowsOutOfTrx(
-			@NonNull final String sql,
+			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
+	}
+
+	public static <T> List<T> retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
+	}
+
+	private static <T> List<T> retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt = prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
 			final ArrayList<T> rows = new ArrayList<>();
 			while (rs.next())
 			{
-				T row = loader.retrieveRow(rs);
-				rows.add(row);
+				final T row = loader.retrieveRowOrNull(rs);
+				if(row != null)
+				{
+					rows.add(row);
+				}
 			}
 
 			return rows;
@@ -2909,7 +2929,7 @@ public final class DB
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				return loader.retrieveRow(rs);
+				return loader.retrieveRowOrNull(rs);
 			}
 			else
 			{

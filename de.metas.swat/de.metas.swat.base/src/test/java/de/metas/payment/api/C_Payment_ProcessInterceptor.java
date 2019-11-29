@@ -39,6 +39,7 @@ import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -75,7 +76,8 @@ public class C_Payment_ProcessInterceptor implements IProcessInterceptor
 
 			BigDecimal sumAmt = BigDecimal.ZERO;
 
-			final BigDecimal currentAmt = Services.get(IPaymentDAO.class).getAvailableAmount(payment);
+			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+			final BigDecimal currentAmt = Services.get(IPaymentDAO.class).getAvailableAmount(paymentId);
 
 			sumAmt = sumAmt.add(currentAmt);
 

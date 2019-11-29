@@ -314,7 +314,11 @@ public class CalloutOrder extends CalloutEngine
 
 		if (!orderBL.setBillLocation(order))
 		{
-			throw new BPartnerNoBillToAddressException(bpartner);
+			final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
+			calloutField.fireDataStatusEEvent(
+					localizedMessage,
+					localizedMessage, // this appears onHover
+					true);
 		}
 
 		return NO_ERROR;
@@ -385,7 +389,7 @@ public class CalloutOrder extends CalloutEngine
 				{
 					DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(rs.getInt("SO_DocTypeTarget_ID"));
 
-					if(docTypeTargetId == null)
+					if (docTypeTargetId == null)
 					{
 						docTypeTargetId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
 								.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
@@ -395,7 +399,7 @@ public class CalloutOrder extends CalloutEngine
 								.build());
 					}
 
-					if(docTypeTargetId != null)
+					if (docTypeTargetId != null)
 					{
 						Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
 					}
@@ -663,8 +667,8 @@ public class CalloutOrder extends CalloutEngine
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
 				+ " ORDER BY " + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
-		// metas end
-		; // #1
+				// metas end
+				; // #1
 		final Object[] sqlParams = new Object[] { bill_BPartner_ID };
 
 		final boolean IsSOTrx = order.isSOTrx();
@@ -1442,8 +1446,8 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				+ " ORDER BY lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault
 				+ " DESC"
-		// metas end
-		; // #1
+				// metas end
+				; // #1
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

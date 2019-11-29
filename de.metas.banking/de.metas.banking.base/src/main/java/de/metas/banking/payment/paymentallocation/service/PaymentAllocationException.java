@@ -33,7 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class PaymentAllocationException extends AdempiereException
 {
-	public static final PaymentAllocationException wrapToPaymentAllocationExceptionIfNeeded(final Throwable throwable)
+	public static final PaymentAllocationException wrapIfNeeded(final Throwable throwable)
 	{
 		final Throwable cause = extractCause(throwable);
 		if (cause instanceof PaymentAllocationException)
