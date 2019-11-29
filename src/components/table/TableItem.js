@@ -156,13 +156,19 @@ class TableItem extends PureComponent {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
-    if ((activeCell !== elem && !elem.className.includes('js-input-field')) || cb) {
-      this.setState({
-        activeCell: elem,
-        activeCellName: property,
-      }, () => {
-        cb && cb();
-      });
+    if (
+      (activeCell !== elem && !elem.className.includes('js-input-field')) ||
+      cb
+    ) {
+      this.setState(
+        {
+          activeCell: elem,
+          activeCellName: property,
+        },
+        () => {
+          cb && cb();
+        }
+      );
     } else {
       cb && cb();
     }
