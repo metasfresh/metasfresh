@@ -54,11 +54,11 @@ public class OLCandCreateRequest
 
 	String externalHeaderId;
 
-	/** Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record. */
+	/** Mandatory; an Identifier of an existing AD_InputDataSource record. */
 	InputDataSourceId dataSourceId;
 
 	/**
-	 * Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record.
+	 * Mandatory; an Identifier of an existing AD_InputDataSource record.
 	 * It's mandatory because all the code that processes C_OLCands into something else expects this to be set to its respective destination.
 	 * Therefore, {@code C_OLCand}s without any dataDest will go nowhere.
 	 */

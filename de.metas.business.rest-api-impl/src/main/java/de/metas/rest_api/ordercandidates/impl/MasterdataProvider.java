@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
@@ -22,6 +21,8 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.api.impl.InputDataSourceQuery;
+import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -40,6 +41,7 @@ import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.InvalidIdentifierException;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.rest_api.utils.PermissionService;
@@ -232,7 +234,7 @@ final class MasterdataProvider
 		productPricesMasterDataProvider.createProductPrice(request);
 	}
 
-	public InputDataSourceId getDataSourceId(final String dataSourceIdentifier)
+	public InputDataSourceId getDataSourceId(final String dataSourceIdentifier, final OrgId orgId)
 	{
 		final IInputDataSourceDAO dataSourceDAO = Services.get(IInputDataSourceDAO.class);
 		if (dataSourceIdentifier == null)
@@ -242,28 +244,33 @@ final class MasterdataProvider
 
 		final IdentifierString dataSource = IdentifierString.of(dataSourceIdentifier);
 
-		final InputDataSourceId dataSourceId;
+		final InputDataSourceQueryBuilder queryBuilder = InputDataSourceQuery.builder();
+
+		queryBuilder.orgId(orgId);
 
 		switch (dataSource.getType())
 		{
 			case INTERNALNAME:
-				dataSourceId = InputDataSourceId.ofRepoIdOrNull(dataSourceDAO.retrieveInputDataSourceIdByInternalName(dataSource.asInternalName()));
+				queryBuilder.internalName(dataSource.asInternalName());
 				break;
 			case EXTERNAL_ID:
-				dataSourceId = dataSourceDAO.retrieveInputDataSourceIdByExternalId(dataSource.asExternalId()).orElse(null);
+				queryBuilder.externalId(dataSource.asExternalId());
 				break;
 			case METASFRESH_ID:
-				dataSourceId = InputDataSourceId.ofRepoIdOrNull(dataSource.asMetasfreshId().getValue());
+				queryBuilder.inputDataSourceId(InputDataSourceId.ofRepoIdOrNull(dataSource.asMetasfreshId().getValue()));
 				break;
 			case VALUE:
-				dataSourceId = dataSourceDAO.retrieveInputDataSourceIdByValue(dataSource.asValue()).orElse(null);
+				queryBuilder.value(dataSource.asValue());
 				break;
 
+
 			default:
-				throw new AdempiereException("Unexpected type=" + dataSource.getType());
+				throw new InvalidIdentifierException(dataSource);
 		}
 
-		return dataSourceId;
+		final Optional<InputDataSourceId> dataSourceId = dataSourceDAO.retrieveInputDataSourceIdBy(queryBuilder.build());
+
+		return dataSourceId.orElse(null);
 
 	}
 
@@ -289,11 +296,11 @@ final class MasterdataProvider
 				shipperId = ShipperId.ofRepoIdOrNull(shipperIdentifier.asMetasfreshId().getValue());
 				break;
 			case VALUE:
-				shipperId = shipperDAO.getShipperIdByValue(shipperIdentifier.asValue()).orElse(null);
+				shipperId = shipperDAO.getShipperIdByValue(shipperIdentifier.asValue(), getCreateOrgId(request.getOrg())).orElse(null);
 				break;
 
 			default:
-				throw new AdempiereException("Unexpected type=" + shipperIdentifier.getType());
+				throw new InvalidIdentifierException(shipperIdentifier);
 		}
 
 		if (shipperId == null)

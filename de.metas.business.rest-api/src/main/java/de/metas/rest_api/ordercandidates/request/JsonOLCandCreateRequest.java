@@ -60,30 +60,23 @@ public final class JsonOLCandCreateRequest
 			allowEmptyValue = false, //
 			value = "This translates to <code>C_OLCand.externalLineId</code>.\n"
 					+ "<code>externalLineId</code> and <code>dataSource</code> together need to be unique.")
-	private String externalLineId;
+	String externalLineId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "This translates to <code>C_OLCand.externalHeaderId</code>.\n"
 					+ "<code>externalHeaderId</code> and <code>dataSource</code> together denote the unique group of olCands that were added in one bulk.")
-	private String externalHeaderId;
+	String externalHeaderId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "Identifier for data source.")
-	private String dataSource;
+			value = "Identifier of the <code>AD_InputDataSource</code> record that tells where this OLCand came from.")
+	String dataSource;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "Identifier of the <code>AD_InputDataSource</code> record that tells what shall be happen with this OLCand.")
-	private String dataDest;
-
-
-
-
-
-
-
+	String dataDest;
 
 	@ApiModelProperty( //
 			required = true, //
@@ -92,7 +85,7 @@ public final class JsonOLCandCreateRequest
 					+ "\n"
 					+ "Note that the given partner's *location* can also be left empty, if the partner can be found in metasfresh and has an address there.\n"
 					+ "If there are multiple adresses, the default shipTo address is preferred.")
-	private JsonRequestBPartnerLocationAndContact bpartner;
+	JsonRequestBPartnerLocationAndContact bpartner;
 
 	@ApiModelProperty( //
 			required = false, //
@@ -100,7 +93,7 @@ public final class JsonOLCandCreateRequest
 					+ "It's the business partner that shall receive the invoice.\n"
 					+ "Optional; if empty, then `bpartner` will receive the invoice.")
 	@JsonInclude(Include.NON_NULL)
-	private JsonRequestBPartnerLocationAndContact billBPartner;
+	JsonRequestBPartnerLocationAndContact billBPartner;
 
 	@ApiModelProperty( //
 			required = false, //
@@ -108,7 +101,7 @@ public final class JsonOLCandCreateRequest
 					+ "It's the business partner that shall receive the shipment.\n"
 					+ "Optional; if empty, then `bpartner` will receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
-	private JsonRequestBPartnerLocationAndContact dropShipBPartner;
+	JsonRequestBPartnerLocationAndContact dropShipBPartner;
 
 	@ApiModelProperty( //
 			required = false, //
@@ -116,14 +109,14 @@ public final class JsonOLCandCreateRequest
 					+ "It's an intermediate partner that shall receive the shipment and forward it to the eventual recipient.\n"
 					+ "Optional; if empty, then `dropShipBPartner` or `bpartner` will directly receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
-	private JsonRequestBPartnerLocationAndContact handOverBPartner;
+	JsonRequestBPartnerLocationAndContact handOverBPartner;
 
 	@ApiModelProperty( //
 			required = false, //
 			value = "This translates to `C_OLCand.DateOrdered`.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
-	private LocalDate dateOrdered;
+	LocalDate dateOrdered;
 
 	@ApiModelProperty( //
 			required = false, //
@@ -131,17 +124,17 @@ public final class JsonOLCandCreateRequest
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
 					+ "Note: may be empty, if is `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate dateRequired;
+	LocalDate dateRequired;
 
-	private int flatrateConditionsId;
+	int flatrateConditionsId;
 
 	@ApiModelProperty(value = "This translates to `C_OLCand.M_Product_ID`.")
-	private JsonProductInfo product;
+	JsonProductInfo product;
 
 	@JsonInclude(Include.NON_NULL)
-	private String productDescription;
+	String productDescription;
 
-	private BigDecimal qty;
+	BigDecimal qty;
 
 	@ApiModelProperty(required = false, //
 			value = "This translates to `C_UOM.X12DE355`.\n"
@@ -149,12 +142,12 @@ public final class JsonOLCandCreateRequest
 					+ "If not provided here, then the respective product's UOM is used instead.\n"
 					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
 	@JsonInclude(Include.NON_NULL)
-	private String uomCode;
+	String uomCode;
 
 	@ApiModelProperty(required = false, //
 			value = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`.")
 	@JsonInclude(Include.NON_NULL)
-	private MetasfreshId packingMaterialId;
+	MetasfreshId packingMaterialId;
 
 	@ApiModelProperty(value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
 			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
@@ -162,30 +155,30 @@ public final class JsonOLCandCreateRequest
 			+ "- the pricing system also needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
 			+ "- if a new business partner is created on the fly, the detault business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
 	@JsonInclude(Include.NON_NULL)
-	private String pricingSystemCode;
+	String pricingSystemCode;
 
 	@ApiModelProperty(required = false, //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
 	@JsonInclude(Include.NON_NULL)
-	private BigDecimal price;
+	BigDecimal price;
 
 	@ApiModelProperty( //
 			value = "If a (manual) `price` is provided, then also a currencyCode needs be given.")
 	@JsonInclude(Include.NON_NULL)
-	private String currencyCode; // shall come from pricingSystem/priceList
+	String currencyCode; // shall come from pricingSystem/priceList
 
 	@ApiModelProperty( //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) discount.")
 	@JsonInclude(Include.NON_NULL)
-	private BigDecimal discount;
+	BigDecimal discount;
 
 	@ApiModelProperty( //
 			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
-	private String poReference;
+	String poReference;
 
 	@ApiModelProperty(required = false, //
 			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
-	private String warehouseDestCode;
+	String warehouseDestCode;
 
 	@ApiModelProperty(required = false, //
 			value = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
@@ -196,34 +189,34 @@ public final class JsonOLCandCreateRequest
 					+ "Note for healthcare-ch users: set `docBaseType` to `ARI` (sales invoice) "
 					+ "and `docSubType` to one of `EA` (\"Patient\"), `GM` (\"Gemeinde\" or `KV` (\"Krankenversicherung\"")
 	@JsonInclude(Include.NON_NULL)
-	private JsonDocTypeInfo invoiceDocType;
+	JsonDocTypeInfo invoiceDocType;
 
 	@ApiModelProperty(required = false, //
 			value = "Can be set if the invoice's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
-	private LocalDate presetDateInvoiced;
+	LocalDate presetDateInvoiced;
 
 	@ApiModelProperty(required = false, //
 			value = "Can be set if the shipment's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
-	private LocalDate presetDateShipped;
+	LocalDate presetDateShipped;
 
 	@ApiModelProperty(value = "A C_Payment entry will be created based on the info here")
-	private JsonPaymentInfo paymentInfo;
+	JsonPaymentInfo paymentInfo;
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
-	private OrderDocType orderDocType;
+	OrderDocType orderDocType;
 
 	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
-	private JSONPaymentRule paymentRule;
+	JSONPaymentRule paymentRule;
 
 	@ApiModelProperty(value = "Specifies the value for the sales rep that will propagate to the created order")
-	private String salesPartnerCode;
+	String salesPartnerCode;
 
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
-	private String shipper;
+	String shipper;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -306,7 +299,6 @@ public final class JsonOLCandCreateRequest
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
 
-
 		if (!"DEST.de.metas.invoicecandidate".equals(dataDest)) // TODO extract constant //TODO fix this
 		{
 			Check.assumeNotNull(dateRequired,
@@ -382,10 +374,9 @@ public final class JsonOLCandCreateRequest
 				.build();
 	}
 
-
 	public enum OrderDocType
 	{
-		@ApiEnum("Specifies if the order will be a standard one")
+		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DOcTYpe is specified.")
 		SalesOrder("SalesOrder"),
 
 		@ApiEnum("Specifies if the order will be prepaid")

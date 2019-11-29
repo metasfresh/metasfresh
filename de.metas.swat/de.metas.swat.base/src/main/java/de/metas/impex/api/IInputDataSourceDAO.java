@@ -27,9 +27,9 @@ import java.util.Optional;
 import java.util.Properties;
 
 import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.util.ISingletonService;
-import de.metas.util.lang.ExternalId;
 
 public interface IInputDataSourceDAO extends ISingletonService
 {
@@ -37,10 +37,8 @@ public interface IInputDataSourceDAO extends ISingletonService
 
 	int retrieveInputDataSourceIdByInternalName(String internalName);
 
-	Optional<InputDataSourceId> retrieveInputDataSourceIdByExternalId(ExternalId externalId);
-
-	Optional<InputDataSourceId> retrieveInputDataSourceIdByValue(String asValue);
-
 	void createIfMissing(InputDataSourceCreateRequest request);
+
+	Optional<InputDataSourceId> retrieveInputDataSourceIdBy(InputDataSourceQuery query);
 
 }

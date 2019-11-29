@@ -103,7 +103,6 @@ class JsonConverters
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
-
 		final String dataSourceIdentifier = request.getDataSource();
 
 		if (Check.isEmpty(dataSourceIdentifier))
@@ -111,7 +110,7 @@ class JsonConverters
 			throw new MissingPropertyException("dataSource", request);
 		}
 
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier);
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
 
 		final String dataDestIdentifier = request.getDataDest();
 
@@ -120,7 +119,7 @@ class JsonConverters
 			throw new MissingPropertyException("dataDest", request);
 		}
 
-		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier);
+		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 
@@ -132,7 +131,6 @@ class JsonConverters
 		}
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
-
 
 		JsonPaymentInfo paymentInfo = request.getPaymentInfo();
 

@@ -145,7 +145,10 @@ public class OLCandRepository
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
 
-		olCandPO.setC_DocTypeOrder_ID(DocTypeId.toRepoId(request.getDocTypeOrderId()));
+		if (request.getDocTypeOrderId() != null)
+		{
+			olCandPO.setC_DocTypeOrder_ID(DocTypeId.toRepoId(request.getDocTypeOrderId()));
+		}
 
 		olCandPO.setPresetDateShipped(TimeUtil.asTimestamp(request.getPresetDateShipped()));
 

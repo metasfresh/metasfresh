@@ -1,5 +1,7 @@
 package de.metas.impex.api.impl;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.util.Optional;
 
 /*
@@ -27,6 +29,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,8 +42,8 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 public class InputDataSourceDAO implements IInputDataSourceDAO
@@ -106,29 +109,41 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 	}
 
 	@Override
-	public Optional<InputDataSourceId> retrieveInputDataSourceIdByExternalId(final ExternalId externalId)
+	public Optional<InputDataSourceId> retrieveInputDataSourceIdBy(final InputDataSourceQuery query)
 	{
-		final InputDataSourceId inputDataSourceId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_InputDataSource.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_ExternalId, externalId.getValue())
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_AD_InputDataSource> queryBuilder = queryBL.createQueryBuilder(I_AD_InputDataSource.class);
+
+		Check.assumeNotNull(query.getOrgId(), "Org Id is missing from InputDataSourceQuery ", query);
+
+		queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_AD_Org_ID, query.getOrgId());
+
+		if (!query.getInternalName().isEmpty())
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_InternalName, query.getInternalName());
+		}
+
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+		}
+
+		if (!isEmpty(query.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_Value, query.getValue());
+		}
+
+		if (query.getInputDataSourceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_AD_InputDataSource_ID, query.getInputDataSourceId());
+		}
+
+		final InputDataSourceId firstId = queryBuilder
 				.create()
-				.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
+				.firstIdOnly(InputDataSourceId::ofRepoId);
 
-		return Optional.of(inputDataSourceId);
-	}
-
-	@Override
-	public Optional<InputDataSourceId> retrieveInputDataSourceIdByValue(final String value)
-	{
-		final InputDataSourceId inputDataSourceId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_InputDataSource.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_Value, value)
-				.create()
-				.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
-
-		return Optional.of(inputDataSourceId);
+		return Optional.of(firstId);
 	}
 
 }

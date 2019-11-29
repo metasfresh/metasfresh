@@ -124,7 +124,7 @@ public class OrderCreateRequestRabbitMQListener
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
-		IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 		// final OrderResponse order = request.getOrder();
 		final String poReference = request.getOrderId().getValueAsString();

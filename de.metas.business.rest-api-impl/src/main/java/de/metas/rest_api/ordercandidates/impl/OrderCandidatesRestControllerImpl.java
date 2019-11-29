@@ -85,7 +85,6 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
@@ -280,7 +279,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 		return jsonConverters
 				.fromJson(request, masterdataProvider)
-				.dataSourceId(masterdataProvider.getDataSourceId(dataSourceInternalNameToUse))
+				.dataSourceId(masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg())))
 				.build();
 	}
 

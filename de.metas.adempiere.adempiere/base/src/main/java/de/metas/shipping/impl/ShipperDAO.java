@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Shipper;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
@@ -85,11 +86,12 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@Override
-	public Optional<ShipperId> getShipperIdByValue(final String value)
+	public Optional<ShipperId> getShipperIdByValue(final String value, final OrgId orgId)
 	{
 		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_M_Shipper.COLUMNNAME_AD_Org_ID, orgId)
 				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
 				.create()
 				.firstIdOnly(ShipperId::ofRepoIdOrNull);

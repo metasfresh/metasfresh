@@ -95,7 +95,8 @@ public class OLCandsProcessorExecutor
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
 
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
+		this.processorDataDestinationId = inputDataSourceDAO.
+				retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		this.candidatesSource = candidatesSource;
 	}

@@ -33,7 +33,5 @@ public class JsonPaymentInfo
 
 	String currencyCode;
 
-	String typeOfPayment;
-
 	String targetIBAN;
 }
