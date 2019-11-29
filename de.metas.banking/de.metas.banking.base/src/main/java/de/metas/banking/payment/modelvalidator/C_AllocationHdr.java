@@ -1,7 +1,5 @@
 package de.metas.banking.payment.modelvalidator;
 
-import java.util.ArrayList;
-
 /*
  * #%L
  * de.metas.banking.base
@@ -24,26 +22,11 @@ import java.util.ArrayList;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.model.I_C_PaySelectionLine;
+import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -55,6 +38,21 @@ import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr
@@ -117,8 +115,8 @@ public class C_AllocationHdr
 	private static Set<PaymentId> extractPaymentIds(final List<I_C_AllocationLine> lines)
 	{
 		return lines.stream()
-				.map(line -> PaymentId.ofRepoId(line.getC_Payment_ID()))
-				.filter(Predicates.notNull())
+				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -158,7 +156,7 @@ public class C_AllocationHdr
 
 	/**
 	 * Update all given pay selection lines.
-	 *
+	 * <p>
 	 * NOTE: pay selection lines shall ALL be part of the same {@link I_C_PaySelection}.
 	 *
 	 * @param context
