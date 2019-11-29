@@ -10,6 +10,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import de.metas.document.engine.IDocument;
@@ -76,10 +77,17 @@ public class InvoiceService
 		return Optional.of(lastArchive.get(0));
 	}
 
-	public void reverseInvoice(@NonNull final InvoiceId invoiceId)
+	public ResponseEntity.HeadersBuilder<?> reverseInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		final I_C_Invoice documentRecord = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+		if (documentRecord == null)
+		{
+			return ResponseEntity.notFound();
+		}
+
+		// In case something bad happens we just throw here. The api caller sees the message and decides how to handle the error.
 		Services.get(IDocumentBL.class).processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		return ResponseEntity.ok();
 	}
 
 }

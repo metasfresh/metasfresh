@@ -157,13 +157,17 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		return ResponseEntity.notFound().build();
 	}
 
-	@PutMapping(path = "/{invoiceId}/pdf")
+	@PutMapping(path = "/{invoiceId}/revert")
 	public ResponseEntity<?> revertInvoice(
 			@PathVariable("invoiceId") @ApiParam(required = true, value = "metasfreshId of the invoice to revert") final int invoiceRecordId)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
-		invoiceService.reverseInvoice(invoiceId);
 
-		return ResponseEntity.ok().build();
+		if (invoiceId == null)
+		{
+			return ResponseEntity.notFound().build();
+		}
+
+		return invoiceService.reverseInvoice(invoiceId).build();
 	}
 }
