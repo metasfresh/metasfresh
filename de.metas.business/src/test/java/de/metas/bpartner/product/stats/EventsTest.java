@@ -16,6 +16,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.util.time.SystemTime;
 
@@ -69,14 +70,17 @@ public class EventsTest
 				.productPrice(ProductPrice.builder()
 						.productId(ProductId.ofRepoId(1001))
 						.price(Money.of("11001.01", currencyId))
+						.invoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight)
 						.build())
 				.productPrice(ProductPrice.builder()
 						.productId(ProductId.ofRepoId(1002))
 						.price(Money.of("11002.02", currencyId))
+						.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 						.build())
 				.productPrice(ProductPrice.builder()
 						.productId(ProductId.ofRepoId(1003))
 						.price(Money.of("11003.03", currencyId))
+						.invoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight)
 						.build())
 				.build());
 	}
