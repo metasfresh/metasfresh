@@ -1,8 +1,11 @@
 package de.metas.rest_api.invoice.impl;
 
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -13,12 +16,8 @@ import org.compiere.util.Env;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.invoice.InvoiceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -77,17 +76,24 @@ public class InvoiceService
 		return Optional.of(lastArchive.get(0));
 	}
 
-	public ResponseEntity.HeadersBuilder<?> reverseInvoice(@NonNull final InvoiceId invoiceId)
+	public ResponseEntity<Object> reverseInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		final I_C_Invoice documentRecord = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
 		if (documentRecord == null)
 		{
-			return ResponseEntity.notFound();
+			return ResponseEntity.notFound().build();
 		}
 
-		// In case something bad happens we just throw here. The api caller sees the message and decides how to handle the error.
-		Services.get(IDocumentBL.class).processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
-		return ResponseEntity.ok();
+		try
+		{
+			Services.get(IDocumentBL.class).processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+		}
+		catch (final Exception e)
+		{
+			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
+		}
+
+		return ResponseEntity.ok().build();
 	}
 
 }

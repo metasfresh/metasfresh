@@ -168,6 +168,6 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			return ResponseEntity.notFound().build();
 		}
 
-		return invoiceService.reverseInvoice(invoiceId).build();
+		return invoiceService.reverseInvoice(invoiceId);
 	}
 }
