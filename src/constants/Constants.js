@@ -108,4 +108,4 @@ export const DATE_FIELD_FORMATS = {
  */
 export const TIME_FIELD_TYPES = ['Time'];
 
-export const TIME_REGEX_TEST = /\d\d:\d\d$/;
+export const TIME_REGEX_TEST = /^\d\d:\d\d$/;
