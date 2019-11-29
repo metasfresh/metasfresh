@@ -107,3 +107,5 @@ export const DATE_FIELD_FORMATS = {
  * @type {array} ToDo: Description for the constant.
  */
 export const TIME_FIELD_TYPES = ['Time'];
+
+export const TIME_REGEX_TEST = /\d\d:\d\d$/;

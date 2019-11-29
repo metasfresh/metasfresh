@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
 
 import * as windowActions from '../../actions/WindowActions';
+import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
 
 function isNumberField(widgetType) {
@@ -52,6 +53,7 @@ class MasterWidget extends Component {
       JSON.stringify(widgetData[0].value) !== JSON.stringify(next)
     ) {
       if (dateParse.includes(widgetType) && !Moment.isMoment(next)) {
+        next = convertTimeStringToMoment(next);
         next = Moment(next);
       }
       this.setState(
