@@ -13,15 +13,14 @@ package de.metas.payment.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -38,6 +37,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 public class PlainPaymentDAO extends AbstractPaymentDAO
@@ -50,8 +50,9 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 	}
 
 	@Override
-	public BigDecimal getAvailableAmount(I_C_Payment payment)
+	public BigDecimal getAvailableAmount(PaymentId paymentId)
 	{
+		final I_C_Payment payment = getById(paymentId);
 		return payment.getPayAmt();
 	}
 
@@ -97,6 +98,5 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 	{
 		throw new UnsupportedOperationException();
 	}
-
 
 }

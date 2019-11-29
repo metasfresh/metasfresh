@@ -42,9 +42,9 @@ public class MultipleVendorDocumentsException extends PaymentAllocationException
 	private static final String MSG = "PaymentAllocation.CannotAllocateMultipleDocumentsException";
 
 	private final Collection<IPaymentDocument> payments;
-	private final Collection<IPayableDocument> payableDocs;
+	private final Collection<PayableDocument> payableDocs;
 
-	MultipleVendorDocumentsException(final Collection<IPaymentDocument> payments, final Collection<IPayableDocument> payableDocs)
+	MultipleVendorDocumentsException(final Collection<IPaymentDocument> payments, final Collection<PayableDocument> payableDocs)
 	{
 		super("");
 		this.payments = ImmutableList.copyOf(payments);
@@ -75,7 +75,7 @@ public class MultipleVendorDocumentsException extends PaymentAllocationException
 
 		if (payableDocs != null && !payableDocs.isEmpty())
 		{
-			for (final IPayableDocument doc : payableDocs)
+			for (final PayableDocument doc : payableDocs)
 			{
 				if (doc == null)
 				{

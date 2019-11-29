@@ -36,9 +36,9 @@ import de.metas.i18n.TranslatableStrings;
  * @author tsa
  *
  */
+@SuppressWarnings("serial")
 public class PaymentDocumentNotAllocatedException extends PaymentAllocationException
 {
-	private static final long serialVersionUID = 1L;
 	private static final String MSG = "PaymentAllocation.CannotAllocatePayableDocumentsException";
 
 	private final Collection<IPaymentDocument> payments;
