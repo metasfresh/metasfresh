@@ -2,17 +2,8 @@ package de.metas.handlingunits.generichumodel;
 
 import java.util.Optional;
 
-import org.adempiere.mm.attributes.api.IAttributeSet;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.handlingunits.HuId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -39,25 +30,14 @@ import lombok.Value;
 
 @Value
 @Builder
-public class HU
+public class PackagingCode
 {
 	@NonNull
-	HuId id;
+	PackagingCodeId id;
 
 	@NonNull
-	HUType type;
+	Optional<HUType> onlyForType;
 
 	@NonNull
-	Optional<PackagingCode> packagingCode;
-
-	@NonNull
-	@Singular
-	ImmutableMap<ProductId, Quantity> productQuantities;
-
-	@NonNull
-	IAttributeSet atributes;
-
-	@NonNull
-	@Singular("childHU")
-	ImmutableList<HU> childHUs;
+	String value;
 }
