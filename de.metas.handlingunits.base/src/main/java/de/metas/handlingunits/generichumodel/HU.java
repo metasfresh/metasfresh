@@ -1,8 +1,13 @@
 package de.metas.handlingunits.generichumodel;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.util.lang.Mutable;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -38,7 +43,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class HU
 {
 	@NonNull
@@ -60,4 +65,59 @@ public class HU
 	@NonNull
 	@Singular("childHU")
 	ImmutableList<HU> childHUs;
+
+	public <T> T extractSingleAttributeValue(
+			@NonNull final Function<IAttributeSet, T> attrValueFunction,
+			@NonNull final BinaryOperator<T> mergeFunction)
+	{
+		final Mutable<T> result = new Mutable<>();
+		for (final HU hu : allHUAsList())
+		{
+			final T attrValue = attrValueFunction.apply(hu.getAtributes());
+			result.setValue(mergeFunction.apply(result.getValue(), attrValue));
+		}
+		return result.getValue();
+	}
+
+	public List<HU> allHUAsList()
+	{
+		return recurseNext(this);
+	}
+
+	public Optional<HU> retainProduct(@NonNull final ProductId productId)
+	{
+		if (!this.getProductQuantities().containsKey(productId))
+		{
+			return Optional.empty(); // we know that the M_HU datamodel is such that if we don't have a product here, the children won't have it either.
+		}
+
+		final Quantity quantity = this.getProductQuantities().get(productId);
+		final HUBuilder result = this.toBuilder()
+				.clearProductQuantities()
+				.clearChildHUs()
+				.productQuantity(productId, quantity);
+
+		for (final HU child : getChildHUs())
+		{
+			child.retainProduct(productId).ifPresent(result::childHU);
+		}
+		return Optional.of(result.build());
+
+	}
+
+	private List<HU> recurseNext(@NonNull final HU hu)
+	{
+		if (hu.getChildHUs().isEmpty())
+		{
+			return ImmutableList.of(hu);
+		}
+
+		final ImmutableList.Builder<HU> results = ImmutableList.builder();
+		for (final HU child : hu.getChildHUs())
+		{
+			final List<HU> recurseNext = recurseNext(child);
+			results.addAll(recurseNext);
+		}
+		return results.build();
+	}
 }

@@ -411,17 +411,25 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final I_M_HU huRecord)
 	{
-		final HU rootHU = SpringContextHolder.instance.getBean(HURepository.class)
-				.getbyId(HuId.ofRepoId(huRecord.getM_HU_ID()));
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
-		if (rootHU.getType().isLU())
+
+		final HU rootHU = SpringContextHolder.instance.getBean(HURepository.class)
+				.getbyId(HuId.ofRepoId(huRecord.getM_HU_ID()))
+				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
+				.orElse(null);
+
+		if (rootHU == null || rootHU.getType().isLU())
 		{
 			return Quantitys.createZero(productId); // we don't to HU-related SSCC's if the HU is not a LU.
 		}
 
 		final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
 		ssccRecord.setM_HU_ID(huRecord.getM_HU_ID());
-		final Date bestBefore = rootHU.getAtributes().getValueAsDate(AttributeConstants.ATTR_BestBeforeDate); // TODO add method to HU to get minimum
+
+		// get minimum best before
+		final Date bestBefore = rootHU.extractSingleAttributeValue(
+				attrSet -> attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate),
+				(date1, date2) -> TimeUtil.min(date1, date2));
 		ssccRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
 		final String sscc18 = rootHU.getAtributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
@@ -432,9 +440,9 @@ public class DesadvBL implements IDesadvBL
 		if (packagingCode.isPresent())
 		{
 			ssccRecord.setM_HU_PackagingCode_LU_ID(packagingCode.get().getId().getRepoId());
-			// TODO add "slice" method for one product to HU, to avoid having child HUs that don't even have the product
+
 			final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
-					rootHU.getChildHUs(),
+					rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
 					hu -> hu.getPackagingCode().orElse(null),
 					null);
 			if (packagingCode != null)
@@ -446,7 +454,6 @@ public class DesadvBL implements IDesadvBL
 		final Quantity quantity = rootHU.getProductQuantities().get(productId);
 		ssccRecord.setQtyCUsPerLU(quantity.toBigDecimal());
 
-		// TODO add "slice" method for one product to HU, to avoid having child HUs that don't even have the product
 		final BigDecimal qtyCU = CollectionUtils.extractSingleElementOrDefault(
 				rootHU.getChildHUs(),
 				hu -> hu.getProductQuantities().get(productId).toBigDecimal(),

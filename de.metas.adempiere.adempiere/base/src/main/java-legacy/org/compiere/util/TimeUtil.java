@@ -1079,7 +1079,9 @@ public class TimeUtil
 	 * @param date2
 	 * @return minimum date or null
 	 */
-	public static <T extends Date> T min(final T date1, final T date2)
+	public static <T extends Date> T min(
+			@Nullable final T date1,
+			@Nullable final T date2)
 	{
 		if (date1 == date2)
 		{
@@ -1708,11 +1710,11 @@ public class TimeUtil
 
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
-		if(obj == null)
+		if (obj == null)
 		{
 			return null;
 		}
-		
+
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
