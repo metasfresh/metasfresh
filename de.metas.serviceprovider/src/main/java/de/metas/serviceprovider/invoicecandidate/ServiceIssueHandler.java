@@ -15,6 +15,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -24,6 +25,8 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -48,6 +51,9 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.serviceprovider.Issue;
+import de.metas.serviceprovider.IssueId;
+import de.metas.serviceprovider.IssueRepository;
 import de.metas.serviceprovider.ServiceProviderConstants;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.tax.api.ITaxBL;
@@ -88,6 +94,8 @@ public class ServiceIssueHandler extends AbstractInvoiceCandidateHandler
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+
+	private final IssueRepository issueRepo = SpringContextHolder.instance.getBean(IssueRepository.class);
 
 	@Override
 	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
@@ -164,9 +172,6 @@ public class ServiceIssueHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setAD_Table_ID(commissionShareRef.getAD_Table_ID());
 		icRecord.setRecord_ID(commissionShareRef.getRecord_ID());
 
-		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(FlatrateTermId.ofRepoId(commissionShareRecord.getC_Flatrate_Term_ID()));
-
-
 		// product
 		icRecord.setM_Product_ID(ServiceProviderConstants.SERVICE_PRODUCT_ID.getRepoId());
 
@@ -175,18 +180,19 @@ public class ServiceIssueHandler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setQtyToInvoice(ZERO); // to be computed
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerLocationId commissionToLocationId = BPartnerLocationId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final Issue issue = issueRepo.getbyId(IssueId.ofRepoId(commissionShareRecord.getS_Issue_ID()));
 
-		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
+		final BPartnerLocationId commissionToLocationId = bPartnerDAO.retrieveBPartnerLocationId(BPartnerLocationQuery.builder().applyTypeStrictly(false).bpartnerId(issue.getBillBPartnerId()).type(Type.BILL_TO).build());
+
+		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(issue.getBillBPartnerId(), SOTrx.PURCHASE);
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
 
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
-						CommissionConstants.COMMISSION_PRODUCT_ID,
-						bPartnerId,
-						Quantitys.create(ONE, CommissionConstants.COMMISSION_PRODUCT_ID),
+						issue.getProductId(),
+						issue.getBillBPartnerId(),
+						Quantitys.create(ONE, issue.getProductId()),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
@@ -205,7 +211,7 @@ public class ServiceIssueHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
 		// bill location
-		icRecord.setBill_BPartner_ID(bPartnerId.getRepoId());
+		icRecord.setBill_BPartner_ID(issue.getBillBPartnerId().getRepoId());
 		icRecord.setBill_Location_ID(commissionToLocationId.getRepoId());
 		icRecord.setBill_User_ID(flatrateTerm.getBill_User_ID());
 
