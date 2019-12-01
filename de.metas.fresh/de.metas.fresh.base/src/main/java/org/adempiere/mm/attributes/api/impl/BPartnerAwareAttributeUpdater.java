@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
@@ -123,9 +124,10 @@ public class BPartnerAwareAttributeUpdater
 		//
 		// Create Attribute Set Instance
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		// Check if the attribute was already set in the ASI
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (ai != null)
 		{
 			// In case it was, just leave it as it is
@@ -144,7 +146,7 @@ public class BPartnerAwareAttributeUpdater
 
 		//
 		// Create/Update the Attribute Instance
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue);
 	}
 
 	private final boolean isApplyForSOTrx(final IBPartnerAware bpartnerAware)

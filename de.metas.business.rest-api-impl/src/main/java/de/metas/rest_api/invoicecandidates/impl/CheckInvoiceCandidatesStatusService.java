@@ -26,7 +26,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.invoice.impl.InvoicePDFService;
+import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem;
@@ -66,9 +66,9 @@ public class CheckInvoiceCandidatesStatusService
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-	private final InvoicePDFService invoicePDFService;
+	private final InvoiceService invoicePDFService;
 
-	public CheckInvoiceCandidatesStatusService(@NonNull final InvoicePDFService invoicePDFService)
+	public CheckInvoiceCandidatesStatusService(@NonNull final InvoiceService invoicePDFService)
 	{
 
 		this.invoicePDFService = invoicePDFService;

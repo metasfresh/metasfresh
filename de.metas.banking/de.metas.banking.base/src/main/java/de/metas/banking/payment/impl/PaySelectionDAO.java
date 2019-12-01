@@ -3,12 +3,14 @@ package de.metas.banking.payment.impl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
@@ -17,8 +19,10 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author al
@@ -99,13 +103,12 @@ public class PaySelectionDAO implements IPaySelectionDAO
 		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection)
 				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID());
 		return queryBuilder.create()
-				.match();
+				.anyMatch();
 	}
 
 	private final IQueryBuilder<I_C_PaySelectionLine> createQueryBuilder(final I_C_PaySelection paySelection)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection);
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection);
 
 		queryBuilder.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
 				.addOnlyActiveRecordsFilter()
@@ -155,5 +158,17 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
 				.firstOnly(de.metas.banking.model.I_C_PaySelectionLine.class);
+	}
+
+	@Override
+	public IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(@NonNull final Set<InvoiceId> invoiceIds)
+	{
+		Check.assumeNotEmpty(invoiceIds, "invoiceIds is not empty");
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PaySelectionLine.class)
+				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoiceIds)
+				.addOnlyActiveRecordsFilter()
+				.create();
 	}
 }

@@ -173,7 +173,7 @@ public class ShipmentDeclarationRepository
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Shipment_Declaration.COLUMN_M_InOut_ID, shipmentId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 }

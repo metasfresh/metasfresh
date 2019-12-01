@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -147,9 +148,9 @@ public class OLCandRegistry
 		}
 
 		@Override
-		public boolean validate(final I_C_OLCand olCand)
+		public void validate(final I_C_OLCand olCand)
 		{
-			return true;
+			// nothing to do
 		}
 	}
 
@@ -169,19 +170,29 @@ public class OLCandRegistry
 			return 0;
 		}
 
+		/**
+		 * Change {@link I_C_OLCand#COLUMN_IsError IsError} and {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg} accordingly, but <b>do not</b> save.
+		 */
 		@Override
-		public boolean validate(@NonNull final I_C_OLCand olCand)
+		public void validate(@NonNull final I_C_OLCand olCand)
 		{
 			for (final IOLCandValidator olCandValdiator : validators)
 			{
-				if (!olCandValdiator.validate(olCand))
+				try
 				{
-					return false;
+					olCandValdiator.validate(olCand);
+				}
+				catch (final Exception e)
+				{
+					final AdempiereException me = AdempiereException
+							.wrapIfNeeded(e)
+							.appendParametersToMessage()
+							.setParameter("OLCandValidator", olCandValdiator.getClass().getSimpleName());
+					olCand.setIsError(true);
+					olCand.setErrorMsg(me.getLocalizedMessage());
+					break;
 				}
 			}
-			return true;
 		}
-
 	}
-
 }

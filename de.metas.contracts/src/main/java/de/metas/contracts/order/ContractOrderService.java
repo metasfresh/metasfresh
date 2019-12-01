@@ -150,7 +150,7 @@ public class ContractOrderService
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addNotNull(I_C_OrderLine.COLUMN_C_Flatrate_Conditions_ID)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	public void save(@NonNull final I_C_Order order)

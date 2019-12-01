@@ -25,8 +25,8 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
  */
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,11 +58,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveContactRequestBuilder;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveContactRequestBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -472,14 +472,14 @@ public class OrderBL implements IOrderBL
 		}
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final LocalDate orderDate;
+		final ZonedDateTime orderDate;
 		if (order.getDatePromised() != null)
 		{
-			orderDate = TimeUtil.asLocalDate(order.getDatePromised());
+			orderDate = TimeUtil.asZonedDateTime(order.getDatePromised());
 		}
 		else
 		{
-			orderDate = TimeUtil.asLocalDate(order.getDateOrdered());
+			orderDate = TimeUtil.asZonedDateTime(order.getDateOrdered());
 		}
 
 		final PriceListId priceListId = PriceListId.ofRepoId(order.getM_PriceList_ID());

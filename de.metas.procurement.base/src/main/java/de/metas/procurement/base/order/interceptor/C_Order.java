@@ -49,7 +49,7 @@ public class C_Order
 		final IPMMPurchaseCandidateDAO purchaseCandidateDAO = Services.get(IPMMPurchaseCandidateDAO.class);
 		final boolean wasCreatedFromPurchaseCandidates = purchaseCandidateDAO.retrivePurchaseCandidateOrderLines(order)
 				.create()
-				.match();
+				.anyMatch();
 
 		if (wasCreatedFromPurchaseCandidates)
 		{

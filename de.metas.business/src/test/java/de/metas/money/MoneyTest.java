@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,7 +41,7 @@ public class MoneyTest
 	private CurrencyId EUR;
 	private CurrencyId CHF;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		EUR = CurrencyId.ofRepoId(10);

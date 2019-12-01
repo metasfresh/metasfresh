@@ -29,6 +29,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -37,7 +38,6 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
 
 public class AgeAttributeCreator
 {
@@ -77,23 +77,23 @@ public class AgeAttributeCreator
 		}
 
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId ageAttribute = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
+		final AttributeId ageAttributeId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
 
-		if (ageAttribute == null)
+		if (ageAttributeId == null)
 		{
 			return;
 		}
 
 		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
-		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, ageAttribute);
+		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, ageAttributeId);
 		if (attribute == null)
 		{
 			return;
 		}
 
-		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
-
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, ageAttribute);
+		attributeSetInstanceBL.getCreateASI(asiAware);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, ageAttributeId);
 
 		if (ai != null)
 		{
@@ -101,9 +101,9 @@ public class AgeAttributeCreator
 			return;
 		}
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, ageAttribute);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, ageAttributeId);
 		final int defaultAge = ageAttributesService.computeDefaultAge();
-		attributeSetInstanceBL.setAttributeInstanceValue(asi, ageAttribute, defaultAge);
+		attributeSetInstanceBL.setAttributeInstanceValue(asiId, ageAttributeId, defaultAge);
 	}
 
 	private @NonNull Object getSourceModel()

@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -131,8 +132,10 @@ public class DimensionSpec
 
 		for (final KeyNamePair attrToValue : attrToValues)
 		{
+
 			final AttributeId attributeId = AttributeId.ofRepoId(attrToValue.getKey());
-			final I_M_AttributeInstance ai = asiBL.getCreateAttributeInstance(newASI, attributeId);
+			final AttributeSetInstanceId newASIId = AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID());
+			final I_M_AttributeInstance ai = asiBL.getCreateAttributeInstance(newASIId, attributeId);
 
 			String attrValue = attrToValue.getName();
 
@@ -224,8 +227,10 @@ public class DimensionSpec
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
 			return DimensionConstants.DIM_EMPTY;
@@ -375,16 +380,16 @@ public class DimensionSpec
 						dimensionSpecAttribute.getDIM_Dimension_Spec_Attribute_ID())
 				.create()
 				.list();
-		
+
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		final AttributeId attributeId = AttributeId.ofRepoId(dimensionSpecAttribute.getM_Attribute_ID());
 
 		for (final I_DIM_Dimension_Spec_AttributeValue attrValue : attrValues)
 		{
 			final AttributeValueId attributeValueId = AttributeValueId.ofRepoId(attrValue.getM_AttributeValue_ID());
-			
+
 			final String groupName;
-			if(dimensionSpecAttribute.isValueAggregate())
+			if (dimensionSpecAttribute.isValueAggregate())
 			{
 				groupName = dimensionSpecAttribute.getValueAggregateName();
 			}

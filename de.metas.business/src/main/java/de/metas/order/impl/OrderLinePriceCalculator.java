@@ -1,9 +1,10 @@
 package de.metas.order.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -11,7 +12,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.BooleanWithReason;
@@ -23,6 +26,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
@@ -44,6 +48,7 @@ import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -80,14 +85,14 @@ final class OrderLinePriceCalculator
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
+	private final IOrderLineBL orderLineBL;
 
-	private final OrderLineBL orderLineBL;
 	private final OrderLinePriceUpdateRequest request;
 
 	@Builder
 	private OrderLinePriceCalculator(
 			@NonNull final OrderLinePriceUpdateRequest request,
-			@NonNull final OrderLineBL orderLineBL)
+			@NonNull final IOrderLineBL orderLineBL)
 	{
 		this.orderLineBL = orderLineBL;
 		this.request = request;
@@ -165,11 +170,11 @@ final class OrderLinePriceCalculator
 		{
 			if (request.getQtyOverride() != null)
 			{
-				orderLineBL.updateLineNetAmt(orderLine, request.getQtyOverride());
+				orderLineBL.updateLineNetAmtFromQty(request.getQtyOverride(), orderLine);
 			}
 			else
 			{
-				orderLineBL.updateLineNetAmt(orderLine, orderLineBL.getQtyEntered(orderLine));
+				orderLineBL.updateLineNetAmtFromQty(orderLineBL.getQtyEntered(orderLine), orderLine);
 			}
 		}
 	}
@@ -294,19 +299,16 @@ final class OrderLinePriceCalculator
 
 		final boolean isSOTrx = order.isSOTrx();
 		final int productId = orderLine.getM_Product_ID();
-		int bpartnerId = orderLine.getC_BPartner_ID();
-		if (bpartnerId <= 0)
-		{
-			bpartnerId = order.getC_BPartner_ID();
-		}
 
-		final LocalDate date = OrderLineBL.getPriceDate(orderLine, order);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(firstGreaterThanZero(orderLine.getC_BPartner_ID(), order.getC_BPartner_ID()));
 
-		final BigDecimal qtyInPriceUOM;
+		final ZonedDateTime date = OrderLineBL.getPriceDate(orderLine, order);
+
+		final Quantity qtyInPriceUOM;
 		if (request.getQtyOverride() != null)
 		{
 			final Quantity qtyOverride = request.getQtyOverride();
-			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).toBigDecimal();
+			qtyInPriceUOM = orderLineBL.convertQtyToPriceUOM(qtyOverride, orderLine);
 		}
 		else
 		{
@@ -314,12 +316,12 @@ final class OrderLinePriceCalculator
 		}
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
-				productId,
+				ProductId.ofRepoId(productId),
 				bpartnerId,
-				orderLine.getPrice_UOM_ID(),  // task 06942
 				qtyInPriceUOM,
-				isSOTrx);
-		pricingCtx.setPriceDate(date);
+				SOTrx.ofBoolean(isSOTrx));
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(date));
+
 
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(orderLine);

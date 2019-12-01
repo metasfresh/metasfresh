@@ -106,13 +106,8 @@ public interface IDocumentBL extends ISingletonService
 
 	/**
 	 * Retrieve document status for given record.
-	 *
-	 * @param ctx
-	 * @param AD_Table_ID
-	 * @param Record_ID
-	 * @return
 	 */
-	String getDocStatusOrNull(Properties ctx, int AD_Table_ID, int Record_ID);
+	DocStatus getDocStatusOrNull(Object documentObj);
 
 	/**
 	 * Retrieve DocumentNo for given record. If no value was found, the model will be loaded and {@link #getDocumentNo(Object)} will be used.

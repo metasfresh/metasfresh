@@ -180,7 +180,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(final String categoryValue)
+	public Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull final String categoryValue)
 	{
 		final int productCategoryRepoId = queryBL
 				.createQueryBuilder(I_M_Product_Category.class)

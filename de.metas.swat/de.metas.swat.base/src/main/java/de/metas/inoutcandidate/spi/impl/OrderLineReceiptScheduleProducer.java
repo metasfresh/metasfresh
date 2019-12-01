@@ -297,10 +297,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 		else
 		{
-
 			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberDateAttrId);
 
+			final AttributeSetInstanceId rsASIId = AttributeSetInstanceId.ofRepoIdOrNone(rsASI.getM_AttributeSetInstance_ID());
+			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASIId, lotNumberDateAttrId);
 			if (lotNumberDateAI == null)
 			{
 				lotNumberDateAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberDateAttrId, trxName);
@@ -337,7 +337,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberAttrId);
+			final AttributeSetInstanceId rsASIId = AttributeSetInstanceId.ofRepoIdOrNone(rsASI.getM_AttributeSetInstance_ID());
+			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASIId, lotNumberAttrId);
 
 			if (lotNumberAI == null)
 			{

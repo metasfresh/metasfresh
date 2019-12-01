@@ -135,81 +135,81 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		return dao.retrieveMissingCandidatesQuery(ctx, trxName)
 				.addEqualsFilter(I_C_OLCand.COLUMN_C_OLCand_ID, olCand.getC_OLCand_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
-	private I_C_Invoice_Candidate createInvoiceCandidateForOLCand(@NonNull final I_C_OLCand olc)
+	private I_C_Invoice_Candidate createInvoiceCandidateForOLCand(@NonNull final I_C_OLCand olcRecord)
 	{
 		// services
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-		final Properties ctx = getCtx(olc);
-		Check.assume(Env.getAD_Client_ID(ctx) == olc.getAD_Client_ID(), "AD_Client_ID of {} and of its Ctx are the same", olc);
+		final Properties ctx = getCtx(olcRecord);
+		Check.assume(Env.getAD_Client_ID(ctx) == olcRecord.getAD_Client_ID(), "AD_Client_ID of {} and of its Ctx are the same", olcRecord);
 
-		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, olc);
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, olcRecord);
 
 		// org id
-		final OrgId orgId = OrgId.ofRepoId(olc.getAD_Org_ID());
+		final OrgId orgId = OrgId.ofRepoId(olcRecord.getAD_Org_ID());
 		ic.setAD_Org_ID(orgId.getRepoId());
 
 		ic.setC_ILCandHandler(getHandlerRecord());
 
 		ic.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name));
-		ic.setRecord_ID(olc.getC_OLCand_ID());
+		ic.setRecord_ID(olcRecord.getC_OLCand_ID());
 
-		ic.setPOReference(olc.getPOReference());
+		ic.setPOReference(olcRecord.getPOReference());
 
 		// product
-		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olc);
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olcRecord);
 		ic.setM_Product_ID(ProductId.toRepoId(productId));
 
 		// charge
-		final int chargeId = olc.getC_Charge_ID();
+		final int chargeId = olcRecord.getC_Charge_ID();
 		ic.setC_Charge_ID(chargeId);
 
-		setOrderedData(ic, olc);
+		setOrderedData(ic, olcRecord);
 
 		ic.setQtyToInvoice(ZERO); // to be computed
 
-		ic.setInvoicableQtyBasedOn(olc.getInvoicableQtyBasedOn());
-		ic.setM_PricingSystem_ID(olc.getM_PricingSystem_ID());
-		ic.setPriceActual(olc.getPriceActual());
-		ic.setPrice_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc)); // 07090 when we set PriceActual, we shall also set PriceUOM.
+		ic.setInvoicableQtyBasedOn(olcRecord.getInvoicableQtyBasedOn());
+		ic.setM_PricingSystem_ID(olcRecord.getM_PricingSystem_ID());
+		ic.setPriceActual(olcRecord.getPriceActual());
+		ic.setPrice_UOM_ID(olCandEffectiveValuesBL.getEffectiveUomId(olcRecord).getRepoId()); // 07090 when we set PriceActual, we shall also set PriceUOM.
 
-		ic.setPriceEntered(olc.getPriceEntered()); // cg : task 04917
-		ic.setDiscount(olc.getDiscount());
-		ic.setC_Currency_ID(olc.getC_Currency_ID());
+		ic.setPriceEntered(olcRecord.getPriceEntered()); // cg : task 04917
+		ic.setDiscount(olcRecord.getDiscount());
+		ic.setC_Currency_ID(olcRecord.getC_Currency_ID());
 		// ic.setC_ConversionType_ID(C_ConversionType_ID); // N/A
 
-		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olc)));
+		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olcRecord)));
 
 		// bill location
-		final int billLocationId = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olc));
+		final int billLocationId = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olcRecord));
 		ic.setBill_Location_ID(billLocationId);
 
-		final int billUserId = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olc));
+		final int billUserId = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olcRecord));
 		ic.setBill_User_ID(billUserId);
 
-		ic.setDescription(olc.getDescription());
+		ic.setDescription(olcRecord.getDescription());
 
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
 
 		// 04285: set header and footer
 
-		ic.setDescriptionBottom(olc.getDescriptionBottom());
-		ic.setDescriptionHeader(olc.getDescriptionHeader());
+		ic.setDescriptionBottom(olcRecord.getDescriptionBottom());
+		ic.setDescriptionHeader(olcRecord.getDescriptionHeader());
 
 		// 05265
 		ic.setIsSOTrx(true);
 
-		ic.setPresetDateInvoiced(olc.getPresetDateInvoiced());
-		ic.setC_DocTypeInvoice_ID(olc.getC_DocTypeInvoice_ID());
+		ic.setPresetDateInvoiced(olcRecord.getPresetDateInvoiced());
+		ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
 
 		// 07442 activity and tax
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
-				ClientId.ofRepoId(olc.getAD_Client_ID()),
-				OrgId.ofRepoId(olc.getAD_Org_ID()),
+				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
+				OrgId.ofRepoId(olcRecord.getAD_Org_ID()),
 				productId);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
@@ -217,20 +217,20 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final int taxId = taxBL.getTax(
 				ctx,
 				ic, // model
-				TaxCategoryId.ofRepoIdOrNull(olc.getC_TaxCategory_ID()),
+				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
-				CoalesceUtil.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getPresetDateInvoiced()),
+				CoalesceUtil.coalesce(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
-				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olc)),
+				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olcRecord)),
 				true /* isSOTrx */);
 		ic.setC_Tax_ID(taxId);
 
-		ic.setExternalLineId(olc.getExternalLineId());
-		ic.setExternalHeaderId(olc.getExternalHeaderId());
+		ic.setExternalLineId(olcRecord.getExternalLineId());
+		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
 
-		olc.setProcessed(true);
-		saveRecord(olc);
+		olcRecord.setProcessed(true);
+		saveRecord(olcRecord);
 
 		return ic;
 	}
@@ -275,7 +275,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-		final Quantity olCandQuantity = Quantity.of(olc.getQty(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
+		final Quantity olCandQuantity = Quantity.of(olc.getQtyEntered(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
 		ic.setQtyEntered(olCandQuantity.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(olCandQuantity.getUomId()));
 

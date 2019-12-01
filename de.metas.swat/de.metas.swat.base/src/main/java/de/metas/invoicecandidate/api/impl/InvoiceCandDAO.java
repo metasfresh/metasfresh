@@ -373,7 +373,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				//
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -1092,7 +1092,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, pinstanceId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveForBillPartnerQuery(final I_C_BPartner bpartner)
@@ -1526,7 +1526,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
 				.setLimit(1)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

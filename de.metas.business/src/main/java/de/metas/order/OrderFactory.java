@@ -20,6 +20,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -138,7 +139,7 @@ public class OrderFactory
 		return orderLineBuilder;
 	}
 
-	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final int uomId)
+	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
 	{
 		return orderLineBuilders.stream()
 				.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))

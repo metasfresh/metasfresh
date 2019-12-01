@@ -117,8 +117,9 @@ import org.compiere.impexp.BankStatementLoaderInterface;
 		try
 		{
 			log.info( "MBankStatementLoader Class Name=" + getStmtLoaderClass());
-			Class bsrClass = Class.forName(getStmtLoaderClass());
-			m_loader = (BankStatementLoaderInterface) bsrClass.newInstance();
+			@SuppressWarnings("unchecked")
+			Class<BankStatementLoaderInterface> bsrClass = (Class<BankStatementLoaderInterface>)Class.forName(getStmtLoaderClass());
+			m_loader = bsrClass.newInstance();
 		}
 		catch(Exception e)
 		{
@@ -131,6 +132,7 @@ import org.compiere.impexp.BankStatementLoaderInterface;
 	 *	Return Name
 	 *	@return Name
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MBankStatementLoader[")

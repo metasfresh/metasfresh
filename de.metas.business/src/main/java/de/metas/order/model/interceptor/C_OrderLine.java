@@ -51,6 +51,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -121,7 +122,7 @@ public class C_OrderLine
 	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine);
+		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
 		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 	}
 
@@ -138,8 +139,8 @@ public class C_OrderLine
 	public void setQtyOrdered(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToInternalUOM(orderLine);
-		orderLine.setQtyOrdered(qtyOrdered);
+		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
+		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 	}
 
 	/**

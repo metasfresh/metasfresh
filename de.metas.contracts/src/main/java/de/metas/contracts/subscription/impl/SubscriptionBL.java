@@ -407,7 +407,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// is used for pricing) contains the number of goods to be delivered
 		// over the whole subscription term
 
-		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCand.getQty()));
+		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCand.getQtyEntered()));
 		newTerm.setStartDate(olCand.getDateCandidate());
 
 		newTerm.setDeliveryRule(olCand.getDeliveryRule());

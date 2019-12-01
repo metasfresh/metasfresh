@@ -91,7 +91,7 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public String getX12DE355ById(final UomId uomId)
+	public String getX12DE355ById(@NonNull final UomId uomId)
 	{
 		I_C_UOM uom = getById(uomId);
 		return uom.getX12DE355();
@@ -172,5 +172,12 @@ public class UOMDAO implements IUOMDAO
 
 		final I_C_UOM uom = getById(uomId);
 		return UOMPrecision.ofInt(uom.getStdPrecision());
+	}
+
+	@Override
+	public boolean isUOMForTUs(@NonNull final UomId uomId)
+	{
+		final String x12de355 = getX12DE355ById(uomId);
+		return X12DE355_COLI.equals(x12de355) || X12DE355_TU.equals(x12de355);
 	}
 }
