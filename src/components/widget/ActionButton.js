@@ -261,6 +261,8 @@ class ActionButton extends Component {
  * @prop {*} windowType
  * @prop {*} fields
  * @prop {*} dataId
+ * @prop {*} docId
+ * @prop {string} activeTab
  * @todo Check title, buttons. Which proptype? Required or optional?
  */
 ActionButton.propTypes = {
@@ -272,6 +274,8 @@ ActionButton.propTypes = {
   windowType: PropTypes.any,
   fields: PropTypes.any,
   dataId: PropTypes.any,
+  docId: PropTypes.any,
+  activeTab: PropTypes.string,
 };
 
 export default connect(state => ({
