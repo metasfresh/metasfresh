@@ -39,12 +39,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -135,15 +130,10 @@
     "externalHeaderId" : "2011234567890_2009_01:001",
     "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
-	 "salesPartnerCode": "Krankenkasse AG",
+	"salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -237,12 +227,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -336,12 +321,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -435,12 +415,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -534,12 +509,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -633,12 +603,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -732,12 +697,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -831,12 +791,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -930,12 +885,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1029,12 +979,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1128,12 +1073,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1227,12 +1167,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1326,12 +1261,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1425,12 +1355,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1524,12 +1449,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1623,12 +1543,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1722,12 +1637,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1821,12 +1731,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+   
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -1920,12 +1825,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
@@ -2019,12 +1919,7 @@
 	 "salesPartnerCode": "Krankenkasse AG",
    "shipper": "DPD",
    "paymentRule": "Paypal",
-   "paymentInfo": {
-    "amount": 0,
-    "currencyCode": "string",
-    "typeOfPayment": "string",
-    "targetIBAN": "string"
-  },
+  
    "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
