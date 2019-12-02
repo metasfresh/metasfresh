@@ -28,10 +28,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -64,6 +66,18 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
 		return load(paymentId, I_C_Payment.class);
+	}
+
+	@Override
+	public Optional<I_C_Payment> getByExternalOrderId(@NonNull final ExternalId externalId)
+	{
+		final I_C_Payment i_c_payment = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalOrderId, externalId.getValue())
+				.create()
+				.firstOnlyOrNull(I_C_Payment.class);
+
+		return Optional.ofNullable(i_c_payment);
 	}
 
 	@Override
