@@ -36,6 +36,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -64,7 +65,7 @@ public class HURepository
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	public HU getbyId(@NonNull final HuId id)
+	public HU getById(@NonNull final HuId id)
 	{
 		final I_M_HU huRecord = handlingUnitsDAO.getById(id);
 		return ofRecord(huRecord);
@@ -72,10 +73,10 @@ public class HURepository
 
 	private HU ofRecord(@NonNull final I_M_HU huRecord)
 	{
-		final HUIteratorListener listener = new HUIteratorListener(huRecord);
+		final HUIteratorListener listener = new HUIteratorListener();
 
 		new HUIterator()
-				.setEnableStorageIteration(true)
+				.setEnableStorageIteration(false)
 				.setListener(listener)
 				.iterate(huRecord);
 
@@ -88,10 +89,7 @@ public class HURepository
 		private final IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
 		private final HUStack huStack = new HUStack();
 
-		public HUIteratorListener(I_M_HU rootHuRecord)
-		{
-			huStack.push(extractIdAndBuilder(rootHuRecord));
-		}
+		private IPair<HuId, HUBuilder> currentIdAndBuilder;
 
 		private ImmutablePair<HuId, HUBuilder> extractIdAndBuilder(@NonNull final I_M_HU rootHuRecord)
 		{
@@ -108,24 +106,12 @@ public class HURepository
 
 		private HUBuilder createHUBuilder(@NonNull final I_M_HU huRecord)
 		{
-
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 			return HU.builder()
+					.id(HuId.ofRepoId(huRecord.getM_HU_ID()))
 					.type(HUType.ofCode(handlingUnitsBL.getHU_UnitType(huRecord)))
 					.packagingCode(extractPackagingCodeId(huRecord))
-					.atributes(attributeStorage);
-		}
-
-		private ImmutableMap<ProductId, Quantity> extractProductsAndQuantities(final I_M_HU huRecord)
-		{
-			final ImmutableMap<ProductId, Quantity> productsAndQuantities = handlingUnitsBL
-					.getStorageFactory()
-					.getStorage(huRecord).getProductStorages()
-					.stream()
-					.collect(ImmutableMap.toImmutableMap(
-							IHUProductStorage::getProductId,
-							IHUProductStorage::getQtyInStockingUOM));
-			return productsAndQuantities;
+					.attributes(attributeStorage);
 		}
 
 		@Override
@@ -139,23 +125,28 @@ public class HURepository
 		@Override
 		public Result afterHU(final I_M_HU huRecord)
 		{
-			final IPair<HuId, HUBuilder> currentIdAndBuilder = huStack.pop();
+			currentIdAndBuilder = huStack.pop();
 			assume(extractHuId(huRecord).equals(currentIdAndBuilder.getLeft()), "Current HU needs to be the one we just popped from the stack");
 			final HUBuilder childBuilder = currentIdAndBuilder.getRight();
 
-			final HUBuilder parentBuilder = huStack.peek().getRight();
+			final HUBuilder parentBuilderOrNull = huStack.isEmpty() ? null : huStack.peek().getRight();
 
 			if (handlingUnitsBL.isAggregateHU(huRecord))
 			{
+				assume(parentBuilderOrNull != null, "Aggregate HUs always have a parent");
+				final int logicalNumberOfTUs = huRecord.getM_HU_Item_Parent().getQty().intValue();
+				if (logicalNumberOfTUs <= 0)
+				{
+					return Result.CONTINUE; // in some corner cases, there can be empty aggregate HU, because an aggregate HU "stub" was created, but due to a small/odd number of CUs it was not used
+				}
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
 
-				final int logicalNumberOfTUs = huRecord.getM_HU_Item_Parent().getQty().intValue();
-				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = devideQuantities(productsAndQuantities, logicalNumberOfTUs);
+				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = divideQuantities(productsAndQuantities, logicalNumberOfTUs);
 				childBuilder.productQuantities(productsAndQuantitiesPerHU);
 				for (int i = 0; i < logicalNumberOfTUs; i++)
 				{
 					final HU currentChild = childBuilder.build();
-					parentBuilder.childHU(currentChild);
+					parentBuilderOrNull.childHU(currentChild);
 				}
 			}
 			else
@@ -163,12 +154,27 @@ public class HURepository
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
 				childBuilder.productQuantities(productsAndQuantities);
 
-				parentBuilder.childHU(childBuilder.build());
+				if (parentBuilderOrNull != null)
+				{
+					parentBuilderOrNull.childHU(childBuilder.build());
+				}
 			}
 			return Result.CONTINUE;
 		}
 
-		private ImmutableMap<ProductId, Quantity> devideQuantities(
+		private ImmutableMap<ProductId, Quantity> extractProductsAndQuantities(@NonNull final I_M_HU huRecord)
+		{
+			final ImmutableMap<ProductId, Quantity> productsAndQuantities = handlingUnitsBL
+					.getStorageFactory()
+					.getStorage(huRecord).getProductStorages()
+					.stream()
+					.collect(ImmutableMap.toImmutableMap(
+							IHUProductStorage::getProductId,
+							IHUProductStorage::getQtyInStockingUOM));
+			return productsAndQuantities;
+		}
+
+		private ImmutableMap<ProductId, Quantity> divideQuantities(
 				@NonNull final ImmutableMap<ProductId, Quantity> productsAndQuantities,
 				final int divisor)
 		{
@@ -184,7 +190,6 @@ public class HURepository
 
 		private Optional<PackagingCode> extractPackagingCodeId(@NonNull final I_M_HU hu)
 		{
-
 			final I_M_HU_PI_Version piVersionrecord = loadOutOfTrx(hu.getM_HU_PI_Version_ID(), I_M_HU_PI_Version.class);
 			final int packagingCodeRecordId = piVersionrecord.getM_HU_PackagingCode_ID();
 			if (packagingCodeRecordId <= 0)
@@ -227,18 +232,20 @@ public class HURepository
 
 		public HU getResult()
 		{
-			final HU root = huStack.pop().getRight().build();
 			assume(huStack.isEmpty(), "In the end, huStack needs to be empty");
+
+			final HU root = currentIdAndBuilder.getRight().build();
 			return root;
 		}
 	}
 
+	@ToString
 	private static class HUStack
 	{
 		private final ArrayList<HuId> huIds = new ArrayList<HuId>();
 		private final HashMap<HuId, HUBuilder> hus = new HashMap<HuId, HU.HUBuilder>();
 
-		void push(IPair<HuId, HUBuilder> idWithHuBuilder)
+		void push(@NonNull final IPair<HuId, HUBuilder> idWithHuBuilder)
 		{
 			this.huIds.add(idWithHuBuilder.getLeft());
 			this.hus.put(idWithHuBuilder.getLeft(), idWithHuBuilder.getRight());

@@ -161,8 +161,8 @@ import lombok.Data;
 import lombok.NonNull;
 
 /**
- * This class sets up basic master data like attributes and HU-items that can be used in testing.
- *
+ * This class sets up basic master data like attributes and HU-items.
+ * It also has methods like {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal)} that can be called from your tests, to set up complex packing instructions.
  */
 public class HUTestHelper
 {

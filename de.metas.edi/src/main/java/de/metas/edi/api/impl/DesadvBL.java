@@ -68,9 +68,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.generichumodel.HU;
 import de.metas.handlingunits.generichumodel.HURepository;
@@ -82,7 +80,6 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
@@ -105,8 +102,6 @@ public class DesadvBL implements IDesadvBL
 
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final transient ISSCC18CodeDAO sscc18CodeDAO = Services.get(ISSCC18CodeDAO.class);
-	private final transient IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -115,8 +110,20 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+	private final transient HURepository huRepository;
+
+	public DesadvBL()
+	{
+		this(SpringContextHolder.instance.getBean(HURepository.class));
+	}
+
+	@VisibleForTesting
+	public DesadvBL(@NonNull final HURepository huRepository)
+	{
+		this.huRepository = huRepository;
+	}
 
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
@@ -368,6 +375,10 @@ public class DesadvBL implements IDesadvBL
 					false/* noLUForVirtualTU */);
 			final int requiredLUQty = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, remainingQty.toBigDecimal(), remainingQty.getUOM());
 
+			final Quantity maxQtyCUsPerLU = Quantity.of(
+					lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU()),
+					remainingQty.getUOM());
+
 			for (int i = 0; i < requiredLUQty; i++)
 			{
 				final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
@@ -379,6 +390,7 @@ public class DesadvBL implements IDesadvBL
 				// SSCC18
 				final String sscc18 = computeSSCC18();
 				ssccRecord.setIPA_SSCC18(sscc18);
+				ssccRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 
 				// PackagingCodes
 				final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
@@ -387,14 +399,18 @@ public class DesadvBL implements IDesadvBL
 				final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 				ssccRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
 
-				final Quantity maxQtyCU = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfiguration);
+				final Quantity qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
+
+				final Quantity currentQtyTU = qtyCUsPerCurrentLU.divide(lutuConfiguration.getQtyCU(), 0, RoundingMode.UP);
 
 				// Qtys
-				ssccRecord.setQtyCUsPerLU(lutuConfiguration.getQtyCU());
+				ssccRecord.setQtyCUsPerLU(qtyCUsPerCurrentLU.toBigDecimal());
 				ssccRecord.setQtyCU(lutuConfiguration.getQtyCU());
-				ssccRecord.setQtyTU(lutuConfiguration.getQtyTU().intValue());
+				ssccRecord.setQtyTU(currentQtyTU.toBigDecimal().intValue());
 
 				saveRecord(ssccRecord);
+
+				remainingQty = remainingQty.subtract(qtyCUsPerCurrentLU); // prepare next iteration
 			}
 		}
 
@@ -413,14 +429,14 @@ public class DesadvBL implements IDesadvBL
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
-		final HU rootHU = SpringContextHolder.instance.getBean(HURepository.class)
-				.getbyId(HuId.ofRepoId(huRecord.getM_HU_ID()))
+		final HU rootHU = huRepository
+				.getById(HuId.ofRepoId(huRecord.getM_HU_ID()))
 				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
 				.orElse(null);
 
-		if (rootHU == null || rootHU.getType().isLU())
+		if (rootHU == null || !rootHU.getType().isLU())
 		{
-			return Quantitys.createZero(productId); // we don't to HU-related SSCC's if the HU is not a LU.
+			return Quantitys.createZero(productId); // we don't do HU-related SSCC's if the HU is not a LU.
 		}
 
 		final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
@@ -428,12 +444,12 @@ public class DesadvBL implements IDesadvBL
 
 		// get minimum best before
 		final Date bestBefore = rootHU.extractSingleAttributeValue(
-				attrSet -> attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate),
+				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
 				(date1, date2) -> TimeUtil.min(date1, date2));
 		ssccRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
-		final String sscc18 = rootHU.getAtributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
-		ssccRecord.setIsManual_IPA_SSCC18(!!isEmpty(sscc18, true));
+		final String sscc18 = rootHU.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
+		ssccRecord.setIsManual_IPA_SSCC18(isEmpty(sscc18, true));
 		ssccRecord.setIPA_SSCC18(coalesceSuppliers(() -> sscc18, () -> computeSSCC18()));
 
 		final Optional<PackagingCode> packagingCode = rootHU.getPackagingCode();
@@ -454,11 +470,9 @@ public class DesadvBL implements IDesadvBL
 		final Quantity quantity = rootHU.getProductQuantities().get(productId);
 		ssccRecord.setQtyCUsPerLU(quantity.toBigDecimal());
 
-		final BigDecimal qtyCU = CollectionUtils.extractSingleElementOrDefault(
-				rootHU.getChildHUs(),
-				hu -> hu.getProductQuantities().get(productId).toBigDecimal(),
-				null);
+		final BigDecimal qtyCU = rootHU.extractMedianCUQtyPerChild(productId).toBigDecimal();
 		ssccRecord.setQtyCU(qtyCU);
+
 		ssccRecord.setQtyTU(rootHU.getChildHUs().size());
 
 		saveRecord(ssccRecord);

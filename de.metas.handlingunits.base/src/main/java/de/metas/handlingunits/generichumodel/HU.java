@@ -1,6 +1,6 @@
 package de.metas.handlingunits.generichumodel;
 
-import java.util.Iterator;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -60,7 +61,7 @@ public class HU
 	ImmutableMap<ProductId, Quantity> productQuantities;
 
 	@NonNull
-	IAttributeSet atributes;
+	IAttributeSet attributes;
 
 	@NonNull
 	@Singular("childHU")
@@ -73,7 +74,7 @@ public class HU
 		final Mutable<T> result = new Mutable<>();
 		for (final HU hu : allHUAsList())
 		{
-			final T attrValue = attrValueFunction.apply(hu.getAtributes());
+			final T attrValue = attrValueFunction.apply(hu.getAttributes());
 			result.setValue(mergeFunction.apply(result.getValue(), attrValue));
 		}
 		return result.getValue();
@@ -82,6 +83,22 @@ public class HU
 	public List<HU> allHUAsList()
 	{
 		return recurseNext(this);
+	}
+
+	private List<HU> recurseNext(@NonNull final HU hu)
+	{
+		if (hu.getChildHUs().isEmpty())
+		{
+			return ImmutableList.of(hu);
+		}
+
+		final ImmutableList.Builder<HU> results = ImmutableList.builder();
+		for (final HU child : hu.getChildHUs())
+		{
+			final List<HU> recurseNext = recurseNext(child);
+			results.addAll(recurseNext);
+		}
+		return results.build();
 	}
 
 	public Optional<HU> retainProduct(@NonNull final ProductId productId)
@@ -102,22 +119,21 @@ public class HU
 			child.retainProduct(productId).ifPresent(result::childHU);
 		}
 		return Optional.of(result.build());
-
 	}
 
-	private List<HU> recurseNext(@NonNull final HU hu)
+	/**
+	 * Iterates all child-HUs' storage quantities for the given productId and returns the median (or something close).
+	 * Goal: return a reasonably common quantity, and ignore possible outliers.
+	 */
+	public Quantity extractMedianCUQtyPerChild(@NonNull final ProductId productId)
 	{
-		if (hu.getChildHUs().isEmpty())
-		{
-			return ImmutableList.of(hu);
-		}
+		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
+				.stream()
+				.map(hu -> hu.getProductQuantities().get(productId).toBigDecimal())
+				.sorted()
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList.Builder<HU> results = ImmutableList.builder();
-		for (final HU child : hu.getChildHUs())
-		{
-			final List<HU> recurseNext = recurseNext(child);
-			results.addAll(recurseNext);
-		}
-		return results.build();
+		final BigDecimal qtyCU = allQuantities.get(allQuantities.size() / 2);
+		return Quantitys.create(qtyCU, productId);
 	}
 }
