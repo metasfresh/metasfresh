@@ -30,7 +30,7 @@ class TableCell extends PureComponent {
 
   static createDate = (fieldValue, fieldType) => {
     if (fieldValue) {
-      return fieldValue.match(TIME_REGEX_TEST)
+      return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
         ? Moment.utc(Moment.duration(fieldValue).asMilliseconds()).format(
             TIME_FORMAT
           )
