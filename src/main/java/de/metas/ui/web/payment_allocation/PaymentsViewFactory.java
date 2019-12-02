@@ -99,6 +99,11 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 		viewId.assertWindowId(WINDOW_ID);
 
 		final Set<PaymentId> paymentIds = PaymentId.fromIntSet(request.getFilterOnlyIds());
+		if (paymentIds.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
 		final PaymentAndInvoiceRows paymentAndInvoiceRows = rowsRepo.getByPaymentIds(paymentIds);
 
 		return PaymentsView.builder()

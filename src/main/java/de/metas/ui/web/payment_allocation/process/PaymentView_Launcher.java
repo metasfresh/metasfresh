@@ -84,5 +84,4 @@ public class PaymentView_Launcher extends ViewBasedProcessTemplate implements IP
 				.map(rowId -> PaymentId.ofRepoId(rowId.toInt()))
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }

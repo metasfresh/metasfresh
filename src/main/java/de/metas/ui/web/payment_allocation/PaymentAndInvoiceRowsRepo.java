@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Repository;
 
@@ -77,9 +78,13 @@ public class PaymentAndInvoiceRowsRepo
 				.evaluationDate(evaluationDate)
 				.additionalPaymentIdsToInclude(paymentIds)
 				.build());
+		if (paymentsToAllocate.isEmpty())
+		{
+			throw new AdempiereException("@NoOpenPayments@");
+		}
 
 		final PaymentRows paymentRows = toPaymentRows(paymentsToAllocate, evaluationDate);
-		final InvoiceRows invoiceRows = retrieveInvoiceRowsByPaymentRecords(paymentsToAllocate, evaluationDate);
+		final InvoiceRows invoiceRows = retrieveInvoiceRowsByPayments(paymentsToAllocate, evaluationDate);
 
 		return PaymentAndInvoiceRows.builder()
 				.paymentRows(paymentRows)
@@ -119,7 +124,7 @@ public class PaymentAndInvoiceRowsRepo
 				.build();
 	}
 
-	private InvoiceRows retrieveInvoiceRowsByPaymentRecords(
+	private InvoiceRows retrieveInvoiceRowsByPayments(
 			final List<PaymentToAllocate> paymentsToAllocate,
 			final ZonedDateTime evaluationDate)
 	{
