@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 import org.compiere.model.PO;
 
 import de.metas.attachments.AttachmentEntry;
@@ -85,7 +86,7 @@ public interface IOLCandBL extends ISingletonService
 
 	InvoiceRule getInvoiceRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
 
-	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
 	PaymentTermId getPaymentTermId(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
 
@@ -99,7 +100,7 @@ public interface IOLCandBL extends ISingletonService
 	 */
 	PricingSystemId getPricingSystemId(I_C_OLCand olCand, BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
 
-	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults);
+	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
 	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
 

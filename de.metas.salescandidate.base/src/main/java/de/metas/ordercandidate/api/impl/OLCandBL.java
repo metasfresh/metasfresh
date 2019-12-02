@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,6 +27,7 @@ package de.metas.ordercandidate.api.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -43,16 +46,15 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.freighcost.FreightCostRule;
-
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
-import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
@@ -102,8 +104,8 @@ public class OLCandBL implements IOLCandBL
 	public void process(@NonNull final OLCandProcessorDescriptor processor)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
-		final OLCandRegistry olCandRegistry =  springContextHolder.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo =  springContextHolder.getBean(OLCandRepository.class);
+		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
+		final OLCandRepository olCandRepo = springContextHolder.getBean(OLCandRepository.class);
 
 		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
@@ -145,7 +147,7 @@ public class OLCandBL implements IOLCandBL
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
-		{
+	{
 		if (!Check.isEmpty(olCandRecord.getDeliveryRule(), true))
 		{
 			return DeliveryRule.ofCode(olCandRecord.getDeliveryRule());
@@ -216,17 +218,20 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable I_C_OLCand orderCandidateRecord)
 	{
-		if (bPartnerOrderParams != null)
-		{
-			return bPartnerOrderParams.getPaymentRule();
-		}
-		if (orderDefaults != null)
-		{
-			return orderDefaults.getPaymentRule();
-		}
-		return null;
+		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
+				: PaymentRule.ofCode(orderCandidateRecord.getPaymentRule());
+		final PaymentRule bpartnerOrderParamsPaymentRule = bPartnerOrderParams == null ? null
+				: bPartnerOrderParams.getPaymentRule();
+		final PaymentRule orderDefaultsPaymentRule = orderDefaults == null ? null
+				: orderDefaults.getPaymentRule();
+
+		return coalesce(orderCandidatePaymentRule,
+				bpartnerOrderParamsPaymentRule,
+				orderDefaultsPaymentRule);
 	}
 
 	@Override
@@ -246,17 +251,20 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public ShipperId getShipperId(
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
-			@Nullable final OLCandOrderDefaults orderDefaults)
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getShipperId().isPresent())
-		{
-			return bPartnerOrderParams.getShipperId().get();
-		}
-		if (orderDefaults != null)
-		{
-			return orderDefaults.getShipperId();
-		}
-		return null;
+		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
+
+		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
+				: bPartnerOrderParams.getShipperId().orElse(null);
+
+		final ShipperId orderDefaultsShipperId = orderDefaults == null ? null
+				: orderDefaults.getShipperId();
+
+		return coalesce(orderCandiateShipperId,
+				bpartnerOrderParamsShipperId,
+				orderDefaultsShipperId);
 	}
 
 	@Override
@@ -302,7 +310,6 @@ public class OLCandBL implements IOLCandBL
 
 		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
 		final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
-
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQtyEntered();
 

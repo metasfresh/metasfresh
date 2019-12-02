@@ -1,6 +1,7 @@
 package de.metas.impex.api.impl;
 
 import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Optional;
 
@@ -48,6 +49,13 @@ import lombok.NonNull;
 
 public class InputDataSourceDAO implements IInputDataSourceDAO
 {
+
+	@Override
+	public I_AD_InputDataSource getById(@NonNull final InputDataSourceId id)
+	{
+		return loadOutOfTrx(id, I_AD_InputDataSource.class);
+	}
+
 	@Override
 	public int retrieveInputDataSourceIdByInternalName(final String internalName)
 	{

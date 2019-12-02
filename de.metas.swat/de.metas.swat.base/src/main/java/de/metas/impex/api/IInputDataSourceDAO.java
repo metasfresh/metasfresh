@@ -33,6 +33,8 @@ import de.metas.util.ISingletonService;
 
 public interface IInputDataSourceDAO extends ISingletonService
 {
+	I_AD_InputDataSource getById(final InputDataSourceId id);
+
 	I_AD_InputDataSource retrieveInputDataSource(Properties ctx, String internalName, boolean throwEx, String trxName);
 
 	int retrieveInputDataSourceIdByInternalName(String internalName);

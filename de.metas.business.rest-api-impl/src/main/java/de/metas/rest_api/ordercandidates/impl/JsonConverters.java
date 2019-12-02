@@ -16,6 +16,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -70,6 +72,7 @@ class JsonConverters
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -120,6 +123,17 @@ class JsonConverters
 		}
 
 		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
+
+		final I_AD_InputDataSource dataDestRecord = inputDataSourceDAO.getById(dataDestId);
+
+		final String dataDestInternalName = dataDestRecord.getInternalName();
+
+		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
+		{
+			Check.assumeNotNull(request.getDateRequired(),
+					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
+					"DEST.de.metas.invoicecandidate", this);
+		}
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 
