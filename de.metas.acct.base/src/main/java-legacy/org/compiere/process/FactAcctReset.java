@@ -216,7 +216,7 @@ public class FactAcctReset extends JavaProcess
 		else if (AD_Table_ID ==getTableId(I_M_InOut.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_MaterialDelivery
 				+ "','" + X_C_DocType.DOCBASETYPE_MaterialReceipt + "')";
-		else if (AD_Table_ID == MPayment.Table_ID)
+		else if (AD_Table_ID == getTableId(MPayment.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APPayment
 				+ "','" + X_C_DocType.DOCBASETYPE_ARReceipt + "')";
 		else if (AD_Table_ID == getTableId(I_C_Order.class))

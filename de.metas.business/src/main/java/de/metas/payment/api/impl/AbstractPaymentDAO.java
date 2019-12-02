@@ -184,7 +184,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
-				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(PaymentId::ofRepoId)
 				.stream();
