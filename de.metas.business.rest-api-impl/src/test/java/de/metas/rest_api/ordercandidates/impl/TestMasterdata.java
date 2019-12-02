@@ -21,6 +21,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
 
@@ -38,6 +39,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.rules.PriceListVersion;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -224,4 +226,23 @@ final class TestMasterdata
 		return WarehouseId.ofRepoId(record.getM_Warehouse_ID());
 	}
 
+	public ShipperId createShipper(final String shipperName)
+	{
+		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);
+		shipper.setName(shipperName);
+		shipper.setValue(shipperName);
+		saveRecord(shipper);
+
+		return ShipperId.ofRepoId(shipper.getM_Shipper_ID());
+
+	}
+
+	public BPartnerId createSalesRep(final String salesRepCode)
+	{
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setSalesPartnerCode(salesRepCode);
+		saveRecord(partner);
+
+		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+	}
 }

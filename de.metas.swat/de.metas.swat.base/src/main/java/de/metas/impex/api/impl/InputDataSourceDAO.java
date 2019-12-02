@@ -43,6 +43,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -125,7 +126,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 
 		Check.assumeNotNull(query.getOrgId(), "Org Id is missing from InputDataSourceQuery ", query);
 
-		queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		queryBuilder.addInArrayFilter(I_AD_InputDataSource.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
 
 		if (!query.getInternalName().isEmpty())
 		{

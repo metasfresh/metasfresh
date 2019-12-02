@@ -31,6 +31,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.MimeType;
 import org.junit.Before;
 import org.junit.Rule;
@@ -171,6 +172,16 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDataSource(DATA_SOURCE_INTERNALNAME);
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
+
+			testMasterdata.createShipper("DPD");
+
+			testMasterdata.createSalesRep("SalesRep");
+
+			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
+					X_C_DocType.DOCSUBTYPE_StandardOrder));
+
+			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
+					X_C_DocType.DOCSUBTYPE_PrepayOrder));
 		}
 
 		final CurrencyService currencyService = new CurrencyService();

@@ -91,7 +91,7 @@ public class ShipperDAO implements IShipperDAO
 		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Value, value)
-				.addEqualsFilter(I_M_Shipper.COLUMNNAME_AD_Org_ID, orgId)
+				.addInArrayFilter(I_M_Shipper.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
 				.create()
 				.firstIdOnly(ShipperId::ofRepoIdOrNull);
