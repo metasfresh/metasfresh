@@ -1911,7 +1911,6 @@ public final class MPayment extends X_C_Payment
 		reversal.setR_AuthCode(null);
 		reversal.setR_Info(null);
 		reversal.setProcessing(false);
-		reversal.setOProcessing("N");
 		reversal.setProcessed(false);
 		reversal.setPosted(false);
 		reversal.setDescription(getDescription());
