@@ -95,7 +95,7 @@ public class TaxDAO implements ITaxDAO
 		boolean match = new Query(ctx, I_C_VAT_SmallBusiness.Table_Name, whereClause, trxName)
 				.setParameters(bPartnerId, dateTrunc, dateTrunc)
 				.setOnlyActiveRecords(true)
-				.match();
+				.anyMatch();
 
 		return match;
 	}
@@ -202,13 +202,8 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
-	public Optional<TaxCategoryId> getTaxCategoryIdByName(@Nullable final String name)
+	public Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull final String name)
 	{
-		if (name == null)
-		{
-			return Optional.empty();
-		}
-
 		final TaxCategoryId taxCategoryId = queryBL.createQueryBuilder(I_C_TaxCategory.class)
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_Name, name)
 				.create()

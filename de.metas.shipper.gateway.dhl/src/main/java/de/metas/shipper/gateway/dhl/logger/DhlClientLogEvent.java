@@ -22,8 +22,10 @@
 
 package de.metas.shipper.gateway.dhl.logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.oxm.Marshaller;
@@ -35,6 +37,12 @@ import javax.annotation.Nullable;
 @Builder
 public class DhlClientLogEvent
 {
+	/**
+	 * Regexp explanation: .*? means ungreedy (while .* means greedy).
+	 */
+	public static final String LABEL_DATA_REGEX = "(?m)<labelData>(.*?\\s*?)</labelData>";
+	public static final String LABEL_DATA_REPLACEMENT_TEXT = "<labelData>PDF TEXT REMOVED!</labelData>";
+
 	int deliveryOrderRepoId;
 	DhlClientConfig config;
 	Marshaller marshaller;
@@ -77,12 +85,23 @@ public class DhlClientLogEvent
 		{
 			final StringResult result = new StringResult();
 			marshaller.marshal(element, result);
-			return result.toString();
+
+			return cleanupPdfData(result.toString());
 		}
 		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed converting " + element + " to String", ex);
 		}
+	}
+
+	/**
+	 * remove the pdfdata since it's long and useless and we also attach it to the PO record
+	 */
+	@NonNull
+	@VisibleForTesting
+	static String cleanupPdfData(@NonNull final String s)
+	{
+		return s.replaceAll(LABEL_DATA_REGEX, LABEL_DATA_REPLACEMENT_TEXT);
 	}
 
 }

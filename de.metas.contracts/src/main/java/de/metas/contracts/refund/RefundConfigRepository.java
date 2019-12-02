@@ -76,7 +76,7 @@ public class RefundConfigRepository
 	public boolean hasRefundConfig(@NonNull final ConditionsId conditionsId)
 	{
 		return createRefundConfigQuery(conditionsId)
-				.match();
+				.anyMatch();
 	}
 
 	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)

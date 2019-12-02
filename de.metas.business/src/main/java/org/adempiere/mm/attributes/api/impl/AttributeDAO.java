@@ -63,7 +63,7 @@ import lombok.NonNull;
 public class AttributeDAO implements IAttributeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	@Override
 	public void save(@NonNull final I_M_AttributeSetInstance asi)
 	{
@@ -447,16 +447,16 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	public I_M_AttributeInstance retrieveAttributeInstance(
-			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
-			final AttributeId attributeId)
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final AttributeId attributeId)
 	{
-		if (attributeSetInstance == null)
+		if (attributeSetInstanceId == null || attributeSetInstanceId.isNone())
 		{
 			return null;
 		}
 
 		return queryBL.createQueryBuilder(I_M_AttributeInstance.class)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID())
+				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
 				.firstOnly(I_M_AttributeInstance.class);

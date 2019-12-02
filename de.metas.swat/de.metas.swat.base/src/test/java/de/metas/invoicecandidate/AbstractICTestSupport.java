@@ -654,7 +654,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			final boolean existingInvalidCandidates = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
-					.match();
+					.anyMatch();
 			Assert.assertEquals("Existing invalid invoice candidates", false, existingInvalidCandidates);
 		}
 	}

@@ -147,7 +147,7 @@ public class OLCandRepository
 
 		olCandPO.setM_Product_ID(request.getProductId().getRepoId());
 		olCandPO.setProductDescription(request.getProductDescription());
-		olCandPO.setQty(request.getQty());
+		olCandPO.setQtyEntered(request.getQty());
 		olCandPO.setC_UOM_ID(request.getUomId().getRepoId());
 		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
 

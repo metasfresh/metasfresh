@@ -1,7 +1,7 @@
 package de.metas.pricing.service.impl;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Iterator;
 
 import javax.annotation.Nullable;
@@ -96,7 +96,7 @@ public class PriceListBL implements IPriceListBL
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
-			final LocalDate date,
+			final ZonedDateTime date,
 			@NonNull final SOTrx soTrx)
 	{
 		final Boolean processedPLVFiltering = null;
@@ -115,7 +115,7 @@ public class PriceListBL implements IPriceListBL
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
-			@NonNull final LocalDate date,
+			@NonNull final ZonedDateTime date,
 			final SOTrx soTrx,
 			@Nullable final Boolean processedPLVFiltering)
 	{

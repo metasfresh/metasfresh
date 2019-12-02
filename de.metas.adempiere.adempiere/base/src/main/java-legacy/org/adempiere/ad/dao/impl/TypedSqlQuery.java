@@ -799,13 +799,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public boolean anyExist() throws DBException
-	{
-		return match();
-	}
-
-	@Override
-	public boolean match() throws DBException
+	public boolean anyMatch() throws DBException
 	{
 		final StringBuilder sqlSelect;
 		final StringBuilder fromClause;

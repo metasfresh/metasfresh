@@ -177,7 +177,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		final boolean queryMatchesDocTypeId = createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, docTypeQuery)
 				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTypeId)
 				.create()
-				.match();
+				.anyMatch();
 		return queryMatchesDocTypeId;
 	}
 

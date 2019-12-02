@@ -91,7 +91,7 @@ public class HUPackageDAO implements IHUPackageDAO
 				.createQueryBuilder(I_M_Package_HU.class, hu)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

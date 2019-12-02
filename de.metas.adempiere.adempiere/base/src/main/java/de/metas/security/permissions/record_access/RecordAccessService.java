@@ -457,7 +457,7 @@ public class RecordAccessService
 		return query(query)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private Set<Principal> getPrincipals(@NonNull final UserId userId)

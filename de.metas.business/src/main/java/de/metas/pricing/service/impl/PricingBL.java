@@ -79,6 +79,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class PricingBL implements IPricingBL
@@ -272,7 +273,7 @@ public class PricingBL implements IPricingBL
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
 					pricingCtx.getCountryId(),
-					pricingCtx.getPriceDate(),
+					TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
 
@@ -305,7 +306,8 @@ public class PricingBL implements IPricingBL
 			try
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, priceDate, processedPLVFiltering);
+				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList,
+						TimeUtil.asZonedDateTime(priceDate, SystemTime.zoneId()), processedPLVFiltering);
 				if (plv != null)
 				{
 					final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());

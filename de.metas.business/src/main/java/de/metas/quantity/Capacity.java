@@ -133,8 +133,15 @@ public class Capacity implements CapacityInterface
 	@Override
 	public BigDecimal toBigDecimal()
 	{
-		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {}", this);
+		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
+	}
+
+	@Override
+	public Quantity toQuantity()
+	{
+		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Quantity if it's infinite; this={}", this);
+		return Quantity.of(capacity, uom);
 	}
 
 	@Override

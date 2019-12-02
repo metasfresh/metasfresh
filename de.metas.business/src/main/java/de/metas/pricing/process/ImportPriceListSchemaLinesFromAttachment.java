@@ -167,20 +167,32 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	}
 
 	@Nullable
-	private TaxCategoryId getTaxCategoryId(final String name)
+	private TaxCategoryId getTaxCategoryId(@Nullable final String name)
 	{
+		if (name == null)
+		{
+			return null;
+		}
 		return taxDAO.getTaxCategoryIdByName(name).orElse(null);
 	}
 
 	@Nullable
-	private BPartnerId getBPartnerId(final String value)
+	private BPartnerId getBPartnerId(@Nullable final String value)
 	{
-		return partnerDAO.getBPartnerIdByValueOrNull(value);
+		if (value == null)
+		{
+			return null;
+		}
+		return partnerDAO.getBPartnerIdByValue(value).orElse(null);
 	}
 
 	@Nullable
-	private ProductCategoryId getProductCategoryId(final String value)
+	private ProductCategoryId getProductCategoryId(@Nullable final String value)
 	{
+		if (value == null)
+		{
+			return null;
+		}
 		return productDAO.retrieveProductCategoryIdByCategoryValue(value).orElse(null);
 	}
 

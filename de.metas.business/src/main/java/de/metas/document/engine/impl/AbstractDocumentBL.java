@@ -305,14 +305,13 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public String getDocStatusOrNull(final Properties ctx_NOTUSED, final int adTableId, final int recordId)
+	public DocStatus getDocStatusOrNull(final Object documentObj)
 	{
-		return retrieveString(adTableId, recordId, DocumentTableFields.COLUMNNAME_DocStatus);
-	}
-
-	private DocStatus getDocStatusOrNull(final Object document)
-	{
-		final IDocument doc = getDocument(document);
+		final IDocument doc = getDocumentOrNull(documentObj);
+		if (doc == null)
+		{
+			return null;
+		}
 		final DocStatus docStatus = DocStatus.ofNullableCode(doc.getDocStatus());
 		return docStatus;
 	}

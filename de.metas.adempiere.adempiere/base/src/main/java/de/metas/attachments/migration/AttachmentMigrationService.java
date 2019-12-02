@@ -170,7 +170,7 @@ public class AttachmentMigrationService
 				.createQueryBuilder(I_AD_Attachment.class)
 				.addEqualsFilter(I_AD_Attachment.COLUMN_MigrationDate, null)
 				.create()
-				.match();
+				.anyMatch();
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, existRecordsToMigrate, 0);

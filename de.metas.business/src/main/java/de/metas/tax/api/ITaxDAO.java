@@ -80,7 +80,7 @@ public interface ITaxDAO extends ISingletonService
 
 	ITranslatableString getTaxCategoryNameById(TaxCategoryId id);
 
-	Optional<TaxCategoryId> getTaxCategoryIdByName(@Nullable String name);
+	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
 	@Builder
 	@Value

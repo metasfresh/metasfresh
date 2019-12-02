@@ -59,6 +59,29 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Mindesthaltbarkeitsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBestBeforeDate (java.sql.Timestamp BestBeforeDate);
+
+	/**
+	 * Get Mindesthaltbarkeitsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getBestBeforeDate();
+
+    /** Column definition for BestBeforeDate */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_BestBeforeDate = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "BestBeforeDate", null);
+    /** Column name BestBeforeDate */
+    public static final String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

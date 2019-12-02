@@ -25,7 +25,7 @@ package de.metas.materialtracking.model.validator;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.compiere.model.I_M_AttributeSetInstance;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.ModelValidator;
 
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
@@ -120,8 +120,8 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 	{
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 
-		final I_M_AttributeSetInstance asi = getM_AttributeSetInstance(documentLine);
-		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asi);
+		final AttributeSetInstanceId asiId = getM_AttributeSetInstance(documentLine);
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asiId);
 		return materialTracking;
 	}
 
@@ -144,5 +144,5 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 	 * @param documentLine
 	 * @return ASI from document line
 	 */
-	protected abstract I_M_AttributeSetInstance getM_AttributeSetInstance(final DocumentLineType documentLine);
+	protected abstract AttributeSetInstanceId getM_AttributeSetInstance(final DocumentLineType documentLine);
 }

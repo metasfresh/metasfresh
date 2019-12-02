@@ -1,6 +1,7 @@
 package de.metas.request.api.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_AttributeInstance;
@@ -100,9 +101,10 @@ public class RequestBL implements IRequestBL
 
 	}
 
-	private I_M_QualityNote getQualityNoteOrNull(final I_M_InOutLine line)
+	private I_M_QualityNote getQualityNoteOrNull(@NonNull final I_M_InOutLine line)
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		final AttributeId qualityNoteAttributeId = qualityNoteDAO.getQualityNoteAttributeId();
 		if (qualityNoteAttributeId == null)
@@ -111,7 +113,8 @@ public class RequestBL implements IRequestBL
 			return null;
 		}
 
-		final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(line.getM_AttributeSetInstance(), qualityNoteAttributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance qualityNoteAI = attributeDAO.retrieveAttributeInstance(asiId, qualityNoteAttributeId);
 		if (qualityNoteAI == null)
 		{
 			// nothing to do. The Quality Note is not in the attribute instance
@@ -121,7 +124,7 @@ public class RequestBL implements IRequestBL
 		final String qualityNoteValueFromASI = qualityNoteAI.getValue();
 		if (Check.isEmpty(qualityNoteValueFromASI))
 		{
-			// nothing to do. Quality Note was not set in the Attrbute Set Instance
+			// nothing to do. Quality Note was not set in the Attribute Set Instance
 			return null;
 		}
 

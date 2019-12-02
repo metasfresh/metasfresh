@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.ZonedDateTime;
@@ -22,6 +23,7 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -29,8 +31,8 @@ import lombok.NonNull;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
-
-	private IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private int getC_BPartner_Effective_ID(final I_C_OLCand olCand)
 	{
@@ -187,11 +189,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public int getC_UOM_Effective_ID(@NonNull final I_C_OLCand olCandRecord)
+	public UomId getEffectiveUomId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		return olCandRecord.isManualPrice()
-				? getRecordOrStockUOMId(olCandRecord).getRepoId()
-				: olCandRecord.getC_UOM_Internal_ID();
+				? getRecordOrStockUOMId(olCandRecord)
+				: UomId.ofRepoIdOrNull(firstGreaterThanZero(
+						olCandRecord.getC_UOM_Internal_ID(),
+						olCandRecord.getC_UOM_ID()));
 	}
 
 	@Override
@@ -209,11 +213,12 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public I_C_UOM getC_UOM_Effective(final I_C_OLCand olCand)
 	{
-		return InterfaceWrapperHelper.create(
-				InterfaceWrapperHelper.getCtx(olCand),
-				getC_UOM_Effective_ID(olCand),
-				I_C_UOM.class,
-				InterfaceWrapperHelper.getTrxName(olCand));
+		final UomId effectiveUomId = getEffectiveUomId(olCand);
+		if (effectiveUomId == null)
+		{
+			return null;
+		}
+		return uomDAO.getById(effectiveUomId);
 	}
 
 	private int getHandOver_Partner_Effective_ID(final I_C_OLCand olCand)

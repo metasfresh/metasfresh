@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,6 +26,7 @@ import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -148,7 +150,7 @@ public class GetPriceListCommand
 		final CurrencyCode currencyCode = servicesFacade.getCurrencyCodeById(currencyId);
 
 		priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
-		final PriceListVersionId priceListVersionId = servicesFacade.getPriceListVersionId(priceListId, date);
+		final PriceListVersionId priceListVersionId = servicesFacade.getPriceListVersionId(priceListId, TimeUtil.asZonedDateTime(date, SystemTime.zoneId()));
 
 		final ImmutableList<I_M_ProductPrice> productPriceRecords = servicesFacade.getProductPrices(priceListVersionId);
 

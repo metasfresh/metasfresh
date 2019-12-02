@@ -72,7 +72,7 @@ public class C_Flatrate_Transition
 				.setParameters(transition.getC_Flatrate_Transition_ID(), X_C_Flatrate_Conditions.DOCSTATUS_Completed)
 				.setRequiredAccess(Access.READ)
 				.setOnlyActiveRecords(true)
-				.match();
+				.anyMatch();
 
 		if (hasConditions)
 		{

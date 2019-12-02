@@ -220,7 +220,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asLocalDate(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -250,7 +250,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asLocalDate(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 

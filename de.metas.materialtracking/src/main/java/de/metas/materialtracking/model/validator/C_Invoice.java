@@ -27,10 +27,9 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.util.Services;
 
@@ -73,14 +72,14 @@ public class C_Invoice extends MaterialTrackableDocumentByASIInterceptor<I_C_Inv
 	 * Gets order line's ASI (where the material tracking is set)
 	 */
 	@Override
-	protected I_M_AttributeSetInstance getM_AttributeSetInstance(final I_C_InvoiceLine documentLine)
+	protected AttributeSetInstanceId getM_AttributeSetInstance(final I_C_InvoiceLine documentLine)
 	{
 		if (documentLine.getC_OrderLine_ID() <= 0)
 		{
 			return null;
 		}
 		final I_C_OrderLine orderLine = documentLine.getC_OrderLine();
-		return orderLine.getM_AttributeSetInstance();
+		return AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 	}
 
 }

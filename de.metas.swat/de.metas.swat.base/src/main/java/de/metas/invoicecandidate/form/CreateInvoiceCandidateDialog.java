@@ -408,7 +408,7 @@ public class CreateInvoiceCandidateDialog
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
 						PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()) //
 						, CountryId.ofRepoId(location.getC_Location().getC_Country_ID()) // country
-						, SystemTime.asLocalDate() // date
+						, SystemTime.asZonedDateTime() // date
 						, soTrx //
 						, (Boolean)null // processedPLVFiltering
 				);

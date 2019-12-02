@@ -56,12 +56,6 @@ public class OrderCandidate extends AbstractModuleInterceptor
 
 		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactoryForTableName(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
 
-		engine.addModelValidator(new AD_Scheduler(), client);
-		engine.addModelValidator(new AD_Note(), client);
-		//engine.addModelValidator(new C_OLCand(), client); // spring component
-		engine.addModelValidator(new C_OLCandProcessor(), client);
-		engine.addModelValidator(new C_OrderLine(), client);
-
 		// task 08803: registering this listener *after* C_OLCand, because C_OLCand can call IOLCandValdiatorBL.validate, and this listener (which is actually a model interceptor) needs to be called
 		// after that (if there is any change).
 		Services.get(IModelAttributeSetInstanceListenerService.class).registerListener(new OLCandPricingASIListener());

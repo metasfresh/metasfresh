@@ -5,6 +5,7 @@ RETURNS TABLE
 	DocStatus character(2),
 	PrintName character varying(60),
 	countrycode character(2),
+	C_Currency_ID numeric,
 	displayhu text
 	)
 AS
@@ -14,6 +15,7 @@ SELECT
 	i.DocStatus,
 	dt.PrintName,
 	c.countrycode,
+	i.C_Currency_ID,
 	CASE
 		WHEN
 		EXISTS(

@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.EDIDocOutBoundLogService;
@@ -43,6 +44,8 @@ import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,6 +54,8 @@ import lombok.NonNull;
 public class C_Invoice
 {
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private C_Invoice(@NonNull final EDIDocOutBoundLogService ediDocOutBoundLogService)
 	{
@@ -79,7 +84,7 @@ public class C_Invoice
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, //
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, //
 			ifColumnsChanged = I_C_Invoice.COLUMNNAME_EDI_ExportStatus)
 	public void updateDocOutBoundLog(final I_C_Invoice invoiceRecord)
 	{
@@ -87,6 +92,14 @@ public class C_Invoice
 
 		final Optional<I_C_Doc_Outbound_Log> updatedDocOutboundLog = ediDocOutBoundLogService.setEdiExportStatusFromInvoiceRecord(recordReference);
 		updatedDocOutboundLog.ifPresent(InterfaceWrapperHelper::saveRecord);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_C_Invoice.COLUMNNAME_EDIErrorMsg)
+	public void translateEDIErrorMessage(final I_C_Invoice invoiceRecord)
+	{
+		final ITranslatableString errorMsgTrl = msgBL.parseTranslatableString(invoiceRecord.getEDIErrorMsg());
+		invoiceRecord.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)

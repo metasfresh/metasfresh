@@ -13,11 +13,11 @@ package de.metas.materialtracking.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,10 +28,10 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
 import de.metas.i18n.IMsgBL;
@@ -69,18 +69,16 @@ public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order
 	}
 
 	@Override
-	protected I_M_AttributeSetInstance getM_AttributeSetInstance(final I_C_OrderLine documentLine)
+	protected AttributeSetInstanceId getM_AttributeSetInstance(final I_C_OrderLine documentLine)
 	{
-		return documentLine.getM_AttributeSetInstance();
+		return AttributeSetInstanceId.ofRepoIdOrNone(documentLine.getM_AttributeSetInstance_ID());
 	}
 
 	/**
 	 * @param document
-	 *
-	 *            In case the Bestellung has a partner and product of one line belonging to a complete material tracking and that material tracking is not set into ASI, show an error message.
+	 *            In case the purchase order has a partner and product of one line belonging to a complete material tracking and that material tracking is not set into ASI, show an error message.
 	 */
-	@DocValidate(
-			timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void verifyMaterialTracking(final I_C_Order document)
 	{
 		final IMaterialTrackingDAO materialTrackingDao = Services.get(IMaterialTrackingDAO.class);

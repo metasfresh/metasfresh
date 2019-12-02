@@ -171,6 +171,6 @@ public class MatchInvDAO implements IMatchInvDAO
 				.addEqualsFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 	}
 }
