@@ -46,6 +46,7 @@ import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.document.engine.DocStatus;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -117,7 +118,8 @@ public class AllocationBL implements IAllocationBL
 
 		for (final I_C_Payment payment : availablePayments)
 		{
-			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(payment);
+			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(paymentId);
 
 			sumAmt = sumAmt.add(currentAmt);
 
@@ -214,14 +216,13 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final BigDecimal invoiceOpenAmt = invoiceDAO.retrieveOpenAmt(invoice);
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), payment.getDateAcct());
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), payment.getDateTrx());
 
-		IAllocationBuilder allocBuilder = allocationBL.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
+		IAllocationBuilder allocBuilder = newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
 				.setC_Currency_ID(invoice.getC_Currency_ID())
 				.setDateAcct(dateAcct)
 				.setDateTrx(dateTrx);
@@ -229,7 +230,8 @@ public class AllocationBL implements IAllocationBL
 		BigDecimal sumAmt = BigDecimal.ZERO;
 
 		{
-			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(payment);
+			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+			final BigDecimal currentAmt = paymentDAO.getAvailableAmount(paymentId);
 
 			sumAmt = sumAmt.add(currentAmt);
 

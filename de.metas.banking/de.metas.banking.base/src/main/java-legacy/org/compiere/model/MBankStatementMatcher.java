@@ -51,7 +51,7 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 	 */
 	public static MBankStatementMatcher[] getMatchers (Properties ctx, String trxName)
 	{
-		ArrayList<MBankStatementMatcher> list = new ArrayList<MBankStatementMatcher>();
+		ArrayList<MBankStatementMatcher> list = new ArrayList<>();
 		String sql = Env.getUserRolePermissions(ctx).addAccessSQL(
 			"SELECT * FROM C_BankStatementMatcher ORDER BY SeqNo", 
 			"C_BankStatementMatcher", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
@@ -62,7 +62,9 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 			pstmt = DB.prepareStatement(sql, trxName);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
+			{
 				list.add (new MBankStatementMatcher(ctx, rs, trxName));
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
@@ -74,7 +76,9 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)
@@ -122,7 +126,9 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 	public boolean isMatcherValid()
 	{
 		if (m_matcherValid == null)
+		{
 			getMatcher();
+		}
 		return m_matcherValid.booleanValue();
 	}	//	isMatcherValid
 
@@ -134,16 +140,21 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 	{
 		if (m_matcher != null 
 			|| (m_matcherValid != null && m_matcherValid.booleanValue()))
+		{
 			return m_matcher;
+		}
 			
 		String className = getClassname();
 		if (className == null || className.length() == 0)
+		{
 			return null;
+		}
 		
 		try
 		{
-			Class matcherClass = Class.forName(className);
-			m_matcher = (BankStatementMatcherInterface)matcherClass.newInstance();
+			@SuppressWarnings("unchecked")
+			final Class<BankStatementMatcherInterface> matcherClass = (Class<BankStatementMatcherInterface>)Class.forName(className);
+			m_matcher = matcherClass.newInstance();
 			m_matcherValid = Boolean.TRUE;
 		}
 		catch (Exception e)

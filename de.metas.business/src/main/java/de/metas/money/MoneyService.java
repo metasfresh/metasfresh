@@ -142,6 +142,12 @@ public class MoneyService
 		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getCurrencyCode());
 	}
 
+	public Money toMoney(@NonNull final Amount amount)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(amount.getCurrencyCode());
+		return Money.of(amount.getAsBigDecimal(), currencyId);
+	}
+
 	public Money multiply(
 			@NonNull final Quantity qty,
 			@NonNull final ProductPrice price)
