@@ -10,6 +10,27 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.130
+## Features
+* metasfresh
+  * [#5070](https://github.com/metasfresh/metasfresh/issues/5070) Discount Schema Lines in separate window
+  * [#5799](https://github.com/metasfresh/metasfresh/issues/5799) Pricelist Schema export-import for Basepricelists
+  * [#5806](https://github.com/metasfresh/metasfresh/issues/5806) OLCand - Improve support for TU UOMs
+  * [#5824](https://github.com/metasfresh/metasfresh/issues/5824) IBAN Liechtenstein not accepted as Bank Account
+  * [#5834](https://github.com/metasfresh/metasfresh/issues/5834) Sales Order recording without Billto Partner
+  * [#5840](https://github.com/metasfresh/metasfresh/issues/5840) Allow manual creation of Phonecall Schedule
+  * [#5845](https://github.com/metasfresh/metasfresh/issues/5845) Invoice reversal via REST-EP
+  * [#5851](https://github.com/metasfresh/metasfresh/issues/5851) Add currency in doc_sales_invoice_root and in doc_sales_order_root functions
+
+* metasfresh-webui-api
+  * [#1315](https://github.com/metasfresh/metasfresh-webui-api/issues/1315) Product proposal view: show customer name in header
+  * [#1320](https://github.com/metasfresh/metasfresh-webui-api/issues/1320) Payment Allocation Window in WebUI
+
+## Fixes
+* metasfresh
+  * [#5802](https://github.com/metasfresh/metasfresh/issues/5802) Bug in Pricelistversion update for Basepricelists and customer proposals
+  * [#5829](https://github.com/metasfresh/metasfresh/issues/5829) Report aren't working anymore
+
 # metasfresh 5.129
 ## Features
 * metasfresh 
