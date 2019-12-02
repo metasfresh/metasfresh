@@ -17,9 +17,9 @@ import lombok.NonNull;
  *
  */
 @EqualsAndHashCode
-public class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
+final class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 {
-	public static final CreditMemoInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
+	public static CreditMemoInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
 	{
 		return new CreditMemoInvoiceAsPaymentDocument(creditMemoPayableDoc);
 	}
@@ -36,6 +36,12 @@ public class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 	public String toString()
 	{
 		return getClass().getSimpleName() + "[" + creditMemoPayableDoc.toString() + "]";
+	}
+
+	@Override
+	public PaymentDocumentType getType()
+	{
+		return PaymentDocumentType.CreditMemoInvoice;
 	}
 
 	@Override

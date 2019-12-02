@@ -1,5 +1,10 @@
 package de.metas.banking.payment.paymentallocation.service;
 
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
 import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.CustomerCreditMemo;
 import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.CustomerInvoice;
 import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.VendorCreditMemo;
@@ -58,6 +63,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -141,7 +147,7 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), null, "0", "-100", "-200", "-7700", "0"));
+				newAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "-100", "-200", "-7700", "0"));
 
 		//
 		// Check
@@ -169,7 +175,7 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "-5000", "-100", "-200", "-2700", "0"));
+				newAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-5000", "-100", "-200", "-2700", "0"));
 
 		//
 		// Check
@@ -196,7 +202,7 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(payment1.getReference(), payment2.getReference(), "-5000", "0", "0", "0", "0"));
+				newAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-5000", "0", "0", "0", "0"));
 
 		//
 		// Check
@@ -221,8 +227,8 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(payment1.getReference(), payment2.getReference(), "-3000", "0", "0", "-2000", "0"), //
-				newAllocationCandidate(payment1.getReference(), payment3.getReference(), "-2000", "0", "0", "0", "0"));
+				newAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-3000", "0", "0", "-2000", "0"), //
+				newAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment3.getReference(), "-2000", "0", "0", "0", "0"));
 
 		//
 		// Check
@@ -250,7 +256,7 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+				newAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
 
 		//
 		// Check
@@ -281,7 +287,7 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+				newAllocationCandidate(SalesInvoiceToPurchaseInvoice, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
 
 		//
 		// Check
@@ -339,15 +345,15 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), invoice4.getReference(), "500", "1599", "1", "5900", "0")
+				newAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice4.getReference(), "500", "1599", "1", "5900", "0")
 				//
-				, newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "5000", "0", "0", "900", "0")
+				, newAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "5000", "0", "0", "900", "0")
 				//
-				, newAllocationCandidate(invoice1.getReference(), payment2.getReference(), "500", "0", "0", "400", "4500")
+				, newAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment2.getReference(), "500", "0", "0", "400", "4500")
 				//
-				, newAllocationCandidate(invoice2.getReference(), payment2.getReference(), "3000", "50", "50", "4000", "1500")
+				, newAllocationCandidate(InvoiceToPayment, invoice2.getReference(), payment2.getReference(), "3000", "50", "50", "4000", "1500")
 				//
-				, newAllocationCandidate(invoice3.getReference(), payment2.getReference(), "1500", "100", "0", "0", "0"));
+				, newAllocationCandidate(InvoiceToPayment, invoice3.getReference(), payment2.getReference(), "1500", "100", "0", "0", "0"));
 
 		//
 		// Check
@@ -388,7 +394,7 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "30", "0", "0", "70", "20"));
+				newAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "30", "0", "0", "70", "20"));
 
 		//
 		// Check
@@ -421,8 +427,8 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				newAllocationCandidate(invoice1.getReference(), invoice2.getReference(), "-80", "-10", "-5", "-70", "0"),
-				newAllocationCandidate(invoice1.getReference(), payment1.getReference(), "-20", "0", "0", "-50", "0"));
+				newAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "-80", "-10", "-5", "-70", "0"),
+				newAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-20", "0", "0", "-50", "0"));
 
 		//
 		// Check
@@ -599,6 +605,7 @@ public class PaymentAllocationBuilderTest
 	}
 
 	private final AllocationLineCandidate newAllocationCandidate(
+			final AllocationLineCandidateType type,
 			final TableRecordReference payableRef,
 			final TableRecordReference paymentRef,
 			final String allocatedAmtStr,
@@ -608,6 +615,7 @@ public class PaymentAllocationBuilderTest
 			final String paymentOverUnderAmtStr)
 	{
 		return AllocationLineCandidate.builder()
+				.type(type)
 				.bpartnerId(bpartnerId)
 				//
 				.payableDocumentRef(payableRef)
