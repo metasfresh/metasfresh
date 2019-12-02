@@ -355,6 +355,8 @@ export class RawWidget extends Component {
       widgetData,
       rowId,
       tabId,
+      docId,
+      activeTab,
       icon,
       gridAlign,
       entity,
@@ -882,6 +884,8 @@ export class RawWidget extends Component {
             windowType={windowType}
             fields={fields}
             dataId={dataId}
+            docId={docId}
+            activeTab={activeTab}
             onChange={option => this.handlePatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}

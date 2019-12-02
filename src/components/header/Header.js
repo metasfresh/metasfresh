@@ -638,6 +638,8 @@ class Header extends Component {
                       entity="window"
                       windowType={windowId}
                       dataId={dataId}
+                      docId={docId}
+                      activeTab={activeTab}
                       widgetData={[docStatusData]}
                       noLabel
                       type="primary"

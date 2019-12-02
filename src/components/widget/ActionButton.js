@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { topActionsRequest } from '../../api';
 import { dropdownRequest } from '../../actions/GenericActions';
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 
@@ -127,12 +128,16 @@ class ActionButton extends Component {
    * @todo Write the documentation
    */
   handleChangeStatus = status => {
-    const { onChange } = this.props;
+    const { onChange, docId, windowType, activeTab } = this.props;
     const changePromise = onChange(status);
 
     this.statusDropdown.blur();
     if (changePromise instanceof Promise) {
-      changePromise.then(() => this.fetchStatusList());
+      changePromise.then(() => {
+        topActionsRequest(windowType, docId, activeTab);
+
+        return this.fetchStatusList();
+      });
     }
   };
 
