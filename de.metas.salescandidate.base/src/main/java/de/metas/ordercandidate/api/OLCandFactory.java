@@ -1,8 +1,11 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
@@ -45,6 +48,9 @@ final class OLCandFactory
 				.deliveryRule(DeliveryRule.ofNullableCode(record.getDeliveryRule()))
 				.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()))
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
+				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))
+				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
+				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.build();
 	}
 }

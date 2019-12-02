@@ -95,8 +95,7 @@ public class OLCandsProcessorExecutor
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
 
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		this.processorDataDestinationId = inputDataSourceDAO.
-				retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
+		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		this.candidatesSource = candidatesSource;
 	}
@@ -236,7 +235,8 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getPaymentTermId(), candidate.getPaymentTermId())
 				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
 				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
-				)
+				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
+				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
 
 		{
 			return true;

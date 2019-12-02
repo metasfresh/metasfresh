@@ -28,7 +28,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.request.JsonPaymentInfo;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
@@ -145,8 +144,6 @@ class JsonConverters
 		}
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
-
-		JsonPaymentInfo paymentInfo = request.getPaymentInfo();
 
 		final UomId uomId;
 		if (!isEmpty(request.getUomCode(), true))

@@ -205,9 +205,19 @@ class OLCandOrderFactory
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
 
-		de.metas.invoice_gateway.spi.model.BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
-		order.setC_BPartner_SalesRep_ID(salesRepId ==null? -1 : salesRepId.getRepoId());
+		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
+		if (orderDocTypeId != null)
+		{
+			order.setC_DocType_ID(candidateOfGroup.getOrderDocTypeId().getRepoId());
+		}
 
+		final BPartnerId salesRepId  = candidateOfGroup.getSalesRepId();
+
+
+		if(salesRepId != null)
+		{
+			order.setSalesRep_ID(salesRepId.getRepoId());
+		}
 
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);

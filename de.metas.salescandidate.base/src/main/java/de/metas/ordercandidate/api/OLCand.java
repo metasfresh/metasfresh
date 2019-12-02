@@ -13,9 +13,10 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -108,7 +109,6 @@ public final class OLCand implements IProductPriceAware
 	private final InvoiceRule invoiceRule;
 
 	@Getter
-
 	private final BPartnerId salesRepId;
 
 	@Getter
@@ -116,6 +116,10 @@ public final class OLCand implements IProductPriceAware
 
 	@Getter
 	private final BigDecimal qtyItemCapacity;
+
+	@Getter
+	private final DocTypeId orderDocTypeId;
+
 
 
 	@Builder
@@ -130,7 +134,9 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final PricingSystemId pricingSystemId,
-			@Nullable final ShipperId shipperId)
+			@Nullable final ShipperId shipperId,
+			@Nullable final DocTypeId orderDocTypeId,
+			@Nullable final BPartnerId salesRepId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -178,7 +184,9 @@ public final class OLCand implements IProductPriceAware
 
 		this.shipperId = shipperId;
 
-		this.salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
+		this.salesRepId = salesRepId;
+
+		this.orderDocTypeId = orderDocTypeId;
 	}
 
 	@Override

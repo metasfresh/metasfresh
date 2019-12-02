@@ -203,8 +203,6 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	LocalDate presetDateShipped;
 
-	@ApiModelProperty(value = "A C_Payment entry will be created based on the info here")
-	JsonPaymentInfo paymentInfo;
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	OrderDocType orderDocType;
@@ -247,7 +245,6 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
-			@JsonProperty("paymentInfo") final @Nullable JsonPaymentInfo paymentInfo,
 			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
@@ -280,7 +277,6 @@ public final class JsonOLCandCreateRequest
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;
 
-		this.paymentInfo = paymentInfo;
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;
 		this.salesPartnerCode = salesPartnerCode;
@@ -299,12 +295,7 @@ public final class JsonOLCandCreateRequest
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
 
-		if (!"DEST.de.metas.invoicecandidate".equals(dataDest)) // TODO extract constant //TODO fix this
-		{
-			Check.assumeNotNull(dateRequired,
-					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
-					"DEST.de.metas.invoicecandidate", this);
-		}
+
 		if (price != null)
 		{
 			Check.assumeNotNull(currencyCode,
