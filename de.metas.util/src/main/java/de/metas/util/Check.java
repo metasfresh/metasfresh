@@ -647,9 +647,20 @@ public final class Check
 		return isEmpty(str, false);
 	}
 
-	public static boolean isEmptyTrimWhitespaces(final String str)
+	/**
+	 * @return return true if the string is null, las length 0, or contains only whitespace.
+	 */
+	public static boolean isBlank(@Nullable final String str)
 	{
 		return isEmpty(str, true);
+	}
+
+	/**
+	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
+	 */
+	public static boolean isNotBlank(@Nullable final String str)
+	{
+		return !isEmpty(str, true);
 	}
 
 	/**
