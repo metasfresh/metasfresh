@@ -42,7 +42,7 @@ public class PaymentAllocationResult
 	@NonNull
 	private final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
 
-	public boolean isFullyAllocated()
+	public boolean isOK()
 	{
 		return fullyAllocatedCheck.isNoError();
 	}
