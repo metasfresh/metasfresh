@@ -1,18 +1,18 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
+import de.metas.acct.api.AcctSchema;
+import de.metas.costing.*;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailReverseRequest;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
-import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -38,6 +38,9 @@ import de.metas.quantity.Quantity;
 
 public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
+
+	private BigDecimal costPrice = BigDecimal.ZERO;
+
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
 		super(InterfaceWrapperHelper.getPO(inventoryLine), doc);
@@ -55,7 +58,12 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 			qty = qtyCount.subtract(qtyBook);
 		}
 
-		setQty(Quantity.of(qty, getProductStockingUOM()), false);
+		//calculate the cost price considering qty in inventory UOM
+		if (inventoryLine.getCostPrice() != null && qty.signum() > 0) {
+			this.costPrice = inventoryLine.getCostPrice().multiply(qty);
+		}
+
+		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
 	}
@@ -85,10 +93,32 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
 							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);
 		}
+	}
+
+	/**
+	 * @param qty				inventory quantity
+	 * @param inventoryUOMId	UOM used for the inventory process
+	 * @return inventory quantity in the unit of measurement used for stocking.
+	 */
+	private Quantity getQuantityInStockingUOM(final BigDecimal qty,final int inventoryUOMId ) {
+		final Quantity quantityInStockingUOM;
+
+		final I_C_UOM inventoryUOM = Services.get(IUOMDAO.class).getById(inventoryUOMId);
+
+		Check.assume(inventoryUOM != null, " No Unit of measurement was found for the given Id: {}", inventoryUOMId);
+
+		final I_C_UOM stockingUOM = getProductStockingUOM();
+
+		final BigDecimal qtyValueInStockingUOM = Services.get(IUOMConversionBL.class)
+				.convertQty(getProductId(), qty, inventoryUOM, stockingUOM);
+
+		quantityInStockingUOM = Quantity.of(qtyValueInStockingUOM, stockingUOM);
+
+		return quantityInStockingUOM;
 	}
 }

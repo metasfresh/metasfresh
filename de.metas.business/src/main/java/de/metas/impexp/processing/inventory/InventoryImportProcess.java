@@ -180,6 +180,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
 		inventoryLine.setExternalId(importRecord.getExternalLineId());
 		inventoryLine.setQtyCount(importRecord.getQtyCount());
+		inventoryLine.setCostPrice(importRecord.getCostPrice());
 		inventoryLine.setM_Inventory_ID(inventoryId.getRepoId());
 		inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
 
