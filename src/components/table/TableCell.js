@@ -13,10 +13,10 @@ import {
   DATE_FIELD_TYPES,
   TIME_FIELD_TYPES,
   DATE_FIELD_FORMATS,
+  TIME_REGEX_TEST,
   TIME_FORMAT,
 } from '../../constants/Constants';
 import WidgetTooltip from '../widget/WidgetTooltip';
-import { TIME_REGEX_TEST } from '../../utils/documentListHelper';
 
 class TableCell extends PureComponent {
   static getAmountFormatByPrecision = precision =>
