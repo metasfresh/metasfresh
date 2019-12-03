@@ -53,7 +53,7 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 	{
 		this.repository = repository;
 		this.evaluationDate = evaluationDate;
-		rowsHolder = SynchronizedMutable.of(new ImmutableRowsIndex<>(initialRows));
+		rowsHolder = SynchronizedMutable.of(ImmutableRowsIndex.of(initialRows));
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 		final ImmutableRowsIndex<InvoiceRow> rows = rowsHolder.getValue();
 		return recordRefs.streamIds(I_C_Invoice.Table_Name, InvoiceId::ofRepoId)
 				.map(InvoiceRow::convertInvoiceIdToDocumentId)
-				.filter(rows::containsRowId)
+				.filter(rows::isRelevantForRefreshing)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
@@ -82,9 +82,9 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 	@Override
 	public void invalidate(final DocumentIdsSelection rowIds)
 	{
-		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder.getValue().streamRows(rowIds)
-				.map(InvoiceRow::getInvoiceId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder
+				.getValue()
+				.getRecordIdsToRefresh(rowIds, InvoiceRow::convertDocumentIdToInvoiceId);
 
 		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate);
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));

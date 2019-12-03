@@ -3,17 +3,20 @@ package de.metas.ui.web.payment_allocation;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /*
@@ -40,11 +43,25 @@ import lombok.NonNull;
 
 final class ImmutableRowsIndex<T extends IViewRow>
 {
+	public static <T extends IViewRow> ImmutableRowsIndex<T> of(@NonNull final List<T> rows)
+	{
+		final ImmutableList<DocumentId> initialRowIds = rows.stream()
+				.map(IViewRow::getId)
+				.collect(ImmutableList.toImmutableList());
+
+		return new ImmutableRowsIndex<>(initialRowIds, rows);
+	}
+
+	private final ImmutableList<DocumentId> initialRowIds;
 	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
 	private final ImmutableMap<DocumentId, T> rowsById;
 
-	ImmutableRowsIndex(@NonNull final List<T> rows)
+	private ImmutableRowsIndex(
+			@NonNull final ImmutableList<DocumentId> initialRowIds,
+			@NonNull final List<T> rows)
 	{
+		this.initialRowIds = initialRowIds;
+
 		rowIds = rows.stream()
 				.map(IViewRow::getId)
 				.collect(ImmutableList.toImmutableList());
@@ -63,9 +80,10 @@ final class ImmutableRowsIndex<T extends IViewRow>
 				.collect(GuavaCollectors.toImmutableMapByKey(IViewRow::getId));
 	}
 
-	public boolean containsRowId(final DocumentId rowId)
+	public boolean isRelevantForRefreshing(final DocumentId rowId)
 	{
-		return rowIds.contains(rowId);
+		return rowIds.contains(rowId)
+				|| initialRowIds.contains(rowId);
 	}
 
 	public ImmutableRowsIndex<T> replacingRows(
@@ -94,15 +112,33 @@ final class ImmutableRowsIndex<T extends IViewRow>
 
 		resultRows.addAll(newRowsToAdd.values());
 
-		return new ImmutableRowsIndex<>(resultRows);
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
 	}
 
-	public List<T> getRows(@NonNull final DocumentIdsSelection rowIds)
+	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final Function<DocumentId, ID> idMapper)
 	{
-		return streamRows(rowIds).collect(ImmutableList.toImmutableList());
+		if (rowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else if (rowIds.isAll())
+		{
+			return Stream.concat(this.rowIds.stream(), this.initialRowIds.stream())
+					.map(idMapper)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			return rowIds.stream()
+					.filter(this::isRelevantForRefreshing)
+					.map(idMapper)
+					.collect(ImmutableSet.toImmutableSet());
+		}
 	}
 
-	public Stream<T> streamRows(@NonNull final DocumentIdsSelection rowIds)
+	private Stream<T> streamRows(@NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{

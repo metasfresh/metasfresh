@@ -63,9 +63,9 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to allocate");
 		}
-		if (!result.isFullyAllocated())
+		if (!result.isOK())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not fully allocated");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a valid selection");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -117,7 +117,8 @@ public class PaymentsView_Allocate extends PaymentsViewBasedProcess implements I
 				.dateTrx(dateTrx)
 				.dateAcct(dateTrx)
 				.paymentDocuments(paymentDocuments)
-				.payableDocuments(invoiceDocuments);
+				.payableDocuments(invoiceDocuments)
+				.allowPartialAllocations(true);
 	}
 
 	private PayableDocument toPayableDocument(final InvoiceRow row)

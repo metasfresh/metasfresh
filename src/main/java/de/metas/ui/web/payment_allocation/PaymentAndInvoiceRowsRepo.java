@@ -21,12 +21,14 @@ import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -55,6 +57,7 @@ import lombok.NonNull;
 @Repository
 public class PaymentAndInvoiceRowsRepo
 {
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currenciesRepo;
 	private final PaymentAllocationRepository paymentAllocationRepo;
 	private final LookupDataSource bpartnersLookup;
@@ -162,6 +165,7 @@ public class PaymentAndInvoiceRowsRepo
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
+				.docTypeName(docTypeBL.getNameById(invoiceToAllocate.getDocTypeId()))
 				.documentNo(invoiceToAllocate.getDocumentNo())
 				.dateInvoiced(invoiceToAllocate.getDateInvoiced())
 				.bpartner(bpartnersLookup.findById(invoiceToAllocate.getBpartnerId()))
