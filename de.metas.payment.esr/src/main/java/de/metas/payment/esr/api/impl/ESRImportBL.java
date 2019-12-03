@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.metas.banking.api.BankAccountId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -653,7 +654,7 @@ public class ESRImportBL implements IESRImportBL
 
 		return Services.get(IPaymentBL.class).newInboundReceiptBuilder()
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.bpBankAccountId(line.getESR_Import().getC_BP_BankAccount_ID())
+				.bpBankAccountId(BankAccountId.ofRepoId(line.getESR_Import().getC_BP_BankAccount_ID()))
 				.accountNo(line.getAccountNo())
 				.dateAcct(TimeUtil.asLocalDate(line.getAccountingDate()))
 				.dateTrx(TimeUtil.asLocalDate(line.getPaymentDate()))

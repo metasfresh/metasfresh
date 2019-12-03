@@ -27,6 +27,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.banking.api.BankAccountId;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -174,10 +175,10 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder bpBankAccountId(final int bpBankAccountId)
+	public final DefaultPaymentBuilder bpBankAccountId(@NonNull final BankAccountId bpBankAccountId)
 	{
 		assertNotBuilt();
-		payment.setC_BP_BankAccount_ID(bpBankAccountId);
+		payment.setC_BP_BankAccount_ID(bpBankAccountId.getRepoId());
 		return this;
 	}
 
