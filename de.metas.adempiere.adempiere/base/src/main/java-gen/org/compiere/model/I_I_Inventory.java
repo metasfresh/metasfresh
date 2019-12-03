@@ -32,8 +32,6 @@ public interface I_I_Inventory
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_Client>(I_I_Inventory.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -70,7 +68,7 @@ public interface I_I_Inventory
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -80,16 +78,91 @@ public interface I_I_Inventory
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_Org>(I_I_Inventory.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Daten Import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_ID (int C_DataImport_ID);
+
+	/**
+	 * Get Daten Import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_ID();
+
+	public org.compiere.model.I_C_DataImport getC_DataImport();
+
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
+
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport>(I_I_Inventory.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+
+	/**
+	 * Set Data Import Run.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_Run_ID (int C_DataImport_Run_ID);
+
+	/**
+	 * Get Data Import Run.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_Run_ID();
+
+	public org.compiere.model.I_C_DataImport_Run getC_DataImport_Run();
+
+	public void setC_DataImport_Run(org.compiere.model.I_C_DataImport_Run C_DataImport_Run);
+
+    /** Column definition for C_DataImport_Run_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport_Run>(I_I_Inventory.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
+    /** Column name C_DataImport_Run_ID */
+    public static final String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
+
+	/**
+	 * Set Cost Preise.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCostPrice (java.math.BigDecimal CostPrice);
+
+	/**
+	 * Get Cost Preise.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getCostPrice();
+
+    /** Column definition for CostPrice */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_CostPrice = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "CostPrice", null);
+    /** Column name CostPrice */
+    public static final String COLUMNNAME_CostPrice = "CostPrice";
 
 	/**
 	 * Get Erstellt.
@@ -116,8 +189,6 @@ public interface I_I_Inventory
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_User>(I_I_Inventory.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -241,7 +312,7 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
-	 * Set Best Before Date.
+	 * Set Mindesthaltbarkeit.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -250,7 +321,7 @@ public interface I_I_Inventory
 	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate);
 
 	/**
-	 * Get Best Before Date.
+	 * Get Mindesthaltbarkeit.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -337,6 +408,52 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_IsImported", null);
     /** Column name I_IsImported */
     public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+
+	/**
+	 * Set Import Line Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setI_LineContent (java.lang.String I_LineContent);
+
+	/**
+	 * Get Import Line Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getI_LineContent();
+
+    /** Column definition for I_LineContent */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_LineContent = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_LineContent", null);
+    /** Column name I_LineContent */
+    public static final String COLUMNNAME_I_LineContent = "I_LineContent";
+
+	/**
+	 * Set Import Line No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setI_LineNo (int I_LineNo);
+
+	/**
+	 * Get Import Line No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getI_LineNo();
+
+    /** Column definition for I_LineNo */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_LineNo = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_LineNo", null);
+    /** Column name I_LineNo */
+    public static final String COLUMNNAME_I_LineNo = "I_LineNo";
 
 	/**
 	 * Set Inventurdatum.
@@ -539,8 +656,6 @@ public interface I_I_Inventory
 	 */
 	public int getM_Locator_ID();
 
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Locator>(I_I_Inventory.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -564,8 +679,6 @@ public interface I_I_Inventory
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Product>(I_I_Inventory.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -589,8 +702,6 @@ public interface I_I_Inventory
 	 */
 	public int getM_Warehouse_ID();
 
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Warehouse>(I_I_Inventory.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
@@ -644,10 +755,8 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Produktschlüssel.
-	 * Can be:
-	* The exact product value
-	* The product id
-	* Part of the product value, using this pattern val-%
+	 * Produkt-Identifikator;
+ "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -657,10 +766,8 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Produktschlüssel.
-	 * Can be:
-	* The exact product value
-	* The product id
-	* Part of the product value, using this pattern val-%
+	 * Produkt-Identifikator;
+ "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -741,8 +848,6 @@ public interface I_I_Inventory
 	 */
 	public int getSubProducer_BPartner_ID();
 
-    /** Column definition for SubProducer_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner> COLUMN_SubProducer_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner>(I_I_Inventory.class, "SubProducer_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name SubProducer_BPartner_ID */
     public static final String COLUMNNAME_SubProducer_BPartner_ID = "SubProducer_BPartner_ID";
 
@@ -793,8 +898,8 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_TE = "TE";
 
 	/**
-	 * Set UPC/EAN.
-	 * Bar Code (Universal Product Code or its superset European Article Number)
+	 * Set UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -803,8 +908,8 @@ public interface I_I_Inventory
 	public void setUPC (java.lang.String UPC);
 
 	/**
-	 * Get UPC/EAN.
-	 * Bar Code (Universal Product Code or its superset European Article Number)
+	 * Get UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -842,8 +947,6 @@ public interface I_I_Inventory
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_User>(I_I_Inventory.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
