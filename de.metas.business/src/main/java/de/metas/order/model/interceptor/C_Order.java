@@ -200,6 +200,45 @@ public class C_Order
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
 	}
 
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void linkWithPaymentByExternalOrderId(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		if (Check.isBlank(order.getExternalId()))
+		{
+			return;
+		}
+
+		final String autoAssignToSalesOrderByExternalOrderId_Sysconfig = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(autoAssignToSalesOrderByExternalOrderId_Sysconfig, false);
+
+		if (!autoAssignEnabled)
+		{
+			return;
+		}
+
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final Optional<I_C_Payment> paymentOptional = paymentDAO.getByExternalOrderId(ExternalId.of(order.getExternalId()));
+
+		if (!paymentOptional.isPresent())
+		{
+			return;
+		}
+
+		final I_C_Payment payment = paymentOptional.get();
+		payment.setC_Order_ID(order.getC_Order_ID());
+		order.setC_Payment_ID(payment.getC_Payment_ID());
+
+		// todo is this needed, or is the save done automatically?
+		// InterfaceWrapperHelper.save(payment);
+	}
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
