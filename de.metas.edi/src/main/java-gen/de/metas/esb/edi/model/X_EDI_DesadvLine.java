@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1530070053L;
+	private static final long serialVersionUID = -380067917L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			setEDI_DesadvLine_ID (0);
 			setIsSubsequentDeliveryPlanned (false);
 			setM_Product_ID (0);
+			setQtyOrdered (BigDecimal.ZERO);
         } */
     }
 
@@ -344,6 +345,28 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.math.BigDecimal getQtyEntered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellt/ Beauftragt.
+		@param QtyOrdered 
+		Bestellt/ Beauftragt
+	  */
+	@Override
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
+	{
+		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
+	}
+
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

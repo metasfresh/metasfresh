@@ -450,6 +450,31 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
+
+	/**
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOrdered();
+
+    /** Column definition for QtyOrdered */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyOrdered", null);
+    /** Column name QtyOrdered */
+    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
+
+	/**
 	 * Set CU-UPC.
 	 *
 	 * <br>Type: String

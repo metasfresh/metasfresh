@@ -186,6 +186,7 @@ public class DesadvBL implements IDesadvBL
 
 		newDesadvLine.setPriceActual(orderLine.getPriceActual());
 
+		newDesadvLine.setQtyOrdered(orderLine.getQtyOrdered());
 		newDesadvLine.setMovementQty(BigDecimal.ZERO);
 		newDesadvLine.setM_Product_ID(productId.getRepoId());
 
