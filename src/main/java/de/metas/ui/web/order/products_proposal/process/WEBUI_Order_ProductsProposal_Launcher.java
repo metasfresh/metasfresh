@@ -48,9 +48,9 @@ public class WEBUI_Order_ProductsProposal_Launcher extends WEBUI_ProductsProposa
 
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
 		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());
-		if (!docStatus.isDrafted())
+		if (!docStatus.isDraftedOrInProgress())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only Drafted or InProgress orders are allowed");
 		}
 
 		return ProcessPreconditionsResolution.accept();
