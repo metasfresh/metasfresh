@@ -288,6 +288,7 @@
 	<xsd:element name="EDI_Exp_Desadv" type="EDI_Exp_DesadvType" />
 	<xsd:element name="EDI_Exp_DesadvLine" type="EDI_Exp_DesadvLineType" />
 	<xsd:element name="EDI_Desadv_Feedback" type="EDI_Desadv_FeedbackType" />
+	<xsd:element name="XLS_Imp_C_OLCand" type="XLS_Imp_C_OLCandType" />
 	<xsd:complexType name="EDI_Exp_C_BPartner_Product_vType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="ProductNo" type="xsd:string" />
@@ -737,10 +738,22 @@
 		<xsd:attribute ref="TrxName" />
 		<xsd:attribute ref="AD_Session_ID" />
 	</xsd:complexType>
+	<xsd:complexType name="EDI_Exp_DesadvLine_PackType">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="1" name="IPA_SSCC18" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="QtyCU" type="xsd:decimal" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="QtyCUsPerLU" type="xsd:decimal" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="QtyTU" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="BestBeforeDate" type="xsd:date" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="M_HU_PackagingCode_TU_Text" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType" />
+		</xsd:sequence>
+	</xsd:complexType>
 	<xsd:complexType name="EDI_Exp_DesadvLineType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="IPA_SSCC18" type="xsd:string" />
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_DesadvLine_Pack" type="EDI_Exp_DesadvLine_PackType" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="Line" type="xsd:integer" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="MovementQty" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="M_Product_ID" type="EDI_Exp_M_ProductType" />
@@ -749,16 +762,11 @@
 			<xsd:element maxOccurs="1" minOccurs="1" name="QtyEntered" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="UPC" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="IsSubsequentDeliveryPlanned" type="YES-NO" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="QtyDeliveredInUOM" type="xsd:decimal" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="QtyItemCapacity" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_CU" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_TU" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="GTIN" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="UPC_TU" type="xsd:string" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="M_HU_PackagingCode_LU_Text" type="xsd:string" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="M_HU_PackagingCode_TU_Text" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="PriceActual" type="xsd:decimal" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="BestBeforeDate" type="xsd:date" />
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="EDI_Exp_DesadvType">
@@ -855,5 +863,5 @@
 		<xsd:attribute ref="TrxName" />
 		<xsd:attribute ref="AD_Session_ID" />
 	</xsd:complexType>
-	<xsd:element name="XLS_Imp_C_OLCand" type="XLS_Imp_C_OLCandType" />
+	<xsd:element name="EDI_Exp_DesadvLine_Pack" type="EDI_Exp_DesadvLine_PackType" />
 </xsd:schema>

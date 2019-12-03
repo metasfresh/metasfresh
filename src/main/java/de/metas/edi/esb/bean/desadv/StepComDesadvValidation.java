@@ -68,11 +68,11 @@ public class StepComDesadvValidation
 			// validate mandatory types (not null)
 			validateObject(xmlDesadvLine.getLine(), "@FillMandatory@  @EDI_DesadvLine_ID@ @Line@");
 
-			validateObject(xmlDesadvLine.getQtyDeliveredInUOM(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyDeliveredInUOM@");
+			//validateObject(xmlDesadvLine.getQtyDeliveredInUOM(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyDeliveredInUOM@");
 			validateObject(xmlDesadvLine.getCUOMID(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @C_UOM_ID@");
 			validateObject(xmlDesadvLine.getMProductID(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @M_Product_ID@");
 
-			validateObject(xmlDesadvLine.getQtyItemCapacity(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyItemCapacity@");
+			//validateObject(xmlDesadvLine.getQtyItemCapacity(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyItemCapacity@");
 			validateObject(xmlDesadvLine.getQtyEntered(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyEntered@");
 
 			// validateString(xmlDesadvLine.getProductNo(), "@FillMandatory@ ProductNo in @EDI_DesadvLine_ID@ " + xmlDesadvLine.getLine()); not every customer demands this
