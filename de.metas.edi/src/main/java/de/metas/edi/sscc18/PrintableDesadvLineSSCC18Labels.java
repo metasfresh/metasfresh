@@ -38,7 +38,7 @@ import com.google.common.base.Suppliers;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -65,7 +65,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	private final String productName;
 
 	private int existingSSCC18sCount;
-	private final Supplier<List<I_EDI_DesadvLine_SSCC>> existingSSCC18s;
+	private final Supplier<List<I_EDI_DesadvLine_Pack>> existingSSCC18s;
 	private BigDecimal requiredSSCC18sCount;
 
 	private TotalQtyCUBreakdownCalculator huQtysCalculator;
@@ -117,7 +117,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_SSCC> getExistingSSCC18s()
+	public List<I_EDI_DesadvLine_Pack> getExistingSSCC18s()
 	{
 		return existingSSCC18s.get();
 	}
@@ -202,17 +202,17 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				return existingSSCC18Count;
 			}
 
-			return desadvDAO.retrieveDesadvLineSSCCsCount(_desadvLine);
+			return desadvDAO.retrieveDesadvLinePackRecordsCount(_desadvLine);
 		}
 
-		Supplier<List<I_EDI_DesadvLine_SSCC>> getExistingSSCC18s()
+		Supplier<List<I_EDI_DesadvLine_Pack>> getExistingSSCC18s()
 		{
-			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_SSCC>>()
+			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_Pack>>()
 			{
 				@Override
-				public List<I_EDI_DesadvLine_SSCC> get()
+				public List<I_EDI_DesadvLine_Pack> get()
 				{
-					return desadvDAO.retrieveDesadvLineSSCCs(_desadvLine);
+					return desadvDAO.retrieveDesadvLinePacks(_desadvLine);
 				}
 			});
 		}

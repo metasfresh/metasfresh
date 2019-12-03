@@ -5,14 +5,14 @@ import org.compiere.SpringContextHolder;
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.process.JavaProcess;
 
 /**
- * Creates as many {@link I_EDI_DesadvLine_SSCC} records as asked and then print them
+ * Creates as many {@link I_EDI_DesadvLine_Pack} records as asked and then print them
  *
  * @author tsa
  * @task 08910
@@ -22,7 +22,7 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 	//
 	// Parameters
 	private static final String PARAM_Counter = "Counter";
-	/** How many {@link I_EDI_DesadvLine_SSCC} are required */
+	/** How many {@link I_EDI_DesadvLine_Pack} are required */
 	private int p_Counter = 0;
 
 	private final transient SSCC18CodeBL sscc18CodeService = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
@@ -64,7 +64,7 @@ public class EDI_DesadvLine_GenerateSSCCLabels extends JavaProcess
 	}
 
 	/**
-	 * Print all enqueued {@link I_EDI_DesadvLine_SSCC} labels.
+	 * Print all enqueued {@link I_EDI_DesadvLine_Pack} labels.
 	 */
 	@Override
 	protected void postProcess(boolean success)

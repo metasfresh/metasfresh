@@ -47,6 +47,8 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
+import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBLTests;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -69,6 +71,8 @@ import lombok.NonNull;
 public class HUAttributeStorage_generateInitialAttributes_Integration_Test extends AbstractHUTest
 {
 	private IAttributeStorageFactory attributeStorageFactory;
+
+	private int nextSSCC18SerialNumber;
 
 	private I_M_HU_PI huPI;
 	private I_M_HU_PI_Version huPIVersion;
@@ -96,6 +100,11 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 
 	private void setupSSCC18AttributeValueGenerator()
 	{
+		nextSSCC18SerialNumber = 0;
+
+		final SSCC18CodeBL sscc18CodeService = new SSCC18CodeBL(() -> ++nextSSCC18SerialNumber);
+		Services.registerService(ISSCC18CodeBL.class, sscc18CodeService);
+
 		SSCC18CodeBLTests.setManufacturerCode("0001");
 	}
 

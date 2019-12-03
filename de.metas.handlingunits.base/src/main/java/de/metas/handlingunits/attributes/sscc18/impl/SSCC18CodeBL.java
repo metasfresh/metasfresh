@@ -29,6 +29,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
@@ -41,6 +43,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @ToString
+@Service
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {
 	/**

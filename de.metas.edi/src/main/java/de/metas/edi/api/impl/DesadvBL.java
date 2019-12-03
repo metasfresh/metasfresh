@@ -2,7 +2,9 @@ package de.metas.edi.api.impl;
 
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -42,11 +44,11 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
@@ -55,14 +57,13 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -89,15 +90,17 @@ import de.metas.quantity.Quantitys;
 import de.metas.report.server.ReportConstants;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
+@Service
 public class DesadvBL implements IDesadvBL
 {
-	/** Process used to print the {@link I_EDI_DesadvLine_SSCC}s labels */
+	/** Process used to print the {@link I_EDI_DesadvLine_Pack}s labels */
 	private static final String AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print = "EDI_DesadvLine_SSCC_Print";
 
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -111,15 +114,15 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
+	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient HURepository huRepository;
 
-	public DesadvBL()
-	{
-		this(SpringContextHolder.instance.getBean(HURepository.class));
-	}
+//	public DesadvBL()
+//	{
+//		this(SpringContextHolder.instance.getBean(HURepository.class));
+//	}
 
-	@VisibleForTesting
+//	@VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
 	{
 		this.huRepository = huRepository;
@@ -179,24 +182,9 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setLine(orderLine.getLine());
 
 		newDesadvLine.setQtyEntered(orderLine.getQtyEntered());
-		newDesadvLine.setQtyDeliveredInUOM(BigDecimal.ZERO);
 		newDesadvLine.setC_UOM_ID(orderLine.getC_UOM_ID());
 
 		newDesadvLine.setPriceActual(orderLine.getPriceActual());
-
-		final BigDecimal orderLineItemCapacity = orderLine.getQtyItemCapacity();
-		final BigDecimal lineItemCapacity;
-		if (orderLineItemCapacity.signum() <= 0)
-		{
-			// task 09776
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(desadv.getC_BPartner_ID(), I_C_BPartner.class);
-			lineItemCapacity = bpartner.getEdiDESADVDefaultItemCapacity();
-		}
-		else
-		{
-			lineItemCapacity = orderLineItemCapacity;
-		}
-		newDesadvLine.setQtyItemCapacity(lineItemCapacity);
 
 		newDesadvLine.setMovementQty(BigDecimal.ZERO);
 		newDesadvLine.setM_Product_ID(productId.getRepoId());
@@ -345,81 +333,95 @@ public class DesadvBL implements IDesadvBL
 	void addInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
-
 		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
 
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
-
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
-		Quantity remainingQty = Quantitys.create(inOutLineRecord.getMovementQty(), productId);
 
+		Quantity remainingQtyToAdd = Quantitys.create(inOutLineRecord.getMovementQty(), productId);
 		for (final I_M_HU topLevelHU : topLevelHUs)
 		{
-			final Quantity huQty = addPackInfoToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU);
-			remainingQty = remainingQty.subtract(huQty);
+			final Quantity packQty = addPackInfoToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU);
+			remainingQtyToAdd = remainingQtyToAdd.subtract(packQty);
 		}
 
-		if (remainingQty.signum() > 0)
+		if (remainingQtyToAdd.signum() > 0)
 		{
-
-			final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-
-			final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
-			final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
-
-			final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
-					tuPIItemProduct,
-					productId,
-					remainingQty.getUOM(),
-					BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
-					false/* noLUForVirtualTU */);
-			final int requiredLUQty = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, remainingQty.toBigDecimal(), remainingQty.getUOM());
-
-			final Quantity maxQtyCUsPerLU = Quantity.of(
-					lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU()),
-					remainingQty.getUOM());
-
-			for (int i = 0; i < requiredLUQty; i++)
-			{
-				final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
-
-				// BestBefore
-				final Optional<Timestamp> bestBeforeDate = extractBestBeforeDate(inOutLineRecord);
-				bestBeforeDate.ifPresent(ssccRecord::setBestBeforeDate);
-
-				// SSCC18
-				final String sscc18 = computeSSCC18();
-				ssccRecord.setIPA_SSCC18(sscc18);
-				ssccRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
-
-				// PackagingCodes
-				final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
-				ssccRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
-
-				final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
-				ssccRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
-
-				final Quantity qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
-
-				final Quantity currentQtyTU = qtyCUsPerCurrentLU.divide(lutuConfiguration.getQtyCU(), 0, RoundingMode.UP);
-
-				// Qtys
-				ssccRecord.setQtyCUsPerLU(qtyCUsPerCurrentLU.toBigDecimal());
-				ssccRecord.setQtyCU(lutuConfiguration.getQtyCU());
-				ssccRecord.setQtyTU(currentQtyTU.toBigDecimal().intValue());
-
-				saveRecord(ssccRecord);
-
-				remainingQty = remainingQty.subtract(qtyCUsPerCurrentLU); // prepare next iteration
-			}
+			addPackToLineUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd);
 		}
 
 		final BigDecimal newMovementQty = desadvLineRecord.getMovementQty().add(inOutLineRecord.getMovementQty());
-		setQty(desadvLineRecord, newMovementQty);
+		desadvLineRecord.setMovementQty(newMovementQty);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
+	}
+
+	private void addPackToLineUsingJustInOutLine(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final I_C_OrderLine orderLineRecord,
+			@NonNull final I_EDI_DesadvLine desadvLineRecord,
+			@NonNull final Quantity qtyToAdd)
+	{
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
+
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				productId,
+				qtyToAdd.getUOM(),
+				BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
+				false/* noLUForVirtualTU */);
+		final int requiredLUQty = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
+				lutuConfiguration,
+				qtyToAdd.toBigDecimal(),
+				qtyToAdd.getUOM());
+
+		final Quantity maxQtyCUsPerLU = Quantity.of(
+				lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU()),
+				qtyToAdd.getUOM());
+
+		Quantity remainingQty = qtyToAdd;
+
+		for (int i = 0; i < requiredLUQty; i++)
+		{
+			final I_EDI_DesadvLine_Pack packRecord = createNewPackRecord(desadvLineRecord);
+			packRecord.setQtyItemCapacity(lutuConfiguration.getQtyCU());
+			packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
+
+			// BestBefore
+			final Optional<Timestamp> bestBeforeDate = extractBestBeforeDate(inOutLineRecord);
+			bestBeforeDate.ifPresent(packRecord::setBestBeforeDate);
+
+			// SSCC18
+			final String sscc18 = computeSSCC18();
+			packRecord.setIPA_SSCC18(sscc18);
+			packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
+
+			// PackagingCodes
+			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
+			packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+
+			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
+			packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+
+			final Quantity qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
+
+			final Quantity currentQtyTU = qtyCUsPerCurrentLU.divide(lutuConfiguration.getQtyCU(), 0, RoundingMode.UP);
+			packRecord.setQtyTU(currentQtyTU.toBigDecimal().intValue());
+
+			setQty(productId,
+					packRecord,
+					Quantitys.create(lutuConfiguration.getQtyCU(), productId),
+					qtyCUsPerCurrentLU);
+
+			saveRecord(packRecord);
+
+			// prepare next iteration within this for-look
+			remainingQty = remainingQty.subtract(qtyCUsPerCurrentLU);
+		}
 	}
 
 	private Quantity addPackInfoToLineUsingHU(
@@ -439,23 +441,27 @@ public class DesadvBL implements IDesadvBL
 			return Quantitys.createZero(productId); // we don't do HU-related SSCC's if the HU is not a LU.
 		}
 
-		final I_EDI_DesadvLine_SSCC ssccRecord = createNewSSCC18Record(desadvLineRecord);
-		ssccRecord.setM_HU_ID(huRecord.getM_HU_ID());
+		final I_EDI_DesadvLine_Pack packRecord = createNewPackRecord(desadvLineRecord);
+		packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
+		packRecord.setM_HU_ID(huRecord.getM_HU_ID());
+
+		final Quantity qtyCUInStockUOM = rootHU.extractMedianCUQtyPerChildHU(productId);
+		packRecord.setQtyItemCapacity(qtyCUInStockUOM.toBigDecimal());
 
 		// get minimum best before
 		final Date bestBefore = rootHU.extractSingleAttributeValue(
 				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
 				(date1, date2) -> TimeUtil.min(date1, date2));
-		ssccRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
+		packRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
 		final String sscc18 = rootHU.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
-		ssccRecord.setIsManual_IPA_SSCC18(isEmpty(sscc18, true));
-		ssccRecord.setIPA_SSCC18(coalesceSuppliers(() -> sscc18, () -> computeSSCC18()));
+		packRecord.setIsManual_IPA_SSCC18(isEmpty(sscc18, true));
+		packRecord.setIPA_SSCC18(coalesceSuppliers(() -> sscc18, () -> computeSSCC18()));
 
 		final Optional<PackagingCode> packagingCode = rootHU.getPackagingCode();
 		if (packagingCode.isPresent())
 		{
-			ssccRecord.setM_HU_PackagingCode_LU_ID(packagingCode.get().getId().getRepoId());
+			packRecord.setM_HU_PackagingCode_LU_ID(packagingCode.get().getId().getRepoId());
 
 			final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
 					rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
@@ -463,19 +469,14 @@ public class DesadvBL implements IDesadvBL
 					null);
 			if (packagingCode != null)
 			{
-				ssccRecord.setM_HU_PackagingCode_TU_ID(tuPackagingCode.getId().getRepoId());
+				packRecord.setM_HU_PackagingCode_TU_ID(tuPackagingCode.getId().getRepoId());
 			}
 		}
+		packRecord.setQtyTU(rootHU.getChildHUs().size());
 
 		final Quantity quantity = rootHU.getProductQuantities().get(productId);
-		ssccRecord.setQtyCUsPerLU(quantity.toBigDecimal());
-
-		final BigDecimal qtyCU = rootHU.extractMedianCUQtyPerChild(productId).toBigDecimal();
-		ssccRecord.setQtyCU(qtyCU);
-
-		ssccRecord.setQtyTU(rootHU.getChildHUs().size());
-
-		saveRecord(ssccRecord);
+		setQty(productId, packRecord, qtyCUInStockUOM, quantity);
+		saveRecord(packRecord);
 
 		return quantity;
 	}
@@ -489,11 +490,12 @@ public class DesadvBL implements IDesadvBL
 		return ipaSSCC18;
 	}
 
-	private I_EDI_DesadvLine_SSCC createNewSSCC18Record(final I_EDI_DesadvLine desadvLineRecord)
+	private I_EDI_DesadvLine_Pack createNewPackRecord(@NonNull final I_EDI_DesadvLine desadvLineRecord)
 	{
-		final I_EDI_DesadvLine_SSCC ssccRecord = newInstance(I_EDI_DesadvLine_SSCC.class);
+		final I_EDI_DesadvLine_Pack ssccRecord = newInstance(I_EDI_DesadvLine_Pack.class);
 		ssccRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		ssccRecord.setEDI_Desadv_ID(desadvLineRecord.getEDI_Desadv_ID());
+		ssccRecord.setC_UOM_ID(desadvLineRecord.getC_UOM_ID());
 
 		return ssccRecord;
 	}
@@ -529,53 +531,72 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void removeInOutLineFromDesadv(I_M_InOutLine inOutLine)
+	public void removeInOutLineFromDesadv(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		if (inOutLine.getEDI_DesadvLine_ID() <= 0)
+		if (inOutLineRecord.getEDI_DesadvLine_ID() <= 0)
 		{
 			return;
 		}
 
-		final I_EDI_DesadvLine desadvLine = inOutLine.getEDI_DesadvLine();
 
-		inOutLine.setEDI_DesadvLine_ID(0);
-		InterfaceWrapperHelper.save(inOutLine);
+		final List<I_EDI_DesadvLine_Pack> packRecords = desadvDAO.retrieveDesadvLinePackRecords(inOutLineRecord);
+		for (final I_EDI_DesadvLine_Pack packRecord : packRecords)
+		{
+			delete(packRecord);
+		}
+		inOutLineRecord.setEDI_DesadvLine_ID(0);
+		InterfaceWrapperHelper.save(inOutLineRecord);
 
-		final BigDecimal newDesavLineQty = desadvLine.getMovementQty().subtract(inOutLine.getMovementQty());
-		setQty(desadvLine, newDesavLineQty);
+		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
+		final BigDecimal newDesavLineQty = desadvLine.getMovementQty().subtract(inOutLineRecord.getMovementQty());
+		desadvLine.setMovementQty(newDesavLineQty);
 		InterfaceWrapperHelper.save(desadvLine);
-
 	}
 
 	/**
 	 * Sets the given line's <code>MovementQty</code> and <code>QtyDeliveredInUOM</code>.
 	 */
 	@VisibleForTesting
-	void setQty(final I_EDI_DesadvLine desadvLine, final BigDecimal newMovementQty)
+	void setQty(
+			@NonNull final ProductId productId,
+			@NonNull final I_EDI_DesadvLine_Pack packrecord,
+			@NonNull final Quantity qtyCUInStockUom,
+			@NonNull final Quantity qtyCUsPerLUInStockUom)
 	{
-		desadvLine.setMovementQty(newMovementQty);
-
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final UomId uomId = UomId.ofRepoId(packrecord.getC_UOM_ID());
 
-		final UomId uomId = UomId.ofRepoId(desadvLine.getC_UOM_ID());
+		final BigDecimal qtyCUinPackUOM;
 
-		final BigDecimal qtyDeliveredInUOM;
+		final BigDecimal qtyCUsPerLUinPackUOM;
 		if (uomDAO.isUOMForTUs(uomId))
 		{
-			qtyDeliveredInUOM = newMovementQty
-					.divide(desadvLine.getQtyItemCapacity(), RoundingMode.UP)
-					.setScale(0, RoundingMode.UP);
+			qtyCUinPackUOM = ONE;
+
+			qtyCUsPerLUinPackUOM = qtyCUsPerLUInStockUom
+					.toBigDecimal()
+					.divide(packrecord.getQtyItemCapacity(), 0/* result's scale */, RoundingMode.UP);
 		}
 		else
 		{
-			final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
-			qtyDeliveredInUOM = uomConversionBL.convertFromProductUOM(
-					productId,
-					uomId,
-					newMovementQty);
+			qtyCUinPackUOM = uomConversionBL
+					.convertQuantityTo(
+							qtyCUInStockUom,
+							UOMConversionContext.of(productId),
+							uomId)
+					.toBigDecimal();
 
+			qtyCUsPerLUinPackUOM = uomConversionBL
+					.convertQuantityTo(
+							qtyCUsPerLUInStockUom,
+							UOMConversionContext.of(productId),
+							uomId)
+					.toBigDecimal();
 		}
-		desadvLine.setQtyDeliveredInUOM(qtyDeliveredInUOM);
+
+		packrecord.setMovementQty(qtyCUsPerLUInStockUom.toBigDecimal());
+		packrecord.setQtyCU(qtyCUinPackUOM);
+		packrecord.setQtyCUsPerLU(qtyCUsPerLUinPackUOM);
 	}
 
 	@Override

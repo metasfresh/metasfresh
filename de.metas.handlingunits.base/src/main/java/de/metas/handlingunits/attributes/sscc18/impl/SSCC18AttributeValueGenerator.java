@@ -26,11 +26,11 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
@@ -59,7 +59,7 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 			final I_M_Attribute attribute_IGNORED)
 	{
 		final I_M_HU hu = Services.get(IHUAttributesBL.class).getM_HU(attributeSet);
-		final SSCC18CodeBL creator = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
+		final ISSCC18CodeBL creator = Services.get(ISSCC18CodeBL.class);
 
 		// We use M_HU_ID for SSCC18 serial number (06852)
 		final int serialNumber = hu.getM_HU_ID();

@@ -28,22 +28,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -87,7 +84,7 @@ public class DesadvLineSSCC18Generator
 	 */
 	public DesadvLineSSCC18Generator generateAndEnqueuePrinting(@NonNull final IPrintableDesadvLineSSCC18Labels desadvLineLabels)
 	{
-		final List<I_EDI_DesadvLine_SSCC> desadvLineSSCCsExisting = desadvLineLabels.getExistingSSCC18s();
+		final List<I_EDI_DesadvLine_Pack> desadvLineSSCCsExisting = desadvLineLabels.getExistingSSCC18s();
 		final int countExisting = desadvLineSSCCsExisting.size();
 		final int countRequired = desadvLineLabels.getRequiredSSCC18sCount().intValueExact();
 		final TotalQtyCUBreakdownCalculator totalQtyCUsRemaining = desadvLineLabels.breakdownTotalQtyCUsToLUs();
@@ -97,7 +94,7 @@ public class DesadvLineSSCC18Generator
 			// Use existing SSCC if any
 			if (i < countExisting)
 			{
-				final I_EDI_DesadvLine_SSCC desadvLineSSCC = desadvLineSSCCsExisting.get(i);
+				final I_EDI_DesadvLine_Pack desadvLineSSCC = desadvLineSSCCsExisting.get(i);
 
 				// Subtract the "LU" of this SSCC from total QtyCUs remaining
 				totalQtyCUsRemaining.subtractLU()
@@ -119,7 +116,7 @@ public class DesadvLineSSCC18Generator
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
-				final I_EDI_DesadvLine_SSCC desadvLineSSCC = generateDesadvLineSSCC(desadvLine, luQtys);
+				final I_EDI_DesadvLine_Pack desadvLineSSCC = generateDesadvLineSSCC(desadvLine, luQtys);
 				enqueueToPrint(desadvLineSSCC);
 			}
 		}
@@ -223,7 +220,7 @@ public class DesadvLineSSCC18Generator
 	 * @param desadvLineLabels
 	 * @return created {@link I_EDI_DesadvLine_SSCC}.
 	 */
-	private final I_EDI_DesadvLine_SSCC generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
+	private final I_EDI_DesadvLine_Pack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
 	{
 		final IContextAware context = getContext();
 		final Properties ctx = context.getCtx();
@@ -236,7 +233,7 @@ public class DesadvLineSSCC18Generator
 
 		//
 		// Create SSCC record
-		final I_EDI_DesadvLine_SSCC desadvLineSSCC = InterfaceWrapperHelper.create(ctx, I_EDI_DesadvLine_SSCC.class, trxName);
+		final I_EDI_DesadvLine_Pack desadvLineSSCC = InterfaceWrapperHelper.create(ctx, I_EDI_DesadvLine_Pack.class, trxName);
 		desadvLineSSCC.setAD_Org_ID(desadvLine.getAD_Org_ID());
 		desadvLineSSCC.setEDI_DesadvLine(desadvLine);
 		desadvLineSSCC.setIPA_SSCC18(ipaSSCC18);
@@ -248,9 +245,9 @@ public class DesadvLineSSCC18Generator
 		return desadvLineSSCC;
 	}
 
-	private final void enqueueToPrint(final I_EDI_DesadvLine_SSCC desadvLineSSCC)
+	private final void enqueueToPrint(@NonNull final I_EDI_DesadvLine_Pack desadvLineSSCC)
 	{
-		desadvLineSSCC_IDs_ToPrint.add(desadvLineSSCC.getEDI_DesadvLine_SSCC_ID());
+		desadvLineSSCC_IDs_ToPrint.add(desadvLineSSCC.getEDI_DesadvLine_Pack_ID());
 	}
 
 }

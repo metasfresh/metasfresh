@@ -425,31 +425,6 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_ProductNo = "ProductNo";
 
 	/**
-	 * Set Liefermenge.
-	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM);
-
-	/**
-	 * Get Liefermenge.
-	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyDeliveredInUOM();
-
-    /** Column definition for QtyDeliveredInUOM */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyDeliveredInUOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyDeliveredInUOM", null);
-    /** Column name QtyDeliveredInUOM */
-    public static final String COLUMNNAME_QtyDeliveredInUOM = "QtyDeliveredInUOM";
-
-	/**
 	 * Set Menge.
 	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
@@ -473,29 +448,6 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyEntered", null);
     /** Column name QtyEntered */
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
-
-	/**
-	 * Set Verpackungskapazität.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
-
-	/**
-	 * Get Verpackungskapazität.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyItemCapacity();
-
-    /** Column definition for QtyItemCapacity */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyItemCapacity", null);
-    /** Column name QtyItemCapacity */
-    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
 	 * Set CU-UPC.

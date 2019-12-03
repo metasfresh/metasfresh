@@ -54,12 +54,12 @@ import de.metas.edi.sscc18.IPrintableDesadvLineSSCC18Labels;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
 
 /**
- * Form panel used to generate and print {@link I_EDI_DesadvLine_SSCC} records for a given {@link I_EDI_Desadv}.
+ * Form panel used to generate and print {@link I_EDI_DesadvLine_Pack} records for a given {@link I_EDI_Desadv}.
  *
  * @author tsa
  * @task 08910

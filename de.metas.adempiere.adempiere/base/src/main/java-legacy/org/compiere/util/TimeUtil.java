@@ -1069,7 +1069,7 @@ public class TimeUtil
 	}	// max
 
 	/**
-	 * Gets Minimum date.
+	 * Gets minimum date.
 	 *
 	 * If one of the dates is null, then the not null one will be returned.
 	 *

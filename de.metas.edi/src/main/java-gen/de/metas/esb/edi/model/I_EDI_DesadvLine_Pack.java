@@ -1,15 +1,15 @@
 package de.metas.esb.edi.model;
 
 
-/** Generated Interface for EDI_DesadvLine_SSCC
+/** Generated Interface for EDI_DesadvLine_Pack
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_EDI_DesadvLine_SSCC 
+public interface I_EDI_DesadvLine_Pack 
 {
 
-    /** TableName=EDI_DesadvLine_SSCC */
-    public static final String Table_Name = "EDI_DesadvLine_SSCC";
+    /** TableName=EDI_DesadvLine_Pack */
+    public static final String Table_Name = "EDI_DesadvLine_Pack";
 
     /** AD_Table_ID=540676 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -77,7 +77,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.sql.Timestamp getBestBeforeDate();
 
     /** Column definition for BestBeforeDate */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_BestBeforeDate = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "BestBeforeDate", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_BestBeforeDate = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "BestBeforeDate", null);
     /** Column name BestBeforeDate */
     public static final String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
 
@@ -92,7 +92,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -108,6 +108,29 @@ public interface I_EDI_DesadvLine_SSCC
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set DESADV.
@@ -132,7 +155,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public void setEDI_Desadv(de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv);
 
     /** Column definition for EDI_Desadv_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, de.metas.esb.edi.model.I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, de.metas.esb.edi.model.I_EDI_Desadv>(I_EDI_DesadvLine_SSCC.class, "EDI_Desadv_ID", de.metas.esb.edi.model.I_EDI_Desadv.class);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, de.metas.esb.edi.model.I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, de.metas.esb.edi.model.I_EDI_Desadv>(I_EDI_DesadvLine_Pack.class, "EDI_Desadv_ID", de.metas.esb.edi.model.I_EDI_Desadv.class);
     /** Column name EDI_Desadv_ID */
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
@@ -159,32 +182,32 @@ public interface I_EDI_DesadvLine_SSCC
 	public void setEDI_DesadvLine(de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine);
 
     /** Column definition for EDI_DesadvLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, de.metas.esb.edi.model.I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, de.metas.esb.edi.model.I_EDI_DesadvLine>(I_EDI_DesadvLine_SSCC.class, "EDI_DesadvLine_ID", de.metas.esb.edi.model.I_EDI_DesadvLine.class);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, de.metas.esb.edi.model.I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, de.metas.esb.edi.model.I_EDI_DesadvLine>(I_EDI_DesadvLine_Pack.class, "EDI_DesadvLine_ID", de.metas.esb.edi.model.I_EDI_DesadvLine.class);
     /** Column name EDI_DesadvLine_ID */
     public static final String COLUMNNAME_EDI_DesadvLine_ID = "EDI_DesadvLine_ID";
 
 	/**
-	 * Set EDI Lieferavis SSCC (DESADV).
+	 * Set EDI Lieferavis Pack (DESADV).
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEDI_DesadvLine_SSCC_ID (int EDI_DesadvLine_SSCC_ID);
+	public void setEDI_DesadvLine_Pack_ID (int EDI_DesadvLine_Pack_ID);
 
 	/**
-	 * Get EDI Lieferavis SSCC (DESADV).
+	 * Get EDI Lieferavis Pack (DESADV).
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getEDI_DesadvLine_SSCC_ID();
+	public int getEDI_DesadvLine_Pack_ID();
 
-    /** Column definition for EDI_DesadvLine_SSCC_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_EDI_DesadvLine_SSCC_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "EDI_DesadvLine_SSCC_ID", null);
-    /** Column name EDI_DesadvLine_SSCC_ID */
-    public static final String COLUMNNAME_EDI_DesadvLine_SSCC_ID = "EDI_DesadvLine_SSCC_ID";
+    /** Column definition for EDI_DesadvLine_Pack_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_EDI_DesadvLine_Pack_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "EDI_DesadvLine_Pack_ID", null);
+    /** Column name EDI_DesadvLine_Pack_ID */
+    public static final String COLUMNNAME_EDI_DesadvLine_Pack_ID = "EDI_DesadvLine_Pack_ID";
 
 	/**
 	 * Set SSCC18.
@@ -205,7 +228,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.lang.String getIPA_SSCC18();
 
     /** Column definition for IPA_SSCC18 */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "IPA_SSCC18", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "IPA_SSCC18", null);
     /** Column name IPA_SSCC18 */
     public static final String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
 
@@ -230,7 +253,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -255,7 +278,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public boolean isManual_IPA_SSCC18();
 
     /** Column definition for IsManual_IPA_SSCC18 */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_IsManual_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "IsManual_IPA_SSCC18", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_IsManual_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "IsManual_IPA_SSCC18", null);
     /** Column name IsManual_IPA_SSCC18 */
     public static final String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
@@ -278,7 +301,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public int getM_HU_ID();
 
     /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "M_HU_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "M_HU_ID", null);
     /** Column name M_HU_ID */
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
@@ -301,7 +324,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public int getM_HU_PackagingCode_LU_ID();
 
     /** Column definition for M_HU_PackagingCode_LU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_M_HU_PackagingCode_LU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "M_HU_PackagingCode_LU_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_M_HU_PackagingCode_LU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "M_HU_PackagingCode_LU_ID", null);
     /** Column name M_HU_PackagingCode_LU_ID */
     public static final String COLUMNNAME_M_HU_PackagingCode_LU_ID = "M_HU_PackagingCode_LU_ID";
 
@@ -326,7 +349,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.lang.String getM_HU_PackagingCode_LU_Text();
 
     /** Column definition for M_HU_PackagingCode_LU_Text */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_M_HU_PackagingCode_LU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "M_HU_PackagingCode_LU_Text", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_M_HU_PackagingCode_LU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "M_HU_PackagingCode_LU_Text", null);
     /** Column name M_HU_PackagingCode_LU_Text */
     public static final String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";
 
@@ -349,7 +372,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public int getM_HU_PackagingCode_TU_ID();
 
     /** Column definition for M_HU_PackagingCode_TU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_M_HU_PackagingCode_TU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "M_HU_PackagingCode_TU_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_M_HU_PackagingCode_TU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "M_HU_PackagingCode_TU_ID", null);
     /** Column name M_HU_PackagingCode_TU_ID */
     public static final String COLUMNNAME_M_HU_PackagingCode_TU_ID = "M_HU_PackagingCode_TU_ID";
 
@@ -374,12 +397,67 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.lang.String getM_HU_PackagingCode_TU_Text();
 
     /** Column definition for M_HU_PackagingCode_TU_Text */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_M_HU_PackagingCode_TU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "M_HU_PackagingCode_TU_Text", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_M_HU_PackagingCode_TU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "M_HU_PackagingCode_TU_Text", null);
     /** Column name M_HU_PackagingCode_TU_Text */
     public static final String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
 
 	/**
+	 * Set Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_InOutLine_ID (int M_InOutLine_ID);
+
+	/**
+	 * Get Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_InOutLine_ID();
+
+	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+
+    /** Column definition for M_InOutLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_M_InOutLine>(I_EDI_DesadvLine_Pack.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+    /** Column name M_InOutLine_ID */
+    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+
+	/**
+	 * Set Bewegungs-Menge.
+	 * Menge eines bewegten Produktes.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementQty (java.math.BigDecimal MovementQty);
+
+	/**
+	 * Get Bewegungs-Menge.
+	 * Menge eines bewegten Produktes.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getMovementQty();
+
+    /** Column definition for MovementQty */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "MovementQty", null);
+    /** Column name MovementQty */
+    public static final String COLUMNNAME_MovementQty = "MovementQty";
+
+	/**
 	 * Set Menge CU.
+	 * Menge der CUs pro Einzelgebinde (normalerweise TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -389,6 +467,7 @@ public interface I_EDI_DesadvLine_SSCC
 
 	/**
 	 * Get Menge CU.
+	 * Menge der CUs pro Einzelgebinde (normalerweise TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -397,7 +476,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.math.BigDecimal getQtyCU();
 
     /** Column definition for QtyCU */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_QtyCU = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "QtyCU", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_QtyCU = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "QtyCU", null);
     /** Column name QtyCU */
     public static final String COLUMNNAME_QtyCU = "QtyCU";
 
@@ -420,9 +499,34 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.math.BigDecimal getQtyCUsPerLU();
 
     /** Column definition for QtyCUsPerLU */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_QtyCUsPerLU = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "QtyCUsPerLU", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_QtyCUsPerLU = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "QtyCUsPerLU", null);
     /** Column name QtyCUsPerLU */
     public static final String COLUMNNAME_QtyCUsPerLU = "QtyCUsPerLU";
+
+	/**
+	 * Set Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyItemCapacity();
+
+    /** Column definition for QtyItemCapacity */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "QtyItemCapacity", null);
+    /** Column name QtyItemCapacity */
+    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
 	 * Set TU Anzahl.
@@ -443,7 +547,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public int getQtyTU();
 
     /** Column definition for QtyTU */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_QtyTU = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "QtyTU", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_QtyTU = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "QtyTU", null);
     /** Column name QtyTU */
     public static final String COLUMNNAME_QtyTU = "QtyTU";
 
@@ -458,7 +562,7 @@ public interface I_EDI_DesadvLine_SSCC
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_SSCC, Object>(I_EDI_DesadvLine_SSCC.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

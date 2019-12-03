@@ -33,7 +33,7 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.util.ISingletonService;
 
@@ -128,17 +128,16 @@ public interface IDesadvDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrieveAllOrders(I_EDI_Desadv desadv);
 
-	List<I_EDI_DesadvLine_SSCC> retrieveDesadvLineSSCCs(I_EDI_DesadvLine desadvLine);
+	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(I_EDI_DesadvLine desadvLine);
 
-	int retrieveDesadvLineSSCCsCount(I_EDI_DesadvLine desadvLine);
+	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(I_M_InOutLine inOutLineRecord);
+
+	int retrieveDesadvLinePackRecordsCount(I_EDI_DesadvLine desadvLine);
 
 	I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(I_EDI_DesadvLine desadvLine);
 
 	/**
 	 * Get the value of the minimum sum percentage from the sysconfig 'de.metas.esb.edi.DefaultMinimumPercentage'
-	 *
-	 * @return
 	 */
 	BigDecimal retrieveMinimumSumPercentage();
-
 }

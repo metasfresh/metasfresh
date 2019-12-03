@@ -125,7 +125,7 @@ public class HU
 	 * Iterates all child-HUs' storage quantities for the given productId and returns the median (or something close).
 	 * Goal: return a reasonably common quantity, and ignore possible outliers.
 	 */
-	public Quantity extractMedianCUQtyPerChild(@NonNull final ProductId productId)
+	public Quantity extractMedianCUQtyPerChildHU(@NonNull final ProductId productId)
 	{
 		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
 				.stream()

@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1040316650L;
+	private static final long serialVersionUID = 1843690221L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -327,28 +327,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
 	}
 
-	/** Set Liefermenge.
-		@param QtyDeliveredInUOM 
-		Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
-	  */
-	@Override
-	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM)
-	{
-		set_Value (COLUMNNAME_QtyDeliveredInUOM, QtyDeliveredInUOM);
-	}
-
-	/** Get Liefermenge.
-		@return Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
-	  */
-	@Override
-	public java.math.BigDecimal getQtyDeliveredInUOM () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Menge.
 		@param QtyEntered 
 		Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
@@ -366,25 +344,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.math.BigDecimal getQtyEntered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Verpackungskapazität.
-		@param QtyItemCapacity Verpackungskapazität	  */
-	@Override
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
-	{
-		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
-	}
-
-	/** Get Verpackungskapazität.
-		@return Verpackungskapazität	  */
-	@Override
-	public java.math.BigDecimal getQtyItemCapacity () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyItemCapacity);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
