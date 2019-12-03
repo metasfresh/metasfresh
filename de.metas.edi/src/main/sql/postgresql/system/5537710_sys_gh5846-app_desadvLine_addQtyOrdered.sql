@@ -163,8 +163,15 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine ADD COLUMN QtyOrdered NUMERIC')
 ;
 
-UPDATE EDI_DesadvLine l SET QtyOrdered=uomconvert(l.M_Product_ID, p.C_UOM_ID, l.C_UOM_ID, l.QtyEntered), Updated=now(), Updatedby=99
-FROM M_Product p
-WHERE QtyOrdered IS NULL
-    AND p.M_Product_ID=l.M_Product_ID
-;
+UPDATE EDI_DesadvLine l_outer SET QtyOrdered=data.QtyOrdered, UpdatedBy=99, Updated='2019-12-03 16:27:53.785951+01'
+FROM (
+    SELECT l.EDI_DesadvLine_ID, l.QtyEntered, l.M_Product_ID, ol.QtyOrdered
+    FROM EDI_DesadvLine l
+        JOIN M_InOutLine iol on iol.EDI_DesadvLine_ID=l.EDI_DesadvLine_ID
+        JOIN C_OrderLine ol on ol.C_OrderLine_ID=iol.C_OrderLine_ID
+    WHERE l.QtyOrdered IS NULL
+) data
+WHERE data.EDI_DesadvLine_ID=l_outer.EDI_DesadvLine_ID AND l_outer.QtyOrdered IS NULL;
+
+UPDATE EDI_DesadvLine l SET QtyOrdered=0, UpdatedBy=99, Updated='2019-12-03 16:28:39.372809+01'
+WHERE l.QtyOrdered IS NULL;

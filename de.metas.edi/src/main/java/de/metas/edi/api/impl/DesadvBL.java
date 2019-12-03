@@ -117,12 +117,12 @@ public class DesadvBL implements IDesadvBL
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient HURepository huRepository;
 
-//	public DesadvBL()
-//	{
-//		this(SpringContextHolder.instance.getBean(HURepository.class));
-//	}
+	// public DesadvBL()
+	// {
+	// this(SpringContextHolder.instance.getBean(HURepository.class));
+	// }
 
-//	@VisibleForTesting
+	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
 	{
 		this.huRepository = huRepository;
@@ -375,10 +375,13 @@ public class DesadvBL implements IDesadvBL
 				qtyToAdd.getUOM(),
 				BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
 				false/* noLUForVirtualTU */);
-		final int requiredLUQty = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
-				lutuConfiguration,
-				qtyToAdd.toBigDecimal(),
-				qtyToAdd.getUOM());
+		final int requiredLUQty = Math.max(
+				lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
+						lutuConfiguration,
+						qtyToAdd.toBigDecimal(),
+						qtyToAdd.getUOM()),
+				1 // if e.g. the tuPIItemProduct does not have an LU packing instruction
+		);
 
 		final Quantity maxQtyCUsPerLU = Quantity.of(
 				lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU()),
@@ -540,7 +543,6 @@ public class DesadvBL implements IDesadvBL
 		{
 			return;
 		}
-
 
 		final List<I_EDI_DesadvLine_Pack> packRecords = desadvDAO.retrieveDesadvLinePackRecords(inOutLineRecord);
 		for (final I_EDI_DesadvLine_Pack packRecord : packRecords)
