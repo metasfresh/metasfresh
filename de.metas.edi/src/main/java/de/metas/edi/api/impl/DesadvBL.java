@@ -547,13 +547,14 @@ public class DesadvBL implements IDesadvBL
 		{
 			delete(packRecord);
 		}
-		inOutLineRecord.setEDI_DesadvLine_ID(0);
-		InterfaceWrapperHelper.save(inOutLineRecord);
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		final BigDecimal newDesavLineQty = desadvLine.getMovementQty().subtract(inOutLineRecord.getMovementQty());
 		desadvLine.setMovementQty(newDesavLineQty);
 		InterfaceWrapperHelper.save(desadvLine);
+
+		inOutLineRecord.setEDI_DesadvLine_ID(0);
+		InterfaceWrapperHelper.save(inOutLineRecord);
 	}
 
 	/**
