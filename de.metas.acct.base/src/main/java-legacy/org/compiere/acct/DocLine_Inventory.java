@@ -59,7 +59,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		}
 
 		//calculate the cost price considering qty in inventory UOM
-		if (inventoryLine.getCostPrice() != null && qty.signum() > 0) {
+		if (qty.signum() > 0) {
 			this.costPrice = inventoryLine.getCostPrice().multiply(qty);
 		}
 
@@ -105,7 +105,8 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 	 * @param inventoryUOMId	UOM used for the inventory process
 	 * @return inventory quantity in the unit of measurement used for stocking.
 	 */
-	private Quantity getQuantityInStockingUOM(final BigDecimal qty,final int inventoryUOMId ) {
+	private Quantity getQuantityInStockingUOM(final BigDecimal qty, final int inventoryUOMId)
+	{
 		final Quantity quantityInStockingUOM;
 
 		final I_C_UOM inventoryUOM = Services.get(IUOMDAO.class).getById(inventoryUOMId);
