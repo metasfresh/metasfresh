@@ -82,7 +82,8 @@ public class PaymentAllocationBuilder
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
-	private boolean _allowOnlyOneVendorDoc = true;
+	private boolean allowOnlyOneVendorDoc = true;
+	private boolean allowPartialAllocations = false;
 	private boolean dryRun = false;
 
 	// Status
@@ -103,11 +104,19 @@ public class PaymentAllocationBuilder
 		//
 		// Create allocation candidates
 		final ImmutableList<AllocationLineCandidate> candidates = createAllocationLineCandidates();
-		final OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck = checkFullyAllocated();
 
-		if (!dryRun)
+		final OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
+		if (!allowPartialAllocations)
 		{
-			fullyAllocatedCheck.throwIfError();
+			fullyAllocatedCheck = checkFullyAllocated();
+			if (!dryRun)
+			{
+				fullyAllocatedCheck.throwIfError();
+			}
+		}
+		else
+		{
+			fullyAllocatedCheck = OptionalDeferredException.noError();
 		}
 
 		//
@@ -340,10 +349,11 @@ public class PaymentAllocationBuilder
 	 * @param payableDocuments
 	 * @param paymentDocuments
 	 */
-	private void assertOnlyOneVendorDocType(final List<PayableDocument> payableDocuments,
+	private void assertOnlyOneVendorDocType(
+			final List<PayableDocument> payableDocuments,
 			final List<IPaymentDocument> paymentDocuments)
 	{
-		if (!isAllowOnlyOneVendorDoc())
+		if (!allowOnlyOneVendorDoc)
 		{
 			return; // task 09558: nothing to do
 		}
@@ -823,15 +833,17 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
-	private boolean isAllowOnlyOneVendorDoc()
-	{
-		return _allowOnlyOneVendorDoc;
-	}
-
-	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean AllowOnlyOneVendorDoc)
+	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean allowOnlyOneVendorDoc)
 	{
 		assertNotBuilt();
-		_allowOnlyOneVendorDoc = AllowOnlyOneVendorDoc;
+		this.allowOnlyOneVendorDoc = allowOnlyOneVendorDoc;
+		return this;
+	}
+
+	public PaymentAllocationBuilder allowPartialAllocations(final boolean allowPartialAllocations)
+	{
+		assertNotBuilt();
+		this.allowPartialAllocations = allowPartialAllocations;
 		return this;
 	}
 
