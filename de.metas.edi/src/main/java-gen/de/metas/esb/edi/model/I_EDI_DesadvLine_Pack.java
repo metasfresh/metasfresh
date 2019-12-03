@@ -160,7 +160,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set EDI_DesadvLine.
+	 * Set DESADV-Position.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -169,7 +169,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID);
 
 	/**
-	 * Get EDI_DesadvLine.
+	 * Get DESADV-Position.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -400,6 +400,35 @@ public interface I_EDI_DesadvLine_Pack
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_M_HU_PackagingCode_TU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "M_HU_PackagingCode_TU_Text", null);
     /** Column name M_HU_PackagingCode_TU_Text */
     public static final String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
+
+	/**
+	 * Set Lieferung/Wareneingang.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_InOut_ID (int M_InOut_ID);
+
+	/**
+	 * Get Lieferung/Wareneingang.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_InOut_ID();
+
+	public org.compiere.model.I_M_InOut getM_InOut();
+
+	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
+
+    /** Column definition for M_InOut_ID */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, org.compiere.model.I_M_InOut>(I_EDI_DesadvLine_Pack.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+    /** Column name M_InOut_ID */
+    public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
 	 * Set Versand-/Wareneingangsposition.

@@ -389,6 +389,7 @@ public class DesadvBL implements IDesadvBL
 		{
 			final I_EDI_DesadvLine_Pack packRecord = createNewPackRecord(desadvLineRecord);
 			packRecord.setQtyItemCapacity(lutuConfiguration.getQtyCU());
+			packRecord.setM_InOut_ID(inOutLineRecord.getM_InOut_ID());
 			packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
 
 			// BestBefore
@@ -442,6 +443,7 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final I_EDI_DesadvLine_Pack packRecord = createNewPackRecord(desadvLineRecord);
+		packRecord.setM_InOut_ID(inOutLineRecord.getM_InOut_ID());
 		packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
 		packRecord.setM_HU_ID(huRecord.getM_HU_ID());
 

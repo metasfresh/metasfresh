@@ -183,7 +183,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set EDI_DesadvLine.
+	 * Set DESADV-Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -192,7 +192,7 @@ public interface I_EDI_DesadvLine
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID);
 
 	/**
-	 * Get EDI_DesadvLine.
+	 * Get DESADV-Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

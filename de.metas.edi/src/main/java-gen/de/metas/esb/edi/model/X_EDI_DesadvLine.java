@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1843690221L;
+	private static final long serialVersionUID = 1530070053L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -137,8 +137,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
-	/** Set EDI_DesadvLine.
-		@param EDI_DesadvLine_ID EDI_DesadvLine	  */
+	/** Set DESADV-Position.
+		@param EDI_DesadvLine_ID DESADV-Position	  */
 	@Override
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID)
 	{
@@ -148,8 +148,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, Integer.valueOf(EDI_DesadvLine_ID));
 	}
 
-	/** Get EDI_DesadvLine.
-		@return EDI_DesadvLine	  */
+	/** Get DESADV-Position.
+		@return DESADV-Position	  */
 	@Override
 	public int getEDI_DesadvLine_ID () 
 	{

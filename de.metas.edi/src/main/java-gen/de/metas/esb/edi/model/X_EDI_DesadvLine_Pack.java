@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1539457493L;
+	private static final long serialVersionUID = 207001252L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine_Pack (Properties ctx, int EDI_DesadvLine_Pack_ID, String trxName)
@@ -29,6 +29,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 			setEDI_DesadvLine_Pack_ID (0);
 			setIPA_SSCC18 (null);
 			setIsManual_IPA_SSCC18 (false); // N
+			setM_InOut_ID (0);
 			setM_InOutLine_ID (0);
 			setMovementQty (BigDecimal.ZERO);
         } */
@@ -136,8 +137,8 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 		set_ValueFromPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class, EDI_DesadvLine);
 	}
 
-	/** Set EDI_DesadvLine.
-		@param EDI_DesadvLine_ID EDI_DesadvLine	  */
+	/** Set DESADV-Position.
+		@param EDI_DesadvLine_ID DESADV-Position	  */
 	@Override
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID)
 	{
@@ -147,8 +148,8 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, Integer.valueOf(EDI_DesadvLine_ID));
 	}
 
-	/** Get EDI_DesadvLine.
-		@return EDI_DesadvLine	  */
+	/** Get DESADV-Position.
+		@return DESADV-Position	  */
 	@Override
 	public int getEDI_DesadvLine_ID () 
 	{
@@ -316,6 +317,43 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	public java.lang.String getM_HU_PackagingCode_TU_Text () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_TU_Text);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	/** Set Lieferung/Wareneingang.
+		@param M_InOut_ID 
+		Material Shipment Document
+	  */
+	@Override
+	public void setM_InOut_ID (int M_InOut_ID)
+	{
+		if (M_InOut_ID < 1) 
+			set_Value (COLUMNNAME_M_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+	}
+
+	/** Get Lieferung/Wareneingang.
+		@return Material Shipment Document
+	  */
+	@Override
+	public int getM_InOut_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
