@@ -516,10 +516,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE EDI_DesadvLine_Pack ADD CONSTRAINT MInOutLine_EDIDesadvLinePack FOREIGN KEY (M_InOutLine_ID) REFERENCES public.M_InOutLine DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- this was already done somewhere
 -- 2019-12-03T09:19:04.984Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN C_UOM_ID NUMERIC(10) NOT NULL')
-;
+--/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN C_UOM_ID NUMERIC(10) NOT NULL')
+--;
 
 -- 2019-12-03T09:19:05.073Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
