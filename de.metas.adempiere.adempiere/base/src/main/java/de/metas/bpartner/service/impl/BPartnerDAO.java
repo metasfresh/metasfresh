@@ -211,6 +211,18 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public Optional<BPartnerId> getBPartnerIdByExternalId(@NonNull final ExternalId externalId)
+	{
+		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_ExternalId, externalId.getValue())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
+		return Optional.ofNullable(bpartnerId);
+	}
+
+	@Override
 	public I_C_BPartner getByIdInTrx(@NonNull final BPartnerId bpartnerId)
 	{
 		return load(bpartnerId, I_C_BPartner.class);
