@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
@@ -80,6 +81,8 @@ public class InvoiceToAllocate
 	@NonNull
 	Amount discountAmountConverted;
 
+	@NonNull
+	DocTypeId docTypeId;
 	@NonNull
 	SOTrx soTrx;
 	boolean creditMemo;

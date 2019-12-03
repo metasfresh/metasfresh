@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -218,6 +219,7 @@ public class PaymentAllocationRepository
 		}
 
 		final String documentNo = rs.getString("docno");
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(rs.getInt("C_DocType_ID"));
 
 		//
 		// Fetch amounts
@@ -262,6 +264,7 @@ public class PaymentAllocationRepository
 				.grandTotalConverted(grandTotalConv)
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
+				.docTypeId(docTypeId)
 				.soTrx(soTrx)
 				.creditMemo(isCreditMemo)
 				.poReference(rs.getString("POReference"))
