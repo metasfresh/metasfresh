@@ -72,32 +72,32 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.ExtraLarge, captionKey = "M_Product_ID")
 	private final LookupValue product;
 
-	@ViewColumn(seqNo = 45, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
+	public static final String FIELD_asi = "asi";
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
+	private final LookupValue asi;
+
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
 	private final String packingDescription;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, widgetSize = WidgetSize.Small, captionKey = "PreparationDate")
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ZonedDateTime, widgetSize = WidgetSize.Small, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
 	private final BigDecimal qtyOrdered;
 
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_UOM_ID")
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_UOM_ID")
 	private final LookupValue uom;
 
 	public static final String FIELD_qtyToDeliverStockOverride = "qtyToDeliverStockOverride";
-	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverStockOverride;
 
 	public static final String FIELD_qtyToDeliverCatchOverride = "qtyToDeliverCatchOverride";
-	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverCatchOverride;
 
-	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
+	@ViewColumn(seqNo = 120, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
 	private final LookupValue catchUOM;
-
-	public static final String FIELD_asi = "asi";
-	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
-	private final LookupValue asi;
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
