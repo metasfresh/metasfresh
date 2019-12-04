@@ -23,23 +23,7 @@
 package de.metas.rest_api.payment;
 
 import de.metas.Profiles;
-import de.metas.banking.api.BankAccountId;
-import de.metas.banking.api.IBPBankAccountDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.money.CurrencyId;
-import de.metas.payment.TenderType;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.rest_api.utils.CurrencyService;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.poi.ss.formula.functions.T;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,56 +31,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
 @RestController
 @RequestMapping(PaymentRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
 public class PaymentRestEndpointImpl implements PaymentRestEndpoint
 {
-	private final CurrencyService currencyService;
+	private final JsonPaymentService jsonPaymentService;
 
-	public PaymentRestEndpointImpl(final CurrencyService currencyService)
+	public PaymentRestEndpointImpl(final JsonPaymentService jsonPaymentService)
 	{
-		this.currencyService = currencyService;
+		this.jsonPaymentService = jsonPaymentService;
 	}
 
 	@PostMapping
 	@Override
-	public ResponseEntity<T> createPayment(@RequestBody @NonNull final JsonPaymentInfo jsonPaymentInfo)
+	public ResponseEntity<String> createPayment(@RequestBody @NonNull final JsonPaymentInfo jsonPaymentInfo)
 	{
-
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-		final LocalDate dateTrx = SystemTime.asLocalDate();
-
-		final CurrencyId currencyId = currencyService.getCurrencyId(jsonPaymentInfo.getCurrencyCode());
-
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-		final BPartnerId bPartnerId = partnerDAO.getBPartnerIdByExternalId(ExternalId.of(jsonPaymentInfo.getExternalBpartnerId().getValue())).get();
-
-		final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
-		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(bPartnerId, currencyId, jsonPaymentInfo.getTargetIBAN());
-
-		if (!bankAccountIdOptional.isPresent())
-		{
-			throw new AdempiereException("WHYYYYYYYYYYYY user, why?");
-		}
-
-		final I_C_Payment transferBackPayment = paymentBL.newOutboundPaymentBuilder()
-				.bpartnerId(bPartnerId)
-				.payAmt(jsonPaymentInfo.getAmount())
-				.currencyId(currencyId)
-				.bpBankAccountId(bankAccountIdOptional.get())
-
-				.adOrgId(Env.getOrgId())
-				.tenderType(TenderType.DirectDeposit)
-				.dateAcct(dateTrx)
-				.dateTrx(dateTrx)
-				.createAndProcess();
-
-		transferBackPayment.setExternalOrderId(jsonPaymentInfo.getExternalOrderId().getValue());
-
-		return ResponseEntity.ok().build();
+		return jsonPaymentService.createPaymentFromJson(jsonPaymentInfo);
 	}
 }
