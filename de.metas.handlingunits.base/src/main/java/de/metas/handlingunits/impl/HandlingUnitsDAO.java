@@ -58,6 +58,7 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -859,7 +860,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
 			return new HUReservationRepository();
 		}
-		final HUReservationRepository huReservationRepository = Adempiere.getBean(HUReservationRepository.class);
+		final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
 		return huReservationRepository;
 	}
 
