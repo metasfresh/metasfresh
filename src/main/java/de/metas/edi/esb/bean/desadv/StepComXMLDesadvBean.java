@@ -405,7 +405,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineEANCRequired())
 		{
 			final String eanc = ValidationHelper.validateString(lineAndPack.getLine().getEANCU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @EANCU@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @EANCU@");
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -417,7 +417,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineEANTRequired())
 		{
 			final String eant = ValidationHelper.validateString(lineAndPack.getLine().getEANTU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @EANTU@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @EANTU@");
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -429,7 +429,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineGTINRequired())
 		{
 			final String gtin = ValidationHelper.validateString(lineAndPack.getLine().getGTIN(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @GTIN@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @GTIN@");
 
 			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
 			gtinProdInfo.setDOCUMENTID(documentId);
@@ -441,7 +441,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineUPCCRequired())
 		{
 			final String upcc = ValidationHelper.validateString(lineAndPack.getLine().getUPC(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @UPC@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @UPC@");
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
@@ -452,7 +452,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineUPCCRequired())
 		{
 			final String upct = ValidationHelper.validateString(lineAndPack.getLine().getUPCTU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @UPCTU@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @UPCTU@");
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -484,7 +484,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLinePRICRequired())
 		{
 			final BigDecimal priceActual = validateObject(lineAndPack.getLine().getPriceActual(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @PriceActual@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @PriceActual@");
 
 			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
 			prodDescr.setDOCUMENTID(documentId);
@@ -515,7 +515,7 @@ public class StepComXMLDesadvBean
 			if (settings.isDesadvLineCUTURequired())
 			{
 				final BigDecimal qtyItemCapacity = validateObject(lineAndPack.getPack().getQtyCU(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @QtyCU@");
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @QtyCU@");
 				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
 				detail.getDQUAN1().add(cuTuQuantity);
@@ -570,7 +570,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
 		{
 			final XMLGregorianCalendar bestBefore = validateObject(lineAndPack.getBestBeforeDate(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine() + " @BestBeforeDate@");
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @BestBeforeDate@");
 
 			final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
 			dmark1.setDOCUMENTID(documentId);
