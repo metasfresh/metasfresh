@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component, createRef } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 
 import DocumentList from './app/DocumentList';
@@ -13,13 +13,7 @@ import Header from './header/Header';
  * @module Container
  * @extends Component
  */
-// const Container = props => {
-class Container extends Component {
-
-  render(){
-  const parentView = createRef();
-  let childView = createRef();
-
+const Container = props => {
   const {
     docActionElem,
     docStatusData,
@@ -62,7 +56,7 @@ class Container extends Component {
     activeTab,
     masterDocumentList,
     pluginComponents,
-  } = this.props;
+  } = props;
   const pluginModalVisible = pluginModal.visible;
   let PluginModalComponent = null;
 
@@ -183,8 +177,6 @@ class Container extends Component {
                   includedView && includedView.windowType && includedView.viewId
                 }
                 inModal={modal.visible}
-                ref={c => (this.parentView = c)}
-                relatedRef={childView}
               />
 
               {includedView &&
@@ -203,8 +195,6 @@ class Container extends Component {
                     processStatus={processStatus}
                     inBackground={false}
                     inModal={modal.visible}
-                    ref={c => (this.childView = c)}
-                    relatedRef={parentView}
                   />
                 )}
             </div>
@@ -225,7 +215,6 @@ class Container extends Component {
       </div>
     </div>
   );
-}
 };
 
 /**
