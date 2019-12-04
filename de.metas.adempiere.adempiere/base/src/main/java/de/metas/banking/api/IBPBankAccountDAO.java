@@ -34,7 +34,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import de.metas.util.ISingletonService;
 
 /**
- * This interface must be moved in de.metas.banking after we get rid of org.compiere.model.MPaySelectionCheck !
+ * todo This interface must be moved in de.metas.banking but there still are some dependencies which need be fixed
  */
 public interface IBPBankAccountDAO extends ISingletonService
 {
