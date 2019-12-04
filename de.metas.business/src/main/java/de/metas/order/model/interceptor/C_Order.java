@@ -1,5 +1,6 @@
 package de.metas.order.model.interceptor;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.DeliveryViaRule;
@@ -55,6 +56,9 @@ import java.util.Optional;
 public class C_Order
 {
 	public static final C_Order INSTANCE = new C_Order();
+
+	@VisibleForTesting
+	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 
 	private C_Order()
 	{
@@ -213,10 +217,8 @@ public class C_Order
 			return;
 		}
 
-		final String autoAssignToSalesOrderByExternalOrderId_Sysconfig = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
-
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(autoAssignToSalesOrderByExternalOrderId_Sysconfig, false);
+		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false);
 
 		if (!autoAssignEnabled)
 		{
@@ -235,8 +237,7 @@ public class C_Order
 		payment.setC_Order_ID(order.getC_Order_ID());
 		order.setC_Payment_ID(payment.getC_Payment_ID());
 
-		// todo is this needed, or is the save done automatically?
-		// InterfaceWrapperHelper.save(payment);
+		InterfaceWrapperHelper.save(payment);
 	}
 
 	@ModelChange(timings = {
