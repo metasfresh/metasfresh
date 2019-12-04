@@ -854,6 +854,12 @@ export class DocumentList extends Component {
     }
   };
 
+  handleUpdateQuickActions = actions => {
+    if (this.quickActionsComponent) {
+      this.quickActionsComponent.onUpdateActions(actions);
+    }
+  };
+
   /**
    * @method showIncludedView
    * @summary ToDo: Describe the method.
@@ -941,6 +947,7 @@ export class DocumentList extends Component {
       updateParentSelectedIds,
       modal,
       dispatch,
+      parentWindowType,
     } = this.props;
 
     const {
@@ -1120,6 +1127,7 @@ export class DocumentList extends Component {
                     ? {
                         viewId: includedView.viewId,
                         viewSelectedIds: childSelected,
+                        windowType: includedView.windowType,
                       }
                     : NO_VIEW
                 }
@@ -1128,9 +1136,12 @@ export class DocumentList extends Component {
                     ? {
                         viewId: parentDefaultViewId,
                         viewSelectedIds: parentSelected,
+                        windowType: parentWindowType,
                       }
                     : NO_VIEW
                 }
+                relatedRef={this.props.relatedRef}
+                onInvalidViewId={this.fetchLayoutAndData}
               />
             )}
           </div>

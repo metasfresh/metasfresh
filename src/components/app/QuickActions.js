@@ -40,11 +40,6 @@ export class QuickActions extends Component {
     });
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   componentDidMount = () => {
     this.mounted = true;
 
@@ -74,23 +69,17 @@ export class QuickActions extends Component {
     }
   };
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   componentWillUnmount = () => {
     this.mounted = false;
   };
 
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method
-   * @param {*} nextProps
-   * @todo Write the documentation
-   */
   UNSAFE_componentWillReceiveProps = nextProps => {
     const { selected, viewId, windowType } = this.props;
+
+    if (!nextProps.viewId) {
+      console.log('MOUNT: ', viewId, nextProps.viewId)
+      return this.props.onInvalidViewId();
+    }
 
     if (
       ((selected || nextProps.selected) &&
@@ -113,22 +102,10 @@ export class QuickActions extends Component {
     }
   };
 
-  /**
-   * @method shouldComponentUpdate
-   * @summary ToDo: Describe the method
-   * @param {*} nextProps
-   * @todo Write the documentation
-   */
   shouldComponentUpdate(nextProps) {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method
-   * @param {*} prevProps
-   * @todo Write the documentation
-   */
   componentDidUpdate = prevProps => {
     const { inBackground, inModal } = this.props;
 
@@ -174,6 +151,14 @@ export class QuickActions extends Component {
         res,
         rej
       );
+    });
+  };
+
+  onUpdateActions = actions => {
+    console.log('ONUPDATEACTIONS: ', actions)
+
+    this.setState({
+      actions,
     });
   };
 
@@ -249,11 +234,12 @@ export class QuickActions extends Component {
     resolve,
     reject
   ) {
+    const { relatedRef } = this.props;
     if (!this.mounted) {
       return resolve();
     }
 
-    if (windowId && viewId && childView && parentView) {
+    if (windowId && viewId) {
       await quickActionsRequest(
         windowId,
         viewId,
@@ -262,18 +248,37 @@ export class QuickActions extends Component {
         childView,
         parentView
       )
-        .then(response => {
+        .then(result => {
+          const [respRel, resp] = result;
+
           if (this.mounted) {
+            const currentActions =
+              resp && resp.data ? resp.data.actions : respRel.data.actions;
+            const relatedActions =
+              resp && resp.data ? respRel.data.actions : null;
+
+            console.log('response: ', relatedRef, currentActions, relatedActions, resp, respRel);
+
+            if (relatedRef && relatedRef.current && parentView.viewId && relatedActions) {
+              this.props.relatedRef.current.handleUpdateQuickActions(relatedActions);
+            }
+
+            if (relatedRef && relatedRef.current && childView.viewId && relatedActions) {
+              this.props.relatedRef.current.handleUpdateQuickActions(relatedActions);
+            }
+
             return this.setState(
               {
-                actions: response.data.actions,
+                actions: currentActions,
                 loading: false,
               },
               () => resolve()
             );
           }
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log('E: ', e);
+
           if (this.mounted) {
             return this.setState(
               {
@@ -433,7 +438,7 @@ export class QuickActions extends Component {
  * @prop {bool} [stopShortcutPropagation]
  * @prop {string} [processStatus]
  * @prop {string} [shouldNotUpdate]
- * @prop {string} [selected]
+ * @prop {any} [selected]
  * @todo Check title, buttons. Which proptype? Required or optional?
  */
 QuickActions.propTypes = {
@@ -454,6 +459,7 @@ QuickActions.propTypes = {
   processStatus: PropTypes.string,
   shouldNotUpdate: PropTypes.any,
   selected: PropTypes.any,
+  className: PropTypes.string,
 };
 
 export default connect(
