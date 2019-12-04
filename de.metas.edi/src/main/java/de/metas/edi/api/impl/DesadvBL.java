@@ -117,11 +117,6 @@ public class DesadvBL implements IDesadvBL
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient HURepository huRepository;
 
-	// public DesadvBL()
-	// {
-	// this(SpringContextHolder.instance.getBean(HURepository.class));
-	// }
-
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
 	{

@@ -58,37 +58,4 @@ public class EDI_DesadvLine
 			InterfaceWrapperHelper.save(orderLine);
 		}
 	}
-
-//	/**
-//	 * Generate SSCC18 code only for manual and if no other code was generated.
-//	 */
-//	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-//			ifColumnsChanged = {
-//					I_EDI_DesadvLine.COLUMNNAME_IsManual_IPA_SSCC18,
-//					I_EDI_DesadvLine.COLUMNNAME_IPA_SSCC18,
-//					I_EDI_DesadvLine.COLUMNNAME_M_HU_ID,
-//					I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID })
-//	public void generateForIsManualIPASSCC18Changed(final I_EDI_DesadvLine desadvLine)
-//	{
-//		if (!desadvLine.isManual_IPA_SSCC18())
-//		{
-//			return; // only for manual
-//		}
-//
-//		if (!Check.isEmpty(desadvLine.getIPA_SSCC18(), true))
-//		{
-//			return; // only for not-generated
-//		}
-//
-//		//
-//		// Services
-//		final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
-//
-//		final Properties ctx = InterfaceWrapperHelper.getCtx(desadvLine);
-//		final int serialNumber = desadvLine.getM_HU_ID() > 0 ? desadvLine.getM_HU_ID() : desadvLine.getEDI_DesadvLine_ID();
-//
-//		final SSCC18 sscc18 = sscc18CodeBL.generate(ctx, serialNumber);
-//		final String ipaSSCC18 = sscc18CodeBL.toString(sscc18, false); // humanReadable=false
-//		desadvLine.setIPA_SSCC18(ipaSSCC18);
-//	}
 }

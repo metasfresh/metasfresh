@@ -57,7 +57,7 @@ public class DesadvLineSSCC18Generator
 	private static final transient Logger logger = LogManager.getLogger(DesadvLineSSCC18Generator.class);
 
 	// services
-	private final transient SSCC18CodeBL sscc18CodeService;
+	private final transient SSCC18CodeBL sscc18CodeBL;
 	private final transient IDesadvBL desadvBL = Services.get(IDesadvBL.class);
 
 	//
@@ -73,7 +73,7 @@ public class DesadvLineSSCC18Generator
 
 	public DesadvLineSSCC18Generator(@NonNull final SSCC18CodeBL sscc18CodeService)
 	{
-		this.sscc18CodeService = sscc18CodeService;
+		this.sscc18CodeBL = sscc18CodeService;
 	}
 
 	/**
@@ -228,8 +228,8 @@ public class DesadvLineSSCC18Generator
 
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
-		final SSCC18 sscc18 = sscc18CodeService.generate();
-		final String ipaSSCC18 = sscc18CodeService.toString(sscc18, false); // humanReadable=false
+		final SSCC18 sscc18 = sscc18CodeBL.generate();
+		final String ipaSSCC18 = sscc18CodeBL.toString(sscc18, false); // humanReadable=false
 
 		//
 		// Create SSCC record
