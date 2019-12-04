@@ -854,12 +854,6 @@ export class DocumentList extends Component {
     }
   };
 
-  handleUpdateQuickActions = actions => {
-    if (this.quickActionsComponent) {
-      this.quickActionsComponent.onUpdateActions(actions);
-    }
-  };
-
   /**
    * @method showIncludedView
    * @summary ToDo: Describe the method.
@@ -1140,7 +1134,6 @@ export class DocumentList extends Component {
                       }
                     : NO_VIEW
                 }
-                relatedRef={this.props.relatedRef}
                 onInvalidViewId={this.fetchLayoutAndData}
               />
             )}

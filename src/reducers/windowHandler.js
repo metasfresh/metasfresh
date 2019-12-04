@@ -18,8 +18,10 @@ import {
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
   DELETE_ROW,
+  DELETE_QUICK_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
+  FETCHED_QUICK_ACTIONS,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   NO_CONNECTION,
@@ -108,6 +110,7 @@ const initialState = {
     docId: undefined,
     websocket: null,
   },
+  quickActions: {},
   indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
@@ -745,6 +748,31 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         spinner: null,
       };
+
+    // QUICK ACTIONS
+    case FETCHED_QUICK_ACTIONS:
+      return {
+        ...state,
+        quickActions: {
+          ...state.quickActions,
+          [`${action.payload.windowId}${
+            action.payload.id ? `-${action.payload.id}` : ''
+          }`]: action.payload.data,
+        },
+      };
+    case DELETE_QUICK_ACTIONS: {
+      const key = `${action.payload.windowId}${
+        action.payload.id ? `-${action.payload.id}` : ''
+      }`;
+      const newQuickActions = { ...state.quickActions };
+
+      delete newQuickActions[key];
+
+      return {
+        ...state,
+        quickActions: newQuickActions,
+      };
+    }
     default:
       return state;
   }

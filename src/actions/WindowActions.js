@@ -11,16 +11,24 @@ import {
   ADD_NEW_ROW,
   ADD_ROW_DATA,
   ALLOW_SHORTCUT,
+  ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
   CLOSE_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
+  CLOSE_FILTER_BOX,
+  DELETE_QUICK_ACTIONS,
   DELETE_ROW,
   DISABLE_SHORTCUT,
+  DESELECT_TABLE_ITEMS,
+  DISABLE_OUTSIDE_CLICK,
+  HIDE_SPINNER,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  FETCHED_QUICK_ACTIONS,
   NO_CONNECTION,
+  OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
   PATCH_FAILURE,
@@ -28,8 +36,8 @@ import {
   PATCH_SUCCESS,
   REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
-  DESELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
+  SHOW_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
   UNSELECT_TAB,
@@ -44,12 +52,6 @@ import {
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
-  OPEN_FILTER_BOX,
-  CLOSE_FILTER_BOX,
-  ALLOW_OUTSIDE_CLICK,
-  DISABLE_OUTSIDE_CLICK,
-  SHOW_SPINNER,
-  HIDE_SPINNER,
 } from '../constants/ActionTypes';
 import {
   addNotification,
@@ -64,6 +66,27 @@ import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import { toggleFullScreen } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
+
+export function fetchedQuickActions(windowId, id, data) {
+  return {
+    type: FETCHED_QUICK_ACTIONS,
+    payload: {
+      data,
+      windowId,
+      id,
+    },
+  };
+}
+
+export function deleteQuickActions(windowId, id) {
+  return {
+    type: DELETE_QUICK_ACTIONS,
+    payload: {
+      windowId,
+      id,
+    },
+  };
+}
 
 export function setLatestNewDocument(id) {
   return {
@@ -467,6 +490,8 @@ export function createWindow(
           );
         }
 
+        console.log('createWindow')
+
         let elem = 0;
 
         response.data.forEach((value, index) => {
@@ -522,6 +547,7 @@ export function createWindow(
 }
 
 function initTabs(layout, windowType, docId, isModal) {
+  console.log('initTabs')
   return dispatch => {
     let tabTmp = {};
 
@@ -540,6 +566,7 @@ function initTabs(layout, windowType, docId, isModal) {
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
+  console.log('initWindow')
   return dispatch => {
     if (docId === 'NEW') {
       //New master document
@@ -1244,6 +1271,7 @@ export function discardNewDocument({ windowType, documentId } = {}) {
 }
 
 export function getTab(tabId, windowType, docId, orderBy) {
+  // console.log('getTab')
   return getData(
     'window',
     windowType,

@@ -6,7 +6,11 @@ import Queue from 'simple-promise-queue';
 import cx from 'classnames';
 
 import { quickActionsRequest } from '../../api';
-import { openModal } from '../../actions/WindowActions';
+import {
+  openModal,
+  fetchedQuickActions,
+  deleteQuickActions,
+} from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
 import QuickActionsContextShortcuts from '../keyshortcuts/QuickActionsContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
@@ -77,7 +81,6 @@ export class QuickActions extends Component {
     const { selected, viewId, windowType } = this.props;
 
     if (!nextProps.viewId) {
-      console.log('MOUNT: ', viewId, nextProps.viewId)
       return this.props.onInvalidViewId();
     }
 
@@ -154,14 +157,6 @@ export class QuickActions extends Component {
     });
   };
 
-  onUpdateActions = actions => {
-    console.log('ONUPDATEACTIONS: ', actions)
-
-    this.setState({
-      actions,
-    });
-  };
-
   /**
    * @method handleClickOPutside
    * @summary ToDo: Describe the method
@@ -178,7 +173,7 @@ export class QuickActions extends Component {
    * @todo Write the documentation
    */
   handleClick = action => {
-    const { dispatch, viewId, selected, childView, parentView } = this.props;
+    const { openModal, viewId, selected, childView, parentView } = this.props;
 
     if (action.disabled) {
       return;
@@ -188,23 +183,21 @@ export class QuickActions extends Component {
       loading: true,
     });
 
-    dispatch(
-      openModal(
-        action.caption,
-        action.processId,
-        'process',
-        null,
-        null,
-        false,
-        viewId,
-        selected,
-        null,
-        null,
-        parentView.viewId,
-        parentView.viewSelectedIds,
-        childView.viewId,
-        childView.viewSelectedIds
-      )
+    openModal(
+      action.caption,
+      action.processId,
+      'process',
+      null,
+      null,
+      false,
+      viewId,
+      selected,
+      null,
+      null,
+      parentView.viewId,
+      parentView.viewSelectedIds,
+      childView.viewId,
+      childView.viewSelectedIds
     );
 
     this.toggleDropdown();
@@ -234,7 +227,7 @@ export class QuickActions extends Component {
     resolve,
     reject
   ) {
-    const { relatedRef } = this.props;
+    const { fetchedQuickActions } = this.props;
     if (!this.mounted) {
       return resolve();
     }
@@ -257,27 +250,29 @@ export class QuickActions extends Component {
             const relatedActions =
               resp && resp.data ? respRel.data.actions : null;
 
-            console.log('response: ', relatedRef, currentActions, relatedActions, resp, respRel);
-
-            if (relatedRef && relatedRef.current && parentView.viewId && relatedActions) {
-              this.props.relatedRef.current.handleUpdateQuickActions(relatedActions);
+            if ((parentView.viewId || childView.viewId) && relatedActions) {
+              const windowType = parentView.windowType
+                ? parentView.windowType
+                : childView.windowType;
+              const id = parentView.viewId
+                ? parentView.viewId
+                : childView.viewId;
+              fetchedQuickActions(windowType, id, relatedActions);
             }
 
-            if (relatedRef && relatedRef.current && childView.viewId && relatedActions) {
-              this.props.relatedRef.current.handleUpdateQuickActions(relatedActions);
-            }
+            fetchedQuickActions(windowId, viewId, currentActions);
 
             return this.setState(
               {
-                actions: currentActions,
                 loading: false,
               },
               () => resolve()
             );
           }
         })
-        .catch((e) => {
-          console.log('E: ', e);
+        .catch(e => {
+          // eslint-disable-next-line no-console
+          console.error(e);
 
           if (this.mounted) {
             return this.setState(
@@ -331,14 +326,14 @@ export class QuickActions extends Component {
    * @todo Write the documentation
    */
   render() {
+    const { isDropdownOpen, btnTooltip, listTooltip, loading } = this.state;
     const {
       actions,
-      isDropdownOpen,
-      btnTooltip,
-      listTooltip,
-      loading,
-    } = this.state;
-    const { shouldNotUpdate, processStatus, disabled, className } = this.props;
+      shouldNotUpdate,
+      processStatus,
+      disabled,
+      className,
+    } = this.props;
     const disabledDuringProcessing = processStatus === 'pending' || loading;
 
     if (actions.length) {
@@ -443,7 +438,10 @@ export class QuickActions extends Component {
  */
 QuickActions.propTypes = {
   // from @connect
-  dispatch: PropTypes.func.isRequired,
+  actions: PropTypes.array,
+  openModal: PropTypes.func.isRequired,
+  fetchedQuickActions: PropTypes.func.isRequired,
+  deleteQuickActions: PropTypes.func.isRequired,
 
   // from <DocumentList>
   childView: PropTypes.object.isRequired,
@@ -460,11 +458,21 @@ QuickActions.propTypes = {
   shouldNotUpdate: PropTypes.any,
   selected: PropTypes.any,
   className: PropTypes.string,
+  onInvalidViewId: PropTypes.func,
+};
+
+const mapStateToProps = (state, ownProps) => {
+  const { viewId, windowType } = ownProps;
+  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
+
+  return {
+    actions: state.windowHandler.quickActions[key] || [],
+  };
 };
 
 export default connect(
-  false,
-  false,
+  mapStateToProps,
+  { openModal, fetchedQuickActions, deleteQuickActions },
   false,
   { forwardRef: true }
 )(QuickActions);
