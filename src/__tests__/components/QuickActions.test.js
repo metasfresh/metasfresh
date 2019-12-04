@@ -1,21 +1,24 @@
 import React from 'react';
 import { mount, shallow, render } from 'enzyme';
 import nock from 'nock';
-import { connect } from 'react-redux';
-import { shallowWithStore } from 'enzyme-redux';
-import { createMockStore } from 'redux-test-utils';
+import { Provider } from 'react-redux';
 
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-import { QuickActions } from '../../components/app/QuickActions';
+import { initialState } from '../../reducers/windowHandler';
+import { FETCHED_QUICK_ACTIONS } from '../../constants/ActionTypes';
+import ConnectedQuickActions, { QuickActions } from '../../components/app/QuickActions';
 import fixtures from '../../../test_setup/fixtures/quickactions.json';
-
 
 import { quickActionsRequest } from '../../api';
 jest.mock('../../api');
 
 const createDummyProps = function(props) {
   return {
-    dispatch: props.dispatch || jest.fn(),
+    actions: props.actions || [],
+    openModal: props.openModal || jest.fn(),
+    fetchedQuickActions: props.fetchedQuickActions || jest.fn(),
+    deleteQuickActions: props.deleteQuickActions || jest.fn(),
+
     selected: props.selected || null,
     childView: props.childView || {},
     parentView: props.parentView || {},
@@ -57,13 +60,8 @@ describe('QuickActions standalone component', () => {
       expect(wrapper.html()).toBe(null);
     });
 
-    it('fetches and renders actions on mount with `fetchOnInit` param', async function foo() {
-      const props = createDummyProps({ viewId: '540485-b', fetchOnInit: true });
-      const promise = Promise.resolve({ data: { actions: fixtures.data1.actions }});
-
-      quickActionsRequest.mockImplementation(() => {
-        return promise;
-      });
+    it('renders actions', async function asyncTest() {
+      const props = createDummyProps({ viewId: '540485-b', actions: fixtures.data1.actions });
 
       const wrapper = mount(
         <ShortcutProvider hotkeys={{}} keymap={{}} >
@@ -71,12 +69,9 @@ describe('QuickActions standalone component', () => {
         </ShortcutProvider>
       );
 
-      return promise.then(() => {
         wrapper.update();
 
-        expect(wrapper.find(QuickActions).instance().state.actions).toHaveLength(1);
         expect(wrapper.html()).toContain('quick-actions-wrapper');
-      });
     });
   });
 });
