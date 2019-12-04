@@ -55,7 +55,7 @@ import {
   HIDE_SPINNER,
 } from '../constants/ActionTypes';
 
-const initialState = {
+export const initialState = {
   connectionError: false,
   modal: {
     visible: false,
