@@ -7,6 +7,7 @@ import org.springframework.lang.Nullable;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -32,6 +33,7 @@ import lombok.Value;
  */
 
 @Value
+@ToString
 public class LineAndPack
 {
 	@NonNull

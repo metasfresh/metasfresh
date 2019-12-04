@@ -55,7 +55,8 @@ public class StepComDesadvSettings
 				.desadvLineLIRN(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.LIRN", "true"))
 				.desadvLinePRICRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.PRIC.required", "false"))
 				.desadvLineDMARK1BestBeforeDateRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.bestBeforeDate.required", "false"))
-				.build();
+				.desadvLineCUTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.CUTU.required", "false"))
+										.build();
 	}
 
 	String applicationRef;
@@ -77,6 +78,8 @@ public class StepComDesadvSettings
 
 	boolean desadvLineUPCCRequired;
 	boolean desadvLineUPCTRequired;
+
+	boolean desadvLineCUTURequired;
 
 	boolean desadvLineORBUOrderReference;
 
