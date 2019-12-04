@@ -26,12 +26,14 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.rest_api.common.JsonExternalId;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
 
 @Value
+@Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonPaymentInfo
@@ -57,6 +59,5 @@ public class JsonPaymentInfo
 
 	@NonNull
 	String currencyCode;
-
 }
 
