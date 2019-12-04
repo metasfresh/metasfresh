@@ -266,8 +266,6 @@ export class QuickActions extends Component {
 
             fetchedQuickActions(windowId, viewId, currentActions);
 
-            console.log('STAART: ', windowId, viewId, currentActions, result)
-
             return this.setState(
               {
                 loading: false,

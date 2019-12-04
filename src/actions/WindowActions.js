@@ -490,8 +490,6 @@ export function createWindow(
           );
         }
 
-        console.log('createWindow')
-
         let elem = 0;
 
         response.data.forEach((value, index) => {
@@ -547,7 +545,6 @@ export function createWindow(
 }
 
 function initTabs(layout, windowType, docId, isModal) {
-  console.log('initTabs')
   return dispatch => {
     let tabTmp = {};
 
@@ -566,7 +563,6 @@ function initTabs(layout, windowType, docId, isModal) {
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
-  console.log('initWindow')
   return dispatch => {
     if (docId === 'NEW') {
       //New master document
@@ -1271,7 +1267,6 @@ export function discardNewDocument({ windowType, documentId } = {}) {
 }
 
 export function getTab(tabId, windowType, docId, orderBy) {
-  // console.log('getTab')
   return getData(
     'window',
     windowType,
