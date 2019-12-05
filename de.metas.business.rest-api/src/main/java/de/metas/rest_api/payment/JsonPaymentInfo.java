@@ -62,13 +62,15 @@ public class JsonPaymentInfo
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(required = false)
+	@ApiModelProperty(position = 10, //
+			value = "Optional, to specify the `AD_Org_ID`.\n"
+					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
+					+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
-	adorgid the_org_value;
+	String orgCode;
 
-	@ApiModelProperty(required = false,
-	dataType = "java.time.LocalDate",
-	value = "If this is sent, it is used for both `acconting date` and `payment date`.")
+	@ApiModelProperty(dataType = "java.time.LocalDate",
+			value = "If this is sent, it is used for both `accounting date` and `payment date`.")
 	@Nullable
 	LocalDate transactionDate;
 }

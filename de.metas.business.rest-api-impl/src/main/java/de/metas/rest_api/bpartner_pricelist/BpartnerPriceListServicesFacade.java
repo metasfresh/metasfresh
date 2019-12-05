@@ -58,7 +58,6 @@ import lombok.NonNull;
  * Facade of all services on which this REST endpoints depends
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class BpartnerPriceListServicesFacade
@@ -106,6 +105,9 @@ public class BpartnerPriceListServicesFacade
 		return productsService.getProductValues(productIds);
 	}
 
+	// TODO move this method to de.metas.bpartner.service.IBPartnerDAO since it has nothing to do with price list
+	// 		TODO: IdentifierString must also be moved to the module containing IBPartnerDAO
+	// TODO it would be nice here if we would also use orgID when searching for the bpartner, since an ExternalId may belong to multiple users from different orgs
 	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier)
 	{
 		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier);
