@@ -36,6 +36,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
@@ -154,7 +155,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR C_Invoice_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == getTableId(MPayment.class))
+		else if (m_AD_Table_ID == getTableId(I_C_Payment.class))
 		{
 			m_where.append(" OR C_Payment_ID=").append(m_Record_ID);
 		}
@@ -296,7 +297,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("M_Product_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == getTableId(MPayment.class))
+			else if (m_AD_Table_ID == getTableId(I_C_Payment.class))
 			{
 				tab.setValue("C_Payment_ID", new Integer(m_Record_ID));
 			}
