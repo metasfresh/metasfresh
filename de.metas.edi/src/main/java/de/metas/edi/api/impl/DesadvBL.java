@@ -654,9 +654,9 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void printSSCC18_Labels(@NonNull final Properties ctx, final Collection<Integer> desadvLineSSCC_IDs_ToPrint)
+	public void printSSCC18_Labels(@NonNull final Properties ctx, final Collection<Integer> desadvLinePack_IDs_ToPrint)
 	{
-		Check.assumeNotEmpty(desadvLineSSCC_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
+		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 
 		//
 		// Create the process info based on AD_Process and AD_PInstance
@@ -672,9 +672,9 @@ public class DesadvBL implements IDesadvBL
 				// Execute the actual printing process
 				.buildAndPrepareExecution()
 				.onErrorThrowException()
-				// Create a selection with the EDI_DesadvLine_SSCC_IDs that we need to print.
+				// Create a selection with the EDI_DesadvLine_Pack_IDs that we need to print.
 				// The report will fetch it from selection.
-				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), desadvLineSSCC_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
+				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
 	}
 
