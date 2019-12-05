@@ -508,7 +508,7 @@ public class DesadvBL implements IDesadvBL
 		if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
 			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
-			Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
+			return Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
 		}
 		return Optional.empty();
 	}
