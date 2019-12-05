@@ -25,16 +25,19 @@ package de.metas.rest_api.payment;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.lang.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,22 +54,22 @@ import java.util.Optional;
 public class JsonPaymentService
 {
 	private final CurrencyService currencyService;
+	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
 
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public JsonPaymentService(final CurrencyService currencyService)
+	public JsonPaymentService(final CurrencyService currencyService, final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade)
 	{
 		this.currencyService = currencyService;
+		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
 	}
 
 	public ResponseEntity<String> createPaymentFromJson(@NonNull @RequestBody final JsonPaymentInfo jsonPaymentInfo)
 	{
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonPaymentInfo.getTransactionDate(), SystemTime.asLocalDate();
-
-		// todo search by org as well!
-		final OrgId orgId = CoalesceUtil.coalesce(OrgId.ofRepoId(jsonPaymentInfo.getThe_org_value()), Env.getOrgId());
+		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonPaymentInfo.getTransactionDate(), SystemTime.asLocalDate());
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(jsonPaymentInfo.getCurrencyCode());
 		if (currencyId == null)
@@ -74,7 +77,9 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body("Wrong currency: " + jsonPaymentInfo.getCurrencyCode());
 		}
 
-		final Optional<BPartnerId> bPartnerIdOptional = getBPartnerId(ExternalId.of(jsonPaymentInfo.getExternalBpartnerId()), orgId);
+		final OrgId orgId = retrieveOrg(jsonPaymentInfo);
+
+		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonPaymentInfo.getExternalBpartnerId()));
 		if (!bPartnerIdOptional.isPresent())
 		{
 			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonPaymentInfo.getExternalBpartnerId());
@@ -106,11 +111,26 @@ public class JsonPaymentService
 		return ResponseEntity.ok().build();
 	}
 
-	private Optional<BPartnerId> getBPartnerId(final ExternalId bPartnerExternalId, final OrgId orgId)
+	private OrgId retrieveOrg(@RequestBody @NonNull final JsonPaymentInfo jsonPaymentInfo)
 	{
-		return partnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-				.externalId(bPartnerExternalId)
-				.onlyOrgId(orgId)
-				.build());
+		final Optional<OrgId> orgId;
+		if (Check.isNotBlank(jsonPaymentInfo.getOrgCode()))
+		{
+			final OrgQuery query = OrgQuery.builder()
+					.orgValue(jsonPaymentInfo.getOrgCode())
+					.build();
+			orgId = orgDAO.retrieveOrgIdBy(query);
+		}
+		else
+		{
+			orgId = Optional.empty();
+		}
+		return orgId.orElse(Env.getOrgId());
+	}
+
+	private Optional<BPartnerId> retrieveBPartnerId(final IdentifierString bPartnerIdentifierString)
+	{
+		// TODO it would be nice here if we would also use orgID when searching for the bpartner, since an ExternalId may belong to multiple users from different orgs.
+		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString);
 	}
 }
