@@ -2,7 +2,6 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -74,23 +73,10 @@ public class ViewRowEditRestController
 		return JSONOptions.of(userSession);
 	}
 
-	private static IEditableView asEditableView(final IView view)
-	{
-		if (view instanceof IEditableView)
-		{
-			return (IEditableView)view;
-		}
-		else
-		{
-			throw new AdempiereException("View is not editable")
-					.setParameter("view", view);
-		}
-	}
-
 	private final IEditableView getEditableView(final ViewId viewId)
 	{
 		final IView view = viewsRepo.getView(viewId);
-		return asEditableView(view);
+		return IEditableView.asEditableView(view);
 	}
 
 	private RowEditingContext createRowEditingContext(final DocumentId rowId)
