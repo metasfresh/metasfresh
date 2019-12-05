@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.compiere.model.I_C_AllocationLine;
@@ -47,7 +48,7 @@ public interface IPaymentDAO extends ISingletonService
 {
 	I_C_Payment getById(PaymentId paymentId);
 
-	Optional<I_C_Payment> getByExternalOrderId(@NonNull ExternalId externalId);
+	Optional<I_C_Payment> getByExternalOrderId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
 
 	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
 
