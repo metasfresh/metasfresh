@@ -90,7 +90,7 @@ public class JsonPaymentService
 
 		if (!bankAccountIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account bor bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getExternalBpartnerId(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
+			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getExternalBpartnerId(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
 		}
 
 		final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()

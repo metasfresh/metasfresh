@@ -34,7 +34,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import de.metas.util.ISingletonService;
 
 /**
- * todo This interface must be moved in de.metas.banking but there still are some dependencies which need be fixed
+ * TODO This interface must be moved in de.metas.banking but there still are some dependencies which need be fixed
  */
 public interface IBPBankAccountDAO extends ISingletonService
 {
