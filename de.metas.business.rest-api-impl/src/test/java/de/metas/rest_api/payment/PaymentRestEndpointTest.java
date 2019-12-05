@@ -45,7 +45,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,23 +71,32 @@ class PaymentRestEndpointTest
 	@Test
 	void normalFlow()
 	{
-		final ExternalId externalOrderId = ExternalId.of("externalOrderId" + Instant.now());
-		final IdentifierString bPartnerIdentifierString = IdentifierString.of("ext-" + Instant.now());
+		final IdentifierString orderIdentifier = IdentifierString.of("ext-Order");
+		final IdentifierString partnerIdentifier = IdentifierString.of("ext-bPartner");
 
 		final OrgId orgId = OrgId.ANY;
 
 		// create test data
-		final I_C_Order salesOrder = createSalesOrder(externalOrderId);
-		createBPartnerAndBankAccount(bPartnerIdentifierString);
+		final I_C_Order salesOrder = createSalesOrder(orderIdentifier);
+		createBPartnerAndBankAccount(partnerIdentifier);
 
 		// create JsonPaymentInfo
 		final JsonPaymentInfo jsonPaymentInfo = JsonPaymentInfo.builder()
-				.externalOrderId(externalOrderId.getValue())
-				.externalBpartnerId(bPartnerIdentifierString.toJson())
+				.externalOrderId(orderIdentifier.toJson())
+				.externalBpartnerId(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
 				.build();
+
+		assertEquals(JsonPaymentInfo.builder()
+						.externalOrderId("ext-Order")
+						.externalBpartnerId("ext-bPartner")
+						.currencyCode(CURRENCY_CODE_EUR)
+						.amount(PAYMENT_AMOUNT)
+						.targetIBAN(TARGET_IBAN)
+						.build(),
+				jsonPaymentInfo);
 
 		// process JsonPaymentInfo
 		final ResponseEntity<String> response = paymentRestEndpoint.createPayment(jsonPaymentInfo);
@@ -96,11 +104,11 @@ class PaymentRestEndpointTest
 		assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
 
 		//noinspection OptionalGetWithoutIsPresent
-		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(jsonPaymentInfo.getExternalOrderId()), orgId).get();
+		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(orderIdentifier.asExternalId().getValue()), orgId).get();
 
 		assertEquals(0, salesOrder.getC_Payment_ID());
 		assertEquals(0, payment.getC_Order_ID());
-		assertEquals(externalOrderId.getValue(), payment.getExternalOrderId());
+		assertEquals(orderIdentifier.asExternalId().getValue(), payment.getExternalOrderId());
 
 		// enable auto linking SO <-> Payment
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, 0);
@@ -115,20 +123,20 @@ class PaymentRestEndpointTest
 	}
 
 	@NonNull
-	private I_C_Order createSalesOrder(@NonNull final ExternalId externalId)
+	private I_C_Order createSalesOrder(@NonNull final IdentifierString orderIdentifier)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-		order.setExternalId(externalId.getValue());
+		order.setExternalId(orderIdentifier.asExternalId().getValue());
 		order.setIsSOTrx(true);
 
 		InterfaceWrapperHelper.save(order);
 		return order;
 	}
 
-	private void createBPartnerAndBankAccount(@NonNull final IdentifierString externalId)
+	private void createBPartnerAndBankAccount(@NonNull final IdentifierString bpartnerIdentifier)
 	{
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bPartner.setExternalId(externalId.asExternalId().getValue());
+		bPartner.setExternalId(bpartnerIdentifier.asExternalId().getValue());
 
 		InterfaceWrapperHelper.save(bPartner);
 		createBpBankAccount(bPartner.getC_BPartner_ID());

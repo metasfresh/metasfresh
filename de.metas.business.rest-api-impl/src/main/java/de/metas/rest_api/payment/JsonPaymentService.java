@@ -105,7 +105,8 @@ public class JsonPaymentService
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		payment.setExternalOrderId(jsonPaymentInfo.getExternalOrderId());
+		final String externalOrderId = IdentifierString.of(jsonPaymentInfo.getExternalOrderId()).asExternalId().getValue();
+		payment.setExternalOrderId(externalOrderId);
 		InterfaceWrapperHelper.save(payment);
 
 		return ResponseEntity.ok().build();
