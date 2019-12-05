@@ -24,6 +24,7 @@ package de.metas.rest_api.payment;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.rest_api.bpartner.SwaggerDocConstants;
 import de.metas.rest_api.common.JsonExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -42,11 +43,12 @@ public class JsonPaymentInfo
 {
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner.ExternalId`.")
-
+			value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
 	@NonNull
-	String externalBpartnerId;
+	String bpartnerIdentifier;
 
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String")
 	@NonNull
 	String targetIBAN;
 
@@ -56,9 +58,12 @@ public class JsonPaymentInfo
 	@NonNull
 	String externalOrderId;
 
+	@ApiModelProperty(required = true)
 	@NonNull
 	BigDecimal amount;
 
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String")
 	@NonNull
 	String currencyCode;
 

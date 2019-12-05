@@ -79,10 +79,10 @@ public class JsonPaymentService
 
 		final OrgId orgId = retrieveOrg(jsonPaymentInfo);
 
-		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonPaymentInfo.getExternalBpartnerId()));
+		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonPaymentInfo.getBpartnerIdentifier()));
 		if (!bPartnerIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonPaymentInfo.getExternalBpartnerId());
+			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonPaymentInfo.getBpartnerIdentifier());
 		}
 
 		final BPartnerId bPartnerId = bPartnerIdOptional.get();
@@ -90,7 +90,7 @@ public class JsonPaymentService
 
 		if (!bankAccountIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getExternalBpartnerId(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
+			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getBpartnerIdentifier(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
 		}
 
 		final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()

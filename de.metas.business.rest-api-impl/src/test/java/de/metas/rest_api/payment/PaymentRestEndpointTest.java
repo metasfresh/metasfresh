@@ -83,7 +83,7 @@ class PaymentRestEndpointTest
 		// create JsonPaymentInfo
 		final JsonPaymentInfo jsonPaymentInfo = JsonPaymentInfo.builder()
 				.externalOrderId(orderIdentifier.toJson())
-				.externalBpartnerId(partnerIdentifier.toJson())
+				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
@@ -91,7 +91,7 @@ class PaymentRestEndpointTest
 
 		assertEquals(JsonPaymentInfo.builder()
 						.externalOrderId("ext-Order")
-						.externalBpartnerId("ext-bPartner")
+						.bpartnerIdentifier("ext-bPartner")
 						.currencyCode(CURRENCY_CODE_EUR)
 						.amount(PAYMENT_AMOUNT)
 						.targetIBAN(TARGET_IBAN)
