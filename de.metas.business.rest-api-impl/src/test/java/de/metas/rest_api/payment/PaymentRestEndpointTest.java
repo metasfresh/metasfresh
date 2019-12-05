@@ -27,7 +27,9 @@ import de.metas.money.CurrencyId;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -56,7 +58,8 @@ class PaymentRestEndpointTest
 	public static final String TARGET_IBAN = "012345678901234";
 
 	private final CurrencyService currencyService = new CurrencyService();
-	private final JsonPaymentService jsonPaymentService = new JsonPaymentService(currencyService);
+	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade();
+	private final JsonPaymentService jsonPaymentService = new JsonPaymentService(currencyService, bpartnerPriceListServicesFacade);
 	private final PaymentRestEndpoint paymentRestEndpoint = new PaymentRestEndpointImpl(jsonPaymentService);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
@@ -70,18 +73,18 @@ class PaymentRestEndpointTest
 	void normalFlow()
 	{
 		final ExternalId externalOrderId = ExternalId.of("externalOrderId" + Instant.now());
-		final ExternalId externalBpartnerId = ExternalId.of("externalBPartnerId" + Instant.now());
+		final IdentifierString bPartnerIdentifierString = IdentifierString.of("ext-" + Instant.now());
 
-		final OrgId orgId = null;
+		final OrgId orgId = OrgId.ANY;
 
 		// create test data
 		final I_C_Order salesOrder = createSalesOrder(externalOrderId);
-		createBPartnerAndBankAccount(externalBpartnerId);
+		createBPartnerAndBankAccount(bPartnerIdentifierString);
 
 		// create JsonPaymentInfo
 		final JsonPaymentInfo jsonPaymentInfo = JsonPaymentInfo.builder()
 				.externalOrderId(externalOrderId.getValue())
-				.externalBpartnerId(externalBpartnerId.getValue())
+				.externalBpartnerId(bPartnerIdentifierString.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
@@ -89,8 +92,8 @@ class PaymentRestEndpointTest
 
 		// process JsonPaymentInfo
 		final ResponseEntity<String> response = paymentRestEndpoint.createPayment(jsonPaymentInfo);
-		assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
 		assertNull(response.getBody());
+		assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
 
 		//noinspection OptionalGetWithoutIsPresent
 		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(jsonPaymentInfo.getExternalOrderId()), orgId).get();
@@ -122,10 +125,10 @@ class PaymentRestEndpointTest
 		return order;
 	}
 
-	private void createBPartnerAndBankAccount(@NonNull final ExternalId externalId)
+	private void createBPartnerAndBankAccount(@NonNull final IdentifierString externalId)
 	{
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bPartner.setExternalId(externalId.getValue());
+		bPartner.setExternalId(externalId.asExternalId().getValue());
 
 		InterfaceWrapperHelper.save(bPartner);
 		createBpBankAccount(bPartner.getC_BPartner_ID());
