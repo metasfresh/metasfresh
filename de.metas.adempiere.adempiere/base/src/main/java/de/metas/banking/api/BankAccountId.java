@@ -22,11 +22,16 @@
 
 package de.metas.banking.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
+@Value
 public class BankAccountId implements RepoIdAware
 {
 	final int repoId;
@@ -36,20 +41,24 @@ public class BankAccountId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "BankAccountId");
 	}
 
+	@JsonValue
 	@Override
 	public int getRepoId()
 	{
 		return repoId;
 	}
 
+	@NonNull
+	@JsonCreator
 	public static BankAccountId ofRepoId(final int repoId)
 	{
 		return new BankAccountId(repoId);
 	}
 
-	public static BankAccountId ofRepoIdOrNull(@Nullable final Integer repoId)
+	@Nullable
+	public static BankAccountId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId != null && repoId > 0 ? new BankAccountId(repoId) : null;
+		return repoId > 0 ? new BankAccountId(repoId) : null;
 	}
 
 }
