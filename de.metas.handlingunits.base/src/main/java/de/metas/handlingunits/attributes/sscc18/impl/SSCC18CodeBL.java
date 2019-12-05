@@ -63,9 +63,10 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	public SSCC18CodeBL()
 	{
 		this.hasCustomNextSerialNumberProvider = false;
+
 		this.nextSerialNumberProvider = () -> DB.getNextID(
 				ClientId.SYSTEM.getRepoId(),
-				I_M_HU.Table_Name, /* the particular table name doesn't even matter to me right now */
+				I_M_HU.Table_Name, /* "real" HUs also get SSCC18's that are based on their M_HU_ID. to avoid duplicates, we use the same sequence also for "fake"/HU-less SSCC18s. */
 				ITrx.TRXNAME_None);
 	}
 

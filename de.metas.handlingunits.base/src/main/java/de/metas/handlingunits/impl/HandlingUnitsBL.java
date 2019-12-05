@@ -830,21 +830,4 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return vhus;
 	}
-
-	@Override
-	public int countIncludedHUs(@NonNull final I_M_HU luRecord)
-	{
-		// NOTE: we need to iterate the HUs and count them (instead of doing a COUNT directly on database),
-		// because we rely on HU&Items caching
-		// and also because in case of aggregated HUs, we need special handling
-
-		final IncludedHUsCounter includedHUsCounter = new IncludedHUsCounter(luRecord);
-
-		final HUIterator huIterator = new HUIterator();
-		huIterator.setListener(includedHUsCounter.toHUIteratorListener());
-		huIterator.setEnableStorageIteration(false);
-		huIterator.iterate(luRecord);
-
-		return includedHUsCounter.getHUsCount();
-	}
 }

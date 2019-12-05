@@ -43,7 +43,7 @@ public interface ISSCC18CodeBL extends ISingletonService
 	SSCC18 generate(int serialNumber);
 
 	/**
-	 * uses its own internal sequence for serialNumbers and creates a new SSCC18. 
+	 * uses its own internal sequence for serialNumbers and creates a new SSCC18.
 	 */
 	SSCC18 generate();
 

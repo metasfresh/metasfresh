@@ -518,6 +518,4 @@ public interface IHandlingUnitsBL extends ISingletonService
 				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
 				: null;
 	}
-
-	int countIncludedHUs(I_M_HU luRecord);
 }
