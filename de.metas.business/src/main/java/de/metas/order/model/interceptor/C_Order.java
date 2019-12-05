@@ -8,6 +8,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
@@ -226,7 +227,7 @@ public class C_Order
 		}
 
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final Optional<I_C_Payment> paymentOptional = paymentDAO.getByExternalOrderId(ExternalId.of(order.getExternalId()));
+		final Optional<I_C_Payment> paymentOptional = paymentDAO.getByExternalOrderId(ExternalId.of(order.getExternalId()), OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		if (!paymentOptional.isPresent())
 		{

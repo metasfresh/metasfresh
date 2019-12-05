@@ -9,6 +9,8 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -38,8 +40,8 @@ public class CoalesceUtil
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
 	 */
-	// NOTE: this method is optimized for common usage
-	public <T> T coalesce(final T value1, final T value2)
+	@Nullable
+	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2)
 	{
 		return value1 == null ? value2 : value1;
 	}
@@ -55,7 +57,6 @@ public class CoalesceUtil
 	}
 
 	/**
-	 *
 	 * @param values
 	 * @return first not null value from list
 	 */

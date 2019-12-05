@@ -25,6 +25,7 @@ package de.metas.rest_api.payment;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -65,19 +66,18 @@ public class JsonPaymentService
 		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonPaymentInfo.getTransactionDate(), SystemTime.asLocalDate();
 
 		// todo search by org as well!
-		final OrgId orgId = OrgId.ofRepoId(jsonPaymentInfo.getThe_org_value());
+		final OrgId orgId = CoalesceUtil.coalesce(OrgId.ofRepoId(jsonPaymentInfo.getThe_org_value()), Env.getOrgId());
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(jsonPaymentInfo.getCurrencyCode());
-
 		if (currencyId == null)
 		{
 			return ResponseEntity.unprocessableEntity().body("Wrong currency: " + jsonPaymentInfo.getCurrencyCode());
 		}
 
-		final Optional<BPartnerId> bPartnerIdOptional = partnerDAO.getBPartnerIdByExternalId(ExternalId.of(jsonPaymentInfo.getExternalBpartnerId().getValue()));
+		final Optional<BPartnerId> bPartnerIdOptional = getBPartnerId(ExternalId.of(jsonPaymentInfo.getExternalBpartnerId()), orgId);
 		if (!bPartnerIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonPaymentInfo.getExternalBpartnerId().getValue());
+			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonPaymentInfo.getExternalBpartnerId());
 		}
 
 		final BPartnerId bPartnerId = bPartnerIdOptional.get();
@@ -85,7 +85,7 @@ public class JsonPaymentService
 
 		if (!bankAccountIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account bor bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getExternalBpartnerId().getValue(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
+			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account bor bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getExternalBpartnerId(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
 		}
 
 		final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()
@@ -94,7 +94,7 @@ public class JsonPaymentService
 				.currencyId(currencyId)
 				.bpBankAccountId(bankAccountIdOptional.get())
 
-				.adOrgId(Env.getOrgId())
+				.adOrgId(orgId)
 				.tenderType(TenderType.DirectDeposit)
 				.dateAcct(dateTrx)
 				.dateTrx(dateTrx)
@@ -104,5 +104,13 @@ public class JsonPaymentService
 		InterfaceWrapperHelper.save(payment);
 
 		return ResponseEntity.ok().build();
+	}
+
+	private Optional<BPartnerId> getBPartnerId(final ExternalId bPartnerExternalId, final OrgId orgId)
+	{
+		return partnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
+				.externalId(bPartnerExternalId)
+				.onlyOrgId(orgId)
+				.build());
 	}
 }

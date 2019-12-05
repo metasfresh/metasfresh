@@ -25,8 +25,8 @@ package de.metas.rest_api.payment;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -72,14 +72,16 @@ class PaymentRestEndpointTest
 		final ExternalId externalOrderId = ExternalId.of("externalOrderId" + Instant.now());
 		final ExternalId externalBpartnerId = ExternalId.of("externalBPartnerId" + Instant.now());
 
+		final OrgId orgId = null;
+
 		// create test data
 		final I_C_Order salesOrder = createSalesOrder(externalOrderId);
 		createBPartnerAndBankAccount(externalBpartnerId);
 
 		// create JsonPaymentInfo
 		final JsonPaymentInfo jsonPaymentInfo = JsonPaymentInfo.builder()
-				.externalOrderId(JsonExternalId.of(externalOrderId.getValue()))
-				.externalBpartnerId(JsonExternalId.of(externalBpartnerId.getValue()))
+				.externalOrderId(externalOrderId.getValue())
+				.externalBpartnerId(externalBpartnerId.getValue())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
@@ -91,7 +93,7 @@ class PaymentRestEndpointTest
 		assertNull(response.getBody());
 
 		//noinspection OptionalGetWithoutIsPresent
-		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(jsonPaymentInfo.getExternalOrderId().getValue())).get();
+		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(jsonPaymentInfo.getExternalOrderId()), orgId).get();
 
 		assertEquals(0, salesOrder.getC_Payment_ID());
 		assertEquals(0, payment.getC_Order_ID());

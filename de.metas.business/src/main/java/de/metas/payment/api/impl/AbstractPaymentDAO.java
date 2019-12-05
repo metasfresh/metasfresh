@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -69,11 +70,12 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public Optional<I_C_Payment> getByExternalOrderId(@NonNull final ExternalId externalId)
+	public Optional<I_C_Payment> getByExternalOrderId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
 	{
 		final I_C_Payment i_c_payment = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalOrderId, externalId.getValue())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.firstOnlyOrNull(I_C_Payment.class);
 
