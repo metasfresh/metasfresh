@@ -218,7 +218,7 @@ public class C_Order
 		}
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false);
+		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false, order.getAD_Client_ID(), order.getAD_Org_ID());
 
 		if (!autoAssignEnabled)
 		{
