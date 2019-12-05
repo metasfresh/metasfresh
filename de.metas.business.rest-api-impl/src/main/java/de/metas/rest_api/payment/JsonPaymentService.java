@@ -27,10 +27,12 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -60,7 +62,10 @@ public class JsonPaymentService
 	public ResponseEntity<String> createPaymentFromJson(@NonNull @RequestBody final JsonPaymentInfo jsonPaymentInfo)
 	{
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-		final LocalDate dateTrx = SystemTime.asLocalDate();
+		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonPaymentInfo.getTransactionDate(), SystemTime.asLocalDate();
+
+		// todo search by org as well!
+		final OrgId orgId = OrgId.ofRepoId(jsonPaymentInfo.getThe_org_value());
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(jsonPaymentInfo.getCurrencyCode());
 
@@ -95,7 +100,7 @@ public class JsonPaymentService
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		payment.setExternalOrderId(jsonPaymentInfo.getExternalOrderId().getValue());
+		payment.setExternalOrderId(jsonPaymentInfo.getExternalOrderId());
 		InterfaceWrapperHelper.save(payment);
 
 		return ResponseEntity.ok().build();
