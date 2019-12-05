@@ -308,19 +308,19 @@ public class StepComXMLDesadvBean
 		final ImmutableListMultimap.Builder<PACKINXliefKey, LineAndPack> mm = ImmutableListMultimap.builder();
 		for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
 		{
-			final List<EDIExpDesadvLinePackType> subLines = line.getEDIExpDesadvLinePack();
-			if (subLines.isEmpty()) // might be, if there is nothing delivered
+			final List<EDIExpDesadvLinePackType> packs = line.getEDIExpDesadvLinePack();
+			if (packs.isEmpty()) // might be, if there is nothing delivered
 			{
 				mm.put(
 						PACKINXliefKey.forLine(line, ssccRequired, packagingCodeTURequired),
 						new LineAndPack(line, null));
 				continue;
 			}
-			for (final EDIExpDesadvLinePackType subLine : subLines)
+			for (final EDIExpDesadvLinePackType pack : packs)
 			{
 				mm.put(
-						PACKINXliefKey.forLine(line, subLine, ssccRequired, packagingCodeTURequired),
-						new LineAndPack(line, subLine));
+						PACKINXliefKey.forLine(line, pack, ssccRequired, packagingCodeTURequired),
+						new LineAndPack(line, pack));
 			}
 		}
 
@@ -520,6 +520,19 @@ public class StepComXMLDesadvBean
 				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
 				detail.getDQUAN1().add(cuTuQuantity);
 			}
+
+			if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
+			{
+				final XMLGregorianCalendar bestBefore = validateObject(lineAndPack.getPack().getBestBeforeDate(),
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @BestBeforeDate@");
+
+				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
+				dmark1.setDOCUMENTID(documentId);
+				dmark1.setLINENUMBER(lineNumber);
+				dmark1.setIDENTIFICATIONQUAL(IdentificationQual.BATC.name());
+				dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
+				detail.getDMARK1().add(dmark1);
+			}
 		}
 		else
 		{
@@ -566,20 +579,6 @@ public class StepComXMLDesadvBean
 			dqvar1.setDISCREPANCYCODE(getDiscrepancyCode(lineAndPack.getLine().getIsSubsequentDeliveryPlanned(), quantityDiff).toString());
 			detail.setDQVAR1(dqvar1);
 		}
-
-		if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
-		{
-			final XMLGregorianCalendar bestBefore = validateObject(lineAndPack.getBestBeforeDate(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @BestBeforeDate@");
-
-			final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
-			dmark1.setDOCUMENTID(documentId);
-			dmark1.setLINENUMBER(lineNumber);
-			dmark1.setIDENTIFICATIONQUAL(IdentificationQual.BATC.name());
-			dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
-			detail.getDMARK1().add(dmark1);
-		}
-
 		return detail;
 	}
 

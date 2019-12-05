@@ -1,7 +1,5 @@
 package de.metas.edi.esb.bean.desadv;
 
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.springframework.lang.Nullable;
 
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
@@ -41,9 +39,4 @@ public class LineAndPack
 
 	@Nullable // could be null if nothing is delivered for this line
 	EDIExpDesadvLinePackType pack;
-
-	public XMLGregorianCalendar getBestBeforeDate()
-	{
-		return pack.getBestBeforeDate();
-	}
 }
