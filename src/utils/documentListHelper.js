@@ -263,11 +263,11 @@ export function convertTimeStringToMoment(value) {
 // This doesn't set the TZ anymore, as we're handling this globally/in datepicker
 export function parseDateWithCurrentTimezone(value) {
   if (value) {
-    value = convertTimeStringToMoment(value);
-
     if (Moment.isMoment(value)) {
       return value;
     }
+
+    value = convertTimeStringToMoment(value);
     return Moment(value);
   }
   return '';
