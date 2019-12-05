@@ -19,7 +19,7 @@ RETURNS TABLE
 	order_docno text,
 	inout_docno text,
 	io_movementdate date,
-	isCreditMemo character varying(1),
+	isCreditMemo char(1),
 	creditmemo_docNo character varying(30)
 	)
 AS
