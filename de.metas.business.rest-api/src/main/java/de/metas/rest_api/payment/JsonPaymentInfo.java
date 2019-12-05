@@ -30,7 +30,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -43,7 +45,7 @@ public class JsonPaymentInfo
 			value = "This translates to `C_BPartner.ExternalId`.")
 
 	@NonNull
-	JsonExternalId externalBpartnerId;
+	String externalBpartnerId;
 
 	@NonNull
 	String targetIBAN;
@@ -52,12 +54,22 @@ public class JsonPaymentInfo
 			dataType = "java.lang.String", //
 			value = "This translates to `C_Order.ExternalId`.")
 	@NonNull
-	JsonExternalId externalOrderId;
+	String externalOrderId;
 
 	@NonNull
 	BigDecimal amount;
 
 	@NonNull
 	String currencyCode;
+
+	@ApiModelProperty(required = false)
+	@Nullable
+	adorgid the_org_value;
+
+	@ApiModelProperty(required = false,
+	dataType = "java.time.LocalDate",
+	value = "If this is sent, it is used for both `acconting date` and `payment date`.")
+	@Nullable
+	LocalDate transactionDate;
 }
 
