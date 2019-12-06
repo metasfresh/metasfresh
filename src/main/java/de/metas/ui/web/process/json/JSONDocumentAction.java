@@ -48,6 +48,7 @@ public final class JSONDocumentAction implements Serializable
 {
 	public static final Comparator<JSONDocumentAction> ORDERBY_QuickActionFirst_Caption = Comparator
 			.<JSONDocumentAction> comparingInt(action -> action.isEnabled() ? 0 : 1) // enabled actions first
+			.thenComparingInt(action -> action.getSortNo()) // sort no
 			.thenComparingInt(action -> action.isDefaultQuickAction() ? 0 : 1) // Default QuickAction
 			.thenComparingInt(action -> action.isQuickAction() ? 0 : 1) // QuickAction
 			.thenComparing(JSONDocumentAction::getCaption) // Caption
@@ -96,6 +97,9 @@ public final class JSONDocumentAction implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String internalName;
 
+	@JsonIgnore
+	private final int sortNo;
+
 	private final Map<String, Object> debugProperties;
 
 	JSONDocumentAction(
@@ -124,6 +128,8 @@ public final class JSONDocumentAction implements Serializable
 		internalName = relatedProcessDescriptor.getInternalName() != null
 				? relatedProcessDescriptor.getInternalName().getAsString()
 				: null;
+
+		sortNo = relatedProcessDescriptor.getSortNo();
 
 		//
 		// Debug properties
@@ -178,6 +184,11 @@ public final class JSONDocumentAction implements Serializable
 	public boolean isDefaultQuickAction()
 	{
 		return defaultQuickAction;
+	}
+
+	private int getSortNo()
+	{
+		return sortNo;
 	}
 
 	@JsonAnyGetter
