@@ -118,12 +118,12 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	private List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(PaymentsView_Allocate.class),
-				createProcessDescriptor(PaymentsView_AllocateAndDiscount.class),
-				createProcessDescriptor(PaymentsView_AllocateAndWriteOff.class));
+				createProcessDescriptor(10, PaymentsView_Allocate.class),
+				createProcessDescriptor(20, PaymentsView_AllocateAndDiscount.class),
+				createProcessDescriptor(30, PaymentsView_AllocateAndWriteOff.class));
 	}
 
-	protected final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	protected final RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
@@ -136,6 +136,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 				.processId(processId)
 				.anyTable().anyWindow()
 				.displayPlace(DisplayPlace.ViewQuickActions)
+				.sortNo(sortNo)
 				.build();
 	}
 
