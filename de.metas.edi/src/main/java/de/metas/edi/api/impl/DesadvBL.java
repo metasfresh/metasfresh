@@ -682,7 +682,11 @@ public class DesadvBL implements IDesadvBL
 				.executeSync()
 				.getResult();
 
-		return new ReportResultData(result.getReportData(), result.getReportFilename(), result.getReportContentType());
+		return ReportResultData.builder()
+				.reportData(result.getReportData())
+				.reportFilename(result.getReportFilename())
+				.reportContentType(result.getReportContentType())
+				.build();
 	}
 
 	@Override

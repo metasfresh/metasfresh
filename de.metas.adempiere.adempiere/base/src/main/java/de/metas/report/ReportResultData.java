@@ -1,5 +1,6 @@
 package de.metas.report;
 
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -29,12 +30,21 @@ import lombok.Value;
 @Value
 public class ReportResultData
 {
-	@NonNull
-	private String reportFilename;
-
-	@NonNull
 	private byte[] reportData;
 
-	@NonNull
+	private String reportFilename;
+
 	private String reportContentType;
+
+	@Builder
+	private ReportResultData(
+			@NonNull final byte[] reportData,
+			@NonNull final String reportFilename,
+			@NonNull final String reportContentType)
+	{
+		this.reportData = reportData;
+		this.reportFilename = reportFilename;
+		this.reportContentType = reportContentType;
+	}
+
 }
