@@ -941,6 +941,7 @@ export class DocumentList extends Component {
       updateParentSelectedIds,
       modal,
       dispatch,
+      parentWindowType,
     } = this.props;
 
     const {
@@ -1120,6 +1121,7 @@ export class DocumentList extends Component {
                     ? {
                         viewId: includedView.viewId,
                         viewSelectedIds: childSelected,
+                        windowType: includedView.windowType,
                       }
                     : NO_VIEW
                 }
@@ -1128,9 +1130,11 @@ export class DocumentList extends Component {
                     ? {
                         viewId: parentDefaultViewId,
                         viewSelectedIds: parentSelected,
+                        windowType: parentWindowType,
                       }
                     : NO_VIEW
                 }
+                onInvalidViewId={this.fetchLayoutAndData}
               />
             )}
           </div>

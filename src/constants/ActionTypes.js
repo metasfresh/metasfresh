@@ -437,3 +437,15 @@ export const INIT_HOTKEYS = 'INIT_HOTKEYS';
  * @type {string} ToDo: Description for the constant.
  */
 export const UPDATE_HOTKEYS = 'UPDATE_HOTKEYS';
+
+/**
+ * @constant
+ * @type {string} fetches panel's quick actions.
+ */
+export const FETCHED_QUICK_ACTIONS = 'FETCHED_QUICK_ACTIONS';
+
+/**
+ * @constant
+ * @type {string} removes panel's quick actions when it's unmounted.
+ */
+export const DELETE_QUICK_ACTIONS = 'DELETE_QUICK_ACTIONS';

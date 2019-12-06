@@ -649,9 +649,9 @@ TableItem.propTypes = {
   viewId: PropTypes.string,
   docId: PropTypes.string,
   windowId: PropTypes.string,
-  lastChild: PropTypes.string,
-  includedDocuments: PropTypes.string,
-  contextType: PropTypes.string,
+  lastChild: PropTypes.boolean,
+  includedDocuments: PropTypes.array,
+  contextType: PropTypes.any,
   focusOnFieldName: PropTypes.string,
 };
 
