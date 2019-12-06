@@ -15,6 +15,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_Allocate;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndDiscount;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndWriteOff;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
 import de.metas.ui.web.view.IView;
@@ -116,7 +118,9 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	private List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(PaymentsView_Allocate.class));
+				createProcessDescriptor(PaymentsView_Allocate.class),
+				createProcessDescriptor(PaymentsView_AllocateAndDiscount.class),
+				createProcessDescriptor(PaymentsView_AllocateAndWriteOff.class));
 	}
 
 	protected final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
