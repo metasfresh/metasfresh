@@ -89,7 +89,7 @@ final class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 	@Override
 	public Money calculateProjectedOverUnderAmt(Money payAmountToAllocate)
 	{
-		return creditMemoPayableDoc.calculateProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
+		return creditMemoPayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
 	}
 
 	@Override

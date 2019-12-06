@@ -1,5 +1,7 @@
 package de.metas.banking.payment.paymentallocation.service;
 
+import java.math.BigDecimal;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -45,5 +47,26 @@ public class PaymentAllocationResult
 	public boolean isOK()
 	{
 		return fullyAllocatedCheck.isNoError();
+	}
+
+	public BigDecimal getTotalPayAmt()
+	{
+		return candidates.stream()
+				.map(AllocationLineCandidate::getAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public BigDecimal getTotalDiscountAmt()
+	{
+		return candidates.stream()
+				.map(AllocationLineCandidate::getDiscountAmt)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public BigDecimal getTotalWriteOffAmt()
+	{
+		return candidates.stream()
+				.map(AllocationLineCandidate::getWriteOffAmt)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

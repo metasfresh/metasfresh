@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -66,6 +67,11 @@ import lombok.NonNull;
  */
 public class PaymentAllocationBuilder
 {
+	public enum PayableRemainingOpenAmtPolicy
+	{
+		DO_NOTHING, WRITE_OFF, DISCOUNT
+	}
+
 	public static final PaymentAllocationBuilder newBuilder()
 	{
 		return new PaymentAllocationBuilder();
@@ -84,6 +90,7 @@ public class PaymentAllocationBuilder
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean allowOnlyOneVendorDoc = true;
 	private boolean allowPartialAllocations = false;
+	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 	private boolean dryRun = false;
 
 	// Status
@@ -413,10 +420,6 @@ public class PaymentAllocationBuilder
 
 		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 
-		//
-		// First, loop through all Invoices, then, in every single Invoice loop, loop through all Payments.
-		// Allocate the value of every Payment with the Invoice, until the Invoice value is reached.
-		// In most cases this should only be one Payment.
 		for (final PayableDocument payable : payableDocuments)
 		{
 			for (final IPaymentDocument payment : paymentDocuments)
@@ -442,7 +445,7 @@ public class PaymentAllocationBuilder
 				//
 				// Calculate the amounts to allocate:
 				final AllocationAmounts payableAmountsToAllocate = calculateAmountToAllocate(payable, payment);
-				final Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(payableAmountsToAllocate);
+				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(payableAmountsToAllocate);
 				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(payableAmountsToAllocate.getPayAmt());
 
 				// Create new Allocation Line
@@ -466,8 +469,36 @@ public class PaymentAllocationBuilder
 				// Update how much was allocated on current invoice and payment.
 				payable.addAllocatedAmounts(payableAmountsToAllocate);
 				payment.addAllocatedAmt(payableAmountsToAllocate.getPayAmt());
-			}	// loop through payments for invoice
-		}   // invoice loop
+			}	// loop through payments for current payable (aka invoice or prepay order)
+
+			if (!payable.isFullyAllocated())
+			{
+				if (PayableRemainingOpenAmtPolicy.DO_NOTHING.equals(payableRemainingOpenAmtPolicy))
+				{
+					// do nothing
+				}
+				else if (PayableRemainingOpenAmtPolicy.DISCOUNT.equals(payableRemainingOpenAmtPolicy))
+				{
+					payable.moveRemainingOpenAmtToDiscount();
+
+					final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
+					final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+					allocationLineCandidates.add(allocationLine);
+				}
+				else if (PayableRemainingOpenAmtPolicy.WRITE_OFF.equals(payableRemainingOpenAmtPolicy))
+				{
+					payable.moveRemainingOpenAmtToWriteOff();
+
+					final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
+					final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+					allocationLineCandidates.add(allocationLine);
+				}
+				else
+				{
+					throw new AdempiereException("Unknown payableRemainingOpenAmtPolicy: " + payableRemainingOpenAmtPolicy); // shall not happen
+				}
+			}
+		}   // payables loop (aka invoice or prepay order)
 
 		return allocationLineCandidates;
 	}
@@ -627,28 +658,39 @@ public class PaymentAllocationBuilder
 				continue;
 			}
 
-			final Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amountsToAllocate);
-			final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
-					.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
-					//
-					.bpartnerId(payable.getBpartnerId())
-					//
-					.payableDocumentRef(payable.getReference())
-					.paymentDocumentRef(null) // nop
-					// Amounts:
-					.amount(amountsToAllocate.getPayAmt().toBigDecimal())
-					.discountAmt(amountsToAllocate.getDiscountAmt().toBigDecimal())
-					.writeOffAmt(amountsToAllocate.getWriteOffAmt().toBigDecimal())
-					.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
-					.paymentOverUnderAmt(BigDecimal.ZERO)
-					//
-					.build();
+			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, amountsToAllocate);
 			allocationLineCandidates.add(allocationLine);
-
-			payable.addAllocatedAmounts(amountsToAllocate);
 		}
 
 		return allocationLineCandidates;
+	}
+
+	private AllocationLineCandidate createAllocationLineCandidate_DiscountAndWriteOff(
+			@NonNull final PayableDocument payable,
+			@NonNull final AllocationAmounts amountsToAllocate)
+	{
+		Check.assume(amountsToAllocate.getPayAmt().signum() == 0, "PayAmt shall be zero: {}", amountsToAllocate);
+
+		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
+				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
+				//
+				.bpartnerId(payable.getBpartnerId())
+				//
+				.payableDocumentRef(payable.getReference())
+				.paymentDocumentRef(null) // nop
+				// Amounts:
+				.amount(BigDecimal.ZERO)
+				.discountAmt(amountsToAllocate.getDiscountAmt().toBigDecimal())
+				.writeOffAmt(amountsToAllocate.getWriteOffAmt().toBigDecimal())
+				.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
+				.paymentOverUnderAmt(BigDecimal.ZERO)
+				//
+				.build();
+
+		payable.addAllocatedAmounts(amountsToAllocate);
+
+		return allocationLine;
 	}
 
 	private final OptionalDeferredException<PaymentAllocationException> checkFullyAllocated()
@@ -844,6 +886,13 @@ public class PaymentAllocationBuilder
 	{
 		assertNotBuilt();
 		this.allowPartialAllocations = allowPartialAllocations;
+		return this;
+	}
+
+	public PaymentAllocationBuilder payableRemainingOpenAmtPolicy(@NonNull final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy)
+	{
+		assertNotBuilt();
+		this.payableRemainingOpenAmtPolicy = payableRemainingOpenAmtPolicy;
 		return this;
 	}
 

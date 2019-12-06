@@ -88,7 +88,7 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	@Override
 	public Money calculateProjectedOverUnderAmt(Money amountToAllocate)
 	{
-		return purchaseInvoicePayableDoc.calculateProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
+		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
 	}
 
 	@Override
