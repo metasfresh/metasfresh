@@ -163,7 +163,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final ICUpdateResult result = new ICUpdateResult();
 		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
+			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult>createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
 					.setItemsPerBatch(itemsPerBatch)
 
@@ -239,7 +239,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
-	private final void updateInvalid(final I_C_Invoice_Candidate icRecord)
+	private void updateInvalid(final I_C_Invoice_Candidate icRecord)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 
@@ -354,13 +354,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLinesForOrderLine(orderLine, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inoutLines)
 		{
-			if (invoiceCandDAO.existsInvoiceCandidateInOutLinesForInvoiceCandidate(ic, inOutLine))
+			// create a new PO or update the unique existing one
+			I_C_InvoiceCandidate_InOutLine iciol = invoiceCandDAO.retrieveInvoiceCandidateInOutLine(ic, inOutLine);
+			if (iciol == null)
 			{
-				continue; // nothing to to, record already exists
+				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
+				iciol.setC_Invoice_Candidate(ic);
 			}
-
-			final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
-			iciol.setC_Invoice_Candidate(ic);
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
