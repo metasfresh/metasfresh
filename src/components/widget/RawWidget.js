@@ -217,9 +217,11 @@ export class RawWidget extends Component {
       (isValue &&
         (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
           JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
-      JSON.stringify(cachedValue) != JSON.stringify(value);
+      JSON.stringify(cachedValue) != JSON.stringify(value) ||
+      // clear field that had it's cachedValue nulled before
+      (cachedValue === null && value === null);
 
-    if (!cachedValue && !value) {
+    if (cachedValue === undefined && !value) {
       allowPatching = false;
     }
 
@@ -377,7 +379,7 @@ export class RawWidget extends Component {
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
-    const { isEdited, cachedValue } = this.state;
+    const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
@@ -406,9 +408,7 @@ export class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e =>
-        handleChange &&
-        handleChange(widgetField, e.target.value, cachedValue || widgetValue),
+      onChange: e => handleChange && handleChange(widgetField, e.target.value),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
