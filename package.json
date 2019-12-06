@@ -59,7 +59,7 @@
     "autoprefixer": "9.7.2",
     "axios-mock-adapter": "1.14.0",
     "babel-eslint": "10.0.3",
-    "babel-jest": "24.7.1",
+    "babel-jest": "24.9.0",
     "babel-loader": "8.0.6",
     "babel-plugin-dynamic-import-node": "2.3.0",
     "better-docs": "^1.1.6",
