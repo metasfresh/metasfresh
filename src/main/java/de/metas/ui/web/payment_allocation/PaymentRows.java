@@ -3,6 +3,7 @@ package de.metas.ui.web.payment_allocation;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Payment;
@@ -41,13 +42,18 @@ import lombok.NonNull;
 
 public class PaymentRows implements IRowsData<PaymentRow>
 {
+	public static PaymentRows cast(final IRowsData<PaymentRow> rows)
+	{
+		return (PaymentRows)rows;
+	}
+
 	private final PaymentAndInvoiceRowsRepo repository;
 	private final ZonedDateTime evaluationDate;
 	private final SynchronizedMutable<ImmutableRowsIndex<PaymentRow>> rowsHolder;
 
 	@Builder
 	private PaymentRows(
-			@NonNull PaymentAndInvoiceRowsRepo repository,
+			@NonNull final PaymentAndInvoiceRowsRepo repository,
 			@NonNull final List<PaymentRow> initialRows,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
@@ -86,7 +92,18 @@ public class PaymentRows implements IRowsData<PaymentRow>
 				.getValue()
 				.getRecordIdsToRefresh(rowIds, PaymentRow::convertDocumentIdToPaymentId);
 
-		final List<PaymentRow> newRows = repository.getPaymentRowsListByInvoiceId(paymentIds, evaluationDate);
+		final List<PaymentRow> newRows = repository.getPaymentRowsListByPaymentId(paymentIds, evaluationDate);
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+	}
+
+	public void addPayment(@NonNull final PaymentId paymentId)
+	{
+		final PaymentRow row = repository.getPaymentRowByPaymentId(paymentId, evaluationDate).orElse(null);
+		if (row == null)
+		{
+			throw new AdempiereException("@PaymentNotOpen@");
+		}
+
+		rowsHolder.compute(rows -> rows.addingRow(row));
 	}
 }

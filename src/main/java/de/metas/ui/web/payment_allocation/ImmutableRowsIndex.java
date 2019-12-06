@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -115,6 +114,32 @@ final class ImmutableRowsIndex<T extends IViewRow>
 		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
 	}
 
+	public ImmutableRowsIndex<T> addingRow(@NonNull final T rowToAdd)
+	{
+		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
+		boolean added = false;
+		for (final DocumentId rowId : this.rowIds)
+		{
+			if (rowId.equals(rowToAdd.getId()))
+			{
+				resultRows.add(rowToAdd);
+				added = true;
+			}
+			else
+			{
+				resultRows.add(rowsById.get(rowId));
+			}
+		}
+
+		if (!added)
+		{
+			resultRows.add(rowToAdd);
+			added = true;
+		}
+
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+	}
+
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Function<DocumentId, ID> idMapper)
@@ -135,24 +160,6 @@ final class ImmutableRowsIndex<T extends IViewRow>
 					.filter(this::isRelevantForRefreshing)
 					.map(idMapper)
 					.collect(ImmutableSet.toImmutableSet());
-		}
-	}
-
-	private Stream<T> streamRows(@NonNull final DocumentIdsSelection rowIds)
-	{
-		if (rowIds.isEmpty())
-		{
-			return Stream.empty();
-		}
-		else if (rowIds.isAll())
-		{
-			return streamAllRows();
-		}
-		else
-		{
-			return rowIds.stream()
-					.map(rowsById::get)
-					.filter(Predicates.notNull());
 		}
 	}
 }

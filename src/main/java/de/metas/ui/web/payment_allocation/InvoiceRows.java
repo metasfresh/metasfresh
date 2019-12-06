@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
@@ -41,13 +42,18 @@ import lombok.NonNull;
 
 public class InvoiceRows implements IRowsData<InvoiceRow>
 {
+	public static InvoiceRows cast(final IRowsData<InvoiceRow> rows)
+	{
+		return (InvoiceRows)rows;
+	}
+
 	private final PaymentAndInvoiceRowsRepo repository;
 	private final ZonedDateTime evaluationDate;
 	private final SynchronizedMutable<ImmutableRowsIndex<InvoiceRow>> rowsHolder;
 
 	@Builder
 	private InvoiceRows(
-			@NonNull PaymentAndInvoiceRowsRepo repository,
+			@NonNull final PaymentAndInvoiceRowsRepo repository,
 			@NonNull final List<InvoiceRow> initialRows,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
@@ -88,5 +94,16 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 
 		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate);
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+	}
+
+	public void addInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		final InvoiceRow row = repository.getInvoiceRowByInvoiceId(invoiceId, evaluationDate).orElse(null);
+		if (row == null)
+		{
+			throw new AdempiereException("@InvoiceNotOpen@");
+		}
+
+		rowsHolder.compute(rows -> rows.addingRow(row));
 	}
 }

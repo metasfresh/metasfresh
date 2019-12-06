@@ -3,6 +3,7 @@ package de.metas.ui.web.payment_allocation;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -197,7 +198,26 @@ public class PaymentAndInvoiceRowsRepo
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PaymentRow> getPaymentRowsListByInvoiceId(
+	public Optional<InvoiceRow> getInvoiceRowByInvoiceId(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final List<InvoiceRow> invoiceRows = getInvoiceRowsListByInvoiceId(ImmutableList.of(invoiceId), evaluationDate);
+		if (invoiceRows.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (invoiceRows.size() == 1)
+		{
+			return Optional.of(invoiceRows.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("Expected only one row for " + invoiceId + " but got " + invoiceRows);
+		}
+	}
+
+	public List<PaymentRow> getPaymentRowsListByPaymentId(
 			@NonNull final Collection<PaymentId> paymentIds,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
@@ -215,6 +235,25 @@ public class PaymentAndInvoiceRowsRepo
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Optional<PaymentRow> getPaymentRowByPaymentId(
+			@NonNull final PaymentId paymentId,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final List<PaymentRow> paymentRows = getPaymentRowsListByPaymentId(ImmutableList.of(paymentId), evaluationDate);
+		if (paymentRows.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (paymentRows.size() == 1)
+		{
+			return Optional.of(paymentRows.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("Expected only one row for " + paymentId + " but got " + paymentRows);
+		}
 	}
 
 }
