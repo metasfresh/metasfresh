@@ -10,8 +10,13 @@ import de.metas.edi.api.IDesadvBL;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.report.ReportResultData;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,10 +40,20 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class EDI_Desadv_PrintSSCCLabels extends JavaProcess
+public class EDI_Desadv_PrintSSCCLabels extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if (context.getSelectionSize().isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected String doIt() throws Exception
@@ -54,8 +69,9 @@ public class EDI_Desadv_PrintSSCCLabels extends JavaProcess
 				.create()
 				.listIds();
 
-		desadvBL.printSSCC18_Labels(getCtx(), list);
+		final ReportResultData reportResult = desadvBL.printSSCC18_Labels(getCtx(), list);
+		getProcessInfo().getResult().setReportData(reportResult);
+
 		return MSG_OK;
 	}
-
 }

@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -51,6 +52,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -82,11 +84,13 @@ import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -654,13 +658,13 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void printSSCC18_Labels(@NonNull final Properties ctx, final Collection<Integer> desadvLinePack_IDs_ToPrint)
+	public ReportResultData printSSCC18_Labels(@NonNull final Properties ctx, final Collection<Integer> desadvLinePack_IDs_ToPrint)
 	{
-		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
+		// Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 
 		//
 		// Create the process info based on AD_Process and AD_PInstance
-		ProcessInfo.builder()
+		final ProcessExecutionResult result = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_ProcessByValue(AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print)
 				//
@@ -675,7 +679,10 @@ public class DesadvBL implements IDesadvBL
 				// Create a selection with the EDI_DesadvLine_Pack_IDs that we need to print.
 				// The report will fetch it from selection.
 				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited))
-				.executeSync();
+				.executeSync()
+				.getResult();
+
+		return new ReportResultData(result.getReportData(), result.getReportFilename(), result.getReportContentType());
 	}
 
 	@Override
