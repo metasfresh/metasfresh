@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,13 +12,13 @@ public interface I_C_Payment
     public static final String Table_Name = "C_Payment";
 
     /** AD_Table_ID=335 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
@@ -123,10 +107,6 @@ public interface I_C_Payment
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_Client>(I_C_Payment.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -134,7 +114,7 @@ public interface I_C_Payment
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -144,18 +124,12 @@ public interface I_C_Payment
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_Org>(I_C_Payment.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -179,12 +153,6 @@ public interface I_C_Payment
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
-
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_Org>(I_C_Payment.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
@@ -264,8 +232,8 @@ public interface I_C_Payment
     public static final String COLUMNNAME_A_Ident_SSN = "A_Ident_SSN";
 
 	/**
-	 * Set Name.
-	 * Name on Credit Card or Account holder
+	 * Set Name auf Kreditkarte.
+	 * Name auf Kreditkarte oder des Kontoeigners
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -274,8 +242,8 @@ public interface I_C_Payment
 	public void setA_Name (java.lang.String A_Name);
 
 	/**
-	 * Get Name.
-	 * Name on Credit Card or Account holder
+	 * Get Name auf Kreditkarte.
+	 * Name auf Kreditkarte oder des Kontoeigners
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -383,43 +351,8 @@ public interface I_C_Payment
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
-
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Activity>(I_C_Payment.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
-
-	/**
-	 * Set Bankkonto.
-	 * Account at the Bank
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BankAccount_ID (int C_BankAccount_ID);
-
-	/**
-	 * Get Bankkonto.
-	 * Account at the Bank
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BankAccount_ID();
-
-	public org.compiere.model.I_C_BankAccount getC_BankAccount();
-
-	public void setC_BankAccount(org.compiere.model.I_C_BankAccount C_BankAccount);
-
-    /** Column definition for C_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_BankAccount> COLUMN_C_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_BankAccount>(I_C_Payment.class, "C_BankAccount_ID", org.compiere.model.I_C_BankAccount.class);
-    /** Column name C_BankAccount_ID */
-    public static final String COLUMNNAME_C_BankAccount_ID = "C_BankAccount_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -441,12 +374,6 @@ public interface I_C_Payment
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_BPartner>(I_C_Payment.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -557,12 +484,6 @@ public interface I_C_Payment
 	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge();
-
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
-
-    /** Column definition for C_Charge_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Charge>(I_C_Payment.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
@@ -586,12 +507,6 @@ public interface I_C_Payment
 	 */
 	public int getC_ConversionType_ID();
 
-	public org.compiere.model.I_C_ConversionType getC_ConversionType();
-
-	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType);
-
-    /** Column definition for C_ConversionType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_ConversionType> COLUMN_C_ConversionType_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_ConversionType>(I_C_Payment.class, "C_ConversionType_ID", org.compiere.model.I_C_ConversionType.class);
     /** Column name C_ConversionType_ID */
     public static final String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
 
@@ -615,12 +530,6 @@ public interface I_C_Payment
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Currency>(I_C_Payment.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -644,12 +553,6 @@ public interface I_C_Payment
 	 */
 	public int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_DocType>(I_C_Payment.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -833,12 +736,6 @@ public interface I_C_Payment
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
-
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_C_Project>(I_C_Payment.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
@@ -867,8 +764,6 @@ public interface I_C_Payment
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_User>(I_C_Payment.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -1071,7 +966,7 @@ public interface I_C_Payment
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Discount Amount.
+	 * Set Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -1081,7 +976,7 @@ public interface I_C_Payment
 	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount Amount.
+	 * Get Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -1146,7 +1041,7 @@ public interface I_C_Payment
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1156,7 +1051,7 @@ public interface I_C_Payment
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1169,6 +1064,29 @@ public interface I_C_Payment
     public static final org.adempiere.model.ModelColumn<I_C_Payment, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Payment, Object>(I_C_Payment.class, "DocumentNo", null);
     /** Column name DocumentNo */
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set Externe Auftragsnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalOrderId (java.lang.String ExternalOrderId);
+
+	/**
+	 * Get Externe Auftragsnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalOrderId();
+
+    /** Column definition for ExternalOrderId */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment, Object> COLUMN_ExternalOrderId = new org.adempiere.model.ModelColumn<I_C_Payment, Object>(I_C_Payment.class, "ExternalOrderId", null);
+    /** Column name ExternalOrderId */
+    public static final String COLUMNNAME_ExternalOrderId = "ExternalOrderId";
 
 	/**
 	 * Set Aktiv.
@@ -1196,8 +1114,8 @@ public interface I_C_Payment
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allocated.
-	 * Indicates if the payment has been allocated
+	 * Set Zugeordnet.
+	 * Zeigt an ob eine Zahlung bereits zugeordnet wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1206,8 +1124,8 @@ public interface I_C_Payment
 	public void setIsAllocated (boolean IsAllocated);
 
 	/**
-	 * Get Allocated.
-	 * Indicates if the payment has been allocated
+	 * Get Zugeordnet.
+	 * Zeigt an ob eine Zahlung bereits zugeordnet wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1369,8 +1287,8 @@ public interface I_C_Payment
     public static final String COLUMNNAME_IsOverUnderPayment = "IsOverUnderPayment";
 
 	/**
-	 * Set Prepayment.
-	 * The Payment/Receipt is a Prepayment
+	 * Set Vorauszahlung.
+	 * Die Zahlung ist eine Vorauszahlung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1379,8 +1297,8 @@ public interface I_C_Payment
 	public void setIsPrepayment (boolean IsPrepayment);
 
 	/**
-	 * Get Prepayment.
-	 * The Payment/Receipt is a Prepayment
+	 * Get Vorauszahlung.
+	 * Die Zahlung ist eine Vorauszahlung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1419,8 +1337,8 @@ public interface I_C_Payment
     public static final String COLUMNNAME_IsReceipt = "IsReceipt";
 
 	/**
-	 * Set Reconciled.
-	 * Payment is reconciled with bank statement
+	 * Set Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1429,8 +1347,8 @@ public interface I_C_Payment
 	public void setIsReconciled (boolean IsReconciled);
 
 	/**
-	 * Get Reconciled.
-	 * Payment is reconciled with bank statement
+	 * Get Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1492,31 +1410,6 @@ public interface I_C_Payment
     public static final org.adempiere.model.ModelColumn<I_C_Payment, Object> COLUMN_Micr = new org.adempiere.model.ModelColumn<I_C_Payment, Object>(I_C_Payment.class, "Micr", null);
     /** Column name Micr */
     public static final String COLUMNNAME_Micr = "Micr";
-
-	/**
-	 * Set Online Processing.
-	 * This payment can be processed online
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setOProcessing (java.lang.String OProcessing);
-
-	/**
-	 * Get Online Processing.
-	 * This payment can be processed online
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getOProcessing();
-
-    /** Column definition for OProcessing */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, Object> COLUMN_OProcessing = new org.adempiere.model.ModelColumn<I_C_Payment, Object>(I_C_Payment.class, "OProcessing", null);
-    /** Column name OProcessing */
-    public static final String COLUMNNAME_OProcessing = "OProcessing";
 
 	/**
 	 * Set Original Transaction ID.
@@ -1844,7 +1737,7 @@ public interface I_C_Payment
     public static final String COLUMNNAME_Ref_Payment_ID = "Ref_Payment_ID";
 
 	/**
-	 * Set Reversal ID.
+	 * Set Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
@@ -1854,7 +1747,7 @@ public interface I_C_Payment
 	public void setReversal_ID (int Reversal_ID);
 
 	/**
-	 * Get Reversal ID.
+	 * Get Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
@@ -2147,8 +2040,6 @@ public interface I_C_Payment
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Payment, org.compiere.model.I_AD_User>(I_C_Payment.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

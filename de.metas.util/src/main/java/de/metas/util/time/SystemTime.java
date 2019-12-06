@@ -43,7 +43,6 @@ import lombok.experimental.UtilityClass;
  * unpredictable") by Lasse Koskela.
  *
  * @author ts
- *
  */
 @UtilityClass
 public final class SystemTime
@@ -92,6 +91,7 @@ public final class SystemTime
 		return asZonedDateTime().toLocalDateTime();
 	}
 
+	@NonNull
 	public static LocalDate asLocalDate()
 	{
 		return asZonedDateTime().toLocalDate();
@@ -154,10 +154,8 @@ public final class SystemTime
 	}
 
 	/**
-	 *
-	 * @param newTimeSource
-	 *            the given TimeSource will be used for the time returned by the
-	 *            methods of this class (unless it is null).
+	 * @param newTimeSource the given TimeSource will be used for the time returned by the
+	 *                      methods of this class (unless it is null).
 	 */
 	public static void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
