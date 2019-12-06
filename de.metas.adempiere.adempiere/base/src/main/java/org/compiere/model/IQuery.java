@@ -178,6 +178,7 @@ public interface IQuery<T>
 	 * @return
 	 * @throws DBException
 	 */
+	@NonNull
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
@@ -187,6 +188,7 @@ public interface IQuery<T>
 	 * @throws DBMoreThenOneRecordsFoundException
 	 * @see {@link #first()}
 	 */
+	@Nullable
 	<ET extends T> ET firstOnly(Class<ET> clazz) throws DBException;
 
 	/**
@@ -196,6 +198,7 @@ public interface IQuery<T>
 	 * @return
 	 * @throws DBException
 	 */
+	@NonNull
 	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
 
 	/**
@@ -205,6 +208,7 @@ public interface IQuery<T>
 	 * @return model or null if not found or if there were more then one record found.
 	 * @throws DBException
 	 */
+	@Nullable
 	<ET extends T> ET firstOnlyOrNull(Class<ET> clazz) throws DBException;
 
 	/**
