@@ -36,6 +36,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
@@ -56,62 +57,74 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
-
 /**
- *	Request Button Action.
- *	Popup Menu
+ * Request Button Action.
+ * Popup Menu
  *
- *  @author Jorg Janke
- *  @version $Id: ARequest.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- *
+ * @author Jorg Janke
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * 			<li>BF [ 1904928 ] Request: Related Request field not filled
+ * <li>BF [ 1904928 ] Request: Related Request field not filled
+ * @version $Id: ARequest.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
 public class ARequest implements ActionListener
 {
 	private final int bpartnerTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name);
 
 	/**
-	 * 	Constructor
-	 *	@param invoker invoker button
-	 *	@param AD_Table_ID table
-	 *	@param Record_ID record
-	 *	@param C_BPartner_ID optional bp
+	 * Constructor
+	 *
+	 * @param invoker       invoker button
+	 * @param AD_Table_ID   table
+	 * @param Record_ID     record
+	 * @param C_BPartner_ID optional bp
 	 */
-	public ARequest (JComponent invoker, int AD_Table_ID, int Record_ID,
-		int C_BPartner_ID)
+	public ARequest(JComponent invoker, int AD_Table_ID, int Record_ID,
+			int C_BPartner_ID)
 	{
-		super ();
+		super();
 		log.info("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
 		m_C_BPartner_ID = C_BPartner_ID;
 		getRequests(invoker);
-	}	//	ARequest
-
-	/**	The Table						*/
-	private int			m_AD_Table_ID;
-	/** The Record						*/
-	private int			m_Record_ID;
-	/** BPartner						*/
-	private int			m_C_BPartner_ID;
-
-	/**	The Popup						*/
-	private JPopupMenu 	m_popup = new JPopupMenu("RequestMenu");
-	private CMenuItem 	m_new = null;
-	private CMenuItem 	m_active = null;
-	private CMenuItem 	m_all = null;
-	/** Where Clause					*/
-	StringBuffer 		m_where = null;
-
-	/**	Logger	*/
-	private static Logger	log	= LogManager.getLogger(ARequest.class);
+	}    //	ARequest
 
 	/**
-	 * 	Display Request Options - New/Existing.
-	 * 	@param invoker button
+	 * The Table
 	 */
-	private void getRequests (JComponent invoker)
+	private int m_AD_Table_ID;
+	/**
+	 * The Record
+	 */
+	private int m_Record_ID;
+	/**
+	 * BPartner
+	 */
+	private int m_C_BPartner_ID;
+
+	/**
+	 * The Popup
+	 */
+	private JPopupMenu m_popup = new JPopupMenu("RequestMenu");
+	private CMenuItem m_new = null;
+	private CMenuItem m_active = null;
+	private CMenuItem m_all = null;
+	/**
+	 * Where Clause
+	 */
+	StringBuffer m_where = null;
+
+	/**
+	 * Logger
+	 */
+	private static Logger log = LogManager.getLogger(ARequest.class);
+
+	/**
+	 * Display Request Options - New/Existing.
+	 *
+	 * @param invoker button
+	 */
+	private void getRequests(JComponent invoker)
 	{
 		m_new = new CMenuItem(Msg.getMsg(Env.getCtx(), "RequestNew"));
 		m_new.setIcon(Images.getImageIcon2("New16"));
@@ -121,14 +134,14 @@ public class ARequest implements ActionListener
 		int inactiveCount = 0;
 		m_where = new StringBuffer();
 		m_where.append("(AD_Table_ID=").append(m_AD_Table_ID)
-			.append(" AND Record_ID=").append(m_Record_ID)
-			.append(")");
+				.append(" AND Record_ID=").append(m_Record_ID)
+				.append(")");
 		//
 
 		if (m_AD_Table_ID == getTableId(I_AD_User.class))
 		{
 			m_where.append(" OR AD_User_ID=").append(m_Record_ID)
-				.append(" OR SalesRep_ID=").append(m_Record_ID);
+					.append(" OR SalesRep_ID=").append(m_Record_ID);
 		}
 		else if (m_AD_Table_ID == bpartnerTableId)
 		{
@@ -142,7 +155,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR C_Invoice_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == MPayment.Table_ID)
+		else if (m_AD_Table_ID == getTableId(I_C_Payment.class))
 		{
 			m_where.append(" OR C_Payment_ID=").append(m_Record_ID);
 		}
@@ -164,16 +177,16 @@ public class ARequest implements ActionListener
 		}
 		//
 		String sql = "SELECT Processed, COUNT(*) "
-			+ "FROM R_Request WHERE " + m_where
-			+ " GROUP BY Processed "
-			+ "ORDER BY Processed DESC";
+				+ "FROM R_Request WHERE " + m_where
+				+ " GROUP BY Processed "
+				+ "ORDER BY Processed DESC";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, null);
-			rs = pstmt.executeQuery ();
-			while (rs.next ())
+			pstmt = DB.prepareStatement(sql, null);
+			rs = pstmt.executeQuery();
+			while (rs.next())
 			{
 				if ("Y".equals(rs.getString(1)))
 				{
@@ -199,28 +212,29 @@ public class ARequest implements ActionListener
 		if (activeCount > 0)
 		{
 			m_active = new CMenuItem(Msg.getMsg(Env.getCtx(), "RequestActive")
-				+ " (" + activeCount + ")");
+					+ " (" + activeCount + ")");
 			m_popup.add(m_active).addActionListener(this);
 		}
 		if (inactiveCount > 0)
 		{
 			m_all = new CMenuItem(Msg.getMsg(Env.getCtx(), "RequestAll")
-				+ " (" + (activeCount + inactiveCount) + ")");
+					+ " (" + (activeCount + inactiveCount) + ")");
 			m_popup.add(m_all).addActionListener(this);
 		}
 		//
 		if (invoker.isShowing())
-		 {
-			m_popup.show(invoker, 0, invoker.getHeight());	//	below button
+		{
+			m_popup.show(invoker, 0, invoker.getHeight());    //	below button
 		}
-	}	//	getZoomTargets
+	}    //	getZoomTargets
 
 	/**
-	 * 	Listner
-	 *	@param e event
+	 * Listner
+	 *
+	 * @param e event
 	 */
 	@Override
-	public void actionPerformed (ActionEvent e)
+	public void actionPerformed(ActionEvent e)
 	{
 		MQuery query = null;
 		if (e.getSource() == m_active)
@@ -235,7 +249,7 @@ public class ARequest implements ActionListener
 			query.addRestriction(m_where.toString());
 		}
 		//
-		final AdWindowId adWindowId = AdWindowId.ofRepoId(232);		//	232=all - 201=my
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(232);        //	232=all - 201=my
 		AWindow frame = new AWindow();
 		if (!frame.initWindow(adWindowId, query))
 		{
@@ -275,7 +289,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_Order_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID ==getTableId(I_C_Invoice.class))
+			else if (m_AD_Table_ID == getTableId(I_C_Invoice.class))
 			{
 				tab.setValue("C_Invoice_ID", new Integer(m_Record_ID));
 			}
@@ -283,7 +297,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("M_Product_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == MPayment.Table_ID)
+			else if (m_AD_Table_ID == getTableId(I_C_Payment.class))
 			{
 				tab.setValue("C_Payment_ID", new Integer(m_Record_ID));
 			}
@@ -303,15 +317,17 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue(MRequest.COLUMNNAME_R_RequestRelated_ID, new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == getTableId(I_C_OrderLine.class)) {
+			else if (m_AD_Table_ID == getTableId(I_C_OrderLine.class))
+			{
 				MOrderLine oLine = new MOrderLine(Env.getCtx(), m_Record_ID, null);
-				if (oLine != null) {
+				if (oLine != null)
+				{
 					tab.setValue(MOrderLine.COLUMNNAME_C_Order_ID, new Integer(oLine.getC_Order_ID()));
 				}
 			}
 		}
 		AEnv.showCenterScreen(frame);
 		frame = null;
-	}	//	actionPerformed
+	}    //	actionPerformed
 
-}	//	ARequest
+}    //	ARequest

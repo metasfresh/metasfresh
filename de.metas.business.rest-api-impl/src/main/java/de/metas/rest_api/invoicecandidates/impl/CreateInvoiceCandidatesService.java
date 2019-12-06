@@ -310,7 +310,7 @@ public class CreateInvoiceCandidatesService
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
 		final OrgId orgId;
-		if (!Check.isEmpty(item.getOrgCode()))
+		if (Check.isNotBlank(item.getOrgCode()))
 		{
 			final OrgQuery query = OrgQuery.builder()
 					.orgValue(item.getOrgCode())

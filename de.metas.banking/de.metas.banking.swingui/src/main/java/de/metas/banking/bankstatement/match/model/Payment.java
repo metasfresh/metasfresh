@@ -3,6 +3,7 @@ package de.metas.banking.bankstatement.match.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
@@ -72,7 +73,7 @@ public class Payment implements IPayment
 			payAmt = paymentPO.getPayAmt().negate();
 		}
 
-		final I_C_BPartner bpartner = paymentPO.getC_BPartner();
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(paymentPO.getC_BPartner_ID(), I_C_BPartner.class);
 		bpartnerId = bpartner != null ? bpartner.getC_BPartner_ID() : -1;
 		bpartnerName = bpartner.getName();
 
