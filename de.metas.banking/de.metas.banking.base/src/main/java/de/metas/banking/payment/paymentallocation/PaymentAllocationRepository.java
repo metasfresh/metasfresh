@@ -290,6 +290,15 @@ public class PaymentAllocationRepository
 		return DB.retrieveRows(sql, sqlParams, this::retrievePaymentToAllocateOrNull);
 	}
 
+	public ImmutableSet<PaymentId> retrievePaymentIdsToAllocate(final PaymentToAllocateQuery query)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = buildSelectPaymentsToAllocateSql(query, sqlParams);
+
+		final List<PaymentId> paymentIds = DB.retrieveRows(sql, sqlParams, rs -> retrievePaymentId(rs));
+		return ImmutableSet.copyOf(paymentIds);
+	}
+
 	private String buildSelectPaymentsToAllocateSql(final PaymentToAllocateQuery query, final List<Object> sqlParams)
 	{
 		final CurrencyId currencyId = query.getCurrencyId();
@@ -359,7 +368,7 @@ public class PaymentAllocationRepository
 		final Amount openAmtConv = retrieveAmount(rs, "conv_open", convertedToCurrencyCode).negateIf(!inboundPayment);
 
 		return PaymentToAllocate.builder()
-				.paymentId(PaymentId.ofRepoId(rs.getInt("c_payment_id")))
+				.paymentId(retrievePaymentId(rs))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(rs.getInt("AD_Client_ID"), rs.getInt("AD_Org_ID")))
 				.documentNo(rs.getString("DocNo"))
 				.bpartnerId(BPartnerId.ofRepoId(rs.getInt("c_bpartner_id")))
@@ -371,4 +380,8 @@ public class PaymentAllocationRepository
 				.build();
 	}
 
+	private static PaymentId retrievePaymentId(final ResultSet rs) throws SQLException
+	{
+		return PaymentId.ofRepoId(rs.getInt("c_payment_id"));
+	}
 }
