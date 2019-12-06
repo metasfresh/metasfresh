@@ -755,7 +755,6 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType" />
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_DesadvLine_Pack" type="EDI_Exp_DesadvLine_PackType" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="Line" type="xsd:integer" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="MovementQty" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="M_Product_ID" type="EDI_Exp_M_ProductType" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="ProductDescription" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="ProductNo" type="xsd:string" />

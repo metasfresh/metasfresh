@@ -329,12 +329,6 @@ public class StepComXMLDesadvBean
 		return keyToPackages;
 	}
 
-	// no quantity=>no sscc18
-	private static boolean lineHasQty(@NonNull final EDIExpDesadvLineType ediExpDesadvLine)
-	{
-		return ediExpDesadvLine.getMovementQty() != null && ediExpDesadvLine.getMovementQty().signum() != 0;
-	}
-
 	@Value
 	private static class PACKINXliefKey
 	{
@@ -580,6 +574,12 @@ public class StepComXMLDesadvBean
 			detail.setDQVAR1(dqvar1);
 		}
 		return detail;
+	}
+
+	// no quantity=>no sscc18
+	private static boolean lineHasQty(@NonNull final EDIExpDesadvLineType ediExpDesadvLine)
+	{
+		return ediExpDesadvLine.getQtyEntered() != null && ediExpDesadvLine.getQtyEntered().signum() != 0;
 	}
 
 	private DQUAN1 createQuantityDetail(
