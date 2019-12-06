@@ -242,12 +242,17 @@ public final class ProcessPreconditionsResolution
 	public ProcessPreconditionsResolution deriveWithCaptionOverride(@Nullable final String captionOverride)
 	{
 		final ITranslatableString captionOverrideNew = captionOverride == null ? null : TranslatableStrings.constant(captionOverride);
-		if (Objects.equal(this.captionOverride, captionOverrideNew))
+		return deriveWithCaptionOverride(captionOverrideNew);
+	}
+
+	public ProcessPreconditionsResolution deriveWithCaptionOverride(@Nullable final ITranslatableString captionOverride)
+	{
+		if (Objects.equal(this.captionOverride, captionOverride))
 		{
 			return this;
 		}
 
-		return toBuilder().captionOverride(captionOverrideNew).build();
+		return toBuilder().captionOverride(captionOverride).build();
 	}
 
 	public ProcessPreconditionsResolution and(Supplier<ProcessPreconditionsResolution> resolutionSupplier)
