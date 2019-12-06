@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { topActionsRequest } from '../../api';
+import { fetchTopActions } from '../../actions/WindowActions';
 import { dropdownRequest } from '../../actions/GenericActions';
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 
@@ -128,13 +128,19 @@ class ActionButton extends Component {
    * @todo Write the documentation
    */
   handleChangeStatus = status => {
-    const { onChange, docId, windowType, activeTab } = this.props;
+    const {
+      onChange,
+      docId,
+      windowType,
+      activeTab,
+      fetchTopActions,
+    } = this.props;
     const changePromise = onChange(status);
 
     this.statusDropdown.blur();
     if (changePromise instanceof Promise) {
       changePromise.then(() => {
-        topActionsRequest(windowType, docId, activeTab);
+        fetchTopActions(windowType, docId, activeTab);
 
         return this.fetchStatusList();
       });
@@ -253,7 +259,6 @@ class ActionButton extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
  * @prop {bool} modalVisible
  * @prop {*} data
  * @prop {*} onChange
@@ -266,8 +271,8 @@ class ActionButton extends Component {
  * @todo Check title, buttons. Which proptype? Required or optional?
  */
 ActionButton.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
   data: PropTypes.any,
   onChange: PropTypes.any,
   dropdownOpenCallback: PropTypes.any,
@@ -278,6 +283,11 @@ ActionButton.propTypes = {
   activeTab: PropTypes.string,
 };
 
-export default connect(state => ({
-  modalVisible: state.windowHandler.modal.visible,
-}))(ActionButton);
+const mapStateToProps = ({ windowHandler }) => ({
+  modalVisible: windowHandler.modal.visible,
+});
+
+export default connect(
+  mapStateToProps,
+  { fetchTopActions }
+)(ActionButton);
