@@ -1267,7 +1267,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	/**
 	 * Mass-update a given invoice candidate column.
-	 *
+	 * <p>
 	 * If there were any changes, those invoice candidates will be invalidated.
 	 *
 	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
