@@ -42,6 +42,7 @@ import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQt
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -228,7 +229,7 @@ public class DesadvLineSSCC18Generator
 
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
-		final SSCC18 sscc18 = sscc18CodeBL.generate();
+		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
 		final String ipaSSCC18 = sscc18CodeBL.toString(sscc18, false); // humanReadable=false
 
 		//

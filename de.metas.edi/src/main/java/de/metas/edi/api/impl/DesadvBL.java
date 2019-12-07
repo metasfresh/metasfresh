@@ -1,7 +1,6 @@
 package de.metas.edi.api.impl;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
@@ -119,6 +118,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final transient ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
 	private final transient HURepository huRepository;
 
 	// @VisibleForTesting
@@ -400,7 +400,7 @@ public class DesadvBL implements IDesadvBL
 			bestBeforeDate.ifPresent(packRecord::setBestBeforeDate);
 
 			// SSCC18
-			final String sscc18 = computeSSCC18();
+			final String sscc18 = computeSSCC18(OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()));
 			packRecord.setIPA_SSCC18(sscc18);
 			packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 
@@ -426,6 +426,13 @@ public class DesadvBL implements IDesadvBL
 			// prepare next iteration within this for-look
 			remainingQty = remainingQty.subtract(qtyCUsPerCurrentLU);
 		}
+	}
+
+	private String computeSSCC18(@NonNull final OrgId orgId)
+	{
+		final SSCC18 sscc18 = sscc18CodeService.generate(orgId);
+		final String ipaSSCC18 = sscc18CodeService.toString(sscc18, false); // humanReadable=false
+		return ipaSSCC18;
 	}
 
 	private Quantity addPackInfoToLineUsingHU(
@@ -459,9 +466,19 @@ public class DesadvBL implements IDesadvBL
 				(date1, date2) -> TimeUtil.min(date1, date2));
 		packRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
+		// SSCC18
 		final String sscc18 = rootHU.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
-		packRecord.setIsManual_IPA_SSCC18(isEmpty(sscc18, true));
-		packRecord.setIPA_SSCC18(coalesceSuppliers(() -> sscc18, () -> computeSSCC18()));
+		if (isEmpty(sscc18))
+		{
+			packRecord.setIsManual_IPA_SSCC18(true);
+			final String onTheFlySSCC18 = computeSSCC18ForHUId(rootHU.getId());
+			packRecord.setIPA_SSCC18(onTheFlySSCC18);
+		}
+		else
+		{
+			packRecord.setIPA_SSCC18(sscc18);
+			packRecord.setIsManual_IPA_SSCC18(false);
+		}
 
 		final Optional<PackagingCode> packagingCode = rootHU.getPackagingCode();
 		if (packagingCode.isPresent())
@@ -486,11 +503,9 @@ public class DesadvBL implements IDesadvBL
 		return quantity;
 	}
 
-	private String computeSSCC18()
+	private String computeSSCC18ForHUId(@NonNull final HuId huId)
 	{
-		final ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
-
-		final SSCC18 sscc18 = sscc18CodeService.generate();
+		final SSCC18 sscc18 = sscc18CodeService.generate(huId.getRepoId());
 		final String ipaSSCC18 = sscc18CodeService.toString(sscc18, false); // humanReadable=false
 		return ipaSSCC18;
 	}

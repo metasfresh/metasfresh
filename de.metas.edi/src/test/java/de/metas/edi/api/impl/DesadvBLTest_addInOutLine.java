@@ -91,7 +91,7 @@ class DesadvBLTest_addInOutLine
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(() -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", OrgId.ANY.getRepoId());
@@ -246,7 +246,7 @@ class DesadvBLTest_addInOutLine
 		final I_M_HU_Attribute huAttrRecord = newInstance(I_M_HU_Attribute.class);
 		huAttrRecord.setM_Attribute_ID(sscc18HUPIAttributeRecord.getM_Attribute_ID());
 		huAttrRecord.setM_HU_ID(lu.getM_HU_ID());
-		huAttrRecord.setValue(sscc18CodeBL.toString(sscc18CodeBL.generate(), false));
+		huAttrRecord.setValue(sscc18CodeBL.toString(sscc18CodeBL.generate(OrgId.ANY), false));
 		huAttrRecord.setM_HU_PI_Attribute_ID(sscc18HUPIAttributeRecord.getM_HU_PI_Attribute_ID());
 		saveRecord(huAttrRecord);
 

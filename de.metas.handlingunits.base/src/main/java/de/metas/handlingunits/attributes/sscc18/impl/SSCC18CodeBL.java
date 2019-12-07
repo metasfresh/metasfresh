@@ -24,18 +24,17 @@ package de.metas.handlingunits.attributes.sscc18.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -46,6 +45,8 @@ import lombok.ToString;
 @Service
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {
+	public static final String SSCC18_SERIALNUMBER_SEQUENCENAME = "SSCC18_SerialNumber";
+
 	/**
 	 * Manufacturer code consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
 	 */
@@ -64,10 +65,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	{
 		this.hasCustomNextSerialNumberProvider = false;
 
-		this.nextSerialNumberProvider = () -> DB.getNextID(
-				ClientId.SYSTEM.getRepoId(),
-				I_M_HU.Table_Name, /* "real" HUs also get SSCC18's that are based on their M_HU_ID. to avoid duplicates, we use the same sequence also for "fake"/HU-less SSCC18s. */
-				ITrx.TRXNAME_None);
+		this.nextSerialNumberProvider = orgId -> {
+			final String sscc18SerialNumberStr = Services.get(IDocumentNoBuilderFactory.class)
+					.forTableName(SSCC18_SERIALNUMBER_SEQUENCENAME, ClientId.METASFRESH.getRepoId(), orgId.getRepoId())
+					.build();
+			return Integer.parseInt(sscc18SerialNumberStr);
+		};
 	}
 
 	/** Then unit testing, you can use this constructor to register an instances to services where you provide the next serial number. */
@@ -139,9 +142,9 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	}
 
 	@Override
-	public SSCC18 generate()
+	public SSCC18 generate(@NonNull final OrgId orgId)
 	{
-		return generate(nextSerialNumberProvider.provideNextSerialNumber());
+		return generate(nextSerialNumberProvider.provideNextSerialNumber(orgId));
 	}
 
 	@Override
@@ -226,6 +229,6 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	@FunctionalInterface
 	public interface NextSerialNumberProvider
 	{
-		int provideNextSerialNumber();
+		int provideNextSerialNumber(OrgId orgId);
 	}
 }

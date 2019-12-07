@@ -76,7 +76,7 @@ class HURepositoryTest
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(() -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", OrgId.ANY.getRepoId());
@@ -122,7 +122,7 @@ class HURepositoryTest
 				huPIItemProductRecord,
 				new BigDecimal("49"));
 
-		final String sscc18String = sscc18CodeBL.generate().toString();
+		final String sscc18String = sscc18CodeBL.generate(OrgId.ANY).toString();
 		final I_M_HU_Attribute huAttrRecord = newInstance(I_M_HU_Attribute.class);
 		huAttrRecord.setM_Attribute_ID(attrRecord.getM_Attribute_ID());
 		huAttrRecord.setM_HU_ID(lu.getM_HU_ID());

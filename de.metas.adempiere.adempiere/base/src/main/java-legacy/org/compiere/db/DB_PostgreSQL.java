@@ -50,6 +50,7 @@ import de.metas.connection.impl.DB_PostgreSQL_ConnectionCustomizer;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.SystemUtils;
+import lombok.NonNull;
 
 /**
  * PostgreSQL Database Port
@@ -765,9 +766,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	}
 
 	@Override
-	public int getNextID(String name)
+	public int getNextID(@NonNull final String sequenceName)
 	{
-		int m_sequence_id = DB.getSQLValue(null, "SELECT nextval('" + name.toLowerCase() + "')");
+		Check.assumeNotEmpty(sequenceName, "sequenceName not empty");
+		int m_sequence_id = DB.getSQLValue(null, "SELECT nextval('" + sequenceName.toLowerCase() + "')");
 		return m_sequence_id;
 	}
 

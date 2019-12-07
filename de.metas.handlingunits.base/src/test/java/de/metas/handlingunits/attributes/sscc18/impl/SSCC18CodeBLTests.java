@@ -48,7 +48,7 @@ public class SSCC18CodeBLTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		sscc18CodeService = new SSCC18CodeBL(() -> ++nextSSCC18SerialNumber);
+		sscc18CodeService = new SSCC18CodeBL(orgId -> ++nextSSCC18SerialNumber);
 	}
 
 	public static void setManufacturerCode(final String manufacturerCode)

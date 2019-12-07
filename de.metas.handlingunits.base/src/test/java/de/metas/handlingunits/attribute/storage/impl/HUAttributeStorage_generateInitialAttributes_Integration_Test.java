@@ -102,7 +102,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 	{
 		nextSSCC18SerialNumber = 0;
 
-		final SSCC18CodeBL sscc18CodeService = new SSCC18CodeBL(() -> ++nextSSCC18SerialNumber);
+		final SSCC18CodeBL sscc18CodeService = new SSCC18CodeBL(orgId -> ++nextSSCC18SerialNumber);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeService);
 
 		SSCC18CodeBLTests.setManufacturerCode("0001");

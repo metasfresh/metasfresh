@@ -24,12 +24,14 @@ package de.metas.handlingunits.attributes.sscc18;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 public interface ISSCC18CodeBL extends ISingletonService
 {
+	String SSCC18_SERIALNUMBER_SEQUENCENAME = "SSCC18_SerialNumber";
+
 	/**
-	 * @param sscc18
 	 * @return true if the check digit is correct, false otherwise
 	 */
 	boolean isCheckDigitValid(SSCC18 sscc18);
@@ -43,9 +45,10 @@ public interface ISSCC18CodeBL extends ISingletonService
 	SSCC18 generate(int serialNumber);
 
 	/**
-	 * uses its own internal sequence for serialNumbers and creates a new SSCC18.
+	 * Uses its own sequence for serialNumbers (see {@link #SSCC18_SERIALNUMBER_SEQUENCENAME}) and creates a new SSCC18.
+	 * @param orgId there might be different sequences per org
 	 */
-	SSCC18 generate();
+	SSCC18 generate(OrgId orgId);
 
 	/**
 	 * Converts given {@link SSCC18} code to String representation
