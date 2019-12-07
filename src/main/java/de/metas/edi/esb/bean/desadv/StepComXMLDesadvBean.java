@@ -194,9 +194,7 @@ public class StepComXMLDesadvBean
 		final int distinctKeySize = keyToPackages.keySet().size();
 		final boolean ppack1NeededInGeneral = ssccRequired || packagingCodeTURequired || distinctKeySize > 1;
 
-		final int packagingTotalNumber = ppack1NeededInGeneral ? distinctKeySize : 0;
-		packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
-
+		int packagingTotalNumber = 0;
 		for (final PACKINXliefKey key : keyToPackages.keySet())
 		{
 			for (final LineAndPack lineAndPack : keyToPackages.get(key))
@@ -235,6 +233,7 @@ public class StepComXMLDesadvBean
 							ppack1.getDETAIL().add(detailXlief);
 						}
 					}
+					packagingTotalNumber++; // if there are no PPacks,packagingTotalNumber shall remain zero
 				}
 				else // we can add the detail directly to packIn
 				{
@@ -243,7 +242,7 @@ public class StepComXMLDesadvBean
 				}
 			}
 		}
-
+		packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
 		// for (final EDIExpDesadvLineType ediExpDesadvLine : xmlDesadv.getEDIExpDesadvLine())
 		// {
 		// boolean addDETAILXliefToPackInXlief = true;
@@ -303,7 +302,10 @@ public class StepComXMLDesadvBean
 		// }
 	}
 
-	private ImmutableListMultimap<PACKINXliefKey, LineAndPack> extractLineAndPacks(final EDIExpDesadvType xmlDesadv, final boolean ssccRequired, final boolean packagingCodeTURequired)
+	private ImmutableListMultimap<PACKINXliefKey, LineAndPack> extractLineAndPacks(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			final boolean ssccRequired,
+			final boolean packagingCodeTURequired)
 	{
 		final ImmutableListMultimap.Builder<PACKINXliefKey, LineAndPack> mm = ImmutableListMultimap.builder();
 		for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
