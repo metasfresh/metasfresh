@@ -69,6 +69,12 @@ public class PaymentDocument implements IPaymentDocument
 	}
 
 	@Override
+	public PaymentDocumentType getType()
+	{
+		return PaymentDocumentType.RegularPayment;
+	}
+
+	@Override
 	public final String getDocumentNo()
 	{
 		if (!Check.isEmpty(documentNo, true))
