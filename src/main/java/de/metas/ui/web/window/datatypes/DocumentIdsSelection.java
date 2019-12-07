@@ -268,7 +268,7 @@ public final class DocumentIdsSelection
 		return documentIds;
 	}
 
-	public <T> Set<T> toSet(@NonNull final Function<DocumentId, T> mapper)
+	public <T> ImmutableSet<T> toSet(@NonNull final Function<DocumentId, T> mapper)
 	{
 		assertNotAll();
 		if (documentIds.isEmpty())
@@ -283,7 +283,7 @@ public final class DocumentIdsSelection
 		return toSet(DocumentId::toInt);
 	}
 
-	public <ID extends RepoIdAware> Set<ID> toIds(@NonNull final Function<Integer, ID> idMapper)
+	public <ID extends RepoIdAware> ImmutableSet<ID> toIds(@NonNull final Function<Integer, ID> idMapper)
 	{
 		return toSet(idMapper.compose(DocumentId::toInt));
 	}

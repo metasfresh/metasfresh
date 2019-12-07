@@ -3,8 +3,10 @@ package de.metas.ui.web.payment_allocation;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Repository;
 
@@ -20,12 +22,14 @@ import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -54,6 +58,7 @@ import lombok.NonNull;
 @Repository
 public class PaymentAndInvoiceRowsRepo
 {
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currenciesRepo;
 	private final PaymentAllocationRepository paymentAllocationRepo;
 	private final LookupDataSource bpartnersLookup;
@@ -77,9 +82,13 @@ public class PaymentAndInvoiceRowsRepo
 				.evaluationDate(evaluationDate)
 				.additionalPaymentIdsToInclude(paymentIds)
 				.build());
+		if (paymentsToAllocate.isEmpty())
+		{
+			throw new AdempiereException("@NoOpenPayments@");
+		}
 
 		final PaymentRows paymentRows = toPaymentRows(paymentsToAllocate, evaluationDate);
-		final InvoiceRows invoiceRows = retrieveInvoiceRowsByPaymentRecords(paymentsToAllocate, evaluationDate);
+		final InvoiceRows invoiceRows = retrieveInvoiceRowsByPayments(paymentsToAllocate, evaluationDate);
 
 		return PaymentAndInvoiceRows.builder()
 				.paymentRows(paymentRows)
@@ -119,7 +128,7 @@ public class PaymentAndInvoiceRowsRepo
 				.build();
 	}
 
-	private InvoiceRows retrieveInvoiceRowsByPaymentRecords(
+	private InvoiceRows retrieveInvoiceRowsByPayments(
 			final List<PaymentToAllocate> paymentsToAllocate,
 			final ZonedDateTime evaluationDate)
 	{
@@ -157,6 +166,7 @@ public class PaymentAndInvoiceRowsRepo
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
+				.docTypeName(docTypeBL.getNameById(invoiceToAllocate.getDocTypeId()))
 				.documentNo(invoiceToAllocate.getDocumentNo())
 				.dateInvoiced(invoiceToAllocate.getDateInvoiced())
 				.bpartner(bpartnersLookup.findById(invoiceToAllocate.getBpartnerId()))
@@ -188,7 +198,26 @@ public class PaymentAndInvoiceRowsRepo
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PaymentRow> getPaymentRowsListByInvoiceId(
+	public Optional<InvoiceRow> getInvoiceRowByInvoiceId(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final List<InvoiceRow> invoiceRows = getInvoiceRowsListByInvoiceId(ImmutableList.of(invoiceId), evaluationDate);
+		if (invoiceRows.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (invoiceRows.size() == 1)
+		{
+			return Optional.of(invoiceRows.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("Expected only one row for " + invoiceId + " but got " + invoiceRows);
+		}
+	}
+
+	public List<PaymentRow> getPaymentRowsListByPaymentId(
 			@NonNull final Collection<PaymentId> paymentIds,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
@@ -206,6 +235,25 @@ public class PaymentAndInvoiceRowsRepo
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Optional<PaymentRow> getPaymentRowByPaymentId(
+			@NonNull final PaymentId paymentId,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final List<PaymentRow> paymentRows = getPaymentRowsListByPaymentId(ImmutableList.of(paymentId), evaluationDate);
+		if (paymentRows.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (paymentRows.size() == 1)
+		{
+			return Optional.of(paymentRows.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("Expected only one row for " + paymentId + " but got " + paymentRows);
+		}
 	}
 
 }

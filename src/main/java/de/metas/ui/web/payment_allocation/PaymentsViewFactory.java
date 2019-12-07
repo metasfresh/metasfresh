@@ -14,7 +14,11 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.payment_allocation.process.InvoicesView_AddAdditionalInvoice;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_AddAdditionalPayment;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_Allocate;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndDiscount;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndWriteOff;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
 import de.metas.ui.web.view.IView;
@@ -99,22 +103,37 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 		viewId.assertWindowId(WINDOW_ID);
 
 		final Set<PaymentId> paymentIds = PaymentId.fromIntSet(request.getFilterOnlyIds());
+		if (paymentIds.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
 		final PaymentAndInvoiceRows paymentAndInvoiceRows = rowsRepo.getByPaymentIds(paymentIds);
 
 		return PaymentsView.builder()
 				.paymentViewId(viewId)
 				.rows(paymentAndInvoiceRows)
-				.processes(getRelatedProcessDescriptors())
+				.paymentsProcesses(getPaymentRelatedProcessDescriptors())
+				.invoicesProcesses(getInvoiceRelatedProcessDescriptors())
 				.build();
 	}
 
-	private List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
+	private List<RelatedProcessDescriptor> getPaymentRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(PaymentsView_Allocate.class));
+				createProcessDescriptor(10, PaymentsView_Allocate.class),
+				createProcessDescriptor(20, PaymentsView_AllocateAndDiscount.class),
+				createProcessDescriptor(30, PaymentsView_AllocateAndWriteOff.class),
+				createProcessDescriptor(40, PaymentsView_AddAdditionalPayment.class));
 	}
 
-	protected final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	private List<RelatedProcessDescriptor> getInvoiceRelatedProcessDescriptors()
+	{
+		return ImmutableList.of(
+				createProcessDescriptor(10, InvoicesView_AddAdditionalInvoice.class));
+	}
+
+	protected final RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
@@ -127,6 +146,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 				.processId(processId)
 				.anyTable().anyWindow()
 				.displayPlace(DisplayPlace.ViewQuickActions)
+				.sortNo(sortNo)
 				.build();
 	}
 

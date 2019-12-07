@@ -44,25 +44,29 @@ import lombok.NonNull;
 
 public class PaymentRow implements IViewRow
 {
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, widgetSize = WidgetSize.Small, captionKey = "IsReceipt")
+	@Getter
+	private final boolean inboundPayment;
+
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
 	@Getter
 	private final String documentNo;
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateTrx")
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateTrx")
 	private final LocalDate dateTrx;
 
-	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")
 	private final LookupValue bpartner;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "PayAmt")
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "PayAmt")
 	@Getter
 	private final Amount payAmt;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "OpenAmt")
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "OpenAmt")
 	@Getter
 	private final Amount openAmt;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
 	private final String currencyCode;
 
 	private final DocumentId rowId;
@@ -70,8 +74,6 @@ public class PaymentRow implements IViewRow
 	private final PaymentId paymentId;
 	@Getter
 	private final ClientAndOrgId clientAndOrgId;
-	@Getter
-	private final boolean inboundPayment;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
@@ -103,6 +105,11 @@ public class PaymentRow implements IViewRow
 	static DocumentId convertPaymentIdToDocumentId(final PaymentId paymentId)
 	{
 		return DocumentId.of(paymentId);
+	}
+
+	static PaymentId convertDocumentIdToPaymentId(final DocumentId rowId)
+	{
+		return rowId.toId(PaymentId::ofRepoId);
 	}
 
 	@Override

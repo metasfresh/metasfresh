@@ -3,6 +3,7 @@ package de.metas.ui.web.payment_allocation;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Payment;
@@ -41,19 +42,24 @@ import lombok.NonNull;
 
 public class PaymentRows implements IRowsData<PaymentRow>
 {
+	public static PaymentRows cast(final IRowsData<PaymentRow> rows)
+	{
+		return (PaymentRows)rows;
+	}
+
 	private final PaymentAndInvoiceRowsRepo repository;
 	private final ZonedDateTime evaluationDate;
 	private final SynchronizedMutable<ImmutableRowsIndex<PaymentRow>> rowsHolder;
 
 	@Builder
 	private PaymentRows(
-			@NonNull PaymentAndInvoiceRowsRepo repository,
+			@NonNull final PaymentAndInvoiceRowsRepo repository,
 			@NonNull final List<PaymentRow> initialRows,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
 		this.repository = repository;
 		this.evaluationDate = evaluationDate;
-		rowsHolder = SynchronizedMutable.of(new ImmutableRowsIndex<>(initialRows));
+		rowsHolder = SynchronizedMutable.of(ImmutableRowsIndex.of(initialRows));
 	}
 
 	@Override
@@ -68,7 +74,7 @@ public class PaymentRows implements IRowsData<PaymentRow>
 		final ImmutableRowsIndex<PaymentRow> rows = rowsHolder.getValue();
 		return recordRefs.streamIds(I_C_Payment.Table_Name, PaymentId::ofRepoId)
 				.map(PaymentRow::convertPaymentIdToDocumentId)
-				.filter(rows::containsRowId)
+				.filter(rows::isRelevantForRefreshing)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
@@ -82,11 +88,22 @@ public class PaymentRows implements IRowsData<PaymentRow>
 	@Override
 	public void invalidate(final DocumentIdsSelection rowIds)
 	{
-		final ImmutableSet<PaymentId> paymentIds = rowsHolder.getValue().streamRows(rowIds)
-				.map(PaymentRow::getPaymentId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<PaymentId> paymentIds = rowsHolder
+				.getValue()
+				.getRecordIdsToRefresh(rowIds, PaymentRow::convertDocumentIdToPaymentId);
 
-		final List<PaymentRow> newRows = repository.getPaymentRowsListByInvoiceId(paymentIds, evaluationDate);
+		final List<PaymentRow> newRows = repository.getPaymentRowsListByPaymentId(paymentIds, evaluationDate);
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+	}
+
+	public void addPayment(@NonNull final PaymentId paymentId)
+	{
+		final PaymentRow row = repository.getPaymentRowByPaymentId(paymentId, evaluationDate).orElse(null);
+		if (row == null)
+		{
+			throw new AdempiereException("@PaymentNotOpen@");
+		}
+
+		rowsHolder.compute(rows -> rows.addingRow(row));
 	}
 }
