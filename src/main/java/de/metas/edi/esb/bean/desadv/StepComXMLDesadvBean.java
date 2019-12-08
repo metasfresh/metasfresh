@@ -199,7 +199,7 @@ public class StepComXMLDesadvBean
 		{
 			for (final LineAndPack lineAndPack : keyToPackages.get(key))
 			{
-				if (ppack1NeededInGeneral && lineHasQty(lineAndPack.getLine()))
+				if (ppack1NeededInGeneral && lineAndPack.hasPack())
 				{
 					boolean detailAdded = false;
 					if (ssccRequired)
@@ -243,63 +243,6 @@ public class StepComXMLDesadvBean
 			}
 		}
 		packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
-		// for (final EDIExpDesadvLineType ediExpDesadvLine : xmlDesadv.getEDIExpDesadvLine())
-		// {
-		// boolean addDETAILXliefToPackInXlief = true;
-		// if (ppack1NeededInGeneral && lineHasQty(ediExpDesadvLine))
-		// {
-		// if (ssccRequired)
-		// {
-		// final PPACK1 ppack1 = createPPACK1(header);
-		//
-		// // TODO: or the number of OLs we need need the number of different SSCC'ed LUs
-		// final int orderLineCount = xmlDesadv.getEDIExpDesadvLine().size();
-		// packIn.setPACKAGINGTOTAL(formatNumber(orderLineCount, decimalFormat));
-		//
-		// final String ssccValue = validateString(
-		// Util.removePrecedingZeros(ediExpDesadvLine.getIPASSCC18()),
-		// "@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + ediExpDesadvLine.getLine());
-		//
-		// ppack1.setPACKAGINGCODE(ediExpDesadvLine.getMHUPackagingCodeLUText());
-		// ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
-		// ppack1.setIDENTIFICATIONCODE(ssccValue);
-		//
-		// final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLine, settings, decimalFormat, dateFormat);
-		// ppack1.getDETAIL().add(detailXlief);
-		// addDETAILXliefToPackInXlief = false; // because we already added detailXlief to ppack1
-		//
-		// packIn.getPPACK1().add(ppack1);
-		// }
-		// else
-		// {
-		// packIn.setPACKAGINGTOTAL(formatNumber(0, decimalFormat));
-		// }
-		//
-		// if (packagingCodeTURequired)
-		// {
-		// final PPACK1 ppack1 = createPPACK1(header);
-		// ppack1.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
-		//
-		// final String packagingCodeTU = validateString(
-		// ediExpDesadvLine.getMHUPackagingCodeTUText(),
-		// "@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLine.getLine() + " @M_HU_PackagingCode_TU_ID@");
-		// ppack1.setPACKAGINGCODE(packagingCodeTU);
-		// packIn.getPPACK1().add(ppack1);
-		// }
-		//
-		// }
-		//
-		// if (addDETAILXliefToPackInXlief)
-		// {
-		// final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLine, settings, decimalFormat, dateFormat);
-		// packIn.getDETAIL().add(detailXlief);
-		// }
-		//
-		// if (packagingCodeLUText == null)
-		// { // TODO only for now we assume they are all the same
-		// packagingCodeLUText = ediExpDesadvLine.getMHUPackagingCodeLUText();
-		// }
-		// }
 	}
 
 	private ImmutableListMultimap<PACKINXliefKey, LineAndPack> extractLineAndPacks(
@@ -313,16 +256,20 @@ public class StepComXMLDesadvBean
 			final List<EDIExpDesadvLinePackType> packs = line.getEDIExpDesadvLinePack();
 			if (packs.isEmpty()) // might be, if there is nothing delivered
 			{
+				final LineAndPack lineAndPack = new LineAndPack(line, null);
 				mm.put(
-						PACKINXliefKey.forLine(line, ssccRequired, packagingCodeTURequired),
-						new LineAndPack(line, null));
-				continue;
+						PACKINXliefKey.forLine(lineAndPack, ssccRequired, packagingCodeTURequired),
+						lineAndPack);
 			}
-			for (final EDIExpDesadvLinePackType pack : packs)
+			else
 			{
-				mm.put(
-						PACKINXliefKey.forLine(line, pack, ssccRequired, packagingCodeTURequired),
-						new LineAndPack(line, pack));
+				for (final EDIExpDesadvLinePackType pack : packs)
+				{
+					final LineAndPack lineAndPack = new LineAndPack(line, pack);
+					mm.put(
+							PACKINXliefKey.forLine(lineAndPack, ssccRequired, packagingCodeTURequired),
+							lineAndPack);
+				}
 			}
 		}
 
@@ -335,35 +282,30 @@ public class StepComXMLDesadvBean
 	private static class PACKINXliefKey
 	{
 		private static PACKINXliefKey forLine(
-				@NonNull final EDIExpDesadvLineType line,
+				@NonNull final LineAndPack lineAndPack,
 				final boolean ssccRequired,
 				final boolean packagingCodeTURequired)
 		{
-			return forLine(line, null, ssccRequired, packagingCodeTURequired);
-		}
-
-		private static PACKINXliefKey forLine(
-				@NonNull final EDIExpDesadvLineType line,
-				@Nullable final EDIExpDesadvLinePackType subLine,
-				final boolean ssccRequired,
-				final boolean packagingCodeTURequired)
-		{
-			final String ssccValue = ssccRequired && lineHasQty(line)
+			final String ssccValue = ssccRequired && lineAndPack.hasPack()
 					? validateString(
-							Util.removePrecedingZeros(subLine == null ? "" : subLine.getIPASSCC18()),
-							"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + line.getLine())
+							Util.removePrecedingZeros(lineAndPack.getPack().getIPASSCC18()),
+							"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + lineAndPack.getLine().getLine())
 					: "";
 
-			final String packagingCodeTU = packagingCodeTURequired && lineHasQty(line)
+			final String packagingCodeTU = packagingCodeTURequired && lineAndPack.hasPack()
 					? validateString(
-							subLine == null ? "" : subLine.getMHUPackagingCodeTUText(),
-							"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @M_HU_PackagingCode_TU_ID@")
+							lineAndPack.getPack().getMHUPackagingCodeTUText(),
+							"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_TU_ID@")
+					: "";
+
+			final String packagingCodeLU = lineAndPack.hasPack()
+					? lineAndPack.getPack().getMHUPackagingCodeLUText()
 					: "";
 
 			return new PACKINXliefKey(
 					ssccValue,
 					packagingCodeTU,
-					subLine == null ? "" : subLine.getMHUPackagingCodeLUText());
+					packagingCodeLU);
 		}
 
 		@Nullable
@@ -492,7 +434,7 @@ public class StepComXMLDesadvBean
 		}
 
 		BigDecimal qtyDelivered;
-		if (lineHasQty(lineAndPack.getLine()))
+		if (lineAndPack.hasPack())
 		{
 			final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
 			qtyDelivered = lineAndPack.getPack().getQtyCUsPerLU();
@@ -576,12 +518,6 @@ public class StepComXMLDesadvBean
 			detail.setDQVAR1(dqvar1);
 		}
 		return detail;
-	}
-
-	// no quantity=>no sscc18
-	private static boolean lineHasQty(@NonNull final EDIExpDesadvLineType ediExpDesadvLine)
-	{
-		return ediExpDesadvLine.getQtyEntered() != null && ediExpDesadvLine.getQtyEntered().signum() != 0;
 	}
 
 	private DQUAN1 createQuantityDetail(

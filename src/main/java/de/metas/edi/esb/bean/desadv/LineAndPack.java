@@ -39,4 +39,9 @@ public class LineAndPack
 
 	@Nullable // could be null if nothing is delivered for this line
 	EDIExpDesadvLinePackType pack;
+
+	public boolean hasPack()
+	{
+		return pack != null;
+	}
 }

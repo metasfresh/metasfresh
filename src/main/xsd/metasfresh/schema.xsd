@@ -761,6 +761,7 @@
 			<xsd:element maxOccurs="1" minOccurs="1" name="QtyEntered" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="UPC" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="IsSubsequentDeliveryPlanned" type="YES-NO" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="QtyDeliveredInUOM" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_CU" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_TU" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="GTIN" type="xsd:string" />
