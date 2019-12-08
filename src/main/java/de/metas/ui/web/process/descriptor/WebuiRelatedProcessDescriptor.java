@@ -77,6 +77,9 @@ public final class WebuiRelatedProcessDescriptor
 
 	private final String debugProcessClassname;
 
+	@Getter
+	private final int sortNo;
+
 	@lombok.Builder
 	private WebuiRelatedProcessDescriptor(
 			final ProcessId processId,
@@ -87,6 +90,7 @@ public final class WebuiRelatedProcessDescriptor
 			final boolean defaultQuickAction,
 			final String shortcut,
 			@NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier,
+			final int sortNo,
 			final String debugProcessClassname)
 	{
 		this.processId = processId;
@@ -102,7 +106,10 @@ public final class WebuiRelatedProcessDescriptor
 		// Also we assume this is a short living instance which was created right before checking
 		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(() -> ValueAndDuration.fromSupplier(preconditionsResolutionSupplier));
 
+		this.sortNo = sortNo > 0 ? sortNo : 0;
+
 		this.debugProcessClassname = debugProcessClassname;
+
 	}
 
 	public String getCaption(final String adLanguage)

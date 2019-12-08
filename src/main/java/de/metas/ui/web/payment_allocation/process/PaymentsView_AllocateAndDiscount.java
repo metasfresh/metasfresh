@@ -1,7 +1,12 @@
 package de.metas.ui.web.payment_allocation.process;
 
+import org.compiere.util.DisplayType;
+
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 
@@ -27,8 +32,20 @@ import de.metas.process.ProcessPreconditionsResolution;
  * #L%
  */
 
-public class PaymentsView_Allocate extends PaymentsView_Allocate_Template implements IProcessPrecondition
+public class PaymentsView_AllocateAndDiscount extends PaymentsView_Allocate_Template implements IProcessPrecondition
 {
+	@Override
+	protected PaymentAllocationBuilder preparePaymentAllocationBuilder()
+	{
+		final PaymentAllocationBuilder builder = super.preparePaymentAllocationBuilder();
+		if (builder == null)
+		{
+			return null;
+		}
+
+		return builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.DISCOUNT);
+	}
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -39,7 +56,6 @@ public class PaymentsView_Allocate extends PaymentsView_Allocate_Template implem
 		}
 
 		final PaymentAllocationResult result = builder.dryRun().build();
-
 		if (result.getCandidates().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to allocate");
@@ -48,7 +64,21 @@ public class PaymentsView_Allocate extends PaymentsView_Allocate_Template implem
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a valid selection");
 		}
+		if (result.getTotalDiscountAmt().signum() == 0)
+		{
+			// NOTE: there is other process is would allocate without writing off
+			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to discount");
+		}
 
-		return ProcessPreconditionsResolution.accept();
+		return ProcessPreconditionsResolution.accept()
+				.deriveWithCaptionOverride(computeCaption(result));
+	}
+
+	private static ITranslatableString computeCaption(final PaymentAllocationResult result)
+	{
+		return TranslatableStrings.builder()
+				.appendADElement("DiscountAmt").append(": ")
+				.append(result.getTotalDiscountAmt(), DisplayType.Amount)
+				.build();
 	}
 }
