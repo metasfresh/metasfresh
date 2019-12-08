@@ -29,6 +29,7 @@ import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
 import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
 import static de.metas.edi.esb.commons.ValidationHelper.validateString;
+import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -41,7 +42,6 @@ import org.apache.camel.Exchange;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.lang.Nullable;
 
-import com.google.common.collect.ImmutableListMultimap;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
@@ -85,7 +85,6 @@ import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.ReferenceQual;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import de.metas.edi.esb.route.exports.StepComXMLDesadvRoute;
 import lombok.NonNull;
-import lombok.Value;
 
 public class StepComXMLDesadvBean
 {
@@ -136,7 +135,7 @@ public class StepComXMLDesadvBean
 		header.setDOCUMENTTYP(DocumentType.DADV.toString());
 		header.setDOCUMENTFUNCTION(DocumentFunction.ORIG.toString());
 
-		mapDates(xmlDesadv, dateFormat, header);
+		mapDates(xmlDesadv, header, dateFormat);
 
 		mapHeaderReferences(xmlDesadv, header, settings, dateFormat);
 
@@ -155,381 +154,48 @@ public class StepComXMLDesadvBean
 		return document;
 	}
 
-	private DiscrepencyCode getDiscrepancyCode(final String isSubsequentDeliveryPlanned, final BigDecimal diff)
+	private void mapDates(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final HEADERXlief header,
+			@NonNull final String dateFormat)
 	{
-		DiscrepencyCode discrepancyCode;
-		if (diff.signum() == -1)
-		{
-			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped
-			return discrepancyCode;
-		}
-		if (Boolean.parseBoolean(isSubsequentDeliveryPlanned))
-		{
-			discrepancyCode = DiscrepencyCode.BFOL; // = Shipment partial - back order to follow
-		}
-		else
-		{
-			discrepancyCode = DiscrepencyCode.BCOM; // = shipment partial - considered complete, no backorder;
-		}
-		return discrepancyCode;
+		final HDATE1 messageDate = DESADV_objectFactory.createHDATE1();
+		messageDate.setDOCUMENTID(header.getDOCUMENTID());
+		messageDate.setDATEQUAL(DateQual.CREA.toString());
+		messageDate.setDATEFROM(toFormattedStringDate(SystemTime.asDate(), dateFormat));
+		final HDATE1 deliveryDate = DESADV_objectFactory.createHDATE1();
+		deliveryDate.setDOCUMENTID(header.getDOCUMENTID());
+		deliveryDate.setDATEQUAL(DateQual.DELV.toString());
+		deliveryDate.setDATEFROM(toFormattedStringDate(toDate(xmlDesadv.getMovementDate()), dateFormat));
+
+		header.getHDATE1().add(messageDate);
+		header.getHDATE1().add(deliveryDate);
 	}
 
-	private void mapPackaging(
+	private void mapHeaderReferences(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
 			@NonNull final StepComDesadvSettings settings,
-			@NonNull final DecimalFormat decimalFormat,
 			@NonNull final String dateFormat)
 	{
-		final PACKINXlief packIn = DESADV_objectFactory.createPACKINXlief();
-		header.setPACKIN(packIn);
+		final String buyerReference = xmlDesadv.getPOReference();
 
-		packIn.setDOCUMENTID(header.getDOCUMENTID());
+		final HREFE1 orderReference = DESADV_objectFactory.createHREFE1();
+		orderReference.setDOCUMENTID(header.getDOCUMENTID());
+		orderReference.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
+		orderReference.setREFERENCE(buyerReference);
+		orderReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
+		header.getHREFE1().add(orderReference);
 
-		final boolean ssccRequired = settings.isDesadvLineSSCCRequired();
-		final boolean packagingCodeTURequired = settings.isDesadvLinePackagingCodeTURequired();
-
-		final ImmutableListMultimap<PACKINXliefKey, LineAndPack> keyToPackages = extractLineAndPacks(xmlDesadv, ssccRequired, packagingCodeTURequired);
-
-		final int distinctKeySize = keyToPackages.keySet().size();
-		final boolean ppack1NeededInGeneral = ssccRequired || packagingCodeTURequired || distinctKeySize > 1;
-
-		int packagingTotalNumber = 0;
-		for (final PACKINXliefKey key : keyToPackages.keySet())
+		if (!Util.isEmpty(settings.getDesadvHeaderORIGReference()))
 		{
-			for (final LineAndPack lineAndPack : keyToPackages.get(key))
-			{
-				if (ppack1NeededInGeneral && lineAndPack.hasPack())
-				{
-					boolean detailAdded = false;
-					if (ssccRequired)
-					{
-						final PPACK1 ppack1 = createPPACK1(header);
-						packIn.getPPACK1().add(ppack1);
-
-						ppack1.setPACKAGINGCODE(key.getPackagingCodeLUText());
-						ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
-						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(key.getSsccValue(), 18)/* if ssccRequired and we got here, then this is not null */);
-
-						ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
-						ppack1.setPACKAGINGCODE(key.getPackagingCodeLUText()/* if packagingCodeTURequired, then this is set */);
-
-						final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
-						ppack1.getDETAIL().add(detailXlief);
-
-						detailAdded = true;
-					}
-					if (packagingCodeTURequired)
-					{
-						final PPACK1 ppack1 = createPPACK1(header);
-						packIn.getPPACK1().add(ppack1);
-
-						ppack1.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
-						ppack1.setPACKAGINGCODE(key.getPackagingCodeTUText()/* if packagingCodeTURequired, then this is set */);
-
-						if (!detailAdded)
-						{
-							final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
-							ppack1.getDETAIL().add(detailXlief);
-						}
-					}
-					packagingTotalNumber++; // if there are no PPacks,packagingTotalNumber shall remain zero
-				}
-				else // we can add the detail directly to packIn
-				{
-					final DETAILXlief detail = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
-					packIn.getDETAIL().add(detail);
-				}
-			}
+			final HREFE1 origReference = DESADV_objectFactory.createHREFE1();
+			origReference.setDOCUMENTID(header.getDOCUMENTID());
+			origReference.setREFERENCEQUAL(ReferenceQual.ORIG.toString());
+			origReference.setREFERENCE(settings.getDesadvHeaderORIGReference().trim());
+			origReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
+			header.getHREFE1().add(origReference);
 		}
-		packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
-	}
-
-	private ImmutableListMultimap<PACKINXliefKey, LineAndPack> extractLineAndPacks(
-			@NonNull final EDIExpDesadvType xmlDesadv,
-			final boolean ssccRequired,
-			final boolean packagingCodeTURequired)
-	{
-		final ImmutableListMultimap.Builder<PACKINXliefKey, LineAndPack> mm = ImmutableListMultimap.builder();
-		for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
-		{
-			final List<EDIExpDesadvLinePackType> packs = line.getEDIExpDesadvLinePack();
-			if (packs.isEmpty()) // might be, if there is nothing delivered
-			{
-				final LineAndPack lineAndPack = new LineAndPack(line, null);
-				mm.put(
-						PACKINXliefKey.forLine(lineAndPack, ssccRequired, packagingCodeTURequired),
-						lineAndPack);
-			}
-			else
-			{
-				for (final EDIExpDesadvLinePackType pack : packs)
-				{
-					final LineAndPack lineAndPack = new LineAndPack(line, pack);
-					mm.put(
-							PACKINXliefKey.forLine(lineAndPack, ssccRequired, packagingCodeTURequired),
-							lineAndPack);
-				}
-			}
-		}
-
-		final ImmutableListMultimap<PACKINXliefKey, LineAndPack> //
-		keyToPackages = mm.build();
-		return keyToPackages;
-	}
-
-	@Value
-	private static class PACKINXliefKey
-	{
-		private static PACKINXliefKey forLine(
-				@NonNull final LineAndPack lineAndPack,
-				final boolean ssccRequired,
-				final boolean packagingCodeTURequired)
-		{
-			final String ssccValue = ssccRequired && lineAndPack.hasPack()
-					? validateString(
-							Util.removePrecedingZeros(lineAndPack.getPack().getIPASSCC18()),
-							"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + lineAndPack.getLine().getLine())
-					: "";
-
-			final String packagingCodeTU = packagingCodeTURequired && lineAndPack.hasPack()
-					? validateString(
-							lineAndPack.getPack().getMHUPackagingCodeTUText(),
-							"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_TU_ID@")
-					: "";
-
-			final String packagingCodeLU = lineAndPack.hasPack()
-					? lineAndPack.getPack().getMHUPackagingCodeLUText()
-					: "";
-
-			return new PACKINXliefKey(
-					ssccValue,
-					packagingCodeTU,
-					packagingCodeLU);
-		}
-
-		@Nullable
-		String ssccValue;
-
-		@Nullable
-		String packagingCodeTUText;
-
-		@Nullable
-		String packagingCodeLUText;
-	}
-
-	private PPACK1 createPPACK1(final HEADERXlief header)
-	{
-		final PPACK1 ppack1 = DESADV_objectFactory.createPPACK1();
-		ppack1.setDOCUMENTID(header.getDOCUMENTID());
-		ppack1.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL); // one, as per spec
-		return ppack1;
-	}
-
-	private DETAILXlief createDETAILXlief(
-			final String documentId,
-			final EDIExpDesadvType xmlDesadv,
-			final LineAndPack lineAndPack,
-			final StepComDesadvSettings settings,
-			final DecimalFormat decimalFormat,
-			final String dateFormat)
-	{
-		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
-		detail.setDOCUMENTID(documentId);
-
-		final String lineNumber = formatNumber(lineAndPack.getLine().getLine(), decimalFormat);
-		detail.setLINENUMBER(lineNumber);
-
-		if (settings.isDesadvLineEANCRequired())
-		{
-			final String eanc = ValidationHelper.validateString(lineAndPack.getLine().getEANCU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @EANCU@");
-
-			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
-			eancProdInfo.setDOCUMENTID(documentId);
-			eancProdInfo.setPRODUCTQUAL(ProductQual.EANC.toString());
-			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(eanc);
-			detail.getDPRIN1().add(eancProdInfo);
-		}
-		if (settings.isDesadvLineEANTRequired())
-		{
-			final String eant = ValidationHelper.validateString(lineAndPack.getLine().getEANTU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @EANTU@");
-
-			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
-			eancProdInfo.setDOCUMENTID(documentId);
-			eancProdInfo.setPRODUCTQUAL(ProductQual.EANT.toString());
-			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(eant);
-			detail.getDPRIN1().add(eancProdInfo);
-		}
-		if (settings.isDesadvLineGTINRequired())
-		{
-			final String gtin = ValidationHelper.validateString(lineAndPack.getLine().getGTIN(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @GTIN@");
-
-			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
-			gtinProdInfo.setDOCUMENTID(documentId);
-			gtinProdInfo.setPRODUCTQUAL(ProductQual.GTIN.toString());
-			gtinProdInfo.setLINENUMBER(lineNumber);
-			gtinProdInfo.setPRODUCTID(gtin);
-			detail.getDPRIN1().add(gtinProdInfo);
-		}
-		if (settings.isDesadvLineUPCCRequired())
-		{
-			final String upcc = ValidationHelper.validateString(lineAndPack.getLine().getUPC(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @UPC@");
-			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
-			eancProdInfo.setDOCUMENTID(documentId);
-			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
-			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(upcc);
-			detail.getDPRIN1().add(eancProdInfo);
-		}
-		if (settings.isDesadvLineUPCCRequired())
-		{
-			final String upct = ValidationHelper.validateString(lineAndPack.getLine().getUPCTU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @UPCTU@");
-
-			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
-			eancProdInfo.setDOCUMENTID(documentId);
-			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCT.toString());
-			eancProdInfo.setLINENUMBER(lineNumber);
-			eancProdInfo.setPRODUCTID(upct);
-			detail.getDPRIN1().add(eancProdInfo);
-		}
-
-		if (StringUtils.isNotEmpty(lineAndPack.getLine().getProductNo()))
-		{
-			final DPRIN1 prodInfo = DESADV_objectFactory.createDPRIN1();
-			prodInfo.setDOCUMENTID(documentId);
-			prodInfo.setPRODUCTQUAL(ProductQual.BUYR.toString());
-			prodInfo.setLINENUMBER(lineNumber);
-			prodInfo.setPRODUCTID(lineAndPack.getLine().getProductNo());
-			detail.getDPRIN1().add(prodInfo);
-		}
-		if (StringUtils.isNotEmpty(lineAndPack.getLine().getProductDescription()))
-		{
-			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
-			prodDescr.setDOCUMENTID(documentId);
-			prodDescr.setLINENUMBER(lineNumber);
-			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PROD.toString());
-			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
-			prodDescr.setPRODUCTDESCTEXT(trimAndTruncate(lineAndPack.getLine().getProductDescription(), 512));
-			detail.getDPRDE1().add(prodDescr);
-		}
-		if (settings.isDesadvLinePRICRequired())
-		{
-			final BigDecimal priceActual = validateObject(lineAndPack.getLine().getPriceActual(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @PriceActual@");
-
-			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
-			prodDescr.setDOCUMENTID(documentId);
-			prodDescr.setLINENUMBER(lineNumber);
-			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PRIC.toString());
-			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
-			prodDescr.setPRODUCTDESCTEXT(formatNumber(priceActual, decimalFormat));
-			detail.getDPRDE1().add(prodDescr);
-		}
-
-		BigDecimal qtyDelivered;
-		if (lineAndPack.hasPack())
-		{
-			final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
-			qtyDelivered = lineAndPack.getPack().getQtyCUsPerLU();
-			if (qtyDelivered == null)
-			{
-				qtyDelivered = BigDecimal.ZERO;
-			}
-			cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
-			final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(lineAndPack.getPack().getCUOMID().getX12DE355());
-			if (measurementUnit != null)
-			{
-				cuQuantity.setMEASUREMENTUNIT(measurementUnit.toString());
-			}
-			detail.getDQUAN1().add(cuQuantity);
-
-			if (settings.isDesadvLineCUTURequired())
-			{
-				final BigDecimal qtyItemCapacity = validateObject(lineAndPack.getPack().getQtyCU(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @QtyCU@");
-				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
-				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
-				detail.getDQUAN1().add(cuTuQuantity);
-			}
-
-			if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
-			{
-				final XMLGregorianCalendar bestBefore = validateObject(lineAndPack.getPack().getBestBeforeDate(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @BestBeforeDate@");
-
-				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
-				dmark1.setDOCUMENTID(documentId);
-				dmark1.setLINENUMBER(lineNumber);
-				dmark1.setIDENTIFICATIONQUAL(IdentificationQual.BATC.name());
-				dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
-				detail.getDMARK1().add(dmark1);
-			}
-		}
-		else
-		{
-			qtyDelivered = BigDecimal.ZERO;
-		}
-
-		final boolean orbuOrderReference = settings.isDesadvLineORBUOrderReference();
-		final boolean orbuLineReference = settings.isDesadvLineORBUOrderLineReference();
-		if (orbuOrderReference || orbuLineReference)
-		{
-			final DREFE1 orderHeaderRef = DESADV_objectFactory.createDREFE1();
-			orderHeaderRef.setDOCUMENTID(documentId);
-			orderHeaderRef.setLINENUMBER(lineNumber);
-			orderHeaderRef.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
-
-			if (orbuOrderReference)
-			{
-				orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
-			}
-			if (orbuLineReference)
-			{
-				orderHeaderRef.setREFERENCELINE(lineNumber);
-			}
-			detail.getDREFE1().add(orderHeaderRef);
-		}
-
-		if (settings.isDesadvLineLIRN())
-		{
-			final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
-			orderLineRef.setDOCUMENTID(documentId);
-			orderLineRef.setLINENUMBER(lineNumber);
-			orderLineRef.setREFERENCEQUAL(ReferenceQual.LIRN.toString());
-			orderLineRef.setREFERENCELINE(lineNumber);
-			detail.getDREFE1().add(orderLineRef);
-		}
-
-		final BigDecimal quantityDiff = lineAndPack.getLine().getQtyEntered().subtract(qtyDelivered);
-		if (quantityDiff.signum() != 0)
-		{
-			final DQVAR1 dqvar1 = DESADV_objectFactory.createDQVAR1();
-			dqvar1.setDOCUMENTID(documentId);
-			dqvar1.setLINENUMBER(lineNumber);
-			dqvar1.setQUANTITY(formatNumber(quantityDiff, decimalFormat));
-			dqvar1.setDISCREPANCYCODE(getDiscrepancyCode(lineAndPack.getLine().getIsSubsequentDeliveryPlanned(), quantityDiff).toString());
-			detail.setDQVAR1(dqvar1);
-		}
-		return detail;
-	}
-
-	private DQUAN1 createQuantityDetail(
-			@NonNull final String documentId,
-			@NonNull final String lineNumber,
-			@NonNull final QuantityQual qualifier)
-	{
-		final DQUAN1 cuQuantity = DESADV_objectFactory.createDQUAN1();
-		cuQuantity.setDOCUMENTID(documentId);
-		cuQuantity.setLINENUMBER(lineNumber);
-		cuQuantity.setQUANTITYQUAL(qualifier.toString());
-		return cuQuantity;
 	}
 
 	private void mapAddresses(
@@ -576,44 +242,431 @@ public class StepComXMLDesadvBean
 		// transport details HTRSD1 not mapped for now
 	}
 
-	private void mapHeaderReferences(
+	private void mapPackaging(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
 			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DecimalFormat decimalFormat,
 			@NonNull final String dateFormat)
 	{
-		final String buyerReference = xmlDesadv.getPOReference();
+		final PACKINXlief packIn = DESADV_objectFactory.createPACKINXlief();
+		header.setPACKIN(packIn);
 
-		final HREFE1 orderReference = DESADV_objectFactory.createHREFE1();
-		orderReference.setDOCUMENTID(header.getDOCUMENTID());
-		orderReference.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
-		orderReference.setREFERENCE(buyerReference);
-		orderReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
-		header.getHREFE1().add(orderReference);
+		packIn.setDOCUMENTID(header.getDOCUMENTID());
 
-		if (!Util.isEmpty(settings.getDesadvHeaderORIGReference()))
+		final boolean ssccRequired = settings.isDesadvLineSSCCRequired();
+		final boolean packagingCodeTURequired = settings.isDesadvLinePackagingCodeTURequired();
+		final boolean ppack1NeededInGeneral = ssccRequired || packagingCodeTURequired;
+
+		if (ppack1NeededInGeneral)
 		{
-			final HREFE1 origReference = DESADV_objectFactory.createHREFE1();
-			origReference.setDOCUMENTID(header.getDOCUMENTID());
-			origReference.setREFERENCEQUAL(ReferenceQual.ORIG.toString());
-			origReference.setREFERENCE(settings.getDesadvHeaderORIGReference().trim());
-			origReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
-			header.getHREFE1().add(origReference);
+			int packagingTotalNumber = 0;
+			BigDecimal qtyDelivered = ZERO;
+			for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
+			{
+				final String documentId = xmlDesadv.getDocumentNo();
+				final String lineNumber = extractLineNumber(line, decimalFormat);
+
+				final List<EDIExpDesadvLinePackType> packs = line.getEDIExpDesadvLinePack();
+				if (packs.isEmpty())
+				{
+					final LineAndPack lineAndPack = new LineAndPack(line, null/* pack */);
+					final DETAILXlief detail = createDETAILXliefForLineAndPack(xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
+					packIn.getDETAIL().add(detail);
+
+					// check if we need a discrepancy information
+					final BigDecimal quantityDiff = line.getQtyEntered();
+					if (quantityDiff.signum() != 0)
+					{
+						detail.setDOCUMENTID(documentId);
+						detail.setLINENUMBER(lineNumber);
+
+						final DQVAR1 dqvar1 = createDQVAR1(documentId, line, quantityDiff, decimalFormat);
+						detail.setDQVAR1(dqvar1);
+					}
+					continue;
+				}
+				for (final EDIExpDesadvLinePackType pack : packs)
+				{
+					final LineAndPack lineAndPack = new LineAndPack(line, pack);
+					boolean detailAdded = false;
+					if (ssccRequired)
+					{
+						final PPACK1 ppack1 = createPPACK1(header);
+						packIn.getPPACK1().add(ppack1);
+
+						final String sscc18 = validateString(
+								Util.removePrecedingZeros(lineAndPack.getPack().getIPASSCC18()),
+								"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + lineAndPack.getLine().getLine());
+						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(sscc18, 18)/* if ssccRequired and we got here, then this is not null */);
+						ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
+
+						final String packagingCodeLU = validateString(
+								lineAndPack.getPack().getMHUPackagingCodeLUText(),
+								"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_LU_ID@");
+						ppack1.setPACKAGINGCODE(packagingCodeLU);
+						ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
+
+						final DETAILXlief detailXlief = createDETAILXliefForLineAndPack(xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
+						ppack1.getDETAIL().add(detailXlief);
+
+						detailAdded = true;
+					}
+					if (packagingCodeTURequired)
+					{
+						final PPACK1 ppack1 = createPPACK1(header);
+						packIn.getPPACK1().add(ppack1);
+
+						final String packagingCodeTU = validateString(
+								lineAndPack.getPack().getMHUPackagingCodeTUText(),
+								"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_TU_ID@");
+						ppack1.setPACKAGINGCODE(packagingCodeTU);
+						ppack1.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
+
+						if (!detailAdded)
+						{
+							final DETAILXlief detailXlief = createDETAILXliefForLineAndPack(xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
+							ppack1.getDETAIL().add(detailXlief);
+						}
+					}
+					packagingTotalNumber++; // if there are no PPacks,packagingTotalNumber shall remain zero
+					qtyDelivered = qtyDelivered.add(extractQtyDelivered(lineAndPack.getPack()));
+				}
+
+				// we iterated all packs if the current line; now check if we a discrepancy information
+				final BigDecimal quantityDiff = line.getQtyEntered().subtract(qtyDelivered);
+				if (quantityDiff.signum() != 0)
+				{
+					final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
+					detail.setDOCUMENTID(documentId);
+					detail.setLINENUMBER(lineNumber);
+
+					final DQVAR1 dqvar1 = createDQVAR1(documentId, line, quantityDiff, decimalFormat);
+					detail.setDQVAR1(dqvar1);
+				}
+			}
+			packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
+		}
+		else
+		{
+			for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
+			{
+				// don't create PPACK1s, but create one aggregated detail per line
+				final DETAILXlief detailXlief = createDETAILXliefForLine(xmlDesadv, line, settings, decimalFormat, dateFormat);
+				packIn.getDETAIL().add(detailXlief);
+			}
+			packIn.setPACKAGINGTOTAL(formatNumber(0, decimalFormat));
 		}
 	}
 
-	private void mapDates(final EDIExpDesadvType xmlDesadv, final String dateFormat, final HEADERXlief header)
+	private PPACK1 createPPACK1(@NonNull final HEADERXlief header)
 	{
-		final HDATE1 messageDate = DESADV_objectFactory.createHDATE1();
-		messageDate.setDOCUMENTID(header.getDOCUMENTID());
-		messageDate.setDATEQUAL(DateQual.CREA.toString());
-		messageDate.setDATEFROM(toFormattedStringDate(SystemTime.asDate(), dateFormat));
-		final HDATE1 deliveryDate = DESADV_objectFactory.createHDATE1();
-		deliveryDate.setDOCUMENTID(header.getDOCUMENTID());
-		deliveryDate.setDATEQUAL(DateQual.DELV.toString());
-		deliveryDate.setDATEFROM(toFormattedStringDate(toDate(xmlDesadv.getMovementDate()), dateFormat));
+		final PPACK1 ppack1 = DESADV_objectFactory.createPPACK1();
+		ppack1.setDOCUMENTID(header.getDOCUMENTID());
+		ppack1.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL); // one, as per spec
+		return ppack1;
+	}
 
-		header.getHDATE1().add(messageDate);
-		header.getHDATE1().add(deliveryDate);
+	private DETAILXlief createDETAILXliefForLineAndPack(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final LineAndPack lineAndPack,
+			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DecimalFormat decimalFormat,
+			@NonNull final String dateFormat)
+	{
+		final EDIExpDesadvLineType line = lineAndPack.getLine();
+
+		final DETAILXlief detail = createDetailAndAddLineData(xmlDesadv, line, settings, decimalFormat);
+
+		final String documentId = xmlDesadv.getDocumentNo();
+
+		final String lineNumber = extractLineNumber(line, decimalFormat);
+		final BigDecimal qtyDelivered = extractQtyDelivered(lineAndPack.getPack());
+
+		final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
+		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
+		detail.getDQUAN1().add(cuQuantity); // we set some of cuQuantity's properties in the following if-else-blocks
+
+		if (lineAndPack.hasPack())
+		{
+			final EDIExpDesadvLinePackType pack = lineAndPack.getPack();
+			final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(pack.getCUOMID().getX12DE355());
+			if (measurementUnit != null)
+			{
+				cuQuantity.setMEASUREMENTUNIT(measurementUnit.toString());
+			}
+
+			if (settings.isDesadvLineCUTURequired())
+			{
+				final BigDecimal qtyItemCapacity = validateObject(pack.getQtyCU(),
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
+				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
+				detail.getDQUAN1().add(cuTuQuantity);
+			}
+
+			if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
+			{
+				final XMLGregorianCalendar bestBefore = validateObject(pack.getBestBeforeDate(),
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
+
+				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
+				dmark1.setDOCUMENTID(documentId);
+				dmark1.setLINENUMBER(lineNumber);
+				dmark1.setIDENTIFICATIONQUAL(IdentificationQual.BATC.name());
+				dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
+				detail.getDMARK1().add(dmark1);
+			}
+		}
+		return detail;
+	}
+
+	private DETAILXlief createDETAILXliefForLine(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final EDIExpDesadvLineType line,
+			@NonNull final StepComDesadvSettings settings,
+			@NonNull final DecimalFormat decimalFormat,
+			@NonNull final String dateFormat)
+	{
+		final DETAILXlief detail = createDetailAndAddLineData(xmlDesadv, line, settings, decimalFormat);
+
+		BigDecimal qtyDelivered = ZERO;
+		MeasurementUnit measurementUnit = null;
+		for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
+		{
+			qtyDelivered = qtyDelivered.add(extractQtyDelivered(pack));
+			measurementUnit = MeasurementUnit.fromMetasfreshUOM(pack.getCUOMID().getX12DE355());
+		}
+
+		final String documentId = xmlDesadv.getDocumentNo();
+		final String lineNumber = extractLineNumber(line, decimalFormat);
+
+		final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
+		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
+		detail.getDQUAN1().add(cuQuantity);
+		if (measurementUnit != null)
+		{
+			cuQuantity.setMEASUREMENTUNIT(measurementUnit.toString());
+		}
+
+		// check if we need a discrepancy information
+		final BigDecimal quantityDiff = line.getQtyEntered().subtract(qtyDelivered);
+		if (quantityDiff.signum() != 0)
+		{
+			detail.setDOCUMENTID(documentId);
+			detail.setLINENUMBER(lineNumber);
+
+			final DQVAR1 dqvar1 = createDQVAR1(documentId, line, quantityDiff, decimalFormat);
+			detail.setDQVAR1(dqvar1);
+		}
+
+		return detail;
+	}
+
+	private String extractLineNumber(@NonNull final EDIExpDesadvLineType line, @NonNull final DecimalFormat decimalFormat)
+	{
+		final String lineNumber = formatNumber(line.getLine(), decimalFormat);
+		return lineNumber;
+	}
+
+	private DETAILXlief createDetailAndAddLineData(
+			@NonNull EDIExpDesadvType xmlDesadv,
+			@NonNull EDIExpDesadvLineType line,
+			final StepComDesadvSettings settings,
+			DecimalFormat decimalFormat)
+	{
+		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
+
+		final String documentId = xmlDesadv.getDocumentNo();
+
+		detail.setDOCUMENTID(documentId);
+
+		final String lineNumber = extractLineNumber(line, decimalFormat);
+		detail.setLINENUMBER(lineNumber);
+
+		if (settings.isDesadvLineEANCRequired())
+		{
+			final String eanc = ValidationHelper.validateString(line.getEANCU(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANCU@");
+
+			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
+			eancProdInfo.setDOCUMENTID(documentId);
+			eancProdInfo.setPRODUCTQUAL(ProductQual.EANC.toString());
+			eancProdInfo.setLINENUMBER(lineNumber);
+			eancProdInfo.setPRODUCTID(eanc);
+			detail.getDPRIN1().add(eancProdInfo);
+		}
+		if (settings.isDesadvLineEANTRequired())
+		{
+			final String eant = ValidationHelper.validateString(line.getEANTU(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANTU@");
+
+			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
+			eancProdInfo.setDOCUMENTID(documentId);
+			eancProdInfo.setPRODUCTQUAL(ProductQual.EANT.toString());
+			eancProdInfo.setLINENUMBER(lineNumber);
+			eancProdInfo.setPRODUCTID(eant);
+			detail.getDPRIN1().add(eancProdInfo);
+		}
+		if (settings.isDesadvLineGTINRequired())
+		{
+			final String gtin = ValidationHelper.validateString(line.getGTIN(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN@");
+
+			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
+			gtinProdInfo.setDOCUMENTID(documentId);
+			gtinProdInfo.setPRODUCTQUAL(ProductQual.GTIN.toString());
+			gtinProdInfo.setLINENUMBER(lineNumber);
+			gtinProdInfo.setPRODUCTID(gtin);
+			detail.getDPRIN1().add(gtinProdInfo);
+		}
+		if (settings.isDesadvLineUPCCRequired())
+		{
+			final String upcc = ValidationHelper.validateString(line.getUPC(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPC@");
+			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
+			eancProdInfo.setDOCUMENTID(documentId);
+			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
+			eancProdInfo.setLINENUMBER(lineNumber);
+			eancProdInfo.setPRODUCTID(upcc);
+			detail.getDPRIN1().add(eancProdInfo);
+		}
+		if (settings.isDesadvLineUPCCRequired())
+		{
+			final String upct = ValidationHelper.validateString(line.getUPCTU(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCTU@");
+
+			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
+			eancProdInfo.setDOCUMENTID(documentId);
+			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCT.toString());
+			eancProdInfo.setLINENUMBER(lineNumber);
+			eancProdInfo.setPRODUCTID(upct);
+			detail.getDPRIN1().add(eancProdInfo);
+		}
+
+		if (StringUtils.isNotEmpty(line.getProductNo()))
+		{
+			final DPRIN1 prodInfo = DESADV_objectFactory.createDPRIN1();
+			prodInfo.setDOCUMENTID(documentId);
+			prodInfo.setPRODUCTQUAL(ProductQual.BUYR.toString());
+			prodInfo.setLINENUMBER(lineNumber);
+			prodInfo.setPRODUCTID(line.getProductNo());
+			detail.getDPRIN1().add(prodInfo);
+		}
+		if (StringUtils.isNotEmpty(line.getProductDescription()))
+		{
+			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
+			prodDescr.setDOCUMENTID(documentId);
+			prodDescr.setLINENUMBER(lineNumber);
+			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PROD.toString());
+			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
+			prodDescr.setPRODUCTDESCTEXT(trimAndTruncate(line.getProductDescription(), 512));
+			detail.getDPRDE1().add(prodDescr);
+		}
+		if (settings.isDesadvLinePRICRequired())
+		{
+			final BigDecimal priceActual = validateObject(line.getPriceActual(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @PriceActual@");
+
+			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
+			prodDescr.setDOCUMENTID(documentId);
+			prodDescr.setLINENUMBER(lineNumber);
+			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PRIC.toString());
+			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
+			prodDescr.setPRODUCTDESCTEXT(formatNumber(priceActual, decimalFormat));
+			detail.getDPRDE1().add(prodDescr);
+		}
+
+		final boolean orbuOrderReference = settings.isDesadvLineORBUOrderReference();
+		final boolean orbuLineReference = settings.isDesadvLineORBUOrderLineReference();
+		if (orbuOrderReference || orbuLineReference)
+		{
+			final DREFE1 orderHeaderRef = DESADV_objectFactory.createDREFE1();
+			orderHeaderRef.setDOCUMENTID(documentId);
+			orderHeaderRef.setLINENUMBER(lineNumber);
+			orderHeaderRef.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
+
+			if (orbuOrderReference)
+			{
+				orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
+			}
+			if (orbuLineReference)
+			{
+				orderHeaderRef.setREFERENCELINE(lineNumber);
+			}
+			detail.getDREFE1().add(orderHeaderRef);
+		}
+
+		if (settings.isDesadvLineLIRN())
+		{
+			final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
+			orderLineRef.setDOCUMENTID(documentId);
+			orderLineRef.setLINENUMBER(lineNumber);
+			orderLineRef.setREFERENCEQUAL(ReferenceQual.LIRN.toString());
+			orderLineRef.setREFERENCELINE(lineNumber);
+			detail.getDREFE1().add(orderLineRef);
+		}
+		return detail;
+	}
+
+	private DQUAN1 createQuantityDetail(
+			@NonNull final String documentId,
+			@NonNull final String lineNumber,
+			@NonNull final QuantityQual qualifier)
+	{
+		final DQUAN1 cuQuantity = DESADV_objectFactory.createDQUAN1();
+		cuQuantity.setDOCUMENTID(documentId);
+		cuQuantity.setLINENUMBER(lineNumber);
+		cuQuantity.setQUANTITYQUAL(qualifier.toString());
+		return cuQuantity;
+	}
+
+	private DQVAR1 createDQVAR1(
+			@NonNull final String documentId,
+			@NonNull final EDIExpDesadvLineType line,
+			@NonNull final BigDecimal quantityDiff,
+			@NonNull final DecimalFormat decimalFormat)
+	{
+		final DQVAR1 dqvar1 = DESADV_objectFactory.createDQVAR1();
+		dqvar1.setDOCUMENTID(documentId);
+		dqvar1.setLINENUMBER(extractLineNumber(line, decimalFormat));
+		dqvar1.setQUANTITY(formatNumber(quantityDiff, decimalFormat));
+		dqvar1.setDISCREPANCYCODE(extractDiscrepancyCode(line.getIsSubsequentDeliveryPlanned(), quantityDiff).toString());
+		return dqvar1;
+	}
+
+	private BigDecimal extractQtyDelivered(@Nullable final EDIExpDesadvLinePackType pack)
+	{
+		if (pack == null)
+		{
+			return ZERO;
+		}
+		final BigDecimal qtyDelivered = pack.getQtyCUsPerLU();
+		if (qtyDelivered == null)
+		{
+			return ZERO;
+		}
+		return qtyDelivered;
+	}
+
+	private DiscrepencyCode extractDiscrepancyCode(
+			@Nullable final String isSubsequentDeliveryPlanned,
+			@NonNull final BigDecimal diff)
+	{
+		DiscrepencyCode discrepancyCode;
+		if (diff.signum() == -1)
+		{
+			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped
+			return discrepancyCode;
+		}
+		if (Boolean.parseBoolean(isSubsequentDeliveryPlanned))
+		{
+			discrepancyCode = DiscrepencyCode.BFOL; // = Shipment partial - back order to follow
+		}
+		else
+		{
+			discrepancyCode = DiscrepencyCode.BCOM; // = shipment partial - considered complete, no backorder;
+		}
+		return discrepancyCode;
 	}
 }
