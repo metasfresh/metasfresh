@@ -24,7 +24,7 @@ package de.metas.rest_api.bpartner;
 
 public class SwaggerDocConstants
 {
-	public static final String BPARTER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
+	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* or something like `ext-<C_Bartner.ExternalId>`\n"
 			+ "* or something like `val-<C_Bartner.Value>`\n"
@@ -39,7 +39,7 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<C_BPartner_Location_ID.ExternalId>`\n"
 			+ "* or something like `gln-<C_BPartner_Location_ID.GLN>`\n";
 
-	public static final String PRODUCTIDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
+	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
 			+ "* or something like `ext-<M_Product_ID.ExternalId>`\n"
 			+ "* or something like `val-<M_Product_ID.Value>`";

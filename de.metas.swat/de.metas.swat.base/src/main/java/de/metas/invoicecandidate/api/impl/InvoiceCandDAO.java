@@ -363,9 +363,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list(I_C_Invoice_Candidate.class);
 	}
 
+	@Nullable
 	@Override
-	public boolean existsInvoiceCandidateInOutLinesForInvoiceCandidate(final I_C_Invoice_Candidate ic, final I_M_InOutLine iol)
+	public I_C_InvoiceCandidate_InOutLine retrieveInvoiceCandidateInOutLine(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_M_InOutLine iol)
 	{
+		// there is a Unique Index on the 2 columns C_IC_IOL_Unique_Active, so i'm sure there's at most 1 line
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, ic)
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
@@ -373,7 +375,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				//
 				.create()
-				.anyMatch();
+				.firstOnly(I_C_InvoiceCandidate_InOutLine.class);
 	}
 
 	@Override
@@ -428,8 +430,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 	}
 
 	@Override
@@ -846,9 +848,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(pinstanceId)
-		// Invalidate no matter if Processed or not
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-		;
+				// Invalidate no matter if Processed or not
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+				;
 
 		invalidateCandsFor(icQueryBuilder);
 		// logger.info("Invalidated {} C_Invoice_Candidates for AD_PInstance_ID={}", new Object[] { count, adPInstanceId });
@@ -952,7 +954,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			if (invoiceCandidateIds == null || invoiceCandidateIds.isEmpty())
 			{
 				// i.e. tag none
-				queryBuilder.filter(ConstantQueryFilter.<I_C_Invoice_Candidate_Recompute> of(false));
+				queryBuilder.filter(ConstantQueryFilter.<I_C_Invoice_Candidate_Recompute>of(false));
 			}
 			else
 			{
@@ -1267,13 +1269,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	/**
 	 * Mass-update a given invoice candidate column.
-	 *
+	 * <p>
 	 * If there were any changes, those invoice candidates will be invalidated.
 	 *
 	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
-	 * @param value value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
-	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
+	 * @param value                      value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull           if true then it will update only if column value is null (not set)
+	 * @param selectionId                invoice candidates selection (AD_PInstance_ID)
 	 */
 	private final <T> void updateColumnForSelection(
 			@NonNull final String columnName,
@@ -1289,7 +1291,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.setOnlySelection(selectionId)
 				.addNotEqualsFilter(columnName, value) // skip those which have our value set
-		;
+				;
 		if (updateOnlyIfNull)
 		{
 			selectionQueryBuilder.addEqualsFilter(columnName, null);

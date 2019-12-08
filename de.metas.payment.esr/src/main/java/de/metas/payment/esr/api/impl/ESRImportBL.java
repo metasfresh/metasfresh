@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.metas.banking.api.BankAccountId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -354,7 +355,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * Groups the given lines so that we can create one payment for each line.
-	 *
+	 * <p>
 	 * to be more specific, the lines are grouped the following properties:
 	 * <ul>
 	 * <li>AD_Org_ID</li>
@@ -402,8 +403,8 @@ public class ESRImportBL implements IESRImportBL
 		if (line.getC_Invoice_ID() > 0
 				&& !line.getC_Invoice().isPaid()
 				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID() // only if orgs match
-		// we also want to handle invoices that are already paid, because this line links them to another payment
-		/* && !line.getC_Invoice().isPaid() */)
+			// we also want to handle invoices that are already paid, because this line links them to another payment
+			/* && !line.getC_Invoice().isPaid() */)
 		{
 			key = Util.mkKey(
 					line.getAD_Org_ID(),
@@ -577,10 +578,8 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/**
-	 *
 	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
-	 * @param line the line in question
-	 *
+	 * @param line      the line in question
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
@@ -655,7 +654,7 @@ public class ESRImportBL implements IESRImportBL
 
 		return Services.get(IPaymentBL.class).newInboundReceiptBuilder()
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.bpBankAccountId(line.getESR_Import().getC_BP_BankAccount_ID())
+				.bpBankAccountId(BankAccountId.ofRepoIdOrNull(line.getESR_Import().getC_BP_BankAccount_ID()))
 				.accountNo(line.getAccountNo())
 				.dateAcct(TimeUtil.asLocalDate(line.getAccountingDate()))
 				.dateTrx(TimeUtil.asLocalDate(line.getPaymentDate()))
@@ -909,7 +908,7 @@ public class ESRImportBL implements IESRImportBL
 			// check partners first
 			final I_C_BPartner esrPartner = line.getC_BPartner();
 			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0 ? line.getC_Invoice().getC_BPartner() : null;
-			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? line.getC_Payment().getC_BPartner() : null;
+			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? InterfaceWrapperHelper.load(line.getC_Payment().getC_BPartner_ID(), I_C_BPartner.class) : null;
 			if (esrPartner != null)
 			{
 				if (invPartner != null)
@@ -1038,7 +1037,7 @@ public class ESRImportBL implements IESRImportBL
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
 					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
 							invoiceOrgName,
-							importLineOrgName}));
+							importLineOrgName }));
 		}
 
 		importLine.setC_Invoice(invoice);

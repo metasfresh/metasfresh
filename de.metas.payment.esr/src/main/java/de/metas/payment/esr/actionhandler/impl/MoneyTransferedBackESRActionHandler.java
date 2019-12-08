@@ -26,6 +26,7 @@ package de.metas.payment.esr.actionhandler.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.banking.api.BankAccountId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -97,7 +98,7 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 						.payAmt(transferedBackAmt)
 						.currencyId(CurrencyId.ofRepoId(linePayment.getC_Currency_ID()))
 						.tenderType(TenderType.DirectDeposit)
-						.bpBankAccountId(linePayment.getC_BP_BankAccount_ID())
+						.bpBankAccountId(BankAccountId.ofRepoId(linePayment.getC_BP_BankAccount_ID()))
 						.dateAcct(dateTrx)
 						.dateTrx(dateTrx)
 						.createAndProcess();

@@ -8,6 +8,13 @@ import de.metas.money.Money;
 
 public interface IPaymentDocument
 {
+	enum PaymentDocumentType
+	{
+		RegularPayment, CreditMemoInvoice, PurchaseInvoice,
+	}
+
+	PaymentDocumentType getType();
+
 	BPartnerId getBpartnerId();
 
 	String getDocumentNo();

@@ -1,13 +1,8 @@
-package de.metas.invoicecandidate.api.impl;
-
-import static java.math.BigDecimal.ONE;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,27 +20,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
+package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.inout.IInOutDAO;
@@ -67,6 +42,29 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
@@ -142,7 +140,7 @@ import lombok.NonNull;
 	/**
 	 * Update all invoice candidates which were tagged
 	 */
-	private final void updateTagged()
+	private void updateTagged()
 	{
 		//
 		// Determine if we shall process our invoice candidates in batches and commit after each batch.
@@ -165,7 +163,7 @@ import lombok.NonNull;
 		final ICUpdateResult result = new ICUpdateResult();
 		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
+			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult>createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
 					.setItemsPerBatch(itemsPerBatch)
 
@@ -184,7 +182,7 @@ import lombok.NonNull;
 						final List<Integer> chunkInvoiceCandidateIds = new ArrayList<>();
 
 						@Override
-						public void process(final I_C_Invoice_Candidate ic) throws Exception
+						public void process(final I_C_Invoice_Candidate ic)
 						{
 							chunkInvoiceCandidateIds.add(ic.getC_Invoice_Candidate_ID());
 
@@ -241,7 +239,7 @@ import lombok.NonNull;
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
-	private final void updateInvalid(final I_C_Invoice_Candidate icRecord)
+	private void updateInvalid(final I_C_Invoice_Candidate icRecord)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 
@@ -356,23 +354,23 @@ import lombok.NonNull;
 		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLinesForOrderLine(orderLine, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inoutLines)
 		{
-			if (invoiceCandDAO.existsInvoiceCandidateInOutLinesForInvoiceCandidate(ic, inOutLine))
+			// create a new PO or update the unique existing one
+			I_C_InvoiceCandidate_InOutLine iciol = invoiceCandDAO.retrieveInvoiceCandidateInOutLine(ic, inOutLine);
+			if (iciol == null)
 			{
-				continue; // nothing to to, record already exists
+				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
+				iciol.setC_Invoice_Candidate(ic);
 			}
-
-			final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
-			iciol.setC_Invoice_Candidate(ic);
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
 
-	private final void assertNotExecuted()
+	private void assertNotExecuted()
 	{
 		Check.assume(!executed, "Updater not executed: {}", this);
 	}
 
-	private final void markAsExecuted()
+	private void markAsExecuted()
 	{
 		assertNotExecuted();
 		executed = true;
@@ -395,7 +393,7 @@ import lombok.NonNull;
 		return setContext(context.getCtx(), context.getTrxName());
 	}
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		Check.assumeNotNull(_ctx, "_ctx not null");
 		return _ctx;
@@ -404,7 +402,7 @@ import lombok.NonNull;
 	/**
 	 * @return actual trxName or {@link ITrx#TRXNAME_ThreadInherited}
 	 */
-	private final String getTrxName()
+	private String getTrxName()
 	{
 		if (trxManager.isNull(_trxName))
 		{
@@ -469,7 +467,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final int getItemsPerBatch()
+	private int getItemsPerBatch()
 	{
 		return sysConfigBL.getIntValue(SYSCONFIG_ItemsPerBatch, DEFAULT_ItemsPerBatch);
 	}
@@ -478,7 +476,6 @@ import lombok.NonNull;
 	 * IC update result.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	private static final class ICUpdateResult
 	{
