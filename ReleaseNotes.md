@@ -10,6 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.131
+## Features
+* metasfresh
+  * [#5850](https://github.com/metasfresh/metasfresh/issues/5850) Add Net Amount and Gross Amount in Partner Window, Tab Request
+  * [#5861](https://github.com/metasfresh/metasfresh/issues/5861) Initial Cost Price via Inventory import
+  * [#5869](https://github.com/metasfresh/metasfresh/issues/5869) Add Check for isCreditMemo in function Docs_Sales_Invoice_Description
+  * [#5880](https://github.com/metasfresh/metasfresh/issues/5880) Support inheriting Attribute from Phantom BOM to order line to support pricing
+  * [#5882](https://github.com/metasfresh/metasfresh/issues/5882) migration scripts: avoid logging AD_Preference changes
+
+* metasfresh-webui-frontend
+  * [#2475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2475) Refresh quickActions in both included and parent view when selection changes
+
+## Fixes
+* metasfresh
+  * [#5874](https://github.com/metasfresh/metasfresh/issues/5874) Reactivate Shipment, update Shipmentline delivery catch weight => does not update invoice candidate
+  * [#5878](https://github.com/metasfresh/metasfresh/issues/5878) automatically create native sequence when an AD_Table is created
+  * [#5802](https://github.com/metasfresh/metasfresh/issues/5802) Bug in Pricelistversion update for Basepricelists and customer proposals
+
+* metasfreseh-webui-frontend
+  * [#2454](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2454) Time not displayed in widgets
+  * [#2472](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2472) Purchase order from sales order not working anymore
+  * [#2474](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2474) X button not working for several fields
+
 # metasfresh 5.130
 ## Features
 * metasfresh
