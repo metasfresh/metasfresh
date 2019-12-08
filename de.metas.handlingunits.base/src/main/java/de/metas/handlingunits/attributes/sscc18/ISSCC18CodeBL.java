@@ -46,6 +46,7 @@ public interface ISSCC18CodeBL extends ISingletonService
 
 	/**
 	 * Uses its own sequence for serialNumbers (see {@link #SSCC18_SERIALNUMBER_SEQUENCENAME}) and creates a new SSCC18.
+	 *
 	 * @param orgId there might be different sequences per org
 	 */
 	SSCC18 generate(OrgId orgId);

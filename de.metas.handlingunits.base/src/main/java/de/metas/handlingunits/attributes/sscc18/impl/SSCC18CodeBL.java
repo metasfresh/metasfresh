@@ -45,8 +45,6 @@ import lombok.ToString;
 @Service
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {
-	public static final String SSCC18_SERIALNUMBER_SEQUENCENAME = "SSCC18_SerialNumber";
-
 	/**
 	 * Manufacturer code consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
 	 */
