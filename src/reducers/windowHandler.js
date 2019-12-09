@@ -19,9 +19,13 @@ import {
   CLOSE_FILTER_BOX,
   DELETE_ROW,
   DELETE_QUICK_ACTIONS,
+  DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   FETCHED_QUICK_ACTIONS,
+  FETCH_TOP_ACTIONS,
+  FETCH_TOP_ACTIONS_FAILURE,
+  FETCH_TOP_ACTIONS_SUCCESS,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   NO_CONNECTION,
@@ -109,6 +113,11 @@ export const initialState = {
     includedTabsInfo: {},
     docId: undefined,
     websocket: null,
+    topActions: {
+      actions: [],
+      fetching: false,
+      error: false,
+    },
   },
   quickActions: {},
   indicator: 'saved',
@@ -748,7 +757,6 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         spinner: null,
       };
-
     // QUICK ACTIONS
     case FETCHED_QUICK_ACTIONS:
       return {
@@ -771,6 +779,54 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         quickActions: newQuickActions,
+      };
+    }
+    // TOP ACTIONS
+    case FETCH_TOP_ACTIONS:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          topActions: {
+            ...state.master.topActions,
+            fetching: true,
+          },
+        },
+      };
+    case FETCH_TOP_ACTIONS_SUCCESS:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          topActions: {
+            ...state.master.topActions,
+            actions: action.payload,
+            fetching: false,
+          },
+        },
+      };
+    case FETCH_TOP_ACTIONS_FAILURE:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          topActions: {
+            ...state.master.topActions,
+            fetching: false,
+            error: true,
+          },
+        },
+      };
+    case DELETE_TOP_ACTIONS: {
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          topActions: {
+            ...state.master.topActions,
+            actions: [],
+          },
+        },
       };
     }
     default:

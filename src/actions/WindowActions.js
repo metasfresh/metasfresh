@@ -20,13 +20,17 @@ import {
   CLOSE_FILTER_BOX,
   DELETE_QUICK_ACTIONS,
   DELETE_ROW,
-  DISABLE_SHORTCUT,
+  DELETE_TOP_ACTIONS,
   DESELECT_TABLE_ITEMS,
+  DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   HIDE_SPINNER,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   FETCHED_QUICK_ACTIONS,
+  FETCH_TOP_ACTIONS,
+  FETCH_TOP_ACTIONS_FAILURE,
+  FETCH_TOP_ACTIONS_SUCCESS,
   NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
@@ -61,7 +65,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { getData, openFile, patchRequest } from './GenericActions';
-import { initLayout } from '../api';
+import { initLayout, topActionsRequest } from '../api';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import { toggleFullScreen } from '../utils';
@@ -85,6 +89,12 @@ export function deleteQuickActions(windowId, id) {
       windowId,
       id,
     },
+  };
+}
+
+export function deleteTopActions() {
+  return {
+    type: DELETE_TOP_ACTIONS,
   };
 }
 
@@ -662,6 +672,27 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
         })
       );
     });
+  };
+}
+
+export function fetchTopActions(windowType, docId, tabId) {
+  return dispatch => {
+    dispatch({
+      type: FETCH_TOP_ACTIONS,
+    });
+
+    topActionsRequest(windowType, docId, tabId)
+      .then(response => {
+        dispatch({
+          type: FETCH_TOP_ACTIONS_SUCCESS,
+          payload: response.data.actions,
+        });
+      })
+      .catch(() => {
+        dispatch({
+          type: FETCH_TOP_ACTIONS_FAILURE,
+        });
+      });
   };
 }
 
