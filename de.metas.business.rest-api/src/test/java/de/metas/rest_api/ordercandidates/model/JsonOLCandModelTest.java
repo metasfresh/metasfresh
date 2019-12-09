@@ -142,8 +142,6 @@ public class JsonOLCandModelTest
 				.toBuilder()
 				.dataDest("int-DEST.de.metas.invoicecandidate")
 				.presetDateInvoiced(LocalDate.of(2019, 03, 13))
-
-				.shipper("val - DPD Classic")
 				.build();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.builder()
