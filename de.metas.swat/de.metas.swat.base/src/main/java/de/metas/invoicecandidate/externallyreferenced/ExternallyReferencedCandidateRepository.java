@@ -163,7 +163,11 @@ public class ExternallyReferencedCandidateRepository
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
 
 		saveRecord(icRecord);
-		return InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+		final InvoiceCandidateId persistedInvoiceCandidateId =  InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+
+		storeInvoiceDetailItems(persistedInvoiceCandidateId, ic.getInvoiceDetailItems());
+
+		return persistedInvoiceCandidateId;
 	}
 
 	private void syncBillPartnerToRecord(
@@ -300,7 +304,7 @@ public class ExternallyReferencedCandidateRepository
 	 * @param invoiceCandidateId	Id of the invoice candidate to which the detail items are referring.
 	 * @param invoiceDetailItems    TO holding additional details about invoice candidate.
 	 */
-	public void storeInvoiceDetailItems(final InvoiceCandidateId invoiceCandidateId, final List<InvoiceDetailItem> invoiceDetailItems)
+	private void storeInvoiceDetailItems(final InvoiceCandidateId invoiceCandidateId, final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		if (CollectionUtils.isNotEmpty(invoiceDetailItems))
 		{

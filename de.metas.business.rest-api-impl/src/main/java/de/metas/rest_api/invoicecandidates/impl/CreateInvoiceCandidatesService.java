@@ -155,8 +155,6 @@ public class CreateInvoiceCandidatesService
 
 			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
 
-			externallyReferencedCandidateRepository.storeInvoiceDetailItems(candidateId, candidateToSave.getInvoiceDetailItems());
-
 			final JsonCreateInvoiceCandidatesResponseItem responseItem = JsonCreateInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
 					.externalLineId(lineId)

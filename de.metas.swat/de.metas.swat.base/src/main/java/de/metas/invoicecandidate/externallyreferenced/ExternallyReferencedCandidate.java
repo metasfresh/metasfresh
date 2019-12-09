@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -72,7 +73,8 @@ public class ExternallyReferencedCandidate
 				.productId(newIC.getProductId())
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
-				.soTrx(newIC.getSoTrx());
+				.soTrx(newIC.getSoTrx())
+				.invoiceDetailItems(newIC.getInvoiceDetailItems());
 	}
 
 	private final OrgId orgId;
@@ -127,6 +129,8 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
+	private List<InvoiceDetailItem> invoiceDetailItems;
+
 	@Builder
 	private ExternallyReferencedCandidate(
 			@NonNull final OrgId orgId,
@@ -153,7 +157,8 @@ public class ExternallyReferencedCandidate
 			@NonNull final ProductPrice priceActual,
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
-			@Nullable final String lineDescription)
+			@Nullable final String lineDescription,
+			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -180,6 +185,7 @@ public class ExternallyReferencedCandidate
 		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.invoiceDetailItems = invoiceDetailItems;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(

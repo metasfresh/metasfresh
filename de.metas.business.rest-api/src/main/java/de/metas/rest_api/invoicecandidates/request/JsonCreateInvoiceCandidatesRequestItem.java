@@ -133,7 +133,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	String lineDescription;
 
 	@ApiModelProperty(position = 190, required = false, //
-			value = "optional invoice detail items")
+			value = "Optional invoice detail items. Will be persisted as `C_Invoice_Detail` records together with the new invoice candidate.")
 	List<JSONInvoiceDetailItem> invoiceDetailItems;
 
 	@JsonCreator
