@@ -2,6 +2,11 @@ package de.metas.impex;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -27,11 +32,14 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class InputDataSourceId implements RepoIdAware
 {
+
 	int repoId;
 
+	@JsonCreator
 	public static InputDataSourceId ofRepoId(final int repoId)
 	{
 		return new InputDataSourceId(repoId);
@@ -62,4 +70,9 @@ public class InputDataSourceId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
 }
