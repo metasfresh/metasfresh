@@ -9,6 +9,7 @@ import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ public class EmptiesQuickInputProcessor implements IQuickInputProcessor
 {
 
 	@Override
-	public Set<DocumentId> process(final QuickInput quickInput)
+	public Set<DocumentId> process(@NonNull final QuickInput quickInput)
 	{
 		final I_M_InOut inout = quickInput.getRootDocumentAs(I_M_InOut.class);
 		final IEmptiesQuickInput emptiesQuickInput = quickInput.getQuickInputDocumentAs(IEmptiesQuickInput.class);

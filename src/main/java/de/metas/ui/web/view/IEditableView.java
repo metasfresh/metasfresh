@@ -2,6 +2,8 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -21,12 +23,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,6 +37,20 @@ import lombok.ToString;
 
 public interface IEditableView extends IView
 {
+	static IEditableView asEditableView(final IView view)
+	{
+		if (view instanceof IEditableView)
+		{
+			return (IEditableView)view;
+		}
+		else
+		{
+			throw new AdempiereException("View is not editable")
+					.setParameter("view", view);
+		}
+	}
+
+
 	void patchViewRow(RowEditingContext ctx, List<JSONDocumentChangedEvent> fieldChangeRequests);
 
 	LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query);
