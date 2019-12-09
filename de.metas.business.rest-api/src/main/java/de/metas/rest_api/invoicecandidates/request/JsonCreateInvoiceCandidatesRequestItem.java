@@ -1,9 +1,9 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCTIDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -67,7 +67,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	String poReference;
 
 	@ApiModelProperty(position = 50, required = true, //
-			value = BPARTER_IDENTIFIER_DOC)
+			value = BPARTNER_IDENTIFIER_DOC)
 	String billPartnerIdentifier;
 
 	@ApiModelProperty(position = 60, required = true, //
@@ -79,7 +79,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	String billContactIdentifier;
 
 	@ApiModelProperty(position = 80, required = true, //
-			value = PRODUCTIDENTIFIER_DOC)
+			value = PRODUCT_IDENTIFIER_DOC)
 	String productIdentifier;
 
 	@ApiModelProperty(position = 130, required = false, //

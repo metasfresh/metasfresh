@@ -15,7 +15,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2025653177L;
+	private static final long serialVersionUID = -1790059392L;
 
     /** Standard Constructor */
     public X_C_Order (Properties ctx, int C_Order_ID, String trxName)
@@ -1274,6 +1274,22 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set External ID.
+		@param ExternalId External ID	  */
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/** Get External ID.
+		@return External ID	  */
+	@Override
+	public java.lang.String getExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
 	/** Set Frachtbetrag.

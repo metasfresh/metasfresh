@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -64,6 +65,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return firstOnly(clazz, throwExIfMoreThenOneFound);
 	}
 
+	@NonNull
 	@Override
 	public final <ET extends T> ET firstOnlyNotNull(final Class<ET> clazz) throws DBException
 	{
@@ -78,6 +80,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return model;
 	}
 
+	@NonNull
 	@Override
 	public final <ET extends T> ET firstNotNull(final Class<ET> clazz) throws DBException
 	{

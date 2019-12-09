@@ -143,18 +143,28 @@ public class PayableDocument
 		amountsToAllocate = amountsToAllocate.subtract(amounts);
 	}
 
-	public Money calculateProjectedOverUnderAmt(@NonNull final AllocationAmounts amountsToAllocate)
+	public void moveRemainingOpenAmtToDiscount()
 	{
-		return getOpenAmtRemainingToAllocate().subtract(amountsToAllocate.getTotalAmt());
+		amountsToAllocate = amountsToAllocate.movePayAmtToDiscount();
 	}
 
-	private Money getOpenAmtRemainingToAllocate()
+	public void moveRemainingOpenAmtToWriteOff()
+	{
+		amountsToAllocate = amountsToAllocate.movePayAmtToWriteOff();
+	}
+
+	public Money computeProjectedOverUnderAmt(@NonNull final AllocationAmounts amountsToAllocate)
+	{
+		return computeOpenAmtRemainingToAllocate().subtract(amountsToAllocate.getTotalAmt());
+	}
+
+	private Money computeOpenAmtRemainingToAllocate()
 	{
 		return openAmtInitial.subtract(amountsAllocated.getTotalAmt());
 	}
 
 	public boolean isFullyAllocated()
 	{
-		return amountsToAllocate.isZero();
+		return amountsToAllocate.getTotalAmt().isZero();
 	}
 }

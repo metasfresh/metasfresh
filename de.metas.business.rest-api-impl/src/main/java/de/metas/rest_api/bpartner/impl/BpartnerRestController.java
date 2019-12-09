@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner.impl;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
@@ -102,7 +102,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{bpartnerIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -122,7 +122,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -147,7 +147,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -241,7 +241,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -270,7 +270,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 

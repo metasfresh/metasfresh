@@ -35,6 +35,7 @@ import de.metas.util.Services;
 @Service
 public class CurrencyService
 {
+	@Nullable
 	public CurrencyId getCurrencyId(@Nullable final String currencyCodeStr)
 	{
 		if (Check.isEmpty(currencyCodeStr, true))
