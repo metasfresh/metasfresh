@@ -261,9 +261,10 @@ public class StepComXMLDesadvBean
 		if (ppack1NeededInGeneral)
 		{
 			int packagingTotalNumber = 0;
-			BigDecimal qtyDelivered = ZERO;
 			for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
 			{
+				BigDecimal qtyDelivered = ZERO;
+
 				final String documentId = xmlDesadv.getDocumentNo();
 				final String lineNumber = extractLineNumber(line, decimalFormat);
 
@@ -344,6 +345,7 @@ public class StepComXMLDesadvBean
 					final DQVAR1 dqvar1 = createDQVAR1(documentId, line, quantityDiff, decimalFormat);
 					detail.setDQVAR1(dqvar1);
 				}
+
 			}
 			packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
 		}
