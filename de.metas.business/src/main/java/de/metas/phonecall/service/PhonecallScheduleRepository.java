@@ -8,6 +8,8 @@ import org.compiere.model.I_C_Phonecall_Schedule;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
@@ -80,23 +82,30 @@ public class PhonecallScheduleRepository
 	{
 		final I_C_Phonecall_Schedule scheduleRecord = load(scheduleId, I_C_Phonecall_Schedule.class);
 
+		return toPhonecallSchedule(scheduleRecord);
+	}
+
+	@VisibleForTesting
+	static PhonecallSchedule toPhonecallSchedule(final I_C_Phonecall_Schedule record)
+	{
 		final PhonecallSchemaVersionId schemaVersionId = PhonecallSchemaVersionId.ofRepoId(
-				scheduleRecord.getC_Phonecall_Schema_ID(),
-				scheduleRecord.getC_Phonecall_Schema_Version_ID());
+				record.getC_Phonecall_Schema_ID(),
+				record.getC_Phonecall_Schema_Version_ID());
 
 		return PhonecallSchedule.builder()
-				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(scheduleRecord.getC_BPartner_ID(), scheduleRecord.getC_BPartner_Location_ID()))
-				.contactId(UserId.ofRepoId(scheduleRecord.getC_BP_Contact_ID()))
-				.date(TimeUtil.asLocalDate(scheduleRecord.getPhonecallDate()))
-				.startTime(TimeUtil.asZonedDateTime(scheduleRecord.getPhonecallTimeMin()))
-				.endTime(TimeUtil.asZonedDateTime(scheduleRecord.getPhonecallTimeMax()))
-				.id(scheduleId)
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.contactId(UserId.ofRepoId(record.getC_BP_Contact_ID()))
+				.date(TimeUtil.asLocalDate(record.getPhonecallDate()))
+				.startTime(TimeUtil.asZonedDateTime(record.getPhonecallTimeMin()))
+				.endTime(TimeUtil.asZonedDateTime(record.getPhonecallTimeMax()))
+				.id(PhonecallScheduleId.ofRepoId(record.getC_Phonecall_Schedule_ID()))
 				.schemaVersionLineId(PhonecallSchemaVersionLineId.ofRepoId(
 						schemaVersionId,
-						scheduleRecord.getC_Phonecall_Schema_Version_Line_ID()))
-				.isOrdered(scheduleRecord.isOrdered())
-				.isCalled(scheduleRecord.isCalled())
-				.salesRepId(UserId.ofRepoId(scheduleRecord.getSalesRep_ID()))
+						record.getC_Phonecall_Schema_Version_Line_ID()))
+				.isOrdered(record.isOrdered())
+				.isCalled(record.isCalled())
+				.salesRepId(UserId.ofRepoId(record.getSalesRep_ID()))
+				.description(record.getDescription())
 				.build();
 	}
 
