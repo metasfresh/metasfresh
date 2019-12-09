@@ -421,7 +421,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
-
+				sched.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
 			}
 
 			shipmentSchedulePA.save(sched);
