@@ -445,7 +445,7 @@ public interface I_EDI_Desadv
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -455,7 +455,7 @@ public interface I_EDI_Desadv
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false

@@ -638,7 +638,7 @@ public final class ProcessExecutor
 
 		public ProcessExecutor executeSync()
 		{
-			processInfo.setAsync(false); // #1160 advise the product info, that we want a synchronous execution
+			processInfo.setAsync(false); // #1160 advise the process info, that we want a synchronous execution
 			final ProcessExecutor worker = build();
 			worker.executeSync();
 			return worker;

@@ -59,29 +59,6 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Mindesthaltbarkeitsdatum.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setBestBeforeDate (java.sql.Timestamp BestBeforeDate);
-
-	/**
-	 * Get Mindesthaltbarkeitsdatum.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getBestBeforeDate();
-
-    /** Column definition for BestBeforeDate */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_BestBeforeDate = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "BestBeforeDate", null);
-    /** Column name BestBeforeDate */
-    public static final String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -206,7 +183,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set EDI_DesadvLine.
+	 * Set DESADV-Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -215,7 +192,7 @@ public interface I_EDI_DesadvLine
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID);
 
 	/**
-	 * Get EDI_DesadvLine.
+	 * Get DESADV-Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -252,29 +229,6 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_GTIN = "GTIN";
 
 	/**
-	 * Set SSCC18.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setIPA_SSCC18 (java.lang.String IPA_SSCC18);
-
-	/**
-	 * Get SSCC18.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getIPA_SSCC18();
-
-    /** Column definition for IPA_SSCC18 */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "IPA_SSCC18", null);
-    /** Column name IPA_SSCC18 */
-    public static final String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -298,31 +252,6 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set manuelle SSCC18.
-	 * Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsManual_IPA_SSCC18 (boolean IsManual_IPA_SSCC18);
-
-	/**
-	 * Get manuelle SSCC18.
-	 * Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isManual_IPA_SSCC18();
-
-    /** Column definition for IsManual_IPA_SSCC18 */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IsManual_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "IsManual_IPA_SSCC18", null);
-    /** Column name IsManual_IPA_SSCC18 */
-    public static final String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
 	/**
 	 * Set Spätere Nachlieferung.
@@ -373,125 +302,6 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "Line", null);
     /** Column name Line */
     public static final String COLUMNNAME_Line = "Line";
-
-	/**
-	 * Set Handling Unit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_HU_ID (int M_HU_ID);
-
-	/**
-	 * Get Handling Unit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_HU_ID();
-
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_ID", null);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
-
-	/**
-	 * Set LU Verpackungscode.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID);
-
-	/**
-	 * Get LU Verpackungscode.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_HU_PackagingCode_LU_ID();
-
-    /** Column definition for M_HU_PackagingCode_LU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_LU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_LU_ID", null);
-    /** Column name M_HU_PackagingCode_LU_ID */
-    public static final String COLUMNNAME_M_HU_PackagingCode_LU_ID = "M_HU_PackagingCode_LU_ID";
-
-	/**
-	 * Set M_HU_PackagingCode_LU_Text.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text);
-
-	/**
-	 * Get M_HU_PackagingCode_LU_Text.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.lang.String getM_HU_PackagingCode_LU_Text();
-
-    /** Column definition for M_HU_PackagingCode_LU_Text */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_LU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_LU_Text", null);
-    /** Column name M_HU_PackagingCode_LU_Text */
-    public static final String COLUMNNAME_M_HU_PackagingCode_LU_Text = "M_HU_PackagingCode_LU_Text";
-
-	/**
-	 * Set TU Verpackungscode.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_HU_PackagingCode_TU_ID (int M_HU_PackagingCode_TU_ID);
-
-	/**
-	 * Get TU Verpackungscode.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_HU_PackagingCode_TU_ID();
-
-    /** Column definition for M_HU_PackagingCode_TU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_TU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_TU_ID", null);
-    /** Column name M_HU_PackagingCode_TU_ID */
-    public static final String COLUMNNAME_M_HU_PackagingCode_TU_ID = "M_HU_PackagingCode_TU_ID";
-
-	/**
-	 * Set M_HU_PackagingCode_TU_Text.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text);
-
-	/**
-	 * Get M_HU_PackagingCode_TU_Text.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.lang.String getM_HU_PackagingCode_TU_Text();
-
-    /** Column definition for M_HU_PackagingCode_TU_Text */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_PackagingCode_TU_Text = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_PackagingCode_TU_Text", null);
-    /** Column name M_HU_PackagingCode_TU_Text */
-    public static final String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
 
 	/**
 	 * Set Bewegungs-Menge.
@@ -615,31 +425,6 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_ProductNo = "ProductNo";
 
 	/**
-	 * Set Liefermenge.
-	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM);
-
-	/**
-	 * Get Liefermenge.
-	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyDeliveredInUOM();
-
-    /** Column definition for QtyDeliveredInUOM */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyDeliveredInUOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyDeliveredInUOM", null);
-    /** Column name QtyDeliveredInUOM */
-    public static final String COLUMNNAME_QtyDeliveredInUOM = "QtyDeliveredInUOM";
-
-	/**
 	 * Set Menge.
 	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
@@ -665,27 +450,29 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
-	 * Set Verpackungskapazität.
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Verpackungskapazität.
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyItemCapacity();
+	public java.math.BigDecimal getQtyOrdered();
 
-    /** Column definition for QtyItemCapacity */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyItemCapacity", null);
-    /** Column name QtyItemCapacity */
-    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
+    /** Column definition for QtyOrdered */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyOrdered", null);
+    /** Column name QtyOrdered */
+    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
 	 * Set CU-UPC.

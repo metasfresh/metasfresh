@@ -57,8 +57,6 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 	public ForwardingICAggregationKeyBuilder(final String aggregationUsageLevel)
 	{
-		super();
-
 		Check.assumeNotEmpty(aggregationUsageLevel, "aggregationUsageLevel not empty");
 		this.aggregationUsageLevel = aggregationUsageLevel;
 	}
@@ -108,7 +106,7 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
 		final OrderId prepayOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
-		if (prepayOrderId !=null 
+		if (prepayOrderId !=null
 				&& Services.get(IOrderBL.class).isPrepay(prepayOrderId)
 				&& X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header.equals(aggregationUsageLevel))
 		{

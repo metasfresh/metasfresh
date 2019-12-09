@@ -75,7 +75,9 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
 			.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class, "spring component")
-			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component");
+			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
+			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
+			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component");
 
 	@BeforeEach
 	public void beforeEach()
