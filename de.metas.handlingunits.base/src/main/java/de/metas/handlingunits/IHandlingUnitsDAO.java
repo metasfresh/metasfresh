@@ -310,8 +310,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * <ul>
 	 * <li>this method will return packing material(s) of this HU only and not for its included HUs.</li>
 	 * </ul>
-	 *
-	 * @param hu
 	 * @return packing material and quantity pairs
 	 */
 	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
@@ -323,15 +321,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param ctx
 	 *
 	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
-	 *
-	 * @param trxName
-	 * @return
 	 */
 	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
 
 	/**
-	 * @param ctx
-	 * @param adOrgId
 	 * @return all available (i.e. active) HU PIs from system, for the given org_id and for org 0
 	 */
 	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
@@ -339,8 +332,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -348,25 +339,17 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve the aggregated item of the given HU if it has one.
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return the aggregated item or null.
 	 */
 	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
 	 * Retrieve all the child HUs of the given item, both active and not active
-	 *
-	 * @param parentItem
-	 * @return
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 
 	/**
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
-	 *
-	 * @param hus
-	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 

@@ -11,7 +11,8 @@ public interface IDocumentNoBuilderFactory extends ISingletonService
 	IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder();
 
 	/**
-	 * Convenience method to create and prepare the builder for a given tableName.
+	 * Convenience method to create and prepare the builder for a given tableName.<br>
+	 * (There doesn't have to be a "real" AD_Table).
 	 *
 	 * @param tableName the method will look for a sequence whose name is this table name, prepended with {@link IDocumentNoBuilder#PREFIX_DOCSEQ}.
 	 */
