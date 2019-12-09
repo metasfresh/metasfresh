@@ -56,7 +56,8 @@ public class ProductsToPickRowsService
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 	
-	private static final String MSG_TYPE_UNALLOCATED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.createPickRequest";
+	private static final String MSG_TYPE_UNALLOCATED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error";
+	private static final String MSG_TYPE_NOT_SUPPORTED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported";
 
 	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
@@ -118,10 +119,16 @@ public class ProductsToPickRowsService
 					.autoReview(!isPickingReviewRequired)
 					.build();
 		}
-		else
+		else if (ProductsToPickRowType.UNALLOCABLE.equals(rowType))
 		{
 			final ITranslatableString message = Services.get(IMsgBL.class)
 					.getTranslatableMsgText(MSG_TYPE_UNALLOCATED);
+			throw new AdempiereException(message); 
+		}
+		else
+		{
+			final ITranslatableString message = Services.get(IMsgBL.class)
+					.getTranslatableMsgText(MSG_TYPE_NOT_SUPPORTED);
 			throw new AdempiereException(message); 
 		}
 	}
