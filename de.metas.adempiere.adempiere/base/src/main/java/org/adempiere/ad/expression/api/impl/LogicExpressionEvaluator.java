@@ -54,15 +54,15 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	/** Internal marker for value not found */
 	static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
 
-	/* package */static interface BooleanValueSupplier
+	/* package */interface BooleanValueSupplier
 	{
 		Boolean getValueOrNull();
-	};
+	}
 
-	/* package */static interface BooleanEvaluator
+	/* package */interface BooleanEvaluator
 	{
 		Boolean evaluateOrNull(BooleanValueSupplier left, BooleanValueSupplier right);
-	};
+	}
 
 	private static final BooleanEvaluator EVALUATOR_AND = (left, right) -> {
 		Boolean leftValue = null;
@@ -346,6 +346,17 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 
 		//
+		// Try comparing as Strings first because it's faster then trying to convert to BigDecimal
+		{
+			final String value1Str = stripQuotes(valueObj1);
+			final String value2Str = stripQuotes(valueObj2);
+			if (evaluateLogicTupleForComparables(value1Str, operand, value2Str))
+			{
+				return true;
+			}
+		}
+
+		//
 		// Try comparing BigDecimals
 		try
 		{
@@ -357,7 +368,10 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				{
 					final BigDecimal value2bd = new BigDecimal(valueObj2);
 
-					return evaluateLogicTupleForComparables(value1bd, operand, value2bd);
+					if (evaluateLogicTupleForComparables(value1bd, operand, value2bd))
+					{
+						return true;
+					}
 				}
 			}
 		}
@@ -367,12 +381,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 
 		//
-		// Try comparing as Strings
-		{
-			final String value1Str = stripQuotes(valueObj1);
-			final String value2Str = stripQuotes(valueObj2);
-			return evaluateLogicTupleForComparables(value1Str, operand, value2Str);
-		}
+		// Not matched
+		return false;
 	}
 
 	private static final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)
@@ -552,7 +562,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		 * @param operand
 		 * @return value or {@link #VALUE_NotFound}
 		 */
-		public final String getValue(final Object operand) throws ExpressionEvaluationException
+		public String getValue(final Object operand) throws ExpressionEvaluationException
 		{
 			//
 			// Case: we deal with with a parameter (which we will need to get it from context/source)
@@ -580,7 +590,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 			}
 		}
 
-		private final String resolveCtxName(final CtxName ctxName)
+		private String resolveCtxName(final CtxName ctxName)
 		{
 			final String value = ctxName.getValueAsString(params);
 			final boolean valueNotFound = Env.isPropertyValueNull(ctxName.getName(), value);
