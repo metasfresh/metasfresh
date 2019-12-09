@@ -59,11 +59,6 @@ class JSONDocumentChangedWebSocketEventCollector
 	{
 	}
 
-	public List<JSONDocumentChangedWebSocketEvent> getEvents()
-	{
-		return ImmutableList.copyOf(events.values());
-	}
-
 	public List<JSONDocumentChangedWebSocketEvent> getEventsAndClear()
 	{
 		final List<JSONDocumentChangedWebSocketEvent> eventsList = ImmutableList.copyOf(events.values());
