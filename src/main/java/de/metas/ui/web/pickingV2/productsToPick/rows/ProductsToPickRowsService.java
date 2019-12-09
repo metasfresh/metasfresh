@@ -16,11 +16,14 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -52,6 +55,9 @@ public class ProductsToPickRowsService
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
+	
+	private static final String MSG_TYPE_UNALLOCATED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error";
+	private static final String MSG_TYPE_NOT_SUPPORTED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported";
 
 	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
@@ -113,9 +119,17 @@ public class ProductsToPickRowsService
 					.autoReview(!isPickingReviewRequired)
 					.build();
 		}
+		else if (ProductsToPickRowType.UNALLOCABLE.equals(rowType))
+		{
+			final ITranslatableString message = Services.get(IMsgBL.class)
+					.getTranslatableMsgText(MSG_TYPE_UNALLOCATED);
+			throw new AdempiereException(message); 
+		}
 		else
 		{
-			throw new AdempiereException("Type not supported: " + rowType);
+			final ITranslatableString message = Services.get(IMsgBL.class)
+					.getTranslatableMsgText(MSG_TYPE_NOT_SUPPORTED);
+			throw new AdempiereException(message); 
 		}
 	}
 
