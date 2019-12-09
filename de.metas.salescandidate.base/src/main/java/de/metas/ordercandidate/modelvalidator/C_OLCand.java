@@ -119,7 +119,8 @@ public class C_OLCand
 				olCand,
 				ImmutableSet.<String> of(
 						I_C_OLCand.COLUMNNAME_C_BPartner_ID,
-						I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)))
+						I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID))
+				&& InterfaceWrapperHelper.isUIAction(olCand))
 		{
 			// task 09686
 			olCand.setM_PricingSystem_ID(0);
