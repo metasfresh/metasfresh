@@ -32,7 +32,7 @@ public interface I_C_Invoice_Detail
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -59,7 +59,7 @@ public interface I_C_Invoice_Detail
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -69,7 +69,7 @@ public interface I_C_Invoice_Detail
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -127,7 +127,7 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getC_Invoice_ID();
 
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException;
+	public org.compiere.model.I_C_Invoice getC_Invoice();
 
 	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
 
@@ -140,7 +140,7 @@ public interface I_C_Invoice_Detail
 	 * Set Rechnungsposition.
 	 * Rechnungszeile
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -150,13 +150,13 @@ public interface I_C_Invoice_Detail
 	 * Get Rechnungsposition.
 	 * Rechnungszeile
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_InvoiceLine_ID();
 
-	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine() throws RuntimeException;
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine();
 
 	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
 
@@ -298,7 +298,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Zeige Detail-Infos statt Rechnungszeile.
+	 * Set Detail-Info statt Rechnungszeile andrucken.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -307,7 +307,7 @@ public interface I_C_Invoice_Detail
 	public void setIsDetailOverridesLine (boolean IsDetailOverridesLine);
 
 	/**
-	 * Get Zeige Detail-Infos statt Rechnungszeile.
+	 * Get Detail-Info statt Rechnungszeile andrucken.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -321,7 +321,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_IsDetailOverridesLine = "IsDetailOverridesLine";
 
 	/**
-	 * Set Print before.
+	 * Set davor andrucken.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -330,7 +330,7 @@ public interface I_C_Invoice_Detail
 	public void setIsPrintBefore (boolean IsPrintBefore);
 
 	/**
-	 * Get Print before.
+	 * Get davor andrucken.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -344,7 +344,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_IsPrintBefore = "IsPrintBefore";
 
 	/**
-	 * Set Gedruckt.
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -354,7 +354,7 @@ public interface I_C_Invoice_Detail
 	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Gedruckt.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -369,8 +369,31 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_IsPrinted = "IsPrinted";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Label.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLabel (java.lang.String Label);
+
+	/**
+	 * Get Label.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLabel();
+
+    /** Column definition for Label */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, Object> COLUMN_Label = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, Object>(I_C_Invoice_Detail.class, "Label", null);
+    /** Column name Label */
+    public static final String COLUMNNAME_Label = "Label";
+
+	/**
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -379,8 +402,8 @@ public interface I_C_Invoice_Detail
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -388,7 +411,7 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
@@ -428,7 +451,7 @@ public interface I_C_Invoice_Detail
 
 	/**
 	 * Set Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Optional weitere Information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -438,7 +461,7 @@ public interface I_C_Invoice_Detail
 
 	/**
 	 * Get Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Optional weitere Information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -452,8 +475,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set Percentage.
-	 * Percent of the entire amount
+	 * Set Anteil.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -462,8 +484,7 @@ public interface I_C_Invoice_Detail
 	public void setPercentage (java.math.BigDecimal Percentage);
 
 	/**
-	 * Get Percentage.
-	 * Percent of the entire amount
+	 * Get Anteil.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
