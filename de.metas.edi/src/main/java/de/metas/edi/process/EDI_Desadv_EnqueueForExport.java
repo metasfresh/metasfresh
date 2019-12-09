@@ -229,14 +229,12 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 
 	/**
 	 * Returns the number of desadv records that have at least one line with qty 0.
-	 *
-	 * @return
 	 */
 	private int countDESADVWithLinesQty0()
 	{
 		return createEDIDesadvQueryBuilder()
 				.andCollectChildren(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, I_EDI_DesadvLine.class)
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM, BigDecimal.ZERO)
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_MovementQty, BigDecimal.ZERO)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_EDI_Desadv.COLUMN_EDI_Desadv_ID, I_EDI_Desadv.class)
 				.create()

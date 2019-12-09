@@ -25,6 +25,8 @@ package de.metas.adempiere.gui.search;
 
 import java.math.BigDecimal;
 
+import de.metas.quantity.Quantity;
+
 /**
  * Implementations or adapters of this interface model a record (e.g. C_OrderLine) which supports handling unit packing instructions (e.g. packing item, qty etc).
  *
@@ -63,7 +65,9 @@ public interface IHUPackingAware
 	/** @param qty quantity (aka Qty CU) */
 	void setQty(BigDecimal qtyInHUsUOM);
 
-	/** @return quantity (aka Qty CU) */
+	/** @return quantity (aka Qty CU)
+	 * TODO: change to {@link Quantity}, so the UOM is known
+	 */
 	BigDecimal getQty();
 
 	int getM_HU_PI_Item_Product_ID();

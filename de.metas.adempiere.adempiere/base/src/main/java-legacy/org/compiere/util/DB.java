@@ -78,6 +78,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CacheMgt;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -1894,12 +1895,14 @@ public final class DB
 	}	// getNextID
 
 	/**
-	 * Get next number for Key column = 0 is Error.
+	 * Get next ID for database record.
+	 * If you consider using this in your business logic, please take a look at {@link IDocumentNoBuilderFactory} first.
+	 * <p>
+	 * <b>WARNING:</b> the underlying sequence might be reset, depending on existing primary keys in the DB
+	 * <p>
 	 *
-	 * @param AD_Client_ID client
-	 * @param TableName table name
 	 * @param trxName optional Transaction Name
-	 * @return next no
+	 * @return next primary key number
 	 */
 	public static int getNextID(int AD_Client_ID, String TableName, String trxName)
 	{
@@ -2897,7 +2900,7 @@ public final class DB
 			while (rs.next())
 			{
 				final T row = loader.retrieveRowOrNull(rs);
-				if(row != null)
+				if (row != null)
 				{
 					rows.add(row);
 				}

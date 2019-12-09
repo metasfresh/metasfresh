@@ -30,7 +30,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -329,9 +328,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU getLoadingUnitHU(I_M_HU hu);
 
 	/**
-	 * Gets the TU of given HU.
+	 * Get the TU of the given (included) HU.
 	 *
-	 * @param hu
 	 * @return TU handling unit or null.
 	 */
 	I_M_HU getTransportUnitHU(I_M_HU hu);

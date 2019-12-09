@@ -775,7 +775,8 @@ public class ExportHelper
 			}
 			else
 			{
-				df = DisplayType.getDateFormat(displayType);
+				//df = DisplayType.getDateFormat(displayType); // since we export to xsd:date, it makes no sense to by default use the current user's locale's (or whatever) dateFormat.
+				df = new SimpleDateFormat("yyyy-MM-dd");
 				valueAttributes.put(RPL_Constants.XML_ATTR_DateFormat, df.toPattern());
 			}
 			log.debug("DatePattern: {}", df.toPattern());
