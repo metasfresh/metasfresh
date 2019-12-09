@@ -53,4 +53,7 @@ public class PhonecallSchemaVersionLine
 
 	@NonNull
 	ZonedDateTime endTime;
+
+	@Nullable
+	String description;
 }

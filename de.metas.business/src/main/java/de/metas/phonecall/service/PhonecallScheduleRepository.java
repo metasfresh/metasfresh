@@ -71,6 +71,8 @@ public class PhonecallScheduleRepository
 
 		scheduleRecord.setSalesRep_ID(UserId.toRepoId(schedule.getSalesRepId()));
 
+		scheduleRecord.setDescription(schedule.getDescription());
+
 		saveRecord(scheduleRecord);
 	}
 

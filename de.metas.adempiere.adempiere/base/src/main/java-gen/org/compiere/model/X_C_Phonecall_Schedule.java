@@ -14,7 +14,7 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1782043187L;
+	private static final long serialVersionUID = -1939826764L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schedule (Properties ctx, int C_Phonecall_Schedule_ID, String trxName)
@@ -52,20 +52,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_User getC_BP_Contact() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Contact_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setC_BP_Contact(org.compiere.model.I_AD_User C_BP_Contact)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Contact_ID, org.compiere.model.I_AD_User.class, C_BP_Contact);
-	}
-
-	/** Set Contact.
-		@param C_BP_Contact_ID Contact	  */
+	/** Set Kontakt.
+		@param C_BP_Contact_ID Kontakt	  */
 	@Override
 	public void setC_BP_Contact_ID (int C_BP_Contact_ID)
 	{
@@ -75,8 +63,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			set_Value (COLUMNNAME_C_BP_Contact_ID, Integer.valueOf(C_BP_Contact_ID));
 	}
 
-	/** Get Contact.
-		@return Contact	  */
+	/** Get Kontakt.
+		@return Kontakt	  */
 	@Override
 	public int getC_BP_Contact_ID () 
 	{
@@ -84,18 +72,6 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -121,18 +97,6 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
 	}
 
 	/** Set Standort.
@@ -183,7 +147,7 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public org.compiere.model.I_C_Phonecall_Schema getC_Phonecall_Schema() throws RuntimeException
+	public org.compiere.model.I_C_Phonecall_Schema getC_Phonecall_Schema()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Phonecall_Schema_ID, org.compiere.model.I_C_Phonecall_Schema.class);
 	}
@@ -217,7 +181,7 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public org.compiere.model.I_C_Phonecall_Schema_Version getC_Phonecall_Schema_Version() throws RuntimeException
+	public org.compiere.model.I_C_Phonecall_Schema_Version getC_Phonecall_Schema_Version()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Phonecall_Schema_Version_ID, org.compiere.model.I_C_Phonecall_Schema_Version.class);
 	}
@@ -251,7 +215,7 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public org.compiere.model.I_C_Phonecall_Schema_Version_Line getC_Phonecall_Schema_Version_Line() throws RuntimeException
+	public org.compiere.model.I_C_Phonecall_Schema_Version_Line getC_Phonecall_Schema_Version_Line()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, org.compiere.model.I_C_Phonecall_Schema_Version_Line.class);
 	}
@@ -282,6 +246,22 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Anruf getätigt.
@@ -364,52 +344,40 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallDate);
 	}
 
-	/** Set PhonecallTimeMax.
-		@param PhonecallTimeMax PhonecallTimeMax	  */
+	/** Set Erreichbar bis.
+		@param PhonecallTimeMax Erreichbar bis	  */
 	@Override
 	public void setPhonecallTimeMax (java.sql.Timestamp PhonecallTimeMax)
 	{
 		set_Value (COLUMNNAME_PhonecallTimeMax, PhonecallTimeMax);
 	}
 
-	/** Get PhonecallTimeMax.
-		@return PhonecallTimeMax	  */
+	/** Get Erreichbar bis.
+		@return Erreichbar bis	  */
 	@Override
 	public java.sql.Timestamp getPhonecallTimeMax () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallTimeMax);
 	}
 
-	/** Set PhonecallTimeMin.
-		@param PhonecallTimeMin PhonecallTimeMin	  */
+	/** Set Erreichbar von.
+		@param PhonecallTimeMin Erreichbar von	  */
 	@Override
 	public void setPhonecallTimeMin (java.sql.Timestamp PhonecallTimeMin)
 	{
 		set_Value (COLUMNNAME_PhonecallTimeMin, PhonecallTimeMin);
 	}
 
-	/** Get PhonecallTimeMin.
-		@return PhonecallTimeMin	  */
+	/** Get Erreichbar von.
+		@return Erreichbar von	  */
 	@Override
 	public java.sql.Timestamp getPhonecallTimeMin () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallTimeMin);
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
-	{
-		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
-	}
-
-	/** Set Aussendienst.
-		@param SalesRep_ID Aussendienst	  */
+	/** Set Kundenbetreuer.
+		@param SalesRep_ID Kundenbetreuer	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -419,8 +387,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Aussendienst.
-		@return Aussendienst	  */
+	/** Get Kundenbetreuer.
+		@return Kundenbetreuer	  */
 	@Override
 	public int getSalesRep_ID () 
 	{
