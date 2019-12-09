@@ -96,6 +96,6 @@ public class ShipperDAO implements IShipperDAO
 				.create()
 				.firstIdOnly(ShipperId::ofRepoIdOrNull);
 
-		return Optional.of(shipperId);
+		return Optional.ofNullable(shipperId);
 	}
 }

@@ -327,6 +327,8 @@ public class OrderCandidatesRestControllerImplTest
 
 		testMasterdata.createProduct("productCode", uomId);
 
+
+
 		testDateOrdered(null);
 		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 2));
@@ -356,6 +358,11 @@ public class OrderCandidatesRestControllerImplTest
 						.docBaseType("ARI")
 						.docSubType("KV")
 						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
 				.build());
 
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
@@ -455,6 +462,11 @@ public class OrderCandidatesRestControllerImplTest
 								.gln("gln1")
 								.build())
 						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
 				.invoiceDocType(JsonDocTypeInfo.builder()
 						.docBaseType("ARI")
@@ -498,6 +510,11 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.syncAdvise(SyncAdvise.READ_ONLY)
 						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(JsonRequestBPartner.builder()
@@ -606,9 +623,11 @@ public class OrderCandidatesRestControllerImplTest
 				.externalLineId("externalLineId")
 				.poReference("poRef")
 				.shipper("val-DPD")
-				.salesPartnerCode("billBPartner")
+				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
 				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
+
 
 				.product(JsonProductInfo.builder()
 						.code("productCode")
