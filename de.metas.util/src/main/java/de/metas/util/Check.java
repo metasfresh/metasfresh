@@ -39,7 +39,6 @@ import lombok.NonNull;
 
 /**
  *
- *
  */
 public final class Check
 {
@@ -190,12 +189,12 @@ public final class Check
 
 	/**
 	 * Assumes that <code>obj</code> is instanceof <code>interfaceClass</code>.
-	 *
+	 * <p>
 	 * If <code>obj</code> is null, it's fine.
 	 *
 	 * @param obj
 	 * @param interfaceClass
-	 * @param objectName user readable object name (i.e. variable name)
+	 * @param objectName     user readable object name (i.e. variable name)
 	 */
 	public static void assumeInstanceOfOrNull(final Object obj, final Class<?> interfaceClass, final String objectName)
 	{
@@ -229,7 +228,7 @@ public final class Check
 
 	/**
 	 * Assumes that <code>obj</code> is <code>instanceof interfaceClass</code>.
-	 *
+	 * <p>
 	 * If <code>obj</code> is <code>null</code>, then an exception will be thrown.
 	 *
 	 * @param objectName user readable object name (i.e. variable name)
@@ -258,10 +257,11 @@ public final class Check
 	 *
 	 * @param object
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static <T> T assumeNotNull(final T object, final String assumptionMessage, final Object... params)
+	@NonNull
+	public static <T> T assumeNotNull(@Nullable final T object, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotNull(object, defaultExClazz, assumptionMessage, params);
 	}
@@ -269,7 +269,8 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
-	public static <T> T assumeNotNull(final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	@NonNull
+	public static <T> T assumeNotNull(@Nullable final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object != null;
 		assume(cond, exceptionClass, assumptionMessage, params);
@@ -287,7 +288,7 @@ public final class Check
 	 *
 	 * @param object
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static void assumeNull(final Object object, final String assumptionMessage, final Object... params)
@@ -342,7 +343,7 @@ public final class Check
 	 *
 	 * @param collection
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
@@ -386,7 +387,7 @@ public final class Check
 	 *
 	 * @param array
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static <T> void assumeNotEmpty(final T[] array, final String assumptionMessage, final Object... params)
@@ -414,7 +415,7 @@ public final class Check
 	 *
 	 * @param map
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static void assumeNotEmpty(final Map<?, ?> map, final String assumptionMessage, final Object... params)
@@ -559,7 +560,6 @@ public final class Check
 	 * of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
 	 */
 	public static void errorIf(
 			final boolean cond,
@@ -647,15 +647,26 @@ public final class Check
 		return isEmpty(str, false);
 	}
 
-	public static boolean isEmptyTrimWhitespaces(final String str)
+	/**
+	 * @return return true if the string is null, las length 0, or contains only whitespace.
+	 */
+	public static boolean isBlank(@Nullable final String str)
 	{
 		return isEmpty(str, true);
 	}
 
 	/**
+	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
+	 */
+	public static boolean isNotBlank(@Nullable final String str)
+	{
+		return !isEmpty(str, true);
+	}
+
+	/**
 	 * Is String Empty
 	 *
-	 * @param str string
+	 * @param str             string
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
@@ -673,7 +684,7 @@ public final class Check
 		{
 			return str.length() == 0;
 		}
-	}	// isEmpty
+	}    // isEmpty
 
 	/**
 	 * @return true if bd is null or bd.signum() is zero
@@ -710,7 +721,7 @@ public final class Check
 	 *
 	 * <p>
 	 * If both a and b are Object[], they are compared item-by-item.
-	 *
+	 * <p>
 	 * NOTE: this is a copy paste from org.zkoss.lang.Objects.equals(Object, Object)
 	 *
 	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
@@ -740,7 +751,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (!equals(as[j], bs[j]))
 				{
@@ -757,7 +768,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -774,7 +785,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -791,7 +802,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -808,7 +819,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -825,7 +836,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -842,7 +853,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -859,7 +870,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -876,7 +887,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{

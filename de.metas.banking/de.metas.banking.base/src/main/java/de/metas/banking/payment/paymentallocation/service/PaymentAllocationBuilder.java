@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -37,6 +38,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -47,6 +49,7 @@ import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -54,7 +57,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
 import de.metas.util.Services;
-import de.metas.util.collections.ListUtils;
+import lombok.NonNull;
 
 /**
  * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link IPaymentDocument}s.
@@ -64,6 +67,11 @@ import de.metas.util.collections.ListUtils;
  */
 public class PaymentAllocationBuilder
 {
+	public enum PayableRemainingOpenAmtPolicy
+	{
+		DO_NOTHING, WRITE_OFF, DISCOUNT
+	}
+
 	public static final PaymentAllocationBuilder newBuilder()
 	{
 		return new PaymentAllocationBuilder();
@@ -80,7 +88,9 @@ public class PaymentAllocationBuilder
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
-	private boolean _allowOnlyOneVendorDoc = true;
+	private boolean allowOnlyOneVendorDoc = true;
+	private boolean allowPartialAllocations = false;
+	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 	private boolean dryRun = false;
 
 	// Status
@@ -101,11 +111,19 @@ public class PaymentAllocationBuilder
 		//
 		// Create allocation candidates
 		final ImmutableList<AllocationLineCandidate> candidates = createAllocationLineCandidates();
-		final OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck = checkFullyAllocated();
 
-		if (!dryRun)
+		final OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
+		if (!allowPartialAllocations)
 		{
-			fullyAllocatedCheck.throwIfError();
+			fullyAllocatedCheck = checkFullyAllocated();
+			if (!dryRun)
+			{
+				fullyAllocatedCheck.throwIfError();
+			}
+		}
+		else
+		{
+			fullyAllocatedCheck = OptionalDeferredException.noError();
 		}
 
 		//
@@ -176,7 +194,7 @@ public class PaymentAllocationBuilder
 				.setAmount(line.getAmount())
 				.setDiscountAmt(line.getDiscountAmt())
 				.setWriteOffAmt(line.getWriteOffAmt())
-				.setOverUnderAmt(line.getOverUnderAmt())
+				.setOverUnderAmt(line.getPayableOverUnderAmt())
 				.setSkipIfAllAmountsAreZero();
 
 		final ITableRecordReference payableDocRef = line.getPayableDocumentRef();
@@ -186,14 +204,16 @@ public class PaymentAllocationBuilder
 
 		//
 		// Invoice - Payment
-		if (I_C_Invoice.Table_Name.equals(payableDocTableName) && org.compiere.model.I_C_Payment.Table_Name.equals(paymentDocTableName))
+		if (I_C_Invoice.Table_Name.equals(payableDocTableName)
+				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
 			payableLineBuilder.setC_Payment_ID(paymentDocRef.getRecord_ID());
 		}
 		//
 		// Invoice - CreditMemo invoice or Sales invoice - Purchase Invoice
-		else if (I_C_Invoice.Table_Name.equals(payableDocTableName) && I_C_Invoice.Table_Name.equals(paymentDocTableName))
+		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
+				&& I_C_Invoice.Table_Name.equals(paymentDocTableName))
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
 			//
@@ -212,7 +232,8 @@ public class PaymentAllocationBuilder
 		}
 		//
 		// Invoice - just Discount/WriteOff
-		else if (I_C_Invoice.Table_Name.equals(payableDocTableName) && paymentDocTableName == null)
+		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
+				&& paymentDocTableName == null)
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
 			// allow only if the line's amount is zero, because else, we need to have a document where to allocate.
@@ -220,7 +241,8 @@ public class PaymentAllocationBuilder
 		}
 		//
 		// Outgoing payment - Incoming payment
-		else if (org.compiere.model.I_C_Payment.Table_Name.equals(payableDocTableName) && org.compiere.model.I_C_Payment.Table_Name.equals(paymentDocTableName))
+		else if (I_C_Payment.Table_Name.equals(payableDocTableName)
+				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
 		{
 			payableLineBuilder.setC_Payment_ID(payableDocRef.getRecord_ID());
 			// Incoming payment line
@@ -313,7 +335,10 @@ public class PaymentAllocationBuilder
 
 		//
 		// Allocate payments to invoices
-		allocationCandidates.addAll(createAllocationLineCandidates(payableDocuments, paymentDocuments));
+		allocationCandidates.addAll(createAllocationLineCandidates(
+				AllocationLineCandidateType.InvoiceToPayment,
+				payableDocuments,
+				paymentDocuments));
 
 		//
 		// Try allocate payment reversals to payments
@@ -331,43 +356,42 @@ public class PaymentAllocationBuilder
 	 * @param payableDocuments
 	 * @param paymentDocuments
 	 */
-	private void assertOnlyOneVendorDocType(final List<PayableDocument> payableDocuments,
+	private void assertOnlyOneVendorDocType(
+			final List<PayableDocument> payableDocuments,
 			final List<IPaymentDocument> paymentDocuments)
 	{
-		if (!isAllowOnlyOneVendorDoc())
+		if (!allowOnlyOneVendorDoc)
 		{
 			return; // task 09558: nothing to do
 		}
 
-		// filter payments
-		final List<IPaymentDocument> paymentVendorDocuments = ListUtils.copyAndFilter(paymentDocuments, paymentDoc -> {
-			if (!paymentDoc.isVendorDocument())
-			{
-				return false;
-			}
+		final List<IPaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
+				.filter(IPaymentDocument::isVendorDocument)
+				.collect(ImmutableList.toImmutableList());
 
-			return true;
-		});
-
-		//
-		// filter invoices and credit memos
+		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
 		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
-		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
-			if (payable.isCreditMemo() && payable.isVendorDocument())
-			{
-				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
-				return false;
-			}
-
+		for (final PayableDocument payable : payableDocuments)
+		{
 			if (!payable.isVendorDocument())
 			{
-				return false;
+				continue;
 			}
 
-			return true;
-		});
+			if (payable.isCreditMemo())
+			{
+				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
+			}
+			else
+			{
+				payableVendorDocuments_NoCreditMemos.add(payable);
 
-		if (paymentVendorDocuments.size() > 1 || payableVendorDocuments_NoCreditMemos.size() > 1 || paymentVendorDocuments_CreditMemos.size() > 1)
+			}
+		}
+
+		if (paymentVendorDocuments.size() > 1
+				|| payableVendorDocuments_NoCreditMemos.size() > 1
+				|| paymentVendorDocuments_CreditMemos.size() > 1)
 		{
 			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
 			paymentVendorDocs.addAll(paymentVendorDocuments);
@@ -384,7 +408,10 @@ public class PaymentAllocationBuilder
 	 * @param paymentDocuments
 	 * @return created allocation candidates
 	 */
-	private final List<AllocationLineCandidate> createAllocationLineCandidates(final List<PayableDocument> payableDocuments, final List<IPaymentDocument> paymentDocuments)
+	private final List<AllocationLineCandidate> createAllocationLineCandidates(
+			@NonNull final AllocationLineCandidateType type,
+			@NonNull final List<PayableDocument> payableDocuments,
+			@NonNull final List<IPaymentDocument> paymentDocuments)
 	{
 		if (payableDocuments.isEmpty() || paymentDocuments.isEmpty())
 		{
@@ -393,10 +420,6 @@ public class PaymentAllocationBuilder
 
 		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 
-		//
-		// First, loop through all Invoices, then, in every single Invoice loop, loop through all Payments.
-		// Allocate the value of every Payment with the Invoice, until the Invoice value is reached.
-		// In most cases this should only be one Payment.
 		for (final PayableDocument payable : payableDocuments)
 		{
 			for (final IPaymentDocument payment : paymentDocuments)
@@ -422,11 +445,13 @@ public class PaymentAllocationBuilder
 				//
 				// Calculate the amounts to allocate:
 				final AllocationAmounts payableAmountsToAllocate = calculateAmountToAllocate(payable, payment);
-				final Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(payableAmountsToAllocate);
+				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(payableAmountsToAllocate);
 				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(payableAmountsToAllocate.getPayAmt());
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
+						.type(type)
+						//
 						.bpartnerId(payable.getBpartnerId())
 						//
 						.payableDocumentRef(payable.getReference())
@@ -444,46 +469,90 @@ public class PaymentAllocationBuilder
 				// Update how much was allocated on current invoice and payment.
 				payable.addAllocatedAmounts(payableAmountsToAllocate);
 				payment.addAllocatedAmt(payableAmountsToAllocate.getPayAmt());
-			}	// loop through payments for invoice
-		}   // invoice loop
+			}	// loop through payments for current payable (aka invoice or prepay order)
+
+			if (!payable.isFullyAllocated())
+			{
+				if (PayableRemainingOpenAmtPolicy.DO_NOTHING.equals(payableRemainingOpenAmtPolicy))
+				{
+					// do nothing
+				}
+				else if (PayableRemainingOpenAmtPolicy.DISCOUNT.equals(payableRemainingOpenAmtPolicy))
+				{
+					payable.moveRemainingOpenAmtToDiscount();
+
+					final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
+					final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+					allocationLineCandidates.add(allocationLine);
+				}
+				else if (PayableRemainingOpenAmtPolicy.WRITE_OFF.equals(payableRemainingOpenAmtPolicy))
+				{
+					payable.moveRemainingOpenAmtToWriteOff();
+
+					final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
+					final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+					allocationLineCandidates.add(allocationLine);
+				}
+				else
+				{
+					throw new AdempiereException("Unknown payableRemainingOpenAmtPolicy: " + payableRemainingOpenAmtPolicy); // shall not happen
+				}
+			}
+		}   // payables loop (aka invoice or prepay order)
 
 		return allocationLineCandidates;
 	}
 
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<PayableDocument> payableDocuments)
 	{
-		final List<IPaymentDocument> paymentDocuments_CreditMemos = new ArrayList<>();
-		final List<PayableDocument> payableDocuments_NoCreditMemos = ListUtils.copyAndFilter(payableDocuments, payable -> {
+		final List<PayableDocument> invoices = new ArrayList<>();
+		final List<IPaymentDocument> creditMemos = new ArrayList<>();
+
+		for (final PayableDocument payable : payableDocuments)
+		{
 			if (payable.isCreditMemo())
 			{
-				paymentDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
-				return false;
+				creditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
 			}
-			return true;
-		});
+			else
+			{
+				invoices.add(payable);
+			}
+		}
 
-		return createAllocationLineCandidates(payableDocuments_NoCreditMemos, paymentDocuments_CreditMemos);
+		return createAllocationLineCandidates(
+				AllocationLineCandidateType.InvoiceToCreditMemo,
+				invoices,
+				creditMemos);
 	}
 
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<PayableDocument> payableDocuments)
 	{
-		final List<IPaymentDocument> paymentDocuments_PurchaseInvoices = new ArrayList<>();
-		final List<PayableDocument> payableDocuments_SaleInvoices = ListUtils.copyAndFilter(payableDocuments, payable -> {
+		final List<PayableDocument> salesInvoices = new ArrayList<>();
+		final List<IPaymentDocument> purchaseInvoices = new ArrayList<>();
+
+		for (final PayableDocument payable : payableDocuments)
+		{
 			// do not support credit memo
 			if (payable.isCreditMemo())
 			{
-				return false;
+				continue;
 			}
 
-			if (!payable.isCustomerDocument())
+			if (payable.isCustomerDocument())
 			{
-				paymentDocuments_PurchaseInvoices.add(PurchaseInvoiceAsPaymentDocument.wrap(payable));
-				return false;
+				salesInvoices.add(payable);
 			}
-			return true;
-		});
+			else
+			{
+				purchaseInvoices.add(PurchaseInvoiceAsPaymentDocument.wrap(payable));
+			}
+		}
 
-		return createAllocationLineCandidates(payableDocuments_SaleInvoices, paymentDocuments_PurchaseInvoices);
+		return createAllocationLineCandidates(
+				AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice,
+				salesInvoices,
+				purchaseInvoices);
 	}
 
 	/**
@@ -544,6 +613,8 @@ public class PaymentAllocationBuilder
 
 				// Create new Allocation Line
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
+						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
+						//
 						.bpartnerId(paymentOut.getBpartnerId())
 						//
 						.payableDocumentRef(paymentOut.getReference())
@@ -587,26 +658,39 @@ public class PaymentAllocationBuilder
 				continue;
 			}
 
-			final Money payableOverUnderAmt = payable.calculateProjectedOverUnderAmt(amountsToAllocate);
-			final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
-					.bpartnerId(payable.getBpartnerId())
-					//
-					.payableDocumentRef(payable.getReference())
-					.paymentDocumentRef(null) // nop
-					// Amounts:
-					.amount(amountsToAllocate.getPayAmt().toBigDecimal())
-					.discountAmt(amountsToAllocate.getDiscountAmt().toBigDecimal())
-					.writeOffAmt(amountsToAllocate.getWriteOffAmt().toBigDecimal())
-					.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
-					.paymentOverUnderAmt(BigDecimal.ZERO)
-					//
-					.build();
+			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, amountsToAllocate);
 			allocationLineCandidates.add(allocationLine);
-
-			payable.addAllocatedAmounts(amountsToAllocate);
 		}
 
 		return allocationLineCandidates;
+	}
+
+	private AllocationLineCandidate createAllocationLineCandidate_DiscountAndWriteOff(
+			@NonNull final PayableDocument payable,
+			@NonNull final AllocationAmounts amountsToAllocate)
+	{
+		Check.assume(amountsToAllocate.getPayAmt().signum() == 0, "PayAmt shall be zero: {}", amountsToAllocate);
+
+		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
+				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
+				//
+				.bpartnerId(payable.getBpartnerId())
+				//
+				.payableDocumentRef(payable.getReference())
+				.paymentDocumentRef(null) // nop
+				// Amounts:
+				.amount(BigDecimal.ZERO)
+				.discountAmt(amountsToAllocate.getDiscountAmt().toBigDecimal())
+				.writeOffAmt(amountsToAllocate.getWriteOffAmt().toBigDecimal())
+				.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
+				.paymentOverUnderAmt(BigDecimal.ZERO)
+				//
+				.build();
+
+		payable.addAllocatedAmounts(amountsToAllocate);
+
+		return allocationLine;
 	}
 
 	private final OptionalDeferredException<PaymentAllocationException> checkFullyAllocated()
@@ -791,15 +875,24 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
-	private boolean isAllowOnlyOneVendorDoc()
-	{
-		return _allowOnlyOneVendorDoc;
-	}
-
-	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean AllowOnlyOneVendorDoc)
+	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean allowOnlyOneVendorDoc)
 	{
 		assertNotBuilt();
-		_allowOnlyOneVendorDoc = AllowOnlyOneVendorDoc;
+		this.allowOnlyOneVendorDoc = allowOnlyOneVendorDoc;
+		return this;
+	}
+
+	public PaymentAllocationBuilder allowPartialAllocations(final boolean allowPartialAllocations)
+	{
+		assertNotBuilt();
+		this.allowPartialAllocations = allowPartialAllocations;
+		return this;
+	}
+
+	public PaymentAllocationBuilder payableRemainingOpenAmtPolicy(@NonNull final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy)
+	{
+		assertNotBuilt();
+		this.payableRemainingOpenAmtPolicy = payableRemainingOpenAmtPolicy;
 		return this;
 	}
 

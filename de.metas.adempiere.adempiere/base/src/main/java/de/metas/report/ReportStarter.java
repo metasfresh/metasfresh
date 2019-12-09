@@ -93,7 +93,7 @@ public abstract class ReportStarter extends JavaProcess
 			// Create report and print it directly
 			if (reportPrintingInfo.isForceSync())
 			{
-				// gh #1160 if the caller want ou to execute synchronously, then do just that
+				// gh #1160 if the caller want you to execute synchronously, then do just that
 				startProcess0(pi, reportPrintingInfo);
 			}
 			else

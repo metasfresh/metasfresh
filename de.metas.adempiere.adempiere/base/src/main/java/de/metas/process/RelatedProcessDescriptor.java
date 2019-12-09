@@ -46,7 +46,7 @@ import lombok.Value;
 @Value
 public final class RelatedProcessDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -57,7 +57,7 @@ public final class RelatedProcessDescriptor
 	private final AdWindowId windowId;
 	private final AdTabId tabId;
 
-	public static enum DisplayPlace
+	public enum DisplayPlace
 	{
 		SingleDocumentActionsMenu, //
 		IncludedTabTopActionsMenu, //
@@ -70,6 +70,8 @@ public final class RelatedProcessDescriptor
 	private final boolean webuiDefaultQuickAction;
 
 	private final String webuiShortcut;
+
+	private final int sortNo;
 
 	private RelatedProcessDescriptor(final Builder builder)
 	{
@@ -84,6 +86,8 @@ public final class RelatedProcessDescriptor
 		webuiDefaultQuickAction = builder.webuiDefaultQuickAction && displayPlaces.contains(DisplayPlace.ViewQuickActions);
 
 		webuiShortcut = builder.webuiShortcut;
+
+		sortNo = builder.sortNo > 0 ? builder.sortNo : 0;
 	}
 
 	public boolean isDisplayedOn(@NonNull final DisplayPlace displayPlace)
@@ -113,6 +117,8 @@ public final class RelatedProcessDescriptor
 		private boolean webuiDefaultQuickAction;
 
 		private String webuiShortcut;
+
+		private int sortNo = 0;
 
 		private Builder()
 		{
@@ -193,6 +199,12 @@ public final class RelatedProcessDescriptor
 		public Builder webuiShortcut(final String webuiShortcut)
 		{
 			this.webuiShortcut = webuiShortcut;
+			return this;
+		}
+
+		public Builder sortNo(final int sortNo)
+		{
+			this.sortNo = sortNo;
 			return this;
 		}
 	}

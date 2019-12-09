@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 import java.time.LocalDate;
 
@@ -65,7 +65,7 @@ public class BpartnerPriceListRestController
 
 	@GetMapping("/{bpartnerIdentifier}/sales/prices/{countryCode}")
 	public ResponseEntity<JsonResponsePriceList> getSalesPriceList(
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			//
@@ -83,7 +83,7 @@ public class BpartnerPriceListRestController
 
 	@GetMapping("/{bpartnerIdentifier}/purchase/prices/{countryCode}")
 	public ResponseEntity<JsonResponsePriceList> getPurchasePriceList(
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			//

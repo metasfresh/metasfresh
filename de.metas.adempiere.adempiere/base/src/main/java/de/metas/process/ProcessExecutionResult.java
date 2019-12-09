@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.report.ReportResultData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
@@ -77,7 +78,7 @@ public class ProcessExecutionResult
 	/**
 	 * Display process logs to user policy
 	 */
-	public static enum ShowProcessLogs
+	public enum ShowProcessLogs
 	{
 		/** Always display them */
 		Always,
@@ -85,7 +86,7 @@ public class ProcessExecutionResult
 		OnError,
 		/** Never display them */
 		Never
-	};
+	}
 
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
@@ -155,24 +156,24 @@ public class ProcessExecutionResult
 	// note: my local ProcessExecutionResultTest failed without this constructor
 	@JsonCreator
 	public ProcessExecutionResult(
-			@JsonProperty("pinstanceId") final PInstanceId pinstanceId, 
-			@JsonProperty("summary") final String summary, 
-			@JsonProperty("error") final boolean error, 
+			@JsonProperty("pinstanceId") final PInstanceId pinstanceId,
+			@JsonProperty("summary") final String summary,
+			@JsonProperty("error") final boolean error,
 			//@JsonProperty("errorWasReportedToUser") final boolean errorWasReportedToUser, // transient
-			@JsonProperty("timeout") final boolean timeout, 
+			@JsonProperty("timeout") final boolean timeout,
 			//@JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
-			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy, 
+			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
 			//@JsonProperty("printFormat") final MPrintFormat printFormat, // transient
-			@JsonProperty("reportData") final byte[] reportData, 
-			@JsonProperty("reportFilename") final String reportFilename, 
-			@JsonProperty("reportContentType") final String reportContentType, 
+			@JsonProperty("reportData") final byte[] reportData,
+			@JsonProperty("reportFilename") final String reportFilename,
+			@JsonProperty("reportContentType") final String reportContentType,
 			//@JsonProperty("throwable") final Throwable throwable, // transient
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
-			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution, 
-			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution, 
+			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
+			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution,
 			@JsonProperty("recordsToOpen") final RecordsToOpen recordsToOpen,
-			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen, 
-			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode, 
+			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
+			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
 			@JsonProperty("webuiViewId") final String webuiViewId)
 	{
 		this.pinstanceId = pinstanceId;
@@ -191,7 +192,7 @@ public class ProcessExecutionResult
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -497,6 +498,12 @@ public class ProcessExecutionResult
 		reportFilename = file.getName();
 		reportContentType = MimeType.getMimeType(reportFilename);
 	}
+	public void setReportData(@NonNull final ReportResultData reportResult)
+	{
+		reportData = reportResult.getReportData();
+		reportFilename = reportResult.getReportFilename();
+		reportContentType = reportResult.getReportContentType();
+	}
 
 	public byte[] getReportData()
 	{
@@ -773,7 +780,7 @@ public class ProcessExecutionResult
 		@JsonInclude(JsonInclude.Include.NON_NULL)
 		private final String adWindowIdStr;
 
-		public static enum OpenTarget
+		public enum OpenTarget
 		{
 			SingleDocument, SingleDocumentModal, GridView,
 		}
@@ -860,7 +867,7 @@ public class ProcessExecutionResult
 	//
 	//
 
-	public static enum ViewOpenTarget
+	public enum ViewOpenTarget
 	{
 		IncludedView, ModalOverlay, NewBrowserTab
 	}

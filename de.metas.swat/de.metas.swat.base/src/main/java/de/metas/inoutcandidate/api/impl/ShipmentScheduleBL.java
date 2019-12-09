@@ -38,7 +38,11 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ASICopy;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -478,13 +482,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void applyUserChanges(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
+	public void applyUserChangesInTrx(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx(userChanges));
+		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx0(userChanges));
 	}
 
-	private void applyUserChangesInTrx(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
+	private void applyUserChangesInTrx0(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
 	{
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 
@@ -503,7 +507,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 
 			updateRecord(record, userChange);
-
 			shipmentSchedulesRepo.save(record);
 		}
 	}
@@ -525,6 +528,26 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		if (from.getAsiId() != null)
 		{
 			record.setM_AttributeSetInstance_ID(from.getAsiId().getRepoId());
+		}
+
+		if (from.getBestBeforeDate() != null)
+		{
+			final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+			final AttributeSetInstanceId oldAsiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+			final AttributeSetInstanceId asiId;
+			if (oldAsiId.isNone())
+			{
+				final I_M_AttributeSetInstance asiNew = attributeSetInstanceBL.createASI(ProductId.ofRepoId(record.getM_Product_ID()));
+				asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
+			}
+			else
+			{
+				final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(oldAsiId).copy();
+				asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
+			}
+			record.setM_AttributeSetInstance_ID(asiId.getRepoId());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, from.getBestBeforeDate());
 		}
 	}
 

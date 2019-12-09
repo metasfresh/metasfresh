@@ -161,13 +161,12 @@ import lombok.Data;
 import lombok.NonNull;
 
 /**
- * This class sets up basic master data like attributes and HU-items that can be used in testing.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * This class sets up basic master data like attributes and HU-items.
+ * It also has methods like {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal)} that can be called from your tests, to set up complex packing instructions.
  */
 public class HUTestHelper
 {
+	/** Creates a new instance <b>and also calls {@link AdempiereTestHelper#init()}</b> */
 	public static HUTestHelper newInstanceOutOfTrx()
 	{
 		return new HUTestHelper()
@@ -384,20 +383,22 @@ public class HUTestHelper
 		}
 	}
 
-	public void setInitAdempiere(final boolean initAdempiere)
+	public HUTestHelper setInitAdempiere(final boolean initAdempiere)
 	{
 		Check.assume(!initialized, "helper not initialized");
 		this.initAdempiere = initAdempiere;
+		return this;
 	}
 
 	/**
-	 * Final, because its called by a constructor.
+	 * Returns this instance, initialized.
+	 * Note: final, because its called by a constructor.
 	 */
-	public final void init()
+	public final HUTestHelper init()
 	{
 		if (initialized)
 		{
-			return;
+			return this;
 		}
 
 		if (initAdempiere)
@@ -446,6 +447,8 @@ public class HUTestHelper
 		initialized = true;
 
 		afterInitialized();
+
+		return this;
 	}
 
 	protected void afterInitialized()
@@ -1069,11 +1072,6 @@ public class HUTestHelper
 
 	/**
 	 * Invokes {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal, I_C_BPartner)} with bPartner being {@code null}.
-	 *
-	 * @param huDefinition
-	 * @param includedHuDefinition
-	 * @param qty
-	 * @return
 	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
@@ -1125,16 +1123,10 @@ public class HUTestHelper
 		return itemDefinition;
 	}
 
-	/**
-	 *
-	 * @param huDefinition
-	 * @param huPackingMaterial
-	 * @return
-	 */
-	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial huPackingMaterial)
+	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(
+			@NonNull final I_M_HU_PI huDefinition,
+			@NonNull final I_M_HU_PackingMaterial huPackingMaterial)
 	{
-		Check.assumeNotNull(huDefinition, "Parameter huDefinition is not null");
-		Check.assumeNotNull(huPackingMaterial, "Parameter pmProduct is not null");
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
@@ -1148,6 +1140,7 @@ public class HUTestHelper
 		return piItem;
 	}
 
+	/** @deprecated please use {@link #assignProduct(I_M_HU_PI_Item, ProductId, BigDecimal, I_C_UOM)} instead. */
 	@Deprecated
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom)
 	{

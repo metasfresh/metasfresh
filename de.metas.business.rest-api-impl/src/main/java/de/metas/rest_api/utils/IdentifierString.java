@@ -138,6 +138,9 @@ public class IdentifierString
 		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
 	}
 
+	/**
+	 * @deprecated please use {@link #toJson()} instead
+	 */
 	@Override
 	@Deprecated
 	public String toString()
