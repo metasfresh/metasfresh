@@ -673,9 +673,11 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public ReportResultData printSSCC18_Labels(@NonNull final Properties ctx, final Collection<Integer> desadvLinePack_IDs_ToPrint)
+	public ReportResultData printSSCC18_Labels(
+			@NonNull final Properties ctx,
+			@NonNull final Collection<Integer> desadvLinePack_IDs_ToPrint)
 	{
-		// Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
+		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 
 		//
 		// Create the process info based on AD_Process and AD_PInstance

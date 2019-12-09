@@ -30,11 +30,11 @@ import lombok.Value;
 @Value
 public class ReportResultData
 {
-	private byte[] reportData;
+	byte[] reportData;
 
-	private String reportFilename;
+	String reportFilename;
 
-	private String reportContentType;
+	String reportContentType;
 
 	@Builder
 	private ReportResultData(

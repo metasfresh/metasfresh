@@ -82,7 +82,7 @@ public interface IDesadvBL extends ISingletonService
 	void removeInOutLineFromDesadv(I_M_InOutLine inOutLine);
 
 	/**
-	 * Print SSCC18 labels for given {@link I_EDI_DesadvLine_Pack} IDs.
+	 * Print SSCC18 labels for given {@link I_EDI_DesadvLine_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
 	 */
 	ReportResultData printSSCC18_Labels(Properties ctx, Collection<Integer> desadvLineSSCC_IDs_ToPrint);
 
