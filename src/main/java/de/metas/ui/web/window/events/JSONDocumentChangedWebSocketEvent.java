@@ -66,8 +66,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	{
 		final String tabId = null;
 		final DocumentId rowId = null;
-		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId, rowId);
-		return event;
+		return new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId, rowId);
 	}
 
 	@JsonProperty("windowId")
