@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.compiere.util.DisplayType;
+
 import com.google.common.base.MoreObjects;
 
+import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -167,9 +170,16 @@ public final class TranslatableStringBuilder
 		// return append(ConstantTranslatableString.of(value));
 	}
 
-	public TranslatableStringBuilder append(final BigDecimal value, final int displayType)
+	public TranslatableStringBuilder append(@NonNull final BigDecimal value, final int displayType)
 	{
 		return append(NumberTranslatableString.of(value, displayType));
+	}
+
+	public TranslatableStringBuilder append(@NonNull final Amount amount)
+	{
+		return append(NumberTranslatableString.of(amount.getAsBigDecimal(), DisplayType.Amount))
+				.append(" ")
+				.append(amount.getCurrencyCode().toThreeLetterCode());
 	}
 
 	public TranslatableStringBuilder append(final int value)

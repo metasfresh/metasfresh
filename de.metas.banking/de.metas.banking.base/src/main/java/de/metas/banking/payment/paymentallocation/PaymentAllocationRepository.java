@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -218,6 +219,7 @@ public class PaymentAllocationRepository
 		}
 
 		final String documentNo = rs.getString("docno");
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(rs.getInt("C_DocType_ID"));
 
 		//
 		// Fetch amounts
@@ -262,6 +264,7 @@ public class PaymentAllocationRepository
 				.grandTotalConverted(grandTotalConv)
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
+				.docTypeId(docTypeId)
 				.soTrx(soTrx)
 				.creditMemo(isCreditMemo)
 				.poReference(rs.getString("POReference"))
@@ -285,6 +288,15 @@ public class PaymentAllocationRepository
 		final String sql = buildSelectPaymentsToAllocateSql(query, sqlParams);
 
 		return DB.retrieveRows(sql, sqlParams, this::retrievePaymentToAllocateOrNull);
+	}
+
+	public ImmutableSet<PaymentId> retrievePaymentIdsToAllocate(final PaymentToAllocateQuery query)
+	{
+		final List<Object> sqlParams = new ArrayList<>();
+		final String sql = buildSelectPaymentsToAllocateSql(query, sqlParams);
+
+		final List<PaymentId> paymentIds = DB.retrieveRows(sql, sqlParams, rs -> retrievePaymentId(rs));
+		return ImmutableSet.copyOf(paymentIds);
 	}
 
 	private String buildSelectPaymentsToAllocateSql(final PaymentToAllocateQuery query, final List<Object> sqlParams)
@@ -356,7 +368,7 @@ public class PaymentAllocationRepository
 		final Amount openAmtConv = retrieveAmount(rs, "conv_open", convertedToCurrencyCode).negateIf(!inboundPayment);
 
 		return PaymentToAllocate.builder()
-				.paymentId(PaymentId.ofRepoId(rs.getInt("c_payment_id")))
+				.paymentId(retrievePaymentId(rs))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(rs.getInt("AD_Client_ID"), rs.getInt("AD_Org_ID")))
 				.documentNo(rs.getString("DocNo"))
 				.bpartnerId(BPartnerId.ofRepoId(rs.getInt("c_bpartner_id")))
@@ -368,4 +380,8 @@ public class PaymentAllocationRepository
 				.build();
 	}
 
+	private static PaymentId retrievePaymentId(final ResultSet rs) throws SQLException
+	{
+		return PaymentId.ofRepoId(rs.getInt("c_payment_id"));
+	}
 }

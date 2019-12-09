@@ -2,10 +2,13 @@ package de.metas.document;
 
 import org.compiere.model.I_C_DocType;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 
 public interface IDocTypeBL extends ISingletonService
 {
+	ITranslatableString getNameById(DocTypeId docTypeId);
+
 	/**
 	 * @return true if it's a sales quotation (Binding)
 	 */

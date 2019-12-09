@@ -1,5 +1,7 @@
 package de.metas.document.impl;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,11 +30,21 @@ import org.compiere.model.X_C_DocType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class DocTypeBL implements IDocTypeBL
 {
+	@Override
+	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
+	{
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
+		return InterfaceWrapperHelper.getModelTranslationMap(docType)
+				.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
+	}
+
 	@Override
 	public boolean isSalesQuotation(@NonNull final DocTypeId docTypeId)
 	{

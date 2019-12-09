@@ -45,6 +45,16 @@ import lombok.Value;
 @Value
 public final class AllocationLineCandidate
 {
+	public enum AllocationLineCandidateType
+	{
+		InvoiceToPayment, //
+		SalesInvoiceToPurchaseInvoice, //
+		InvoiceToCreditMemo, //
+		InvoiceDiscountOrWriteOff, //
+		InboundPaymentToOutboundPayment, //
+	}
+
+	private final AllocationLineCandidateType type;
 	private final BPartnerId bpartnerId;
 
 	private final TableRecordReference payableDocumentRef;
@@ -60,6 +70,8 @@ public final class AllocationLineCandidate
 
 	@Builder
 	private AllocationLineCandidate(
+			@NonNull final AllocationLineCandidateType type,
+			//
 			@Nullable final BPartnerId bpartnerId,
 			//
 			@NonNull final TableRecordReference payableDocumentRef,
@@ -72,6 +84,8 @@ public final class AllocationLineCandidate
 			@Nullable final BigDecimal payableOverUnderAmt,
 			@Nullable final BigDecimal paymentOverUnderAmt)
 	{
+		this.type = type;
+
 		this.amount = amount;
 		this.discountAmt = CoalesceUtil.coalesce(discountAmt, BigDecimal.ZERO);
 		this.writeOffAmt = CoalesceUtil.coalesce(writeOffAmt, BigDecimal.ZERO);
@@ -87,11 +101,6 @@ public final class AllocationLineCandidate
 		{
 			Check.assumeNotNull(paymentDocumentRef, "paymentDocumentRef not null when amount is not zero");
 		}
-	}
-
-	public BigDecimal getOverUnderAmt()
-	{
-		return getPayableOverUnderAmt();
 	}
 
 	public boolean isZeroToAllocate()

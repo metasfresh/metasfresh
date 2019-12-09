@@ -124,6 +124,36 @@ public class AllocationAmounts
 				: toBuilder().writeOffAmt(writeOffAmt).build();
 	}
 
+	public AllocationAmounts movePayAmtToDiscount()
+	{
+		if (payAmt.signum() == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder()
+					.payAmt(payAmt.toZero())
+					.discountAmt(discountAmt.add(payAmt))
+					.build();
+		}
+	}
+
+	public AllocationAmounts movePayAmtToWriteOff()
+	{
+		if (payAmt.signum() == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder()
+					.payAmt(payAmt.toZero())
+					.writeOffAmt(writeOffAmt.add(payAmt))
+					.build();
+		}
+	}
+
 	public AllocationAmounts add(AllocationAmounts other)
 	{
 		return toBuilder()
