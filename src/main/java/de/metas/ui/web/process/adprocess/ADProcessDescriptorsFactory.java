@@ -176,6 +176,8 @@ import lombok.NonNull;
 				//
 				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
 				//
+				.sortNo(relatedProcessDescriptor.getSortNo())
+				//
 				.build();
 	}
 

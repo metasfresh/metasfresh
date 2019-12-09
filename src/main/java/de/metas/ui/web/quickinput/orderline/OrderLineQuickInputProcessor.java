@@ -199,6 +199,9 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
 			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty());
 
+			final AttributeSetInstanceId bomLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
+			final ImmutableAttributeSet attributes = asiBL.getImmutableAttributeSetById(bomLineAsiId);
+
 			if (compensationGroupId == null)
 			{
 				compensationGroupId = orderGroupsRepo.createNewGroupId(GroupCreateRequest.builder()
@@ -209,6 +212,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 			result.add(initialCandidate.toBuilder()
 					.productId(bomLineProductId)
+					.attributes(attributes)
 					.qty(bomLineQty)
 					.compensationGroupId(compensationGroupId)
 					.explodedFromBOMLineId(bomLineId)

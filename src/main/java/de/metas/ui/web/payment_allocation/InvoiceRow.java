@@ -8,6 +8,7 @@ import org.compiere.model.I_C_Invoice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
@@ -48,28 +49,31 @@ import lombok.NonNull;
 
 public class InvoiceRow implements IViewRow
 {
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_DocType_ID")
+	private final ITranslatableString docTypeName;
+
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
 	@Getter
 	private final String documentNo;
 
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateInvoiced")
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateInvoiced")
 	private final LocalDate dateInvoiced;
 
-	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_BPartner_ID")
 	private final LookupValue bpartner;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "GrandTotal")
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "GrandTotal")
 	private final Amount grandTotal;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "OpenAmt")
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "OpenAmt")
 	@Getter
 	private final Amount openAmt;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount")
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount")
 	@Getter
 	private final Amount discountAmt;
 
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
 	private final String currencyCode;
 
 	private final DocumentId rowId;
@@ -88,6 +92,7 @@ public class InvoiceRow implements IViewRow
 	private InvoiceRow(
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final ITranslatableString docTypeName,
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
@@ -100,6 +105,7 @@ public class InvoiceRow implements IViewRow
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
 		this.invoiceId = invoiceId;
 		this.clientAndOrgId = clientAndOrgId;
+		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
@@ -117,6 +123,11 @@ public class InvoiceRow implements IViewRow
 	static DocumentId convertInvoiceIdToDocumentId(@NonNull final InvoiceId invoiceId)
 	{
 		return DocumentId.of(invoiceId);
+	}
+
+	static InvoiceId convertDocumentIdToInvoiceId(@NonNull final DocumentId rowId)
+	{
+		return rowId.toId(InvoiceId::ofRepoId);
 	}
 
 	public static DocumentId convertRecordRefToDocumentId(@NonNull final TableRecordReference recordRef)

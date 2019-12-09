@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.TranslatableStrings;
+import de.metas.payment.PaymentId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IView;
@@ -48,16 +49,17 @@ public class PaymentsView extends AbstractCustomView<PaymentRow> implements IVie
 		return (PaymentsView)view;
 	}
 
-	private ImmutableList<RelatedProcessDescriptor> processes;
+	private final ImmutableList<RelatedProcessDescriptor> processes;
 
 	@Getter
-	private InvoicesView invoicesView;
+	private final InvoicesView invoicesView;
 
 	@Builder
 	private PaymentsView(
 			@NonNull final ViewId paymentViewId,
 			final PaymentAndInvoiceRows rows,
-			@Nullable final List<RelatedProcessDescriptor> processes)
+			@Nullable final List<RelatedProcessDescriptor> paymentsProcesses,
+			@Nullable final List<RelatedProcessDescriptor> invoicesProcesses)
 	{
 		super(paymentViewId,
 				TranslatableStrings.empty(),
@@ -67,9 +69,10 @@ public class PaymentsView extends AbstractCustomView<PaymentRow> implements IVie
 		invoicesView = InvoicesView.builder()
 				.viewId(paymentViewId.withWindowId(InvoicesViewFactory.WINDOW_ID))
 				.rows(rows.getInvoiceRows())
+				.processes(invoicesProcesses)
 				.build();
 
-		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
+		this.processes = paymentsProcesses != null ? ImmutableList.copyOf(paymentsProcesses) : ImmutableList.of();
 	}
 
 	@Override
@@ -88,5 +91,17 @@ public class PaymentsView extends AbstractCustomView<PaymentRow> implements IVie
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return processes;
+	}
+
+	@Override
+	protected PaymentRows getRowsData()
+	{
+		return PaymentRows.cast(super.getRowsData());
+	}
+
+	public void addPayment(@NonNull final PaymentId paymentId)
+	{
+		final PaymentRows paymentRows = getRowsData();
+		paymentRows.addPayment(paymentId);
 	}
 }

@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
@@ -41,19 +42,24 @@ import lombok.NonNull;
 
 public class InvoiceRows implements IRowsData<InvoiceRow>
 {
+	public static InvoiceRows cast(final IRowsData<InvoiceRow> rows)
+	{
+		return (InvoiceRows)rows;
+	}
+
 	private final PaymentAndInvoiceRowsRepo repository;
 	private final ZonedDateTime evaluationDate;
 	private final SynchronizedMutable<ImmutableRowsIndex<InvoiceRow>> rowsHolder;
 
 	@Builder
 	private InvoiceRows(
-			@NonNull PaymentAndInvoiceRowsRepo repository,
+			@NonNull final PaymentAndInvoiceRowsRepo repository,
 			@NonNull final List<InvoiceRow> initialRows,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
 		this.repository = repository;
 		this.evaluationDate = evaluationDate;
-		rowsHolder = SynchronizedMutable.of(new ImmutableRowsIndex<>(initialRows));
+		rowsHolder = SynchronizedMutable.of(ImmutableRowsIndex.of(initialRows));
 	}
 
 	@Override
@@ -69,7 +75,7 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 		final ImmutableRowsIndex<InvoiceRow> rows = rowsHolder.getValue();
 		return recordRefs.streamIds(I_C_Invoice.Table_Name, InvoiceId::ofRepoId)
 				.map(InvoiceRow::convertInvoiceIdToDocumentId)
-				.filter(rows::containsRowId)
+				.filter(rows::isRelevantForRefreshing)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
@@ -82,11 +88,22 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 	@Override
 	public void invalidate(final DocumentIdsSelection rowIds)
 	{
-		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder.getValue().streamRows(rowIds)
-				.map(InvoiceRow::getInvoiceId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder
+				.getValue()
+				.getRecordIdsToRefresh(rowIds, InvoiceRow::convertDocumentIdToInvoiceId);
 
 		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate);
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+	}
+
+	public void addInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		final InvoiceRow row = repository.getInvoiceRowByInvoiceId(invoiceId, evaluationDate).orElse(null);
+		if (row == null)
+		{
+			throw new AdempiereException("@InvoiceNotOpen@");
+		}
+
+		rowsHolder.compute(rows -> rows.addingRow(row));
 	}
 }
