@@ -205,15 +205,19 @@ public final class JsonOLCandCreateRequest
 
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
+	@JsonInclude(Include.NON_NULL)
 	OrderDocType orderDocType;
 
 	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
+	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
 
 	@ApiModelProperty(value = "Specifies the value for the sales rep that will propagate to the created order")
+	@JsonInclude(Include.NON_NULL)
 	String salesPartnerCode;
 
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
+	@JsonInclude(Include.NON_NULL)
 	String shipper;
 
 	@JsonCreator

@@ -39,11 +39,9 @@ import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.OrderDocType;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
@@ -250,11 +248,7 @@ public class XmlToOLCandsService
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
 				.dataSource("int-" + RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
-				.dataDest("int-" + InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME)
-				.shipper("val-DPD - Classic")
-				.salesPartnerCode("SalesRep")
-				.paymentRule(JSONPaymentRule.Paypal)
-				.orderDocType(OrderDocType.SalesOrder);
+				.dataDest("int-" + InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		final String invoiceRecipientEAN = extractRecipientEAN(xmlInvoice);
 		final HighLevelContext context = HighLevelContext.builder()
