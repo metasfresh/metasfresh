@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 public class SSCC18CodeBLTests
@@ -53,8 +54,7 @@ public class SSCC18CodeBLTests
 
 	public static void setManufacturerCode(final String manufacturerCode)
 	{
-		final int adOrgId = 0;
-		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, manufacturerCode, adOrgId);
+		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, manufacturerCode, OrgId.ANY.getRepoId());
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"01000000", // expected,
@@ -117,7 +117,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("0000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -130,7 +130,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -143,7 +143,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("2");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,

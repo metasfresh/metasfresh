@@ -478,7 +478,7 @@ public class DesadvBL implements IDesadvBL
 		if (isEmpty(sscc18))
 		{
 			packRecord.setIsManual_IPA_SSCC18(true);
-			final String onTheFlySSCC18 = computeSSCC18ForHUId(rootHU.getId());
+			final String onTheFlySSCC18 = computeSSCC18ForHUId(rootHU.getOrgId(), rootHU.getId());
 			packRecord.setIPA_SSCC18(onTheFlySSCC18);
 		}
 		else
@@ -510,9 +510,9 @@ public class DesadvBL implements IDesadvBL
 		return quantity;
 	}
 
-	private String computeSSCC18ForHUId(@NonNull final HuId huId)
+	private String computeSSCC18ForHUId(@NonNull final OrgId orgId, @NonNull final HuId huId)
 	{
-		final SSCC18 sscc18 = sscc18CodeService.generate(huId.getRepoId());
+		final SSCC18 sscc18 = sscc18CodeService.generate(orgId, huId.getRepoId());
 		final String ipaSSCC18 = sscc18CodeService.toString(sscc18, false); // humanReadable=false
 		return ipaSSCC18;
 	}

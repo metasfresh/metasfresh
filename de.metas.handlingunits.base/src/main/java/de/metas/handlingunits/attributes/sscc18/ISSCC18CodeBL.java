@@ -39,15 +39,17 @@ public interface ISSCC18CodeBL extends ISingletonService
 	/**
 	 * Generates a new SSCC18 code for given serialNumber
 	 *
+	 *@param orgId there might be different GS1-manufacturer-IDs for different orgs.
+	 *
 	 * @return generated SSCC18; never return null
 	 * @throws AdempiereException if serialNumber or ManufacturerCode is not valid
 	 */
-	SSCC18 generate(int serialNumber);
+	SSCC18 generate(OrgId orgId, int serialNumber);
 
 	/**
 	 * Uses its own sequence for serialNumbers (see {@link #SSCC18_SERIALNUMBER_SEQUENCENAME}) and creates a new SSCC18.
 	 *
-	 * @param orgId there might be different sequences per org
+	 * @param orgId there might be different sequences and GS1-manufacturer-IDs for different orgs.
 	 */
 	SSCC18 generate(OrgId orgId);
 

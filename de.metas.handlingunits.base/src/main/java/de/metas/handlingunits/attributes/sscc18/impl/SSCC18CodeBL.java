@@ -22,11 +22,8 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * #L%
  */
 
-import java.util.Properties;
-
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -79,10 +76,9 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		this.nextSerialNumberProvider = nextSerialNumberProvider;
 	}
 
-	protected String getManufacturerCode()
+	protected String getManufacturerCode(@NonNull final OrgId orgId)
 	{
-		final Properties ctx = Env.getCtx();
-		final String manufacturerCode_SysConfig = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ManufacturerCode, null, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final String manufacturerCode_SysConfig = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ManufacturerCode, null, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
 		return manufacturerCode_SysConfig;
 	}
 
@@ -142,17 +138,17 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	@Override
 	public SSCC18 generate(@NonNull final OrgId orgId)
 	{
-		return generate(nextSerialNumberProvider.provideNextSerialNumber(orgId));
+		return generate(orgId, nextSerialNumberProvider.provideNextSerialNumber(orgId));
 	}
 
 	@Override
-	public SSCC18 generate(final int serialNumber)
+	public SSCC18 generate(@NonNull final OrgId orgId, final int serialNumber)
 	{
 		Check.assume(serialNumber > 0, "serialNumber > 0");
 
 		//
 		// Retrieve and validate ManufacturerCode
-		final String manufacturerCode_SysConfig = getManufacturerCode();
+		final String manufacturerCode_SysConfig = getManufacturerCode(orgId);
 		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} is not a number", manufacturerCode_SysConfig);
 		final int manufacturerCodeSize = manufacturerCode_SysConfig.length();
 		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {}", manufacturerCode_SysConfig);
