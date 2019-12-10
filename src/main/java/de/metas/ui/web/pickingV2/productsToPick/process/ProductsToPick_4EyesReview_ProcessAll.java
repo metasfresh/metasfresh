@@ -26,7 +26,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.util.Services;
