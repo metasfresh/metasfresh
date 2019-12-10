@@ -39,7 +39,7 @@ import java.time.LocalDate;
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonPaymentInfo
+public class JsonInboundPaymentInfo
 {
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String", //

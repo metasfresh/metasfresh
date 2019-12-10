@@ -67,35 +67,35 @@ public class JsonPaymentService
 		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
 	}
 
-	public ResponseEntity<String> createPaymentFromJson(@NonNull @RequestBody final JsonPaymentInfo jsonPaymentInfo)
+	public ResponseEntity<String> createInboundPaymentFromJson(@NonNull @RequestBody final JsonInboundPaymentInfo jsonInboundPaymentInfo)
 	{
-		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonPaymentInfo.getTransactionDate(), SystemTime.asLocalDate());
+		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonInboundPaymentInfo.getTransactionDate(), SystemTime.asLocalDate());
 
-		final CurrencyId currencyId = currencyService.getCurrencyId(jsonPaymentInfo.getCurrencyCode());
+		final CurrencyId currencyId = currencyService.getCurrencyId(jsonInboundPaymentInfo.getCurrencyCode());
 		if (currencyId == null)
 		{
-			return ResponseEntity.unprocessableEntity().body("Wrong currency: " + jsonPaymentInfo.getCurrencyCode());
+			return ResponseEntity.unprocessableEntity().body("Wrong currency: " + jsonInboundPaymentInfo.getCurrencyCode());
 		}
 
-		final OrgId orgId = retrieveOrg(jsonPaymentInfo);
+		final OrgId orgId = retrieveOrg(jsonInboundPaymentInfo);
 
-		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonPaymentInfo.getBpartnerIdentifier()));
+		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonInboundPaymentInfo.getBpartnerIdentifier()));
 		if (!bPartnerIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonPaymentInfo.getBpartnerIdentifier());
+			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonInboundPaymentInfo.getBpartnerIdentifier());
 		}
 
 		final BPartnerId bPartnerId = bPartnerIdOptional.get();
-		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(bPartnerId, currencyId, jsonPaymentInfo.getTargetIBAN());
+		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(bPartnerId, currencyId, jsonInboundPaymentInfo.getTargetIBAN());
 
 		if (!bankAccountIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getBpartnerIdentifier(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
+			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonInboundPaymentInfo.getBpartnerIdentifier(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
 		}
 
 		final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
 				.bpartnerId(bPartnerId)
-				.payAmt(jsonPaymentInfo.getAmount())
+				.payAmt(jsonInboundPaymentInfo.getAmount())
 				.currencyId(currencyId)
 				.bpBankAccountId(bankAccountIdOptional.get())
 
@@ -105,7 +105,7 @@ public class JsonPaymentService
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		final String externalOrderId = IdentifierString.of(jsonPaymentInfo.getExternalOrderId()).asExternalId().getValue();
+		final String externalOrderId = IdentifierString.of(jsonInboundPaymentInfo.getExternalOrderId()).asExternalId().getValue();
 		payment.setExternalOrderId(externalOrderId);
 		payment.setIsAutoAllocateAvailableAmt(true);
 		InterfaceWrapperHelper.save(payment);
@@ -113,13 +113,13 @@ public class JsonPaymentService
 		return ResponseEntity.ok().build();
 	}
 
-	private OrgId retrieveOrg(@RequestBody @NonNull final JsonPaymentInfo jsonPaymentInfo)
+	private OrgId retrieveOrg(@RequestBody @NonNull final JsonInboundPaymentInfo jsonInboundPaymentInfo)
 	{
 		final Optional<OrgId> orgId;
-		if (Check.isNotBlank(jsonPaymentInfo.getOrgCode()))
+		if (Check.isNotBlank(jsonInboundPaymentInfo.getOrgCode()))
 		{
 			final OrgQuery query = OrgQuery.builder()
-					.orgValue(jsonPaymentInfo.getOrgCode())
+					.orgValue(jsonInboundPaymentInfo.getOrgCode())
 					.build();
 			orgId = orgDAO.retrieveOrgIdBy(query);
 		}
