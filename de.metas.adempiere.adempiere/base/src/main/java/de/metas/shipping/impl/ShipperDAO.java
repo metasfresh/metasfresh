@@ -92,7 +92,7 @@ public class ShipperDAO implements IShipperDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Value, value)
 				.addInArrayFilter(I_M_Shipper.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
-				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
+				.orderByDescending(I_M_Shipper.COLUMNNAME_AD_Org_ID)
 				.create()
 				.firstIdOnly(ShipperId::ofRepoIdOrNull);
 

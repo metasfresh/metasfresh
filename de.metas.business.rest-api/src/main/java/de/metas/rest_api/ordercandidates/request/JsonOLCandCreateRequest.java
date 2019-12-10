@@ -57,25 +57,25 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 
-			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.externalLineId</code>.\n"
-					+ "<code>externalLineId</code> and <code>dataSource</code> together need to be unique.")
+			required = true, //
+			value = "This translates to 'C_OLCand.externalLineId'.\n"
+					+ "'externalLineId' and 'dataSource' together need to be unique.")
 	String externalLineId;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.externalHeaderId</code>.\n"
-					+ "<code>externalHeaderId</code> and <code>dataSource</code> together denote the unique group of olCands that were added in one bulk.")
+			required = true, //
+			value = "This translates to 'C_OLCand.externalHeaderId'.\n"
+					+ " 'externalHeaderId'  and 'dataSource' together denote the unique group of olCands that were added in one bulk.")
 	String externalHeaderId;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Identifier of the <code>AD_InputDataSource</code> record that tells where this OLCand came from.")
+			required = true, //
+			value = "Identifier of the 'AD_InputDataSource' record that tells where this OLCand came from.")
 	String dataSource;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "Identifier of the <code>AD_InputDataSource</code> record that tells what shall be happen with this OLCand.")
+			required = true, //
+			value = "Identifier of the 'AD_InputDataSource' record that tells what shall be happen with this OLCand.")
 	String dataDest;
 
 	@ApiModelProperty( //
@@ -371,7 +371,7 @@ public final class JsonOLCandCreateRequest
 
 	public enum OrderDocType
 	{
-		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DOcTYpe is specified.")
+		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
 		SalesOrder("SalesOrder"),
 
 		@ApiEnum("Specifies if the order will be prepaid")

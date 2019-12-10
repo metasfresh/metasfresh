@@ -37,7 +37,7 @@ public interface IInputDataSourceDAO extends ISingletonService
 
 	I_AD_InputDataSource retrieveInputDataSource(Properties ctx, String internalName, boolean throwEx, String trxName);
 
-	int retrieveInputDataSourceIdByInternalName(String internalName);
+	InputDataSourceId retrieveInputDataSourceIdByInternalName(String internalName);
 
 	void createIfMissing(InputDataSourceCreateRequest request);
 

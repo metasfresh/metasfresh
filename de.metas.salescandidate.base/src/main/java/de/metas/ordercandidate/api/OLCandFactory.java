@@ -48,7 +48,7 @@ final class OLCandFactory
 				.deliveryRule(DeliveryRule.ofNullableCode(record.getDeliveryRule()))
 				.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()))
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
-				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))
+				.paymentRule(PaymentRule.ofNullableCode(record.getPaymentRule()))
 				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
 				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.build();

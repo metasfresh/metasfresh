@@ -223,7 +223,7 @@ public class OLCandBL implements IOLCandBL
 			@Nullable I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
-				: PaymentRule.ofCode(orderCandidateRecord.getPaymentRule());
+				: PaymentRule.ofNullableCode(orderCandidateRecord.getPaymentRule());
 		final PaymentRule bpartnerOrderParamsPaymentRule = bPartnerOrderParams == null ? null
 				: bPartnerOrderParams.getPaymentRule();
 		final PaymentRule orderDefaultsPaymentRule = orderDefaults == null ? null

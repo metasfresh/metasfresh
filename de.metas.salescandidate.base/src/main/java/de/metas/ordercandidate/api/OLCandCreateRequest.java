@@ -1,7 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import static de.metas.util.Check.assumeNotNull;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -144,8 +142,8 @@ public class OLCandCreateRequest
 
 		this.orgId = orgId;
 
-		this.dataSourceId = assumeNotNull(dataSourceId, "data source may not be empty");
-		this.dataDestId = assumeNotNull(dataDestId, "data dest may not be empty");
+		this.dataSourceId = dataSourceId;
+		this.dataDestId = dataDestId;
 
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;

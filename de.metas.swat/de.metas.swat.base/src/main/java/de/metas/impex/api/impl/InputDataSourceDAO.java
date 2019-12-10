@@ -58,10 +58,12 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 	}
 
 	@Override
-	public int retrieveInputDataSourceIdByInternalName(final String internalName)
+	public InputDataSourceId retrieveInputDataSourceIdByInternalName(final String internalName)
 	{
-		return retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
+		final int inputDataSourceRecordId = retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
 				.getAD_InputDataSource_ID();
+
+		return InputDataSourceId.ofRepoId(inputDataSourceRecordId);
 	}
 
 	@Override
@@ -118,7 +120,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 	}
 
 	@Override
-	public Optional<InputDataSourceId> retrieveInputDataSourceIdBy(final InputDataSourceQuery query)
+	public Optional<InputDataSourceId> retrieveInputDataSourceIdBy(@NonNull final InputDataSourceQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
