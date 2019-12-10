@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.metas.mpackage.PackageId;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Package;
