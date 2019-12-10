@@ -85,7 +85,6 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
@@ -275,12 +274,12 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final String dataSourceInternalNameToUse = coalesce(
-				request.getDataSourceInternalName(),
-				DATA_SOURCE_INTERNAL_NAME);
+				request.getDataSource(),
+				"int-" + DATA_SOURCE_INTERNAL_NAME);
 
 		return jsonConverters
 				.fromJson(request, masterdataProvider)
-				.dataSourceInternalName(dataSourceInternalNameToUse)
+				.dataSourceId(masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg())))
 				.build();
 	}
 

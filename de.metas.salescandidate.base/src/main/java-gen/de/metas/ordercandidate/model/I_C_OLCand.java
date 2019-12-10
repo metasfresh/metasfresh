@@ -266,6 +266,56 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
+	 * Set Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+
+	/**
+	 * Get Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_BP_Location_Effective_ID();
+
+    /** Column name C_BP_Location_Effective_ID */
+    public static final String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
+
+	/**
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Location_Override_ID();
+
+    /** Column name C_BP_Location_Override_ID */
+    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
 	 * Set Geschäftspartner eff..
 	 *
 	 * <br>Type: Search
@@ -360,54 +410,25 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
 
 	/**
-	 * Set Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Zugeordneter Vertriebspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
 
 	/**
-	 * Get Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Zugeordneter Vertriebspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public int getC_BP_Location_Effective_ID();
-
-    /** Column name C_BP_Location_Effective_ID */
-    public static final String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+	public int getC_BPartner_SalesRep_ID();
 
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_Location_Override_ID();
-
-    /** Column name C_BP_Location_Override_ID */
-    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+    /** Column name C_BPartner_SalesRep_ID */
+    public static final String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
 	 * Set Kosten.
@@ -479,6 +500,29 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
+	 * Set Auftrags-Belegart.
+	 * Document type used for the orders generated from this order candidate
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocTypeOrder_ID (int C_DocTypeOrder_ID);
+
+	/**
+	 * Get Auftrags-Belegart.
+	 * Document type used for the orders generated from this order candidate
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocTypeOrder_ID();
+
+    /** Column name C_DocTypeOrder_ID */
+    public static final String COLUMNNAME_C_DocTypeOrder_ID = "C_DocTypeOrder_ID";
+
+	/**
 	 * Set Vertragsbedingungen.
 	 *
 	 * <br>Type: TableDir
@@ -523,34 +567,6 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_C_OLCand_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "C_OLCand_ID", null);
     /** Column name C_OLCand_ID */
     public static final String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
-
-	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Steuerkategorie.
@@ -618,6 +634,34 @@ public interface I_C_OLCand
 
     /** Column name C_UOM_Internal_ID */
     public static final String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Kand.-Datum.
@@ -1674,6 +1718,35 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
 
 	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_M_Shipper>(I_C_OLCand.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
 	 * Set Ziel-Lager.
 	 *
 	 * <br>Type: Table
@@ -1693,6 +1766,31 @@ public interface I_C_OLCand
 
     /** Column name M_Warehouse_Dest_ID */
     public static final String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
+
+	/**
+	 * Set Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentRule (java.lang.String PaymentRule);
+
+	/**
+	 * Get Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaymentRule();
+
+    /** Column definition for PaymentRule */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "PaymentRule", null);
+    /** Column name PaymentRule */
+    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
 	 * Set Referenz.
@@ -1764,6 +1862,29 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_PresetDateShipped = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "PresetDateShipped", null);
     /** Column name PresetDateShipped */
     public static final String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
+
+	/**
+	 * Set Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
+
+	/**
+	 * Get Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPrice_UOM_Internal_ID();
+
+    /** Column name Price_UOM_Internal_ID */
+    public static final String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
 
 	/**
 	 * Set Einzelpreis.
@@ -1868,31 +1989,8 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_PriceInternal = "PriceInternal";
 
 	/**
-	 * Set Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
-
-	/**
-	 * Get Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPrice_UOM_Internal_ID();
-
-    /** Column name Price_UOM_Internal_ID */
-    public static final String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
-
-	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1902,7 +2000,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1967,6 +2065,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1976,6 +2075,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Get Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1987,31 +2087,6 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "QtyItemCapacity", null);
     /** Column name QtyItemCapacity */
     public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
-
-	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
-
-	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyOrdered();
-
-    /** Column definition for QtyOrdered */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "QtyOrdered", null);
-    /** Column name QtyOrdered */
-    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
 	 * Set Datensatz-ID.
