@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackagingCode;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -109,6 +110,7 @@ public class HURepository
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 			return HU.builder()
 					.id(HuId.ofRepoId(huRecord.getM_HU_ID()))
+					.orgId(OrgId.ofRepoIdOrAny(huRecord.getAD_Org_ID()))
 					.type(HUType.ofCode(handlingUnitsBL.getHU_UnitType(huRecord)))
 					.packagingCode(extractPackagingCodeId(huRecord))
 					.attributes(attributeStorage);
