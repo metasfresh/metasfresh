@@ -37,6 +37,7 @@ import org.compiere.model.X_C_UOM;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.handlingunits.AbstractIncludedHUsCounter;
 import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -463,7 +464,7 @@ import de.metas.util.StringUtils;
 		}
 	}
 
-	private static final class HUKeyIncludedHUsCounter extends HUDisplayNameBuilder.AbstractIncludedHUsCounter<IHUKey> implements IHUKeyVisitor
+	private static final class HUKeyIncludedHUsCounter extends AbstractIncludedHUsCounter<IHUKey> implements IHUKeyVisitor
 	{
 		private HUKeyIncludedHUsCounter(final IHUKey rootHUKey, final boolean countVHUs)
 		{

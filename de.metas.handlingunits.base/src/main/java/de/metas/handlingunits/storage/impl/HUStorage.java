@@ -75,7 +75,7 @@ import lombok.NonNull;
 		this.storageFactory = storageFactory;
 
 		dao = storageFactory.getHUStorageDAO();
-		Check.assumeNotNull(dao, "dao not null");
+		Check.assumeNotNull(dao, "HUStorageDAO needs to be not-null; storageFactory={}", storageFactory);
 
 		Check.errorUnless(hu.getM_HU_ID() > 0, "Given HU has to be saved; hu={}", hu);
 		this.hu = hu;

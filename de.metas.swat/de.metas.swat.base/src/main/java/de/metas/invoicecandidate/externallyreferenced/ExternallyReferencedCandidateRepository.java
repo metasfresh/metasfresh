@@ -9,6 +9,10 @@ import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
+import de.metas.util.NumberUtils;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -159,7 +163,11 @@ public class ExternallyReferencedCandidateRepository
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
 
 		saveRecord(icRecord);
-		return InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+		final InvoiceCandidateId persistedInvoiceCandidateId =  InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+
+		storeInvoiceDetailItems(persistedInvoiceCandidateId, ic.getInvoiceDetailItems());
+
+		return persistedInvoiceCandidateId;
 	}
 
 	private void syncBillPartnerToRecord(
@@ -287,5 +295,35 @@ public class ExternallyReferencedCandidateRepository
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
 
 		return candidate.build();
+	}
+
+	/**
+	 * Persists the given invoice detail items that are not considered empty.
+	 * @see InvoiceDetailItem#isEmpty()
+	 *
+	 * @param invoiceCandidateId	Id of the invoice candidate to which the detail items are referring.
+	 * @param invoiceDetailItems    TO holding additional details about invoice candidate.
+	 */
+	private void storeInvoiceDetailItems(final InvoiceCandidateId invoiceCandidateId, final List<InvoiceDetailItem> invoiceDetailItems)
+	{
+		if (CollectionUtils.isNotEmpty(invoiceDetailItems))
+		{
+			invoiceDetailItems.stream()
+					.filter(invoiceDetailItem -> !invoiceDetailItem.isEmpty())
+					.map(invoiceDetail -> createI_C_InvoiceDetail(invoiceCandidateId, invoiceDetail))
+					.forEach(InterfaceWrapperHelper::saveRecord);
+		}
+	}
+
+	private I_C_Invoice_Detail createI_C_InvoiceDetail(final InvoiceCandidateId invoiceCandidateId, final InvoiceDetailItem invoiceDetailItem)
+	{
+		final I_C_Invoice_Detail invoiceDetailEntity = newInstance(I_C_Invoice_Detail.class);
+
+		invoiceDetailEntity.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+		invoiceDetailEntity.setSeqNo(NumberUtils.asInt(invoiceDetailItem.getSeqNo(), 0));
+		invoiceDetailEntity.setDescription(invoiceDetailItem.getDescription());
+		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
+
+		return invoiceDetailEntity;
 	}
 }

@@ -230,7 +230,7 @@ public class Services
 		}
 	}
 
-	private static final <T extends IService> T findAndLoadService(final Class<T> serviceInterfaceClass)
+	private static final <T extends IService> T findAndLoadService(@NonNull final Class<T> serviceInterfaceClass)
 	{
 		try
 		{

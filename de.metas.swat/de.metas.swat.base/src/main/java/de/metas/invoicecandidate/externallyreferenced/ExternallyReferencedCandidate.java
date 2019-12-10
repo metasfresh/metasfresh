@@ -1,8 +1,11 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 
@@ -72,7 +75,8 @@ public class ExternallyReferencedCandidate
 				.productId(newIC.getProductId())
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
-				.soTrx(newIC.getSoTrx());
+				.soTrx(newIC.getSoTrx())
+				.invoiceDetailItems(newIC.getInvoiceDetailItems());
 	}
 
 	private final OrgId orgId;
@@ -127,6 +131,8 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
+	private List<InvoiceDetailItem> invoiceDetailItems;
+
 	@Builder
 	private ExternallyReferencedCandidate(
 			@NonNull final OrgId orgId,
@@ -153,7 +159,8 @@ public class ExternallyReferencedCandidate
 			@NonNull final ProductPrice priceActual,
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
-			@Nullable final String lineDescription)
+			@Nullable final String lineDescription,
+			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -180,6 +187,7 @@ public class ExternallyReferencedCandidate
 		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(
@@ -190,15 +198,21 @@ public class ExternallyReferencedCandidate
 		{
 			if (!priceEnteredOverride.getProductId().equals(productId))
 			{
-				// TODO fail
+				throw new AdempiereException("priceEnteredOverride.productId=" + priceEnteredOverride.getProductId() + " is inconsistent with candidate.productId=" + productId)
+						.appendParametersToMessage()
+						.setParameter("candidate", this);
 			}
 			if (!priceEnteredOverride.getUomId().equals(invoicingUomId))
 			{
-				// TODO fail
+				throw new AdempiereException("priceEnteredOverride.uomId=" + priceEnteredOverride.getUomId() + " is inconsistent with candidate.invoicingUomId=" + invoicingUomId)
+						.appendParametersToMessage()
+						.setParameter("candidate", this);
 			}
-			if(!priceEnteredOverride.getCurrencyId().equals(currencyId))
+			if (!priceEnteredOverride.getCurrencyId().equals(currencyId))
 			{
-				// TODO fail
+				throw new AdempiereException("priceEnteredOverride.currencyId=" + priceEnteredOverride.getCurrencyId() + " is inconsistent with candidate.currencyId=" + currencyId)
+						.appendParametersToMessage()
+						.setParameter("candidate", this);
 			}
 		}
 	}

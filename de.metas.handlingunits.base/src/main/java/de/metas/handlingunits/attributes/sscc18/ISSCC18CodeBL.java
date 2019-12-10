@@ -10,29 +10,28 @@ package de.metas.handlingunits.attributes.sscc18;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 public interface ISSCC18CodeBL extends ISingletonService
 {
+	String SSCC18_SERIALNUMBER_SEQUENCENAME = "SSCC18_SerialNumber";
+
 	/**
-	 * @param sscc18
 	 * @return true if the check digit is correct, false otherwise
 	 */
 	boolean isCheckDigitValid(SSCC18 sscc18);
@@ -40,12 +39,17 @@ public interface ISSCC18CodeBL extends ISingletonService
 	/**
 	 * Generates a new SSCC18 code for given serialNumber
 	 *
-	 * @param ctx
-	 * @param serialNumber
 	 * @return generated SSCC18; never return null
 	 * @throws AdempiereException if serialNumber or ManufacturerCode is not valid
 	 */
-	SSCC18 generate(Properties ctx, int serialNumber);
+	SSCC18 generate(int serialNumber);
+
+	/**
+	 * Uses its own sequence for serialNumbers (see {@link #SSCC18_SERIALNUMBER_SEQUENCENAME}) and creates a new SSCC18.
+	 *
+	 * @param orgId there might be different sequences per org
+	 */
+	SSCC18 generate(OrgId orgId);
 
 	/**
 	 * Converts given {@link SSCC18} code to String representation

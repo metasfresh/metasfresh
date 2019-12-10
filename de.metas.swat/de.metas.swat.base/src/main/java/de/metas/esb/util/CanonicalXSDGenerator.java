@@ -13,12 +13,12 @@ package de.metas.esb.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -265,7 +265,6 @@ public class CanonicalXSDGenerator
 		Check.assume(toJavaName(name).equals(name),
 				"'name' param '" + name + "' equals '" + toJavaName(name) + "'");
 
-		final Properties ctx = Env.getCtx();
 		final List<ADRefListItem> listValues = new ArrayList<>(adReferenceDAO.retrieveListItems(AD_Reference_ID));
 		if (listValues.isEmpty())
 		{
@@ -565,30 +564,30 @@ public class CanonicalXSDGenerator
 				.replace("-", "_")
 				.replace('.', '_');
 	}
-	
+
 	/**
 	 * Returns a string created from the given input, but without any non-ascii characters. If the given string is
 	 * empty, then an empty string is returned.
-	 * 
+	 *
 	 * It is assumed that
 	 * <ul>
 	 * <li>the given input is not null</li>
 	 * <li>after stripping non-ascii chars from the given (a non-empty!) input there is at least one ascii character
 	 * left to output</li>
 	 * </ul>
-	 * 
+	 *
 	 */
 	private static final String mkAsciiOnly(final String input)
 	{
 		Check.assume(input != null, "Input string is not null");
-		
+
 		if("".equals(input))
 		{
 			return "";
 		}
-		
+
 		final String output = input.replaceAll("[^\\p{ASCII}]", "");
-				
+
 		Check.assume(!"".equals(output), "Input string '" + input + "' has at least one ascii-character");
         return output;
 	}

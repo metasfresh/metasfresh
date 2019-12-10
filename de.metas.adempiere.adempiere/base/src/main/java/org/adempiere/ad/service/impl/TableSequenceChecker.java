@@ -53,6 +53,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class TableSequenceChecker implements ITableSequenceChecker
 {
@@ -188,7 +189,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 				createOrUpdateTableSequence(ctx, tableName, localTrxName);
 
 				// gh #941 *always* deal with native sequences, even if there is no AD_Sequence or no AD_Column
-				createOrUpdateNativeSequence(tableName, localTrxName);
+				createOrUpdateNativeSequence(tableName);
 			}
 
 			@Override
@@ -377,16 +378,11 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		return changed;
 	}	// validate
 
-	/**
-	 * Invokes the DB function {@code dba_seq_check_native()} with the given {@code tableName}.
-	 *  
-	 * @task https://github.com/metasfresh/metasfresh/issues/941
-	 */
-	private void createOrUpdateNativeSequence(final String tableName, final String trxName)
+	private void createOrUpdateNativeSequence(@NonNull final String tableName)
 	{
-		DB.executeFunctionCallEx(trxName, "select dba_seq_check_native(?)", new Object[] { tableName });
+		DB.createTableSequence(tableName);
 	}
-	
+
 	private void log(final SequenceChangeLog changeLog)
 	{
 		if (!changeLog.isChange())

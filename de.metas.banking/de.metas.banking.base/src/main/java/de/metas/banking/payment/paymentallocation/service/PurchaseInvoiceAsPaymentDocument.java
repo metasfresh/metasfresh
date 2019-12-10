@@ -15,9 +15,9 @@ import lombok.NonNull;
  *
  */
 @EqualsAndHashCode
-public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
+final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 {
-	public static final PurchaseInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
+	public static PurchaseInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
 	{
 		return new PurchaseInvoiceAsPaymentDocument(creditMemoPayableDoc);
 	}
@@ -35,6 +35,12 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	public String toString()
 	{
 		return getClass().getSimpleName() + "[" + purchaseInvoicePayableDoc.toString() + "]";
+	}
+
+	@Override
+	public PaymentDocumentType getType()
+	{
+		return PaymentDocumentType.PurchaseInvoice;
 	}
 
 	@Override
@@ -82,7 +88,7 @@ public class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	@Override
 	public Money calculateProjectedOverUnderAmt(Money amountToAllocate)
 	{
-		return purchaseInvoicePayableDoc.calculateProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
+		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -366,5 +367,11 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		return attributesService.isStorageRelevant(attributeId);
+	}
+
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return attributeDAO.getImmutableAttributeSetById(asiId);
 	}
 }
