@@ -109,9 +109,9 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 
 		// set info from header
 
-		newBalanceDetail.setM_InOut(inout);
-		newBalanceDetail.setC_BPartner(inout.getC_BPartner());
-		newBalanceDetail.setC_DocType(inout.getC_DocType());
+		newBalanceDetail.setM_InOut_ID(inout.getM_InOut_ID());
+		newBalanceDetail.setC_BPartner_ID(inout.getC_BPartner_ID());
+		newBalanceDetail.setC_DocType_ID(inout.getC_DocType_ID());
 		newBalanceDetail.setDocumentNo(inout.getDocumentNo());
 
 		final Timestamp movementDate = inout.getMovementDate();
@@ -183,7 +183,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 				.list();
 	}
 
-	private IQueryBuilder<I_M_Material_Balance_Detail> createQueryBuilderForInout(I_M_InOut inout)
+	private IQueryBuilder<I_M_Material_Balance_Detail> createQueryBuilderForInout(final I_M_InOut inout)
 	{
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -220,7 +220,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 	}
 
 	@Override
-	public void deleteBalanceDetailsForInOut(I_M_InOut inout)
+	public void deleteBalanceDetailsForInOut(final I_M_InOut inout)
 	{
 		final IQueryBuilder<I_M_Material_Balance_Detail> queryBuilder = createQueryBuilderForInout(inout);
 

@@ -218,16 +218,16 @@ public final class StringUtils
 	/**
 	 * Convert given object to ADempiere's boolean value.
 	 *
-	 * @param value, may be null
+	 * @param value,        may be null
 	 * @param defaultValue, may be null
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
 	 *         <li>false if value is boolean false, "false" or "N"
 	 *         <li><code>defaultValue</code> if value is null or other
 	 *         </ul>
 	 */
-	public static Boolean toBoolean(final Object value, final Boolean defaultValue)
+	@Nullable
+	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
 	{
 		if (value == null)
 		{
@@ -261,8 +261,7 @@ public final class StringUtils
 	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
 	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
 	 *         <li>false if value is boolean false, "false" or "N"
 	 *         <li>false if value is null or other
@@ -278,8 +277,7 @@ public final class StringUtils
 	 * Converts given boolean value to ADempiere's string representation of it
 	 *
 	 * @param value
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li><code>null</code> if value is null
 	 *         <li>"Y" if value is true
 	 *         <li>"N" if value is false
@@ -440,7 +438,7 @@ public final class StringUtils
 	 * 0000000000 + 123456 => 0000123456
 	 *        000 + 123456 =>     123456
 	 * </pre>
-	 *
+	 * <p>
 	 * Note: if any parameter is <code>null</code>, then <code>""</code> is assumed isntead.
 	 *
 	 * @param string
@@ -531,7 +529,7 @@ public final class StringUtils
 	/**
 	 * Replace String values.
 	 *
-	 * @param value string to be processed
+	 * @param value   string to be processed
 	 * @param oldPart old part
 	 * @param newPart replacement - can be null or ""
 	 * @return String with replaced values
@@ -561,7 +559,7 @@ public final class StringUtils
 		retValue.append(oldValue);
 		// log.debug( "Env.replace - " + value + " - Old=" + oldPart + ", New=" + newPart + ", Result=" + retValue.toString());
 		return retValue.toString();
-	}	// replace
+	}    // replace
 
 	/**
 	 * Remove CR / LF from String
@@ -656,7 +654,7 @@ public final class StringUtils
 			}
 		}
 		return out.toString();
-	}	// cleanWhitespace
+	}    // cleanWhitespace
 
 	/**
 	 * remove white space from the begin
@@ -679,8 +677,7 @@ public final class StringUtils
 	}
 
 	/**
-	 *
-	 * @param value note: <code>null</code> is threaded like ""
+	 * @param value       note: <code>null</code> is threaded like ""
 	 * @param size
 	 * @param description
 	 * @return
@@ -739,13 +736,13 @@ public final class StringUtils
 	public static String maskHTML(String content)
 	{
 		return maskHTML(content, false);
-	}	// maskHTML
+	}    // maskHTML
 
 	/**
 	 * Mask HTML content. i.e. replace characters with &values;
 	 *
 	 * @param content content
-	 * @param maskCR convert CR into <br>
+	 * @param maskCR  convert CR into <br>
 	 * @return masked content or null if the <code>content</code> is null
 	 * @deprecated please consider using {@link StringEscapeUtils#escapeHtml4(String)} instead.
 	 */
@@ -800,12 +797,12 @@ public final class StringUtils
 			}
 		}
 		return out.toString();
-	}	// maskHTML
+	}    // maskHTML
 
 	/**
 	 * Get the number of occurances of countChar in string.
 	 *
-	 * @param string String to be searched
+	 * @param string    String to be searched
 	 * @param countChar to be counted character
 	 * @return number of occurances
 	 */
@@ -825,7 +822,7 @@ public final class StringUtils
 			}
 		}
 		return counter;
-	}	// getCount
+	}    // getCount
 
 	/**************************************************************************
 	 * Find index of search character in str. This ignores content in () and 'texts'
@@ -842,7 +839,7 @@ public final class StringUtils
 	/**
 	 * Find index of search characters in str. This ignores content in () and 'texts'
 	 *
-	 * @param str string
+	 * @param str     string
 	 * @param search1 first search character
 	 * @param search2 second search character (or)
 	 * @return index or -1 if not found
@@ -887,7 +884,7 @@ public final class StringUtils
 	/**
 	 * Find index of search character in str. This ignores content in () and 'texts'
 	 *
-	 * @param str string
+	 * @param str    string
 	 * @param search search character
 	 * @return index or -1 if not found
 	 */
@@ -992,5 +989,5 @@ public final class StringUtils
 			}
 		}
 		return new String(data);
-	}	// initCap
+	}    // initCap
 }

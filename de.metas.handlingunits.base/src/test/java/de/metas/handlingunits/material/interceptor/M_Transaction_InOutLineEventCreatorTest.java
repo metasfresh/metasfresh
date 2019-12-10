@@ -101,12 +101,12 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(bPartner);
 
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
-		inout.setC_BPartner(bPartner);
+		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		save(inout);
 
 		inoutLine = newInstance(I_M_InOutLine.class);
 		inoutLine.setM_Product_ID(product.getM_Product_ID());
-		inoutLine.setM_InOut(inout);
+		inoutLine.setM_InOut_ID(inout.getM_InOut_ID());
 		save(inoutLine);
 
 		inoutLineId = InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID());

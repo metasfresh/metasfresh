@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -48,16 +49,17 @@ import lombok.NonNull;
  * Helper class used for sending user notifications about generated or reversed shipments/receipts.
  *
  * @author tsa
- *
  */
 public final class InOutUserNotificationsProducer
 {
-	public static final InOutUserNotificationsProducer newInstance()
+	public static InOutUserNotificationsProducer newInstance()
 	{
 		return new InOutUserNotificationsProducer();
 	}
 
-	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
+	/**
+	 * Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously
+	 */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.inout.UserNotifications")
 			.type(Type.REMOTE)
@@ -81,7 +83,6 @@ public final class InOutUserNotificationsProducer
 	/**
 	 * Post events about given shipment/receipts that were processed.
 	 *
-	 * @param inouts
 	 * @see #notifyInOutProcessed(I_M_InOut)
 	 */
 	public InOutUserNotificationsProducer notifyInOutsProcessed(final Collection<? extends I_M_InOut> inouts)
@@ -105,8 +106,6 @@ public final class InOutUserNotificationsProducer
 	 * <li>if inout's DocStatus is Voided or Reversed, a "reversed" notification will be sent
 	 * </ul>
 	 *
-	 * @param inout
-	 * @return
 	 */
 	public final InOutUserNotificationsProducer notifyInOutProcessed(final I_M_InOut inout)
 	{
@@ -115,9 +114,9 @@ public final class InOutUserNotificationsProducer
 		return this;
 	}
 
-	private final UserNotificationRequest createUserNotification(@NonNull final I_M_InOut inout)
+	private UserNotificationRequest createUserNotification(@NonNull final I_M_InOut inout)
 	{
-		final I_C_BPartner bpartner = inout.getC_BPartner();
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 
@@ -136,13 +135,13 @@ public final class InOutUserNotificationsProducer
 				.build();
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
 				.topic(EVENTBUS_TOPIC);
 	}
 
-	private final String getNotificationAD_Message(final I_M_InOut inout)
+	private String getNotificationAD_Message(final I_M_InOut inout)
 	{
 		if (docActionBL.isDocumentReversedOrVoided(inout))
 		{
@@ -154,7 +153,7 @@ public final class InOutUserNotificationsProducer
 		}
 	}
 
-	private final UserId getNotificationRecipientUserId(final I_M_InOut inout)
+	private UserId getNotificationRecipientUserId(final I_M_InOut inout)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
