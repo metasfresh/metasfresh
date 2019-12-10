@@ -56,6 +56,7 @@ import org.eevolution.api.PPOrderRoutingActivityCode;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivitySchedule;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_NodeNext;
 import org.eevolution.model.I_PP_Order_Workflow;
@@ -419,6 +420,11 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		trxManager.runInThreadInheritedTrx(() -> saveInTrx(orderRouting));
 	}
 
+	private I_PP_Order getPPOrder(I_PP_Order_Node pp_order_node)
+	{
+		return pp_order_node.getPP_Order();
+	}
+
 	private void saveInTrx(@NonNull final PPOrderRouting orderRouting)
 	{
 		//
@@ -460,10 +466,10 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 				saveRecord(activityRecord);
 				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
-				final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-				I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(routingRecord.getAD_WF_Node_Template_ID());
-				if (nodeTemplate != null) {
-					attachmentEntryService.shareAttachmentLinks(ImmutableList.of(nodeTemplate),ImmutableList.of(activityRecord.getPP_Order()));
+				final I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(routingRecord.getAD_WF_Node_Template_ID());
+				if (nodeTemplate != null)
+				{
+					getAttachmentEntryServiceInstance().shareAttachmentLinks(ImmutableList.of(nodeTemplate),ImmutableList.of(activityRecord.getPP_Order()));
 				}
 			}
 
@@ -511,6 +517,11 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		//
 		// Delete remaining nodes if any
 		InterfaceWrapperHelper.deleteAll(activityRecordsToDelete);
+	}
+
+	private AttachmentEntryService getAttachmentEntryServiceInstance()
+	{
+		return SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	}
 
 	private ImmutablePair<PPOrderRoutingActivityId, PPOrderRoutingActivityId> extractCurrentAndNextActivityIdPair(final I_PP_Order_NodeNext record)
