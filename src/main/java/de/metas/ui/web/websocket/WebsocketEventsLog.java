@@ -42,7 +42,7 @@ public final class WebsocketEventsLog
 	private final AtomicInteger logEventsMaxSize = new AtomicInteger(500);
 	private final List<WebsocketEventLogRecord> loggedEvents = new LinkedList<>();
 
-	public final void logEvent(final String destination, final Object event)
+	public void logEvent(final String destination, final Object event)
 	{
 		if (!logEventsEnabled.get())
 		{
@@ -51,6 +51,8 @@ public final class WebsocketEventsLog
 
 		synchronized (loggedEvents)
 		{
+			logger.info("{}: {}", destination, event);
+
 			loggedEvents.add(new WebsocketEventLogRecord(destination, event));
 			final int maxSize = logEventsMaxSize.get();
 			while (loggedEvents.size() > maxSize)
