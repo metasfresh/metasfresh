@@ -137,7 +137,7 @@ class TableFilter extends Component {
   };
 
   generateShortcuts = () => {
-    let { actions } = this.state;
+    let { actions } = this.props;
     const shortcutActions = [];
 
     if (!actions) {
