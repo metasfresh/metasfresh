@@ -354,7 +354,7 @@ class TableCell extends PureComponent {
               listenOnKeysTrue,
               onClickOutside,
             }}
-            clearValue={true}
+            clearValue={this.clearWidgetValue}
             entity={entityEffective}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}

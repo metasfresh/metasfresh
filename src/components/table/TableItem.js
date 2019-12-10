@@ -152,26 +152,37 @@ class TableItem extends PureComponent {
     }
   };
 
-  focusCell = property => {
+  focusCell = (property, cb) => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
-    if (activeCell !== elem && !elem.className.includes('js-input-field')) {
-      this.setState({
-        activeCell: elem,
-        activeCellName: property,
-      });
+    if (
+      (activeCell !== elem && !elem.className.includes('js-input-field')) ||
+      cb
+    ) {
+      this.setState(
+        {
+          activeCell: elem,
+          activeCellName: property,
+        },
+        () => {
+          cb && cb();
+        }
+      );
+    } else {
+      cb && cb();
     }
   };
 
   handleEditProperty = (e, property, focus, item, select) => {
-    this.focusCell(property);
-    this.editProperty(e, property, focus, item, select);
+    this.focusCell(property, () => {
+      this.editProperty(e, property, focus, item, select);
+    });
   };
 
   editProperty = (e, property, focus, item, select) => {
     if (item ? !item.readonly : true) {
-      if (this.state.edited === property) e.stopPropagation();
+      if (this.state.edited === property && e) e.stopPropagation();
 
       if (select && this.selectedCell) {
         this.selectedCell.clearValue();
@@ -228,15 +239,6 @@ class TableItem extends PureComponent {
     changeListenOnFalse();
   };
 
-  closeTableField = e => {
-    const { activeCell } = this.state;
-
-    this.handleEditProperty(e);
-    this.listenOnKeysTrue();
-
-    activeCell && activeCell.focus();
-  };
-
   /*
    * This function is called when cell's value changes
    */
@@ -278,8 +280,20 @@ class TableItem extends PureComponent {
 
   handleClickOutside = e => {
     const { changeListenOnTrue } = this.props;
+
+    this.selectedCell && this.selectedCell.clearValue(true);
     this.handleEditProperty(e);
+
     changeListenOnTrue();
+  };
+
+  closeTableField = e => {
+    const { activeCell } = this.state;
+
+    this.handleEditProperty(e);
+    this.listenOnKeysTrue();
+
+    activeCell && activeCell.focus();
   };
 
   handleCellExtend = () => {

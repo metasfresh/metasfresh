@@ -158,7 +158,7 @@
 
         .with-widget {
             display: flex;
-            align-items: end;
+            align-items: flex-end;
 
             .widget-tooltip {
                 text-align: right;
@@ -278,6 +278,10 @@
     }
 
     @media (min-width: $breakpoint-xl){
+        .form-flex-align {
+            align-items: baseline;
+        }
+
         .filter-panel-buttons {
             padding: 0;
             margin: 0;
@@ -453,6 +457,10 @@
         > .row {
             margin-bottom: 15px;
         }
+    }
+
+    .hint {
+        margin-bottom: 10px;
     }
 
     @media (min-width: $breakpoint-sm){
