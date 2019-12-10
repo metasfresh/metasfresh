@@ -649,7 +649,7 @@ TableItem.propTypes = {
   viewId: PropTypes.string,
   docId: PropTypes.string,
   windowId: PropTypes.string,
-  lastChild: PropTypes.boolean,
+  lastChild: PropTypes.bool,
   includedDocuments: PropTypes.array,
   contextType: PropTypes.any,
   focusOnFieldName: PropTypes.string,
