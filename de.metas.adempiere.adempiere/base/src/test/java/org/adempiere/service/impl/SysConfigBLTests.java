@@ -10,21 +10,21 @@ package org.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -35,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 public class SysConfigBLTests
@@ -71,12 +72,12 @@ public class SysConfigBLTests
 		//
 		// Test on same org
 		{
-			final int adOrgIdToUse = AD_Org_ID;
+			final OrgId adOrgIdToUse = OrgId.ofRepoIdOrAny(AD_Org_ID);
 
-			sysConfigBL.setValue(name, value, adOrgIdToUse);
+			sysConfigBL.setValue(name, value,  ClientId.METASFRESH, adOrgIdToUse);
 			final String valueGet = sysConfigBL.getValue(name,
 					adClientId,
-					adOrgIdToUse);
+					adOrgIdToUse.getRepoId());
 
 			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + adOrgIdToUse,
 					value, // expected
@@ -87,14 +88,12 @@ public class SysConfigBLTests
 		//
 		// Test: set the value on AD_Org_ID=0, get value using given Org
 		{
-			final int adOrgIdToUse = 0;
-
-			sysConfigBL.setValue(name, value, adOrgIdToUse);
+			sysConfigBL.setValue(name, value, ClientId.METASFRESH, OrgId.ANY);
 			final String valueGet = sysConfigBL.getValue(name,
 					adClientId,
-					adOrgIdToUse);
+					OrgId.ANY.getRepoId());
 
-			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + adOrgIdToUse,
+			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + OrgId.ANY,
 					value, // expected
 					valueGet// actual
 			);

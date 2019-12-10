@@ -181,7 +181,6 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 			{
 				continue;
 			}
-
 			test(attributeValueGeneratorClass);
 		}
 	}

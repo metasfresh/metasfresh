@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /*
@@ -89,6 +91,6 @@ public class C_Flatrate_TermTest
 	{
 		final String sysConfigName = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_" + X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement;
 		Services.get(ISysConfigBL.class)
-				.setValue(sysConfigName, true, 0);
+				.setValue(sysConfigName, true, ClientId.METASFRESH, OrgId.ANY);
 	}
 }

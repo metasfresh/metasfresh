@@ -28,6 +28,7 @@ import java.util.Map;
  */
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
@@ -54,7 +55,7 @@ public class SSCC18CodeBLTests
 
 	public static void setManufacturerCode(final String manufacturerCode)
 	{
-		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, manufacturerCode, OrgId.ANY.getRepoId());
+		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, manufacturerCode, ClientId.METASFRESH, OrgId.ANY);
 	}
 
 	@Test

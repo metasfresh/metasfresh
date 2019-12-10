@@ -31,6 +31,7 @@ import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -50,6 +51,7 @@ import org.junit.Ignore;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
@@ -86,7 +88,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 
 	public void setAttributeAction(AttributeAction attributeAction)
 	{
-		sysConfigBL.setValue(AttributesBL.SYSCONFIG_AttributeAction, attributeAction.getCode(), 0);
+		sysConfigBL.setValue(AttributesBL.SYSCONFIG_AttributeAction, attributeAction.getCode(), ClientId.METASFRESH, OrgId.ANY);
 	}
 
 	public void setIsAttrDocumentRelevantForInvoice(final I_M_Attribute attribute, final boolean isAttrDocumentRelevant)

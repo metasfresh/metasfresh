@@ -34,6 +34,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -111,7 +112,7 @@ class PaymentRestEndpointTest
 		assertEquals(orderIdentifier.asExternalId().getValue(), payment.getExternalOrderId());
 
 		// enable auto linking SO <-> Payment
-		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, 0);
+		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.METASFRESH, OrgId.ANY);
 
 		// run the "before_complete" interceptor
 		C_Order.INSTANCE.linkWithPaymentByExternalOrderId(salesOrder);

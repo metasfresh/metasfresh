@@ -58,6 +58,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
@@ -83,6 +84,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -2611,8 +2613,7 @@ public final class DB
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
 				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
-		final int adOrgId = 0;
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, adOrgId);
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	public static String getTableSequenceName(final String tableName)
