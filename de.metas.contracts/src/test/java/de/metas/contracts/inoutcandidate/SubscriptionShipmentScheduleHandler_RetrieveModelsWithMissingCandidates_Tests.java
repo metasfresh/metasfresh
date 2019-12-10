@@ -102,14 +102,14 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 		// guard
 		{
-			sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 3, ClientId.METASFRESH, OrgId.ANY);
+			sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 3, ClientId.SYSTEM, OrgId.ANY);
 			assertOnlyFirstRecordIsReturned();
 		}
 
-		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.METASFRESH, OrgId.ANY);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
 		assertBothRecordsAreReturned();
 
-		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 5, ClientId.METASFRESH, OrgId.ANY);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 5, ClientId.SYSTEM, OrgId.ANY);
 		assertBothRecordsAreReturned();
 	}
 
@@ -121,7 +121,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	{
 		// taken from another test; i don't really care, i just need a setup that returns both records
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.METASFRESH, OrgId.ANY);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.SYSTEM, OrgId.ANY);
 		assertBothRecordsAreReturned(); // guard
 
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Service);

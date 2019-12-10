@@ -56,7 +56,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		final List<DeviceConfig> deviceConfigs = configPool.getDeviceConfigsForAttributeCode(attributeCode);
 		final DeviceConfig deviceConfig = CollectionUtils.singleElement(deviceConfigs);
 
-		System.out.println("Checking " + deviceConfig);
+		//System.out.println("Checking " + deviceConfig);
 		Assert.assertEquals("deviceName", deviceName, deviceConfig.getDeviceName());
 		Assert.assertEquals("attributeCode", ImmutableSet.of(attributeCode), deviceConfig.getAssignedAttributeCodes());
 		Assert.assertEquals("DeviceClass", MOCKED_DEVICE_DeviceClass, deviceConfig.getDeviceClassname());
@@ -88,7 +88,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 
 	private static final void putSysConfig(final String name, final String value)
 	{
-		Services.get(ISysConfigBL.class).setValue(name, value, ClientId.METASFRESH, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(name, value, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	private final SysConfigDeviceConfigPool createSysConfigDeviceConfigPool()

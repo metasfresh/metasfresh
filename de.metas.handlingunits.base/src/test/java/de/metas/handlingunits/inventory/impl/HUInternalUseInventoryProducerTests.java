@@ -134,7 +134,7 @@ public class HUInternalUseInventoryProducerTests
 		locator.setM_Warehouse(wh);
 		saveRecord(locator);
 
-		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.METASFRESH, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.SYSTEM, OrgId.ANY);
 
 		SystemTime.setTimeSource(new FixedTimeSource(LocalDate.of(2019, Month.JUNE, 10).atTime(10, 00)));
 	}

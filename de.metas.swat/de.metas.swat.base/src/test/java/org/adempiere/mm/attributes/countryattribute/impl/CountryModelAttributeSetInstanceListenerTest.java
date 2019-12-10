@@ -78,7 +78,7 @@ public class CountryModelAttributeSetInstanceListenerTest
 
 			helper.createM_AttributeUse(helper.product_attributeSet, attr_Country);
 
-			helper.sysConfigBL.setValue(CountryAttributeDAO.SYSCONFIG_CountryAttribute, attr_Country.getM_Attribute_ID(), ClientId.METASFRESH, OrgId.ANY);
+			helper.sysConfigBL.setValue(CountryAttributeDAO.SYSCONFIG_CountryAttribute, attr_Country.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 		}
 
 		//
