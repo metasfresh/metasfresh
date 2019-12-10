@@ -264,7 +264,7 @@ public class InOutDAO implements IInOutDAO
 				.createQueryBuilder(I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
 				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, soTrx.toBoolean())
 				.create()
 				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
@@ -284,7 +284,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOut.class)
-				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(InOutId::ofRepoId)
 				.stream();

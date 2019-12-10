@@ -22,7 +22,6 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.api.IBPartnerAwareFactory;
@@ -76,7 +75,7 @@ public class InOutLineBPartnerAware implements IBPartnerAware
 	public I_C_BPartner getC_BPartner()
 	{
 		final I_M_InOut inout = getM_InOut();
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(inout.getC_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(inout.getC_BPartner_ID(), I_C_BPartner.class);
 		if (partner == null)
 		{
 			return null;
@@ -84,7 +83,7 @@ public class InOutLineBPartnerAware implements IBPartnerAware
 		return partner;
 	}
 
-	private final I_M_InOut getM_InOut()
+	private I_M_InOut getM_InOut()
 	{
 		final I_M_InOut inout = inoutLine.getM_InOut();
 		if (inout == null)

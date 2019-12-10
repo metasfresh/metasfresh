@@ -126,7 +126,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(io.getM_Warehouse_ID());
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
-		final I_C_BPartner_Location locationTo = InterfaceWrapperHelper.create(io.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location locationTo = InterfaceWrapperHelper.create(io.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
 
 		final Timestamp shipDate = io.getMovementDate();
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(ctx,

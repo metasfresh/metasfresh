@@ -220,14 +220,14 @@ public final class StringUtils
 	 *
 	 * @param value, may be null
 	 * @param defaultValue, may be null
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
 	 *         <li>false if value is boolean false, "false" or "N"
 	 *         <li><code>defaultValue</code> if value is null or other
 	 *         </ul>
 	 */
-	public static Boolean toBoolean(final Object value, final Boolean defaultValue)
+	@Nullable
+	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
 	{
 		if (value == null)
 		{
@@ -261,8 +261,7 @@ public final class StringUtils
 	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
 	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
 	 *         <li>false if value is boolean false, "false" or "N"
 	 *         <li>false if value is null or other
@@ -278,8 +277,7 @@ public final class StringUtils
 	 * Converts given boolean value to ADempiere's string representation of it
 	 *
 	 * @param value
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li><code>null</code> if value is null
 	 *         <li>"Y" if value is true
 	 *         <li>"N" if value is false
@@ -440,7 +438,7 @@ public final class StringUtils
 	 * 0000000000 + 123456 => 0000123456
 	 *        000 + 123456 =>     123456
 	 * </pre>
-	 *
+	 * <p>
 	 * Note: if any parameter is <code>null</code>, then <code>""</code> is assumed isntead.
 	 *
 	 * @param string
@@ -679,7 +677,6 @@ public final class StringUtils
 	}
 
 	/**
-	 *
 	 * @param value note: <code>null</code> is threaded like ""
 	 * @param size
 	 * @param description

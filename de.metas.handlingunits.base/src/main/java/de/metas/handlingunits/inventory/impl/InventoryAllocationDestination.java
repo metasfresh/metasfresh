@@ -113,7 +113,7 @@ import lombok.Value;
 
 /**
  * {@link IAllocationDestination} which is used to generate Internal Use Inventory documents for quantity that is asked to be loaded here.
- *
+ * <p>
  * Useful when you want to destroy an HU and you want also to "internal use" it's M_Storage counter-part.
  *
  * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
@@ -144,7 +144,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final String description;
 
 	private final Map<InventoryHeaderKey, I_M_Inventory> inventoriesMap = new LinkedHashMap<>();
-	/** Map the inventory lines to the base receipt lines */
+	/**
+	 * Map the inventory lines to the base receipt lines
+	 */
 	private final Map<InventoryLineKey, I_M_InventoryLine> inventoryLinesMap = new HashMap<>();
 
 	//
@@ -172,7 +174,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 		this.description = description;
 	}
 
-	/** @return created inventory documents */
+	/**
+	 * @return created inventory documents
+	 */
 	private List<I_M_Inventory> getInventories()
 	{
 		return ImmutableList.copyOf(inventoriesMap.values());
@@ -376,7 +380,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_InOut receipt = inoutLine.getM_InOut();
 		if (receipt.isSOTrx())
 		{
-			throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType() });
+			throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType_ID() });
 		}
 	}
 
@@ -429,8 +433,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Complete inventory document
-	 *
-	 * @param inventory
 	 */
 	private void completeInventory(final I_M_Inventory inventory)
 	{
@@ -439,8 +441,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Create HU snapshots recursively for all the HUs linked to this inventory
-	 *
-	 * @param inventory
 	 */
 	private void createHUSnapshotsForInventory(final I_M_Inventory inventory)
 	{
@@ -450,15 +450,13 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Move the handling units used in inventory from their current warehouse to the handling units warehouse.
-	 *
-	 * @param inventory
 	 */
 	private void createEmptiesMovementForInventory(final I_M_Inventory inventory)
 	{
 		final int inventoryId = inventory.getM_Inventory_ID();
 		final HUPackingMaterialsCollector packingMaterialsCollector = getPackingMaterialsCollectorForInventory(inventoryId);
 
-		if(packingMaterialsCollector == null)
+		if (packingMaterialsCollector == null)
 		{
 			// the HU was probably a virtual one (CU only). Nothing to move
 			return;
@@ -475,14 +473,14 @@ class InventoryAllocationDestination implements IAllocationDestination
 	/**
 	 * Return inventoryLine for inoutLine if it exists, create an inventory line otherwise
 	 */
-	private I_M_InventoryLine getCreateInventoryLine(@NonNull InventoryLineCandidate candidate)
+	private I_M_InventoryLine getCreateInventoryLine(@NonNull final InventoryLineCandidate candidate)
 	{
 		return inventoryLinesMap.computeIfAbsent(
 				createInventoryLineKey(candidate),
 				k -> createInventoryLine(candidate));
 	}
 
-	private static InventoryLineKey createInventoryLineKey(@NonNull InventoryLineCandidate candidate)
+	private static InventoryLineKey createInventoryLineKey(@NonNull final InventoryLineCandidate candidate)
 	{
 		return InventoryLineKey.builder()
 				.topLevelHU(candidate.getTopLevelHUId())
@@ -491,7 +489,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 				.build();
 	}
 
-	private I_M_InventoryLine createInventoryLine(@NonNull InventoryLineCandidate candidate)
+	private I_M_InventoryLine createInventoryLine(@NonNull final InventoryLineCandidate candidate)
 	{
 		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(candidate);
 		final ProductId productId = candidate.getProductId();
@@ -621,7 +619,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return currentSnapshotProducer;
 	}
 
-	private I_M_HU_PI_Item_Product extractPackingOrNull(@NonNull final I_M_HU hu, @NonNull InventoryLineCandidate inventoryLineCandidate)
+	private I_M_HU_PI_Item_Product extractPackingOrNull(@NonNull final I_M_HU hu, @NonNull final InventoryLineCandidate inventoryLineCandidate)
 	{
 		//
 		// Direct
@@ -671,10 +669,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	/**
 	 * Counts the number of TUs from from the
 	 *
-	 * @param huContext
 	 * @param tuHU TU or aggregated TU
-	 * @param inventoryLine
-	 * @return
 	 */
 	private BigDecimal countTUs(
 			@NonNull final IHUContext huContext,

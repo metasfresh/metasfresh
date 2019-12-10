@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -44,6 +45,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -106,12 +108,14 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * When generating receipt lines pick only those allocation lines which have HUs from this Set.
-	 *
+	 * <p>
 	 * If the set is null, it means no restriction will be applied, so any HU will be considered.
 	 */
 	private final Set<HuId> selectedHUIds;
 
-	/** Collects packing materials in order to generate Packing Material receipt lines */
+	/**
+	 * Collects packing materials in order to generate Packing Material receipt lines
+	 */
 	private final HUPackingMaterialsCollector packingMaterialsCollector;
 
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
@@ -140,7 +144,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	/**
 	 * @return context; never returns null
 	 */
-	private final IHUContext getHUContext()
+	private IHUContext getHUContext()
 	{
 		return _huContext;
 	}
@@ -195,7 +199,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLines;
 	}
 
-	private final List<I_M_InOutLine> createReceiptLines(final HUReceiptLineCandidate receiptLineCandidate)
+	private List<I_M_InOutLine> createReceiptLines(final HUReceiptLineCandidate receiptLineCandidate)
 	{
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
@@ -256,9 +260,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Add the value of M_QualityNote from the receiptLineCandidate to the M_AttributeSetInstance of the receipt line
-	 *
-	 * @param receiptLineWithIssues
-	 * @param receiptLineCandidate
 	 */
 	private void addQualityToASI(
 			final I_M_InOutLine receiptLineWithIssues,
@@ -321,7 +322,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLines_PackingMaterials;
 	}
 
-	private final void createHUSnapshots()
+	private void createHUSnapshots()
 	{
 		// Create the snapshots for all enqueued HUs so far.
 		huSnapshotProducer.createSnapshots();
@@ -337,7 +338,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 *
 	 * @return additional packing material receipt lines that were created.
 	 */
-	private final List<I_M_InOutLine> createBottomReceiptLines_PackingMaterials()
+	private List<I_M_InOutLine> createBottomReceiptLines_PackingMaterials()
 	{
 		//
 		// Sets M_Product_ID sort comparator to use
@@ -345,7 +346,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final Comparator<Integer> candidatesSortComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
 				.setContext(getCtx())
 				.setC_BPartner_ID(receipt.getC_BPartner_ID())
-				.setC_DocType(receipt.getC_DocType())
+				.setC_DocType(load(receipt.getC_DocType_ID(), I_C_DocType.class))
 				.findProductIdsComparator();
 		packingMaterialsCollector.setProductIdSortComparator(candidatesSortComparator);
 
@@ -390,10 +391,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Create receipt line for given packing material receipt line candidate.
-	 *
+	 * <p>
 	 * This method will also search for packing material receipt schedules and will try to allocate receipt line to them.
 	 *
-	 * @param candidate
 	 * @return created receipt line
 	 */
 	private I_M_InOutLine createPackingMaterialReceiptLine(final HUPackingMaterialDocumentLineCandidate candidate)
@@ -454,7 +454,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLine;
 	}
 
-	private final boolean isRsaEligible(final I_M_ReceiptSchedule_Alloc rsa)
+	private boolean isRsaEligible(final I_M_ReceiptSchedule_Alloc rsa)
 	{
 		if (!rsa.isActive())
 		{
@@ -475,7 +475,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return true;
 	}
 
-	private final boolean isHUEligible(final I_M_HU hu)
+	private boolean isHUEligible(final I_M_HU hu)
 	{
 		final boolean huExistsAndSaved = hu != null && hu.getM_HU_ID() > 0;
 		if (!huExistsAndSaved)
@@ -530,7 +530,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Transfer handling units from <code>allocs</code> to <code>receiptLine</code>.
-	 *
+	 * <p>
 	 * Also collect the packing materials.
 	 *
 	 * @param rs
@@ -666,9 +666,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Process in an {@link IHUContextProcessorExecutor} retrieval of packing materials from Gebinde Lager. Will process them all at once in a single movement
-	 *
-	 * @param huContext
-	 * @param hu
 	 */
 	private void fetchPackingMaterialsFromGebindeLager(final IHUContext huContext)
 	{
@@ -679,10 +676,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	/**
 	 * Assign <code>hu</code> to receipt line. Also transfer the attributes from HU to receipt line's ASI.
 	 *
-	 * @param huContext
-	 * @param rs
 	 * @param hu top level HU (LU, TU, VHU)
-	 * @param receiptLine
 	 */
 	private void transferHandlingUnit(final IHUContext huContext,
 			final I_M_ReceiptSchedule rs,
