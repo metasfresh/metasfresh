@@ -184,6 +184,7 @@ public class RecordChangeLogEntryLoader
 			final Comparator<RecordRefWithLogEntry> comparator = Comparator
 					.comparing(e -> e.getRecordChangeLogEntry().getChangedTimestamp());
 			final RecordRefWithLogEntry firstRecordRefWithLogEntry = values.stream()
+					.filter(value -> value.getRecordChangeLogEntry().getValueOld() != null) /* it shouldn't be the case; just for safety */
 					.min(comparator)
 					.get() /* the collection is not empty, so there must be a minimum */;
 
@@ -322,7 +323,7 @@ public class RecordChangeLogEntryLoader
 		final RecordChangeLogEntry logEntry = recordRefWithLogEntry.getRecordChangeLogEntry();
 
 		final Object valueOld = logEntry.getValueOld();
-		if (valueOld == null || !(valueOld instanceof KeyNamePair))
+		if (valueOld == null || !(valueOld instanceof KeyNamePair)) //might be a bug
 		{
 			throw new AdempiereException("The RecordChangeLogEntry's column references C_Location, so its valueOld needs to be KeyNamePair and not-null")
 					.appendParametersToMessage()
