@@ -32,10 +32,6 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_Client>(I_C_Phonecall_Schedule.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_C_Phonecall_Schedule
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,23 +49,17 @@ public interface I_C_Phonecall_Schedule
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_Org>(I_C_Phonecall_Schedule.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Contact.
+	 * Set Kontakt.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -78,7 +68,7 @@ public interface I_C_Phonecall_Schedule
 	public void setC_BP_Contact_ID (int C_BP_Contact_ID);
 
 	/**
-	 * Get Contact.
+	 * Get Kontakt.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -86,12 +76,6 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getC_BP_Contact_ID();
 
-	public org.compiere.model.I_AD_User getC_BP_Contact();
-
-	public void setC_BP_Contact(org.compiere.model.I_AD_User C_BP_Contact);
-
-    /** Column definition for C_BP_Contact_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_C_BP_Contact_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "C_BP_Contact_ID", org.compiere.model.I_AD_User.class);
     /** Column name C_BP_Contact_ID */
     public static final String COLUMNNAME_C_BP_Contact_ID = "C_BP_Contact_ID";
 
@@ -115,12 +99,6 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_C_BPartner>(I_C_Phonecall_Schedule.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -144,12 +122,6 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_C_BPartner_Location>(I_C_Phonecall_Schedule.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -282,10 +254,31 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object>(I_C_Phonecall_Schedule.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Aktiv.
@@ -409,7 +402,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_PhonecallDate = "PhonecallDate";
 
 	/**
-	 * Set PhonecallTimeMax.
+	 * Set Erreichbar bis.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -418,7 +411,7 @@ public interface I_C_Phonecall_Schedule
 	public void setPhonecallTimeMax (java.sql.Timestamp PhonecallTimeMax);
 
 	/**
-	 * Get PhonecallTimeMax.
+	 * Get Erreichbar bis.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -432,7 +425,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_PhonecallTimeMax = "PhonecallTimeMax";
 
 	/**
-	 * Set PhonecallTimeMin.
+	 * Set Erreichbar von.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -441,7 +434,7 @@ public interface I_C_Phonecall_Schedule
 	public void setPhonecallTimeMin (java.sql.Timestamp PhonecallTimeMin);
 
 	/**
-	 * Get PhonecallTimeMin.
+	 * Get Erreichbar von.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -455,7 +448,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_PhonecallTimeMin = "PhonecallTimeMin";
 
 	/**
-	 * Set Aussendienst.
+	 * Set Kundenbetreuer.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -464,7 +457,7 @@ public interface I_C_Phonecall_Schedule
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Aussendienst.
+	 * Get Kundenbetreuer.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -472,12 +465,6 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getSalesRep_ID();
 
-	public org.compiere.model.I_AD_User getSalesRep();
-
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
-
-    /** Column definition for SalesRep_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
     /** Column name SalesRep_ID */
     public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
@@ -506,8 +493,6 @@ public interface I_C_Phonecall_Schedule
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
