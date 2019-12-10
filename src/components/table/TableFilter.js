@@ -77,7 +77,7 @@ class TableFilter extends Component {
     tabId: PropTypes.string,
     docType: PropTypes.string,
     docId: PropTypes.string,
-    openModal: PropTypes.func,
+    openModal: PropTypes.func.isRequired,
     toggleFullScreen: PropTypes.func,
     fullScreen: PropTypes.any,
     wrapperHeight: PropTypes.number,
@@ -86,6 +86,7 @@ class TableFilter extends Component {
     handleBatchEntryToggle: PropTypes.func,
     supportQuickInput: PropTypes.bool,
     allowCreateNew: PropTypes.bool,
+    openTableModal: PropTypes.func,
   };
 
   constructor(props) {
@@ -170,7 +171,7 @@ class TableFilter extends Component {
 
   render() {
     const {
-      openModal,
+      openTableModal,
       actions,
       toggleFullScreen,
       fullScreen,
@@ -195,7 +196,7 @@ class TableFilter extends Component {
             {!isBatchEntry && allowCreateNew && (
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                onClick={openModal}
+                onClick={openTableModal}
                 tabIndex={tabIndex}
               >
                 {counterpart.translate('window.addNew.caption')}

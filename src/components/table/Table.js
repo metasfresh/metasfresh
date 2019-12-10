@@ -794,6 +794,7 @@ class Table extends Component {
 
   openModal = (windowType, tabId, rowId) => {
     const { dispatch } = this.props;
+
     dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
   };
 
@@ -1192,7 +1193,7 @@ class Table extends Component {
           )}
           {!readonly && (
             <TableFilter
-              openModal={() => this.openModal(windowId, tabId, 'NEW')}
+              openTableModal={() => this.openModal(windowId, tabId, 'NEW')}
               {...{
                 toggleFullScreen,
                 fullScreen,
