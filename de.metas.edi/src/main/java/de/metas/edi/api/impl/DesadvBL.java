@@ -374,17 +374,24 @@ public class DesadvBL implements IDesadvBL
 				qtyToAdd.getUOM(),
 				BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
 				false/* noLUForVirtualTU */);
-		final int requiredLUQty = Math.max(
-				lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
-						lutuConfiguration,
-						qtyToAdd.toBigDecimal(),
-						qtyToAdd.getUOM()),
-				1 // if e.g. the tuPIItemProduct does not have an LU packing instruction
-		);
 
-		final Quantity maxQtyCUsPerLU = Quantity.of(
-				lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU()),
-				qtyToAdd.getUOM());
+		final Quantity maxQtyCUsPerLU;
+		final int requiredLUQty;
+		if (lutuConfiguration.isInfiniteQtyTU())
+		{
+			maxQtyCUsPerLU = qtyToAdd;
+			requiredLUQty = 1;
+		}
+		else
+		{ // if e.g. the tuPIItemProduct does not have an LU packing instruction
+			maxQtyCUsPerLU = Quantity.of(
+					lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU()),
+					qtyToAdd.getUOM());
+			requiredLUQty = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
+					lutuConfiguration,
+					qtyToAdd.toBigDecimal(),
+					qtyToAdd.getUOM());
+		}
 
 		Quantity remainingQty = qtyToAdd;
 

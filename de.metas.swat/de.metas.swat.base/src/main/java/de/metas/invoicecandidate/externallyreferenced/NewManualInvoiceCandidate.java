@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -92,6 +93,9 @@ public class NewManualInvoiceCandidate
 
 	private String lineDescription;
 
+	@Nullable
+	private List<InvoiceDetailItem> invoiceDetailItems;
+
 	private NewManualInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
@@ -111,7 +115,8 @@ public class NewManualInvoiceCandidate
 			ProductPrice priceEnteredOverride,
 			Percent discountOverride,
 			DocTypeId invoiceDocTypeId,
-			String lineDescription)
+			String lineDescription,
+			final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
 
@@ -132,6 +137,7 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.invoiceDetailItems = invoiceDetailItems;
 
 		if (priceEnteredOverride != null)
 		{
