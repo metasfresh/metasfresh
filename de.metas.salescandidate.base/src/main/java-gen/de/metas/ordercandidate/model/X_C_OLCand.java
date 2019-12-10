@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1061256606L;
+	private static final long serialVersionUID = -1770254872L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -269,43 +269,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getBill_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
-	}
-
-	@Override
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bankverbindung des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
-	}
-
-	/** Get Bankverbindung.
-		@return Bankverbindung des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_BankAccount_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1914,7 +1877,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1923,7 +1886,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
@@ -1980,7 +1943,9 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	/** Set Verpackungskapazität.
-		@param QtyItemCapacity Verpackungskapazität	  */
+		@param QtyItemCapacity 
+		Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
+	  */
 	@Override
 	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
 	{
@@ -1988,7 +1953,8 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	/** Get Verpackungskapazität.
-		@return Verpackungskapazität	  */
+		@return Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
+	  */
 	@Override
 	public java.math.BigDecimal getQtyItemCapacity () 
 	{

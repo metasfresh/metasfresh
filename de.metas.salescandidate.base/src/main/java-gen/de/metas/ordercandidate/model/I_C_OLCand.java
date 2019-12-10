@@ -266,35 +266,6 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
-	 * Set Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_BankAccount_ID();
-
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
-
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
-
-    /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BP_BankAccount>(I_C_OLCand.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
-    /** Column name C_BP_BankAccount_ID */
-    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
-
-	/**
 	 * Set Standort eff..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
@@ -2019,7 +1990,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2029,7 +2000,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2094,6 +2065,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2103,6 +2075,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Get Verpackungskapazität.
+	 * Fassungsvermögen in der Lager-Maßeinheit des jeweiligen Produktes
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
