@@ -172,6 +172,7 @@ class TableFilter extends Component {
   render() {
     const {
       openTableModal,
+      openModal,
       actions,
       toggleFullScreen,
       fullScreen,
