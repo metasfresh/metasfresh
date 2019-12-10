@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.attachments.AttachmentEntryService;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -41,6 +42,9 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_WF_Node;
+import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
@@ -202,6 +206,39 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
 				.list();
+	}
+
+	private I_AD_WF_Node retrieveManufacturingWorkflowNodeOrNull(@NonNull final int workflowId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_WF_Node.class)
+				.addEqualsFilter(I_AD_WF_Node.COLUMN_AD_Workflow_ID, workflowId)
+				.create()
+				.first(I_AD_WF_Node.class);
+	}
+
+	private I_AD_WF_Node_Template retrieveManufacturingWorkflowTemplateOrNull(@NonNull final int workflowId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_WF_Node_Template.class)
+				.addEqualsFilter(I_AD_WF_Node_Template.COLUMNNAME_AD_WF_Node_Template_ID, workflowId)
+				.create()
+				.first(I_AD_WF_Node_Template.class);
+	}
+
+	private int getWorkflowTemplateId(@NonNull final int workflowId)
+	{
+		final I_AD_WF_Node node = retrieveManufacturingWorkflowNodeOrNull(workflowId);
+		if (node == null)
+		{
+			return 0;
+		}
+		final I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(node.getAD_WF_Node_Template_ID());
+		if (nodeTemplate == null)
+		{
+			return 0;
+		}
+		return nodeTemplate.getAD_WF_Node_Template_ID();
 	}
 
 	private List<I_PP_Order_NodeNext> retrieveOrderNodeNexts(@NonNull final PPOrderId orderId)
@@ -423,6 +460,11 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 				saveRecord(activityRecord);
 				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
+				final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+				I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(routingRecord.getAD_WF_Node_Template_ID());
+				if (nodeTemplate != null) {
+					attachmentEntryService.shareAttachmentLinks(ImmutableList.of(nodeTemplate),ImmutableList.of(activityRecord.getPP_Order()));
+				}
 			}
 
 			//
@@ -433,7 +475,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		// Set First Activity
 		routingRecord.setPP_Order_Node_ID(orderRouting.getFirstActivity().getId().getRepoId());
 		saveRecord(routingRecord);
-
 		//
 		// Transitions
 		{
@@ -510,6 +551,10 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setAD_Workflow_ID(from.getRoutingId().getRepoId());
 		record.setDurationUnit(DurationUnitCodeUtils.toDurationUnitCode(from.getDurationUnit()));
 		record.setQtyBatchSize(from.getQtyPerBatch());
+		if (getWorkflowTemplateId(from.getRoutingId().getRepoId()) != 0)
+		{
+			record.setAD_WF_Node_Template_ID(getWorkflowTemplateId(from.getRoutingId().getRepoId()));
+		}
 	}
 
 	private I_PP_Order_Node toNewOrderNodeRecord(
@@ -531,7 +576,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final TemporalUnit durationUnit = from.getDurationUnit();
 
 		record.setIsActive(true);
-
 		record.setValue(from.getCode().getAsString());
 
 		record.setAD_Workflow_ID(from.getRoutingActivityId().getRoutingId().getRepoId());
