@@ -36,8 +36,6 @@ import javax.swing.ImageIcon;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -76,6 +74,7 @@ import org.slf4j.Logger;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
@@ -472,14 +471,7 @@ public class AcctViewer extends CFrame
 
 		//
 		// Add selection listener
-		table.getSelectionModel().addListSelectionListener(new ListSelectionListener()
-		{
-			@Override
-			public void valueChanged(final ListSelectionEvent e)
-			{
-				enableDisableOpenDocument();
-			}
-		});
+		table.getSelectionModel().addListSelectionListener(e -> enableDisableOpenDocument());
 
 		//
 		// South
@@ -826,7 +818,9 @@ public class AcctViewer extends CFrame
 			final int adTableId = m_data.getAD_Table_ID();
 			final int recordId = m_data.getRecord_ID();
 			if (adTableId <= 0 || recordId <= 0)
+			{
 				return;
+			}
 			parametersInfo.append(", AD_Table_ID=").append(adTableId)
 				.append(", Record_ID=").append(recordId);
 		}
@@ -1062,7 +1056,7 @@ public class AcctViewer extends CFrame
 			final AcctSchemaElement ase = acctSchemaElements.getByElementType(AcctSchemaElementType.Account);
 			if (ase != null)
 			{
-				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getElementId();
+				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ChartOfAccountsId.toRepoId(ase.getChartOfAccountsId());
 			}
 		}
 		else if (keyColumn.equals("User1_ID"))
@@ -1071,7 +1065,7 @@ public class AcctViewer extends CFrame
 			final AcctSchemaElement ase = acctSchemaElements.getByElementType(AcctSchemaElementType.UserList1);
 			if (ase != null)
 			{
-				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getElementId();
+				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ChartOfAccountsId.toRepoId(ase.getChartOfAccountsId());
 			}
 		}
 		else if (keyColumn.equals("User2_ID"))
@@ -1080,7 +1074,7 @@ public class AcctViewer extends CFrame
 			final AcctSchemaElement ase = acctSchemaElements.getByElementType(AcctSchemaElementType.UserList2);
 			if (ase != null)
 			{
-				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ase.getElementId();
+				whereClause += " AND " + I_C_ElementValue.COLUMNNAME_C_Element_ID + "=" + ChartOfAccountsId.toRepoId(ase.getChartOfAccountsId());
 			}
 		}
 		else if (keyColumn.equals("M_Product_ID"))
@@ -1187,7 +1181,9 @@ public class AcctViewer extends CFrame
 		{
 			ADialog.error(0, this, "Error", e.getLocalizedMessage());
 			if (LogManager.isLevelFinest())
+			{
 				e.printStackTrace();
+			}
 		}
 	}
 
