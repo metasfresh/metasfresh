@@ -129,7 +129,6 @@ export class RawWidget extends Component {
       handleBlur,
       listenOnKeysTrue,
       enableOnClickOutside,
-      onClickOutside,
     } = this.props;
 
     this.setState(
@@ -146,8 +145,6 @@ export class RawWidget extends Component {
         if (widgetField) {
           this.handlePatch(widgetField, value, id);
         }
-
-        onClickOutside && onClickOutside();
       }
     );
   };
