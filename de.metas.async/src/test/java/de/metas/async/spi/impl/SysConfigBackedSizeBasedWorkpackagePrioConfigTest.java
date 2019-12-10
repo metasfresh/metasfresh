@@ -3,12 +3,14 @@ package de.metas.async.spi.impl;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /*
@@ -21,14 +23,14 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,7 +47,7 @@ public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 
 	/**
 	 * Tests the normal case (all configured "correctly") for the following config (position=3 means third WP, queue's size=2).
-	 * 
+	 *
 	 * <pre>
 	 *     1 => urgend
 	 *  2 -5 => high
@@ -61,11 +63,11 @@ public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 		final String sysConfigPrefix = config.getSysConfigPrefix();
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		sysConfigBL.setValue(sysConfigPrefix + "31", "minor", 0);
-		sysConfigBL.setValue(sysConfigPrefix + "16", "low", 0);
-		sysConfigBL.setValue(sysConfigPrefix + "0006", "medium", 0); // leading zeros shall not matter
-		sysConfigBL.setValue(sysConfigPrefix + "02", "HIGH", 0);
-		sysConfigBL.setValue(sysConfigPrefix + "1", "URgENT", 0); // cases shall not matter
+		sysConfigBL.setValue(sysConfigPrefix + "31", "minor", ClientId.SYSTEM, OrgId.ANY);
+		sysConfigBL.setValue(sysConfigPrefix + "16", "low", ClientId.SYSTEM, OrgId.ANY);
+		sysConfigBL.setValue(sysConfigPrefix + "0006", "medium", ClientId.SYSTEM, OrgId.ANY); // leading zeros shall not matter
+		sysConfigBL.setValue(sysConfigPrefix + "02", "HIGH", ClientId.SYSTEM, OrgId.ANY);
+		sysConfigBL.setValue(sysConfigPrefix + "1", "URgENT", ClientId.SYSTEM, OrgId.ANY); // cases shall not matter
 
 		assertThat("Priority for size=100", config.apply(100), is(ConstantWorkpackagePrio.minor()));
 
@@ -91,7 +93,7 @@ public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 
 	/**
 	 * Tests the some misconfig-cases for the following config (position=3 means third WP, queue's size=2).
-	 * 
+	 *
 	 * <pre>
 	 *   1.2 => urgend (not an int, shall be ignored, i.e. also "high", as this is the "closest" prio we have got this size)
 	 *  2-25 => high (OK)
@@ -107,11 +109,11 @@ public class SysConfigBackedSizeBasedWorkpackagePrioConfigTest
 		final String sysConfigPrefix = config.getSysConfigPrefix();
 
 		final ISysConfigBL iSysConfigBL = Services.get(ISysConfigBL.class);
-		iSysConfigBL.setValue(sysConfigPrefix + "101", "minor", 0);
-		iSysConfigBL.setValue(sysConfigPrefix + "51", "low", 0);
-		iSysConfigBL.setValue(sysConfigPrefix + "25", "mediummm", 0); // wrong string, should be skipped
-		iSysConfigBL.setValue(sysConfigPrefix + "2", "high", 0);
-		iSysConfigBL.setValue(sysConfigPrefix + "1.2", "urgent", 0); // not an int number, should also be skipped
+		iSysConfigBL.setValue(sysConfigPrefix + "101", "minor", ClientId.SYSTEM, OrgId.ANY);
+		iSysConfigBL.setValue(sysConfigPrefix + "51", "low", ClientId.SYSTEM, OrgId.ANY);
+		iSysConfigBL.setValue(sysConfigPrefix + "25", "mediummm", ClientId.SYSTEM, OrgId.ANY); // wrong string, should be skipped
+		iSysConfigBL.setValue(sysConfigPrefix + "2", "high", ClientId.SYSTEM, OrgId.ANY);
+		iSysConfigBL.setValue(sysConfigPrefix + "1.2", "urgent", ClientId.SYSTEM, OrgId.ANY); // not an int number, should also be skipped
 
 		assertThat("Priority for size=101", config.apply(101 - 1), is(ConstantWorkpackagePrio.minor()));
 		assertThat("Priority for size=100", config.apply(100 - 1), is(ConstantWorkpackagePrio.low()));

@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
@@ -19,6 +20,7 @@ import org.junit.Test;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import de.metas.util.time.SystemTime;
@@ -100,14 +102,14 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 		// guard
 		{
-			sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 3, 0);
+			sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 3, ClientId.METASFRESH, OrgId.ANY);
 			assertOnlyFirstRecordIsReturned();
 		}
 
-		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, 0);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.METASFRESH, OrgId.ANY);
 		assertBothRecordsAreReturned();
 
-		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 5, 0);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 5, ClientId.METASFRESH, OrgId.ANY);
 		assertBothRecordsAreReturned();
 	}
 
@@ -119,7 +121,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 	{
 		// taken from another test; i don't really care, i just need a setup that returns both records
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, 0);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, ClientId.METASFRESH, OrgId.ANY);
 		assertBothRecordsAreReturned(); // guard
 
 		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Service);

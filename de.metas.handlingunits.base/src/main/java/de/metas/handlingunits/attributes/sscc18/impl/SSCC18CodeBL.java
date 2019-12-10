@@ -47,6 +47,8 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	 */
 	public static final String SYSCONFIG_ManufacturerCode = "de.metas.handlingunit.GS1ManufacturerCode";
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * The extended digit in SSCC18. Usually 0 (the package type - a carton)
 	 */
@@ -78,7 +80,10 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 
 	protected String getManufacturerCode(@NonNull final OrgId orgId)
 	{
-		final String manufacturerCode_SysConfig = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ManufacturerCode, null, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
+		final String manufacturerCode_SysConfig = sysConfigBL.getValue(SYSCONFIG_ManufacturerCode, null,
+				ClientId.METASFRESH.getRepoId(),
+				orgId.getRepoId());
+
 		return manufacturerCode_SysConfig;
 	}
 
@@ -145,11 +150,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	public SSCC18 generate(@NonNull final OrgId orgId, final int serialNumber)
 	{
 		Check.assume(serialNumber > 0, "serialNumber > 0");
-
 		//
 		// Retrieve and validate ManufacturerCode
 		final String manufacturerCode_SysConfig = getManufacturerCode(orgId);
-		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} is not a number", manufacturerCode_SysConfig);
+		Check.assumeNotEmpty(manufacturerCode_SysConfig, "Manufacturer code {} may not be empty; orgId={}", manufacturerCode_SysConfig, orgId);
+		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} need to be a number; orgId={}", manufacturerCode_SysConfig, orgId);
+
 		final int manufacturerCodeSize = manufacturerCode_SysConfig.length();
 		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {}", manufacturerCode_SysConfig);
 
@@ -157,12 +163,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		// Validate serialNumber and adjust serialNumber and manufacturerCode paddings
 		final String serialNumberStr = String.valueOf(serialNumber);
 		final int serialNumberSize = serialNumberStr.length();
-		Check.assume(serialNumberSize <= 9, "Serial number too long: {}", serialNumberStr);
+		Check.assume(serialNumberSize <= 9, "Serial number too long: {}; orgId={}", serialNumberStr, orgId);
 		final String finalManufacturerCode;
 		final String finalSerialNumber;
 		if (manufacturerCodeSize == 8)
 		{
-			Check.assume(serialNumberSize <= 8, "Serial number too long: {}", serialNumberStr);
+			Check.assume(serialNumberSize <= 8, "Serial number too long: {}; orgId={}", serialNumberStr, orgId);
 			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 8, "Manufacturer code size shoult be 8");
 
 			finalManufacturerCode = manufacturerCode_SysConfig;

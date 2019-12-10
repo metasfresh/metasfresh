@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Activity;
@@ -56,6 +57,7 @@ import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
@@ -132,7 +134,7 @@ public class HUInternalUseInventoryProducerTests
 		locator.setM_Warehouse(wh);
 		saveRecord(locator);
 
-		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, 0);
+		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.METASFRESH, OrgId.ANY);
 
 		SystemTime.setTimeSource(new FixedTimeSource(LocalDate.of(2019, Month.JUNE, 10).atTime(10, 00)));
 	}
