@@ -247,7 +247,6 @@ public class C_Order
 		order.setC_Payment_ID(payment.getC_Payment_ID());
 		payment.setC_Order_ID(order.getC_Order_ID());
 
-		DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, "select C_DocType_ID from C_Order where C_Order_ID=1000004");
 		InterfaceWrapperHelper.save(payment);
 	}
 
