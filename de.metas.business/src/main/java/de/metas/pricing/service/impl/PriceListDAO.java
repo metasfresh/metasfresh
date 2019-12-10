@@ -631,6 +631,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		recordCopy.setM_PriceList_Version_ID(request.getCopyToPriceListVersionId().getRepoId());
 		recordCopy.setM_ProductPrice_Base_ID(record.getM_ProductPrice_ID());
+		recordCopy.setIsInvalidPrice(false);
 
 		if (request.getPriceStd() != null)
 		{
