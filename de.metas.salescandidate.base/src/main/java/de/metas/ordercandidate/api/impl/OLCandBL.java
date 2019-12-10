@@ -45,6 +45,7 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -266,6 +267,21 @@ public class OLCandBL implements IOLCandBL
 				bpartnerOrderParamsShipperId,
 				orderDefaultsShipperId);
 	}
+
+	@Override
+	public DocTypeId getOrderDocTypeId(
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable final I_C_OLCand orderCandidateRecord)
+	{
+		final DocTypeId orderDocTypeId = orderCandidateRecord == null ? null : DocTypeId.ofRepoIdOrNull(orderCandidateRecord.getC_DocTypeOrder_ID());
+
+		final DocTypeId orderDefaultsDocTypeId = orderDefaults == null ? null
+				: orderDefaults.getDocTypeTargetId();
+
+		return coalesce(orderDocTypeId,
+				orderDefaultsDocTypeId);
+	}
+
 
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)

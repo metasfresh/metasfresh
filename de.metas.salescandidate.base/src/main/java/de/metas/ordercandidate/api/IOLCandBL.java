@@ -29,6 +29,7 @@ import org.compiere.model.PO;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
@@ -103,5 +104,7 @@ public interface IOLCandBL extends ISingletonService
 	ShipperId getShipperId(BPartnerOrderParams bPartnerOrderParams, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
 	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
+
+	DocTypeId getOrderDocTypeId(OLCandOrderDefaults orderDefaults, I_C_OLCand orderCandidateRecord);
 
 }
