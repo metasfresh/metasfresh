@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;

@@ -1,19 +1,8 @@
-package de.metas.shipping.api;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,18 +20,32 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.shipping.model;
+
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
 public class ShipperTransportationId implements RepoIdAware
 {
 	int repoId;
 
+	@NonNull
 	@JsonCreator
 	public static ShipperTransportationId ofRepoId(final int repoId)
 	{
 		return new ShipperTransportationId(repoId);
 	}
 
-	public static ShipperTransportationId ofRepoIdOrNull(@Nullable final int repoId)
+	@Nullable
+	public static ShipperTransportationId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}

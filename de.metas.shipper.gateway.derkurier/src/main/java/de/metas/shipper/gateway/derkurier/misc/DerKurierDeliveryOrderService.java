@@ -23,7 +23,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.NonNull;
 

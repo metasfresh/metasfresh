@@ -25,6 +25,7 @@ package de.metas.shipping.api;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import org.compiere.model.I_M_Package;
 
 import de.metas.shipping.ShipperId;
