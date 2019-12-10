@@ -88,7 +88,7 @@ public class DifferenceRowBalancerTest
 
 	private final void setAllowSalesPurchaseInvoiceCompensation(final boolean allow)
 	{
-		Services.get(ISysConfigBL.class).setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, ClientId.METASFRESH, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Test

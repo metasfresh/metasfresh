@@ -88,7 +88,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 
 	public void setAttributeAction(AttributeAction attributeAction)
 	{
-		sysConfigBL.setValue(AttributesBL.SYSCONFIG_AttributeAction, attributeAction.getCode(), ClientId.METASFRESH, OrgId.ANY);
+		sysConfigBL.setValue(AttributesBL.SYSCONFIG_AttributeAction, attributeAction.getCode(), ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	public void setIsAttrDocumentRelevantForInvoice(final I_M_Attribute attribute, final boolean isAttrDocumentRelevant)

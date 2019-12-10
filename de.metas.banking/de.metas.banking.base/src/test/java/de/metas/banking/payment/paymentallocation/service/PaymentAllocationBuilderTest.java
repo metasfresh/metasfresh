@@ -127,7 +127,7 @@ public class PaymentAllocationBuilderTest
 
 	private final void setAllowSalesPurchaseInvoiceCompensation(final boolean allow)
 	{
-		sysConfigs.setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, ClientId.METASFRESH, OrgId.ANY);
+		sysConfigs.setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Test

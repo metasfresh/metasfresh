@@ -83,7 +83,7 @@ public class InvoiceBLSortLinesTests
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
-		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.METASFRESH, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	/**

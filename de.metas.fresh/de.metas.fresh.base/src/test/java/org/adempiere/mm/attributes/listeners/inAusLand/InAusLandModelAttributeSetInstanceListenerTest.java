@@ -76,7 +76,7 @@ public class InAusLandModelAttributeSetInstanceListenerTest
 		helper.createM_AttributeValue(attr_InAusLand, InAusLandAttributeBL.ATTRIBUTEVALUE_INLAND);
 		helper.createM_AttributeValue(attr_InAusLand, InAusLandAttributeBL.ATTRIBUTEVALUE_AUSLAND);
 		helper.createM_AttributeUse(helper.product_attributeSet, attr_InAusLand);
-		helper.sysConfigBL.setValue(InAusLandAttributeDAO.SYSCONFIG_InAusLandAttribute, attr_InAusLand.getM_Attribute_ID(), ClientId.METASFRESH, OrgId.ANY);
+		helper.sysConfigBL.setValue(InAusLandAttributeDAO.SYSCONFIG_InAusLandAttribute, attr_InAusLand.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Test

@@ -75,11 +75,14 @@ public class RemoteArchiveStorageTests
 
 	@Rule
 	public TemporaryFolder storageFolder = new TemporaryFolder();
+	private ISysConfigBL sysConfigBL;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		setupClient();
 		setupRemoteArchiveEndpoint();
@@ -87,7 +90,7 @@ public class RemoteArchiveStorageTests
 
 	protected void setupClient()
 	{
-		//
+				//
 		// Configure client level settings
 		ctx = Env.getCtx();
 		client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
@@ -118,11 +121,9 @@ public class RemoteArchiveStorageTests
 
 	protected void setupRemoteArchiveEndpoint()
 	{
-		//
-		// Configure mocked endpoint
-		Services.get(ISysConfigBL.class).setValue(RemoteArchiveStorage.SYSCONFIG_ArchiveEndpoint,
+		sysConfigBL.setValue(RemoteArchiveStorage.SYSCONFIG_ArchiveEndpoint,
 				StaticMockedArchiveEndpoint.class.getName(),
-				ClientId.METASFRESH, OrgId.ANY);
+				ClientId.ofRepoId(client.getAD_Client_ID()), OrgId.ANY);
 		StaticMockedArchiveEndpoint.setArchiveEndpoint(new MockedArchiveEndpoint());
 
 	}

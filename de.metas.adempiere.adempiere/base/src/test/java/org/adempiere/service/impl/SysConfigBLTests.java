@@ -47,7 +47,7 @@ public class SysConfigBLTests
 	private ISysConfigBL sysConfigBL;
 
 	private Properties ctx;
-	private int adClientId;
+	private ClientId adClientId;
 
 	@Before
 	public void init()
@@ -56,8 +56,8 @@ public class SysConfigBLTests
 		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		this.ctx = Env.getCtx();
-		this.adClientId = 1;
-		Env.setContext(ctx, "#AD_Client_ID", adClientId);
+		this.adClientId = ClientId.ofRepoId(1);
+		Env.setContext(ctx, "#AD_Client_ID", adClientId.getRepoId());
 	}
 
 	@Test
@@ -74,9 +74,10 @@ public class SysConfigBLTests
 		{
 			final OrgId adOrgIdToUse = OrgId.ofRepoIdOrAny(AD_Org_ID);
 
-			sysConfigBL.setValue(name, value,  ClientId.METASFRESH, adOrgIdToUse);
+			sysConfigBL.setValue(name, value, adClientId, adOrgIdToUse);
+
 			final String valueGet = sysConfigBL.getValue(name,
-					adClientId,
+					adClientId.getRepoId(),
 					adOrgIdToUse.getRepoId());
 
 			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + adOrgIdToUse,
@@ -88,9 +89,9 @@ public class SysConfigBLTests
 		//
 		// Test: set the value on AD_Org_ID=0, get value using given Org
 		{
-			sysConfigBL.setValue(name, value, ClientId.METASFRESH, OrgId.ANY);
+			sysConfigBL.setValue(name, value, adClientId, OrgId.ANY);
 			final String valueGet = sysConfigBL.getValue(name,
-					adClientId,
+					adClientId.getRepoId(),
 					OrgId.ANY.getRepoId());
 
 			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + OrgId.ANY,
@@ -100,7 +101,7 @@ public class SysConfigBLTests
 
 			// Test with any other org:
 			final String valueGet_Org = sysConfigBL.getValue(name,
-					adClientId,
+					adClientId.getRepoId(),
 					AD_Org_ID);
 			Assert.assertEquals("Invalid value for " + name + ", AD_Org_ID=" + AD_Org_ID,
 					value, // expected

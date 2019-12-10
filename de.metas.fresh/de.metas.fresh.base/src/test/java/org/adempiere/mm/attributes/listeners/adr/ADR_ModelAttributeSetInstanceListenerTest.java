@@ -104,7 +104,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 			InterfaceWrapperHelper.save(attr_ADR);
 			helper.createM_AttributeUse(helper.product_attributeSet, attr_ADR);
 
-			helper.sysConfigBL.setValue(ADRAttributeDAO.SYSCONFIG_ADRAttribute, attr_ADR.getM_Attribute_ID(), ClientId.METASFRESH, OrgId.ANY);
+			helper.sysConfigBL.setValue(ADRAttributeDAO.SYSCONFIG_ADRAttribute, attr_ADR.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 
 			helper.createAD_Ref_List_Items(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID
 					, I_C_BPartner.ADRZertifizierung_L_GMAA

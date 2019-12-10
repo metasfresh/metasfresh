@@ -91,6 +91,6 @@ public class C_Flatrate_TermTest
 	{
 		final String sysConfigName = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_" + X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement;
 		Services.get(ISysConfigBL.class)
-				.setValue(sysConfigName, true, ClientId.METASFRESH, OrgId.ANY);
+				.setValue(sysConfigName, true, ClientId.SYSTEM, OrgId.ANY);
 	}
 }

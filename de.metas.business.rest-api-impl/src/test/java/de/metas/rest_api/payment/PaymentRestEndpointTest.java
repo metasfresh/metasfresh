@@ -112,7 +112,7 @@ class PaymentRestEndpointTest
 		assertEquals(orderIdentifier.asExternalId().getValue(), payment.getExternalOrderId());
 
 		// enable auto linking SO <-> Payment
-		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.METASFRESH, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
 
 		// run the "before_complete" interceptor
 		C_Order.INSTANCE.linkWithPaymentByExternalOrderId(salesOrder);
