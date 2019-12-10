@@ -34,7 +34,6 @@ import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAn
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.MissingPropertyException;
-import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -137,11 +136,6 @@ class JsonConverters
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 
 		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request);
-
-		if (salesRepId == null)
-		{
-			throw MissingResourceException.builder().resourceName("salesPartnerCode").parentResource(request).build();
-		}
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 

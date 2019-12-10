@@ -325,7 +325,12 @@ final class MasterdataProvider
 
 		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode = bPartnerDAO.getBPartnerIdBySalesPartnerCode(salesRepValue);
 
-		return bPartnerIdBySalesPartnerCode.orElse(null);
+		return bPartnerIdBySalesPartnerCode.orElseThrow(() ->
+				MissingResourceException.builder().
+				resourceName("salesPartnerCode").
+				resourceIdentifier(salesRepValue).
+				parentResource(request).
+				build());
 	}
 
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)

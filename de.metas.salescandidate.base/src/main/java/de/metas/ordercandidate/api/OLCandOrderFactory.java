@@ -22,6 +22,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MNote;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
@@ -34,6 +35,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -103,6 +105,7 @@ class OLCandOrderFactory
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private static final String MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = "OLCandProcessor.ProcessingError_Desc";
 	private static final String MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = "OLCandProcessor.Order_Completion_Failed";
@@ -209,15 +212,19 @@ class OLCandOrderFactory
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
 		{
-			order.setC_DocType_ID(candidateOfGroup.getOrderDocTypeId().getRepoId());
+			order.setC_DocTypeTarget_ID(candidateOfGroup.getOrderDocTypeId().getRepoId());
 		}
 
 		final BPartnerId salesRepId  = candidateOfGroup.getSalesRepId();
 
-
 		if(salesRepId != null)
 		{
-			order.setSalesRep_ID(salesRepId.getRepoId());
+			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
+
+			final I_C_BPartner salesPartner = bpartnerDAO.getById(salesRepId);
+
+			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
+
 		}
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment

@@ -10,6 +10,8 @@ import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
@@ -108,6 +110,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final PaymentTermId paymentTermId = olCandBL.getPaymentTermId(params, orderDefaults);
 		final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(olCandRecord, params, orderDefaults);
 		final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
+		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
@@ -121,6 +125,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.paymentTermId(paymentTermId)
 				.pricingSystemId(pricingSystemId)
 				.shipperId(shipperId)
+				.orderDocTypeId(orderDocTypeId)
+				.salesRepId(salesRepId)
 				.build();
 	}
 }
