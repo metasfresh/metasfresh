@@ -1,5 +1,8 @@
 package de.metas.ordercandidate.api;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -8,7 +11,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -20,10 +22,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -79,7 +84,7 @@ public class OLCandRepository
 
 	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
-		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
+		final I_C_OLCand olCandPO = newInstance(I_C_OLCand.class);
 
 		if (request.getOrgId() != null)
 		{
@@ -141,6 +146,11 @@ public class OLCandRepository
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
 
+		if (request.getDocTypeOrderId() != null)
+		{
+			olCandPO.setC_DocTypeOrder_ID(DocTypeId.toRepoId(request.getDocTypeOrderId()));
+		}
+
 		olCandPO.setPresetDateShipped(TimeUtil.asTimestamp(request.getPresetDateShipped()));
 
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
@@ -176,22 +186,32 @@ public class OLCandRepository
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 
-		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		if (request.getDataSourceInternalName() != null)
-		{
-			final int inputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceId(request.getDataSourceInternalName());
-			olCandPO.setAD_InputDataSource_ID(inputDataSourceId);
-		}
-		if (request.getDataDestInternalName() != null)
-		{
-			final int inputDataDestId = inputDataSourceDAO.retrieveInputDataSourceId(request.getDataDestInternalName());
-			olCandPO.setAD_DataDestination_ID(inputDataDestId);
-		}
+		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
+
+		olCandPO.setAD_DataDestination_ID(request.getDataDestId().getRepoId());
 
 		olCandPO.setExternalLineId(request.getExternalLineId());
 		olCandPO.setExternalHeaderId(request.getExternalHeaderId());
 
-		InterfaceWrapperHelper.saveRecord(olCandPO);
+		final ShipperId shipperId = request.getShipperId();
+		if (shipperId != null)
+		{
+			olCandPO.setM_Shipper_ID(shipperId.getRepoId());
+		}
+
+		final BPartnerId salesRepId = request.getSalesRepId();
+		if (salesRepId != null)
+		{
+			olCandPO.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
+		}
+
+		final PaymentRule paymentRule = request.getPaymentRule();
+		if (paymentRule != null)
+		{
+			olCandPO.setPaymentRule(paymentRule.getCode());
+		}
+
+		saveRecord(olCandPO);
 
 		return olCandPO;
 	}
@@ -219,7 +239,7 @@ public class OLCandRepository
 		}
 		if (olCandQuery.getInputDataSourceName() != null)
 		{
-			final int inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(olCandQuery.getInputDataSourceName());
+			final InputDataSourceId inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
 		}
 

@@ -116,6 +116,7 @@ class IdentifierStringTest
 				.put(Type.EXTERNAL_ID, "ext-someExternalId")
 				.put(Type.VALUE, "val-someValue")
 				.put(Type.GLN, "gln-someGLN")
+				.put(Type.INTERNALNAME, "int-someInternalName")
 				.build();
 
 		for (final Type type : Type.values())
