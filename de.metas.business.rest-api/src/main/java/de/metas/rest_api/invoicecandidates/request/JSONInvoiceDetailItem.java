@@ -1,18 +1,6 @@
-package de.metas.phonecall;
-
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business.rest-api
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -32,28 +20,33 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.rest_api.invoicecandidates.request;
+
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+
 @Value
-@Builder
-public class PhonecallSchemaVersionLine
+public class JSONInvoiceDetailItem
 {
-	@Nullable
-	PhonecallSchemaVersionLineId id;
+	Integer seqNo;
 
-	@NonNull
-	PhonecallSchemaVersionId versionId;
+	String label;
 
-	@NonNull
-	BPartnerLocationId bpartnerAndLocationId;
-
-	@NonNull
-	UserId contactId;
-
-	@NonNull
-	ZonedDateTime startTime;
-
-	@NonNull
-	ZonedDateTime endTime;
-
-	@Nullable
 	String description;
+
+	@JsonCreator
+	@Builder
+	public JSONInvoiceDetailItem(
+			@JsonProperty("seqNo") @Nullable final Integer seqNo,
+			@JsonProperty("label") @Nullable final String label,
+			@JsonProperty("description") @Nullable final String description)
+	{
+		this.seqNo = seqNo;
+		this.label = label;
+		this.description = description;
+	}
 }

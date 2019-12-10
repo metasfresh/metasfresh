@@ -152,6 +152,7 @@ public class PhonecallSchemaRepository
 				.contactId(UserId.ofRepoId(record.getC_BP_Contact_ID()))
 				.startTime(TimeUtil.asZonedDateTime(record.getPhonecallTimeMin()))
 				.endTime(TimeUtil.asZonedDateTime(record.getPhonecallTimeMax()))
+				.description(record.getDescription())
 				.build();
 	}
 
