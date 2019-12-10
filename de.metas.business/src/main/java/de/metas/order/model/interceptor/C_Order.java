@@ -21,11 +21,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.DB;
 
 import java.util.List;
 import java.util.Optional;
@@ -205,7 +207,7 @@ public class C_Order
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void linkWithPaymentByExternalOrderId(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
@@ -234,10 +236,18 @@ public class C_Order
 			return;
 		}
 
-		final I_C_Payment payment = paymentOptional.get();
-		payment.setC_Order_ID(order.getC_Order_ID());
-		order.setC_Payment_ID(payment.getC_Payment_ID());
+		// ! [workaround]
+		// This save should not be needed but it is.
+		// Without it MPayment.setC_Order_ID fails because it tries to read the C_DocType_ID from the order
+		// 		and since the order is not yet saved => only C_DocType_Target_ID has value and C_DocType_ID doesn't (is 0).
+		// Therefore we use this save to flush the order.
+		Services.get(IOrderDAO.class).save(order);
 
+		final I_C_Payment payment = paymentOptional.get();
+		order.setC_Payment_ID(payment.getC_Payment_ID());
+		payment.setC_Order_ID(order.getC_Order_ID());
+
+		DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, "select C_DocType_ID from C_Order where C_Order_ID=1000004");
 		InterfaceWrapperHelper.save(payment);
 	}
 

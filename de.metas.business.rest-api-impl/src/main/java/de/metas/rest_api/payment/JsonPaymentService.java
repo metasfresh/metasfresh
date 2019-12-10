@@ -93,7 +93,7 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonPaymentInfo.getBpartnerIdentifier(), jsonPaymentInfo.getCurrencyCode(), jsonPaymentInfo.getTargetIBAN()));
 		}
 
-		final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()
+		final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
 				.bpartnerId(bPartnerId)
 				.payAmt(jsonPaymentInfo.getAmount())
 				.currencyId(currencyId)
@@ -107,6 +107,7 @@ public class JsonPaymentService
 
 		final String externalOrderId = IdentifierString.of(jsonPaymentInfo.getExternalOrderId()).asExternalId().getValue();
 		payment.setExternalOrderId(externalOrderId);
+		payment.setIsAutoAllocateAvailableAmt(true);
 		InterfaceWrapperHelper.save(payment);
 
 		return ResponseEntity.ok().build();
