@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
 
@@ -25,7 +25,7 @@ const dateParse = ['Date', 'DateTime', 'ZonedDateTime', 'Timestamp', 'Time'];
  * @module MasterWidget
  * @extends Component
  */
-class MasterWidget extends Component {
+class MasterWidget extends PureComponent {
   state = {
     updated: false,
     edited: false,

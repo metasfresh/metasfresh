@@ -1,9 +1,8 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
 import { Shortcut } from '../keyshortcuts';
-import { arePropTypesIdentical } from '../../utils';
 
-export default class DocumentListContextShortcuts extends Component {
+export default class DocumentListContextShortcuts extends PureComponent {
   handlers = {
     OPEN_SELECTED: event => {
       event.preventDefault();
@@ -52,9 +51,6 @@ export default class DocumentListContextShortcuts extends Component {
       }
     },
   };
-
-  shouldComponentUpdate = nextProps =>
-    !arePropTypesIdentical(nextProps, this.props);
 
   render() {
     return [

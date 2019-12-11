@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import Container from '../components/Container';
@@ -15,7 +15,7 @@ const mapStateToProps = state => ({
   includedView: state.listHandler.includedView,
 });
 
-class InboxAll extends Component {
+class InboxAll extends PureComponent {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     inbox: PropTypes.object.isRequired,

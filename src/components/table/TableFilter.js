@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
@@ -13,7 +13,7 @@ import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
 import { TableFilterContextShortcuts } from '../keyshortcuts';
 
-class ActionButton extends Component {
+class ActionButton extends PureComponent {
   static propTypes = {
     action: PropTypes.object.isRequired,
     openModal: PropTypes.func.isRequired,
@@ -47,8 +47,14 @@ class ActionButton extends Component {
     );
   };
 
+  handleShowTooltip = () => {
+    const { action, showTooltip } = this.props;
+
+    showTooltip(action.processId);
+  };
+
   render() {
-    const { action, tabIndex, children, showTooltip, hideTooltip } = this.props;
+    const { action, tabIndex, children, hideTooltip } = this.props;
 
     return (
       <button
@@ -56,7 +62,7 @@ class ActionButton extends Component {
         className="btn btn-meta-outline-secondary btn-distance btn-sm"
         tabIndex={tabIndex}
         title={action.description}
-        onMouseEnter={showTooltip}
+        onMouseEnter={this.showTooltip}
         onMouseLeave={hideTooltip}
       >
         {action.caption}
@@ -241,7 +247,7 @@ class TableFilter extends Component {
                       docType,
                       selected,
                     }}
-                    showTooltip={() => this.showTooltip(action.processId)}
+                    showTooltip={this.showTooltip}
                     hideTooltip={this.hideTooltip}
                     key={`top-action-${action.processId}`}
                   >

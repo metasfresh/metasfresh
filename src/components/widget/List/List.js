@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React, { PureComponent } from 'react';
 import { List } from 'immutable';
 import { findKey } from 'lodash';
 import uuid from 'uuid/v4';
@@ -12,7 +11,7 @@ import {
 import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
 import RawList from './RawList';
 
-class ListWidget extends Component {
+export default class ListWidget extends PureComponent {
   previousValue = '';
 
   constructor(props) {
@@ -331,8 +330,7 @@ ListWidget.defaultProps = {
 };
 
 ListWidget.propTypes = {
-  filter: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
+  filter: PropTypes.object,
   properties: PropTypes.object,
   isInputEmpty: PropTypes.bool,
   defaultValue: PropTypes.any,
@@ -365,14 +363,3 @@ ListWidget.propTypes = {
   mandatory: PropTypes.bool,
   lastProperty: PropTypes.string,
 };
-
-const mapStateToProps = state => ({
-  filter: state.windowHandler.filter,
-});
-
-export default connect(
-  mapStateToProps,
-  false,
-  false,
-  { forwardRef: true }
-)(ListWidget);

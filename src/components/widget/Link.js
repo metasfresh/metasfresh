@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
-class Link extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  handleClick = url => {
+export default class Link extends PureComponent {
+  handleClick = () => {
+    const { widgetData } = this.props;
+    const url = widgetData[0].value;
     window.open(url, '_blank');
   };
 
@@ -24,7 +22,7 @@ class Link extends Component {
           {icon && <i className="meta-icon-edit input-icon-right" />}
         </div>
         <div
-          onClick={() => this.handleClick(widgetData[0].value)}
+          onClick={this.handleClick}
           className={
             'btn btn-icon btn-meta-outline-secondary btn-inline ' +
             'pointer btn-distance-rev btn-sm ' +
@@ -39,5 +37,3 @@ class Link extends Component {
     );
   }
 }
-
-export default Link;
