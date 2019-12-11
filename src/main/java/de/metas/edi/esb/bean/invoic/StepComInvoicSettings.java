@@ -62,6 +62,7 @@ public class StepComInvoicSettings
 				.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
 				.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
 
+				.invoicLineBUYRRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.BUYR.required", "false"))
 				.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
 				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
 				.invoicLineEANTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANT.required", "false"))
@@ -91,6 +92,8 @@ public class StepComInvoicSettings
 	boolean invoicIVCEStreet1Required;
 	boolean invoicIVCECityRequired;
 	boolean invoicIVCEPostaCodeRequired;
+
+	boolean invoicLineBUYRRequired;
 
 	boolean invoicLineGTINRequired;
 

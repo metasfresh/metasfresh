@@ -39,7 +39,6 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
@@ -248,13 +247,16 @@ public class StepComXMLInvoicBean
 			final String lineNumber = formatNumber(xmlCctopInvoic500V.getLine(), decimalFormat);
 			detailXrech.setLINENUMBER(lineNumber);
 
-			if (!Util.isEmpty(xmlCctopInvoic500V.getVendorProductNo()))
+			if (settings.isInvoicLineBUYRRequired())
 			{
+				final String buyr = ValidationHelper.validateString(xmlCctopInvoic500V.getVendorProductNo(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getVendorProductNo() + " @VendorProductNo@");
+
 				final DPRIN1 productInfo = INVOIC_objectFactory.createDPRIN1();
 				productInfo.setDOCUMENTID(documentId);
 				productInfo.setLINENUMBER(lineNumber);
 				productInfo.setPRODUCTQUAL(ProductQual.BUYR.name());
-				productInfo.setPRODUCTID(xmlCctopInvoic500V.getVendorProductNo());
+				productInfo.setPRODUCTID(buyr);
 				detailXrech.getDPRIN1().add(productInfo);
 			}
 
