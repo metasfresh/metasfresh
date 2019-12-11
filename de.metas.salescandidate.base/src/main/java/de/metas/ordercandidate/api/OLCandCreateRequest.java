@@ -1,7 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -9,12 +7,16 @@ import javax.annotation.Nullable;
 
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -50,15 +52,15 @@ public class OLCandCreateRequest
 
 	String externalHeaderId;
 
-	/** Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record. */
-	String dataSourceInternalName;
+	/** Mandatory; an Identifier of an existing AD_InputDataSource record. */
+	InputDataSourceId dataSourceId;
 
 	/**
-	 * Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record.
+	 * Mandatory; an Identifier of an existing AD_InputDataSource record.
 	 * It's mandatory because all the code that processes C_OLCands into something else expects this to be set to its respective destination.
 	 * Therefore, {@code C_OLCand}s without any dataDest will go nowhere.
 	 */
-	String dataDestInternalName;
+	InputDataSourceId dataDestId;
 
 	OrgId orgId;
 
@@ -74,6 +76,8 @@ public class OLCandCreateRequest
 
 	LocalDate presetDateInvoiced;
 	DocTypeId docTypeInvoiceId;
+
+	DocTypeId docTypeOrderId;
 
 	LocalDate presetDateShipped;
 
@@ -92,13 +96,19 @@ public class OLCandCreateRequest
 
 	WarehouseId warehouseDestId;
 
+	ShipperId shipperId;
+
+	BPartnerId salesRepId;
+
+	PaymentRule paymentRule;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
 			@Nullable final String externalHeaderId,
 			final OrgId orgId,
-			@NonNull final String dataSourceInternalName,
-			@Nullable final String dataDestInternalName,
+			@NonNull final InputDataSourceId dataSourceId,
+			@NonNull final InputDataSourceId dataDestId,
 			@NonNull final BPartnerInfo bpartner,
 			final BPartnerInfo billBPartner,
 			final BPartnerInfo dropShipBPartner,
@@ -109,6 +119,7 @@ public class OLCandCreateRequest
 			@Nullable final LocalDate presetDateInvoiced,
 			@Nullable final LocalDate presetDateShipped,
 			@Nullable final DocTypeId docTypeInvoiceId,
+			@Nullable final DocTypeId docTypeOrderId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
 			final String productDescription,
@@ -119,7 +130,10 @@ public class OLCandCreateRequest
 			final BigDecimal price,
 			final CurrencyId currencyId,
 			final Percent discount,
-			@Nullable final WarehouseId warehouseDestId)
+			@Nullable final WarehouseId warehouseDestId,
+			@Nullable final ShipperId shipperId,
+			@Nullable final BPartnerId salesRepId,
+			@Nullable final PaymentRule paymentRule)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -128,8 +142,8 @@ public class OLCandCreateRequest
 
 		this.orgId = orgId;
 
-		this.dataDestInternalName = assumeNotEmpty(dataDestInternalName, "dataDestInternalName may not be empty");
-		this.dataSourceInternalName = assumeNotEmpty(dataSourceInternalName, "dataSourceInternalName may not be empty");
+		this.dataSourceId = dataSourceId;
+		this.dataDestId = dataDestId;
 
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
@@ -141,6 +155,7 @@ public class OLCandCreateRequest
 		this.dateOrdered = dateOrdered;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.docTypeInvoiceId = docTypeInvoiceId;
+		this.docTypeOrderId = docTypeOrderId;
 
 		this.presetDateShipped = presetDateShipped;
 
@@ -155,6 +170,11 @@ public class OLCandCreateRequest
 		this.currencyId = currencyId;
 		this.discount = discount;
 
+		this.shipperId = shipperId;
+		this.salesRepId = salesRepId;
+
 		this.warehouseDestId = warehouseDestId;
+
+		this.paymentRule = paymentRule;
 	}
 }

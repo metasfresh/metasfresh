@@ -1,5 +1,10 @@
 package de.metas.impex.api.impl;
 
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,6 +30,7 @@ package de.metas.impex.api.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,19 +39,31 @@ import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InputDataSourceDAO implements IInputDataSourceDAO
 {
+
 	@Override
-	public int retrieveInputDataSourceId(final String internalName)
+	public I_AD_InputDataSource getById(@NonNull final InputDataSourceId id)
 	{
-		return retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
+		return loadOutOfTrx(id, I_AD_InputDataSource.class);
+	}
+
+	@Override
+	public InputDataSourceId retrieveInputDataSourceIdByInternalName(final String internalName)
+	{
+		final int inputDataSourceRecordId = retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
 				.getAD_InputDataSource_ID();
+
+		return InputDataSourceId.ofRepoId(inputDataSourceRecordId);
 	}
 
 	@Override
@@ -94,11 +112,50 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 		{
 			final I_AD_InputDataSource newInputDataSource = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_InputDataSource.class, ITrx.TRXNAME_None);
 			newInputDataSource.setEntityType(request.getEntityType());
+			newInputDataSource.setValue(request.getInternalName());
 			newInputDataSource.setInternalName(request.getInternalName());
 			newInputDataSource.setIsDestination(request.isDestination());
 			newInputDataSource.setName(request.getName());
 			InterfaceWrapperHelper.save(newInputDataSource);
 		}
+	}
+
+	@Override
+	public Optional<InputDataSourceId> retrieveInputDataSourceIdBy(@NonNull final InputDataSourceQuery query)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_AD_InputDataSource> queryBuilder = queryBL.createQueryBuilder(I_AD_InputDataSource.class);
+
+		Check.assumeNotNull(query.getOrgId(), "Org Id is missing from InputDataSourceQuery ", query);
+
+		queryBuilder.addInArrayFilter(I_AD_InputDataSource.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
+
+		if (!query.getInternalName().isEmpty())
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_InternalName, query.getInternalName());
+		}
+
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+		}
+
+		if (!isEmpty(query.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_Value, query.getValue());
+		}
+
+		if (query.getInputDataSourceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_AD_InputDataSource_ID, query.getInputDataSourceId());
+		}
+
+		final InputDataSourceId firstId = queryBuilder
+				.create()
+				.firstIdOnly(InputDataSourceId::ofRepoId);
+
+		return Optional.of(firstId);
 	}
 
 }
