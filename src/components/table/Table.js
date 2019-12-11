@@ -798,6 +798,12 @@ class Table extends Component {
     dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
   };
 
+  openTableModal = () => {
+    const { dispatch, windowId, tabId } = this.props;
+
+    dispatch(openModal('Add new', windowId, 'window', tabId, 'NEW'));
+  };
+
   handleAdvancedEdit = (windowId, tabId, selected) => {
     const { dispatch } = this.props;
 
@@ -987,6 +993,8 @@ class Table extends Component {
       viewId,
       supportOpenRecord,
       focusOnFieldName,
+      modalVisible,
+      isGerman,
     } = this.props;
 
     const {
@@ -1030,6 +1038,8 @@ class Table extends Component {
           supportOpenRecord,
           item,
           focusOnFieldName,
+          modalVisible,
+          isGerman,
         }}
         dataHash={dataHash}
         key={`${i}-${viewId}`}
@@ -1065,12 +1075,7 @@ class Table extends Component {
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
         getSizeClass={getSizeClass}
-        handleRowCollapse={() =>
-          this.handleRowCollapse(
-            item,
-            collapsedParentsRows.indexOf(item[keyProperty]) > -1
-          )
-        }
+        handleRowCollapse={this.handleRowCollapse}
         onItemChange={this.handleItemChange}
         onCopy={handleCopy}
       />
@@ -1193,7 +1198,7 @@ class Table extends Component {
           )}
           {!readonly && (
             <TableFilter
-              openTableModal={() => this.openModal(windowId, tabId, 'NEW')}
+              openTableModal={this.openTableModal}
               {...{
                 toggleFullScreen,
                 fullScreen,
@@ -1348,6 +1353,10 @@ Table.propTypes = propTypes;
 const mapStateToProps = state => ({
   allowShortcut: state.windowHandler.allowShortcut,
   allowOutsideClick: state.windowHandler.allowOutsideClick,
+  modalVisible: state.windowHandler.modal.visible,
+  isGerman: state.appHandler.me.language
+    ? state.appHandler.me.language.key.includes('de')
+    : false,
 });
 
 const clickOutsideConfig = {
