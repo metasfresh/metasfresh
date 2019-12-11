@@ -107,7 +107,7 @@
     "webpack-cli": "3.2.1",
     "webpack-dev-server": "3.3.1",
     "webpack-node-externals": "1.7.2",
-    "why-did-you-update": "1.0.6"
+    "why-did-you-update": "github:maicki/why-did-you-update#pull/58/head"
   },
   "dependencies": {
     "@zxing/library": "0.12.3",
@@ -161,6 +161,7 @@
     "react-router-redux": "4.0.8",
     "react-tagsinput": "3.18.0",
     "react-tether": "1.0.4",
+    "react-transition-group": "^4.3.0",
     "react-translate-component": "0.15.1",
     "redux": "3.7.2",
     "redux-actions": "2.3.0",
@@ -169,6 +170,8 @@
     "redux-test-utils": "0.3.0",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
+    "shallow-compare": "^1.2.2",
+    "shallowequal": "^1.1.0",
     "simple-promise-queue": "0.1.7",
     "sockjs-client": "1.0.0",
     "stompjs": "2.3.3",
