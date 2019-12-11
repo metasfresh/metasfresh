@@ -1,5 +1,8 @@
 package de.metas.edi.esb.bean.invoic;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.camel.CamelContext;
 
 import de.metas.edi.esb.commons.Util;
@@ -106,8 +109,10 @@ public class StepComInvoicSettings
 
 	public boolean isMeasurementUnitAllowed(@NonNull final MeasurementUnit measurementUnit)
 	{
+		final List<String> allowedMeasurementUnits = Arrays.asList(invoicLineRequiredMEASUREMENTUNIT.split("\\s*,\\s*"));
+
 		return Util.isEmpty(invoicLineRequiredMEASUREMENTUNIT)
 				|| ANY_MEASUREMENTUNIT.equals(invoicLineRequiredMEASUREMENTUNIT)
-				|| invoicLineRequiredMEASUREMENTUNIT.equals(measurementUnit.name());
+				|| allowedMeasurementUnits.contains(measurementUnit.name());
 	}
 }

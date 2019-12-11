@@ -627,10 +627,10 @@ public class StepComXMLDesadvBean
 	}
 
 	private DETAILXlief createDetailAndAddLineData(
-			@NonNull EDIExpDesadvType xmlDesadv,
-			@NonNull EDIExpDesadvLineType line,
-			final StepComDesadvSettings settings,
-			DecimalFormat decimalFormat)
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final EDIExpDesadvLineType line,
+			@NonNull final StepComDesadvSettings settings,
+			final DecimalFormat decimalFormat)
 	{
 		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
 
@@ -701,13 +701,16 @@ public class StepComXMLDesadvBean
 			detail.getDPRIN1().add(eancProdInfo);
 		}
 
-		if (StringUtils.isNotEmpty(line.getProductNo()))
+		if (settings.isDesadvLineBUYRRequired())
 		{
+			final String buyr = ValidationHelper.validateString(line.getProductNo(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @ProductNo@");
+
 			final DPRIN1 prodInfo = DESADV_objectFactory.createDPRIN1();
 			prodInfo.setDOCUMENTID(documentId);
 			prodInfo.setPRODUCTQUAL(ProductQual.BUYR.toString());
 			prodInfo.setLINENUMBER(lineNumber);
-			prodInfo.setPRODUCTID(line.getProductNo());
+			prodInfo.setPRODUCTID(buyr);
 			detail.getDPRIN1().add(prodInfo);
 		}
 		if (StringUtils.isNotEmpty(line.getProductDescription()))
