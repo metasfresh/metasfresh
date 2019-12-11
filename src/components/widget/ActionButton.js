@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTopActions } from '../../actions/WindowActions';
@@ -11,7 +11,7 @@ import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContex
  * @module ActionButton
  * @extends Component
  */
-class ActionButton extends Component {
+class ActionButton extends PureComponent {
   constructor(props) {
     super(props);
 
