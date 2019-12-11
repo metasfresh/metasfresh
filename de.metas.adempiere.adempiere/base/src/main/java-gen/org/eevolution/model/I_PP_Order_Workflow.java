@@ -59,33 +59,6 @@ public interface I_PP_Order_Workflow
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Workflow Steps Template.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID);
-
-	/**
-	 * Get Workflow Steps Template.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_WF_Node_Template_ID();
-
-	public org.compiere.model.I_AD_WF_Node_Template getAD_WF_Node_Template();
-
-	public void setAD_WF_Node_Template(org.compiere.model.I_AD_WF_Node_Template AD_WF_Node_Template);
-
-    /** Column definition for AD_WF_Node_Template_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WF_Node_Template> COLUMN_AD_WF_Node_Template_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Workflow, org.compiere.model.I_AD_WF_Node_Template>(I_PP_Order_Workflow.class, "AD_WF_Node_Template_ID", org.compiere.model.I_AD_WF_Node_Template.class);
-    /** Column name AD_WF_Node_Template_ID */
-    public static final String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
-
-	/**
 	 * Set Workflow.
 	 * Workflow or combination of tasks
 	 *

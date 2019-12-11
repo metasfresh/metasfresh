@@ -15,7 +15,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 535405891L;
+	private static final long serialVersionUID = -1024116806L;
 
     /** Standard Constructor */
     public X_PP_Order_Workflow (Properties ctx, int PP_Order_Workflow_ID, String trxName)
@@ -47,40 +47,6 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_WF_Node_Template getAD_WF_Node_Template()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_Template_ID, org.compiere.model.I_AD_WF_Node_Template.class);
-	}
-
-	@Override
-	public void setAD_WF_Node_Template(org.compiere.model.I_AD_WF_Node_Template AD_WF_Node_Template)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Node_Template_ID, org.compiere.model.I_AD_WF_Node_Template.class, AD_WF_Node_Template);
-	}
-
-	/** Set Workflow Steps Template.
-		@param AD_WF_Node_Template_ID Workflow Steps Template	  */
-	@Override
-	public void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID)
-	{
-		if (AD_WF_Node_Template_ID < 1) 
-			set_Value (COLUMNNAME_AD_WF_Node_Template_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_WF_Node_Template_ID, Integer.valueOf(AD_WF_Node_Template_ID));
-	}
-
-	/** Get Workflow Steps Template.
-		@return Workflow Steps Template	  */
-	@Override
-	public int getAD_WF_Node_Template_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_Template_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_AD_Workflow getAD_Workflow()

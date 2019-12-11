@@ -213,7 +213,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_WF_Node.class)
-				.addEqualsFilter(I_AD_WF_Node.COLUMN_AD_Workflow_ID, workflowId)
+				.addEqualsFilter(I_AD_WF_Node.COLUMN_AD_WF_Node_ID, workflowId)
 				.create()
 				.first(I_AD_WF_Node.class);
 	}
@@ -466,11 +466,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 				saveRecord(activityRecord);
 				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
-				final I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(routingRecord.getAD_WF_Node_Template_ID());
-				if (nodeTemplate != null)
-				{
-					getAttachmentEntryServiceInstance().shareAttachmentLinks(ImmutableList.of(nodeTemplate),ImmutableList.of(activityRecord.getPP_Order()));
-				}
 			}
 
 			//
@@ -562,10 +557,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setAD_Workflow_ID(from.getRoutingId().getRepoId());
 		record.setDurationUnit(DurationUnitCodeUtils.toDurationUnitCode(from.getDurationUnit()));
 		record.setQtyBatchSize(from.getQtyPerBatch());
-		if (getWorkflowTemplateId(from.getRoutingId().getRepoId()) != 0)
-		{
-			record.setAD_WF_Node_Template_ID(getWorkflowTemplateId(from.getRoutingId().getRepoId()));
-		}
 	}
 
 	private I_PP_Order_Node toNewOrderNodeRecord(
@@ -627,6 +618,17 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setQtyReject(from.getQtyRejected().toBigDecimal());
 		record.setDateStart(TimeUtil.asTimestamp(from.getDateStart()));
 		record.setDateFinish(TimeUtil.asTimestamp(from.getDateFinish()));
+
+		if (getWorkflowTemplateId(record.getAD_WF_Node_ID()) != 0 )
+		{
+			record.setAD_WF_Node_Template_ID(getWorkflowTemplateId(record.getAD_WF_Node_ID()));
+		}
+
+		final I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(record.getAD_WF_Node_Template_ID());
+		if (nodeTemplate != null)
+		{
+			getAttachmentEntryServiceInstance().shareAttachmentLinks(ImmutableList.of(nodeTemplate),ImmutableList.of(record.getPP_Order()));
+		}
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)
