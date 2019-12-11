@@ -33,5 +33,5 @@ public interface PaymentRestEndpoint
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/payment";
 
 	@PostMapping
-	ResponseEntity<String> createPayment(@RequestBody @NonNull JsonPaymentInfo jsonPaymentInfo);
+	ResponseEntity<String> createInboundPayment(@RequestBody @NonNull JsonInboundPaymentInfo jsonInboundPaymentInfo);
 }

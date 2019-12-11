@@ -43,10 +43,10 @@ public class PaymentRestEndpointImpl implements PaymentRestEndpoint
 		this.jsonPaymentService = jsonPaymentService;
 	}
 
-	@PostMapping
+	@PostMapping("/inbound")
 	@Override
-	public ResponseEntity<String> createPayment(@RequestBody @NonNull final JsonPaymentInfo jsonPaymentInfo)
+	public ResponseEntity<String> createInboundPayment(@RequestBody @NonNull final JsonInboundPaymentInfo jsonInboundPaymentInfo)
 	{
-		return jsonPaymentService.createPaymentFromJson(jsonPaymentInfo);
+		return jsonPaymentService.createInboundPaymentFromJson(jsonInboundPaymentInfo);
 	}
 }
