@@ -3,6 +3,7 @@ package de.metas.edi.esb.bean.desadv;
 import org.apache.camel.CamelContext;
 
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.pojo.common.MeasurementUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +34,8 @@ import lombok.Value;
 @Builder
 public class StepComDesadvSettings
 {
+	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
+
 	public static StepComDesadvSettings forReceiverGLN(
 			@NonNull final CamelContext context,
 			@NonNull final String recipientGLN)
@@ -43,7 +46,10 @@ public class StepComDesadvSettings
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.testIndicator", "T"))
 				.desadvHeaderORIGReference(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.header.ORIG.reference", ""))
+
+				.desadvLinePackagingCodeLURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeLU.required", "true"))
 				.desadvLinePackagingCodeTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeTU.required", "false"))
+
 				.desadvLineSSCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.SSCC.required", "false"))
 				.desadvLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.GTIN.required", "false"))
 				.desadvLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.EANC.required", "false"))
@@ -55,7 +61,10 @@ public class StepComDesadvSettings
 				.desadvLineLIRN(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.LIRN", "true"))
 				.desadvLinePRICRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.PRIC.required", "false"))
 				.desadvLineDMARK1BestBeforeDateRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.bestBeforeDate.required", "false"))
+				.desadvLineDMARK1BestBeforeDateAsBatchNoRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.bestBeforeDateAsBatchNo.required", "false"))
 				.desadvLineCUTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.CUTU.required", "true"))
+
+				.desadvLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
 				.build();
 	}
 
@@ -66,6 +75,8 @@ public class StepComDesadvSettings
 	String testIndicator;
 
 	String desadvHeaderORIGReference;
+
+	boolean desadvLinePackagingCodeLURequired;
 
 	boolean desadvLinePackagingCodeTURequired;
 
@@ -90,4 +101,20 @@ public class StepComDesadvSettings
 	boolean desadvLinePRICRequired;
 
 	boolean desadvLineDMARK1BestBeforeDateRequired;
+
+	boolean desadvLineDMARK1BestBeforeDateAsBatchNoRequired;
+
+	String desadvLineRequiredMEASUREMENTUNIT;
+
+	public boolean isDesadvLineMEASUREMENTUNITRequired()
+	{
+		return !Util.isEmpty(desadvLineRequiredMEASUREMENTUNIT);
+	}
+
+	public boolean isMeasurementUnitAllowed(@NonNull final MeasurementUnit measurementUnit)
+	{
+		return Util.isEmpty(desadvLineRequiredMEASUREMENTUNIT)
+				|| ANY_MEASUREMENTUNIT.equals(desadvLineRequiredMEASUREMENTUNIT)
+				|| desadvLineRequiredMEASUREMENTUNIT.equals(measurementUnit.name());
+	}
 }

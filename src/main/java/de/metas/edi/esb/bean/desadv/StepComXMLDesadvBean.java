@@ -33,12 +33,18 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
-
+import java.util.Map;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.lang.Nullable;
 
@@ -85,6 +91,7 @@ import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.ReferenceQual;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import de.metas.edi.esb.route.exports.StepComXMLDesadvRoute;
 import lombok.NonNull;
+import lombok.Value;
 
 public class StepComXMLDesadvBean
 {
@@ -302,11 +309,14 @@ public class StepComXMLDesadvBean
 						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(sscc18, 18)/* if ssccRequired and we got here, then this is not null */);
 						ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
 
-						final String packagingCodeLU = validateString(
-								lineAndPack.getPack().getMHUPackagingCodeLUText(),
-								"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_LU_ID@");
-						ppack1.setPACKAGINGCODE(packagingCodeLU);
-						ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
+						if (settings.isDesadvLinePackagingCodeLURequired())
+						{
+							final String packagingCodeLU = validateString(
+									lineAndPack.getPack().getMHUPackagingCodeLUText(),
+									"@FillMandatory@ @EDI_DesadvLine_ID@=" + lineAndPack.getLine().getLine() + " @M_HU_PackagingCode_LU_ID@");
+							ppack1.setPACKAGINGCODE(packagingCodeLU);
+							ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
+						}
 
 						final DETAILXlief detailXlief = createDETAILXliefForLineAndPack(xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
 						ppack1.getDETAIL().add(detailXlief);
@@ -345,20 +355,144 @@ public class StepComXMLDesadvBean
 					final DQVAR1 dqvar1 = createDQVAR1(documentId, line, quantityDiff, decimalFormat);
 					detail.setDQVAR1(dqvar1);
 				}
-
 			}
 			packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
 		}
 		else
 		{
-			for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
+			final PackagingLUGroupings packagingCodeLUs = extractPackagingCodeLU(xmlDesadv.getEDIExpDesadvLine(), settings); // has at least one key, even if there is no packagingCodeLU
+
+			if (packagingCodeLUs.hasSinglePackagingCode())
 			{
-				// don't create PPACK1s, but create one aggregated detail per line
-				final DETAILXlief detailXlief = createDETAILXliefForLine(xmlDesadv, line, settings, decimalFormat, dateFormat);
-				packIn.getDETAIL().add(detailXlief);
+				// only one global packagingCodeLU, so no need for PPACK1s. We can add the one packagingCodeLU to the PACKIN
+				if (settings.isDesadvLinePackagingCodeLURequired())
+				{
+					final String packagingCodeLUText = packagingCodeLUs.getSinglePackagingCode();
+
+					final String packagingCodeLU = validateString(
+							"NONE".equals(packagingCodeLUText) ? null : packagingCodeLUText,
+							"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @M_HU_PackagingCode_LU_ID@");
+					packIn.setPACKAGINGCODE(packagingCodeLU);
+					packIn.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
+				}
+				for (final EDIExpDesadvLineType line : xmlDesadv.getEDIExpDesadvLine())
+				{
+					// don't create PPACK1s, but create one aggregated detail per line
+					final DETAILXlief detailXlief = createDETAILXliefForLine(xmlDesadv, line, settings, decimalFormat, dateFormat);
+					packIn.getDETAIL().add(detailXlief);
+				}
 			}
+			else
+			{
+				for (final String packagingCodeLUText : packagingCodeLUs.getPackagingCodes())
+				{
+					final PPACK1 ppack1 = createPPACK1(header);
+					packIn.getPPACK1().add(ppack1);
+
+					// no need to have PPACK1s. We can add the one packagingCodeLU to the PACKIN
+					if (settings.isDesadvLinePackagingCodeLURequired())
+					{
+						final String packagingCodeLU = validateString(
+								"NONE".equals(packagingCodeLUText) ? null : packagingCodeLUText, // fail if "NONE"
+								"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @M_HU_PackagingCode_LU_ID@");
+						ppack1.setPACKAGINGCODE(packagingCodeLU);
+						ppack1.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
+					}
+					for (final EDIExpDesadvLineType line : packagingCodeLUs.getLines(packagingCodeLUText))
+					{
+						for (final EDIExpDesadvLinePackType pack : packagingCodeLUs.getPacks(packagingCodeLUText, line))
+						{
+							final LineAndPack lineAndPack = new LineAndPack(line, pack);
+							final DETAILXlief detailXlief = createDETAILXliefForLineAndPack(xmlDesadv, lineAndPack, settings, decimalFormat, dateFormat);
+							ppack1.getDETAIL().add(detailXlief);
+						}
+					}
+				}
+			}
+
 			packIn.setPACKAGINGTOTAL(formatNumber(0, decimalFormat));
 		}
+	}
+
+	private PackagingLUGroupings extractPackagingCodeLU(
+			@NonNull final List<EDIExpDesadvLineType> lines,
+			@NonNull final StepComDesadvSettings settings)
+	{
+		final PackagingLUGroupings packingLUGroupings = new PackagingLUGroupings();
+
+		for (final EDIExpDesadvLineType line : lines)
+		{
+			for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
+			{
+				final String packagingCodeLU;
+				if (!settings.isDesadvLinePackagingCodeLURequired())
+				{
+					// if packagincCodes are not needed, then some add them, to avoid having different keys that we don't actually care for
+					packagingCodeLU = "NONE";
+				}
+				else
+				{
+					packagingCodeLU = StringUtils.isEmpty(pack.getMHUPackagingCodeLUText()) ? "NONE" : pack.getMHUPackagingCodeLUText();
+				}
+
+				packingLUGroupings.add(packagingCodeLU, line, pack);
+			}
+		}
+		return packingLUGroupings;
+	}
+
+	/** Needed if we have to partition our lines and packs by different LU-packagingCodes. One line can have more than one different LU-packagingCode. */
+	@Value // note that this class is NOT immutable
+	private static class PackagingLUGroupings
+	{
+		LinkedHashMap<String, LinkedHashSet<EDIExpDesadvLineType>> packagingCodeTolines = new LinkedHashMap<>();
+		Map<PackagingCodeLUAndLine, List<EDIExpDesadvLinePackType>> packs = new HashMap<>();
+
+		public void add(
+				@NonNull final String packagingCodeLU,
+				@NonNull final EDIExpDesadvLineType line,
+				@NonNull final EDIExpDesadvLinePackType pack)
+		{
+			final LinkedHashSet<EDIExpDesadvLineType> codeLines = packagingCodeTolines.computeIfAbsent(packagingCodeLU, key -> new LinkedHashSet<>());
+			codeLines.add(line);
+
+			final PackagingCodeLUAndLine packagingCodeLUAndLine = new PackagingCodeLUAndLine(packagingCodeLU, line);
+			final List<EDIExpDesadvLinePackType> codeAndLinePacks = packs.computeIfAbsent(packagingCodeLUAndLine, key -> new ArrayList<>());
+			codeAndLinePacks.add(pack);
+		}
+
+		public boolean hasSinglePackagingCode()
+		{
+			return packagingCodeTolines.size() == 1;
+		}
+
+		public String getSinglePackagingCode()
+		{
+			return packagingCodeTolines.keySet().iterator().next();
+		}
+
+		public Collection<String> getPackagingCodes()
+		{
+			return packagingCodeTolines.keySet();
+		}
+
+		public Collection<EDIExpDesadvLineType> getLines(@NonNull final String packagingCodeLUText)
+		{
+			return packagingCodeTolines.get(packagingCodeLUText);
+		}
+
+		public Collection<EDIExpDesadvLinePackType> getPacks(@NonNull final String packagingCodeLU, @NonNull final EDIExpDesadvLineType line)
+		{
+			final PackagingCodeLUAndLine packagingCodeLUAndLine = new PackagingCodeLUAndLine(packagingCodeLU, line);
+			return packs.get(packagingCodeLUAndLine);
+		}
+	}
+
+	@Value
+	private static class PackagingCodeLUAndLine
+	{
+		String packagingCodeLU;
+		EDIExpDesadvLineType line;
 	}
 
 	private PPACK1 createPPACK1(@NonNull final HEADERXlief header)
@@ -392,10 +526,17 @@ public class StepComXMLDesadvBean
 		if (lineAndPack.hasPack())
 		{
 			final EDIExpDesadvLinePackType pack = lineAndPack.getPack();
-			final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(pack.getCUOMID().getX12DE355());
-			if (measurementUnit != null)
+
+			if (settings.isDesadvLineMEASUREMENTUNITRequired())
 			{
-				cuQuantity.setMEASUREMENTUNIT(measurementUnit.toString());
+				final String x12DE355 = ValidationHelper.validateString(pack.getCUOMID().getX12DE355(),
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @C_UOM_ID@");
+				final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(x12DE355);
+				if (!settings.isMeasurementUnitAllowed(measurementUnit))
+				{
+					throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + line.getLine() + " @C_UOM_ID@=" + settings.getDesadvLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
+				}
+				cuQuantity.setMEASUREMENTUNIT(measurementUnit.name());
 			}
 
 			if (settings.isDesadvLineCUTURequired())
@@ -407,7 +548,10 @@ public class StepComXMLDesadvBean
 				detail.getDQUAN1().add(cuTuQuantity);
 			}
 
-			if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
+			final boolean dmark1Required = settings.isDesadvLineDMARK1BestBeforeDateRequired() //
+					|| settings.isDesadvLineDMARK1BestBeforeDateAsBatchNoRequired();
+
+			if (dmark1Required)
 			{
 				final XMLGregorianCalendar bestBefore = validateObject(pack.getBestBeforeDate(),
 						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
@@ -416,7 +560,11 @@ public class StepComXMLDesadvBean
 				dmark1.setDOCUMENTID(documentId);
 				dmark1.setLINENUMBER(lineNumber);
 				dmark1.setIDENTIFICATIONQUAL(IdentificationQual.BATC.name());
-				dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
+				dmark1.setIDENTIFICATIONCODE(toFormattedStringDate(toDate(bestBefore), dateFormat));
+				if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
+				{
+					dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
+				}
 				detail.getDMARK1().add(dmark1);
 			}
 		}
@@ -437,7 +585,14 @@ public class StepComXMLDesadvBean
 		for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
 		{
 			qtyDelivered = qtyDelivered.add(extractQtyDelivered(pack));
-			measurementUnit = MeasurementUnit.fromMetasfreshUOM(pack.getCUOMID().getX12DE355());
+
+			final String x12DE355 = ValidationHelper.validateString(pack.getCUOMID().getX12DE355(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @C_UOM_ID@");
+			measurementUnit = MeasurementUnit.fromMetasfreshUOM(x12DE355);
+			if (!settings.isMeasurementUnitAllowed(measurementUnit))
+			{
+				throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + line.getLine() + " @C_UOM_ID@=" + settings.getDesadvLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
+			}
 		}
 
 		final String documentId = xmlDesadv.getDocumentNo();
@@ -448,7 +603,7 @@ public class StepComXMLDesadvBean
 		detail.getDQUAN1().add(cuQuantity);
 		if (measurementUnit != null)
 		{
-			cuQuantity.setMEASUREMENTUNIT(measurementUnit.toString());
+			cuQuantity.setMEASUREMENTUNIT(measurementUnit.name());
 		}
 
 		// check if we need a discrepancy information
