@@ -1,56 +1,61 @@
-package de.metas.acct.api;
+package de.metas.impex.api.impl;
 
 import javax.annotation.Nullable;
 
+import de.metas.impex.InputDataSourceId;
+import de.metas.organization.OrgId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
-@Builder
-public class AcctSchemaElement
+public class InputDataSourceQuery
 {
-	@NonNull
-	AcctSchemaElementType elementType;
-	@NonNull
-	String name;
-	int seqNo;
+OrgId orgId;
 
-	int defaultValue;
-	@Nullable
-	ChartOfAccountsId chartOfAccountsId;
+	ExternalId externalId;
 
-	@NonNull
-	String displayColumnName;
+	String internalName;
 
-	boolean mandatory;
-	boolean displayedInEditor;
-	boolean balanced;
+	InputDataSourceId inputDataSourceId;
 
-	public String getColumnName()
+	String value;
+
+	@Builder(toBuilder = true)
+	private InputDataSourceQuery(
+			@NonNull final OrgId orgId,
+			@Nullable final ExternalId externalId,
+			@Nullable final String internalName,
+			@Nullable final InputDataSourceId inputDataSourceId,
+			@Nullable final String value)
 	{
-		return getElementType().getColumnName();
+		this.orgId = orgId;
+		this.externalId = externalId;
+		this.internalName = internalName;
+		this.inputDataSourceId = inputDataSourceId;
+		this.value = value;
 	}
+
 }

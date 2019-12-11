@@ -1,3 +1,8 @@
+package de.metas.rest_api.ordercandidates.request;
+
+import de.pentabyte.springfox.ApiEnum;
+import lombok.Getter;
+
 /*
  * #%L
  * de.metas.business.rest-api
@@ -20,18 +25,22 @@
  * #L%
  */
 
-package de.metas.rest_api.payment;
-
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import lombok.NonNull;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-public interface PaymentRestEndpoint
+public enum JSONPaymentRule
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/payment";
 
-	@PostMapping
-	ResponseEntity<String> createInboundPayment(@RequestBody @NonNull JsonInboundPaymentInfo jsonInboundPaymentInfo);
+	@ApiEnum("Specifies that the order will have paymentRule = Paypal")
+	Paypal("L"),
+
+	@ApiEnum("Specifies that the order will have paymentRule = On Credit")
+	OnCredit("P");
+
+	@Getter
+	private final String code;
+
+	JSONPaymentRule(final String code)
+	{
+		this.code = code;
+	}
+
+
 }

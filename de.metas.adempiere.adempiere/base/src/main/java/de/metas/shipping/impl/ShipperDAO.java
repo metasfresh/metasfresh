@@ -2,6 +2,8 @@ package de.metas.shipping.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -32,10 +34,10 @@ import org.compiere.model.I_M_Shipper;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 public class ShipperDAO implements IShipperDAO
@@ -81,5 +83,19 @@ public class ShipperDAO implements IShipperDAO
 		final I_M_Shipper shipper = getById(shipperId);
 		return InterfaceWrapperHelper.getModelTranslationMap(shipper)
 				.getColumnTrl(I_M_Shipper.COLUMNNAME_Name, shipper.getName());
+	}
+
+	@Override
+	public Optional<ShipperId> getShipperIdByValue(final String value, final OrgId orgId)
+	{
+		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Value, value)
+				.addInArrayFilter(I_M_Shipper.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.orderByDescending(I_M_Shipper.COLUMNNAME_AD_Org_ID)
+				.create()
+				.firstIdOnly(ShipperId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(shipperId);
 	}
 }

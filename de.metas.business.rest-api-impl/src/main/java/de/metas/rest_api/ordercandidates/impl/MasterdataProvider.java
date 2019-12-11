@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -17,10 +18,16 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.api.impl.InputDataSourceQuery;
+import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
@@ -28,11 +35,18 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.InvalidIdentifierException;
 import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.rest_api.utils.PermissionService;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -219,4 +233,130 @@ final class MasterdataProvider
 	{
 		productPricesMasterDataProvider.createProductPrice(request);
 	}
+
+	public InputDataSourceId getDataSourceId(final String dataSourceIdentifier, final OrgId orgId)
+	{
+		final IInputDataSourceDAO dataSourceDAO = Services.get(IInputDataSourceDAO.class);
+		if (dataSourceIdentifier == null)
+		{
+			return null;
+		}
+
+		final IdentifierString dataSource = IdentifierString.of(dataSourceIdentifier);
+
+		final InputDataSourceQueryBuilder queryBuilder = InputDataSourceQuery.builder();
+
+		queryBuilder.orgId(orgId);
+
+		switch (dataSource.getType())
+		{
+			case INTERNALNAME:
+				queryBuilder.internalName(dataSource.asInternalName());
+				break;
+			case EXTERNAL_ID:
+				queryBuilder.externalId(dataSource.asExternalId());
+				break;
+			case METASFRESH_ID:
+				queryBuilder.inputDataSourceId(InputDataSourceId.ofRepoIdOrNull(dataSource.asMetasfreshId().getValue()));
+				break;
+			case VALUE:
+				queryBuilder.value(dataSource.asValue());
+				break;
+
+
+			default:
+				throw new InvalidIdentifierException(dataSource);
+		}
+
+		final Optional<InputDataSourceId> dataSourceId = dataSourceDAO.retrieveInputDataSourceIdBy(queryBuilder.build());
+
+		return dataSourceId.orElse(null);
+
+	}
+
+	public ShipperId getShipperId(final JsonOLCandCreateRequest request)
+	{
+		final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+
+		final String shipper = request.getShipper();
+
+		if (shipper == null)
+		{
+			return null;
+		}
+
+		final IdentifierString shipperIdentifier = IdentifierString.of(shipper);
+
+		final ShipperId shipperId;
+
+		switch (shipperIdentifier.getType())
+		{
+
+			case METASFRESH_ID:
+				shipperId = ShipperId.ofRepoIdOrNull(shipperIdentifier.asMetasfreshId().getValue());
+				break;
+			case VALUE:
+				shipperId = shipperDAO.getShipperIdByValue(shipperIdentifier.asValue(), getCreateOrgId(request.getOrg())).orElse(null);
+				break;
+
+			default:
+				throw new InvalidIdentifierException(shipperIdentifier);
+		}
+
+		if (shipperId == null)
+		{
+			throw MissingResourceException.builder().resourceName("shipper").resourceIdentifier(shipperIdentifier.toJson()).parentResource(request).build();
+		}
+
+		return shipperId;
+
+	}
+
+	public BPartnerId getSalesRepId(final JsonOLCandCreateRequest request)
+	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final String salesRepValue = request.getSalesPartnerCode();
+
+		if(Check.isEmpty(salesRepValue))
+		{
+			return null;
+		}
+
+		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode = bPartnerDAO.getBPartnerIdBySalesPartnerCode(salesRepValue);
+
+		return bPartnerIdBySalesPartnerCode.orElseThrow(() ->
+				MissingResourceException.builder().
+				resourceName("salesPartnerCode").
+				resourceIdentifier(salesRepValue).
+				parentResource(request).
+				build());
+	}
+
+	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)
+	{
+		final JSONPaymentRule jsonPaymentRule = request.getPaymentRule();
+
+		if (jsonPaymentRule == null)
+		{
+			return null;
+		}
+
+		if (JSONPaymentRule.Paypal.equals(jsonPaymentRule))
+		{
+			return PaymentRule.PayPal;
+		}
+
+		if (JSONPaymentRule.OnCredit.equals(jsonPaymentRule))
+		{
+			return PaymentRule.OnCredit;
+		}
+
+		throw MissingResourceException.builder()
+				.resourceName("paymentRule")
+				.resourceIdentifier(jsonPaymentRule.getCode())
+				.parentResource(request)
+				.build();
+	}
+
 }

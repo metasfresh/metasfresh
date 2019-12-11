@@ -364,6 +364,8 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final Quantity qtyToAdd)
 	{
+		Check.assume(qtyToAdd.signum() > 0, "Parameter 'qtyToAdd' needs to be >0 for all this to make sense");
+
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
 		final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
@@ -377,7 +379,7 @@ public class DesadvBL implements IDesadvBL
 
 		final Quantity maxQtyCUsPerLU;
 		final int requiredLUQty;
-		if (lutuConfiguration.isInfiniteQtyTU())
+		if (lutuConfiguration.isInfiniteQtyTU() || lutuConfiguration.isInfiniteQtyCU())
 		{
 			maxQtyCUsPerLU = qtyToAdd;
 			requiredLUQty = 1;
@@ -391,6 +393,16 @@ public class DesadvBL implements IDesadvBL
 					lutuConfiguration,
 					qtyToAdd.toBigDecimal(),
 					qtyToAdd.getUOM());
+		}
+
+		final BigDecimal qtyCUsPerTU;
+		if (lutuConfiguration.isInfiniteQtyCU())
+		{
+			qtyCUsPerTU = qtyToAdd.toBigDecimal();
+		}
+		else
+		{
+			qtyCUsPerTU = lutuConfiguration.getQtyCU();
 		}
 
 		Quantity remainingQty = qtyToAdd;
@@ -420,7 +432,7 @@ public class DesadvBL implements IDesadvBL
 
 			final Quantity qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 
-			final Quantity currentQtyTU = qtyCUsPerCurrentLU.divide(lutuConfiguration.getQtyCU(), 0, RoundingMode.UP);
+			final Quantity currentQtyTU = qtyCUsPerCurrentLU.divide(qtyCUsPerTU, 0, RoundingMode.UP);
 			packRecord.setQtyTU(currentQtyTU.toBigDecimal().intValue());
 
 			setQty(productId,
