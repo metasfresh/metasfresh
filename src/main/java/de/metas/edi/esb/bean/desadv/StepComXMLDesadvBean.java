@@ -283,7 +283,7 @@ public class StepComXMLDesadvBean
 					packIn.getDETAIL().add(detail);
 
 					// check if we need a discrepancy information
-					final BigDecimal quantityDiff = line.getQtyEntered();
+					final BigDecimal quantityDiff = ZERO.subtract(line.getQtyEntered());
 					if (quantityDiff.signum() != 0)
 					{
 						detail.setDOCUMENTID(documentId);
@@ -345,7 +345,7 @@ public class StepComXMLDesadvBean
 				}
 
 				// we iterated all packs if the current line; now check if we a discrepancy information
-				final BigDecimal quantityDiff = line.getQtyEntered().subtract(qtyDelivered);
+				final BigDecimal quantityDiff = qtyDelivered.subtract(line.getQtyEntered());
 				if (quantityDiff.signum() != 0)
 				{
 					final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
@@ -607,7 +607,7 @@ public class StepComXMLDesadvBean
 		}
 
 		// check if we need a discrepancy information
-		final BigDecimal quantityDiff = line.getQtyEntered().subtract(qtyDelivered);
+		final BigDecimal quantityDiff = qtyDelivered.subtract(line.getQtyEntered());
 		if (quantityDiff.signum() != 0)
 		{
 			detail.setDOCUMENTID(documentId);
@@ -814,7 +814,7 @@ public class StepComXMLDesadvBean
 			@NonNull final BigDecimal diff)
 	{
 		DiscrepencyCode discrepancyCode;
-		if (diff.signum() == -1)
+		if (diff.signum() > 0)
 		{
 			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped
 			return discrepancyCode;
