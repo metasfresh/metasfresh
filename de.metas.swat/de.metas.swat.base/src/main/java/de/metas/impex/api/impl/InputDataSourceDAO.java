@@ -112,6 +112,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 		{
 			final I_AD_InputDataSource newInputDataSource = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_InputDataSource.class, ITrx.TRXNAME_None);
 			newInputDataSource.setEntityType(request.getEntityType());
+			newInputDataSource.setValue(request.getInternalName());
 			newInputDataSource.setInternalName(request.getInternalName());
 			newInputDataSource.setIsDestination(request.isDestination());
 			newInputDataSource.setName(request.getName());

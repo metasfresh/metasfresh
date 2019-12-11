@@ -42,7 +42,6 @@ import de.metas.uom.IUOMDAO;
 
 public class DesadvBLTest
 {
-
 	private DesadvBL desadvBL;
 
 	@BeforeEach

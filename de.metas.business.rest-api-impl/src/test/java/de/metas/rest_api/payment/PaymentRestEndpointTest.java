@@ -69,7 +69,7 @@ class PaymentRestEndpointTest
 	}
 
 	@Test
-	void normalFlow()
+	void normalInboundFlow()
 	{
 		final IdentifierString orderIdentifier = IdentifierString.of("ext-Order");
 		final IdentifierString partnerIdentifier = IdentifierString.of("ext-bPartner");
@@ -81,7 +81,7 @@ class PaymentRestEndpointTest
 		createBPartnerAndBankAccount(partnerIdentifier);
 
 		// create JsonPaymentInfo
-		final JsonPaymentInfo jsonPaymentInfo = JsonPaymentInfo.builder()
+		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
 				.externalOrderId(orderIdentifier.toJson())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
@@ -89,17 +89,17 @@ class PaymentRestEndpointTest
 				.targetIBAN(TARGET_IBAN)
 				.build();
 
-		assertEquals(JsonPaymentInfo.builder()
+		assertEquals(JsonInboundPaymentInfo.builder()
 						.externalOrderId("ext-Order")
 						.bpartnerIdentifier("ext-bPartner")
 						.currencyCode(CURRENCY_CODE_EUR)
 						.amount(PAYMENT_AMOUNT)
 						.targetIBAN(TARGET_IBAN)
 						.build(),
-				jsonPaymentInfo);
+				jsonInboundPaymentInfo);
 
 		// process JsonPaymentInfo
-		final ResponseEntity<String> response = paymentRestEndpoint.createPayment(jsonPaymentInfo);
+		final ResponseEntity<String> response = paymentRestEndpoint.createInboundPayment(jsonInboundPaymentInfo);
 		assertNull(response.getBody());
 		assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
 

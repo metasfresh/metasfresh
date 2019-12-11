@@ -164,7 +164,9 @@ public class VCharge extends Charge
 	public void dispose()
 	{
 		if (m_frame != null)
+		{
 			m_frame.dispose();
+		}
 		m_frame = null;
 	}	//	dispose
 
@@ -177,13 +179,18 @@ public class VCharge extends Charge
 	{
 		log.info(e.getActionCommand());
 		//
-		if (e.getActionCommand().equals(ConfirmPanel.A_OK) || m_C_Element_ID == 0)
+		if (e.getActionCommand().equals(ConfirmPanel.A_OK) || chartOfAccountsId == null)
+		{
 			dispose();
-		//  new Account
+		}
 		else if (e.getSource().equals(newButton))
+		{
 			createNew();
+		}
 		else if (e.getSource().equals(accountButton))
+		{
 			createAccount();
+		}
 	}   //  actionPerformed
 
 	/**
@@ -230,9 +237,13 @@ public class VCharge extends Charge
 		createAccount(dataTable);
 		
 		if (listCreated.length() > 0)
+		{
 			ADialog.info(m_WindowNo, panel, "ChargeCreated", listCreated.toString());
+		}
 		if (listRejected.length() > 0)
+		{
 			ADialog.error(m_WindowNo, panel, "ChargeNotCreated", listRejected.toString());
+		}
 	}   //  createAccount
 	
 	/**
