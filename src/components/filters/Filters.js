@@ -452,7 +452,7 @@ class Filters extends Component {
 
   /**
    * @method annotateFilters
-   * @summary ToDo: Describe the method
+   * @summary I think it creates caption for active filters to show when the widget is closed - Kuba
    * @param {*} unannotatedFilters
    */
   annotateFilters = unannotatedFilters => {
@@ -461,13 +461,18 @@ class Filters extends Component {
     return unannotatedFilters.map(unannotatedFilter => {
       const parameter =
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
-      const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
       const currentFilter = activeFilter
         ? activeFilter.find(f => f.filterId === unannotatedFilter.filterId)
         : null;
       const activeParameter =
         parameter && isActive && currentFilter && currentFilter.parameters[0];
+      const filterType = unannotatedFilter.parameters
+        ? unannotatedFilter.parameters.find(
+            filter => filter.parameterName === activeParameter.parameterName
+          )
+        : parameter && parameter.widgetType;
+
       const captionValue = activeParameter
         ? TableCell.fieldValueToString(
             activeParameter.valueTo
