@@ -393,7 +393,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public String getValueAsString(final String attributeKey)
+	public String getValueAsString(@NonNull final String attributeKey)
 	{
 		final Object valueObj = getValue(attributeKey);
 		return valueObj != null ? valueObj.toString() : null;
