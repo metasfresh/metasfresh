@@ -41,7 +41,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
-import de.metas.util.Check;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 
@@ -106,10 +105,9 @@ public class WindowQuickInputRestController
 
 	@RequestMapping(method = RequestMethod.HEAD)
 	public ResponseEntity<Object> checkSupported(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
-			, @PathVariable("tabId") final String tabIdStr //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr_NOTUSED,
+			@PathVariable("tabId") final String tabIdStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -130,10 +128,9 @@ public class WindowQuickInputRestController
 
 	@GetMapping("/layout")
 	public JSONQuickInputLayoutDescriptor getLayout(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr_NOTUSED //
-			, @PathVariable("tabId") final String tabIdStr //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr_NOTUSED,
+			@PathVariable("tabId") final String tabIdStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -153,10 +150,9 @@ public class WindowQuickInputRestController
 
 	@PostMapping
 	public JSONDocument createQuickInput(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -218,7 +214,10 @@ public class WindowQuickInputRestController
 		});
 	}
 
-	private final <R> R forQuickInputWritable(final QuickInputPath quickInputPath, final IDocumentChangesCollector changesCollector, final Function<QuickInput, R> quickInputProcessor)
+	private final <R> R forQuickInputWritable(
+			final QuickInputPath quickInputPath,
+			final IDocumentChangesCollector changesCollector,
+			final Function<QuickInput, R> quickInputProcessor)
 	{
 		return documentsCollection.forRootDocumentWritable(quickInputPath.getRootDocumentPath(), changesCollector, rootDocument -> {
 			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForWriting())
@@ -238,11 +237,10 @@ public class WindowQuickInputRestController
 
 	@GetMapping("/{quickInputId}")
 	public JSONDocument getById(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @PathVariable("quickInputId") final String quickInputIdStr //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("quickInputId") final String quickInputIdStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -252,13 +250,12 @@ public class WindowQuickInputRestController
 
 	@GetMapping("/{quickInputId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getFieldTypeaheadValues(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @PathVariable("quickInputId") final String quickInputIdStr //
-			, @PathVariable("fieldName") final String fieldName //
-			, @RequestParam(name = "query", required = true) final String query //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("quickInputId") final String quickInputIdStr,
+			@PathVariable("fieldName") final String fieldName,
+			@RequestParam(name = "query", required = true) final String query)
 	{
 		userSession.assertLoggedIn();
 
@@ -269,12 +266,11 @@ public class WindowQuickInputRestController
 
 	@GetMapping("/{quickInputId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getFieldDropdownValues(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @PathVariable("quickInputId") final String quickInputIdStr //
-			, @PathVariable("fieldName") final String fieldName //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("quickInputId") final String quickInputIdStr,
+			@PathVariable("fieldName") final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
@@ -285,11 +281,11 @@ public class WindowQuickInputRestController
 
 	@PatchMapping("/{quickInputId}")
 	public List<JSONDocument> processChanges(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @PathVariable("quickInputId") final String quickInputIdStr //
-			, @RequestBody final List<JSONDocumentChangedEvent> events)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("quickInputId") final String quickInputIdStr,
+			@RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
 
@@ -314,22 +310,26 @@ public class WindowQuickInputRestController
 
 	@PostMapping("{quickInputId}/complete")
 	public List<JSONDocument> complete(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @PathVariable("quickInputId") final String quickInputIdStr //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("quickInputId") final String quickInputIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
-			return forQuickInputWritable(quickInputPath, changesCollector, quickInput -> {
-				final List<Document> documentLines = quickInput.complete();
-				return JSONDocument.ofDocumentsList(documentLines, newJSONDocumentOptions());
-			});
-		});
+
+		return Execution.callInNewExecution(
+				"quickInput-complete-" + quickInputPath,
+				() -> forQuickInputWritable(quickInputPath,
+						NullDocumentChangesCollector.instance,
+						this::completeQuickInput));
+	}
+
+	private List<JSONDocument> completeQuickInput(final QuickInput quickInput)
+	{
+		final List<Document> documentLines = quickInput.complete();
+		return JSONDocument.ofDocumentsList(documentLines, newJSONDocumentOptions());
 	}
 
 	private final QuickInput getQuickInputNoLock(final QuickInputPath quickInputPath)
@@ -338,10 +338,8 @@ public class WindowQuickInputRestController
 				.getOrElseThrow(quickInputPath.getQuickInputId(), () -> new EntityNotFoundException("No quick input document found for " + quickInputPath));
 	}
 
-	private void commit(final QuickInput quickInput)
+	private void commit(@NonNull final QuickInput quickInput)
 	{
-		Check.assumeNotNull(quickInput, "Parameter quickInput is not null");
-
 		if (quickInput.isCompleted())
 		{
 			_quickInputDocuments.remove(quickInput.getId());
