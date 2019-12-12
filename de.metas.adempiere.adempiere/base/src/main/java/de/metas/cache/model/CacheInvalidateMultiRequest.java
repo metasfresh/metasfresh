@@ -60,6 +60,15 @@ public class CacheInvalidateMultiRequest
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
+	public static final CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
+	{
+		final Set<CacheInvalidateRequest> requests = multiRequests.stream()
+				.flatMap(multiRequest -> multiRequest.getRequests().stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		return new CacheInvalidateMultiRequest(requests);
+	}
+
 	public static CacheInvalidateMultiRequest all()
 	{
 		return ALL;
