@@ -392,7 +392,7 @@
 	<xsd:complexType name="EDI_cctop_invoic_500_vType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="C_Invoice_ID" type="xsd:integer" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="eancom_uom" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="EanCom_UOM" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EDI_cctop_invoic_500_v_ID" type="xsd:integer" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="ISO_Code" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="Line" type="xsd:integer" />
@@ -411,6 +411,8 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="ProductDescription" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="OrderPOReference" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="OrderLine" type="xsd:integer" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="QtyInvoicedInOrderedUOM" type="xsd:decimal" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="EanCom_Ordered_UOM" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="TaxAmtInfo" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EanCom_Price_UOM" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="EAN_CU" type="xsd:string" />
@@ -740,7 +742,8 @@
 	</xsd:complexType>
 	<xsd:complexType name="EDI_Exp_DesadvLine_PackType">
 		<xsd:sequence>
-			<xsd:element maxOccurs="1" minOccurs="1" name="IPA_SSCC18" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="IPA_SSCC18" type="xsd:string" />
+			<xsd:element maxOccurs="1" minOccurs="0" name="LotNumber" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="QtyCU" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="QtyCUsPerLU" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="QtyTU" type="xsd:integer" />

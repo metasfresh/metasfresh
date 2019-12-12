@@ -39,6 +39,13 @@ public class StepComInvoicSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
 
+	public enum InvoicLineQuantityInUOM
+	{
+		InvoicedUOM,
+
+		OrderedUOM;
+	}
+
 	public static StepComInvoicSettings forReceiverGLN(
 			@NonNull final CamelContext context,
 			@NonNull final String recipientGLN)
@@ -69,6 +76,7 @@ public class StepComInvoicSettings
 				.invoicLineUPCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCC.required", "false"))
 				.invoicLineUPCTRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.UPCT.required", "false"))
 
+				.invoicLineQuantityInUOM(InvoicLineQuantityInUOM.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.QuantityInUOM", "InvoicedUOM")))
 				.invoicLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
 				.build();
 	}
@@ -102,6 +110,8 @@ public class StepComInvoicSettings
 
 	boolean invoicLineUPCCRequired;
 	boolean invoicLineUPCTRequired;
+
+	InvoicLineQuantityInUOM invoicLineQuantityInUOM;
 
 	String invoicLineRequiredMEASUREMENTUNIT;
 

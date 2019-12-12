@@ -31,6 +31,7 @@ import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
 import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Comparator;
 
@@ -336,24 +337,7 @@ public class StepComXMLInvoicBean
 			productDescr.setPRODUCTDESCLANG(ProductDescLang.DE.name());
 			detailXrech.getDPRDE1().add(productDescr);
 
-			final DQUAN1 invoicedQuantity = INVOIC_objectFactory.createDQUAN1();
-			invoicedQuantity.setDOCUMENTID(documentId);
-			invoicedQuantity.setLINENUMBER(lineNumber);
-			invoicedQuantity.setQUANTITYQUAL(QuantityQual.INVO.name());
-
-			if (settings.isInvoicLineMEASUREMENTUNITRequired())
-			{
-				final String eanComUom = ValidationHelper.validateString(xmlCctopInvoic500V.getEancomUom(),
-						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @C_UOM_ID@");
-				final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(eanComUom);
-				if (!settings.isMeasurementUnitAllowed(measurementUnit))
-				{
-					throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @C_UOM_ID@=" + settings.getInvoicLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
-				}
-				invoicedQuantity.setMEASUREMENTUNIT(measurementUnit.name());
-			}
-			invoicedQuantity.setQUANTITY(formatNumber(xmlCctopInvoic500V.getQtyInvoiced(), decimalFormat));
-			detailXrech.getDQUAN1().add(invoicedQuantity);
+			mapInvoicedQty(detailXrech, xmlCctopInvoic500V, settings, decimalFormat);
 
 			final DAMOU1 amount = INVOIC_objectFactory.createDAMOU1();
 			amount.setDOCUMENTID(documentId);
@@ -397,6 +381,61 @@ public class StepComXMLInvoicBean
 			detailXrech.setDTAXI1(tax);
 
 			headerXrech.getDETAIL().add(detailXrech);
+		}
+	}
+
+	private void mapInvoicedQty(
+			@NonNull final DETAILXrech detailXrech,
+			@NonNull final EDICctopInvoic500VType xmlCctopInvoic500V,
+			@NonNull final StepComInvoicSettings settings,
+			@NonNull final DecimalFormat decimalFormat)
+	{
+		final String lineNumber = formatNumber(xmlCctopInvoic500V.getLine(), decimalFormat);
+
+		final DQUAN1 dQuan1 = INVOIC_objectFactory.createDQUAN1();
+		detailXrech.getDQUAN1().add(dQuan1);
+		dQuan1.setDOCUMENTID(detailXrech.getDOCUMENTID());
+		dQuan1.setLINENUMBER(lineNumber);
+		dQuan1.setQUANTITYQUAL(QuantityQual.INVO.name());
+
+		switch (settings.getInvoicLineQuantityInUOM())
+		{
+			case InvoicedUOM:
+				final BigDecimal qtyInvoiced = ValidationHelper.validateObject(xmlCctopInvoic500V.getQtyInvoiced(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @QtyInvoiced@");
+				dQuan1.setQUANTITY(formatNumber(qtyInvoiced, decimalFormat));
+
+				if (settings.isInvoicLineMEASUREMENTUNITRequired())
+				{
+					final String eanComUom = ValidationHelper.validateString(xmlCctopInvoic500V.getEanComUOM(),
+							"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EanComUOM@");
+					final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(eanComUom);
+					if (!settings.isMeasurementUnitAllowed(measurementUnit))
+					{
+						throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EanComUOM@=" + settings.getInvoicLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
+					}
+					dQuan1.setMEASUREMENTUNIT(measurementUnit.name());
+				}
+				break;
+			case OrderedUOM:
+				final BigDecimal qtyInvoicedInOrderedUOM = ValidationHelper.validateObject(xmlCctopInvoic500V.getQtyInvoicedInOrderedUOM(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @QtyInvoicedInOrderedUOM@");
+				dQuan1.setQUANTITY(formatNumber(qtyInvoicedInOrderedUOM, decimalFormat));
+
+				if (settings.isInvoicLineMEASUREMENTUNITRequired())
+				{
+					final String eanComUom = ValidationHelper.validateString(xmlCctopInvoic500V.getEanComOrderedUOM(),
+							"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EanComOrderedUOM@");
+					final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(eanComUom);
+					if (!settings.isMeasurementUnitAllowed(measurementUnit))
+					{
+						throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EanComOrderedUOM@=" + settings.getInvoicLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
+					}
+					dQuan1.setMEASUREMENTUNIT(measurementUnit.name());
+				}
+				break;
+			default:
+				throw new RuntimeCamelException("Unexpected InvoicLineQuantityInUOM=" + settings.getInvoicLineQuantityInUOM());
 		}
 	}
 

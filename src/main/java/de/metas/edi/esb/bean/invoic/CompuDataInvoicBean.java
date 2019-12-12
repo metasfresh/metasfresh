@@ -381,7 +381,7 @@ public class CompuDataInvoicBean
 
 			final CctopInvoice500V cctopInvoice500V = new CctopInvoice500V();
 			cctopInvoice500V.setcInvoiceID(formatNumber(xmlCctopInvoic500V.getCInvoiceID(), decimalFormat));
-			cctopInvoice500V.setEancomUom(xmlCctopInvoic500V.getEancomUom());
+			cctopInvoice500V.setEancomUom(xmlCctopInvoic500V.getEanComUOM());
 			cctopInvoice500V.setIsoCode(xmlCctopInvoic500V.getISOCode());
 			cctopInvoice500V.setLine(formatNumber(xmlCctopInvoic500V.getLine(), decimalFormat));
 			cctopInvoice500V.setLineNetAmt(formatNumber(xmlCctopInvoic500V.getLineNetAmt(), decimalFormat));

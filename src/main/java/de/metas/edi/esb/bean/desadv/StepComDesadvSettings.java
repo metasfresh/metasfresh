@@ -68,7 +68,7 @@ public class StepComDesadvSettings
 				.desadvLineLIRN(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.LIRN", "true"))
 				.desadvLinePRICRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.PRIC.required", "false"))
 				.desadvLineDMARK1BestBeforeDateRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.bestBeforeDate.required", "false"))
-				.desadvLineDMARK1BestBeforeDateAsBatchNoRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.bestBeforeDateAsBatchNo.required", "false"))
+				.desadvLineDMARK1BatchNoRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.batchNo.required", "false"))
 
 				.desadvLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
 				.build();
@@ -110,7 +110,7 @@ public class StepComDesadvSettings
 
 	boolean desadvLineDMARK1BestBeforeDateRequired;
 
-	boolean desadvLineDMARK1BestBeforeDateAsBatchNoRequired;
+	boolean desadvLineDMARK1BatchNoRequired;
 
 	String desadvLineRequiredMEASUREMENTUNIT;
 
