@@ -41,9 +41,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
@@ -55,7 +52,6 @@ import org.eevolution.api.PPOrderRoutingActivityCode;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivitySchedule;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_NodeNext;
 import org.eevolution.model.I_PP_Order_Workflow;
@@ -66,7 +62,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.IResourceDAO;
@@ -418,25 +413,17 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 			for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 			{
 				I_PP_Order_Node activityRecord = existingActivityRecords.remove(activity.getId());
-				final boolean newActivity;
 				if (activityRecord == null)
 				{
 					activityRecord = toNewOrderNodeRecord(activity, orderId, ppOrderWorkflowId);
-					newActivity = true;
 				}
 				else
 				{
 					updateOrderNodeRecord(activityRecord, activity);
-					newActivity = false;
 				}
 
 				saveRecord(activityRecord);
 				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
-
-				if (newActivity)
-				{
-					copyAttachmentsFromTemplate(activityRecord);
-				}
 			}
 
 			//
@@ -483,11 +470,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		//
 		// Delete remaining nodes if any
 		InterfaceWrapperHelper.deleteAll(activityRecordsToDelete);
-	}
-
-	private AttachmentEntryService getAttachmentEntryServiceInstance()
-	{
-		return SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	}
 
 	private ImmutablePair<PPOrderRoutingActivityId, PPOrderRoutingActivityId> extractCurrentAndNextActivityIdPair(final I_PP_Order_NodeNext record)
@@ -542,23 +524,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		updateOrderNodeRecord(record, activity);
 
 		return record;
-	}
-
-	private void copyAttachmentsFromTemplate(final I_PP_Order_Node activity)
-	{
-		final PPRoutingActivityTemplateId activityTemplateId = PPRoutingActivityTemplateId.ofRepoIdOrNull(activity.getAD_WF_Node_Template_ID());
-		if (activityTemplateId == null)
-		{
-			return;
-		}
-
-		final TableRecordReference activityTemplateRef = TableRecordReference.of(I_AD_WF_Node_Template.Table_Name, activityTemplateId);
-		final TableRecordReference activityRef = TableRecordReference.of(I_PP_Order_Node.Table_Name, activity.getPP_Order_Node_ID());
-		final TableRecordReference orderRef = TableRecordReference.of(I_PP_Order.Table_Name, activity.getPP_Order_ID());
-
-		getAttachmentEntryServiceInstance().shareAttachmentLinks(
-				ImmutableList.of(activityTemplateRef),
-				ImmutableList.of(orderRef, activityRef));
 	}
 
 	private void updateOrderNodeRecord(final I_PP_Order_Node record, final PPOrderRoutingActivity from)
