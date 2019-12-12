@@ -91,6 +91,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 		return inoutLine;
 	}
@@ -208,7 +209,7 @@ public class InOutDAO implements IInOutDAO
 		// + " AND io.IsSOTrx='Y'"
 		// + " AND iol.AD_Client_ID=?";
 
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
 						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
 						// anymore, because they are already in a shipper-transportation
@@ -218,8 +219,6 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class);
-
-		return queryBuilder;
 	}
 
 	@Override
@@ -246,7 +245,7 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine retrieveLineWithQualityDiscount(final I_M_InOutLine originInOutLine)
+	public I_M_InOutLine retrieveLineWithQualityDiscount(@NonNull final I_M_InOutLine originInOutLine)
 	{
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = createInDisputeQueryBuilder(originInOutLine.getM_InOut());
 
@@ -288,9 +287,8 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOut retrieveInOut(@NonNull final List<I_M_InOutLine> receiptLines)
 	{
 		final int inOutId = CollectionUtils.extractSingleElement(receiptLines, I_M_InOutLine::getM_InOut_ID);
-		final I_M_InOut receipt = load(inOutId, I_M_InOut.class);
 
-		return receipt;
+		return load(inOutId, I_M_InOut.class);
 	}
 
 	@Override

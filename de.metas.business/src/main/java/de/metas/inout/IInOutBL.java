@@ -1,6 +1,16 @@
 package de.metas.inout;
 
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.util.ISingletonService;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PricingSystem;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -24,29 +34,16 @@ import java.math.BigDecimal;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_PricingSystem;
-
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.util.ISingletonService;
-
 /**
  * Generic API regarding {@link I_M_InOut} and it's lines, transactions, allocations etc.
  *
  * @author tsa
- *
  */
 public interface IInOutBL extends ISingletonService
 {
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
-	 *
+	 * <p>
 	 * When picking the pricing system, first check if the given <code>inOutLine</code>'s <code>M_InOut</code>'s bpartner has an pricingsystem set directly in its <code>C_BPartner</code> record that matches the <code>M_InOut.IsSOTrx</code>.
 	 * <p>
 	 * If the bpartner's <code>C_BPartner.M_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='Y'</code>) or <code>C_BPartner.PO_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='N'</code>) is <code>NULL</code>,<br>
@@ -60,7 +57,6 @@ public interface IInOutBL extends ISingletonService
 	 * <p>
 	 * After the pricing system is picked, look for the fitting price list using <code>M_InOut.C_BPartner_Location_ID</code>.
 	 *
-	 * @param inOutLine
 	 * @return the pricing context, populated with the information that was found (pricing system, price list, discount, currency)
 	 * @throws AdempiereException in case there is no price list to fit the given <code>inOutLine</code>.
 	 */
@@ -71,29 +67,25 @@ public interface IInOutBL extends ISingletonService
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
 
 	/**
-	 * @param inOut
 	 * @return the pricing system fir for the inout,
-	 *         Otherwise, throws exception when throwEx = true and return null if it is false
-	 *
+	 * Otherwise, throws exception when throwEx = true and return null if it is false
 	 */
 	I_M_PricingSystem getPricingSystem(I_M_InOut inOut, boolean throwEx);
 
 	/**
 	 * Checks if given inout is a true reversal.
-	 *
+	 * <p>
 	 * A reversal is the document which reverses the effect of original document.
 	 *
-	 * @param inout
 	 * @return true if given inout is a true reversal.
 	 */
 	boolean isReversal(I_M_InOut inout);
 
 	/**
 	 * Checks if given inout line is a true reversal.
-	 *
+	 * <p>
 	 * A reversal is the document which reverses the effect of original document.
 	 *
-	 * @param inout
 	 * @return true if given inout line is a true reversal.
 	 */
 	boolean isReversal(org.compiere.model.I_M_InOutLine inoutLine);
@@ -101,7 +93,6 @@ public interface IInOutBL extends ISingletonService
 	/**
 	 * Create a new (drafted/i.e. not saved) inout line.
 	 *
-	 * @param inout
 	 * @return new inout line
 	 */
 	I_M_InOutLine newInOutLine(I_M_InOut inout);
@@ -109,17 +100,13 @@ public interface IInOutBL extends ISingletonService
 	/**
 	 * Create a new (drafted/i.e. not saved) inout line.
 	 *
-	 * @param inout
 	 * @param inout line's model class to use
 	 * @return new inout line
 	 */
 	<T extends I_M_InOutLine> T newInOutLine(I_M_InOut inout, Class<T> modelClass);
 
 	/**
-	 *
-	 * @param movementType
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>true if Customer Shipment or Returns
 	 *         <li>false if Vendor Receipts or Returns
 	 *         </ul>
@@ -127,8 +114,6 @@ public interface IInOutBL extends ISingletonService
 	boolean getSOTrxFromMovementType(String movementType);
 
 	/**
-	 *
-	 * @param movementType
 	 * @return true if Customer or Vendor Returns
 	 */
 	boolean isReturnMovementType(String movementType);
@@ -136,43 +121,32 @@ public interface IInOutBL extends ISingletonService
 	/**
 	 * Sort the given inOut's lines by their referenced order lines and configured sorting criteria.
 	 *
-	 * @param inOut
 	 * @return sorted lines
 	 */
 	List<I_M_InOutLine> sortLines(I_M_InOut inOut);
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
-	 *
-	 * @param inout
 	 */
 	void deleteMatchInvs(I_M_InOut inout);
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
-	 *
-	 * @param iol
 	 */
 	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
 
 	/**
-	 *
-	 * @param iol
 	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
 	 */
 	BigDecimal getEffectiveStorageChange(I_M_InOutLine iol);
 
 	/**
 	 * Refresh all the lines for the given shipment in the Shipment Statistics view window
-	 * 
-	 * @param inout
 	 */
 	void invalidateStatistics(I_M_InOut inout);
 
 	/**
 	 * Refresh the line for the given shipment line in the Shipment Statistics view window
-	 * 
-	 * @param inoutLine
 	 */
 	void invalidateStatistics(I_M_InOutLine inoutLine);
 
