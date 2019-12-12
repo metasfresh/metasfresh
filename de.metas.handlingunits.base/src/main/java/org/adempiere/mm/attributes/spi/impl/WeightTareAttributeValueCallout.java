@@ -45,6 +45,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class WeightTareAttributeValueCallout
 		extends AbstractWeightAttributeValueCallout
@@ -205,5 +206,11 @@ public class WeightTareAttributeValueCallout
 			final Object valueNew)
 	{
 		return !Objects.equals(valueOld, valueNew);
+	}
+
+	@Override
+	public boolean isDisplayedUI(@NonNull final IAttributeSet attributeSet, @NonNull final I_M_Attribute attribute)
+	{
+		return isTopLevelVHU(attributeSet);
 	}
 }
