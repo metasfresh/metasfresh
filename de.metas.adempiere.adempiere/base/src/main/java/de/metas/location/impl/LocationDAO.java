@@ -13,8 +13,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
 import org.slf4j.Logger;
 
@@ -27,6 +29,7 @@ import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -92,16 +95,49 @@ public class LocationDAO implements ILocationDAO
 		locationRecord.setAddress2(request.getAddress2());
 		locationRecord.setAddress3(request.getAddress3());
 		locationRecord.setAddress4(request.getAddress4());
-		locationRecord.setPostal(request.getPostal());
+
+		final String postalValue = request.getPostal();
+		locationRecord.setPostal(postalValue);
+
 		locationRecord.setPostal_Add(request.getPostalAdd());
 		locationRecord.setCity(request.getCity());
 		locationRecord.setC_Region_ID(request.getRegionId());
 		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
 		locationRecord.setPOBox(request.getPoBox());
 
+		int postalId = getPostalId(request);
+
+		locationRecord.setC_Postal_ID(postalId);
+
 		save(locationRecord);
 
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
+	}
+
+	private int getPostalId(final LocationCreateRequest request)
+	{
+		final String postalValue = request.getPostal();
+
+		if (Check.isEmpty(postalValue))
+		{
+			return -1;
+		}
+
+		final IQueryBuilder<I_C_Postal> postalQuery = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Postal.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Country_ID, request.getCountryId());
+
+		if (request.getRegionId() > 0)
+		{
+			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, request.getRegionId());
+		}
+
+		final int postalId = postalQuery.filter(PostalQueryFilter.of(postalValue))
+				.create()
+				.firstIdOnly();
+
+		return postalId;
 	}
 
 	@Override
