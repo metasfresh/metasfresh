@@ -15,7 +15,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 575783704L;
+	private static final long serialVersionUID = -1854152448L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (Properties ctx, int AD_WF_Node_ID, String trxName)
@@ -23,22 +23,17 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
       super (ctx, AD_WF_Node_ID, trxName);
       /** if (AD_WF_Node_ID == 0)
         {
-			setAction (null);
-// Z
+			setAction (null); // Z
 			setAD_WF_Node_ID (0);
 			setAD_Workflow_ID (0);
-			setCost (Env.ZERO);
+			setCost (BigDecimal.ZERO);
 			setDuration (0);
 			setDurationLimit (0);
-			setEntityType (null);
-// 'U'
-			setIsCentrallyMaintained (true);
-// Y
-			setJoinElement (null);
-// X
+			setEntityType (null); // 'U'
+			setIsCentrallyMaintained (true); // Y
+			setJoinElement (null); // X
 			setName (null);
-			setSplitElement (null);
-// X
+			setSplitElement (null); // X
 			setValue (null);
 			setWaitingTime (0);
 			setXPosition (0);
@@ -91,9 +86,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** UserWorkbench = B */
 	public static final String ACTION_UserWorkbench = "B";
 	/** Set Aktion.
-		@param Action 
-		Indicates the Action to be performed
-	  */
+		@param Action Aktion	  */
 	@Override
 	public void setAction (java.lang.String Action)
 	{
@@ -102,8 +95,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	/** Get Aktion.
-		@return Indicates the Action to be performed
-	  */
+		@return Aktion	  */
 	@Override
 	public java.lang.String getAction () 
 	{
@@ -111,7 +103,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_Column()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
@@ -148,7 +140,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Form getAD_Form() throws RuntimeException
+	public org.compiere.model.I_AD_Form getAD_Form()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Form_ID, org.compiere.model.I_AD_Form.class);
 	}
@@ -185,7 +177,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Image getAD_Image() throws RuntimeException
+	public org.compiere.model.I_AD_Image getAD_Image()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Image_ID, org.compiere.model.I_AD_Image.class);
 	}
@@ -222,7 +214,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
@@ -259,7 +251,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Task getAD_Task() throws RuntimeException
+	public org.compiere.model.I_AD_Task getAD_Task()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Task_ID, org.compiere.model.I_AD_Task.class);
 	}
@@ -296,7 +288,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Block getAD_WF_Block() throws RuntimeException
+	public org.compiere.model.I_AD_WF_Block getAD_WF_Block()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_WF_Block_ID, org.compiere.model.I_AD_WF_Block.class);
 	}
@@ -358,7 +350,41 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
+	public org.compiere.model.I_AD_WF_Node_Template getAD_WF_Node_Template()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_Template_ID, org.compiere.model.I_AD_WF_Node_Template.class);
+	}
+
+	@Override
+	public void setAD_WF_Node_Template(org.compiere.model.I_AD_WF_Node_Template AD_WF_Node_Template)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_WF_Node_Template_ID, org.compiere.model.I_AD_WF_Node_Template.class, AD_WF_Node_Template);
+	}
+
+	/** Set Workflow Steps Template.
+		@param AD_WF_Node_Template_ID Workflow Steps Template	  */
+	@Override
+	public void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID)
+	{
+		if (AD_WF_Node_Template_ID < 1) 
+			set_Value (COLUMNNAME_AD_WF_Node_Template_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_WF_Node_Template_ID, Integer.valueOf(AD_WF_Node_Template_ID));
+	}
+
+	/** Get Workflow Steps Template.
+		@return Workflow Steps Template	  */
+	@Override
+	public int getAD_WF_Node_Template_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_Template_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
 	}
@@ -395,7 +421,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	public org.compiere.model.I_AD_Window getAD_Window()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
@@ -432,7 +458,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getAD_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
@@ -504,18 +530,6 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public java.lang.String getAttributeValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AttributeValue);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -614,6 +628,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -731,9 +747,9 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		return (java.lang.String)get_Value(COLUMNNAME_DynPriorityUnit);
 	}
 
-	/** Set EMail.
+	/** Set eMail.
 		@param EMail 
-		Electronic Mail Address
+		EMail-Adresse
 	  */
 	@Override
 	public void setEMail (java.lang.String EMail)
@@ -741,8 +757,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
-	/** Get EMail.
-		@return Electronic Mail Address
+	/** Get eMail.
+		@return EMail-Adresse
 	  */
 	@Override
 	public java.lang.String getEMail () 
@@ -975,9 +991,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -985,8 +999,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -1057,7 +1070,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_R_MailText getR_MailText() throws RuntimeException
+	public org.compiere.model.I_R_MailText getR_MailText()
 	{
 		return get_ValueAsPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class);
 	}
@@ -1094,7 +1107,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}
@@ -1363,7 +1376,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getWorkflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getWorkflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
