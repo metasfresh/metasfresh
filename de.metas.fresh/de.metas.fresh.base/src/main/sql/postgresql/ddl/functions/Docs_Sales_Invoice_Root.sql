@@ -7,7 +7,7 @@ RETURNS TABLE
 	countrycode character(2),
 	C_Currency_ID numeric,
 	displayhu text,
-	documentno character varying(30)
+	isCreditMemo character(1)
 	)
 AS
 $$	
@@ -30,7 +30,10 @@ SELECT
 		THEN 'Y'
 		ELSE 'N'
 	END as displayhu,
-	documentno
+	CASE WHEN dt.docbasetype = 'ARC'
+		THEN 'Y'
+		ELSE 'N'
+	END AS isCreditMemo
 FROM
 	C_Invoice i
 	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
