@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -110,11 +110,6 @@ public class DocumentWebsocketPublisher
 		websocketSender.convertAndSend(events);
 	}
 
-	public void staleByDocumentPath(final DocumentPath documentPath)
-	{
-		forCollector(collector -> collector.staleByDocumentPath(documentPath));
-	}
-
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
 		forCollector(collector -> collector.staleRootDocument(windowId, documentId));
@@ -130,9 +125,9 @@ public class DocumentWebsocketPublisher
 		forCollector(collector -> collector.staleTabs(windowId, documentId, tabIds));
 	}
 
-	public void staleIncludedDocument(final WindowId windowId, final DocumentId documentId, final DetailId tabId, final DocumentId rowId)
+	public void staleIncludedDocuments(final WindowId windowId, final DocumentId documentId, final DetailId tabId, final DocumentIdsSelection rowIds)
 	{
-		forCollector(collector -> collector.staleIncludedDocument(windowId, documentId, tabId, rowId));
+		forCollector(collector -> collector.staleIncludedDocuments(windowId, documentId, tabId, rowIds));
 	}
 
 	public void convertAndPublish(final List<JSONDocument> jsonDocumentEvents)

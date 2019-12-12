@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -130,12 +131,24 @@ public final class JSONIncludedTabInfo
 		return stale != null && stale.booleanValue();
 	}
 
-	public void staleRow(@NonNull final DocumentId rowId)
+	public void staleRows(@NonNull final DocumentIdsSelection rowIds)
 	{
-		staleRowIds.add(rowId);
+		if (rowIds.isEmpty())
+		{
+			// shall not happen
+			return;
+		}
+		else if (rowIds.isAll())
+		{
+			setStale();
+		}
+		else
+		{
+			staleRowIds.addAll(rowIds.toSet());
 
-		// FIXME: atm staling included rows is not supported on frontend, so we are invalidating the whole tab.
-		setStale();
+			// FIXME: atm staling included rows is not supported on frontend, so we are invalidating the whole tab.
+			setStale();
+		}
 	}
 
 	public void mergeFrom(JSONIncludedTabInfo from)

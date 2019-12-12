@@ -342,6 +342,12 @@ public class DocumentEntityDescriptor
 		return includedEntityDescriptor;
 	}
 
+	public List<DocumentEntityDescriptor> getIncludedEntitiesByTableName(@NonNull final String tableName)
+	{
+		return streamIncludedEntitiesByTableName(tableName)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public Stream<DocumentEntityDescriptor> streamIncludedEntitiesByTableName(@NonNull final String tableName)
 	{
 		return includedEntitiesByDetailId.values()

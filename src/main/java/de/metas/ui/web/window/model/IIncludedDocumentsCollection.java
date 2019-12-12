@@ -67,7 +67,7 @@ public interface IIncludedDocumentsCollection
 
 	void markStaleAll();
 	
-	void markStale(final DocumentId rowId);
+	void markStale(final DocumentIdsSelection rowIds);
 
 	/** @return true if contains at least one stale document */
 	boolean isStale();
