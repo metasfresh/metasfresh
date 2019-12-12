@@ -123,7 +123,7 @@ public class PPOrderBL implements IPPOrderBL
 		{
 			order.setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}    // addDescription
 
 	@Override
 	public void updateQtyBatchs(final I_PP_Order order, final boolean override)
