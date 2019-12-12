@@ -102,7 +102,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	private static final String VERSION_DEFAULT = "0";
 
 	private static final String SYSCONFIG_LoadLimitWarn = "webui.documents.LoadLimitWarn";
-	private static final int DEFAULT_LoadLimitWarn = 100;
+	private static final int DEFAULT_LoadLimitWarn = 250;
 
 	private static final String SYSCONFIG_LoadLimitMax = "webui.documents.LoadLimitMax";
 	private static final int DEFAULT_LoadLimitMax = 300;
