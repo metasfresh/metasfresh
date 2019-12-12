@@ -283,6 +283,29 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
 	/**
+	 * Set Chargennummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLotNumber (java.lang.String LotNumber);
+
+	/**
+	 * Get Chargennummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLotNumber();
+
+    /** Column definition for LotNumber */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object> COLUMN_LotNumber = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine_Pack, Object>(I_EDI_DesadvLine_Pack.class, "LotNumber", null);
+    /** Column name LotNumber */
+    public static final String COLUMNNAME_LotNumber = "LotNumber";
+
+	/**
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search

@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 207001252L;
+	private static final long serialVersionUID = 1364769355L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine_Pack (Properties ctx, int EDI_DesadvLine_Pack_ID, String trxName)
@@ -109,9 +109,9 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	public void setEDI_Desadv_ID (int EDI_Desadv_ID)
 	{
 		if (EDI_Desadv_ID < 1) 
-			set_Value (COLUMNNAME_EDI_Desadv_ID, null);
+			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, null);
 		else 
-			set_Value (COLUMNNAME_EDI_Desadv_ID, Integer.valueOf(EDI_Desadv_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, Integer.valueOf(EDI_Desadv_ID));
 	}
 
 	/** Get DESADV.
@@ -221,6 +221,22 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Chargennummer.
+		@param LotNumber Chargennummer	  */
+	@Override
+	public void setLotNumber (java.lang.String LotNumber)
+	{
+		set_Value (COLUMNNAME_LotNumber, LotNumber);
+	}
+
+	/** Get Chargennummer.
+		@return Chargennummer	  */
+	@Override
+	public java.lang.String getLotNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LotNumber);
 	}
 
 	/** Set Handling Unit.
