@@ -13,10 +13,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
 import org.slf4j.Logger;
 
@@ -100,22 +98,6 @@ public class LocationDAO implements ILocationDAO
 		locationRecord.setC_Region_ID(request.getRegionId());
 		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
 		locationRecord.setPOBox(request.getPoBox());
-
-		final IQueryBuilder<I_C_Postal> postalQuery = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Postal.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Country_ID, request.getCountryId());
-
-		if (request.getRegionId() > 0)
-		{
-			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, request.getRegionId());
-		}
-
-		final int postalId = postalQuery.filter(PostalQueryFilter.of(request.getPostal()))
-				.create()
-				.firstIdOnly();
-
-		locationRecord.setC_Postal_ID(postalId);
 
 		save(locationRecord);
 
