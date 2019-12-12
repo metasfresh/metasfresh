@@ -295,7 +295,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@FunctionalInterface
-	private static interface FieldValueSupplier
+	private interface FieldValueSupplier
 	{
 		/**
 		 * @param fieldDescriptor
@@ -339,7 +339,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 		}
 
-		private final DocumentId retrieveDocumentId()
+		private DocumentId retrieveDocumentId()
 		{
 			final List<DocumentFieldDescriptor> idFields = entityDescriptor.getIdFields();
 			if (idFields.isEmpty())
@@ -427,7 +427,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	public static enum RefreshResult
+	public enum RefreshResult
 	{
 		OK, MISSING
 	}
@@ -637,7 +637,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		return po;
 	}
 
-	private static final TableRecordReference extractRootRecordReference(final Document includedDocument)
+	private static TableRecordReference extractRootRecordReference(final Document includedDocument)
 	{
 		if (includedDocument.isRootDocument())
 		{
@@ -660,7 +660,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		return TableRecordReference.of(rootTableName, rootRecordId);
 	}
 
-	private static final IQueryBuilder<Object> toQueryBuilder(final SqlDocumentEntityDataBindingDescriptor dataBinding, final DocumentId documentId)
+	private static IQueryBuilder<Object> toQueryBuilder(final SqlDocumentEntityDataBindingDescriptor dataBinding, final DocumentId documentId)
 	{
 		final String tableName = dataBinding.getTableName();
 
@@ -808,7 +808,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	/** @return true if PO field's values can be considered the same */
-	private static final boolean poFieldValueEqual(final Object value1, final Object value2)
+	private static boolean poFieldValueEqual(final Object value1, final Object value2)
 	{
 		if (value1 == value2)
 		{
@@ -825,7 +825,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		return DataTypes.equals(value1, value2);
 	}
 
-	private static final boolean isEmptyPOFieldValue(final Object value)
+	private static boolean isEmptyPOFieldValue(final Object value)
 	{
 		if (value == null)
 		{
@@ -890,7 +890,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 	}
 
-	private static final void saveLabels(final Document document, final IDocumentFieldView documentField)
+	private static void saveLabels(final Document document, final IDocumentFieldView documentField)
 	{
 		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor().orElse(null));
 
@@ -927,7 +927,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	private static final void createLabelPORecord(@NonNull final Object listValueObj, final int linkId, @NonNull final LabelsLookup lookup)
+	private static void createLabelPORecord(@NonNull final Object listValueObj, final int linkId, @NonNull final LabelsLookup lookup)
 	{
 		final String listValue = listValueObj.toString();
 		final PO labelPO = TableModelLoader.instance.newPO(lookup.getLabelsTableName());
