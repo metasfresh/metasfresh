@@ -33,11 +33,11 @@ import org.compiere.model.IQuery;
 import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
 
+import javax.annotation.Nullable;
+
 /**
- *
- * @author tsa
- *
  * @param <T> model type
+ * @author tsa
  */
 public interface IQueryBuilder<T>
 {
@@ -135,19 +135,19 @@ public interface IQueryBuilder<T>
 
 	IQueryBuilder<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 
-	IQueryBuilder<T> addEqualsFilter(String columnName, Object value, IQueryFilterModifier modifier);
+	IQueryBuilder<T> addEqualsFilter(String columnName, @Nullable Object value, IQueryFilterModifier modifier);
 
-	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, Object value, IQueryFilterModifier modifier);
+	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value, IQueryFilterModifier modifier);
 
-	IQueryBuilder<T> addEqualsFilter(String columnName, Object value);
+	IQueryBuilder<T> addEqualsFilter(String columnName, @Nullable Object value);
 
-	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, Object value);
+	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
 
 	/**
 	 * Filters using the given string as a <b>substring</b>.
 	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
 	 *
-	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param substring  will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
 	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
@@ -253,10 +253,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 *
-	 * @param columnName the key column from the "main" query
+	 * @param columnName         the key column from the "main" query
 	 * @param subQueryColumnName the key column from the "sub" query
-	 * @param subQuery the actual sub query
+	 * @param subQuery           the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
@@ -264,10 +263,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 *
-	 * @param column the key column from the "main" query
+	 * @param column         the key column from the "main" query
 	 * @param subQueryColumn the key column from the "sub" query
-	 * @param subQuery the actual sub query
+	 * @param subQuery       the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
@@ -276,7 +274,7 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Create a new {@link IQueryBuilder} which collects models from given model column.
-	 *
+	 * <p>
 	 * Example: collect all invoice business partners (<code>Bill_Partner_ID</code>) from matched <code>C_Order</code>:
 	 *
 	 * <pre>
@@ -287,7 +285,6 @@ public interface IQueryBuilder<T>
 	 *   .create() // create IQuery&lt;I_C_BPartner&gt;
 	 *   .list()   // list bpartners
 	 * </pre>
-	 *
 	 *
 	 * @param column model column
 	 * @return list of collected models
@@ -321,7 +318,7 @@ public interface IQueryBuilder<T>
 	 * </pre>
 	 *
 	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
-	 * @param childType child model to be used
+	 * @param childType              child model to be used
 	 * @return query build for <code>ChildType</code>
 	 */
 	<ChildType, ExtChildType extends ChildType> IQueryBuilder<ExtChildType> andCollectChildren(ModelColumn<ChildType, ?> linkColumnInChildTable, Class<ExtChildType> childType);
@@ -329,7 +326,7 @@ public interface IQueryBuilder<T>
 	/**
 	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
 	 * .
-	 *
+	 * <p>
 	 * This is a convenient version of {@link #andCollectChildren(ModelColumn, Class)} for the case when you don't have to retrieve an extended interface of the child type.
 	 *
 	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
