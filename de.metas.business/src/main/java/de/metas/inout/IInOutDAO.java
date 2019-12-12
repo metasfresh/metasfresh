@@ -30,6 +30,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.shipping.model.ShipperTransportationId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -52,9 +55,6 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * Retrieve all (active) lines of given <code>inOut</code>.
-	 *
-	 * @param inOut
-	 * @param inoutLineClass
 	 * @return <code>inOut</code>'s lines
 	 */
 	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
@@ -63,10 +63,6 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
-	 *
-	 * @param inOut
-	 * @param clazz
-	 * @return
 	 */
 	<T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(I_M_InOut inOut, Class<T> clazz);
 
@@ -75,7 +71,6 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(I_C_OrderLine orderLine, Class<T> clazz);
 
 	/**
-	 *
 	 * @param ctx
 	 * @return query to retrieve all {@link I_M_InOutLine}s which are part of a shipment with doc status <code>Draft</code>, <code>InProgress</code> or <code>WaitingConfirmation</code>.
 	 */
@@ -83,28 +78,18 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * Returns all (including inactive) M_InOutLines that reference the given <code>packingMaterialLine</code> from their <code>M_PackingMaterial_InOutLine_ID</code> value.
-	 *
-	 * @param packingMaterialLine
-	 * @return
 	 */
 	IQueryBuilder<I_M_InOutLine> retrieveAllReferencingLinesBuilder(I_M_InOutLine packingMaterialLine);
 
 	/**
 	 * Returns all the M_InOutLine IDs of the given inout that have quality issues ( QualityDiscountPercent > 0).
-	 *
-	 * @param inOut
-	 * @return
 	 */
 	List<Integer> retrieveLineIdsWithQualityDiscount(I_M_InOut inOut);
 
 	/**
-	 *
 	 * Retrieve the M_InOutLine that is in dispute (has qty with issues) and is based on the same order line as the inout line given as parameter.
-	 *
-	 * @param originInOutLine
-	 * @return
 	 */
-	I_M_InOutLine retrieveLineWithQualityDiscount(I_M_InOutLine originInOutLine);
+	I_M_InOutLine retrieveLineWithQualityDiscount(@NonNull I_M_InOutLine originInOutLine);
 
 	LocalDate getLastInOutDate(BPartnerId bpartnerId, ProductId productId, SOTrx soTrx);
 
@@ -115,4 +100,7 @@ public interface IInOutDAO extends ISingletonService
 	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 
 	<T extends I_M_InOutLine> T getLineById(InOutLineId inoutLineId, Class<T> modelClass);
+
+	@NonNull
+	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
 }

@@ -35,6 +35,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -72,6 +74,18 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.asList();
 	}
 
 	@Override
