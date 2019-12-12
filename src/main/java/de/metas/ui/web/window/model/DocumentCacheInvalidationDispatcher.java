@@ -2,7 +2,6 @@ package de.metas.ui.web.window.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -18,8 +17,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cache.ICacheResetListener;
@@ -93,18 +90,18 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(currentTrx))
-		{
-			resetAsync(request);
-		}
-		else
+		if (trxManager.isActive(currentTrx))
 		{
 			final CacheInvalidateMultiRequestsCollector collector = currentTrx.getPropertyAndProcessAfterCommit(
 					TRXPROP_Requests,
-					CacheInvalidateMultiRequestsCollector::new,
+					() -> new CacheInvalidateMultiRequestsCollector(currentTrx.getTrxName()),
 					CacheInvalidateMultiRequestsCollector::resetAsync);
 
 			collector.collect(request);
+		}
+		else
+		{
+			resetAsync(request);
 		}
 
 		return 1; // not relevant
@@ -117,11 +114,14 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 			return;
 		}
 
+		logger.trace("resetAsync: {}", request);
 		async.execute(() -> resetNow(request));
 	}
 
 	private void resetNow(@NonNull final CacheInvalidateMultiRequest request)
 	{
+		logger.trace("resetNow: {}", request);
+
 		try (final IAutoCloseable c = documents.getWebsocketPublisher().temporaryCollectOnThisThread())
 		{
 			request.getRequests().forEach(this::resetDocumentNow);
@@ -134,7 +134,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 
 	private void resetDocumentNow(@NonNull final CacheInvalidateRequest request)
 	{
-		logger.debug("Got {}", request);
+		logger.debug("resetDocumentNow: {}", request);
 
 		final String rootTableName = request.getRootTableName();
 		if (rootTableName == null)
@@ -171,10 +171,17 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 
 	private final class CacheInvalidateMultiRequestsCollector
 	{
+		private final String name; // used for debugging
 		private List<CacheInvalidateMultiRequest> multiRequests = new ArrayList<>();
+
+		private CacheInvalidateMultiRequestsCollector(final String name)
+		{
+			this.name = name;
+		}
 
 		public void collect(@NonNull final CacheInvalidateMultiRequest multiRequest)
 		{
+			logger.trace("Collecting request on `{}`: {}", name, multiRequest);
 			multiRequests.add(multiRequest);
 		}
 
@@ -183,16 +190,14 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 			final List<CacheInvalidateMultiRequest> multiRequests = this.multiRequests;
 			this.multiRequests = null; // just to prevent adding more events
 
+			logger.trace("Flushing {} collected requests for on `{}`", multiRequests.size(), name);
+
 			if (multiRequests.isEmpty())
 			{
 				return;
 			}
 
-			final Set<CacheInvalidateRequest> requests = multiRequests.stream()
-					.flatMap(multiRequest -> multiRequest.getRequests().stream())
-					.collect(ImmutableSet.toImmutableSet());
-
-			final CacheInvalidateMultiRequest multiRequestEffective = CacheInvalidateMultiRequest.of(requests);
+			final CacheInvalidateMultiRequest multiRequestEffective = CacheInvalidateMultiRequest.ofMultiRequests(multiRequests);
 			DocumentCacheInvalidationDispatcher.this.resetAsync(multiRequestEffective);
 		}
 	}
