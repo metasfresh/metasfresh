@@ -421,12 +421,14 @@ public class DebugRestController
 
 	public enum LoggingModule
 	{
-		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()), //
+		websockets_and_invalidation(
+				de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName(),
+				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()), //
 		view(de.metas.ui.web.view.IView.class.getPackage().getName()), //
 		cache(
-				de.metas.cache.CCache.class.getName() //
-				, de.metas.cache.CacheMgt.class.getName() //
-				, de.metas.cache.model.IModelCacheService.class.getName() // model caching
+				de.metas.cache.CCache.class.getName(),
+				de.metas.cache.CacheMgt.class.getName(),
+				de.metas.cache.model.IModelCacheService.class.getName() // model caching
 		) //
 		;
 
