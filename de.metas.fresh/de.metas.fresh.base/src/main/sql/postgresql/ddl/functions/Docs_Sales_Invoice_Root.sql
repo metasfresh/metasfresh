@@ -6,7 +6,8 @@ RETURNS TABLE
 	PrintName character varying(60),
 	countrycode character(2),
 	C_Currency_ID numeric,
-	displayhu text
+	displayhu text,
+	documentno character varying(30)
 	)
 AS
 $$	
@@ -28,7 +29,8 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhu
+	END as displayhu,
+	documentno
 FROM
 	C_Invoice i
 	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
