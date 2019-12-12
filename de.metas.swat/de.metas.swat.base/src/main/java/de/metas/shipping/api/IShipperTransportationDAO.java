@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.shipping.model.ShipperTransportationId;
+import lombok.NonNull;
 import org.compiere.model.I_M_Package;
 
 import de.metas.shipping.ShipperId;
@@ -35,7 +36,7 @@ import de.metas.util.ISingletonService;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
-	List<I_M_ShippingPackage> retrieveShippingPackages(I_M_ShipperTransportation shipperTransportation);
+	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
 	/**
 	 * Retrieve all {@link I_M_ShippingPackage}s which are pointing to givem {@link I_M_Package}.

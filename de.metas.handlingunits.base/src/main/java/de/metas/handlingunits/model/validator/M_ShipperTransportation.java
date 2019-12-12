@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_M_Package;
@@ -54,7 +55,7 @@ public class M_ShipperTransportation
 		//
 		// Retrieve all HUs which we need to remove from their picking slots
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
-		for (final I_M_ShippingPackage shippingPackage : shipperTransportationDAO.retrieveShippingPackages(shipperTransportation))
+		for (final I_M_ShippingPackage shippingPackage : shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID())))
 		{
 			final I_M_Package mpackage = shippingPackage.getM_Package();
 
