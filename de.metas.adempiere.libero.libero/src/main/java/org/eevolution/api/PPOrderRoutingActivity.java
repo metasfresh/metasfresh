@@ -14,6 +14,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -69,6 +70,9 @@ public final class PPOrderRoutingActivity
 	private final BPartnerId subcontractingVendorId;
 
 	private final boolean milestone;
+
+	@Nullable
+	private PPRoutingActivityTemplateId activityTemplateId;
 
 	@NonNull
 	private final ResourceId resourceId;

@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.metas.attachments.AttachmentEntryService;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -42,8 +41,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
@@ -67,6 +66,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.IResourceDAO;
@@ -74,6 +74,7 @@ import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -207,39 +208,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
 				.list();
-	}
-
-	private I_AD_WF_Node retrieveManufacturingWorkflowNodeOrNull(@NonNull final int workflowId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_WF_Node.class)
-				.addEqualsFilter(I_AD_WF_Node.COLUMN_AD_WF_Node_ID, workflowId)
-				.create()
-				.first(I_AD_WF_Node.class);
-	}
-
-	private I_AD_WF_Node_Template retrieveManufacturingWorkflowTemplateOrNull(@NonNull final int workflowId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_WF_Node_Template.class)
-				.addEqualsFilter(I_AD_WF_Node_Template.COLUMNNAME_AD_WF_Node_Template_ID, workflowId)
-				.create()
-				.first(I_AD_WF_Node_Template.class);
-	}
-
-	private int getWorkflowTemplateId(@NonNull final int workflowId)
-	{
-		final I_AD_WF_Node node = retrieveManufacturingWorkflowNodeOrNull(workflowId);
-		if (node == null)
-		{
-			return 0;
-		}
-		final I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(node.getAD_WF_Node_Template_ID());
-		if (nodeTemplate == null)
-		{
-			return 0;
-		}
-		return nodeTemplate.getAD_WF_Node_Template_ID();
 	}
 
 	private List<I_PP_Order_NodeNext> retrieveOrderNodeNexts(@NonNull final PPOrderId orderId)
@@ -420,11 +388,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		trxManager.runInThreadInheritedTrx(() -> saveInTrx(orderRouting));
 	}
 
-	private I_PP_Order getPPOrder(I_PP_Order_Node pp_order_node)
-	{
-		return pp_order_node.getPP_Order();
-	}
-
 	private void saveInTrx(@NonNull final PPOrderRouting orderRouting)
 	{
 		//
@@ -455,17 +418,25 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 			for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 			{
 				I_PP_Order_Node activityRecord = existingActivityRecords.remove(activity.getId());
+				final boolean newActivity;
 				if (activityRecord == null)
 				{
 					activityRecord = toNewOrderNodeRecord(activity, orderId, ppOrderWorkflowId);
+					newActivity = true;
 				}
 				else
 				{
 					updateOrderNodeRecord(activityRecord, activity);
+					newActivity = false;
 				}
 
 				saveRecord(activityRecord);
 				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
+
+				if (newActivity)
+				{
+					copyAttachmentsFromTemplate(activityRecord);
+				}
 			}
 
 			//
@@ -545,7 +516,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setSetupTime(0);
 		record.setMovingTime(0);
 		record.setDuration(0);
-		
+
 		updateOrderWorkflowRecord(record, from);
 
 		return record;
@@ -571,6 +542,23 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		updateOrderNodeRecord(record, activity);
 
 		return record;
+	}
+
+	private void copyAttachmentsFromTemplate(final I_PP_Order_Node activity)
+	{
+		final PPRoutingActivityTemplateId activityTemplateId = PPRoutingActivityTemplateId.ofRepoIdOrNull(activity.getAD_WF_Node_Template_ID());
+		if (activityTemplateId == null)
+		{
+			return;
+		}
+
+		final TableRecordReference activityTemplateRef = TableRecordReference.of(I_AD_WF_Node_Template.Table_Name, activityTemplateId);
+		final TableRecordReference activityRef = TableRecordReference.of(I_PP_Order_Node.Table_Name, activity.getPP_Order_Node_ID());
+		final TableRecordReference orderRef = TableRecordReference.of(I_PP_Order.Table_Name, activity.getPP_Order_ID());
+
+		getAttachmentEntryServiceInstance().shareAttachmentLinks(
+				ImmutableList.of(activityTemplateRef),
+				ImmutableList.of(orderRef, activityRef));
 	}
 
 	private void updateOrderNodeRecord(final I_PP_Order_Node record, final PPOrderRoutingActivity from)
@@ -607,7 +595,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
 		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
 		record.setQtyRequiered(from.getQtyRequired().toBigDecimal());
-		record.setC_UOM_ID(from.getQtyRequired().getUOMId());
+		record.setC_UOM_ID(from.getQtyRequired().getUomId().getRepoId());
 
 		//
 		// Reported values
@@ -619,16 +607,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setDateStart(TimeUtil.asTimestamp(from.getDateStart()));
 		record.setDateFinish(TimeUtil.asTimestamp(from.getDateFinish()));
 
-		if (getWorkflowTemplateId(record.getAD_WF_Node_ID()) != 0 )
-		{
-			record.setAD_WF_Node_Template_ID(getWorkflowTemplateId(record.getAD_WF_Node_ID()));
-		}
-
-		final I_AD_WF_Node_Template nodeTemplate = retrieveManufacturingWorkflowTemplateOrNull(record.getAD_WF_Node_Template_ID());
-		if (nodeTemplate != null)
-		{
-			getAttachmentEntryServiceInstance().shareAttachmentLinks(ImmutableList.of(nodeTemplate),ImmutableList.of(record.getPP_Order()));
-		}
+		final PPRoutingActivityTemplateId activityTemplateId = from.getActivityTemplateId();
+		record.setAD_WF_Node_Template_ID(PPRoutingActivityTemplateId.toRepoId(activityTemplateId));
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)
