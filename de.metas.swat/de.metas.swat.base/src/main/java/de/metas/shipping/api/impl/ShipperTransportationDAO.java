@@ -25,6 +25,7 @@ package de.metas.shipping.api.impl;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
@@ -43,13 +44,11 @@ import de.metas.util.Services;
 public class ShipperTransportationDAO implements IShipperTransportationDAO
 {
 	@Override
-	public List<I_M_ShippingPackage> retrieveShippingPackages(final I_M_ShipperTransportation shipperTransportation)
+	public List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull final ShipperTransportationId shipperTransportationId)
 	{
-		Check.assumeNotNull(shipperTransportation, "shipperTransportation not null");
-
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShippingPackage.class, shipperTransportation)
-				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportation.getM_ShipperTransportation_ID()))
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId))
 				.create()
 				.list(I_M_ShippingPackage.class);
 	}
