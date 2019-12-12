@@ -1,12 +1,8 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
 import Loader from '../app/Loader';
 
-class Indicator extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+export default class Indicator extends PureComponent {
   render() {
     const {
       value,
@@ -38,5 +34,3 @@ class Indicator extends Component {
     );
   }
 }
-
-export default Indicator;

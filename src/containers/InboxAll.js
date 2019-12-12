@@ -5,16 +5,6 @@ import { connect } from 'react-redux';
 import Container from '../components/Container';
 import Inbox from '../components/inbox/Inbox';
 
-const mapStateToProps = state => ({
-  inbox: state.appHandler.inbox,
-  processStatus: state.appHandler.processStatus,
-  modal: state.windowHandler.modal,
-  rawModal: state.windowHandler.rawModal,
-  pluginModal: state.windowHandler.pluginModal,
-  indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
-});
-
 class InboxAll extends PureComponent {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -48,5 +38,15 @@ class InboxAll extends PureComponent {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  inbox: state.appHandler.inbox,
+  processStatus: state.appHandler.processStatus,
+  modal: state.windowHandler.modal,
+  rawModal: state.windowHandler.rawModal,
+  pluginModal: state.windowHandler.pluginModal,
+  indicator: state.windowHandler.indicator,
+  includedView: state.listHandler.includedView,
+});
 
 export default connect(mapStateToProps)(InboxAll);
