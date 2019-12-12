@@ -10,21 +10,22 @@ package org.adempiere.mm.attributes.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -34,14 +35,10 @@ import org.compiere.model.X_M_Attribute;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeValueCallout
 {
-	public WeightGrossAttributeValueCallout()
-	{
-		super();
-	}
-
 	/**
 	 * Recalculates the net weight based on the current values of the given <code>attributeSet</code>'s Weight Gross and Weight Tare values.
 	 *
@@ -61,7 +58,8 @@ public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeVal
 	 * @return {@link BigDecimal#ZERO}
 	 */
 	@Override
-	public Object generateSeedValue(final IAttributeSet attributeSet, final I_M_Attribute attribute, final Object valueInitialDefault)
+	public Object generateSeedValue(final IAttributeSet attributeSet, final I_M_Attribute attribute,
+			@Nullable final Object valueInitialDefault)
 	{
 		// we don't support a value different from null
 		Check.assumeNull(valueInitialDefault, "valueInitialDefault null");
@@ -131,5 +129,11 @@ public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeVal
 		}
 
 		return true;
+	}
+
+	@Override
+	public boolean isDisplayedUI(@NonNull final IAttributeSet attributeSet, @NonNull final I_M_Attribute attribute)
+	{
+		return isTopLevelVHU(attributeSet);
 	}
 }

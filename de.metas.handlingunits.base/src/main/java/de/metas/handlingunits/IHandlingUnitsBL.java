@@ -312,7 +312,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Checks if given handling unit is top level (i.e. it has no parents)
 	 *
-	 * @param hu
 	 * @return true if is a top level handling unit
 	 */
 	boolean isTopLevel(I_M_HU hu);
@@ -414,7 +413,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
-
 
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
