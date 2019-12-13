@@ -13,15 +13,14 @@ package de.metas.edi.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -81,7 +80,8 @@ public class C_Order
 			return;
 		}
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiRecipient())
+		final boolean isEdiRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
+		if (!isEdiRecipient)
 		{
 			return;
 		}
@@ -111,9 +111,7 @@ public class C_Order
 	 * @param order
 	 * @task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID }
-			)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID })
 	public void updateEdiEnabled(final I_C_Order order)
 	{
 		final int orderInputDataSourceId = order.getAD_InputDataSource_ID();
@@ -131,8 +129,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void onPartnerChange(final I_C_Order order)
 	{
 
@@ -143,16 +140,14 @@ public class C_Order
 			return;
 		}
 
-		final boolean isEdiRecipient = partner.isEdiRecipient();
+		final boolean isEdiRecipient = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
 
 		// in case the partner was changed and the new one is not an edi recipient, the order will not be edi enabled
 		// If the new bp is edi recipient, we leave it to the user to set the flag or not
-
 		if (!isEdiRecipient)
 		{
 			order.setIsEdiEnabled(false);
 		}
 	}
-
 
 }
