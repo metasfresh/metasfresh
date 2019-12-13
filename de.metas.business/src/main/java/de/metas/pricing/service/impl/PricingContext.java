@@ -1,5 +1,7 @@
 package de.metas.pricing.service.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -148,7 +150,7 @@ class PricingContext implements IEditablePricingContext
 	@Override
 	public OrgId getOrgId()
 	{
-		return orgId;
+		return coalesce(orgId, OrgId.ANY);
 	}
 
 	@Override
