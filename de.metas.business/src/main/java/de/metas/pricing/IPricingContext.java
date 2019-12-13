@@ -35,6 +35,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -42,6 +43,8 @@ import de.metas.util.OptionalBoolean;
 
 public interface IPricingContext extends IContextAware
 {
+	OrgId getOrgId();
+
 	ProductId getProductId();
 
 	Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware();

@@ -48,6 +48,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -96,12 +97,14 @@ public class PricingBL implements IPricingBL
 
 	@Override
 	public IEditablePricingContext createInitialContext(
+			@NonNull final OrgId orgId,
 			@Nullable final ProductId productId,
 			@Nullable BPartnerId bPartnerId,
 			@Nullable final Quantity quantity,
 			@NonNull final SOTrx soTrx)
 	{
 		final IEditablePricingContext pricingCtx = createPricingContext();
+		pricingCtx.setOrgId(orgId);
 		pricingCtx.setProductId(productId);
 		pricingCtx.setBPartnerId(bPartnerId);
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
@@ -125,6 +128,7 @@ public class PricingBL implements IPricingBL
 
 	@Override
 	public IEditablePricingContext createInitialContext(
+			final int AD_Org_ID,
 			final int M_Product_ID,
 			final int C_BPartner_ID,
 			final int C_UOM_ID,
@@ -132,6 +136,7 @@ public class PricingBL implements IPricingBL
 			final boolean isSOTrx)
 	{
 		final IEditablePricingContext pricingCtx = createPricingContext();
+		pricingCtx.setOrgId(OrgId.ofRepoIdOrAny(AD_Org_ID));
 		pricingCtx.setProductId(ProductId.ofRepoIdOrNull(M_Product_ID));
 		pricingCtx.setBPartnerId(BPartnerId.ofRepoIdOrNull(C_BPartner_ID));
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
