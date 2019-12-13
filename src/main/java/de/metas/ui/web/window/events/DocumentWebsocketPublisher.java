@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -68,23 +67,29 @@ public class DocumentWebsocketPublisher
 		final JSONDocumentChangedWebSocketEventCollector collector;
 		final boolean autoflush;
 
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		final JSONDocumentChangedWebSocketEventCollector threadLocalCollector = THREAD_LOCAL_COLLECTOR.get();
 		if (threadLocalCollector != null)
 		{
 			collector = threadLocalCollector;
 			autoflush = false;
 		}
-		else if (trxManager.isActive(trx))
-		{
-			collector = trx.getProperty(JSONDocumentChangedWebSocketEventCollector.class.getName(), () -> createCollectorAndBind(trx, websocketSender));
-			autoflush = false;
-		}
 		else
 		{
-			collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
-			autoflush = true;
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			if (trxManager.isActive(trx))
+			{
+				collector = trx.getPropertyAndProcessAfterCommit(
+						JSONDocumentChangedWebSocketEventCollector.class.getName(),
+						() -> JSONDocumentChangedWebSocketEventCollector.newInstance(),
+						c -> sendAllAndClear(c, websocketSender));
+				autoflush = false;
+			}
+			else
+			{
+				collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
+				autoflush = true;
+			}
 		}
 
 		//
@@ -99,26 +104,10 @@ public class DocumentWebsocketPublisher
 		}
 	}
 
-	private static JSONDocumentChangedWebSocketEventCollector createCollectorAndBind(final ITrx trx, final WebsocketSender websocketSender)
-	{
-		final JSONDocumentChangedWebSocketEventCollector collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
-
-		trx.getTrxListenerManager()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(transaction -> sendAllAndClear(collector, websocketSender));
-
-		return collector;
-	}
-
 	private static void sendAllAndClear(final JSONDocumentChangedWebSocketEventCollector collector, final WebsocketSender websocketSender)
 	{
 		final List<JSONDocumentChangedWebSocketEvent> events = collector.getEventsAndClear();
 		websocketSender.convertAndSend(events);
-	}
-
-	public void staleByDocumentPath(final DocumentPath documentPath)
-	{
-		forCollector(collector -> collector.staleByDocumentPath(documentPath));
 	}
 
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
@@ -136,9 +125,9 @@ public class DocumentWebsocketPublisher
 		forCollector(collector -> collector.staleTabs(windowId, documentId, tabIds));
 	}
 
-	public void staleIncludedDocument(final WindowId windowId, final DocumentId documentId, final DetailId tabId, final DocumentId rowId)
+	public void staleIncludedDocuments(final WindowId windowId, final DocumentId documentId, final DetailId tabId, final DocumentIdsSelection rowIds)
 	{
-		forCollector(collector -> collector.staleIncludedDocument(windowId, documentId, tabId, rowId));
+		forCollector(collector -> collector.staleIncludedDocuments(windowId, documentId, tabId, rowIds));
 	}
 
 	public void convertAndPublish(final List<JSONDocument> jsonDocumentEvents)

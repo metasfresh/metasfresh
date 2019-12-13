@@ -229,7 +229,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	}
 
 	@Override
-	public void markStale(DocumentId rowId)
+	public void markStale(final DocumentIdsSelection rowIds)
 	{
 		markStaleAll();
 	}

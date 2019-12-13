@@ -57,15 +57,19 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
+import de.metas.ui.web.window.invalidation.DocumentToInvalidate;
+import de.metas.ui.web.window.invalidation.IncludedDocumentToInvalidate;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.util.Check;
@@ -687,56 +691,59 @@ public class DocumentCollection
 		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
-	public void invalidateIncludedDocumentsByRecordId(final String tableName, final int recordId, final String childTableName, final int childRecordId)
+	public void invalidate(final DocumentToInvalidate documentToInvalidate)
 	{
-		final DocumentId documentId = DocumentId.of(recordId);
-		final DocumentId rowId = childRecordId > 0 ? DocumentId.of(childRecordId) : null;
-
-		final Function<DocumentEntityDescriptor, DocumentPath> toDocumentPath;
-		if (rowId != null)
-		{
-			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId(), rowId);
-		}
-		else
-		{
-			// all rows for given tab/detail
-			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId());
-		}
-
-		//
-		// Create possible documentKeys for given tableName/recordId
-		final ImmutableSet<DocumentPath> documentPaths = getCachedWindowIdsForTableName(tableName)
+		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
 				.stream()
 				.map(this::getDocumentEntityDescriptor)
-				.flatMap(rootEntity -> rootEntity.streamIncludedEntitiesByTableName(childTableName))
-				.map(toDocumentPath)
-				.collect(ImmutableSet.toImmutableSet());
-
-		documentPaths.forEach(this::invalidateIncludedDocuments);
-	}
-
-	private void invalidateIncludedDocuments(final DocumentPath documentPath)
-	{
-		Check.assume(!documentPath.isRootDocument(), "included document path: {}", documentPath);
-
-		//
-		// Get the root document if exists
-		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
-		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(rootDocumentPath);
-		final Document document = rootDocuments.getIfPresent(documentKey);
-
-		// Invalidate
-		if (document != null)
+				.collect(ImmutableList.toImmutableList());
+		if (entityDescriptors.isEmpty())
 		{
-			try (final IAutoCloseable lock = document.lockForWriting())
-			{
-				document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStale(documentPath.getSingleRowId());
-			}
+			return;
 		}
 
-		//
-		// Notify frontend, even if the root document does not exist (or it was not cached).
-		websocketPublisher.staleByDocumentPath(documentPath);
+		final DocumentId rootDocumentId = documentToInvalidate.getDocumentId();
+
+		for (final DocumentEntityDescriptor entityDescriptor : entityDescriptors)
+		{
+			final WindowId windowId = entityDescriptor.getWindowId();
+			final DocumentKey rootDocumentKey = DocumentKey.of(windowId, rootDocumentId);
+			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
+			if (rootDocument != null)
+			{
+				try (final IAutoCloseable lock = rootDocument.lockForWriting())
+				{
+					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+					{
+						final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+						if (includedRowIds.isEmpty())
+						{
+							continue;
+						}
+
+						for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+						{
+							final DetailId detailId = includedEntityDescriptor.getDetailId();
+
+							rootDocument.getIncludedDocumentsCollection(detailId).markStale(includedRowIds);
+							websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
+						}
+					}
+
+				}
+			}
+
+			//
+			// Invalidate the root document
+			if (documentToInvalidate.isInvalidateDocument())
+			{
+				rootDocuments.invalidate(rootDocumentKey);
+			}
+
+			//
+			// Notify frontend, even if the root document does not exist (or it was not cached).
+			websocketPublisher.staleRootDocument(windowId, rootDocumentId);
+		}
 	}
 
 	/**
@@ -755,7 +762,7 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		websocketPublisher.staleByDocumentPath(documentPath);
+		websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 	}
 
 	public Document duplicateDocument(final DocumentPath fromDocumentPath)
