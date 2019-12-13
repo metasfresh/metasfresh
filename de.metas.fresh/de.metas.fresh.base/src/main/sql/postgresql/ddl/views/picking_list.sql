@@ -10,6 +10,7 @@ SELECT
 	p.value as productvalue,
 	v.productname,
 	v.qtyordered,
+	pc.qtyPicked,
 	v.c_uom_id,
 	v.ad_org_id,
 	v.c_orderso_id,
