@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -40,24 +41,24 @@ import de.metas.uom.UomId;
  */
 public interface IEditablePricingContext extends IPricingContext
 {
+	IEditablePricingContext setOrgId(OrgId orgId);
+
 	/**
 	 * Set's this context's referenced object to the given {@code referencedObject}, and set's this context's trxName to be the given referencedObject's trxName.
-	 *
-	 * @param referencedObject
 	 */
-	IEditablePricingContext setReferencedObject(final Object referencedObject);
+	IEditablePricingContext setReferencedObject(Object referencedObject);
 
-	IEditablePricingContext setSOTrx(final SOTrx soTrx);
+	IEditablePricingContext setSOTrx(SOTrx soTrx);
 
-	IEditablePricingContext setQty(final BigDecimal qty);
+	IEditablePricingContext setQty(BigDecimal qty);
 
-	IEditablePricingContext setBPartnerId(final BPartnerId bpartnerId);
+	IEditablePricingContext setBPartnerId(BPartnerId bpartnerId);
 
 	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
 
-	IEditablePricingContext setUomId(final UomId uomId);
+	IEditablePricingContext setUomId(UomId uomId);
 
-	IEditablePricingContext setPriceDate(final LocalDate priceDate);
+	IEditablePricingContext setPriceDate(LocalDate priceDate);
 
 	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
 
@@ -65,7 +66,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setPriceListVersionId(PriceListVersionId priceListVersionId);
 
-	IEditablePricingContext setProductId(final ProductId productId);
+	IEditablePricingContext setProductId(ProductId productId);
 
 	/**
 	 * Set this to <code>true</code> to indicate to the pricing engine that discounts shall <b>not</b> be computed and applied to the result.
