@@ -162,7 +162,7 @@ public class HUShippingFacade
 	{
 		if (addToShipperTransportationId > 0)
 		{
-			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
+			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(addToShipperTransportationId), hus);
 			mPackagesCreated.addAll(result);
 			Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
 		}

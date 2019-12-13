@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -60,7 +61,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
 
 	@Override
-	public List<I_M_Package> addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
+	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)
 	{
 		//
 		// Load Shipper transportation document and validate it
