@@ -35,6 +35,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IHUShipperTransportationBL extends ISingletonService
 {
 	/**
@@ -58,7 +60,7 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 *
 	 * @return true if HU is eligible for adding to shipper transportation.
 	 */
-	boolean isEligibleForAddingToShipperTransportation(I_M_HU hu);
+	boolean isEligibleForAddingToShipperTransportation(@Nullable I_M_HU hu);
 
 	/**
 	 * @return shipping packages for HU, filtered by it's package partner and location

@@ -56,6 +56,8 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
 	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
@@ -139,7 +141,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	}
 
 	@Override
-	public boolean isEligibleForAddingToShipperTransportation(final I_M_HU hu)
+	public boolean isEligibleForAddingToShipperTransportation(@Nullable final I_M_HU hu)
 	{
 		// guard against null
 		if (hu == null)
