@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
@@ -14,7 +14,7 @@ import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesAction
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 
-export class RawLookup extends Component {
+export class RawLookup extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -128,7 +128,7 @@ export class RawLookup extends Component {
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.props.onDropdownListToggle(false);
+      this.handleDropdownListToggle(false);
     }
   };
 
@@ -139,6 +139,12 @@ export class RawLookup extends Component {
       selected: null,
       loading: false,
     });
+  };
+
+  handleDropdownListToggle = (val, mouse) => {
+    const { field, onDropdownListToggle } = this.props;
+
+    onDropdownListToggle(val, mouse, field);
   };
 
   handleSelect = (select, mouse) => {
@@ -240,7 +246,7 @@ export class RawLookup extends Component {
         isFocused: false,
       },
       () => {
-        this.props.onDropdownListToggle(false, mouse);
+        this.handleDropdownListToggle(false, mouse);
       }
     );
   }
@@ -257,7 +263,7 @@ export class RawLookup extends Component {
         },
         () => {
           if (!mandatory && mouse) {
-            this.props.onDropdownListToggle(true);
+            this.handleDropdownListToggle(true);
           }
         }
       );
@@ -550,10 +556,6 @@ export class RawLookup extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  filter: state.windowHandler.filter,
-});
-
 RawLookup.propTypes = {
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
@@ -563,4 +565,4 @@ RawLookup.propTypes = {
   onDropdownListToggle: PropTypes.func,
 };
 
-export default connect(mapStateToProps)(RawLookup);
+export default connect()(RawLookup);

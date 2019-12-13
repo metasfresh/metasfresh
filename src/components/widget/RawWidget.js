@@ -597,6 +597,7 @@ export class RawWidget extends PureComponent {
             {...{
               attribute,
             }}
+            filter={filter}
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
