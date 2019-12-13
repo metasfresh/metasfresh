@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import org.apache.commons.lang.WordUtils;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
@@ -16,6 +17,8 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -48,6 +51,7 @@ public class CreatePickingCandidatesCommand
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
+	private final Quantity quantity;
 
 	@Builder
 	private CreatePickingCandidatesCommand(
@@ -59,6 +63,8 @@ public class CreatePickingCandidatesCommand
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		this.pickFrom = request.getPickFrom();
 		this.pickingSlotId = request.getPickingSlotId();
+		final BigDecimal qty = request.getQtyToPick().toBigDecimal();
+		this.quantity = Quantity.of(qty, getShipmentScheduleUOM());
 	}
 
 	public PickHUResult perform()
@@ -77,7 +83,7 @@ public class CreatePickingCandidatesCommand
 	{
 		return PickingCandidate.builder()
 				.processingStatus(PickingCandidateStatus.Draft)
-				.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
+				.qtyPicked(quantity)
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFrom(pickFrom)
 				.pickingSlotId(pickingSlotId)
