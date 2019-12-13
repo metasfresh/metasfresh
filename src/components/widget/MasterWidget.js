@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
+import { noop } from 'lodash';
 
 import * as windowActions from '../../actions/WindowActions';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
@@ -33,24 +34,44 @@ class MasterWidget extends PureComponent {
   };
 
   componentDidMount() {
-    const { data, widgetData, clearValue } = this.props;
+    const { data, clearValue } = this.props;
+    const localWidgetData = this.getWidgetData();
 
     // `clearValue` removes current field value for the widget. This is used when
     // user focuses on table cell and starts typing
     this.setState({
-      data: data || (clearValue ? '' : widgetData[0].value),
+      data: data || (clearValue ? '' : localWidgetData[0].value),
     });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { widgetData, widgetType } = this.props;
+    const { widgetType } = this.props;
+    const localWidgetData = this.getWidgetData();
     const { edited, data } = this.state;
-    let next = nextProps.widgetData[0].value;
+
+    const {
+      widgetData: nextWidgetData,
+      getWidgetData: nextGetWidgetData,
+      item: nextItem,
+      isEditable: nextIsEditable,
+      supportFieldEdit: nextSupportFieldEdit,
+    } = nextProps;
+
+    const nextLocalWidgetData = nextWidgetData
+      ? nextWidgetData
+      : this.getWidgetData(
+          nextItem,
+          nextIsEditable,
+          nextSupportFieldEdit,
+          nextGetWidgetData
+        );
+
+    let next = nextLocalWidgetData[0].value;
 
     if (
       !edited &&
       JSON.stringify(next) !== data &&
-      JSON.stringify(widgetData[0].value) !== JSON.stringify(next)
+      JSON.stringify(localWidgetData[0].value) !== JSON.stringify(next)
     ) {
       if (next && dateParse.includes(widgetType) && !Moment.isMoment(next)) {
         next = convertTimeStringToMoment(next);
@@ -79,6 +100,26 @@ class MasterWidget extends PureComponent {
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
+
+  getWidgetData = (
+    nextItem,
+    nextIsEditable,
+    nextSupportFieldEdit,
+    nextGetWidgetData
+  ) => {
+    const { widgetData, getWidgetData } = this.props;
+    let { item, isEditable, supportFieldEdit } = this.props;
+    const localItem = nextItem || item;
+    const localIsEditable = nextIsEditable || isEditable;
+    const localSupportEdit = nextSupportFieldEdit || supportFieldEdit;
+
+    const getData = nextGetWidgetData ? nextGetWidgetData : getWidgetData;
+    const localWidgetData = widgetData
+      ? widgetData
+      : getData(localItem, localIsEditable, localSupportEdit);
+
+    return localWidgetData;
+  };
 
   /**
    * @method handlePatch
@@ -261,11 +302,13 @@ class MasterWidget extends PureComponent {
   render() {
     const { handleBackdropLock, onClickOutside } = this.props;
     const { updated, data } = this.state;
-    const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
+    const handleFocusFn = handleBackdropLock ? handleBackdropLock : noop;
+    const localWidgetData = this.getWidgetData();
 
     return (
       <RawWidget
         {...this.props}
+        widgetData={localWidgetData}
         updated={updated}
         data={data}
         handleFocus={() => handleFocusFn(true)}
@@ -298,6 +341,7 @@ MasterWidget.propTypes = {
   updatePropertyValue: PropTypes.func,
   openModal: PropTypes.func.isRequired,
   data: PropTypes.object,
+  getWidgetData: PropTypes.func,
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
   dataId: PropTypes.string,

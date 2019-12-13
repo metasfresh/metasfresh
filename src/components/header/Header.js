@@ -504,6 +504,14 @@ class Header extends Component {
     }
   };
 
+  closeSubheaderOverlays = () => {
+    this.closeOverlays('isSubheaderShow');
+  };
+
+  closeDropdownOverlays = () => {
+    this.closeOverlays('dropdown');
+  };
+
   /**
    * @method redirect
    * @summary ToDo: Describe the method
@@ -512,6 +520,15 @@ class Header extends Component {
   redirect = where => {
     const { dispatch } = this.props;
     dispatch(push(where));
+  };
+
+  getWidgetData = () => {
+    const { docStatusData } = this.props;
+
+    if (docStatusData && docStatusData.status) {
+      return [docStatusData];
+    }
+    return [{}];
   };
 
   /**
@@ -524,7 +541,6 @@ class Header extends Component {
       siteName,
       docNoData,
       docStatus,
-      docStatusData,
       dataId,
       breadcrumb,
       showSidelist,
@@ -580,7 +596,7 @@ class Header extends Component {
             <div className="header-container">
               <div className="header-left-side">
                 <div
-                  onClick={() => this.closeOverlays('isSubheaderShow')}
+                  onClick={this.closeSubheaderOverlays}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
@@ -640,12 +656,10 @@ class Header extends Component {
                       dataId={dataId}
                       docId={docId}
                       activeTab={activeTab}
-                      widgetData={[docStatusData]}
+                      getWidgetData={this.getWidgetData}
                       noLabel
                       type="primary"
-                      dropdownOpenCallback={() =>
-                        this.closeOverlays('dropdown')
-                      }
+                      dropdownOpenCallback={this.closeDropdownOverlays}
                       {...docStatus}
                     />
                     {tooltipOpen === keymap.DOC_STATUS && (
@@ -758,7 +772,7 @@ class Header extends Component {
 
         {isSubheaderShow && (
           <Subheader
-            closeSubheader={() => this.closeOverlays('isSubheaderShow')}
+            closeSubheader={this.closeSubheaderOverlays}
             docNo={docNoData && docNoData.value}
             openModal={this.openModal}
             openModalRow={this.openModalRow}
