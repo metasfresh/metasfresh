@@ -55,7 +55,7 @@ public class C_Invoice_Candidate
 
 		// Make sure the IsEDIRecipient flag is up to date in the invoice candidate
 		// It shall always be the same as in the bill BPartner
-		final boolean isEDIRecipient = ediBPartner.isEdiRecipient();
+		final boolean isEDIRecipient = ediBPartner.isEdiInvoicRecipient();
 		invoiceCandidate.setIsEdiRecipient(isEDIRecipient);
 
 	}
