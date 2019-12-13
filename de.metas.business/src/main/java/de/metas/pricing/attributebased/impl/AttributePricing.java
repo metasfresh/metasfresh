@@ -280,7 +280,7 @@ public class AttributePricing implements IPricingRule
 						.setProductId(pricingCtx.getProductId())
 						.onlyValidPrices(true)
 						.matching(_defaultMatchers)
-						.matchingAttributes(attributeSetInstance)
+						.strictlyMatchingAttributes(attributeSetInstance)
 						.firstMatching(),
 
 				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
