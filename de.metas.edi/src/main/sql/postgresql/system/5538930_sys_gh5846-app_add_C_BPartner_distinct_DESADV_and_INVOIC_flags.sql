@@ -175,7 +175,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 COMMIT;
-UPDATE C_BPartner SET IsEdiDesadvRecipient='Y' WHERE IsEdiInvoicecipient='Y';
+UPDATE C_BPartner SET IsEdiDesadvRecipient='Y' WHERE IsEdiInvoicRecipient='Y';
+
 -- 2019-12-13T13:54:11.071Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,569749,593783,0,220,0,TO_TIMESTAMP('2019-12-13 14:54:10','YYYY-MM-DD HH24:MI:SS'),100,'',0,'de.metas.esb.edi',0,'Y','Y','Y','N','N','N','N','N','Erhält EDI-DESADV',390,380,0,1,1,TO_TIMESTAMP('2019-12-13 14:54:10','YYYY-MM-DD HH24:MI:SS'),100)
