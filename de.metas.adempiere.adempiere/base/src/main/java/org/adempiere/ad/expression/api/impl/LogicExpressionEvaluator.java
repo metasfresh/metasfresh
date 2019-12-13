@@ -1,27 +1,5 @@
 package org.adempiere.ad.expression.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -360,29 +338,53 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		// Try comparing BigDecimals
 		try
 		{
-			if (!valueObj1.startsWith("'"))
+			if (isPossibleNumber(valueObj1)
+					&& isPossibleNumber(valueObj2))
 			{
-				final BigDecimal value1bd = new BigDecimal(valueObj1);
-
-				if (!valueObj2.startsWith("'"))
+				final BigDecimal value1BD = new BigDecimal(valueObj1);
+				final BigDecimal value2BD = new BigDecimal(valueObj2);
+				if (evaluateLogicTupleForComparables(value1BD, operand, value2BD))
 				{
-					final BigDecimal value2bd = new BigDecimal(valueObj2);
-
-					if (evaluateLogicTupleForComparables(value1bd, operand, value2bd))
-					{
-						return true;
-					}
+					return true;
 				}
 			}
 		}
 		catch (final Exception ex)
 		{
-			logger.trace("Failed extracting BigDecimals but going forward", ex);
+			logger.trace("Failed extracting BigDecimals but going forward (valueObj1={}, valueObj2={})", valueObj1, valueObj2, ex);
 		}
 
 		//
 		// Not matched
 		return false;
+	}
+
+	@VisibleForTesting
+	static final boolean isPossibleNumber(final String valueStr)
+	{
+		if (valueStr == null || valueStr.isEmpty())
+		{
+			return false;
+		}
+		if (valueStr.startsWith("'"))
+		{
+			return false;
+		}
+
+		for (int i = 0, length = valueStr.length(); i < length; i++)
+		{
+			final char ch = valueStr.charAt(i);
+			final boolean validNumberChar = ch == '+' || ch == '-'
+					|| ch == '.'
+					|| Character.isDigit(ch);
+
+			if (!validNumberChar)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private static final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)

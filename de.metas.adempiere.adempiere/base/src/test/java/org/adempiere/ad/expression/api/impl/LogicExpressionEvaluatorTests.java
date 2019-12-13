@@ -40,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.service.impl.PlainSysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.AbstractBooleanAssert;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
@@ -891,6 +892,48 @@ public class LogicExpressionEvaluatorTests
 	}
 
 	@Nested
+	public class isPossibleNumber
+	{
+		private AbstractBooleanAssert<?> assertPossibleNumber(final String valueStr)
+		{
+			return assertThat(LogicExpressionEvaluator.isPossibleNumber(valueStr))
+					.as("isPossibleNumber(%s)", valueStr);
+		}
+
+		@Test
+		public void null_and_empty()
+		{
+			assertPossibleNumber(null).isFalse();
+			assertPossibleNumber("").isFalse();
+		}
+
+		@Test
+		public void string_starting_with_quotes()
+		{
+			assertPossibleNumber("'").isFalse();
+		}
+
+		@Test
+		public void integers()
+		{
+			assertPossibleNumber("0").isTrue();
+			assertPossibleNumber("1").isTrue();
+			assertPossibleNumber("12345").isTrue();
+			assertPossibleNumber("+12345").isTrue();
+			assertPossibleNumber("-12345").isTrue();
+		}
+
+		@Test
+		public void decimals()
+		{
+			assertPossibleNumber("1.1").isTrue();
+			assertPossibleNumber("12345.00100").isTrue();
+			assertPossibleNumber("+12345.00100").isTrue();
+			assertPossibleNumber("-12345.00100").isTrue();
+		}
+	}
+
+	@Nested
 	public class evaluateLogicTuple
 	{
 		@Test
@@ -909,6 +952,8 @@ public class LogicExpressionEvaluatorTests
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10.0", "=", "10.0")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10.0001", "=", "10.0001")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10.0001000000000000000000", "=", "10.0001")).isTrue();
+			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("+10.0001000000000000000000", "=", "+10.0001")).isTrue();
+			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("-10.0001000000000000000000", "=", "-10.0001")).isTrue();
 		}
 	}
 }
