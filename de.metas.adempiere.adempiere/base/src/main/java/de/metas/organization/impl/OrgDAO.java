@@ -286,6 +286,10 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public ZoneId getTimeZone(@NonNull final OrgId orgId)
 	{
+		if (!orgId.isRegular())
+		{
+			return SystemTime.zoneId();
+		}
 		final ZoneId timeZone = getOrgInfoById(orgId).getTimeZone();
 		return timeZone != null ? timeZone : SystemTime.zoneId();
 	}

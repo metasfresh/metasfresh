@@ -161,7 +161,10 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, commissionShareRecord);
 
-		icRecord.setAD_Org_ID(commissionShareRecord.getAD_Org_ID());
+		// 07442 activity and tax
+		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
+
+		icRecord.setAD_Org_ID(orgId.getRepoId());
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		final TableRecordReference commissionShareRef = TableRecordReference.of(commissionShareRecord);
@@ -187,6 +190,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
+						orgId,
 						CommissionConstants.COMMISSION_PRODUCT_ID,
 						bPartnerId,
 						Quantitys.create(ONE, CommissionConstants.COMMISSION_PRODUCT_ID),
@@ -224,9 +228,6 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						.adOrgId(commissionShareRecord.getAD_Org_ID())
 						.build());
 		icRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
-
-		// 07442 activity and tax
-		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
 
 		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
 				ClientId.ofRepoId(commissionShareRecord.getAD_Client_ID()),

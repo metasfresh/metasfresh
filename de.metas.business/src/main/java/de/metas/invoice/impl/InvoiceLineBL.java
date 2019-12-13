@@ -319,6 +319,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 
 		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createInitialContext(
+				invoiceLine.getAD_Org_ID(),
 				productId,
 				bPartnerId,
 				invoiceLine.getPrice_UOM_ID(),

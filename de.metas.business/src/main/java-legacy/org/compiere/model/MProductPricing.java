@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -38,10 +39,10 @@ import de.metas.util.lang.Percent;
 
 /**
  * Product Price Calculations
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MProductPricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
- * 
+ *
  * @deprecated Please use {@link IPricingBL}
  */
 @Deprecated
@@ -53,7 +54,7 @@ public class MProductPricing
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param M_Product_ID product
 	 * @param C_BPartner_ID partner
 	 * @param Qty quantity
@@ -61,7 +62,7 @@ public class MProductPricing
 	 */
 	public MProductPricing(int M_Product_ID, int C_BPartner_ID, BigDecimal Qty, boolean isSOTrx)
 	{
-		pricingCtx = Services.get(IPricingBL.class).createInitialContext(M_Product_ID, C_BPartner_ID, 0, Qty, isSOTrx);
+		pricingCtx = Services.get(IPricingBL.class).createInitialContext(Env.getAD_Org_ID(Env.getCtx()), M_Product_ID, C_BPartner_ID, 0, Qty, isSOTrx);
 		result = Services.get(IPricingBL.class).createInitialResult(pricingCtx);
 	}	// MProductPricing
 
@@ -70,7 +71,7 @@ public class MProductPricing
 
 	/**
 	 * Calculate Price
-	 * 
+	 *
 	 * @return true if calculated
 	 */
 	public boolean recalculatePrice()
@@ -97,7 +98,7 @@ public class MProductPricing
 
 	/**
 	 * Is Tax Included
-	 * 
+	 *
 	 * @return tax included
 	 */
 	public boolean isTaxIncluded()
@@ -107,7 +108,7 @@ public class MProductPricing
 
 	/**************************************************************************
 	 * Calculate Discount Percentage based on Standard/List Price
-	 * 
+	 *
 	 * @return Discount
 	 */
 	public Percent getDiscount()
@@ -122,14 +123,14 @@ public class MProductPricing
 
 	/**
 	 * Set PriceList
-	 * 
+	 *
 	 * @param M_PriceList_ID pl
 	 */
 	public void setM_PriceList_ID(int M_PriceList_ID)
 	{
 		setPriceListId(PriceListId.ofRepoIdOrNull(M_PriceList_ID));
 	}	// setM_PriceList_ID
-	
+
 	public void setPriceListId(PriceListId priceListId)
 	{
 		pricingCtx.setPriceListId(priceListId);
@@ -138,7 +139,7 @@ public class MProductPricing
 
 	/**
 	 * Set PriceList Version
-	 * 
+	 *
 	 * @param M_PriceList_Version_ID plv
 	 */
 	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID)
@@ -151,7 +152,7 @@ public class MProductPricing
 
 	/**
 	 * Set Price Date
-	 * 
+	 *
 	 * @param priceDate date
 	 */
 	public void setPriceDate(Timestamp priceDate)
@@ -162,7 +163,7 @@ public class MProductPricing
 
 	/**
 	 * Round
-	 * 
+	 *
 	 * @param bd number
 	 * @return rounded number
 	 */
@@ -178,7 +179,7 @@ public class MProductPricing
 
 	/**************************************************************************
 	 * Get C_UOM_ID
-	 * 
+	 *
 	 * @return uom
 	 */
 	public int getC_UOM_ID()
@@ -189,7 +190,7 @@ public class MProductPricing
 
 	/**
 	 * Get Price List
-	 * 
+	 *
 	 * @return list
 	 */
 	public BigDecimal getPriceList()
@@ -200,7 +201,7 @@ public class MProductPricing
 
 	/**
 	 * Get Price Std
-	 * 
+	 *
 	 * @return std
 	 */
 	public BigDecimal getPriceStd()
@@ -211,7 +212,7 @@ public class MProductPricing
 
 	/**
 	 * Get Price Limit
-	 * 
+	 *
 	 * @return limit
 	 */
 	public BigDecimal getPriceLimit()
@@ -222,7 +223,7 @@ public class MProductPricing
 
 	/**
 	 * Is Price List enforded?
-	 * 
+	 *
 	 * @return enforce limit
 	 */
 	public boolean isEnforcePriceLimit()
@@ -233,7 +234,7 @@ public class MProductPricing
 
 	/**
 	 * Is a DiscountSchema active?
-	 * 
+	 *
 	 * @return active Discount Schema
 	 */
 	public boolean isDiscountSchema()
@@ -244,7 +245,7 @@ public class MProductPricing
 
 	/**
 	 * Is the Price Calculated (i.e. found)?
-	 * 
+	 *
 	 * @return calculated
 	 */
 	public boolean isCalculated()
@@ -254,7 +255,7 @@ public class MProductPricing
 
 	/**
 	 * Convenience method to get priceStd with the discount already subtracted. Note that the result matches the former behavior of {@link #getPriceStd()}.
-	 * 
+	 *
 	 * @return
 	 */
 	// metas
@@ -288,7 +289,7 @@ public class MProductPricing
 	{
 		return TaxCategoryId.toRepoId(result.getTaxCategoryId());
 	}
-	
+
 	public boolean isManualPrice()
 	{
 		return pricingCtx.getManualPriceEnabled().isTrue();
@@ -298,7 +299,7 @@ public class MProductPricing
 	{
 		pricingCtx.setManualPriceEnabled(manualPrice);
 	}
-	
+
 	public void throwProductNotOnPriceListException()
 	{
 		throw new ProductNotOnPriceListException(pricingCtx);

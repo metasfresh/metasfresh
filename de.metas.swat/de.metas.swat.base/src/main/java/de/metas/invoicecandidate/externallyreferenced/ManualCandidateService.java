@@ -76,6 +76,7 @@ public class ManualCandidateService
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
+						newIC.getOrgId(),
 						newIC.getProductId(),
 						newIC.getBillPartnerInfo().getBpartnerId(),
 						newIC.getQtyOrdered().getStockQty(),

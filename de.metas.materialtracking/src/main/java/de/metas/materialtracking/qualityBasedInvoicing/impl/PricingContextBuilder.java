@@ -65,11 +65,11 @@ public class PricingContextBuilder
 		final I_M_PriceList_Version plv = vendorInvoicingInfo.getM_PriceList_Version();
 		Check.assumeNotNull(plv,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
-		
+
 		final I_M_PriceList pl = plv.getM_PriceList();
 		Check.assumeNotNull(pl,
 				"Param 'vendorInvoicingInfo.M_PriceList_Version.M_PriceList' not null; vendorInvoicingInfo={}", vendorInvoicingInfo);
-		
+
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pl.getM_PricingSystem_ID());
 		final I_M_PricingSystem pricingSystem = priceListsRepo.getPricingSystemById(pricingSystemId);
 		Check.assumeNotNull(pricingSystem,
@@ -108,6 +108,7 @@ public class PricingContextBuilder
 		//
 		// Create Pricing Context
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				-1, // AD_Org_ID - will be set later
 				-1, // M_Product_ID - will be set later
 				-1, // billBPartnerId - will be set later
 				-1, // C_UOM_ID - will be set later

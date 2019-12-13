@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -61,7 +60,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final ZoneId timeZone = orgDAO.getTimeZone(Env.getOrgId(pricingCtx.getCtx()));
+		final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
 				ctxPriceListVersion,
 				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone));
