@@ -1,5 +1,7 @@
 package de.metas.pricing.service.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -42,6 +44,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -68,6 +71,8 @@ class PricingContext implements IEditablePricingContext
 	private I_M_PriceList_Version _priceListVersion = null;
 
 	private boolean skipCheckingPriceListSOTrxFlag;
+
+	private OrgId orgId;
 
 	private ProductId productId;
 
@@ -102,6 +107,7 @@ class PricingContext implements IEditablePricingContext
 	public IEditablePricingContext copy()
 	{
 		final PricingContext pricingCtxNew = new PricingContext();
+		pricingCtxNew.orgId = orgId;
 		pricingCtxNew.productId = productId;
 		pricingCtxNew.pricingSystemId = pricingSystemId;
 		pricingCtxNew.priceListId = priceListId;
@@ -138,6 +144,19 @@ class PricingContext implements IEditablePricingContext
 	public IEditablePricingContext setPricingSystemId(final PricingSystemId pricingSystemId)
 	{
 		this.pricingSystemId = pricingSystemId;
+		return this;
+	}
+
+	@Override
+	public OrgId getOrgId()
+	{
+		return coalesce(orgId, OrgId.ANY);
+	}
+
+	@Override
+	public IEditablePricingContext setOrgId(final OrgId orgId)
+	{
+		this.orgId = orgId;
 		return this;
 	}
 

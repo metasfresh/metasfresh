@@ -1,5 +1,6 @@
 package de.metas.pricing.rules;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.compiere.model.I_M_PriceList;
@@ -13,6 +14,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -42,6 +44,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
@@ -57,9 +60,10 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
+		final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
 				ctxPriceListVersion,
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone));
 
 		if (productPrice == null)
 		{

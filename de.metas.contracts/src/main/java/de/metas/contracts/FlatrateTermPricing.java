@@ -106,6 +106,7 @@ public class FlatrateTermPricing
 
 		final boolean isSOTrx = true;
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				term.getAD_Org_ID(),
 				termRelatedProductId.getRepoId(),
 				term.getBill_BPartner_ID(),
 				Services.get(IProductBL.class).getStockUOMId(termRelatedProductId).getRepoId(),

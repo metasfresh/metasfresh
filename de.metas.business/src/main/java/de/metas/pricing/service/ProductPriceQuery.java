@@ -5,8 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -60,12 +63,27 @@ import lombok.NonNull;
  */
 public class ProductPriceQuery
 {
+	public enum AttributePricing
+	{
+		/** Only match product prices with IsAttributeDependent='Y' */
+		STRICT,
+
+		/** Prefer product prices with IsAttributeDependent='Y', but also allow product prices with IsAttributeDependent='N' */
+		NOT_STRICT,
+
+		/** Only match product prices with IsAttributeDependent='N' */
+		NONE,
+
+		/** No ASI related matching at all */
+		IGNORE;
+	}
+
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
 
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
 
-	private Boolean _attributePricing;
+	private AttributePricing _attributePricing = AttributePricing.IGNORE;
 	private I_M_AttributeSetInstance _attributePricing_asiToMatch;
 
 	private Boolean _scalePrice;
@@ -112,9 +130,14 @@ public class ProductPriceQuery
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
 
-		queryBuilder.orderBy()
-				.clear()
-				.addColumn(I_M_ProductPrice.COLUMN_M_Product_ID, Direction.Ascending, Nulls.Last)
+		final IQueryBuilderOrderByClause<I_M_ProductPrice> orderBy = queryBuilder.orderBy();
+		orderBy.clear(); // note: orderBy is NOT immutable
+
+		if (AttributePricing.NOT_STRICT.equals(_attributePricing))
+		{ // we might have product prices with IsAttributeDependant both 'Y' and 'N'; prefer those with 'Y'.
+			orderBy.addColumnDescending(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant);
+		}
+		orderBy.addColumn(I_M_ProductPrice.COLUMN_M_Product_ID, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_ProductPrice.COLUMN_MatchSeqNo, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, Direction.Ascending, Nulls.Last); // just to have a predictable order
 
@@ -143,7 +166,7 @@ public class ProductPriceQuery
 	 *
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
 	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
-	 * 			@param type
+	 *            @param type
 	 * @return
 	 */
 	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)
@@ -209,25 +232,32 @@ public class ProductPriceQuery
 
 		//
 		// Attribute pricing records
-		final Boolean attributePricing = getAttributePricing();
-		if (attributePricing != null)
+		switch (_attributePricing)
 		{
-			// Attributes matching enabled => match given ASI (if any)
-			if (attributePricing)
-			{
-				queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true);
-
-				final I_M_AttributeSetInstance attributePricingASIToMatch = getAttributePricingASIToMatch();
-				if (attributePricingASIToMatch != null)
-				{
-					queryBuilder.filter(ASIProductPriceAttributesFilter.of(attributePricingASIToMatch));
-				}
-			}
-			// Attributes matching disabled => match only those product prices which are not attribute dependent
-			else
-			{
+			case NONE:
+				// Attributes matching disabled => match only those product prices which are not attribute dependent
 				queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, false);
-			}
+				break;
+			case STRICT:
+				// Attributes matching enabled => match given ASI (if any)
+				queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true); // don't even look at product prices that don't have the flag set
+
+				final I_M_AttributeSetInstance attributePricingASIToMatchStrict = getAttributePricingASIToMatch();
+				if (attributePricingASIToMatchStrict != null)
+				{
+					queryBuilder.filter(ASIProductPriceAttributesFilter.attributeDependantOnly(attributePricingASIToMatchStrict));
+				}
+				break;
+			case NOT_STRICT:
+				// Non-strict matching; if a productPrice is attribute dependent, then match it against the ASI
+				final I_M_AttributeSetInstance attributePricingASIToMatchNotStrict = getAttributePricingASIToMatch();
+				if (attributePricingASIToMatchNotStrict != null)
+				{
+					queryBuilder.filter(ASIProductPriceAttributesFilter.alsoAcceptIfNotAttributeDependant(attributePricingASIToMatchNotStrict));
+				}
+				break;
+			case IGNORE: // do noting
+				break;
 		}
 
 		//
@@ -277,7 +307,7 @@ public class ProductPriceQuery
 	/** Matches product price which is NOT marked as "attributed pricing" */
 	public ProductPriceQuery noAttributePricing()
 	{
-		_attributePricing = Boolean.FALSE;
+		_attributePricing = AttributePricing.NONE;
 		_attributePricing_asiToMatch = null;
 		return this;
 	}
@@ -296,34 +326,40 @@ public class ProductPriceQuery
 	/** Matches any product price which is marked as "attributed pricing" */
 	public ProductPriceQuery onlyAttributePricing()
 	{
-		_attributePricing = Boolean.TRUE;
+		_attributePricing = AttributePricing.STRICT;
 		// _attributePricing_asiToMatch = null;
 		return this;
 	}
 
 	/**
-	 * Matches product price which is marked as "attributed pricing" and the given ASI is matching.
+	 * Matches product prices which are marked as "attributed pricing" and the given ASI is matching.
 	 * If <code>asi</code> is null then any "attributed pricing" will be matched.
 	 *
 	 * @param asi ASI to match or <code>null</code>
 	 */
-	public ProductPriceQuery matchingAttributes(final I_M_AttributeSetInstance asi)
+	public ProductPriceQuery strictlyMatchingAttributes(@Nullable final I_M_AttributeSetInstance asi)
 	{
-		_attributePricing = Boolean.TRUE;
+		_attributePricing = AttributePricing.STRICT;
 		_attributePricing_asiToMatch = asi;
 		return this;
 	}
 
-	public ProductPriceQuery dontMatchAttributes()
+	/**
+	 * Like {@link #strictlyMatchingAttributes(I_M_AttributeSetInstance)}, but also accepts prices that are not attribute dependent at all.
+	 */
+	public ProductPriceQuery notStrictlyMatchingAttributes(@Nullable final I_M_AttributeSetInstance asi)
 	{
-		_attributePricing = null;
-		_attributePricing_asiToMatch = null;
+		_attributePricing = AttributePricing.NOT_STRICT;
+		_attributePricing_asiToMatch = asi;
 		return this;
+
 	}
 
-	private Boolean getAttributePricing()
+	public ProductPriceQuery dontMatchAttributes()
 	{
-		return _attributePricing;
+		_attributePricing = AttributePricing.IGNORE;
+		_attributePricing_asiToMatch = null;
+		return this;
 	}
 
 	private I_M_AttributeSetInstance getAttributePricingASIToMatch()
@@ -368,7 +404,7 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	public ProductPriceQuery matching(final Collection<IProductPriceQueryMatcher> matchers)
+	public ProductPriceQuery matching(@Nullable final Collection<IProductPriceQueryMatcher> matchers)
 	{
 		if (matchers == null || matchers.isEmpty())
 		{
@@ -439,19 +475,28 @@ public class ProductPriceQuery
 
 	private static final class ASIProductPriceAttributesFilter implements IQueryFilter<I_M_ProductPrice>
 	{
-		public static ASIProductPriceAttributesFilter of(final I_M_AttributeSetInstance asi)
+		public static ASIProductPriceAttributesFilter attributeDependantOnly(final I_M_AttributeSetInstance asi)
 		{
-			return new ASIProductPriceAttributesFilter(asi);
+			return new ASIProductPriceAttributesFilter(asi, /* acceptNotAttributeDependent */false);
+		}
+
+		public static IQueryFilter<I_M_ProductPrice> alsoAcceptIfNotAttributeDependant(final I_M_AttributeSetInstance asi)
+		{
+			return new ASIProductPriceAttributesFilter(asi, /* acceptNotAttributeDependent */true);
 		}
 
 		private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		private final I_M_AttributeSetInstance _asi;
+		private final boolean _acceptNotAttributeDependent;
 		private transient ImmutableMap<Integer, I_M_AttributeInstance> _asiAttributes;
 
-		private ASIProductPriceAttributesFilter(@NonNull final I_M_AttributeSetInstance asi)
+		private ASIProductPriceAttributesFilter(
+				@NonNull final I_M_AttributeSetInstance asi,
+				final boolean acceptNotAttributeDependent)
 		{
 			_asi = asi;
+			_acceptNotAttributeDependent = acceptNotAttributeDependent;
 		}
 
 		@Override
@@ -461,7 +506,7 @@ public class ProductPriceQuery
 		}
 
 		@Override
-		public boolean accept(final I_M_ProductPrice productPrice)
+		public boolean accept(@Nullable final I_M_ProductPrice productPrice)
 		{
 			// Guard against null, shall not happen
 			if (productPrice == null)
@@ -469,10 +514,9 @@ public class ProductPriceQuery
 				return false;
 			}
 
-			// Consider only those product prices which have the attributes matching option enabled
 			if (!productPrice.isAttributeDependant())
 			{
-				return false;
+				return _acceptNotAttributeDependent; // either way, there is nothing more to do or match here
 			}
 
 			// If our ASI does not have attributes set, consider this product price as matching
@@ -547,5 +591,4 @@ public class ProductPriceQuery
 			return productPriceAttributes;
 		}
 	}
-
 }

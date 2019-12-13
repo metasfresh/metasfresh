@@ -30,6 +30,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -316,6 +317,7 @@ final class OrderLinePriceCalculator
 		}
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 				ProductId.ofRepoId(productId),
 				bpartnerId,
 				qtyInPriceUOM,
