@@ -158,7 +158,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 
 		// Create New
-		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class, asiId);
+		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class);
 		instanceNew.setM_Attribute_ID(attributeId.getRepoId());
 		instanceNew.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		save(instanceNew);

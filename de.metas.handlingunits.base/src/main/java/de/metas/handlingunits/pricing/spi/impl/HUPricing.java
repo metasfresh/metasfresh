@@ -115,7 +115,7 @@ public class HUPricing extends AttributePricing
 		}
 		else
 		{
-			productPriceQuery.matchingAttributes(attributeSetInstance);
+			productPriceQuery.notStrictlyMatchingAttributes(attributeSetInstance);
 		}
 
 		return productPriceQuery.firstMatching(I_M_ProductPrice.class);
