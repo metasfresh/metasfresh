@@ -28,27 +28,26 @@ import static org.hamcrest.Matchers.not;
 import java.util.Properties;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.service.impl.PlainSysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.util.Services;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class LogicExpressionCompilerTests
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		// needed in case we throw AdempiereExceptions which are checking the database for translating the messages
@@ -57,7 +56,7 @@ public class LogicExpressionCompilerTests
 
 	private LogicExpressionCompiler compiler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -116,6 +115,43 @@ public class LogicExpressionCompilerTests
 		final String expressionStr = expression.getFormatedExpressionString();
 		compiler.setUseOperatorPrecedence(useOperatorPrecendence);
 		return compiler.compile(expressionStr);
+	}
+
+	private void assertCompileException(final String expressionStr)
+	{
+		compiler.setUseOperatorPrecedence(false);
+
+		try
+		{
+			compiler.compile(expressionStr);
+			Assert.fail("Expression should throw parse exception: " + expressionStr);
+		}
+		catch (final ExpressionCompileException e)
+		{
+			// System.out.println(e.getLocalizedMessage());
+		}
+		catch (final AdempiereException e)
+		{
+			// System.out.println(e.getLocalizedMessage());
+		}
+	}
+
+	@Nested
+	public class compileException
+	{
+		@Test
+		public void blank_expressions()
+		{
+			assertCompileException(null);
+			assertCompileException("");
+			assertCompileException("     ");
+		}
+
+		@Test
+		public void single_var()
+		{
+			assertCompileException("@b@");
+		}
 	}
 
 	@Test
