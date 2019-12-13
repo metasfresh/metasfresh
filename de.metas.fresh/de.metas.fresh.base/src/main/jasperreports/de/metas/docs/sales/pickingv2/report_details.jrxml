@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="local-adapter.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="305"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="688"/>
@@ -61,6 +61,18 @@
 	</field>
 	<field name="locator" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="locator"/>
+	</field>
+	<field name="x" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="x"/>
+	</field>
+	<field name="y" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="y"/>
+	</field>
+	<field name="z" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="z"/>
+	</field>
+	<field name="x1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="x1"/>
 	</field>
 	<pageHeader>
 		<band height="36">
@@ -136,7 +148,11 @@
 				<textElement textAlignment="Left">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{locator}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{locator}
++($F{x}!=null ? $F{x}+" " : "")
++($F{y}!=null ? $F{y}+" " : "")
++($F{z}!=null ? $F{z}+" " : "")
++($F{x1}!=null ? $F{x1}+" " : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="206" y="4" width="152" height="13" uuid="f0b45d88-3ade-4d7e-a40e-abd8be9af448"/>
