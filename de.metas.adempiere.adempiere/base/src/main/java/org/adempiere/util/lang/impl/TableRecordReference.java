@@ -4,6 +4,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -40,8 +41,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
@@ -53,7 +52,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.jgoodies.common.base.Objects;
 
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -264,7 +262,8 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(tableName, recordId);
 	}
 
-	private final transient int adTableId;
+	@JsonIgnore
+	private transient Integer _adTableId;
 
 	private static final String PROP_TableName = "tableName";
 	@JsonProperty(PROP_TableName)
@@ -294,7 +293,7 @@ public final class TableRecordReference implements ITableRecordReference
 	public TableRecordReference(final int adTableId, final int recordId)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
-		this.adTableId = adTableId;
+		this._adTableId = adTableId;
 		this.tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
 		// NOTE: not validating with org.adempiere.model.InterfaceWrapperHelper.getFirstValidIdByColumnName(String) just for performances,
@@ -317,18 +316,20 @@ public final class TableRecordReference implements ITableRecordReference
 			@JsonProperty("recordId") final int recordId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-		this.tableName = tableName;
-		this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
 		// NOTE: not validating with org.adempiere.model.InterfaceWrapperHelper.getFirstValidIdByColumnName(String) just for performances,
 		// but we might consider it since it's not a big deal.
 		Check.assume(recordId >= 0, "recordId >= 0");
+
+		this.tableName = tableName;
+		this._adTableId = null; // lazy
+
 		this.recordId = recordId;
 	}
 
 	private TableRecordReference(@NonNull final Object model)
 	{
-		this.adTableId = InterfaceWrapperHelper.getModelTableId(model);
+		this._adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.recordId = InterfaceWrapperHelper.getId(model);
 
@@ -356,32 +357,27 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return true;
 		}
-
-		final TableRecordReference other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
+		else if (obj instanceof TableRecordReference)
+		{
+			final TableRecordReference other = (TableRecordReference)obj;
+			return Objects.equals(this.tableName, other.tableName)
+					&& this.recordId == other.recordId;
+		}
+		else
 		{
 			return false;
 		}
-
-		return new EqualsBuilder()
-				.append(adTableId, other.adTableId)
-				// .append(tableName, other.tableName) adTableId alone is sufficient
-				.append(recordId, other.recordId)
-				.isEqual();
 	}
 
 	@Override
 	public int hashCode()
 	{
-		if (_hashcode == null)
+		Integer hashcode = this._hashcode;
+		if (hashcode == null)
 		{
-			_hashcode = new HashcodeBuilder()
-					.append(adTableId)
-					// .append(tableName) adTableId alone is sufficient
-					.append(recordId)
-					.toHashcode();
+			hashcode = _hashcode = Objects.hash(tableName, recordId);
 		}
-		return _hashcode;
+		return hashcode;
 	}
 
 	@Override
@@ -402,13 +398,18 @@ public final class TableRecordReference implements ITableRecordReference
 	@JsonIgnore
 	public int getAD_Table_ID()
 	{
+		Integer adTableId = this._adTableId;
+		if (adTableId == null)
+		{
+			adTableId = this._adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		}
 		return adTableId;
 	}
 
 	@JsonIgnore
 	public AdTableId getAdTableId()
 	{
-		return AdTableId.ofRepoId(adTableId);
+		return AdTableId.ofRepoId(getAD_Table_ID());
 	}
 
 	@Override

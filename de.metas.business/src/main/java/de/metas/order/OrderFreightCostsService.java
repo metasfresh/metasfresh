@@ -303,6 +303,7 @@ public class OrderFreightCostsService
 			}
 
 			final IEditablePricingContext pricingContext = pricingBL.createInitialContext(
+					freightCost.getOrgId().getRepoId(),
 					freightCost.getFreightCostProductId().getRepoId(),
 					freightCostContext.getShipToBPartnerId().getRepoId(),
 					0,

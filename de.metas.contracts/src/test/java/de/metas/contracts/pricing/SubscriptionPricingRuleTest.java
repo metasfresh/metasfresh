@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.impl.PricingTestHelper;
@@ -48,6 +49,7 @@ public class SubscriptionPricingRuleTest
 				.build();
 
 		final IEditablePricingContext pricingCtx = helper.subscriptionPricingContextNew()
+				.orgId(OrgId.ANY)
 				.priceList(priceListDE)
 				.priceListVersion(plvDE)
 				.country(contryDE)
@@ -79,6 +81,7 @@ public class SubscriptionPricingRuleTest
 				.build();
 
 		final IEditablePricingContext pricingCtx = helper.subscriptionPricingContextNew()
+				.orgId(OrgId.ANY)
 				.priceList(priceListDE)
 				.priceListVersion(plvDE)
 				.country(contryDE)
