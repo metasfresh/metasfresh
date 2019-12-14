@@ -55,6 +55,8 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.collections.PagedIterator.Page;
 import lombok.NonNull;
 
 /*
@@ -529,24 +531,38 @@ public final class DefaultView implements IEditableView
 		}
 		else if (rowIds.isAll())
 		{
-			throw new UnsupportedOperationException("Streaming all rows is not supported");
-		}
+			assertNotClosed();
+			checkChangedRows();
 
-		// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
-		// and the records recently retrieved have a big chance to be cached.
-		return rowIds.stream()
-				.distinct()
-				.map(rowId -> {
-					try
-					{
-						return getOrRetrieveById(rowId);
-					}
-					catch (final EntityNotFoundException e)
-					{
-						return null;
-					}
-				})
-				.filter(row -> row != null);
+			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
+			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.get().getDefaultSelection();
+
+			return IteratorUtils.<IViewRow> newPagedIterator()
+					.firstRow(0)
+					.maxRows(1000) // MAX rows to fetch
+					.pageSize(100) // fetch 100items/chunk
+					.pageFetcher((firstRow, pageSize) -> Page.ofRowsOrNull(viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageSize)))
+					.build()
+					.stream();
+		}
+		else
+		{
+			// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
+			// and the records recently retrieved have a big chance to be cached.
+			return rowIds.stream()
+					.distinct()
+					.map(rowId -> {
+						try
+						{
+							return getOrRetrieveById(rowId);
+						}
+						catch (final EntityNotFoundException e)
+						{
+							return null;
+						}
+					})
+					.filter(Predicates.notNull());
+		}
 	}
 
 	@Override
