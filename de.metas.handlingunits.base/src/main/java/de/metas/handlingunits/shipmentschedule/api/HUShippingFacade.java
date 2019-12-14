@@ -3,7 +3,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
@@ -141,6 +140,7 @@ public class HUShippingFacade
 		return shipmentsGenerateResult.getInOuts();
 	}
 
+	// TODO this is where the shipper is called
 	public InOutGenerateResult generateShippingDocuments()
 	{
 		trxManager.runInThreadInheritedTrx(this::generateShippingDocuments0);
@@ -150,7 +150,8 @@ public class HUShippingFacade
 	private void generateShippingDocuments0()
 	{
 		addHUsToShipperTransportationIfNeeded();
-		generateShipments();
+		//  // TODO this one generates shipments from shipment candidates. i dont need this
+		generateShipmentsFromCandidates();
 		generateInvoicesIfNeeded();
 		generateShipperDeliveryOrdersIfNeeded();
 	}
@@ -168,7 +169,7 @@ public class HUShippingFacade
 		}
 	}
 
-	private void generateShipments()
+	private void generateShipmentsFromCandidates()
 	{
 		final List<ShipmentScheduleWithHU> candidates = getCandidates();
 		if (candidates.isEmpty())
@@ -194,6 +195,9 @@ public class HUShippingFacade
 
 	}
 
+	/**
+	 * // TODO explain what this does
+	 */
 	private void generateInvoicesIfNeeded()
 	{
 		Check.assumeNotNull(shipmentsGenerateResult, "shipments generated");
@@ -251,6 +255,9 @@ public class HUShippingFacade
 		return ShipperId.ofRepoId(mPackage.getM_Shipper_ID());
 	}
 
+	/**
+	 * // TODO tbp: replace this method with ShpperDeliveyService.generateShipperDeliveryOrderIfPossible!
+	 */
 	private void generateShipperDeliveryOrderIfNeeded(
 			final ShipperId shipperId,
 			@NonNull final Collection<I_M_Package> mPackages)
@@ -286,7 +293,7 @@ public class HUShippingFacade
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
-	public LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
 	}
