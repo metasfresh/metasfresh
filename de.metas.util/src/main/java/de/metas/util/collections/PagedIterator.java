@@ -151,13 +151,20 @@ public class PagedIterator<E> implements Iterator<E>
 	@lombok.Value
 	public static final class Page<E>
 	{
-		public static final <E> Page<E> ofRows(final List<E> rows)
+		public static <E> Page<E> ofRows(final List<E> rows)
 		{
 			final Integer lastRow = null;
 			return new Page<>(rows, lastRow);
 		}
 
-		public static final <E> Page<E> ofRowsAndLastRowIndex(final List<E> rows, final int lastRowZeroBased)
+		public static <E> Page<E> ofRowsOrNull(final List<E> rows)
+		{
+			return rows != null && !rows.isEmpty()
+					? ofRows(rows)
+					: null;
+		}
+
+		public static <E> Page<E> ofRowsAndLastRowIndex(final List<E> rows, final int lastRowZeroBased)
 		{
 			return new Page<>(rows, lastRowZeroBased);
 		}
