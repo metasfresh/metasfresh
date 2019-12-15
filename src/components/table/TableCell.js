@@ -2,7 +2,6 @@ import Moment from 'moment-timezone';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import React, { PureComponent, createRef } from 'react';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
@@ -410,16 +409,4 @@ TableCell.propTypes = {
   isGerman: PropTypes.bool,
 };
 
-const mapStateToProps = state => ({
-  modalVisible: state.windowHandler.modal.visible,
-  isGerman: state.appHandler.me.language
-    ? state.appHandler.me.language.key.includes('de')
-    : false,
-});
-
-export default connect(
-  mapStateToProps,
-  null,
-  null,
-  { forwardRef: true }
-)(TableCell);
+export default TableCell;
