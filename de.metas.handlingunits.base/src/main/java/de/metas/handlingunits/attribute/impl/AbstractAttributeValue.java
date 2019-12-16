@@ -404,7 +404,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			return getInternalValueString();
 		}
-		return null;
+		final Object value = getValue();
+		return value == null ? null : value.toString();
 	}
 
 	@Override
@@ -728,7 +729,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		}
 	}
 
-	@Nullable @Override
+	@Nullable
+	@Override
 	public final Object getEmptyValue()
 	{
 		final Object value = getValue();
@@ -745,7 +747,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			return null;
 		}
-		else if(TimeUtil.isDateOrTimeObject(value))
+		else if (TimeUtil.isDateOrTimeObject(value))
 		{
 			return null;
 		}

@@ -418,6 +418,10 @@ public class DesadvBL implements IDesadvBL
 			final Optional<Timestamp> bestBeforeDate = extractBestBeforeDate(inOutLineRecord);
 			bestBeforeDate.ifPresent(packRecord::setBestBeforeDate);
 
+			// Lot
+			final Optional<String> lotNumber = extractLotNumber(inOutLineRecord);
+			lotNumber.ifPresent(packRecord::setLotNumber);
+
 			// SSCC18
 			final String sscc18 = computeSSCC18(OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()));
 			packRecord.setIPA_SSCC18(sscc18);
@@ -479,15 +483,22 @@ public class DesadvBL implements IDesadvBL
 		final Quantity qtyCUInStockUOM = rootHU.extractMedianCUQtyPerChildHU(productId);
 		packRecord.setQtyItemCapacity(qtyCUInStockUOM.toBigDecimal());
 
-		// get minimum best before
+		// get minimum best before of all HUs and sub-HUs
 		final Date bestBefore = rootHU.extractSingleAttributeValue(
 				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
 				(date1, date2) -> TimeUtil.min(date1, date2));
 		packRecord.setBestBeforeDate(TimeUtil.asTimestamp(bestBefore));
 
+		// Lot
+		final String lotNumber = rootHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNr);
+		if (!isEmpty(lotNumber, true))
+		{
+			packRecord.setLotNumber(lotNumber);
+		}
+
 		// SSCC18
 		final String sscc18 = rootHU.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
-		if (isEmpty(sscc18))
+		if (isEmpty(sscc18, true))
 		{
 			packRecord.setIsManual_IPA_SSCC18(true);
 			final String onTheFlySSCC18 = computeSSCC18ForHUId(rootHU.getId());
@@ -547,6 +558,18 @@ public class DesadvBL implements IDesadvBL
 		{
 			final Date bestBeforeDate = attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
 			return Optional.of(TimeUtil.asTimestamp(bestBeforeDate));
+		}
+		return Optional.empty();
+	}
+
+	private Optional<String> extractLotNumber(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
+		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+		if (attributeSet.hasAttribute(AttributeConstants.ATTR_LotNr))
+		{
+			final String lotNumber = attributeSet.getValueAsString(AttributeConstants.ATTR_LotNr);
+			return Optional.of(lotNumber);
 		}
 		return Optional.empty();
 	}
