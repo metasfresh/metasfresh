@@ -104,7 +104,7 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					+ " INNER JOIN M_Product_Category_Acct acct ON (acct.M_Product_Category_ID=" + fromProductCategoryId.getRepoId() + " AND acct.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId() + ")"
 					+ " WHERE 1=1"
 					+ " AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId()
-					+ " AND NOT EXISTS (SELECT 1 FROM M_Product_Acct pa WHERE pa.M_Product_ID=p.M_Product_ID AND pa.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+					+ " AND NOT EXISTS (SELECT 1 FROM M_Product_Acct pa WHERE pa.M_Product_ID=p.M_Product_ID AND pa.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
 			countCreated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 			addLog(0, null, BigDecimal.valueOf(countCreated), "@Created@");
 		}
