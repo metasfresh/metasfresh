@@ -49,7 +49,7 @@ public class CreatePickingCandidatesCommand
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
-	private final BigDecimal quantity;
+	private final Quantity quantity;
 
 	@Builder
 	private CreatePickingCandidatesCommand(
@@ -61,7 +61,7 @@ public class CreatePickingCandidatesCommand
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		this.pickFrom = request.getPickFrom();
 		this.pickingSlotId = request.getPickingSlotId();
-		this.quantity = request.getQtyToPick().toBigDecimal();
+		this.quantity = request.getQtyToPick();
 	}
 
 	public PickHUResult perform()
@@ -80,7 +80,7 @@ public class CreatePickingCandidatesCommand
 	{
 		return PickingCandidate.builder()
 				.processingStatus(PickingCandidateStatus.Draft)
-				.qtyPicked(Quantity.of(this.quantity, getShipmentScheduleUOM()))
+				.qtyPicked(quantity)
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFrom(pickFrom)
 				.pickingSlotId(pickingSlotId)
