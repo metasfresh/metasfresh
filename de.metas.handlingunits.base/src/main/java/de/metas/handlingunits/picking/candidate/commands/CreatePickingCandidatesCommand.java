@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -14,9 +13,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -87,9 +83,4 @@ public class CreatePickingCandidatesCommand
 				.build();
 	}
 
-	private I_C_UOM getShipmentScheduleUOM()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		return shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
-	}
 }
