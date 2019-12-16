@@ -1,0 +1,1 @@
+update c_element set isnaturalaccount='Y' where name='metas fresh Konto'; 
