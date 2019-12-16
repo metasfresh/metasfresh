@@ -13,21 +13,23 @@ package de.metas.acct.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_MatchInv;
@@ -36,14 +38,62 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.doc.DocLine_Invoice;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 @Interceptor(I_M_MatchInv.class)
 public class M_MatchInv
 {
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_BEFORE_DELETE })
-	public void unpostInvoiceIfNeeded(final I_M_MatchInv matchInv)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void beforeChange(final I_M_MatchInv matchInv)
+	{
+		// Unpost the M_MatchInv and C_Invoice when M_MatchInv.Qty was changed.
+		// NOTE: this is NOT a standard use case because usualy the M_MatchInv.Qty is NEVER changed.
+		// The only case when the Qty is changed is by the M_MatchInv migration processes.
+		if (InterfaceWrapperHelper.isValueChanged(matchInv, I_M_MatchInv.COLUMNNAME_Qty))
+		{
+			unpostMatchInvIfNeeded(matchInv);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterNewOrChange(final I_M_MatchInv matchInv, final ModelChangeType changeType)
+	{
+		if (changeType.isNew() || isJustProcessed(matchInv))
+		{
+			unpostInvoiceIfNeeded(matchInv);
+			postIt(matchInv);
+		}
+	}
+
+	private boolean isJustProcessed(final I_M_MatchInv matchInv)
+	{
+		return InterfaceWrapperHelper.isValueChanged(matchInv, I_M_MatchInv.COLUMNNAME_Processed)
+				&& matchInv.isProcessed();
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(final I_M_MatchInv matchInv)
+	{
+		unpostInvoiceIfNeeded(matchInv);
+	}
+
+	private void postIt(final I_M_MatchInv matchInv)
+	{
+		final IPostingService postingService = Services.get(IPostingService.class);
+
+		postingService.newPostingRequest()
+				.setClientId(ClientId.ofRepoId(matchInv.getAD_Client_ID()))
+				.setDocumentRef(TableRecordReference.of(matchInv))
+				.setFailOnError(false)
+				.onErrorNotifyUser(UserId.ofRepoId(matchInv.getUpdatedBy()))
+				.postIt();
+
+	}
+
+	private void unpostInvoiceIfNeeded(final I_M_MatchInv matchInv)
 	{
 		// Do nothing if there is no need to report the invoice for this M_MatchInv
 		if (!DocLine_Invoice.isInvoiceRepostingRequired(matchInv))
@@ -62,16 +112,7 @@ public class M_MatchInv
 		Doc_Invoice.unpost(invoice);
 	}
 
-	/**
-	 * Unpost the M_MatchInv and C_Invoice when M_MatchInv.Qty was changed.
-	 * 
-	 * NOTE: this is NOT a standard use case because usualy the M_MatchInv.Qty is NEVER changed. The only case when the Qty is changed is by the M_MatchInv migration processes.
-	 * 
-	 * @param matchInv
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_M_MatchInv.COLUMNNAME_Qty })
-	public void unpostMatchInvIfNeeded(final I_M_MatchInv matchInv)
+	private void unpostMatchInvIfNeeded(final I_M_MatchInv matchInv)
 	{
 		//
 		// Un-post the M_MatchInv
