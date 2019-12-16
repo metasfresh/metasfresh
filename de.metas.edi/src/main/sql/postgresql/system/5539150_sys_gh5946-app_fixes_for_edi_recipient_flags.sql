@@ -186,13 +186,13 @@ UPDATE AD_Field SET DisplayLogic='@IsEdiDesadvRecipient@=Y',Updated=TO_TIMESTAMP
 UPDATE AD_Field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''',Updated=TO_TIMESTAMP('2019-12-16 11:55:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559004
 ;
 
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=559003;
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=560040;
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=560039;
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=562075;
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=562074;
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=583139;
-update AD_field_ID SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=583138;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=559003;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=560040;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=560039;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=562075;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=562074;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=583139;
+update AD_field SET DisplayLogic='@IsEdiDesadvRecipient/''N''@=''Y''', Updated='2019-12-16 10:56:21.856929+00', UpdatedBy=99 WHERE AD_Field_ID=583138;
 
 
 -- 2019-12-16T12:04:02.862Z
