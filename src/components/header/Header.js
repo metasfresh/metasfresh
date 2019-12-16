@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
@@ -33,7 +33,7 @@ import UserDropdown from './UserDropdown';
  * @module Header
  * @extends Component
  */
-class Header extends Component {
+class Header extends PureComponent {
   state = {
     isSubheaderShow: false,
     isSideListShow: false,
@@ -127,8 +127,12 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {object} state
    */
-  handleInboxOpen = state => {
-    this.setState({ isInboxOpen: !!state });
+  closeInbox = () => {
+    this.setState({ isInboxOpen: false });
+  };
+
+  openInbox = () => {
+    this.setState({ isInboxOpen: true });
   };
 
   /**
@@ -683,9 +687,7 @@ class Header extends Component {
                       'header-item-open': isInboxOpen,
                     }
                   )}
-                  onClick={() =>
-                    this.closeOverlays('', () => this.handleInboxOpen(true))
-                  }
+                  onClick={() => this.closeOverlays('', this.openInbox)}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
@@ -711,8 +713,8 @@ class Header extends Component {
                 <Inbox
                   ref={this.inboxRef}
                   open={isInboxOpen}
-                  close={this.handleInboxOpen}
-                  onFocus={() => this.handleInboxOpen(true)}
+                  close={this.closeInbox}
+                  onFocus={this.openInbox}
                   disableOnClickOutside={true}
                   inbox={inbox}
                 />
