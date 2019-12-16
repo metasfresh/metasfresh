@@ -1,5 +1,6 @@
 DROP VIEW IF EXISTS "de_metas_endcustomer_fresh_reports".PickingList;
-CREATE OR REPLACE VIEW "de_metas_endcustomer_fresh_reports".PickingList AS 
+DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.PickingList;
+CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.PickingList AS 
 SELECT
 	v.bpartnervalue,
 	v.bpartnername,
@@ -9,7 +10,7 @@ SELECT
 	v.preparationdate,
 	p.value as productvalue,
 	v.productname,
-	v.qtyordered,
+	v.qtypickedplanned,
 	v.c_uom_id,
 	v.ad_org_id,
 	v.c_orderso_id,
