@@ -70,6 +70,7 @@ public class EDI_Desadv_PrintSSCCLabels extends JavaProcess implements IProcessP
 				.listIds();
 
 		final ReportResultData reportResult = desadvBL.printSSCC18_Labels(getCtx(), list);
+
 		getProcessInfo().getResult().setReportData(reportResult);
 
 		return MSG_OK;

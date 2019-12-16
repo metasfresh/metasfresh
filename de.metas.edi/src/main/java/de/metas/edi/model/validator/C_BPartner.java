@@ -13,15 +13,14 @@ package de.metas.edi.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -40,10 +39,13 @@ import de.metas.util.Services;
 @Component
 public class C_BPartner
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
 	public void validate(final I_C_BPartner bpartner)
 	{
-		if (!bpartner.isEdiRecipient())
+		boolean ediRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
+		if (!ediRecipient)
 		{
 			return;
 		}
@@ -68,8 +70,7 @@ public class C_BPartner
 	 *
 	 * @param partner
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiRecipient })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
 	public void updateIsEDIRecipient_InvoiceCandidates(final I_C_BPartner partner)
 	{
 		if (partner == null)
@@ -80,7 +81,7 @@ public class C_BPartner
 		// Services
 		final IEDIInvoiceCandDAO invoiceCandidateDAO = Services.get(IEDIInvoiceCandDAO.class);
 
-		final boolean isEDIRecipient = partner.isEdiRecipient();
+		final boolean isEDIRecipient = partner.isEdiInvoicRecipient();
 
 		// update the unprocessed invoice candidates of this bpartner with the ediRecipient flag,
 		// only if the flag is not yet correctly set

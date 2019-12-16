@@ -214,7 +214,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final List<String> missingFields = new ArrayList<>();
 
 		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
-		if (!ediPartner.isEdiRecipient())
+		final boolean isEdiRecipient = ediPartner.isEdiDesadvRecipient() || ediPartner.isEdiInvoicRecipient();
+		if (!isEdiRecipient)
 		{
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}

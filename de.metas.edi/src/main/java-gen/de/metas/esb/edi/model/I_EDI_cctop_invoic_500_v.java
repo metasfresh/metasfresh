@@ -116,6 +116,27 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEanCom_Ordered_UOM (int EanCom_Ordered_UOM);
+
+	/**
+	 * Get Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getEanCom_Ordered_UOM();
+
+    /** Column name EanCom_Ordered_UOM */
+    public static final String COLUMNNAME_EanCom_Ordered_UOM = "EanCom_Ordered_UOM";
+
+	/**
 	 * Set EanCom_Price_UOM.
 	 *
 	 * <br>Type: String
@@ -145,7 +166,7 @@ public interface I_EDI_cctop_invoic_500_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void seteancom_uom (java.lang.String eancom_uom);
+	public void setEanCom_UOM (java.lang.String EanCom_UOM);
 
 	/**
 	 * Get eancom_uom.
@@ -154,12 +175,12 @@ public interface I_EDI_cctop_invoic_500_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String geteancom_uom();
+	public java.lang.String getEanCom_UOM();
 
-    /** Column definition for eancom_uom */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_eancom_uom = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "eancom_uom", null);
-    /** Column name eancom_uom */
-    public static final String COLUMNNAME_eancom_uom = "eancom_uom";
+    /** Column definition for EanCom_UOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_EanCom_UOM = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "EanCom_UOM", null);
+    /** Column name EanCom_UOM */
+    public static final String COLUMNNAME_EanCom_UOM = "EanCom_UOM";
 
 	/**
 	 * Set CU-EAN.
@@ -596,6 +617,29 @@ public interface I_EDI_cctop_invoic_500_v
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "QtyInvoiced", null);
     /** Column name QtyInvoiced */
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+
+	/**
+	 * Set Fakturierte Menge in Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoicedInOrderedUOM (java.math.BigDecimal QtyInvoicedInOrderedUOM);
+
+	/**
+	 * Get Fakturierte Menge in Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoicedInOrderedUOM();
+
+    /** Column definition for QtyInvoicedInOrderedUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_QtyInvoicedInOrderedUOM = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "QtyInvoicedInOrderedUOM", null);
+    /** Column name QtyInvoicedInOrderedUOM */
+    public static final String COLUMNNAME_QtyInvoicedInOrderedUOM = "QtyInvoicedInOrderedUOM";
 
 	/**
 	 * Set Satz.
