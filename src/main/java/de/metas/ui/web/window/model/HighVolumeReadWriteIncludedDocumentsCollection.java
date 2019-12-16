@@ -63,7 +63,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final Document parentDocument;
 	private final DetailId detailId;
-	private final DocumentPath parentDocumentPath;;
+	private final DocumentPath parentDocumentPath;
 	private final LinkedHashMap<DocumentId, Document> _documentsWithChanges;
 
 	private final IncludedDocumentsCollectionActions actions;
@@ -386,7 +386,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	}
 
 	@Override
-	public void markStale(@NonNull final DocumentId rowId)
+	public void markStale(@NonNull final DocumentIdsSelection rowIds)
 	{
 		// TODO: implement staling only given rowId
 		markStaleAll();

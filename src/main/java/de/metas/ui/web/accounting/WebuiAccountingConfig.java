@@ -87,6 +87,7 @@ public class WebuiAccountingConfig
 						.tableId(adTableId)
 						.anyWindow()
 						.displayPlace(DisplayPlace.ViewQuickActions)
+						.displayPlace(DisplayPlace.ViewActionsMenu)
 						.build()));
 		logger.info("Registered {} ({}) to {} tables", WEBUI_Fact_Acct_Repost_ViewRows.class.getName(), repostProcessId, linkToTableNames.size());
 	}
