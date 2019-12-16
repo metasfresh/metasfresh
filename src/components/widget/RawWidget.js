@@ -601,7 +601,6 @@ export class RawWidget extends PureComponent {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
-            recent={[]}
             dataId={dataId}
             properties={fields}
             windowType={windowType}

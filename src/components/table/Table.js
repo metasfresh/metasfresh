@@ -1,7 +1,7 @@
 import update from 'immutability-helper';
 import { is } from 'immutable';
 import * as _ from 'lodash';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
@@ -42,7 +42,7 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-class Table extends Component {
+class Table extends PureComponent {
   _isMounted = false;
 
   constructor(props) {

@@ -157,7 +157,7 @@ export class RawLookup extends PureComponent {
       subentity,
     } = this.props;
     let selected = select;
-    let mainProp = mainProperty[0];
+    let mainProp = mainProperty;
 
     this.setState({
       selected: null,
@@ -183,7 +183,7 @@ export class RawLookup extends PureComponent {
       }
     } else {
       if (subentity === 'quickInput') {
-        onChange(mainProperty[0].field, selected, () =>
+        onChange(mainProperty.field, selected, () =>
           setNextProperty(mainProp.field)
         );
       } else {
@@ -235,7 +235,7 @@ export class RawLookup extends PureComponent {
         null,
         null,
         'NEW',
-        filterWidget ? parameterName : mainProperty[0].field
+        filterWidget ? parameterName : mainProperty.field
       )
     );
   };
@@ -293,7 +293,7 @@ export class RawLookup extends PureComponent {
     let typeaheadRequest;
     const typeaheadParams = {
       docId: filterWidget ? viewId : dataId,
-      propertyName: filterWidget ? parameterName : mainProperty[0].field,
+      propertyName: filterWidget ? parameterName : mainProperty.field,
       query: inputValue,
       rowId,
       tabId,
@@ -304,7 +304,7 @@ export class RawLookup extends PureComponent {
         windowType,
         viewId,
         dataId,
-        mainProperty[0].field,
+        mainProperty.field,
         inputValue
       );
     } else if (viewId && !filterWidget) {
@@ -358,7 +358,6 @@ export class RawLookup extends PureComponent {
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
-      recent,
       handleInputEmptyStatus,
       enableAutofocus,
       isOpen,
@@ -397,7 +396,7 @@ export class RawLookup extends PureComponent {
       this.setState({
         isInputEmpty: true,
         query: inputValue,
-        list: recent,
+        list: [],
       });
 
       handleInputEmptyStatus && handleInputEmptyStatus(true);

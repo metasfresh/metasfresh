@@ -301,7 +301,6 @@ class Lookup extends PureComponent {
       rowId,
       tabIndex,
       validStatus,
-      recent,
       onChange,
       newRecordCaption,
       properties,
@@ -428,7 +427,7 @@ class Lookup extends PureComponent {
                   defaultValue={defaultValue}
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
-                  mainProperty={[item]}
+                  mainProperty={item}
                   readonly={widgetData[index].readonly}
                   mandatory={widgetData[index].mandatory}
                   resetLocalClearing={this.resetLocalClearing}
@@ -453,7 +452,6 @@ class Lookup extends PureComponent {
                     entity,
                     dataId,
                     isModal,
-                    recent,
                     rank,
                     updated,
                     filterWidget,
