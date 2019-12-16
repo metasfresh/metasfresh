@@ -131,10 +131,10 @@ public class ProductPriceQuery
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
 
 		final IQueryBuilderOrderByClause<I_M_ProductPrice> orderBy = queryBuilder.orderBy();
-		orderBy.clear();
+		orderBy.clear(); // note: orderBy is NOT immutable
 
 		if (AttributePricing.NOT_STRICT.equals(_attributePricing))
-		{ // we might have product prices with IsAttributeDependant both yes and no; prefer those with yes.
+		{ // we might have product prices with IsAttributeDependant both 'Y' and 'N'; prefer those with 'Y'.
 			orderBy.addColumnDescending(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant);
 		}
 		orderBy.addColumn(I_M_ProductPrice.COLUMN_M_Product_ID, Direction.Ascending, Nulls.Last)

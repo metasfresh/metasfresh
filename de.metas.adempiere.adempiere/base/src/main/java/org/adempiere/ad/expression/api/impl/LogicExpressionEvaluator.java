@@ -1,27 +1,5 @@
 package org.adempiere.ad.expression.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,15 +32,15 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	/** Internal marker for value not found */
 	static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
 
-	/* package */static interface BooleanValueSupplier
+	/* package */interface BooleanValueSupplier
 	{
 		Boolean getValueOrNull();
-	};
+	}
 
-	/* package */static interface BooleanEvaluator
+	/* package */interface BooleanEvaluator
 	{
 		Boolean evaluateOrNull(BooleanValueSupplier left, BooleanValueSupplier right);
-	};
+	}
 
 	private static final BooleanEvaluator EVALUATOR_AND = (left, right) -> {
 		Boolean leftValue = null;
@@ -346,33 +324,67 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 
 		//
+		// Try comparing as Strings first because it's faster then trying to convert to BigDecimal
+		{
+			final String value1Str = stripQuotes(valueObj1);
+			final String value2Str = stripQuotes(valueObj2);
+			if (evaluateLogicTupleForComparables(value1Str, operand, value2Str))
+			{
+				return true;
+			}
+		}
+
+		//
 		// Try comparing BigDecimals
 		try
 		{
-			if (!valueObj1.startsWith("'"))
+			if (isPossibleNumber(valueObj1)
+					&& isPossibleNumber(valueObj2))
 			{
-				final BigDecimal value1bd = new BigDecimal(valueObj1);
-
-				if (!valueObj2.startsWith("'"))
+				final BigDecimal value1BD = new BigDecimal(valueObj1);
+				final BigDecimal value2BD = new BigDecimal(valueObj2);
+				if (evaluateLogicTupleForComparables(value1BD, operand, value2BD))
 				{
-					final BigDecimal value2bd = new BigDecimal(valueObj2);
-
-					return evaluateLogicTupleForComparables(value1bd, operand, value2bd);
+					return true;
 				}
 			}
 		}
 		catch (final Exception ex)
 		{
-			logger.trace("Failed extracting BigDecimals but going forward", ex);
+			logger.trace("Failed extracting BigDecimals but going forward (valueObj1={}, valueObj2={})", valueObj1, valueObj2, ex);
 		}
 
 		//
-		// Try comparing as Strings
+		// Not matched
+		return false;
+	}
+
+	@VisibleForTesting
+	static final boolean isPossibleNumber(final String valueStr)
+	{
+		if (valueStr == null || valueStr.isEmpty())
 		{
-			final String value1Str = stripQuotes(valueObj1);
-			final String value2Str = stripQuotes(valueObj2);
-			return evaluateLogicTupleForComparables(value1Str, operand, value2Str);
+			return false;
 		}
+		if (valueStr.startsWith("'"))
+		{
+			return false;
+		}
+
+		for (int i = 0, length = valueStr.length(); i < length; i++)
+		{
+			final char ch = valueStr.charAt(i);
+			final boolean validNumberChar = ch == '+' || ch == '-'
+					|| ch == '.'
+					|| Character.isDigit(ch);
+
+			if (!validNumberChar)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private static final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)
@@ -552,7 +564,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		 * @param operand
 		 * @return value or {@link #VALUE_NotFound}
 		 */
-		public final String getValue(final Object operand) throws ExpressionEvaluationException
+		public String getValue(final Object operand) throws ExpressionEvaluationException
 		{
 			//
 			// Case: we deal with with a parameter (which we will need to get it from context/source)
@@ -580,7 +592,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 			}
 		}
 
-		private final String resolveCtxName(final CtxName ctxName)
+		private String resolveCtxName(final CtxName ctxName)
 		{
 			final String value = ctxName.getValueAsString(params);
 			final boolean valueNotFound = Env.isPropertyValueNull(ctxName.getName(), value);

@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -64,7 +65,12 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
-		return InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
+		if (order == null)
+		{
+			throw new AdempiereException("@NotFound@: " + orderId);
+		}
+		return order;
 	}
 
 	@Override

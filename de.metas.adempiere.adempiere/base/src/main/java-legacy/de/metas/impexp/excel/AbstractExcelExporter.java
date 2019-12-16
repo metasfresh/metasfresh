@@ -43,6 +43,7 @@ import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -421,6 +422,14 @@ public abstract class AbstractExcelExporter
 
 	private void autoSizeColumnsWidth(final Sheet sheet, final int lastColumnIndex)
 	{
+		// #5922
+		// This is needed since we changed from 'poi.version 3.12'  to 'poi.version 3.15'.
+		if (sheet instanceof SXSSFSheet)
+		{
+			final SXSSFSheet sxssfSheet = (SXSSFSheet) sheet;
+			sxssfSheet.trackAllColumnsForAutoSizing();
+		}
+
 		final int maxRowsToAllowCellWidthAutoSize = constants.getMaxRowsToAllowCellWidthAutoSize();
 		if (maxRowsToAllowCellWidthAutoSize <= 0
 				|| maxRowsToAllowCellWidthAutoSize < sheet.getLastRowNum())
