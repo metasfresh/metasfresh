@@ -1,8 +1,5 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import org.apache.commons.lang.WordUtils;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -17,6 +14,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
 
@@ -51,7 +49,7 @@ public class CreatePickingCandidatesCommand
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
-	private final Quantity quantity;
+	private final BigDecimal quantity;
 
 	@Builder
 	private CreatePickingCandidatesCommand(
@@ -63,8 +61,7 @@ public class CreatePickingCandidatesCommand
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		this.pickFrom = request.getPickFrom();
 		this.pickingSlotId = request.getPickingSlotId();
-		final BigDecimal qty = request.getQtyToPick().toBigDecimal();
-		this.quantity = Quantity.of(qty, getShipmentScheduleUOM());
+		this.quantity = request.getQtyToPick().toBigDecimal();
 	}
 
 	public PickHUResult perform()
@@ -83,7 +80,7 @@ public class CreatePickingCandidatesCommand
 	{
 		return PickingCandidate.builder()
 				.processingStatus(PickingCandidateStatus.Draft)
-				.qtyPicked(quantity)
+				.qtyPicked(Quantity.of(this.quantity, getShipmentScheduleUOM()))
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFrom(pickFrom)
 				.pickingSlotId(pickingSlotId)
