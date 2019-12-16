@@ -28,7 +28,10 @@ import java.math.BigDecimal;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
@@ -39,11 +42,11 @@ public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpect
 
 	// Expectations
 	private Integer qtyPrecision = null;
-	private BigDecimal qty;
-	private BigDecimal qtyWithIssues;
+	private StockQtyAndUOMQty qty;
+	private StockQtyAndUOMQty qtyWithIssues;
 	private BigDecimal qtyWithIssuesExact;
-	private BigDecimal qtyWithoutIssues;
-	private BigDecimal qualityDiscountPercent;
+	private StockQtyAndUOMQty qtyWithoutIssues;
+	private Percent qualityDiscountPercent;
 	private String qualityNotices;
 	private boolean qualityNoticesSet;
 
@@ -110,39 +113,39 @@ public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpect
 		return this;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qty(final BigDecimal qty)
+	public ReceiptQtyExpectation<ParentExpectationType> qty(@NonNull final StockQtyAndUOMQty qty)
 	{
 		this.qty = qty;
 		return this;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qty(final String qty)
-	{
-		return qty(new BigDecimal(qty));
-	}
+//	public ReceiptQtyExpectation<ParentExpectationType> qty(final String qty)
+//	{
+//		return qty(new BigDecimal(qty));
+//	}
+//
+//	public ReceiptQtyExpectation<ParentExpectationType> qty(final int qty)
+//	{
+//		return qty(new BigDecimal(qty));
+//	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qty(final int qty)
-	{
-		return qty(new BigDecimal(qty));
-	}
-
-	public BigDecimal getQty()
+	public StockQtyAndUOMQty getQty()
 	{
 		return qty;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssues(final BigDecimal qtyWithIssues)
+	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssues(final StockQtyAndUOMQty qtyWithIssues)
 	{
 		this.qtyWithIssues = qtyWithIssues;
 		return this;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssues(final String qtyWithIssues)
-	{
-		return qtyWithIssues(new BigDecimal(qtyWithIssues));
-	}
+//	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssues(final String qtyWithIssues)
+//	{
+//		return qtyWithIssues(new BigDecimal(qtyWithIssues));
+//	}
 
-	public BigDecimal getQtyWithIssues()
+	public StockQtyAndUOMQty getQtyWithIssues()
 	{
 		return qtyWithIssues;
 	}
@@ -164,23 +167,23 @@ public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpect
 	}
 
 
-	public ReceiptQtyExpectation<ParentExpectationType> qtyWithoutIssues(final BigDecimal qtyWithoutIssues)
+	public ReceiptQtyExpectation<ParentExpectationType> qtyWithoutIssues(@NonNull final StockQtyAndUOMQty qtyWithoutIssues)
 	{
 		this.qtyWithoutIssues = qtyWithoutIssues;
 		return this;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qtyWithoutIssues(final String qtyWithoutIssues)
-	{
-		return qtyWithoutIssues(new BigDecimal(qtyWithoutIssues));
-	}
+//	public ReceiptQtyExpectation<ParentExpectationType> qtyWithoutIssues(final String qtyWithoutIssues)
+//	{
+//		return qtyWithoutIssues(new BigDecimal(qtyWithoutIssues));
+//	}
 
-	public BigDecimal getQtyWithoutIssues()
+	public StockQtyAndUOMQty getQtyWithoutIssues()
 	{
 		return qtyWithoutIssues;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qualityDiscountPercent(final BigDecimal qualityDiscountPercent)
+	public ReceiptQtyExpectation<ParentExpectationType> qualityDiscountPercent(final Percent qualityDiscountPercent)
 	{
 		this.qualityDiscountPercent = qualityDiscountPercent;
 		return this;
@@ -188,15 +191,15 @@ public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpect
 
 	public ReceiptQtyExpectation<ParentExpectationType> qualityDiscountPercent(final String qualityDiscountPercent)
 	{
-		return qualityDiscountPercent(new BigDecimal(qualityDiscountPercent));
+		return qualityDiscountPercent(Percent.of(qualityDiscountPercent));
 	}
 
 	public ReceiptQtyExpectation<ParentExpectationType> qualityDiscountPercent(final int qualityDiscountPercent)
 	{
-		return qualityDiscountPercent(new BigDecimal(qualityDiscountPercent));
+		return qualityDiscountPercent(Percent.of(qualityDiscountPercent));
 	}
 
-	public BigDecimal getQualityDiscountPercent()
+	public Percent getQualityDiscountPercent()
 	{
 		return qualityDiscountPercent;
 	}

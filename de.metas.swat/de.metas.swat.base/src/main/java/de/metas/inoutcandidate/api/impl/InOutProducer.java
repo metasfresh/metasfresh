@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashSet;
@@ -58,6 +57,7 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -546,10 +546,10 @@ public class InOutProducer implements IInOutProducer
 
 		//
 		// Quantities
-		final BigDecimal qtyToMove = receiptScheduleBL.getQtyToMove(rs);
-		line.setQtyEntered(qtyToMove);
-		line.setMovementQty(qtyToMove);
-		line.setC_UOM_ID(rs.getC_UOM_ID());
+		final StockQtyAndUOMQty qtyToMove = receiptScheduleBL.getQtyToMove(rs);
+		line.setMovementQty(qtyToMove.getStockQty().toBigDecimal());
+		line.setQtyEntered(qtyToMove.getUOMQtyNotNull().toBigDecimal());
+		line.setC_UOM_ID(qtyToMove.getUOMQtyNotNull().getUomId().getRepoId());
 
 		//
 		// Order Line Link

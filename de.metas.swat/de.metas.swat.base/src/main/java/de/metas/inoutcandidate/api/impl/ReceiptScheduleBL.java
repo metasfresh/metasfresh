@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 
 /*
  * #%L
@@ -42,7 +42,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -64,9 +63,12 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMConversionBL;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
@@ -151,28 +153,27 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs)
+	public StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs)
 	{
 		return Services.get(IReceiptScheduleQtysBL.class).getQtyToMove(rs);
 	}
 
-	/**
-	 * Same as {@link #getQtyToMove(I_M_ReceiptSchedule)} but return the quantity in required UOM.
-	 *
-	 * @param rs
-	 * @param uom
-	 * @return qty to move (in <code>uom</code>).
-	 */
-	public BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs, final I_C_UOM uom)
-	{
-		ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
-		final BigDecimal qtyToMove = getQtyToMove(rs);
-		final BigDecimal qtyToMoveConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productId, qtyToMove,
-						loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class),
-						uom);
-		return qtyToMoveConv;
-	}
+//	/**
+//	 * Same as {@link #getQtyToMove(I_M_ReceiptSchedule)} but return the quantity in required UOM.
+//	 *
+//	 * @return qty to move (in <code>uom</code>).
+//	 */
+//	private Quantity getQtyToMove(@NonNull final I_M_ReceiptSchedule rs, @NonNull final UomId targetUomId)
+//	{
+//		ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
+//		final StockQtyAndUOMQty qtyToMove = getQtyToMove(rs);
+//
+//		final Quantity qtyToMoveConv = Services.get(IUOMConversionBL.class)
+//				.convertQuantityTo(qtyToMove.getStockQty(),
+//						UOMConversionContext.of(productId),
+//						targetUomId);
+//		return qtyToMoveConv;
+//	}
 
 	@Override
 	public int getC_BPartner_Location_Effective_ID(final I_M_ReceiptSchedule rs)
@@ -364,7 +365,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			return existingRsa;// nothing to do
 		}
 
-		final BigDecimal qtyToAllocate = receiptLine.getMovementQty(); // UOM=Product's UOM
+		final StockQtyAndUOMQty qtyToAllocate = extractReceiptQty(receiptLine);
 
 		return createReceiptScheduleAlloc(receiptSchedule, receiptLine, qtyToAllocate);
 	}
@@ -376,20 +377,17 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	/**
-	 *
-	 * @param receiptSchedule
-	 * @param receiptLine
-	 * @param qtyToAllocate quantity to allocate (in {@link I_M_ReceiptSchedule}'s UOM)
+	 * @param qtyToAllocate quantity to allocate (in stock UOM)
 	 * @return receipt schedule allocation; never return null
 	 */
 	private final I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
-			final I_M_ReceiptSchedule receiptSchedule,
-			final I_M_InOutLine receiptLine,
-			final BigDecimal qtyToAllocate)
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@NonNull final I_M_InOutLine receiptLine,
+			@NonNull final StockQtyAndUOMQty qtyToAllocate)
 	{
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(receiptLine);
 		// Determine QtyWithIssues based on receipt line's IsInDispute flag.
-		final BigDecimal qtyWithIssues = receiptLine.isInDispute() ? qtyToAllocate : BigDecimal.ZERO;
+		final StockQtyAndUOMQty qtyWithIssues = receiptLine.isInDispute() ? qtyToAllocate : qtyToAllocate.toZero();
 
 		return createReceiptScheduleAlloc()
 				.setContext(context)
@@ -437,20 +435,18 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public List<I_M_ReceiptSchedule_Alloc> createReceiptScheduleAllocations(
 			final List<? extends I_M_ReceiptSchedule> receiptSchedules,
-			final I_M_InOutLine receiptLine)
+			@NonNull final I_M_InOutLine receiptLine)
 
 	{
-		Check.assumeNotNull(receiptLine, "receipt line not null");
 		Check.assumeNotEmpty(receiptSchedules, "receipt schedules not empty");
-		BigDecimal qtyToAllocateRemaining = receiptLine.getQtyEntered();
+
+		StockQtyAndUOMQty qtyToAllocateRemaining = extractReceiptQty(receiptLine);
 		if (qtyToAllocateRemaining.signum() == 0)
 		{
 			// Receipt Line with ZERO qty???
 			// could be, but we will skip the allocations because there is nothing to allocate
 			return Collections.emptyList();
 		}
-
-		final I_C_UOM qtyToAllocateUOM = loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class);
 
 		//
 		// Iterate receipt schedules and try to allocate on them as much as possible
@@ -468,8 +464,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			//
 			// Calculate how much we can allocate on current receipt schedule
 			// i.e. try Remaining Qty To Allocate, but not more then how much is open on this receipt schedule
-			final BigDecimal rsQtyOpen = getQtyToMove(rs, qtyToAllocateUOM); // how much we can maxium allocate on this receipt schedule
-			final BigDecimal rsQtyToAllocate = qtyToAllocateRemaining.min(rsQtyOpen);
+			final StockQtyAndUOMQty rsQtyOpen = getQtyToMove(rs); // how much we can maximum allocate on this receipt schedule
+			final StockQtyAndUOMQty rsQtyToAllocate = qtyToAllocateRemaining.min(rsQtyOpen);
 			if (rsQtyToAllocate.signum() == 0)
 			{
 				//
@@ -523,6 +519,19 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		//
 		// Return created allocations
 		return allocs;
+	}
+
+	private StockQtyAndUOMQty extractReceiptQty(@NonNull final I_M_InOutLine receiptLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
+		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(receiptLine.getCatch_UOM_ID());
+
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+				receiptLine.getMovementQty(),
+				productId,
+				receiptLine.getQtyDeliveredCatch(),
+				catchUomIdOrNull);
+		return qtyToAllocate;
 	}
 
 	@Override

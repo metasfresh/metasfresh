@@ -25,11 +25,18 @@ package de.metas.inoutcandidate.spi.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /**
@@ -54,10 +61,17 @@ public final class ReceiptQty
 	/** Precision used to store internal quantities */
 	/* package */static final int INTERNAL_PRECISION = 12;
 
-	/** Total Quantity (high presicion, i.e. the precision that we got on input) */
-	private BigDecimal qtyTotal = BigDecimal.ZERO;
+	private final ProductId productId;
+
+	/** might be null, if no catch-quantities are involved */
+	private final UomId catchUomId;
+
+	/** Total Quantity (high precision, i.e. the precision that we got on input) */
+	private StockQtyAndUOMQty qtyTotal;
+
 	/** Quantity with issues (high precision) */
-	private BigDecimal qtyWithIssues = BigDecimal.ZERO;
+	private StockQtyAndUOMQty qtyWithIssues;
+
 	/**
 	 * Quality Notices.
 	 *
@@ -65,10 +79,20 @@ public final class ReceiptQty
 	 */
 	private QualityNoticesCollection qualityNotices = new QualityNoticesCollection();
 
+	public ReceiptQty(
+			@NonNull final ProductId productId,
+			@Nullable final UomId catchUomId)
+	{
+		this.productId = productId;
+		this.catchUomId = catchUomId;
+		this.qtyTotal = StockQtyAndUOMQtys.createZero(productId, catchUomId);
+		this.qtyWithIssues = StockQtyAndUOMQtys.createZero(productId, catchUomId);
+	}
+
 	/** @return a copy of this object */
 	public ReceiptQty copy()
 	{
-		final ReceiptQty copy = new ReceiptQty();
+		final ReceiptQty copy = new ReceiptQty(productId, catchUomId);
 		copy.copyFrom(this);
 		return copy;
 	}
@@ -86,21 +110,30 @@ public final class ReceiptQty
 		return copy();
 	}
 
-	/**
-	 *
-	 * @param qty
-	 * @param qualityDiscountPercent percent between 0...100
-	 */
-	public void addQtyAndQualityDiscountPercent(final BigDecimal qty, final BigDecimal qualityDiscountPercent)
+	public void addQtyAndQualityDiscountPercent(
+			@NonNull final StockQtyAndUOMQty qty,
+			@NonNull final Percent qualityDiscountPercent)
 	{
-		final BigDecimal qtyWithIssuesToAdd = qty.multiply(qualityDiscountPercent)
+		qtyTotal = qtyTotal.add(qty);
+
+		final BigDecimal stockQtyWithIssuesToAdd = qty.getStockQty().toBigDecimal()
+				.multiply(qualityDiscountPercent.toBigDecimal())
 				.divide(Env.ONEHUNDRED, INTERNAL_PRECISION, QtyWithIssues_RoundingMode);
 
-		qtyTotal = qtyTotal.add(qty);
+		final BigDecimal uomQtyWithIssuesToAdd = qty.getUOMQtyNotNull().toBigDecimal()
+				.multiply(qualityDiscountPercent.toBigDecimal())
+				.divide(Env.ONEHUNDRED, INTERNAL_PRECISION, QtyWithIssues_RoundingMode);
+
+		final StockQtyAndUOMQty qtyWithIssuesToAdd = StockQtyAndUOMQtys.create(
+				stockQtyWithIssuesToAdd, qty.getProductId(),
+				uomQtyWithIssuesToAdd, qty.getUOMQtyNotNull().getUomId());
+
 		qtyWithIssues = qtyWithIssues.add(qtyWithIssuesToAdd);
 	}
 
-	public void addQtyAndQtyWithIssues(final BigDecimal qtyToAdd, final BigDecimal qtyWithIssuesToAdd)
+	public void addQtyAndQtyWithIssues(
+			@NonNull final StockQtyAndUOMQty qtyToAdd,
+			@NonNull final StockQtyAndUOMQty qtyWithIssuesToAdd)
 	{
 		qtyTotal = qtyTotal.add(qtyToAdd);
 		qtyWithIssues = qtyWithIssues.add(qtyWithIssuesToAdd);
@@ -108,8 +141,8 @@ public final class ReceiptQty
 
 	public void add(@NonNull final ReceiptQty qtyAndQualityToAdd)
 	{
-		final BigDecimal qtyTotalToAdd = qtyAndQualityToAdd.getQtyTotal();
-		final BigDecimal qtyWithIssuesToAdd = qtyAndQualityToAdd.getQtyWithIssuesExact();
+		final StockQtyAndUOMQty qtyTotalToAdd = qtyAndQualityToAdd.getQtyTotal();
+		final StockQtyAndUOMQty qtyWithIssuesToAdd = qtyAndQualityToAdd.getQtyWithIssuesExact();
 		final QualityNoticesCollection qualityNoticesToAdd = qtyAndQualityToAdd.getQualityNotices();
 
 		addQtyAndQtyWithIssues(qtyTotalToAdd, qtyWithIssuesToAdd);
@@ -147,7 +180,7 @@ public final class ReceiptQty
 	/**
 	 * @return total quantity (with and without issues)
 	 */
-	public BigDecimal getQtyTotal()
+	public StockQtyAndUOMQty getQtyTotal()
 	{
 		return qtyTotal;
 	}
@@ -160,30 +193,30 @@ public final class ReceiptQty
 		return qtyTotal.signum() == 0 && qtyWithIssues.signum() == 0;
 	}
 
-	private BigDecimal getQtyTotal(final int qtyPrecision)
+	private StockQtyAndUOMQty getQtyTotal(final int qtyPrecision)
 	{
-		BigDecimal qtyTotal = getQtyTotal();
+		final StockQtyAndUOMQty qtyTotal = getQtyTotal();
 		if (qtyTotal.signum() == 0)
 		{
-			return BigDecimal.ZERO;
+			return qtyTotal.toZero();
 		}
-		qtyTotal = qtyTotal.setScale(qtyPrecision, QtyTotal_RoundingMode);
-		return qtyTotal;
+		return qtyTotal.setScale(qtyPrecision, QtyTotal_RoundingMode);
 	}
 
 	/**
-	 * @return weighted average quality discount percent (between 0..100)
+	 * @return weighted average quality discount percent, based on the UOM-quantities.
+	 *         I.e. in case of catch weight, the percentage is based on the actually weighed stuff.
 	 */
-	public BigDecimal getQualityDiscountPercent()
+	public Percent getQualityDiscountPercent()
 	{
-		final BigDecimal qtyTotalExact = getQtyTotal();
-		final BigDecimal qtyWithIssuesExact = getQtyWithIssuesExact();
+		final StockQtyAndUOMQty qtyTotalExact = getQtyTotal();
+		final StockQtyAndUOMQty qtyWithIssuesExact = getQtyWithIssuesExact();
 
 		if (qtyTotalExact.signum() == 0)
 		{
 			if (qtyWithIssuesExact.signum() == 0)
 			{
-				return BigDecimal.ZERO;
+				return Percent.ZERO;
 			}
 			// Case: qtyTotal is ZERO but we have qtyWithIssues.
 			// => this could be an issue
@@ -194,21 +227,23 @@ public final class ReceiptQty
 						+ "\nQtyAndQuality: " + this);
 				// just log it for now
 				logger.warn(ex.getLocalizedMessage(), ex);
-				return BigDecimal.ZERO;
+				return Percent.ZERO;
 			}
 		}
 
 		final BigDecimal qualityDiscountPercent = Env.ONEHUNDRED
-				.multiply(qtyWithIssuesExact)
-				.divide(qtyTotalExact, QualityDiscountPercent_Precision, QualityDiscountPercent_RoundingMode);
-
-		return qualityDiscountPercent;
+				.multiply(qtyWithIssuesExact.getUOMQtyNotNull().toBigDecimal())
+				.divide(
+						qtyTotalExact.getUOMQtyNotNull().toBigDecimal(),
+						QualityDiscountPercent_Precision,
+						QualityDiscountPercent_RoundingMode);
+		return Percent.of(qualityDiscountPercent);
 	}
 
 	/**
 	 * @return quantity with issues; i.e. QtyTotal * Quality Discount Percent%
 	 */
-	public BigDecimal getQtyWithIssues(final int qtyPrecision)
+	public StockQtyAndUOMQty getQtyWithIssues(final int qtyPrecision)
 	{
 		return getQtyWithIssuesExact()
 				.setScale(qtyPrecision, QtyWithIssues_RoundingMode);
@@ -217,7 +252,7 @@ public final class ReceiptQty
 	/**
 	 * @return quantity with issues (precise, high scale value)
 	 */
-	public BigDecimal getQtyWithIssuesExact()
+	public StockQtyAndUOMQty getQtyWithIssuesExact()
 	{
 		return qtyWithIssues;
 	}
@@ -225,11 +260,12 @@ public final class ReceiptQty
 	/**
 	 * @return quantity without issues; i.e. QtyTotal - QtyWithIssues
 	 */
-	public BigDecimal getQtyWithoutIssues(final int qtyPrecision)
+	public StockQtyAndUOMQty getQtyWithoutIssues(final int qtyPrecision)
 	{
-		final BigDecimal qtyTotal = getQtyTotal(qtyPrecision);
-		final BigDecimal qtyWithIssues = getQtyWithIssues(qtyPrecision);
-		final BigDecimal qtyWithoutIssues = qtyTotal.subtract(qtyWithIssues);
+		final StockQtyAndUOMQty qtyTotal = getQtyTotal(qtyPrecision);
+		final StockQtyAndUOMQty qtyWithIssues = getQtyWithIssues(qtyPrecision);
+		final StockQtyAndUOMQty qtyWithoutIssues = qtyTotal.subtract(qtyWithIssues);
+
 		return qtyWithoutIssues;
 	}
 

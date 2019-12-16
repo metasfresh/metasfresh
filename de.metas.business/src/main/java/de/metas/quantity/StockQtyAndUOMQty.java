@@ -3,6 +3,7 @@ package de.metas.quantity;
 import static de.metas.util.Check.assumeNotNull;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -46,7 +47,7 @@ public class StockQtyAndUOMQty
 	{
 		return Optional.ofNullable(uomQty);
 	}
-	
+
 	@JsonIgnore
 	public boolean isUOMQtySet()
 	{
@@ -156,5 +157,43 @@ public class StockQtyAndUOMQty
 			result.uomQty(uomQty.multiply(factor));
 		}
 		return result.build();
+	}
+
+	public StockQtyAndUOMQty setScale(
+			final int newScale,
+			@NonNull final RoundingMode roundingMode)
+	{
+		final StockQtyAndUOMQtyBuilder builder = this.toBuilder()
+				.stockQty(stockQty.setScale(newScale, roundingMode));
+		if (uomQty != null)
+		{
+			builder.uomQty(uomQty.setScale(newScale, roundingMode));
+		}
+		return builder.build();
+	}
+
+	public StockQtyAndUOMQty divide(
+			@NonNull final BigDecimal divident,
+			final int scale,
+			@NonNull final RoundingMode roundingMode)
+	{
+		final StockQtyAndUOMQtyBuilder result = this
+				.toBuilder()
+				.stockQty(stockQty.divide(divident, scale, roundingMode));
+		if (uomQty != null)
+		{
+			result.uomQty(uomQty.divide(divident, scale, roundingMode));
+		}
+		return result.build();
+	}
+
+	/** @return the minimum by looking at the stock quantities. */
+	public StockQtyAndUOMQty min(@NonNull final StockQtyAndUOMQty other)
+	{
+		if (this.getStockQty().compareTo(other.getStockQty()) < 0)
+		{
+			return this;
+		}
+		return other;
 	}
 }

@@ -42,6 +42,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  *
@@ -93,7 +94,10 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		createReceiptScheduleAllocFromTrxLine(trxLine, receiptSchedule, huItem);
 	}
 
-	private void createReceiptScheduleAllocFromTrxLine(final I_M_HU_Trx_Line trxLine, final I_M_ReceiptSchedule receiptSchedule, final I_M_HU_Item huItem)
+	private void createReceiptScheduleAllocFromTrxLine(
+			@NonNull final I_M_HU_Trx_Line trxLine,
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@NonNull final I_M_HU_Item huItem)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -109,17 +113,15 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		final I_M_HU vhu = vhuItem == null ? null : vhuItem.getM_HU();
 
 		//
-		// Case: our HU is an LU
+		// Case: our HU is a LU
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
 			// Make sure this is just a dummy transaction used to LU assignments, attribute transfers etc
 			Check.assume(qtyToAllocateOnHU.signum() == 0, "Transactions about LUs shall always have Qty=0: {}", trxLine);
-			// tuHU = null;
-			// luHU = hu;
 			return;
 		}
 		//
-		// Case: our HU is an TU or a top level VHU
+		// Case: our HU is a TU or a top level VHU
 		else
 		{
 			tuHU = hu;

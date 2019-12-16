@@ -238,7 +238,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -248,7 +248,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

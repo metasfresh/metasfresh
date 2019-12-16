@@ -85,8 +85,11 @@ import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Generates material receipt from {@link I_M_ReceiptSchedule_Alloc} (with HUs).
@@ -214,10 +217,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// Create receipt line for QtyWithoutIssues
-		final BigDecimal qtyWithoutIssues = qtyAndQuality.getQtyWithoutIssues(qtyPrecision);
+		final StockQtyAndUOMQty qtyWithoutIssues = qtyAndQuality.getQtyWithoutIssues(qtyPrecision);
 		if (qtyWithoutIssues.signum() > 0)
 		{
-			final BigDecimal qualityDiscountPercent = BigDecimal.ZERO;
+			final Percent qualityDiscountPercent = Percent.ZERO;
 			final String qualityNoticesString = "";
 			final boolean isInDispute = false;
 			final I_M_InOutLine receiptLineWithoutIssues = createReceiptLine(receiptLineCandidate,
@@ -235,10 +238,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// If there is Qty with issues, an extra receipt line is needed (with qtyWithIssues)
-		final BigDecimal qtyWithIssues = qtyAndQuality.getQtyWithIssues(qtyPrecision);
+		final StockQtyAndUOMQty qtyWithIssues = qtyAndQuality.getQtyWithIssues(qtyPrecision);
 		if (qtyWithIssues.signum() > 0)
 		{
-			final BigDecimal qualityDiscountPercent = qtyAndQuality.getQualityDiscountPercent();
+			final Percent qualityDiscountPercent = qtyAndQuality.getQualityDiscountPercent();
 			final String qualityNoticesString = qtyAndQuality.getQualityNotices().asQualityNoticesString();
 			final boolean isInDispute = true;
 			final I_M_InOutLine receiptLineWithIssues = createReceiptLine(receiptLineCandidate,
@@ -426,8 +429,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	private I_M_InOutLine createReceiptLine(
 			final HUReceiptLineCandidate receiptLineCandidate,
-			final BigDecimal qtyToReceive,
-			final BigDecimal qualityDiscountPercent,
+			@NonNull final StockQtyAndUOMQty qtyToReceive,
+			@NonNull final Percent qualityDiscountPercent,
 			final String qualityNote,
 			final boolean isInDispute)
 	{
@@ -442,9 +445,12 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			receiptLine.setSubProducer_BPartner_ID(receiptLineCandidate.getSubProducer_BPartner_ID());
 		}
 
-		receiptLine.setQtyEntered(qtyToReceive);
-		receiptLine.setMovementQty(receiptLine.getQtyEntered());
-		receiptLine.setQualityDiscountPercent(qualityDiscountPercent);
+		receiptLine.setQtyEntered(qtyToReceive.getUOMQtyNotNull().toBigDecimal());
+
+		receiptLine.setC_UOM_ID(qtyToReceive.getUOMQtyNotNull().getUomId().getRepoId());
+		receiptLine.setMovementQty(qtyToReceive.getStockQty().toBigDecimal());
+
+		receiptLine.setQualityDiscountPercent(qualityDiscountPercent.toBigDecimal());
 		receiptLine.setQualityNote(qualityNote);
 		receiptLine.setIsInDispute(isInDispute);
 

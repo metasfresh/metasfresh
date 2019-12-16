@@ -32,7 +32,13 @@ import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * It's a part of an {@link HUReceiptLineCandidate}.
@@ -55,21 +61,28 @@ import de.metas.util.Check;
 	 */
 	private I_M_QualityNote _qualityNote = null;
 	private ReceiptQty _qtyAndQuality = null;
-	private BigDecimal _qty = BigDecimal.ZERO;
+	private StockQtyAndUOMQty _qty ;
 	private int _subProducerBPartnerId = -1;
 	private Object _attributeStorageAggregationKey = null;
 	//
 	private final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 	private final transient List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocsRO = Collections.unmodifiableList(receiptScheduleAllocs);
 
-	public HUReceiptLinePartCandidate(final HUReceiptLinePartAttributes attributes)
-	{
-		super();
+	private final ProductId productId;
+	private final UomId uomId;
 
-		Check.assumeNotNull(attributes, "attributes not null");
+	public HUReceiptLinePartCandidate(
+			@NonNull final HUReceiptLinePartAttributes attributes,
+			@NonNull final ProductId productId,
+			@NonNull final UomId uomId)
+	{
 		_attributes = attributes;
 
+		this.productId = productId;
+		this.uomId = uomId;
+
 		_stale = true; // stale by default
+		_qty = StockQtyAndUOMQtys.createZero(productId, uomId);
 	}
 
 	@Override
@@ -80,7 +93,7 @@ import de.metas.util.Check;
 
 	public void add(final I_M_ReceiptSchedule_Alloc rsa)
 	{
-		final BigDecimal rsaQty = rsa.getHU_QtyAllocated();
+		final BigDecimal rsaQty = rsa.getHU_QtyAllocated(); // TODO get the catch weight!
 
 		_qty = _qty.add(rsaQty);
 
@@ -147,9 +160,10 @@ import de.metas.util.Check;
 
 		//
 		// Qty & Quality
-		final BigDecimal qualityDiscountPercent = attributes.getQualityDiscountPercent();
-		final ReceiptQty qtyAndQuality = new ReceiptQty();
+		final Percent qualityDiscountPercent = Percent.of(attributes.getQualityDiscountPercent());
+		final ReceiptQty qtyAndQuality = new ReceiptQty(productId, uomId);
 		I_M_QualityNote qualityNote = null;
+
 		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
 
 		//
