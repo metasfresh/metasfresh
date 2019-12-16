@@ -31,8 +31,10 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -207,10 +209,10 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		return vhu;
 	}
 
-	protected final BigDecimal getDefaultAvailableQtyToReceive(final I_M_ReceiptSchedule rs)
+	protected final BigDecimal getDefaultAvailableQtyToReceive(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		final BigDecimal qty = receiptScheduleBL.getQtyToMove(rs);
-		return qty == null || qty.signum() <= 0 ? BigDecimal.ZERO : qty;
+		final StockQtyAndUOMQty qty = receiptScheduleBL.getQtyToMove(rs);
+		return qty == null || qty.signum() <= 0 ? BigDecimal.ZERO : qty.getStockQty().toBigDecimal();
 	}
 
 	protected BigDecimal getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)

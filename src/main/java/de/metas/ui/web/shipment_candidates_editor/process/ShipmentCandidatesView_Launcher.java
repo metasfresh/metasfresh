@@ -46,8 +46,9 @@ public class ShipmentCandidatesView_Launcher extends ViewBasedProcessTemplate im
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+
 		ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedShipmentScheduleIds();
-		if (shipmentScheduleIds.isEmpty())
+		if (getSelectedRowIds().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
