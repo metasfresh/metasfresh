@@ -5,12 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.collections.IteratorUtils;
-import de.metas.util.collections.PagedIterator;
 import de.metas.util.collections.PagedIterator.Page;
 import lombok.Builder;
 import lombok.Value;

@@ -386,6 +386,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			public boolean doCatch(final Throwable e)
 			{
 				final PostingException postingException = newPostingException(e);
+				this.postingException = postingException;
 
 				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, getAD_Client_ID(), getAD_Org_ID());
 				if (createNote)
@@ -420,7 +421,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				|| m_DocStatus.equals(IDocument.STATUS_Voided)
 				|| m_DocStatus.equals(IDocument.STATUS_Reversed))
 		{
-			
+			// This is THE valid case
 		}
 		else
 		{
