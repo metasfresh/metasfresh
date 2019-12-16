@@ -62,12 +62,21 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class InOutDAO implements IInOutDAO
 {
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
 		return load(inoutId, I_M_InOut.class);
+	}
+
+	@Nullable
+	@Override
+	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutId, modelClass);
 	}
 
 	@Override

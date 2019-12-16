@@ -43,9 +43,14 @@ import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IInOutDAO extends ISingletonService
 {
 	I_M_InOut getById(InOutId inoutId);
+
+	@Nullable
+	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
 	I_M_InOutLine getLineById(InOutLineId inoutLineId);
 
@@ -55,6 +60,7 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * Retrieve all (active) lines of given <code>inOut</code>.
+	 *
 	 * @return <code>inOut</code>'s lines
 	 */
 	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
@@ -71,7 +77,6 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(I_C_OrderLine orderLine, Class<T> clazz);
 
 	/**
-	 * @param ctx
 	 * @return query to retrieve all {@link I_M_InOutLine}s which are part of a shipment with doc status <code>Draft</code>, <code>InProgress</code> or <code>WaitingConfirmation</code>.
 	 */
 	IQueryBuilder<I_M_InOutLine> createUnprocessedShipmentLinesQuery(Properties ctx);
