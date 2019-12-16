@@ -36,7 +36,10 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Collects {@link HUReceiptLinePartCandidate}s and behaves like a candidate for receipt line (i.e. {@link I_M_InOutLine}).
@@ -68,14 +71,16 @@ import de.metas.util.Check;
 	private ReceiptQty _qtyAndQuality = null;
 	private List<I_M_ReceiptSchedule_Alloc> _receiptScheduleAllocs = null;
 
-	public HUReceiptLineCandidate(final I_M_ReceiptSchedule receiptSchedule)
+	private final ProductId productId;
+	private final UomId uomId;
+
+	public HUReceiptLineCandidate(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		super();
-
-		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
 		_receiptSchedule = receiptSchedule;
-
 		_stale = true;
+
+		this.productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+		this.uomId = UomId.ofRepoId(receiptSchedule.getC_UOM_ID());
 	}
 
 	@Override
@@ -196,7 +201,7 @@ import de.metas.util.Check;
 		// * Compute qty and QtyWithIssues
 		// * Collect quality notices
 		// * Collect receipt schedule allocations
-		final ReceiptQty qtyAndQuality = new ReceiptQty();
+		final ReceiptQty qtyAndQuality = new ReceiptQty(productId, uomId);
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{

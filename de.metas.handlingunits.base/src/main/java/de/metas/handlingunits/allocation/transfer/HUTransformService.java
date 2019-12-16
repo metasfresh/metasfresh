@@ -44,6 +44,9 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.IWeightableFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -66,6 +69,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -122,6 +127,8 @@ public class HUTransformService
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
+
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -418,8 +425,8 @@ public class HUTransformService
 	private void updateAllocation(
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
-			final I_M_HU cuHU, // may be null
-			final Quantity qtyCU, // may be null
+			@Nullable final I_M_HU cuHU, // may be null
+			@Nullable final Quantity qtyCU, // may be null
 			final boolean negateQtyCU,
 			final IHUContext localHuContext)
 	{
@@ -448,6 +455,18 @@ public class HUTransformService
 				qtyToUse = qtyCU.multiply(factor);
 			}
 
+			final Quantity catchWeightOrNull;
+			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(currentCuHU);
+			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			if (weightable != null)
+			{
+				catchWeightOrNull = Quantity.of(weightable.getWeightNet().multiply(factor), weightable.getWeightNetUOM());
+			}
+			else
+			{
+				catchWeightOrNull = null;
+			}
+
 			for (final TableRecordReference ref : getReferencedObjects())
 			{
 				final List<IHUDocument> huDocuments = huDocumentFactoryService.createHUDocuments(localHuContext.getCtx(), ref.getTableName(), ref.getRecord_ID());
@@ -459,8 +478,13 @@ public class HUTransformService
 							.findFirst();
 					if (huDocumentLine.isPresent())
 					{
+						final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(
+								qtyToUse,
+								huDocumentLine.get().getProductId(),
+								catchWeightOrNull);
+
 						final IHUAllocations huAllocations = huDocumentLine.get().getHUAllocations();
-						huAllocations.allocate(luHU, tuHU, currentCuHU, qtyToUse, false);
+						huAllocations.allocate(luHU, tuHU, currentCuHU, qtyToAllocate, false/* deleteOldTUAllocations */);
 					}
 				}
 			}
@@ -1058,7 +1082,7 @@ public class HUTransformService
 				@Nullable final Boolean onlyFromUnreservedHUs)
 		{
 			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
-			
+
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;

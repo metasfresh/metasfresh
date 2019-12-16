@@ -7,7 +7,7 @@ import org.adempiere.ad.trx.api.ITrx;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 
 /**
  * Implementations of this interface are used to manage HU allocations to a particular document line.
@@ -22,16 +22,13 @@ public interface IHUAllocations
 	/**
 	 * Create LU/TU {@link I_M_HU_Assignment} and allocate given HUs. Assignment is fairly generic, but creating allocations depends on this interface's implementor.
 	 *
-	 * @param luHU
-	 * @param tuHU
-	 * @param vhu
-	 * @param qtyToAllocate quantity to allocate
+	 * @param qtyToAllocate quantity to allocate. Contains both the quantity in the respective stock-UOM and (optionally, if the HU has a weight) the actual catch-weight.
 	 * @param deleteOldTUAllocations if true, delete ALL old allocations between the TU and the document (be careful with this, as it might delete allocations which are still desired)
 	 */
 	void allocate(final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU vhu,
-			final Quantity qtyToAllocate,
+			final StockQtyAndUOMQty qtyToAllocate,
 			final boolean deleteOldTUAllocations);
 
 	/**
@@ -46,7 +43,7 @@ public interface IHUAllocations
 	 *
 	 * @return assigned HUs
 	 */
-	public List<I_M_HU> getAssignedHUs();
+	List<I_M_HU> getAssignedHUs();
 
 	/**
 	 * Assign given HUs.

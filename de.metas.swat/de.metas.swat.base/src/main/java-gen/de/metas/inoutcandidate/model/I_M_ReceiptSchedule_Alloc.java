@@ -59,6 +59,29 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCatch_UOM_ID();
+
+    /** Column name Catch_UOM_ID */
+    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -92,7 +115,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -104,8 +127,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getDocStatus();
 
     /** Column definition for DocStatus */
@@ -276,6 +301,31 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_QtyAllocated = "QtyAllocated";
 
 	/**
+	 * Set Zugeordnet Catch.
+	 * Tatsächlich zugeordnete Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyAllocatedInCatchUOM (java.math.BigDecimal QtyAllocatedInCatchUOM);
+
+	/**
+	 * Get Zugeordnet Catch.
+	 * Tatsächlich zugeordnete Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyAllocatedInCatchUOM();
+
+    /** Column definition for QtyAllocatedInCatchUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyAllocatedInCatchUOM = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyAllocatedInCatchUOM", null);
+    /** Column name QtyAllocatedInCatchUOM */
+    public static final String COLUMNNAME_QtyAllocatedInCatchUOM = "QtyAllocatedInCatchUOM";
+
+	/**
 	 * Set Minderwertige Menge.
 	 * Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
 	 *
@@ -299,6 +349,29 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyWithIssues = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyWithIssues", null);
     /** Column name QtyWithIssues */
     public static final String COLUMNNAME_QtyWithIssues = "QtyWithIssues";
+
+	/**
+	 * Set Minderwertige Catch-Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyWithIssuesInCatchUOM (java.math.BigDecimal QtyWithIssuesInCatchUOM);
+
+	/**
+	 * Get Minderwertige Catch-Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyWithIssuesInCatchUOM();
+
+    /** Column definition for QtyWithIssuesInCatchUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_QtyWithIssuesInCatchUOM = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "QtyWithIssuesInCatchUOM", null);
+    /** Column name QtyWithIssuesInCatchUOM */
+    public static final String COLUMNNAME_QtyWithIssuesInCatchUOM = "QtyWithIssuesInCatchUOM";
 
 	/**
 	 * Set Qualitätsabzug %.
