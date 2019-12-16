@@ -18,12 +18,13 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
+import de.metas.product.ProductCategoryId;
 
 /**
  * Copy Product Catergory Default Accounts
@@ -33,88 +34,81 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class ProductCategoryAcctCopy extends JavaProcess
 {
-	/** Product Categpory */
-	private int p_M_Product_Category_ID = 0;
-	/** Acct Schema */
-	private AcctSchemaId p_C_AcctSchema_ID;
+	@Param(parameterName = "M_Product_Category_ID", mandatory = true)
+	private ProductCategoryId fromProductCategoryId;
 
-	/**
-	 * Prepare - e.g., get Parameters.
-	 */
-	@Override
-	protected void prepare()
-	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
-		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals("M_Product_Category_ID"))
-				p_M_Product_Category_ID = para[i].getParameterAsInt();
-			else if (name.equals("C_AcctSchema_ID"))
-				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
-			else
-				log.error("Unknown Parameter: " + name);
-		}
-	}	// prepare
+	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
+	private AcctSchemaId fromAcctSchemaId;
+
+	@Param(parameterName = "M_Product_Category_To_ID", mandatory = true)
+	private ProductCategoryId toProductCategoryId;
+
+	@Param(parameterName = "C_AcctSchema_To_ID", mandatory = true)
+	private AcctSchemaId toAcctSchemaId;
 
 	@Override
 	protected String doIt()
 	{
-		if (p_C_AcctSchema_ID == null)
-			throw new FillMandatoryException("C_AcctSchema_ID");
-
+		//
 		// Update
-		String sql = DB.convertSqlToNative("UPDATE M_Product_Acct pa "
-				+ "SET (P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
-				+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
-				+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
-				+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
-				+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct)="
-				+ " (SELECT P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
-				+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
-				+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
-				+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
-				+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct"
-				+ " FROM M_Product_Category_Acct pca"
-				+ " WHERE pca.M_Product_Category_ID=" + p_M_Product_Category_ID
-				+ " AND pca.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
-				+ "), Updated=now(), UpdatedBy=0 "
-				+ "WHERE pa.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
-				+ " AND EXISTS (SELECT * FROM M_Product p "
-				+ "WHERE p.M_Product_ID=pa.M_Product_ID"
-				+ " AND p.M_Product_Category_ID=" + p_M_Product_Category_ID + ")");
-		int updated = DB.executeUpdate(sql, get_TrxName());
-		addLog(0, null, new BigDecimal(updated), "@Updated@");
+		int countUpdated;
+		{
+			final String sql = DB.convertSqlToNative("UPDATE M_Product_Acct pa "
+					//
+					+ "SET (P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
+					+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
+					+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
+					+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
+					+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct)="
+					//
+					+ " (SELECT P_Revenue_Acct,P_Expense_Acct,P_CostAdjustment_Acct,P_InventoryClearing_Acct,P_Asset_Acct,P_COGS_Acct,"
+					+ " P_PurchasePriceVariance_Acct,P_InvoicePriceVariance_Acct,"
+					+ " P_TradeDiscountRec_Acct,P_TradeDiscountGrant_Acct,"
+					+ " P_WIP_Acct,P_FloorStock_Acct,P_MethodChangeVariance_Acct,P_UsageVariance_Acct,P_RateVariance_Acct,"
+					+ " P_MixVariance_Acct,P_Labor_Acct,P_Burden_Acct,P_CostOfProduction_Acct,P_OutsideProcessing_Acct,P_Overhead_Acct,P_Scrap_Acct"
+					+ " FROM M_Product_Category_Acct pca"
+					+ " WHERE pca.M_Product_Category_ID=" + fromProductCategoryId.getRepoId()
+					+ " AND pca.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId()
+					+ "), Updated=now(), UpdatedBy=0 "
+					//
+					+ "WHERE pa.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
+					+ " AND EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID=pa.M_Product_ID AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId() + ")");
+			countUpdated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			addLog(0, null, BigDecimal.valueOf(countUpdated), "@Updated@");
+		}
 
+		//
 		// Insert new Products
-		sql = "INSERT INTO M_Product_Acct "
-				+ "(M_Product_ID, C_AcctSchema_ID,"
-				+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
-				+ " P_Revenue_Acct, P_Expense_Acct, P_CostAdjustment_Acct, P_InventoryClearing_Acct, P_Asset_Acct, P_CoGs_Acct,"
-				+ " P_PurchasePriceVariance_Acct, P_InvoicePriceVariance_Acct,"
-				+ " P_TradeDiscountRec_Acct, P_TradeDiscountGrant_Acct, "
-				+ " P_WIP_Acct,P_FloorStock_Acct, P_MethodChangeVariance_Acct, P_UsageVariance_Acct, P_RateVariance_Acct,"
-				+ " P_MixVariance_Acct, P_Labor_Acct, P_Burden_Acct, P_CostOfProduction_Acct, P_OutsideProcessing_Acct, P_Overhead_Acct, P_Scrap_Acct) "
-				+ "SELECT p.M_Product_ID, acct.C_AcctSchema_ID,"
-				+ " p.AD_Client_ID, p.AD_Org_ID, 'Y', now(), 0, now(), 0,"
-				+ " acct.P_Revenue_Acct, acct.P_Expense_Acct, acct.P_CostAdjustment_Acct, acct.P_InventoryClearing_Acct, acct.P_Asset_Acct, acct.P_CoGs_Acct,"
-				+ " acct.P_PurchasePriceVariance_Acct, acct.P_InvoicePriceVariance_Acct,"
-				+ " acct.P_TradeDiscountRec_Acct, acct.P_TradeDiscountGrant_Acct, "
-				+ " acct.P_WIP_Acct, acct.P_FloorStock_Acct, acct.P_MethodChangeVariance_Acct, acct.P_UsageVariance_Acct, acct.P_RateVariance_Acct,"
-				+ " acct.P_MixVariance_Acct, acct.P_Labor_Acct, acct.P_Burden_Acct, acct.P_CostOfProduction_Acct, acct.P_OutsideProcessing_Acct, acct.P_Overhead_Acct, acct.P_Scrap_Acct "
-				+ "FROM M_Product p"
-				+ " INNER JOIN M_Product_Category_Acct acct ON (acct.M_Product_Category_ID=p.M_Product_Category_ID)"
-				+ "WHERE acct.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()			// #
-				+ " AND p.M_Product_Category_ID=" + p_M_Product_Category_ID	// #
-				+ " AND NOT EXISTS (SELECT * FROM M_Product_Acct pa "
-				+ "WHERE pa.M_Product_ID=p.M_Product_ID"
-				+ " AND pa.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
-		int created = DB.executeUpdate(sql, get_TrxName());
-		addLog(0, null, new BigDecimal(created), "@Created@");
+		int countCreated;
+		{
+			final String sql = "INSERT INTO M_Product_Acct "
+					+ "(M_Product_ID,"
+					+ " C_AcctSchema_ID,"
+					+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
+					+ " P_Revenue_Acct, P_Expense_Acct, P_CostAdjustment_Acct, P_InventoryClearing_Acct, P_Asset_Acct, P_CoGs_Acct,"
+					+ " P_PurchasePriceVariance_Acct, P_InvoicePriceVariance_Acct,"
+					+ " P_TradeDiscountRec_Acct, P_TradeDiscountGrant_Acct, "
+					+ " P_WIP_Acct,P_FloorStock_Acct, P_MethodChangeVariance_Acct, P_UsageVariance_Acct, P_RateVariance_Acct,"
+					+ " P_MixVariance_Acct, P_Labor_Acct, P_Burden_Acct, P_CostOfProduction_Acct, P_OutsideProcessing_Acct, P_Overhead_Acct, P_Scrap_Acct) "
+					//
+					+ " SELECT "
+					+ " p.M_Product_ID,"
+					+ toAcctSchemaId.getRepoId() + " AS C_AcctSchema_ID,"
+					+ " p.AD_Client_ID, p.AD_Org_ID, 'Y', now(), 0, now(), 0,"
+					+ " acct.P_Revenue_Acct, acct.P_Expense_Acct, acct.P_CostAdjustment_Acct, acct.P_InventoryClearing_Acct, acct.P_Asset_Acct, acct.P_CoGs_Acct,"
+					+ " acct.P_PurchasePriceVariance_Acct, acct.P_InvoicePriceVariance_Acct,"
+					+ " acct.P_TradeDiscountRec_Acct, acct.P_TradeDiscountGrant_Acct, "
+					+ " acct.P_WIP_Acct, acct.P_FloorStock_Acct, acct.P_MethodChangeVariance_Acct, acct.P_UsageVariance_Acct, acct.P_RateVariance_Acct,"
+					+ " acct.P_MixVariance_Acct, acct.P_Labor_Acct, acct.P_Burden_Acct, acct.P_CostOfProduction_Acct, acct.P_OutsideProcessing_Acct, acct.P_Overhead_Acct, acct.P_Scrap_Acct "
+					+ " FROM M_Product p"
+					+ " INNER JOIN M_Product_Category_Acct acct ON (acct.M_Product_Category_ID=" + fromProductCategoryId.getRepoId() + " AND acct.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId() + ")"
+					+ " WHERE 1=1"
+					+ " AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId()
+					+ " AND NOT EXISTS (SELECT 1 FROM M_Product_Acct pa WHERE pa.M_Product_ID=p.M_Product_ID AND pa.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
+			countCreated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			addLog(0, null, BigDecimal.valueOf(countCreated), "@Created@");
+		}
 
-		return "@Created@=" + created + ", @Updated@=" + updated;
-	}	// doIt
-
-}	// ProductCategoryAcctCopy
+		return "@Created@=" + countCreated + ", @Updated@=" + countUpdated;
+	}
+}
