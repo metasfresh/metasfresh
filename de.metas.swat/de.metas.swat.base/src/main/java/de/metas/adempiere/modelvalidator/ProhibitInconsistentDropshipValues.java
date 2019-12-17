@@ -22,12 +22,12 @@ package de.metas.adempiere.modelvalidator;
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
@@ -47,19 +47,20 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /**
  * Makes sure that the IsDropShip checkbox in various tables is consistent with the selected warehouse and other dropship related settings.
- *
+ * <p>
  * Note: This model validator is not registered by {@link SwatValidator}, because we want the option to disable it without code change if required
  *
  * @author ts
- *
  */
 public class ProhibitInconsistentDropshipValues implements ModelValidator
 {
-//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_B_PARTNER_LOCATION_6P = "MOrderLine_InconsistentDropShip_soOl_BPartner_Location";
-//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_WAREHOUSE_6P = "MOrderLine_InconsistentDropShip_soOl_Warehouse";
-//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_PRODUCT_8P = "MOrderLine_InconsistentDropShip_soOl_Product";
+	//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_B_PARTNER_LOCATION_6P = "MOrderLine_InconsistentDropShip_soOl_BPartner_Location";
+	//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_WAREHOUSE_6P = "MOrderLine_InconsistentDropShip_soOl_Warehouse";
+	//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_PRODUCT_8P = "MOrderLine_InconsistentDropShip_soOl_Product";
 
 	private static final String ERR_INCONSISTENT_DROP_SHIP_MORDER_WAREHOUSE_3P = "InconsistentDropShip_MOrder_Warehouse";
 	private static final String ERR_INCONSISTENT_DROP_SHIP_MORDER_DROPSHIP_3P = "InconsistentDropShip_MOrder_Dropship";
@@ -124,7 +125,7 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 			final I_C_DocType ioDocType;
 			if (io.getC_DocType_ID() > 0)
 			{
-				ioDocType = io.getC_DocType();
+				ioDocType = load(io.getC_DocType_ID(), I_C_DocType.class);
 			}
 			else
 			{
@@ -177,7 +178,7 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 									ERR_INCONSISTENT_DROP_SHIP_MINOUT_WAREHOUSE_3P,
 									new Object[] {
 											io.getDocumentNo(),
-											io.getM_Warehouse().getName(),
+											load(io.getM_Warehouse_ID(), I_M_Warehouse.class).getName(),
 											Services.get(IOrgDAO.class).retrieveOrgName(io.getAD_Org_ID())
 									}));
 						}
@@ -187,7 +188,7 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 									ERR_INCONSISTENT_DROP_SHIP_MINOUT_DROPSHIP_3P,
 									new Object[] {
 											io.getDocumentNo(),
-											io.getM_Warehouse().getName(),
+											load(io.getM_Warehouse_ID(), I_M_Warehouse.class).getName(),
 											Services.get(IOrgDAO.class).retrieveOrgName(io.getAD_Org_ID())
 									}));
 						}

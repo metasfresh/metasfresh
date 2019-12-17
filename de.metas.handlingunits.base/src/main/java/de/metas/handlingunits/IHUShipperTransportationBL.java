@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Package;
 
@@ -34,24 +35,22 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IHUShipperTransportationBL extends ISingletonService
 {
 	/**
-	 * Adds given list of HUs to shipper transportation.
-	 *
+	 * Adds given list of HUs to shipper transportation, by creating the needed M_Packages.
+	 * <p>
 	 * This method adds only those HUs which are eligible (see {@link #isEligibleForAddingToShipperTransportation(I_M_HU)}).
-	 *
-	 * @param shipperTransportationId
-	 * @param hus
 	 */
-	List<I_M_Package> addHUsToShipperTransportation(int shipperTransportationId, Collection<I_M_HU> hus);
+	List<I_M_Package> addHUsToShipperTransportation(ShipperTransportationId shipperTransportationId, Collection<I_M_HU> hus);
 
 	/**
 	 * Generates Material Shipments from previously enqueued HUs to shipper transportation.
-	 *
+	 * <p>
 	 * NOTE: this method will not checked if the HU was added to a shipper transportation but it will just check if it's locked.
 	 *
-	 * @param ctx
 	 * @param husQueryBuilder inital HUs query builder to be used; NOTE: this parameter will be changed in this method
 	 */
 	void generateShipments(Properties ctx, IHUQueryBuilder husQueryBuilder);
@@ -59,19 +58,16 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	/**
 	 * Checks if given HU is suitable for adding to shipper transportation.
 	 *
-	 * @param hu
 	 * @return true if HU is eligible for adding to shipper transportation.
 	 */
-	boolean isEligibleForAddingToShipperTransportation(I_M_HU hu);
+	boolean isEligibleForAddingToShipperTransportation(@Nullable I_M_HU hu);
 
 	/**
-	 * @param hu
 	 * @return shipping packages for HU, filtered by it's package partner and location
 	 */
 	List<I_M_ShippingPackage> getShippingPackagesForHU(I_M_HU hu);
 
 	/**
-	 * @param hus
 	 * @return shipper transportation document of given HUs. It's expected to be the same among the passed parameters (otherwise will throw {@link AdempiereException}).
 	 */
 	I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(Collection<I_M_HU> hus);
