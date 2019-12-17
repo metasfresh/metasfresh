@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -32,14 +33,18 @@ import org.compiere.model.I_M_Attribute;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * A wrapper for an {@link I_M_HU} (a TU to be more precise), to access those HU attributes that are relevant for receipt {@link I_M_InOutLine}s.<br>
@@ -47,7 +52,7 @@ import de.metas.util.Services;
  * <p>
  * Use {@link #newInstance(IHUContext, I_M_HU)} to get an instance for production use.
  *
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -56,6 +61,7 @@ import de.metas.util.Services;
 	//
 	// Services
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
 
 	//
 	// Params
@@ -89,12 +95,10 @@ import de.metas.util.Services;
 		this.attr_SubProducerBPartner = null;
 	}
 
-	private HUReceiptLinePartAttributes(final IHUContext huContext, final I_M_HU tuHU)
+	private HUReceiptLinePartAttributes(@NonNull final IHUContext huContext, @NonNull final I_M_HU tuHU)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
 		this.huContext = huContext;
 
-		Check.assumeNotNull(tuHU, "tuHU not null");
 		Check.assume(tuHU.getM_HU_ID() > 0, "tuHU exists");
 		this.tuHU = tuHU;
 		id = String.valueOf(tuHU.getM_HU_ID());
@@ -199,9 +203,24 @@ import de.metas.util.Services;
 		return subProducerBPartnerId <= 0 ? -1 : subProducerBPartnerId; // make sure we use same value for N/A
 	}
 
+	public Optional<Quantity> getWeight()
+	{
+		final IWeightable weightable = weightableFactory.createWeightableOrNull(getAttributeStorage());
+		if (weightable == null)
+		{
+			return Optional.empty();
+		}
+		final BigDecimal weightNetOrNull = weightable.getWeightNetOrNull();
+		if (weightNetOrNull == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(Quantity.of(weightNetOrNull, weightable.getWeightNetUOM()));
+	}
+
 	/**
 	 * The M_QualityNote linked with the HUReceiptLine
-	 * 
+	 *
 	 * @return
 	 */
 	public I_M_QualityNote getQualityNote()
