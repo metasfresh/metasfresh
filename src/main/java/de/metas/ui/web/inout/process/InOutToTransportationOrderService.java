@@ -23,106 +23,73 @@
 package de.metas.ui.web.inout.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Package_HU;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
-@SuppressWarnings("NullableProblems")
-public class M_InOut_AddToTransportationOrderProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
+@Service
+public class InOutToTransportationOrderService
 {
-	@Param(parameterName = "M_ShipperTransportation_ID", mandatory = true)
-	private I_M_ShipperTransportation transportationOrder;
-
-	public static final String ALL_SELECTED_SHIPMENTS_SHOULD_BE_COMPLETED_MSG = "de.metas.ui.web.inout.process.M_InOut_AddToTransportationOrderProcess.AllSelectedShipmentsShouldBeCompleted";
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable()
-	{
-		if (getSelectedRowIds().isEmpty())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		final List<I_M_InOut> inOuts = getSelectedInOuts();
-		for (final I_M_InOut inOut : inOuts)
-		{
-			final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
-			if (!docStatus.isCompleted())
-			{
-				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(ALL_SELECTED_SHIPMENTS_SHOULD_BE_COMPLETED_MSG));
-			}
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	private ImmutableList<I_M_InOut> getSelectedInOuts()
-	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-		return getSelectedRowIds()
-				.stream()
-				.map(rowId -> inOutDAO.getById(InOutId.ofRepoId(rowId.toInt()), I_M_InOut.class))
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
 	/**
 	 * - take all the Shipments
 	 * - filter and take all the unshipped HUs for all the shipments
 	 * - assume that all the HUs are already packed correctly
 	 * - add the HUs to Transportation Order by calling "huShipperTransportationBL.addHUsToShipperTransportation"
 	 */
-	@Override
-	protected String doIt() throws Exception
+	public void addShipmentsToTransportationOrder(@NonNull final ShipperTransportationId transportationOrderId, @NonNull final ImmutableList<InOutId> inOutIds)
 	{
-		final DocStatus docStatus = DocStatus.ofCode(transportationOrder.getDocStatus());
-		if (docStatus.isCompleted())
-		{
-			// this error should not be thrown since we have AD_Val_Rule for the parameter
-			throw new AdempiereException("Transportation Order should not be closed");
-		}
+		final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+		final I_M_ShipperTransportation transportationOrder = shipperTransportationDAO.retrieve(transportationOrderId);
 
 		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-		final ImmutableList<I_M_InOut> selectedInOuts = getSelectedInOuts();
+		final ImmutableList<I_M_InOut> selectedInOuts = retrieveAllInOuts(inOutIds);
 
 		for (final I_M_InOut inOut : selectedInOuts)
 		{
 			final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(inOut);
-			final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(transportationOrder.getM_ShipperTransportation_ID());
+			final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(Objects.requireNonNull(transportationOrder).getM_ShipperTransportation_ID());
 			final boolean anyAdded = !huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered).isEmpty();
 			if (anyAdded)
 			{
+				// only link the InOut and the ShipperTransportation if any HUs were added.
 				inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
 				InterfaceWrapperHelper.save(inOut);
 				Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", shipperTransportationId);
 			}
 		}
+	}
 
-		return MSG_OK;
+	private ImmutableList<I_M_InOut> retrieveAllInOuts(final ImmutableList<InOutId> inOutIds)
+	{
+		final ImmutableList.Builder<I_M_InOut> result = ImmutableList.builder();
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		for (final InOutId io : inOutIds)
+		{
+			// Object.requireNonNull used just to fix a warning
+			result.add(Objects.requireNonNull(inOutDAO.getById(io, I_M_InOut.class)));
+		}
+		return result.build();
 	}
 
 	@NonNull
@@ -219,4 +186,5 @@ public class M_InOut_AddToTransportationOrderProcess extends ViewBasedProcessTem
 
 		return ImmutableList.copyOf(list);
 	}
+
 }
