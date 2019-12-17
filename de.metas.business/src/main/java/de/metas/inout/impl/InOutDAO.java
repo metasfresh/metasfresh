@@ -288,6 +288,7 @@ public class InOutDAO implements IInOutDAO
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, soTrx.toBoolean())
 				.create()
 				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
