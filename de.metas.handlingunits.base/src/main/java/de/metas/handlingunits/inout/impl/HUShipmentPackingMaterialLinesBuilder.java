@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
@@ -56,11 +57,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /**
  * Builder class to generate packing material shipment lines for a given shipment.
  *
  * @author tsa
- *
  */
 public class HUShipmentPackingMaterialLinesBuilder
 {
@@ -110,7 +112,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 	/**
 	 * Sets if we want to delete existing packing materials lines and recreate them.
-	 *
+	 * <p>
 	 * If this option is <code>false</code> and if there are any packing material lines already existing, this builder will not recreate them.
 	 *
 	 * @param overrideExistingPackingMaterialLines <code>true</code> if the packing material lines shall be recreated if they exists
@@ -121,23 +123,22 @@ public class HUShipmentPackingMaterialLinesBuilder
 		_overrideExistingPackingMaterialLines = overrideExistingPackingMaterialLines;
 	}
 
-	private final boolean isOverrideExistingPackingMaterialLines()
+	private boolean isOverrideExistingPackingMaterialLines()
 	{
 		return _overrideExistingPackingMaterialLines;
 	}
 
 	/**
-	 *
 	 * @return true if override values shall be calculated and updated now, in this run
 	 */
-	private final boolean isUpdateOverrideValues()
+	private boolean isUpdateOverrideValues()
 	{
 		return _updateOverrideValues;
 	}
 
 	/**
 	 * Sets if override values (e.g. {@link I_M_InOutLine#setQtyTU_Override(BigDecimal)}) shall be initialized now in this run.
-	 *
+	 * <p>
 	 * Enable this functionality only when u are generating shipment lines and you want to have some initial values for the overrides.
 	 *
 	 * @param updateOverrideValues true if the override values shall be initialized and set now
@@ -148,7 +149,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		_updateOverrideValues = updateOverrideValues;
 	}
 
-	private final void assertConfigurable()
+	private void assertConfigurable()
 	{
 		Check.assume(configurable, "builder shall be in configurable state");
 	}
@@ -197,7 +198,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		final Comparator<Integer> candidatesSortComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
 				.setContext(ctx)
 				.setC_BPartner_ID(inout.getC_BPartner_ID())
-				.setC_DocType(inout.getC_DocType())
+				.setC_DocType(load(inout.getC_DocType_ID(), I_C_DocType.class))
 				.findProductIdsComparator();
 		packingMaterialsCollector.setProductIdSortComparator(candidatesSortComparator);
 
@@ -244,20 +245,17 @@ public class HUShipmentPackingMaterialLinesBuilder
 	/**
 	 * Check if we are dealing with a shipment line where packing materials were specified by user
 	 *
-	 * @param inoutLine
-	 * @return
 	 * @see HUConstants#isQuickShipment()
 	 */
-	private final boolean isManualPackingMaterials(final I_M_InOutLine inoutLine)
+	private boolean isManualPackingMaterials(final I_M_InOutLine inoutLine)
 	{
-		final boolean manualPackingMaterial = inoutLine.isManualPackingMaterial();
-		return manualPackingMaterial;
+		return inoutLine.isManualPackingMaterial();
 	}
 
 	/**
 	 * Collect TU packing materials from the given {@code huPackingMaterialCollectorSource} into our internal {@link HUPackingMaterialsCollector}.
 	 */
-	private final void collectHUs(@NonNull final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
+	private void collectHUs(@NonNull final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
 		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource,
 				"The given huPackingMaterialCollectorSource needs to be instanceof {}; huPackingMaterialCollectorSource={}",
@@ -348,7 +346,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	/**
 	 * Delete existing packing material lines
 	 */
-	private final void deleteExistingPackingMaterialLines()
+	private void deleteExistingPackingMaterialLines()
 	{
 		final I_M_InOut inout = getM_InOut();
 		final List<I_M_InOutLine> retrievePackingMaterialLines = huInOutDAO.retrievePackingMaterialLines(inout);

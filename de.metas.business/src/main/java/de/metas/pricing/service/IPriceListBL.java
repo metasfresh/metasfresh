@@ -43,7 +43,7 @@ public interface IPriceListBL extends ISingletonService
 	 *                              task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
 	 */
 	@Nullable I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			PricingSystemId pricingSystemId,
+			@Nullable PricingSystemId pricingSystemId,
 			CountryId countryId,
 			ZonedDateTime date,
 			@Nullable SOTrx soTrx,

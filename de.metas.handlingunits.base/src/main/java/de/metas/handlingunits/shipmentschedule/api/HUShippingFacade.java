@@ -1,31 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import de.metas.shipping.api.ShipperTransportationId;
-import de.metas.util.lang.CoalesceUtil;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
@@ -42,14 +19,34 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -90,7 +87,7 @@ public class HUShippingFacade
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final Supplier<ShipperGatewayFacade> shipperGatewayFacadeSupplier = //
-			() -> Adempiere.getBean(ShipperGatewayFacade.class);
+			() -> SpringContextHolder.instance.getBean(ShipperGatewayFacade.class);
 
 	//
 	// Parameters
@@ -105,7 +102,7 @@ public class HUShippingFacade
 	// State
 	private List<ShipmentScheduleWithHU> _candidates; // lazy
 	private InOutGenerateResult shipmentsGenerateResult;
-	private final ArrayList<I_M_Package> mpackagesCreated = new ArrayList<>();
+	private final ArrayList<I_M_Package> mPackagesCreated = new ArrayList<>();
 
 	@Builder
 	private HUShippingFacade(
@@ -152,26 +149,30 @@ public class HUShippingFacade
 	private void generateShippingDocuments0()
 	{
 		addHUsToShipperTransportationIfNeeded();
-		generateShipments();
+		generateShipmentsFromCandidates();
 		generateInvoicesIfNeeded();
 		generateShipperDeliveryOrdersIfNeeded();
 	}
 
+	/**
+	 * Adds given list of HUs to shipper transportation, by creating the needed M_Packages.
+	 */
 	private void addHUsToShipperTransportationIfNeeded()
 	{
 		if (addToShipperTransportationId > 0)
 		{
-			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
-			mpackagesCreated.addAll(result);
+			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(addToShipperTransportationId), hus);
+			mPackagesCreated.addAll(result);
 			Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
 		}
 	}
 
-	private void generateShipments()
+	private void generateShipmentsFromCandidates()
 	{
 		final List<ShipmentScheduleWithHU> candidates = getCandidates();
 		if (candidates.isEmpty())
 		{
+			//noinspection ThrowableNotThrown
 			new AdempiereException("No shipment candidates found")
 					.appendParametersToMessage()
 					.setParameter("context", this)
@@ -236,21 +237,22 @@ public class HUShippingFacade
 		}
 		Check.errorIf(addToShipperTransportationId <= 0, "If createShipperDeliveryOrders=true, then addToShipperTransportationId needs to be > 0; this={}", this);
 
-		mpackagesCreated
+		mPackagesCreated
 				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> extractShipperId(mpackage)))
+				.collect(GuavaCollectors.toImmutableListMultimap(HUShippingFacade::extractShipperId))
 				.asMap()
 				.forEach(this::generateShipperDeliveryOrderIfNeeded);
 	}
 
-	private static ShipperId extractShipperId(I_M_Package mpackage)
+	@NonNull
+	private static ShipperId extractShipperId(@NonNull final I_M_Package mPackage)
 	{
-		return ShipperId.ofRepoId(mpackage.getM_Shipper_ID());
+		return ShipperId.ofRepoId(mPackage.getM_Shipper_ID());
 	}
 
 	private void generateShipperDeliveryOrderIfNeeded(
 			final ShipperId shipperId,
-			@NonNull final Collection<I_M_Package> mpackages)
+			@NonNull final Collection<I_M_Package> mPackages)
 	{
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
@@ -265,7 +267,7 @@ public class HUShippingFacade
 			return;
 		}
 
-		final Set<Integer> mpackageIds = mpackages.stream()
+		final Set<Integer> mPackageIds = mPackages.stream()
 				.map(I_M_Package::getM_Package_ID)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -276,14 +278,14 @@ public class HUShippingFacade
 				.pickupDate(getPickupDate(shipperTransportation))
 				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
 				.timeTo(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeTo()))
-				.packageIds(mpackageIds)
+				.packageIds(mPackageIds)
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(addToShipperTransportationId))
 				.shipperGatewayId(shipperGatewayId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
-	public LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
 	}
