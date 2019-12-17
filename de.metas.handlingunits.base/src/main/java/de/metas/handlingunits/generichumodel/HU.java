@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.HuId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -49,6 +50,9 @@ public class HU
 {
 	@NonNull
 	HuId id;
+
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	HUType type;

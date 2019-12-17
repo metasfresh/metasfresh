@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.trxConstraints.api.impl.TrxConstraintsBL;
@@ -13,6 +14,7 @@ import org.compiere.util.Trx;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /*
@@ -49,7 +51,7 @@ public class TrxListenerManagerTest
 	@Test
 	public void testOnAfterCommit() throws SQLException
 	{
-		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, 0);
+		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, ClientId.METASFRESH, OrgId.ANY);
 
 		final TrxManager trxManager = new TrxManager();
 		final Trx trx = new Trx(trxManager, "trxName", true);
@@ -73,7 +75,7 @@ public class TrxListenerManagerTest
 	@Test
 	public void testOnAfterNextCommit() throws SQLException
 	{
-		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, 0);
+		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, ClientId.METASFRESH, OrgId.ANY);
 
 		final TrxManager trxManager = new TrxManager();
 		final Trx trx = new Trx(trxManager, "trxName", true);

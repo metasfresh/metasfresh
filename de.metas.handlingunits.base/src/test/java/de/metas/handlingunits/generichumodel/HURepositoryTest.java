@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -79,7 +80,7 @@ class HURepositoryTest
 		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
-		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", OrgId.ANY.getRepoId());
+		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
 
 		// setup HU packing instructions
 		uomRecord = newInstance(I_C_UOM.class);
