@@ -68,6 +68,9 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.PostingException;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -750,11 +753,23 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		sql.append(" WHERE ").append(keyColumnName).append("=").append(recordId);
 		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		fireDocumentChanged();
+
 		if (updateCount != 1)
 		{
 			throw newPostingException()
 					.setDetailMessage("Unable to unlock");
 		}
+	}
+
+	private void fireDocumentChanged()
+	{
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.fromTableNameAndRecordId(get_TableName(), get_ID()),
+				ModelCacheInvalidationTiming.CHANGE);
+
 	}
 
 	/**************************************************************************
