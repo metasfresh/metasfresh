@@ -346,7 +346,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final Comparator<Integer> candidatesSortComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
 				.setContext(getCtx())
 				.setC_BPartner_ID(receipt.getC_BPartner_ID())
-				.setC_DocType(load(receipt.getC_DocType_ID(), I_C_DocType.class))
+				.setC_DocType(loadOutOfTrx(receipt.getC_DocType_ID(), I_C_DocType.class))
 				.findProductIdsComparator();
 		packingMaterialsCollector.setProductIdSortComparator(candidatesSortComparator);
 
