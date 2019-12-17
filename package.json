@@ -107,7 +107,7 @@
     "webpack-cli": "3.2.1",
     "webpack-dev-server": "3.3.1",
     "webpack-node-externals": "1.7.2",
-    "why-did-you-update": "github:maicki/why-did-you-update#pull/58/head"
+    "why-did-you-update": "1.0.6"
   },
   "dependencies": {
     "@zxing/library": "0.12.3",
