@@ -3017,4 +3017,53 @@ public final class DB
 
 	}
 
+	/**
+	 * @param sqlStatement	SQL statement to be executed
+	 * @param parameters	Parameters to be used in the {@param sqlStatement}
+	 * @param trxName		transaction name
+	 * @return each resulted row as a {@link List<String>}
+	 */
+	public static List<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
+	{
+		List<List<String>> result = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sqlStatement, trxName);
+
+			setParameters(pstmt, parameters);
+
+			rs = pstmt.executeQuery();
+
+			final int columnsCount = rs.getMetaData().getColumnCount();
+
+			if (columnsCount > 0)
+			{
+				result = new ArrayList<>();
+
+				while (rs.next())
+				{
+					List<String> row = new ArrayList<>();
+
+					for (int i = 1; i <= columnsCount; i++)
+					{
+						row.add(rs.getString(i));
+					}
+
+					result.add(row);
+				}
+			}
+		}
+		catch (final SQLException sqlException)
+		{
+			throw new DBException(sqlException, sqlStatement, parameters);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+		return result;
+	}
+
 } // DB
