@@ -108,7 +108,7 @@ public class AbstractExpectation<ParentExpectationType>
 
 	/**
 	 * Note: method is final because we want to call it from subclasses' constructors without having to guess which implementation it will pick.
-	 * 
+	 *
 	 * @param context
 	 */
 	public final void setContext(final IContextAware context)
@@ -323,7 +323,7 @@ public class AbstractExpectation<ParentExpectationType>
 
 	/**
 	 * Set this expectation's name. Can be useful to keep the overview.
-	 * 
+	 *
 	 * @param expectationName
 	 * @return
 	 */

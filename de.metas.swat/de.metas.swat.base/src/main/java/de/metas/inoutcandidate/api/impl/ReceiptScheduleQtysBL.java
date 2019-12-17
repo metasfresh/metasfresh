@@ -102,7 +102,7 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 		final ProductId productId = ProductId.ofRepoId(rsa.getM_ReceiptSchedule().getM_Product_ID());
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(rsa.getCatch_UOM_ID());
 
-		final ReceiptQty qtys = new ReceiptQty(productId, catchUomIdOrNull);
+		final ReceiptQty qtys = catchUomIdOrNull == null ? ReceiptQty.newWithoutCatchWeight(productId) : ReceiptQty.newWithCatchWeight(productId, catchUomIdOrNull);
 
 		if (rsa.isActive())
 		{
@@ -140,12 +140,12 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 
 		// TODO add catch-stuff to M_ReceiptSchedule
 		final ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
-		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(rs.getCatch_UOM_ID());
+		final UomId catchUomId = UomId.ofRepoIdOrNull(rs.getCatch_UOM_ID());
 
-		final StockQtyAndUOMQty qtyMoved = StockQtyAndUOMQtys.create(rs.getQtyMoved(), productId, rs.getQtyMovedInCatchUOM(), catchUomIdOrNull);
-		final StockQtyAndUOMQty qtyMovedWithIssues = StockQtyAndUOMQtys.create(rs.getQtyMovedWithIssues(), productId, rs.getQtyMovedWithIssuesInCatchUOM(), catchUomIdOrNull);
+		final StockQtyAndUOMQty qtyMoved = StockQtyAndUOMQtys.create(rs.getQtyMoved(), productId, rs.getQtyMovedInCatchUOM(), catchUomId);
+		final StockQtyAndUOMQty qtyMovedWithIssues = StockQtyAndUOMQtys.create(rs.getQtyMovedWithIssues(), productId, rs.getQtyMovedWithIssuesInCatchUOM(), catchUomId);
 
-		final ReceiptQty qtys = new ReceiptQty(productId, catchUomIdOrNull);
+		final ReceiptQty qtys = catchUomId == null ? ReceiptQty.newWithoutCatchWeight(productId) : ReceiptQty.newWithCatchWeight(productId, catchUomId);
 
 		qtys.addQtyAndQtyWithIssues(qtyMoved, qtyMovedWithIssues);
 		qtys.addQualityNotices(qualityNotices);

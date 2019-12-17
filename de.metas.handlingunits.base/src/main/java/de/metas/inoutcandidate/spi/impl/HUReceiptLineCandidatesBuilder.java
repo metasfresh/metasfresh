@@ -159,7 +159,7 @@ import lombok.NonNull;
 		//
 		// Compute qty&quality (qtys, discount percent, quality notices)
 		// Collect receipt schedule allocations
-		final ReceiptQty qtyAndQuality = new ReceiptQty(productId, uomId);
+		final ReceiptQty qtyAndQuality = ReceiptQty.newWithoutCatchWeight(productId);
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLineCandidate receiptLineCandidate : receiptLineCandidates)
 		{

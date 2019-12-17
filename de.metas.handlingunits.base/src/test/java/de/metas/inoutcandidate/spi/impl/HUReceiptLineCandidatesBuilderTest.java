@@ -163,6 +163,8 @@ public class HUReceiptLineCandidatesBuilderTest
 			// .qtyWithoutIssues("2.363") // = 2.625 - 0.262
 			// .qualityDiscountPercent("10");
 		}
+		
+		// invoke the method under test
 		final HUReceiptLineCandidatesBuilder huReceiptLineCandidatesBuilder = partsExpectations.createHUReceiptLineCandidatesBuilder();
 
 		//
