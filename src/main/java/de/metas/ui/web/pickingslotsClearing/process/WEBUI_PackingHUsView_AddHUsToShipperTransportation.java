@@ -8,6 +8,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.util.Services;
 
@@ -63,7 +64,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends PackingH
 	protected final String doIt() throws Exception
 	{
 		final List<I_M_HU> hus = retrieveEligibleHUs();
-		huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus);
+		huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportationId), hus);
 
 		return MSG_OK;
 	}
