@@ -356,6 +356,9 @@ MasterWidget.propTypes = {
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  supportFieldEdit: PropTypes.bool,
+  item: PropTypes.object,
+  isEditable: PropTypes.bool,
 };
 
 export default connect(

@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 
 export default class Link extends PureComponent {
   handleClick = () => {
@@ -37,3 +38,11 @@ export default class Link extends PureComponent {
     );
   }
 }
+
+Link.propTypes = {
+  getClassNames: PropTypes.func,
+  widgetData: PropTypes.array,
+  isEdited: PropTypes.bool,
+  widgetProperties: PropTypes.object,
+  icon: PropTypes.any,
+};

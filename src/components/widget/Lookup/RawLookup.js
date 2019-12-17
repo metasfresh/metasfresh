@@ -562,6 +562,7 @@ RawLookup.propTypes = {
   forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onDropdownListToggle: PropTypes.func,
+  field: PropTypes.string,
 };
 
 export default connect()(RawLookup);
