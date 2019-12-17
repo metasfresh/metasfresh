@@ -15,7 +15,7 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1633246333L;
+	private static final long serialVersionUID = 1153852981L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_500_v (Properties ctx, int EDI_cctop_invoic_500_v_ID, String trxName)
@@ -78,6 +78,25 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
+	/** Set Auftrags-Maßeinheit.
+		@param EanCom_Ordered_UOM Auftrags-Maßeinheit	  */
+	@Override
+	public void setEanCom_Ordered_UOM (int EanCom_Ordered_UOM)
+	{
+		set_ValueNoCheck (COLUMNNAME_EanCom_Ordered_UOM, Integer.valueOf(EanCom_Ordered_UOM));
+	}
+
+	/** Get Auftrags-Maßeinheit.
+		@return Auftrags-Maßeinheit	  */
+	@Override
+	public int getEanCom_Ordered_UOM () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_EanCom_Ordered_UOM);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set EanCom_Price_UOM.
 		@param EanCom_Price_UOM EanCom_Price_UOM	  */
 	@Override
@@ -95,19 +114,19 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	}
 
 	/** Set eancom_uom.
-		@param eancom_uom eancom_uom	  */
+		@param EanCom_UOM eancom_uom	  */
 	@Override
-	public void seteancom_uom (java.lang.String eancom_uom)
+	public void setEanCom_UOM (java.lang.String EanCom_UOM)
 	{
-		set_Value (COLUMNNAME_eancom_uom, eancom_uom);
+		set_Value (COLUMNNAME_EanCom_UOM, EanCom_UOM);
 	}
 
 	/** Get eancom_uom.
 		@return eancom_uom	  */
 	@Override
-	public java.lang.String geteancom_uom () 
+	public java.lang.String getEanCom_UOM () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_eancom_uom);
+		return (java.lang.String)get_Value(COLUMNNAME_EanCom_UOM);
 	}
 
 	/** Set CU-EAN.
@@ -443,6 +462,25 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	public java.math.BigDecimal getQtyInvoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Fakturierte Menge in Auftrags-Maßeinheit.
+		@param QtyInvoicedInOrderedUOM Fakturierte Menge in Auftrags-Maßeinheit	  */
+	@Override
+	public void setQtyInvoicedInOrderedUOM (java.math.BigDecimal QtyInvoicedInOrderedUOM)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyInvoicedInOrderedUOM, QtyInvoicedInOrderedUOM);
+	}
+
+	/** Get Fakturierte Menge in Auftrags-Maßeinheit.
+		@return Fakturierte Menge in Auftrags-Maßeinheit	  */
+	@Override
+	public java.math.BigDecimal getQtyInvoicedInOrderedUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoicedInOrderedUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

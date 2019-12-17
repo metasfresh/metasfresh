@@ -14,7 +14,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1233694513L;
+	private static final long serialVersionUID = -926257439L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_HeaderAggregation (Properties ctx, int C_Invoice_Candidate_HeaderAggregation_ID, String trxName)
@@ -181,7 +181,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -190,7 +190,7 @@ public class X_C_Invoice_Candidate_HeaderAggregation extends org.compiere.model.
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

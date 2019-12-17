@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Trace;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -57,7 +58,8 @@ public final class CacheInvalidateRequest
 		final int rootRecordId = RECORD_ID_ALL;
 		final String childTableName = null;
 		final int childRecordId = RECORD_ID_ALL;
-		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
+		final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
+		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
 	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, final int rootRecordId)
@@ -67,7 +69,8 @@ public final class CacheInvalidateRequest
 		final String id = UUID.randomUUID().toString();
 		final String childTableName = null;
 		final int childRecordId = RECORD_ID_ALL;
-		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
+		final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
+		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
 	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, @NonNull final RepoIdAware rootId)
@@ -81,7 +84,8 @@ public final class CacheInvalidateRequest
 
 		final String id = UUID.randomUUID().toString();
 		final int childRecordId = RECORD_ID_ALL;
-		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
+		final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
+		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
 	public static CacheInvalidateRequest fromTableNameAndRecordId(final String tableName, final int recordId)
@@ -99,9 +103,11 @@ public final class CacheInvalidateRequest
 			return rootRecord(tableName, recordId);
 		}
 	}
+	
+	private static final boolean DEBUG = false;
 
 	private static final int RECORD_ID_ALL = -1;
-	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest("ALL", null, RECORD_ID_ALL, null, RECORD_ID_ALL);
+	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest("ALL", null, RECORD_ID_ALL, null, RECORD_ID_ALL, "ALL");
 
 	@JsonProperty("id")
 	private final String id;
@@ -115,6 +121,9 @@ public final class CacheInvalidateRequest
 	private final String childTableName;
 	@JsonProperty("childRecordId")
 	private final int childRecordId;
+	
+	@JsonProperty("debugFrom") 
+	final String debugFrom;
 
 	@JsonCreator
 	private CacheInvalidateRequest(
@@ -122,13 +131,15 @@ public final class CacheInvalidateRequest
 			@JsonProperty("rootTableName") final String rootTableName,
 			@JsonProperty("rootRecordId") final int rootRecordId,
 			@JsonProperty("childTableName") final String childTableName,
-			@JsonProperty("childRecordId") final int childRecordId)
+			@JsonProperty("childRecordId") final int childRecordId,
+			@JsonProperty("debugFrom") final String debugFrom)
 	{
 		this.id = id;
 		this.rootTableName = rootTableName;
 		this.rootRecordId = rootRecordId >= 0 ? rootRecordId : RECORD_ID_ALL;
 		this.childTableName = childTableName;
 		this.childRecordId = childRecordId >= 0 ? childRecordId : RECORD_ID_ALL;
+		this.debugFrom = debugFrom;
 	}
 
 	public boolean isAll()
@@ -217,7 +228,8 @@ public final class CacheInvalidateRequest
 		public CacheInvalidateRequest build()
 		{
 			final String id = UUID.randomUUID().toString();
-			return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
+			final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
+			return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 		}
 
 		public Builder rootRecord(@NonNull final String tableName, final int recordId)

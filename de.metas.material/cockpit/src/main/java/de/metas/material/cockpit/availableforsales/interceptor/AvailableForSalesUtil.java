@@ -5,6 +5,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -14,8 +15,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
@@ -32,6 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 
 import de.metas.Profiles;
 import de.metas.error.AdIssueId;
@@ -87,6 +90,7 @@ import lombok.Value;
 @Component
 public class AvailableForSalesUtil
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final AvailableForSalesRepository availableForSalesRepository;
 
 	public AvailableForSalesUtil(@NonNull final AvailableForSalesRepository availableForSalesRepository)
@@ -114,7 +118,7 @@ public class AvailableForSalesUtil
 		{
 			return false;
 		}
-		
+
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLineRecord.getM_Product_ID());
 		if (productId == null)
 		{
@@ -172,6 +176,49 @@ public class AvailableForSalesUtil
 		Timestamp preparationDate;
 	}
 
+	@Value
+	@Builder
+	private static class CheckAvailableForSalesRequestContext
+	{
+		@NonNull
+		AvailableForSalesConfig config;
+
+		@NonNull
+		UserId errorNotificationRecipient;
+	}
+
+	private class CheckAvailableForSalesRequestsCollector
+	{
+		private final LinkedHashMultimap<CheckAvailableForSalesRequestContext, CheckAvailableForSalesRequest> requests = LinkedHashMultimap.create();
+
+		public void collect(
+				@NonNull final List<CheckAvailableForSalesRequest> requests,
+				@NonNull final AvailableForSalesConfig config,
+				@NonNull final UserId errorNotificationRecipient)
+		{
+			final CheckAvailableForSalesRequestContext context = CheckAvailableForSalesRequestContext.builder()
+					.config(config)
+					.errorNotificationRecipient(errorNotificationRecipient)
+					.build();
+
+			this.requests.putAll(context, requests);
+		}
+
+		public void processAsync()
+		{
+			requests.asMap().forEach(this::processAsync);
+		}
+
+		private void processAsync(final CheckAvailableForSalesRequestContext context, final Collection<CheckAvailableForSalesRequest> requests)
+		{
+			final AvailableForSalesConfig config = context.getConfig();
+			final UserId errorNotificationRecipient = context.getErrorNotificationRecipient();
+
+			retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient);
+		}
+
+	}
+
 	public void checkAndUpdateOrderLineRecords(
 			@NonNull final List<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config)
@@ -180,35 +227,44 @@ public class AvailableForSalesUtil
 		{
 			return; // nothing to do
 		}
+
 		if (config.isRunAsync() && SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_Webui))
 		{
-			final UserId errorNotificationRecipient = UserId.ofRepoId(Env.getAD_User_ID());
+			final UserId errorNotificationRecipient = Env.getLoggedUserId();
 
-			Services.get(ITrxManager.class)
-					.getCurrentTrxListenerManagerOrAutoCommit()
-					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.invokeMethodJustOnce(true)
-					.registerHandlingMethod(committedTrx -> retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient));
+			final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			if (trxManager.isActive(currentTrx))
+			{
+				final CheckAvailableForSalesRequestsCollector collector = currentTrx.getPropertyAndProcessAfterCommit(
+						CheckAvailableForSalesRequestsCollector.class.getName(),
+						CheckAvailableForSalesRequestsCollector::new,
+						CheckAvailableForSalesRequestsCollector::processAsync);
+
+				collector.collect(requests, config, errorNotificationRecipient);
+			}
+			else
+			{
+				retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient);
+			}
 		}
 		else
 		{
 			retrieveDataAndUpdateOrderLines(requests, config);
 		}
-
 	}
 
 	/**
 	 * @param errorNotificationRecipient user to receive a notification if something goes wrong within the async thread
 	 */
 	private void retrieveDataAndUpdateOrderLinesAsync(
-			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final Collection<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config,
 			@NonNull final UserId errorNotificationRecipient)
 	{
 		// We cannot use a thread-inherited transaction that would otherwise be used by default.
 		// Because when this method is called, it means that the thread-inherited transaction is already committed
 		// Therefore, let's create our own trx to work in
-		final Runnable runnable = () -> Services.get(ITrxManager.class).runInNewTrx(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
+		final Runnable runnable = () -> trxManager.runInNewTrx(() -> retrieveDataAndUpdateOrderLines(requests, config));
 
 		final ExecutorService executor = Executors.newSingleThreadExecutor();
 		final Future<?> future = executor.submit(runnable);
@@ -216,9 +272,9 @@ public class AvailableForSalesUtil
 		{
 			future.get(config.getAsyncTimeoutMillis(), TimeUnit.MILLISECONDS);
 		}
-		catch (InterruptedException | ExecutionException | TimeoutException e1)
+		catch (InterruptedException | ExecutionException | TimeoutException ex)
 		{
-			handleAsyncException(errorNotificationRecipient, e1);
+			handleAsyncException(errorNotificationRecipient, ex);
 		}
 	}
 
@@ -244,7 +300,7 @@ public class AvailableForSalesUtil
 
 	@VisibleForTesting
 	void retrieveDataAndUpdateOrderLines(
-			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final Collection<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config)
 	{
 		final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> //
@@ -270,7 +326,7 @@ public class AvailableForSalesUtil
 	}
 
 	private ImmutableMultimap<AvailableForSalesQuery, OrderLineId> createQueries(
-			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final Collection<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config)
 	{
 		final ImmutableMultimap.Builder<AvailableForSalesQuery, OrderLineId> query2OrderLineId = ImmutableMultimap.builder();
@@ -357,7 +413,7 @@ public class AvailableForSalesUtil
 		{
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor(null);
 		}
-		
+
 		ordersRepo.save(salesOrderLineRecord);
 	}
 }

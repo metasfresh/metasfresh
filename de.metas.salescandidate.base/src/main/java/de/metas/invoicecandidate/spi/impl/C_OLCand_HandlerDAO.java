@@ -58,7 +58,7 @@ class C_OLCand_HandlerDAO
 		//
 		// Only those which were not already created
 		final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
 				.create();
 		queryBuilder.addNotInSubQueryFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, I_C_OLCand.COLUMNNAME_Record_ID, existingICsQuery);
 

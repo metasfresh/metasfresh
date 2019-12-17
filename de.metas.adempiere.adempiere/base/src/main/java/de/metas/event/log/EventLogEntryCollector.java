@@ -6,9 +6,11 @@ import java.util.List;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
 import de.metas.event.Event;
 import de.metas.event.log.EventLogUserService.EventLogEntryRequest;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,6 +39,7 @@ import lombok.NonNull;
 
 public class EventLogEntryCollector implements IAutoCloseable
 {
+	private static final Logger logger = LogManager.getLogger(EventLogEntryCollector.class);
 	private final static ThreadLocal<EventLogEntryCollector> threadLocalCollector = new ThreadLocal<>();
 
 	@Getter
@@ -102,7 +105,14 @@ public class EventLogEntryCollector implements IAutoCloseable
 			return;
 		}
 
-		final EventLogService eventStoreService = SpringContextHolder.instance.getBean(EventLogService.class);
-		eventStoreService.saveEventLogEntries(eventLogEntries);
+		try
+		{
+			final EventLogService eventStoreService = SpringContextHolder.instance.getBean(EventLogService.class);
+			eventStoreService.saveEventLogEntries(eventLogEntries);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed saving {}. Ignored", eventLogEntries, ex);
+		}
 	}
 }

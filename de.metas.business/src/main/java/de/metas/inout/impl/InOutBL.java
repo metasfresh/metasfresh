@@ -51,6 +51,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -84,6 +85,7 @@ public class InOutBL implements IInOutBL
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
 				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
 				bPartnerId,
 				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),

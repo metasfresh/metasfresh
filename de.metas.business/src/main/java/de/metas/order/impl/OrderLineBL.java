@@ -549,6 +549,7 @@ public class OrderLineBL implements IOrderLineBL
 		else
 		{
 			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, qtyEntered, uomId);
+			// TODO check if null; but should have been checked by DefaultOLCandValidator
 			return Quantitys.create(qtyOrdered, productId);
 		}
 	}
