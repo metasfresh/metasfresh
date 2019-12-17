@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 
 import de.metas.shipping.ShipperId;
@@ -94,5 +95,11 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_Package_ID, mpackage.getM_Package_ID()))
 				.create()
 				.list(I_M_ShippingPackage.class);
+	}
+
+	@Override
+	public I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return InterfaceWrapperHelper.load(shipperTransportationId, I_M_ShipperTransportation.class);
 	}
 }
