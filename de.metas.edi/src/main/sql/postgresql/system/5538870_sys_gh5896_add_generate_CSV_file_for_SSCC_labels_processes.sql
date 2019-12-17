@@ -25,7 +25,7 @@ INSERT INTO t_alter_column values('ad_sysconfig','Value','VARCHAR(1000)',null,nu
 
 -- 2019-12-13T14:05:50.493Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541302,'S',TO_TIMESTAMP('2019-12-13 16:05:50','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','de.metas.handlingunit.sscc18Label.zebra.sql-select',TO_TIMESTAMP('2019-12-13 16:05:50','YYYY-MM-DD HH24:MI:SS'),100,'select no_of_labels, SSCC, order_reference, date_shipped, GTIN, product_description, amount, weight, best_before, lot_no,bp_address_GLN, bp_address_name1, bp_address_name2, bp_address_street, bp_address_zip_code, bp_address_city,ho_address_GLN, ho_address_name1, ho_address_name2, ho_address_street, ho_address_zip_code, ho_address_city from edi_desadvpack_sscc_label where p_instance_id = ?')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541302,'S',TO_TIMESTAMP('2019-12-13 16:05:50','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','de.metas.handlingunit.sscc18Label.zebra.sql-select',TO_TIMESTAMP('2019-12-13 16:05:50','YYYY-MM-DD HH24:MI:SS'),100,'select no_of_labels, SSCC, order_reference, TO_CHAR(date_shipped,''DD.MM.YYYY''), GTIN, product_description, amount, weight, TO_CHAR(best_before,''YYMMDD''), lot_no,bp_address_GLN, bp_address_name1, bp_address_name2, bp_address_street, bp_address_zip_code, bp_address_city,ho_address_GLN, ho_address_name1, ho_address_name2, ho_address_street, ho_address_zip_code, ho_address_city from edi_desadvpack_sscc_label where p_instance_id = ?')
 ;
 
 -- 2019-12-17T07:42:26.465Z
