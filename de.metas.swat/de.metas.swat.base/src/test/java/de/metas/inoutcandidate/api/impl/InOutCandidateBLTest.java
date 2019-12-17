@@ -85,8 +85,9 @@ public class InOutCandidateBLTest
 				.createInOutLine(I_M_InOutLine.class);
 
 		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
+
 		ReceiptQtyExpectation.newInstance()
-				.qty("33")
+				.qty(qtys_33)
 				.qtyWithIssuesExact("0")
 				.qualityNotices("note 1. note 2. note 3")
 				.assertExpected(qtys);
@@ -107,7 +108,7 @@ public class InOutCandidateBLTest
 
 		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
 		ReceiptQtyExpectation.newInstance()
-				.qty("33")
+				.qty(qtys_33)
 				.qtyWithIssuesExact("33")
 				.qualityNotices("note 1. note 2. note 3")
 				.assertExpected(qtys);

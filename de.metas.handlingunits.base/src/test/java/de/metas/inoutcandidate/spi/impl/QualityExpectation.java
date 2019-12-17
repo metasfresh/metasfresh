@@ -22,8 +22,6 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.test.ErrorMessage;
@@ -164,7 +162,7 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(receiptSchedule);
 		final I_M_ReceiptSchedule_Alloc rsa = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class, context);
 		rsa.setM_ReceiptSchedule(receiptSchedule);
-		rsa.setHU_QtyAllocated(qtyAndQuality().getQty());
+		rsa.setHU_QtyAllocated(qtyAndQuality().getQty().getStockQty().toBigDecimal());
 		InterfaceWrapperHelper.save(rsa);
 		return rsa;
 	}
@@ -190,16 +188,6 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		return this;
 	}
 
-	// public QualityExpectation<ParentExpectationType> qty(final String qty)
-	// {
-	// return qty(new BigDecimal(qty));
-	// }
-	//
-	// public QualityExpectation<ParentExpectationType> qty(final int qty)
-	// {
-	// return qty(new BigDecimal(qty));
-	// }
-
 	public StockQtyAndUOMQty getQty()
 	{
 		return qtyAndQuality().getQty();
@@ -211,31 +199,12 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		return this;
 	}
 
-	// public QualityExpectation<ParentExpectationType> qtyWithIssues(final String qtyWithIssues)
-	// {
-	// return qtyWithIssues(new BigDecimal(qtyWithIssues));
-	// }
-	//
-	// public QualityExpectation<ParentExpectationType> qtyWithIssues(final int qtyWithIssues)
-	// {
-	// return qtyWithIssues(new BigDecimal(qtyWithIssues));
-	// }
 
 	public QualityExpectation<ParentExpectationType> qtyWithoutIssues(@NonNull final StockQtyAndUOMQty qtyWithoutIssues)
 	{
 		qtyAndQuality().qtyWithoutIssues(qtyWithoutIssues);
 		return this;
 	}
-
-	// public QualityExpectation<ParentExpectationType> qtyWithoutIssues(final String qtyWithoutIssues)
-	// {
-	// return qtyWithoutIssues(new BigDecimal(qtyWithoutIssues));
-	// }
-	//
-	// public QualityExpectation<ParentExpectationType> qtyWithoutIssues(final int qtyWithoutIssues)
-	// {
-	// return qtyWithoutIssues(new BigDecimal(qtyWithoutIssues));
-	// }
 
 	public QualityExpectation<ParentExpectationType> qualityDiscountPercent(final Percent qualityDiscountPercent)
 	{

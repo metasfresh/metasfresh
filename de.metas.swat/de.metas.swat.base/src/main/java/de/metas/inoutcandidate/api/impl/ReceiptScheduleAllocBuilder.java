@@ -73,7 +73,7 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected void build(final I_M_ReceiptSchedule_Alloc rsa)
+	protected void build(@NonNull final I_M_ReceiptSchedule_Alloc rsa)
 	{
 		//
 		// Mandatory fields
