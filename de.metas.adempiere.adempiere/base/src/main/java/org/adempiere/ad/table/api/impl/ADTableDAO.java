@@ -3,6 +3,8 @@ package org.adempiere.ad.table.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 /*
@@ -42,6 +44,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
@@ -79,6 +82,15 @@ public class ADTableDAO implements IADTableDAO
 
 		if (columnRecord == null)
 		{
+			if (Adempiere.isUnitTestMode())
+			{
+				final I_AD_Column newColumnRecord = newInstance(I_AD_Column.class);
+				newColumnRecord.setAD_Table_ID(tableId.getRepoId());
+				newColumnRecord.setColumnName(columnName);
+				newColumnRecord.setName(columnName + " + on-the-fly created for unit-test");
+				saveRecord(newColumnRecord);
+				return newColumnRecord;
+			}
 			throw new AdempiereException("@NotFound@ @AD_Column_ID@ " + columnName + " (@AD_Table_ID@=" + tableId + ")");
 		}
 		return columnRecord;
