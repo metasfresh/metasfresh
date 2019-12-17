@@ -64,6 +64,14 @@ public class M_InOut
 			return;
 		}
 
+		// order.isEdiEnabled might be for DESADV or INVOIC; so we also need to check the bpartner's flag
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
+		if (!bpartner.isEdiDesadvRecipient())
+		{
+			inout.setIsEdiEnabled(false);
+			return;
+		}
+
 		final boolean isEdiEnabled = order.isEdiEnabled();
 		inout.setIsEdiEnabled(isEdiEnabled);
 	}
