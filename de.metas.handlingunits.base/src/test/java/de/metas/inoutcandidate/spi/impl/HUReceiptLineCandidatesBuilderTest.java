@@ -163,7 +163,7 @@ public class HUReceiptLineCandidatesBuilderTest
 			// .qtyWithoutIssues("2.363") // = 2.625 - 0.262
 			// .qualityDiscountPercent("10");
 		}
-		
+
 		// invoke the method under test
 		final HUReceiptLineCandidatesBuilder huReceiptLineCandidatesBuilder = partsExpectations.createHUReceiptLineCandidatesBuilder();
 
@@ -193,6 +193,7 @@ public class HUReceiptLineCandidatesBuilderTest
 
 		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.create(new BigDecimal(430), productId, null, null);
 		final StockQtyAndUOMQty qty_80 = StockQtyAndUOMQtys.create(new BigDecimal(510-430), productId, null, null);
+		final StockQtyAndUOMQty qty_70 = StockQtyAndUOMQtys.create(new BigDecimal(500-430), productId, null, null);
 
 		final StockQtyAndUOMQty qty_4450 = StockQtyAndUOMQtys.create(new BigDecimal(4450), productId, null, null); // = 510 + 500 + 8*430
 		final StockQtyAndUOMQty qty_75_5 = StockQtyAndUOMQtys.create(new BigDecimal("75.5"), productId, null, null);  // = 510*5% + 500*10%
@@ -207,7 +208,7 @@ public class HUReceiptLineCandidatesBuilderTest
 			.newQualityExpectation().attributesId("TU01").uom(uomRecord).qty(qty_80).qualityDiscountPercent(5).endExpectation()
 			// TU 2
 			.newQualityExpectation().attributesId("TU02").uom(uomRecord).qty(qty_430).qualityDiscountPercent(10).endExpectation()
-			.newQualityExpectation().attributesId("TU02").uom(uomRecord).qty(qty_80).qualityDiscountPercent(10).endExpectation()
+			.newQualityExpectation().attributesId("TU02").uom(uomRecord).qty(qty_70).qualityDiscountPercent(10).endExpectation()
 			// TU 3..10
 			.newQualityExpectation().attributesId("TU03").uom(uomRecord).qty(qty_430).qualityDiscountPercent(0).endExpectation()
 			.newQualityExpectation().attributesId("TU04").uom(uomRecord).qty(qty_430).qualityDiscountPercent(0).endExpectation()
@@ -219,6 +220,8 @@ public class HUReceiptLineCandidatesBuilderTest
 			.newQualityExpectation().attributesId("TU10").uom(uomRecord).qty(qty_430).qualityDiscountPercent(0).endExpectation()
 		;
 		//@formatter:on
+
+		// invoke the method under test
 		final HUReceiptLineCandidatesBuilder huReceiptLineCandidatesBuilder = partsExpectations.createHUReceiptLineCandidatesBuilder();
 
 		final QualityExpectations<Object> aggregatedExpectations = QualityExpectations.newInstance();
@@ -228,7 +231,7 @@ public class HUReceiptLineCandidatesBuilderTest
 			// Aggregated values expectation
 			.aggregatedExpectation()
 				.uom(uomRecord)
-				.qty(qty_4450) // = 510 + 500 + 8*430
+				.qty(qty_4450) // = 510 + 500 + (8*430)
 				.qtyWithIssues(qty_75_5) // = 510*5% + 500*10%
 				.qtyWithoutIssues(qty_4374_5) // = 4450 - 75.5
 				.qualityDiscountPercent("1.70") // = 75.5 / 4450 * 100
@@ -249,6 +252,7 @@ public class HUReceiptLineCandidatesBuilderTest
 
 		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.create(new BigDecimal(430), productId, null, null);
 		final StockQtyAndUOMQty qty_5 = StockQtyAndUOMQtys.create(new BigDecimal(435 - 430), productId, null, null);
+		final StockQtyAndUOMQty qty_minus_5 = StockQtyAndUOMQtys.create(new BigDecimal(425-430), productId, null, null);
 
 		final StockQtyAndUOMQty qty_4300 = StockQtyAndUOMQtys.create(new BigDecimal(4300), productId, null, null); // = (430 + 5) + (430 - 5) + 8*430
 		final StockQtyAndUOMQty qty_64_25 = StockQtyAndUOMQtys.create(new BigDecimal("64.25"), productId, null, null);  // = (430 + 5)*5% + (430 - 5)*10%
@@ -265,7 +269,7 @@ public class HUReceiptLineCandidatesBuilderTest
 			// TU 2
 			// => qtyWithIssues=42.5
 			.newQualityExpectation().attributesId("TU02").uom(uomRecord).qty(qty_430).qualityDiscountPercent(10).endExpectation()
-			.newQualityExpectation().attributesId("TU02").uom(uomRecord).qty(qty_5).qualityDiscountPercent(10).endExpectation()
+			.newQualityExpectation().attributesId("TU02").uom(uomRecord).qty(qty_minus_5).qualityDiscountPercent(10).endExpectation()
 			// TU 3..10
 			// => qtyWithIssues=0
 			.newQualityExpectation().attributesId("TU03").uom(uomRecord).qty(qty_430).qualityDiscountPercent(0).endExpectation()

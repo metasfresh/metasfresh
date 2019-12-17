@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -33,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -85,7 +85,11 @@ import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -104,6 +108,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	//
 	// Params
@@ -445,9 +450,18 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			receiptLine.setSubProducer_BPartner_ID(receiptLineCandidate.getSubProducer_BPartner_ID());
 		}
 
-		receiptLine.setQtyEntered(qtyToReceive.getUOMQtyNotNull().toBigDecimal());
+		final Optional<Quantity> catchQty = qtyToReceive.getUOMQtyOpt();
+		if(catchQty.isPresent())
+		{
+			receiptLine.setCatch_UOM_ID(catchQty.get().getUomId().getRepoId());
+			receiptLine.setQtyDeliveredCatch(catchQty.get().toBigDecimal());
+		}
 
-		receiptLine.setC_UOM_ID(qtyToReceive.getUOMQtyNotNull().getUomId().getRepoId());
+		final UomId uomId = UomId.ofRepoId(receiptLineCandidate.getC_UOM().getC_UOM_ID());
+		final Quantity qtyEntered = uomConversionBL.convertQuantityTo(qtyToReceive.getStockQty(), UOMConversionContext.of(qtyToReceive.getProductId()), uomId);
+		receiptLine.setQtyEntered(qtyEntered.toBigDecimal());
+		receiptLine.setC_UOM_ID(uomId.getRepoId());
+
 		receiptLine.setMovementQty(qtyToReceive.getStockQty().toBigDecimal());
 
 		receiptLine.setQualityDiscountPercent(qualityDiscountPercent.toBigDecimal());

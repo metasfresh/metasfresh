@@ -75,6 +75,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
 
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+
 	@Override
 	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
 	{
@@ -157,23 +159,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		return Services.get(IReceiptScheduleQtysBL.class).getQtyToMove(rs);
 	}
-
-//	/**
-//	 * Same as {@link #getQtyToMove(I_M_ReceiptSchedule)} but return the quantity in required UOM.
-//	 *
-//	 * @return qty to move (in <code>uom</code>).
-//	 */
-//	private Quantity getQtyToMove(@NonNull final I_M_ReceiptSchedule rs, @NonNull final UomId targetUomId)
-//	{
-//		ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
-//		final StockQtyAndUOMQty qtyToMove = getQtyToMove(rs);
-//
-//		final Quantity qtyToMoveConv = Services.get(IUOMConversionBL.class)
-//				.convertQuantityTo(qtyToMove.getStockQty(),
-//						UOMConversionContext.of(productId),
-//						targetUomId);
-//		return qtyToMoveConv;
-//	}
 
 	@Override
 	public int getC_BPartner_Location_Effective_ID(final I_M_ReceiptSchedule rs)
@@ -333,8 +318,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 	@Override
 	public void generateInOuts(final Properties ctx,
-			final IInOutProducer producer,
-			final Iterator<I_M_ReceiptSchedule> receiptSchedules)
+			@NonNull final IInOutProducer producer,
+			@NonNull final Iterator<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
 				.setContext(ctx)
@@ -359,7 +344,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 		Check.assume(Env.getAD_Client_ID(ctx) == receiptSchedule.getAD_Client_ID(), "AD_Client_ID of " + receiptSchedule + " and of its CTX are the same");
 
-		final I_M_ReceiptSchedule_Alloc existingRsa = Services.get(IReceiptScheduleDAO.class).retrieveRsaForRs(receiptSchedule, receiptLine);
+		final I_M_ReceiptSchedule_Alloc existingRsa = receiptScheduleDAO.retrieveRsaForRs(receiptSchedule, receiptLine);
 		if (existingRsa != null)
 		{
 			return existingRsa;// nothing to do

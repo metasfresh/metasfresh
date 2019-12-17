@@ -44,6 +44,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 public class MutableQtyAndQualityTest
 {
@@ -80,7 +81,7 @@ public class MutableQtyAndQualityTest
 				.qtyPrecision(2)
 				.qty(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("7"), uomId)) // note that at the end of the day, we care for the uomQty, i.e. the potential catch quantity
 				.qualityDiscountPercent("3")
-				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("0.21"), uomId)) // = 3 * 7% = 0.21
+				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("0.24"), productId, new BigDecimal("0.21"), uomId)) // 3% of 8=0.24 resp. 3% of 7=0.21
 		;
 		test_add_sameQty_ExpectConstantPercent(expectationForOneTransaction);
 	}
@@ -92,7 +93,7 @@ public class MutableQtyAndQualityTest
 				.qtyPrecision(2)
 				.qty(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("437.35"), uomId))
 				.qualityDiscountPercent("93.18")
-				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("407.52273"), uomId)) // = 437.35 * 93.18% = 407.52273
+				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("7.4544"), productId, new BigDecimal("407.52273"), uomId)) // = 437.35 * 93.18% = 407.52273
 		;
 		test_add_sameQty_ExpectConstantPercent(expectationForOneTransaction);
 	}
@@ -114,7 +115,7 @@ public class MutableQtyAndQualityTest
 
 	}
 
-	private void test_add_sameQty_ExpectConstantPercent(final ReceiptQtyExpectation<?> expectationForOneTransaction)
+	private void test_add_sameQty_ExpectConstantPercent(@NonNull final ReceiptQtyExpectation<?> expectationForOneTransaction)
 	{
 		final int qtyPrecision = expectationForOneTransaction.getQtyPrecisionToUse();
 

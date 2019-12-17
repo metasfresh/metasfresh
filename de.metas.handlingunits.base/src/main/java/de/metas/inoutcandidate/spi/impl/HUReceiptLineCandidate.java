@@ -37,7 +37,6 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -72,7 +71,6 @@ import lombok.NonNull;
 	private List<I_M_ReceiptSchedule_Alloc> _receiptScheduleAllocs = null;
 
 	private final ProductId productId;
-	private final UomId uomId;
 
 	public HUReceiptLineCandidate(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -80,7 +78,6 @@ import lombok.NonNull;
 		_stale = true;
 
 		this.productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
-		this.uomId = UomId.ofRepoId(receiptSchedule.getC_UOM_ID());
 	}
 
 	@Override
