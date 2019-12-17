@@ -229,8 +229,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		int deleteCount = 0;
 		final List<I_C_Invoice_Candidate> icRecordsToDelete = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, recordId)
 				.create()
 				.list();
 		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
@@ -472,8 +472,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, inoutLine.getM_InOutLine_ID());
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, inoutLine.getM_InOutLine_ID());
 
 			queryBuilder.filter(filter);
 		}
@@ -484,8 +484,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, inoutLine.getC_OrderLine_ID());
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, inoutLine.getC_OrderLine_ID());
 
 			queryBuilder.filter(filter);
 		}
@@ -861,8 +861,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableRecordReference.getAdTableId())
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 	}
@@ -1103,7 +1103,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class, bpartner)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, bpartner.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, bpartner.getC_BPartner_ID())
 				.orderBy()
 				.addColumn(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID)
 				.endOrderBy();
@@ -1121,7 +1121,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, invoiceSchedule)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, I_C_BPartner.COLUMN_C_BPartner_ID, bpartnersQuery)
+				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnersQuery)
 				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
@@ -1223,8 +1223,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final PInstanceId selectionToUpdateId = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.setOnlySelection(selectionId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_PaymentTerm_ID, null)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_PaymentTerm_Override_ID, null)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, null)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null)
 				.create()
 				.createSelection();
 
@@ -1244,8 +1244,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final ICompositeQueryFilter<I_C_Invoice_Candidate> paymentTermSetFilter = queryBL
 				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 				.setJoinOr()
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_PaymentTerm_ID, null)
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_PaymentTerm_Override_ID, null);
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, null)
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null);
 
 		final I_C_Invoice_Candidate firstInvoiceCandidateWithPaymentTermId = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -1562,7 +1562,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Only filter invoice candidates of the organizations this role has access to
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
 
-		return queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
+		return queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, userRolePermissions.getAD_Org_IDs_AsSet());
 
 	}
 
@@ -1708,7 +1708,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final BPartnerId billBPartnerId = query.getBillBPartnerId();
 		if (billBPartnerId != null)
 		{
-			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, billBPartnerId);
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, billBPartnerId);
 		}
 
 		final Timestamp dateToInvoice = query.getDateToInvoice();

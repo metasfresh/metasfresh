@@ -115,8 +115,8 @@ public class ContractBasedInvoiceDueDateProvider implements InvoiceDueDateProvid
 				.addEqualsFilter(I_C_InvoiceLine.COLUMN_C_Invoice_ID, invoiceId)
 				.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
 				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
-				.andCollect(I_C_Invoice_Candidate.COLUMN_Record_ID, I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.andCollect(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, I_C_Flatrate_Term.class)
 				.create()
 				.list();
 		return flatrateTerms;

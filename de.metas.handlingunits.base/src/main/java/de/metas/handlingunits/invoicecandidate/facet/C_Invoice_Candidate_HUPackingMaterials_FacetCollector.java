@@ -87,7 +87,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 		// Query invoice candidates, aggregate them by packing material products and sum the QtyToInvoice
 		final IQueryAggregateBuilder<I_C_Invoice_Candidate, I_M_Product> aggregateOnQtyToInvoiceInPriceUOM = queryBuilderWithDefaultFilters
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, isPackingMaterialQueryFilter)
-				.aggregateOnColumn(I_C_Invoice_Candidate.COLUMN_M_Product_ID);
+				.aggregateOnColumn(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, I_M_Product.class);
 		aggregateOnQtyToInvoiceInPriceUOM
 				.sum(DYNATTR_QtyToInvoiceInPriceUOM, I_C_Invoice_Candidate.COLUMN_QtyToInvoiceInPriceUOM);
 

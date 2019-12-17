@@ -61,8 +61,8 @@ public class HandlerTools
 
 		final IQuery<I_C_Invoice_Candidate> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, term.getC_Flatrate_Term_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
 				.create();
 
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);

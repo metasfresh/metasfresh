@@ -32,8 +32,6 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_Client>(I_C_Invoice_Candidate_HeaderAggregation.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_Org>(I_C_Invoice_Candidate_HeaderAggregation.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -82,8 +78,6 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 */
 	public int getC_BPartner_ID();
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_C_BPartner>(I_C_Invoice_Candidate_HeaderAggregation.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -135,8 +129,6 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate_HeaderAggregation.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -263,7 +255,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -273,7 +265,7 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -311,8 +303,6 @@ public interface I_C_Invoice_Candidate_HeaderAggregation
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_HeaderAggregation, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate_HeaderAggregation.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

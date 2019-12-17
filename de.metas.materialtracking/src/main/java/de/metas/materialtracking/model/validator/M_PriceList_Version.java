@@ -82,7 +82,7 @@ public class M_PriceList_Version
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.filter(plvFilter)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, ppOrderTableID)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, ppOrderTableID)
 				.andCollectChildren(I_C_Invoice_Detail.COLUMN_C_Invoice_Candidate_ID, I_C_Invoice_Detail.class)
 				.addNotEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_PP_Order_ID, null)
 				.orderBy().addColumn(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Detail_ID).endOrderBy()

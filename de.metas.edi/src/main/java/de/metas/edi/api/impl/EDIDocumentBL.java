@@ -89,15 +89,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 
 		return document.isEdiEnabled();
-		// final I_C_BPartner bpartner = InterfaceWrapperHelper.create(document.getC_BPartner(), I_C_BPartner.class);
-		// if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
-		// {
-		// // BPartner was not set yet, nothing to do
-		// return document.isEdiEnabled();
-		// }
-		//
-		// document.setIsEdiEnabled(bpartner.isEdiRecipient());
-		// return bpartner.isEdiRecipient();
 	}
 
 	@Override

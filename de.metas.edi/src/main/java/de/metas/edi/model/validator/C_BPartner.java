@@ -67,11 +67,9 @@ public class C_BPartner
 
 	/**
 	 * Make sure the IsEDIRecipient flag from the invoice candidates of a partner is always up to date
-	 *
-	 * @param partner
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
-	public void updateIsEDIRecipient_InvoiceCandidates(final I_C_BPartner partner)
+	public void updateIsEDIInvoicRecipient_InvoiceCandidates(final I_C_BPartner partner)
 	{
 		if (partner == null)
 		{
