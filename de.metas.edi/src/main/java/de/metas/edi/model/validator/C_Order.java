@@ -80,8 +80,7 @@ public class C_Order
 			return;
 		}
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		final boolean isEdiRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
-		if (!isEdiRecipient)
+		if (!bpartner.isEdiDesadvRecipient() )
 		{
 			return;
 		}
