@@ -91,6 +91,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
 				.create()
 				.listIds(InOutId::ofRepoId)
