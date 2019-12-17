@@ -177,7 +177,7 @@ public class CalloutInOut extends CalloutEngine
 		final I_M_InOut inout = calloutField.getModel(I_M_InOut.class);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(load(inout.getC_DocType_ID(), I_C_DocType.class))
+				.setNewDocType(loadOutOfTrx(inout.getC_DocType_ID(), I_C_DocType.class))
 				.setOldDocumentNo(inout.getDocumentNo())
 				.setDocumentModel(inout)
 				.buildOrNull();
