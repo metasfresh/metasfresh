@@ -140,7 +140,6 @@ public class HUShippingFacade
 		return shipmentsGenerateResult.getInOuts();
 	}
 
-	// TODO this is where the shipper is called
 	public InOutGenerateResult generateShippingDocuments()
 	{
 		trxManager.runInThreadInheritedTrx(this::generateShippingDocuments0);
@@ -150,7 +149,6 @@ public class HUShippingFacade
 	private void generateShippingDocuments0()
 	{
 		addHUsToShipperTransportationIfNeeded();
-		//  // TODO this one generates shipments from shipment candidates. i dont need this
 		generateShipmentsFromCandidates();
 		generateInvoicesIfNeeded();
 		generateShipperDeliveryOrdersIfNeeded();
@@ -195,9 +193,6 @@ public class HUShippingFacade
 
 	}
 
-	/**
-	 * // TODO explain what this does
-	 */
 	private void generateInvoicesIfNeeded()
 	{
 		Check.assumeNotNull(shipmentsGenerateResult, "shipments generated");
@@ -255,9 +250,6 @@ public class HUShippingFacade
 		return ShipperId.ofRepoId(mPackage.getM_Shipper_ID());
 	}
 
-	/**
-	 * // TODO tbp: replace this method with ShpperDeliveyService.generateShipperDeliveryOrderIfPossible!
-	 */
 	private void generateShipperDeliveryOrderIfNeeded(
 			final ShipperId shipperId,
 			@NonNull final Collection<I_M_Package> mPackages)
