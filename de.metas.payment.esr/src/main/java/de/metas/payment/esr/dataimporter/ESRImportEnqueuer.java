@@ -57,7 +57,6 @@ import lombok.NonNull;
  * Helper class to enqueue a given {@link I_ESR_Import} to be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ESRImportEnqueuer
 {
@@ -92,6 +91,13 @@ public class ESRImportEnqueuer
 	public void execute()
 	{
 		final I_ESR_Import esrImport = getEsrImport();
+
+		final int existingLines = esrImportDAO.countLines(esrImport, null);
+		if (existingLines > 0)
+		{
+			throw new AdempiereException("Lines already exist. Please choose a new ESR.");
+		}
+
 		final ESRImportEnqueuerDataSource fromDataSource = getFromDataSource();
 
 		//
