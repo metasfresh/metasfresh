@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
 
@@ -8,7 +9,7 @@ export default class DocumentListContextShortcuts extends PureComponent {
       event.preventDefault();
 
       if (this.props.handleOpenNewTab) {
-        this.props.handleOpenNewTab();
+        this.onOpenNewTab();
       }
     },
     REMOVE_SELECTED: event => {
@@ -22,7 +23,7 @@ export default class DocumentListContextShortcuts extends PureComponent {
       event.preventDefault();
 
       if (this.props.handleAdvancedEdit) {
-        this.props.handleAdvancedEdit();
+        this.onAdvancedEdit();
 
         return true;
       }
@@ -50,6 +51,18 @@ export default class DocumentListContextShortcuts extends PureComponent {
         this.props.handleIndent(false);
       }
     },
+  };
+
+  onAdvancedEdit = () => {
+    const { handleAdvancedEdit, windowId, tabId, selected } = this.props;
+
+    handleAdvancedEdit(windowId, tabId, selected);
+  };
+
+  onOpenNewTab = () => {
+    const { handleOpenNewTab, selected, windowId } = this.props;
+
+    handleOpenNewTab(selected, windowId);
   };
 
   render() {
@@ -87,3 +100,14 @@ export default class DocumentListContextShortcuts extends PureComponent {
     ];
   }
 }
+
+DocumentListContextShortcuts.propTypes = {
+  handleIndent: PropTypes.func,
+  getAllLeafs: PropTypes.func,
+  handleDelete: PropTypes.func,
+  handleOpenNewTab: PropTypes.func,
+  handleAdvancedEdit: PropTypes.func,
+  selected: PropTypes.any,
+  windowId: PropTypes.string,
+  tabId: PropTypes.string,
+};

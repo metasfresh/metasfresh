@@ -1311,12 +1311,12 @@ class Table extends PureComponent {
           <DocumentListContextShortcuts
             handleAdvancedEdit={
               selected && selected.length > 0 && selected[0]
-                ? () => this.handleAdvancedEdit(windowId, tabId, selected)
+                ? this.handleAdvancedEdit
                 : undefined
             }
             handleOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
-                ? () => handleOpenNewTab(selected, windowId)
+                ? handleOpenNewTab
                 : undefined
             }
             handleDelete={
@@ -1326,6 +1326,11 @@ class Table extends PureComponent {
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
+            {...{
+              windowId,
+              tabId,
+              selected,
+            }}
           />
         )}
 
