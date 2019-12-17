@@ -71,7 +71,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
 
 	@Override
-	public boolean updateEdiEnabled(final I_EDI_Document_Extension document)
+	public boolean updateEdiEnabled(@NonNull final I_EDI_Document_Extension document)
 	{
 		// EDI applies only for customer invoices and shipments
 		if (!document.isSOTrx())

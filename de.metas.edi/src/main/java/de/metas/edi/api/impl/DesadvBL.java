@@ -128,7 +128,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
+	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(@NonNull final I_C_Order order)
 	{
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
