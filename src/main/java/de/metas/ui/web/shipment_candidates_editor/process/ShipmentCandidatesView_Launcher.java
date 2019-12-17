@@ -13,8 +13,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.shipment_candidates_editor.ShipmentCandidatesViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -46,8 +48,8 @@ public class ShipmentCandidatesView_Launcher extends ViewBasedProcessTemplate im
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = getSelectedShipmentScheduleIds();
-		if (shipmentScheduleIds.isEmpty())
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
@@ -79,9 +81,24 @@ public class ShipmentCandidatesView_Launcher extends ViewBasedProcessTemplate im
 
 	private ImmutableSet<ShipmentScheduleId> getSelectedShipmentScheduleIds()
 	{
-		return getSelectedRowIds()
-				.stream()
-				.map(rowId -> ShipmentScheduleId.ofRepoId(rowId.toInt()))
-				.collect(ImmutableSet.toImmutableSet());
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else if (selectedRowIds.isAll())
+		{
+			return getView().streamByIds(DocumentIdsSelection.ALL)
+					.map(IViewRow::getId)
+					.map(rowId -> ShipmentScheduleId.ofRepoId(rowId.toInt()))
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			return selectedRowIds
+					.stream()
+					.map(rowId -> ShipmentScheduleId.ofRepoId(rowId.toInt()))
+					.collect(ImmutableSet.toImmutableSet());
+		}
 	}
 }
