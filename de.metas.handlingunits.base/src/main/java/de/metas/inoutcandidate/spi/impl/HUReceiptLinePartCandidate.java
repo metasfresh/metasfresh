@@ -33,10 +33,10 @@ import org.adempiere.util.lang.ObjectUtils;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.product.ProductId;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -61,7 +61,7 @@ import lombok.NonNull;
 	 */
 	private I_M_QualityNote _qualityNote = null;
 	private ReceiptQty _qtyAndQuality = null;
-	private StockQtyAndUOMQty _qty ;
+	private Quantity _qty;
 	private int _subProducerBPartnerId = -1;
 	private Object _attributeStorageAggregationKey = null;
 	//
@@ -69,8 +69,10 @@ import lombok.NonNull;
 	private final transient List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocsRO = Collections.unmodifiableList(receiptScheduleAllocs);
 
 	private final ProductId productId;
-	private final UomId uomId;
 
+	/**
+	 * @param uomId ID of he receipt-line's UOM; not the catch-UOM
+	 */
 	public HUReceiptLinePartCandidate(
 			@NonNull final HUReceiptLinePartAttributes attributes,
 			@NonNull final ProductId productId,
@@ -79,10 +81,9 @@ import lombok.NonNull;
 		_attributes = attributes;
 
 		this.productId = productId;
-		this.uomId = uomId;
 
 		_stale = true; // stale by default
-		_qty = StockQtyAndUOMQtys.createZero(productId, uomId);
+		_qty = Quantitys.createZero(uomId);
 	}
 
 	@Override
@@ -91,22 +92,21 @@ import lombok.NonNull;
 		return ObjectUtils.toString(this);
 	}
 
-	public void add(final I_M_ReceiptSchedule_Alloc rsa)
+	public void add(@NonNull final I_M_ReceiptSchedule_Alloc rsa)
 	{
-		final BigDecimal rsaQty = rsa.getHU_QtyAllocated(); // TODO get the catch weight!
+		final BigDecimal rsaQty = rsa.getHU_QtyAllocated();
+		final Quantity huAllocatedQty = Quantitys.create(rsaQty, UomId.ofRepoId(rsa.getM_ReceiptSchedule().getC_UOM_ID()));
 
-		_qty = _qty.add(rsaQty);
+		_qty = Quantitys.add(UOMConversionContext.of(productId), _qty, huAllocatedQty);
 
 		receiptScheduleAllocs.add(rsa);
 		_stale = true;
 	}
 
 	/**
-	 *
-	 * @param receiptLinePart
 	 * @return true if added
 	 */
-	public boolean add(final HUReceiptLinePartCandidate receiptLinePart)
+	public boolean add(@NonNull final HUReceiptLinePartCandidate receiptLinePart)
 	{
 		if (!canAdd(receiptLinePart))
 		{
@@ -121,10 +121,8 @@ import lombok.NonNull;
 		return true;
 	}
 
-	public boolean canAdd(final HUReceiptLinePartCandidate receiptLinePart)
+	public boolean canAdd(@NonNull final HUReceiptLinePartCandidate receiptLinePart)
 	{
-		Check.assumeNotNull(receiptLinePart, "receiptLinePart not null");
-
 		// Cannot add to it self
 		if (equals(receiptLinePart))
 		{
@@ -161,7 +159,7 @@ import lombok.NonNull;
 		//
 		// Qty & Quality
 		final Percent qualityDiscountPercent = Percent.of(attributes.getQualityDiscountPercent());
-		final ReceiptQty qtyAndQuality = new ReceiptQty(productId, uomId);
+		final ReceiptQty qtyAndQuality = new ReceiptQty(productId);
 		I_M_QualityNote qualityNote = null;
 
 		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);

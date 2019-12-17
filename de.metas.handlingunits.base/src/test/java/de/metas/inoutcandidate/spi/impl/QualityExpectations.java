@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,8 @@ import org.junit.Assert;
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.expectations.IExpectationProducer;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 
 public class QualityExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
@@ -100,9 +101,12 @@ public class QualityExpectations<ParentExpectationType> extends AbstractHUExpect
 
 		final HUReceiptLineCandidatesBuilder huReceiptLineCandidatesBuilder = new HUReceiptLineCandidatesBuilder(receiptSchedule);
 
+		final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(receiptSchedule.getC_UOM_ID());
+
 		for (final QualityExpectation<QualityExpectations<ParentExpectationType>> expectation : expectations)
 		{
-			final HUReceiptLinePartCandidate part = expectation.createPart();
+			final HUReceiptLinePartCandidate part = expectation.createPart(productId, uomId);
 			huReceiptLineCandidatesBuilder.add(part);
 		}
 

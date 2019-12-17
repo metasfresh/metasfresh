@@ -39,7 +39,10 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -131,11 +134,14 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Create TU/LU allocation to Receipt Schedule
 		final ReceiptScheduleHUAllocations huAllocations = new ReceiptScheduleHUAllocations(receiptSchedule);
-// "\nluHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(luHU))+"\ntuHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(tuHU))+"\nvhu\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(vhu))
+		// "\nluHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(luHU))+"\ntuHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(tuHU))+"\nvhu\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(vhu))
 		//
 		// 07698: do not delete old allocations when creating them from transaction line
 		final boolean deleteOldTUAllocations = false;
-		huAllocations.allocate(luHU, tuHU, vhu, Quantity.of(qtyToAllocateOnHU, uom), deleteOldTUAllocations);
+		final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(Quantity.of(qtyToAllocateOnHU, uom), productId, (Quantity)null/* uomQty */);
+
+		huAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocations);
 	}
 
 	/**
