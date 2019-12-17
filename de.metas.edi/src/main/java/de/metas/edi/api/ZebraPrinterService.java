@@ -23,6 +23,7 @@
 package de.metas.edi.api;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.process.PInstanceId;
 import de.metas.report.ReportResultData;
@@ -63,12 +64,13 @@ public class ZebraPrinterService
 	{
 		final Map<String, String> zebraConfigsByName = retrieveZebraPrinterConfigs(clientId, adOrgId);
 
-		final List<List<String>> resultRows = DB.getSQL_ResultRowsAsListsOfStrings(zebraConfigsByName.get(SQL_SELECT.getSysConfigName()),
+		DB.createT_Selection(pInstanceId, desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited);
+
+		final ImmutableList<List<String>> resultRows = DB.getSQL_ResultRowsAsListsOfStrings(zebraConfigsByName.get(SQL_SELECT.getSysConfigName()),
 				Collections.singletonList(pInstanceId), ITrx.TRXNAME_ThreadInherited);
 
 		Check.assumeNotEmpty(resultRows, "SSCC information records must be available!");
 
-		DB.createT_Selection(pInstanceId, desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited);
 
 		final StringBuilder ssccLabelsInformationAsCSV = new StringBuilder(zebraConfigsByName.get(HEADER_LINE_1.getSysConfigName()));
 		ssccLabelsInformationAsCSV.append("\n").append(zebraConfigsByName.get(HEADER_LINE_2.getSysConfigName()));
@@ -100,7 +102,7 @@ public class ZebraPrinterService
 	{
 		final String escapedQuote = "\"";
 		return escapedQuote
-				+ StringUtils.nonNullOrEmpty(valueToEscape).replace(escapedQuote, escapedQuote + escapedQuote)
+				+ StringUtils.nullToEmpty(valueToEscape).replace(escapedQuote, escapedQuote + escapedQuote)
 				+ escapedQuote;
 	}
 

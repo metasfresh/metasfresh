@@ -3023,7 +3023,7 @@ public final class DB
 	 * @param trxName		transaction name
 	 * @return each resulted row as a {@link List<String>}
 	 */
-	public static List<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
+	public static ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
 	{
 		List<List<String>> result = null;
 		PreparedStatement pstmt = null;
@@ -3063,7 +3063,7 @@ public final class DB
 		{
 			DB.close(rs, pstmt);
 		}
-		return result;
+		return result != null ? ImmutableList.copyOf(result) : ImmutableList.of();
 	}
 
 } // DB

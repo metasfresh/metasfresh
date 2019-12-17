@@ -995,10 +995,11 @@ public final class StringUtils
 	}	// initCap
 
 	/**
-	 * @param in	input {@link String}
+	 * @param in input {@link String}
 	 * @return {@param in} if != null, empty string otherwise
 	 */
-	public static String nonNullOrEmpty(final String in) {
+	public static String nullToEmpty(final String in)
+	{
 		return in != null ? in : "";
 	}
 }
