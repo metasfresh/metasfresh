@@ -993,4 +993,13 @@ public final class StringUtils
 		}
 		return new String(data);
 	}	// initCap
+
+	/**
+	 * @param in input {@link String}
+	 * @return {@param in} if != null, empty string otherwise
+	 */
+	public static String nullToEmpty(final String in)
+	{
+		return in != null ? in : "";
+	}
 }

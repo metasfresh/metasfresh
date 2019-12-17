@@ -33,6 +33,7 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,7 +66,7 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 		final int serialNumber = hu.getM_HU_ID();
 		Check.errorIf(serialNumber <= 0, "M_HU_ID={} for M_HU={}", serialNumber, hu);
 
-		final SSCC18 sscc18 = creator.generate(serialNumber);
+		final SSCC18 sscc18 = creator.generate(OrgId.ofRepoIdOrAny(hu.getAD_Org_ID()), serialNumber);
 		return creator.toString(sscc18, false); // humanReadable=false
 	}
 }

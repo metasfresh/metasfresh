@@ -40,6 +40,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.document.service.impl.DummyDocumentLocationBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.PlainInvoiceBL;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -75,6 +76,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 public class DunningTestBase
@@ -106,7 +108,7 @@ public class DunningTestBase
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.get().setCopyOnSave(true); // FIXME : Adapt dunning tests to new behavior
 
-		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, 0);
+		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
 
 		dao = new PlainDunningDAO();
 		Services.registerService(IDunningDAO.class, dao);
