@@ -140,7 +140,7 @@ import lombok.NonNull;
 			// shall not happen
 			throw new AdempiereException("New candidate " + receiptLineCandidate + " refused to add " + receiptLinePartToAdd);
 		}
-		receiptLineCandidates.add(receiptLineCandidate); // 06135: don't forget to add the fruits of our falbour :-P
+		receiptLineCandidates.add(receiptLineCandidate); // 06135: don't forget to add the fruits of our labour :-P
 		stale = true; // we need to recompute the amounts
 	}
 

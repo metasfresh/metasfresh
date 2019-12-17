@@ -73,22 +73,14 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	}
 
 	@Override
-	public StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs)
+	public StockQtyAndUOMQty getQtyToMove(@NonNull final I_M_ReceiptSchedule rs)
 	{
 		final ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
+		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(rs.getCatch_UOM_ID());
 
-		final UomId uomId;
-		if (rs.getC_UOM_ID() > 0)
-		{
-			uomId = UomId.ofRepoId(rs.getC_UOM_ID());
-		}
-		else
-		{
-			uomId = productBL.getStockUOMId(productId);
-		}
-
-		return StockQtyAndUOMQtys.createConvert(rs.getQtyToMove(), productId, uomId);
-
+		return StockQtyAndUOMQtys.create(
+				rs.getQtyToMove(), productId,
+				rs.getQtyMovedWithIssuesInCatchUOM(), catchUomIdOrNull);
 	}
 
 	@Override

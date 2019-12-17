@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -38,10 +40,13 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
@@ -120,15 +125,31 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 			}
 
 			//
-			// Make sure receipt schedule and receipt line have same UOMs
-			if (receiptSchedule.getC_UOM_ID() != receiptLine.getC_UOM_ID())
+			// Make sure receipt schedule and receipt line have same UOMs; if receipschedule has no UOM, then receiptLine's UOM needs to be the stock-UOM
+			final boolean rsHasUOM = receiptSchedule.getC_UOM_ID() > 0;
+			if (rsHasUOM)
 			{
-				throw new AdempiereException("Different UOMs on receipt schedule and receipt line is not supported."
-						+ "\nReceipt Schedule: " + receiptSchedule
-						+ "\nReceipt Schedule UOM: " + loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class)
-						+ "\nReceipt Line: " + receiptLine
-						+ "\nReceipt Line C_UOM_ID: " + receiptLine.getC_UOM_ID());
+				if (receiptSchedule.getC_UOM_ID() != receiptLine.getC_UOM_ID())
+				{
+					throw new AdempiereException("Different UOMs on receipt schedule and receipt line is not supported."
+							+ "\nReceipt Schedule: " + receiptSchedule
+							+ "\nReceipt Schedule UOM: " + loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class)
+							+ "\nReceipt Line: " + receiptLine
+							+ "\nReceipt Line UOM: " + loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class));
+				}
 			}
+			else
+			{
+				final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(receiptProductId);
+				if (receiptLine.getC_UOM_ID() != stockUomId.getRepoId())
+				{
+					throw new AdempiereException("If receipt schedule has no UOM, then receipt line needs to have stockUOM"
+							+ "\nReceipt Schedule: " + receiptSchedule
+							+ "\nReceipt Line: " + receiptLine
+							+ "\nReceipt Line UOM: " + loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class));
+				}
+			}
+
 		}
 	}
 
@@ -164,7 +185,7 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 	}
 
 	@Override
-	public ReceiptScheduleAllocBuilder setM_InOutLine(@NonNull final I_M_InOutLine receiptLine)
+	public ReceiptScheduleAllocBuilder setM_InOutLine(@Nullable final I_M_InOutLine receiptLine)
 	{
 		this._receiptLine = receiptLine;
 		return this;

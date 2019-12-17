@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.inout.model.I_M_InOutLine;
@@ -22,6 +24,9 @@ public interface IReceiptScheduleAllocBuilder
 
 	ReceiptScheduleAllocBuilder setQtyWithIssues(StockQtyAndUOMQty qtyWithIssues);
 
-	IReceiptScheduleAllocBuilder setM_InOutLine(I_M_InOutLine receiptLine);
+	/**
+	 * @param receiptLine can be {@code null} because M_ReceiptSchedule_Alloc are also used to allocate a HU to a receipt schedule even *before* there is any inOutLine.
+	 */
+	IReceiptScheduleAllocBuilder setM_InOutLine(@Nullable I_M_InOutLine receiptLine);
 
 }

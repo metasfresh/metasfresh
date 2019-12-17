@@ -1,5 +1,7 @@
 package de.metas.uom;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_M_Product;
@@ -10,9 +12,23 @@ import lombok.Value;
 @Value
 public final class UOMConversionContext
 {
-	public static UOMConversionContext of(final ProductId productId)
+	public enum Rounding
 	{
-		return new UOMConversionContext(productId);
+		/** The result is rounded to the target uom's precision. The default. */
+		TO_TARGET_UOM_PRECISION,
+
+		/** The result has at least the same scale as the input quantity, even if that scale is bigger than the UOM's precision. */
+		PRESERVE_SCALE;
+	}
+
+	public static UOMConversionContext of(@Nullable final ProductId productId, @Nullable final Rounding rounding)
+	{
+		return new UOMConversionContext(productId, rounding);
+	}
+
+	public static UOMConversionContext of(@Nullable final ProductId productId)
+	{
+		return new UOMConversionContext(productId, null/* rounding */);
 	}
 
 	public static UOMConversionContext of(final int productRepoId)
@@ -29,17 +45,15 @@ public final class UOMConversionContext
 		return of(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null);
 	}
 
-	private final ProductId productId;
+	ProductId productId;
 
-	public enum Rounding
-	{
-		TO_TARGET_UOM_PRECISION,
+	Rounding rounding;
 
-
-	}
-
-	private UOMConversionContext(@Nullable final ProductId productId)
+	private UOMConversionContext(
+			@Nullable final ProductId productId,
+			@Nullable final Rounding rounding)
 	{
 		this.productId = productId;
+		this.rounding = coalesce(rounding, Rounding.TO_TARGET_UOM_PRECISION);
 	}
 }

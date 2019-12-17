@@ -23,8 +23,6 @@ package de.metas.inoutcandidate.spi.impl;
  */
 
 
-import java.math.BigDecimal;
-
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 
@@ -44,7 +42,7 @@ public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpect
 	private Integer qtyPrecision = null;
 	private StockQtyAndUOMQty qty;
 	private StockQtyAndUOMQty qtyWithIssues;
-	private BigDecimal qtyWithIssuesExact;
+	private StockQtyAndUOMQty qtyWithIssuesExact;
 	private StockQtyAndUOMQty qtyWithoutIssues;
 	private Percent qualityDiscountPercent;
 	private String qualityNotices;
@@ -150,18 +148,18 @@ public class ReceiptQtyExpectation<ParentExpectationType> extends AbstractExpect
 		return qtyWithIssues;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssuesExact(final BigDecimal qtyWithIssuesExact)
+	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssuesExact(final StockQtyAndUOMQty qtyWithIssuesExact)
 	{
 		this.qtyWithIssuesExact = qtyWithIssuesExact;
 		return this;
 	}
 
-	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssuesExact(final String qtyWithIssuesExact)
-	{
-		return qtyWithIssuesExact(new BigDecimal(qtyWithIssuesExact));
-	}
+//	public ReceiptQtyExpectation<ParentExpectationType> qtyWithIssuesExact(final String qtyWithIssuesExact)
+//	{
+//		return qtyWithIssuesExact(new BigDecimal(qtyWithIssuesExact));
+//	}
 
-	public BigDecimal getQtyWithIssuesExact()
+	public StockQtyAndUOMQty getQtyWithIssuesExact()
 	{
 		return qtyWithIssuesExact;
 	}

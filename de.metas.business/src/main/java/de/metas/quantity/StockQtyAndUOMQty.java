@@ -126,7 +126,7 @@ public class StockQtyAndUOMQty
 	{
 		return toBuilder()
 				.stockQty(stockQty.toZero())
-				.uomQty(uomQty.toZero())
+				.uomQty(uomQty != null ? uomQty.toZero() : null)
 				.build();
 	}
 
