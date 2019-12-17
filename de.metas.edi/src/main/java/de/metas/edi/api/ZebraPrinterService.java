@@ -71,7 +71,6 @@ public class ZebraPrinterService
 
 		Check.assumeNotEmpty(resultRows, "SSCC information records must be available!");
 
-
 		final StringBuilder ssccLabelsInformationAsCSV = new StringBuilder(zebraConfigsByName.get(HEADER_LINE_1.getSysConfigName()));
 		ssccLabelsInformationAsCSV.append("\n").append(zebraConfigsByName.get(HEADER_LINE_2.getSysConfigName()));
 
