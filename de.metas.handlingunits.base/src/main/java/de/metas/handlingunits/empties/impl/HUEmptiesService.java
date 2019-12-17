@@ -130,7 +130,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	@Override
 	public boolean isEmptiesInOut(@NonNull final I_M_InOut inout)
 	{
-		final I_C_DocType docType = load(inout.getC_DocType_ID(), I_C_DocType.class);
+		final I_C_DocType docType = loadOutOfTrx(inout.getC_DocType_ID(), I_C_DocType.class);
 		if (docType == null || docType.getC_DocType_ID() <= 0)
 		{
 			return false;
