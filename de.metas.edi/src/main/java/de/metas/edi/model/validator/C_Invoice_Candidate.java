@@ -41,7 +41,7 @@ public class C_Invoice_Candidate
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID })
-	public void setIsEDIRecipient(final I_C_Invoice_Candidate invoiceCandidate)
+	public void setIsEDIInvoicRecipient(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -56,7 +56,7 @@ public class C_Invoice_Candidate
 		// Make sure the IsEDIRecipient flag is up to date in the invoice candidate
 		// It shall always be the same as in the bill BPartner
 		final boolean isEDIRecipient = ediBPartner.isEdiInvoicRecipient();
-		invoiceCandidate.setIsEdiRecipient(isEDIRecipient);
+		invoiceCandidate.setIsEdiInvoicRecipient(isEDIRecipient);
 
 	}
 

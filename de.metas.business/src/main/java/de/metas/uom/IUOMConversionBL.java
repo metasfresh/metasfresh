@@ -158,7 +158,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 */
 	BigDecimal convertToProductUOM(ProductId productId, BigDecimal qtyToConvert, UomId fromUomId);
 
-	default BigDecimal convertToProductUOM(final ProductId productId, final I_C_UOM uomSource, final BigDecimal qtyToConvert)
+	default BigDecimal convertToProductUOM(ProductId productId, I_C_UOM uomSource, BigDecimal qtyToConvert)
 	{
 		final UomId fromUomId = uomSource != null ? UomId.ofRepoId(uomSource.getC_UOM_ID()) : null;
 		return convertToProductUOM(productId, qtyToConvert, fromUomId);

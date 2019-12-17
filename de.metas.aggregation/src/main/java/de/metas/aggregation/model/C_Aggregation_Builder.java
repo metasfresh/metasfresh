@@ -10,24 +10,25 @@ package de.metas.aggregation.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -38,7 +39,7 @@ import de.metas.util.Services;
 
 /**
  * Builder class for {@link I_C_Aggregation}
- * 
+ *
  * @author tsa
  *
  */
@@ -94,7 +95,7 @@ public class C_Aggregation_Builder
 		this.adTableId = adTableId;
 		return this;
 	}
-	
+
 	public C_Aggregation_Builder setAD_Table_ID(final String tableName)
 	{
 		this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
@@ -127,7 +128,13 @@ public class C_Aggregation_Builder
 
 	public C_AggregationItem_Builder newItem()
 	{
-		final C_AggregationItem_Builder itemBuilder = new C_AggregationItem_Builder(this);
+		if (adTableId <= 0)
+		{
+			throw new AdempiereException("Before creating a new item, a adTableId needs to be set to the builder")
+					.appendParametersToMessage()
+					.setParameter("C_Aggregation_Builder", this);
+		}
+		final C_AggregationItem_Builder itemBuilder = new C_AggregationItem_Builder(this, AdTableId.ofRepoId(adTableId));
 		itemBuilders.add(itemBuilder);
 		return itemBuilder;
 	}
