@@ -70,6 +70,7 @@ public class M_InOut
 		if (!bpartner.isEdiDesadvRecipient())
 		{
 			inout.setIsEdiEnabled(false);
+			return;
 		}
 
 		final boolean isEdiEnabled = order.isEdiEnabled();
