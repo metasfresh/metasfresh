@@ -31,6 +31,13 @@ public final class UOMConversionContext
 
 	private final ProductId productId;
 
+	public enum Rounding
+	{
+		TO_TARGET_UOM_PRECISION,
+
+
+	}
+
 	private UOMConversionContext(@Nullable final ProductId productId)
 	{
 		this.productId = productId;

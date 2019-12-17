@@ -1170,6 +1170,28 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return ii.intValue();
 	}
 
+	/** Set Tour.
+		@param M_Tour_ID Tour	  */
+	@Override
+	public void setM_Tour_ID (int M_Tour_ID)
+	{
+		if (M_Tour_ID < 1) 
+			set_Value (COLUMNNAME_M_Tour_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Tour_ID, Integer.valueOf(M_Tour_ID));
+	}
+
+	/** Get Tour.
+		@return Tour	  */
+	@Override
+	public int getM_Tour_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Tour_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Ziel-Lager.
 		@param M_Warehouse_Dest_ID Ziel-Lager	  */
 	@Override

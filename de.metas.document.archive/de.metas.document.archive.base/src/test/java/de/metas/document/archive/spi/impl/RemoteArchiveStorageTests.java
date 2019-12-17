@@ -10,18 +10,17 @@ package de.metas.document.archive.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 import java.util.UUID;
@@ -33,6 +32,7 @@ import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -48,20 +48,21 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestWatcher;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
  * Integration test for {@link RemoteArchiveStorage}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class RemoteArchiveStorageTests
 {
 	/** Watches current test and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-	
+
 	@BeforeClass
 	public static void staticInit()
 	{
@@ -74,11 +75,14 @@ public class RemoteArchiveStorageTests
 
 	@Rule
 	public TemporaryFolder storageFolder = new TemporaryFolder();
+	private ISysConfigBL sysConfigBL;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		setupClient();
 		setupRemoteArchiveEndpoint();
@@ -86,7 +90,7 @@ public class RemoteArchiveStorageTests
 
 	protected void setupClient()
 	{
-		//
+				//
 		// Configure client level settings
 		ctx = Env.getCtx();
 		client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
@@ -117,12 +121,9 @@ public class RemoteArchiveStorageTests
 
 	protected void setupRemoteArchiveEndpoint()
 	{
-		//
-		// Configure mocked endpoint
-		Services.get(ISysConfigBL.class).setValue(RemoteArchiveStorage.SYSCONFIG_ArchiveEndpoint,
+		sysConfigBL.setValue(RemoteArchiveStorage.SYSCONFIG_ArchiveEndpoint,
 				StaticMockedArchiveEndpoint.class.getName(),
-				0 // AD_Org_ID
-				);
+				ClientId.ofRepoId(client.getAD_Client_ID()), OrgId.ANY);
 		StaticMockedArchiveEndpoint.setArchiveEndpoint(new MockedArchiveEndpoint());
 
 	}
@@ -135,7 +136,7 @@ public class RemoteArchiveStorageTests
 
 	/**
 	 * Tests current configuration and it asserts everything is well.
-	 * 
+	 *
 	 * This test is a precondition for the rest of the tests.
 	 */
 	@Test

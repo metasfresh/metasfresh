@@ -1113,6 +1113,29 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
+	 * Set Tour.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Tour_ID (int M_Tour_ID);
+
+	/**
+	 * Get Tour.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Tour_ID();
+
+    /** Column definition for M_Tour_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_Tour_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "M_Tour_ID", null);
+    /** Column name M_Tour_ID */
+    public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
+
+	/**
 	 * Set Ziel-Lager.
 	 *
 	 * <br>Type: Table

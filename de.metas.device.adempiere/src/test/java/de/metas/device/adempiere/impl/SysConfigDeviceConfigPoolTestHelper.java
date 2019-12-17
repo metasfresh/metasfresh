@@ -3,6 +3,7 @@ package de.metas.device.adempiere.impl;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
@@ -13,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.device.adempiere.AttributesDevicesHub;
 import de.metas.device.adempiere.DeviceConfig;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -54,7 +56,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		final List<DeviceConfig> deviceConfigs = configPool.getDeviceConfigsForAttributeCode(attributeCode);
 		final DeviceConfig deviceConfig = CollectionUtils.singleElement(deviceConfigs);
 
-		System.out.println("Checking " + deviceConfig);
+		//System.out.println("Checking " + deviceConfig);
 		Assert.assertEquals("deviceName", deviceName, deviceConfig.getDeviceName());
 		Assert.assertEquals("attributeCode", ImmutableSet.of(attributeCode), deviceConfig.getAssignedAttributeCodes());
 		Assert.assertEquals("DeviceClass", MOCKED_DEVICE_DeviceClass, deviceConfig.getDeviceClassname());
@@ -86,8 +88,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 
 	private static final void putSysConfig(final String name, final String value)
 	{
-		final int AD_Org_ID = 0;
-		Services.get(ISysConfigBL.class).setValue(name, value, AD_Org_ID);
+		Services.get(ISysConfigBL.class).setValue(name, value, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	private final SysConfigDeviceConfigPool createSysConfigDeviceConfigPool()

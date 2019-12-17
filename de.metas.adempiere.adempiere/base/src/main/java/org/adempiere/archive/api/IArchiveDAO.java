@@ -50,10 +50,6 @@ public interface IArchiveDAO extends ISingletonService
 
 	/**
 	 * Retrieve the latest {@code limit} archives, ordered by their {@code Created} timestamp
-	 * @param ctx
-	 * @param recordRef
-	 * @param limit
-	 * @return
 	 */
 	List<I_AD_Archive> retrieveLastArchives(Properties ctx, ITableRecordReference recordRef, int limit);
 
@@ -61,10 +57,6 @@ public interface IArchiveDAO extends ISingletonService
 	 * Retrieves the archive with given ID and which is linked to given recordRef.
 	 *
 	 * NOTE: might look a bit redundant that we require the ID and the recordRef but we do that to make sure that given ID is for that recordRef (validation).
-	 *
-	 * @param ctx
-	 * @param recordRef
-	 * @param archiveId
 	 * @return archive or null
 	 */
 	I_AD_Archive retrieveArchiveOrNull(Properties ctx, ITableRecordReference recordRef, int archiveId);
@@ -72,16 +64,11 @@ public interface IArchiveDAO extends ISingletonService
 
 	/**
 	 * Retrieves underlying model, referenced by AD_Table_ID and Record_ID
-	 *
-	 * @param archive
-	 * @param modelClass
 	 * @return underlying model or null
 	 */
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
 
 	/**
-	 * @param model
-	 * @param archiveClass
 	 * @return PDF archive for model or null
 	 */
 	<T extends I_AD_Archive> T retrievePDFArchiveForModel(Object model, Class<T> archiveClass);

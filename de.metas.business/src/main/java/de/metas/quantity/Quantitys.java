@@ -114,7 +114,10 @@ public class Quantitys
 		final I_C_UOM nonStockUomRecord = uomDao.getById(nonStockUomId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final Quantity stockQty = uomConversionBL.convertQuantityTo(Quantity.of(qty, nonStockUomRecord), UOMConversionContext.of(productId), stockUomId);
+		final Quantity stockQty = uomConversionBL.convertQuantityTo(
+				Quantity.of(qty, nonStockUomRecord),
+				UOMConversionContext.of(productId),
+				stockUomId);
 		return stockQty;
 	}
 

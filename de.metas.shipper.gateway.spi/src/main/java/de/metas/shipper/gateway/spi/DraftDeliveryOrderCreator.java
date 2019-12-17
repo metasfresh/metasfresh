@@ -3,7 +3,7 @@ package de.metas.shipper.gateway.spi;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;

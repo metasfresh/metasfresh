@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.proxy.Cached;
@@ -17,8 +18,10 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * SysConfig Service. Most of the code is copy-paste from MSysConfig
@@ -323,41 +326,51 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
-	public void setValue(final String name, final int value, final int AD_Org_ID)
+	public void setValue(final String name, final int value,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		setValue(name, String.valueOf(value), AD_Org_ID);
+		setValue(name, String.valueOf(value), clientId, orgId);
 	}
 
 	@Override
-	public void setValue(final String name, final double value, final int AD_Org_ID)
+	public void setValue(final String name, final double value,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		setValue(name, String.valueOf(value), AD_Org_ID);
+		setValue(name, String.valueOf(value), clientId, orgId);
 	}
 
 	@Override
-	public void setValue(final String name, final boolean value, final int AD_Org_ID)
+	public void setValue(final String name, final boolean value,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		setValue(name, value ? "Y" : "N", AD_Org_ID);
+		setValue(name, value ? "Y" : "N", clientId, orgId);
 	}
 
 	@Override
-	public void setValue(final String name, final String value, final int AD_Org_ID)
+	public void setValue(
+			@NonNull final String name,
+			final String value,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
+
 		final Properties ctx = Env.getCtx();
-		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 
 		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				I_AD_SysConfig sysConfig = Services.get(ISysConfigDAO.class).retrieveSysConfig(ctx, name, AD_Client_ID, AD_Org_ID, localTrxName);
+				I_AD_SysConfig sysConfig = Services.get(ISysConfigDAO.class).retrieveSysConfig(ctx, name, clientId.getRepoId(), orgId.getRepoId(), localTrxName);
 				if (sysConfig == null)
 				{
 					sysConfig = InterfaceWrapperHelper.create(ctx, I_AD_SysConfig.class, localTrxName);
+					InterfaceWrapperHelper.setValue(sysConfig, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 					sysConfig.setName(name);
-					sysConfig.setAD_Org_ID(AD_Org_ID);
+					sysConfig.setAD_Org_ID(orgId.getRepoId());
 				}
 				sysConfig.setValue(value);
 				InterfaceWrapperHelper.save(sysConfig);
