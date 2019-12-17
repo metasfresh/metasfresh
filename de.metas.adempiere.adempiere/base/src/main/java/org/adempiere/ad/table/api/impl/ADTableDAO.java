@@ -67,6 +67,24 @@ public class ADTableDAO implements IADTableDAO
 			"Updated", "UpdatedBy");
 
 	@Override
+	public I_AD_Column retrieveColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)
+	{
+		final I_AD_Column columnRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnly(I_AD_Column.class);
+
+		if (columnRecord == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Column_ID@ " + columnName + " (@AD_Table_ID@=" + tableId + ")");
+		}
+		return columnRecord;
+	}
+
+	@Override
 	public I_AD_Column retrieveColumn(final String tableName, final String columnName)
 	{
 		final I_AD_Column column = retrieveColumnOrNull(tableName, columnName);
@@ -245,7 +263,6 @@ public class ADTableDAO implements IADTableDAO
 		final int tableID = MTable.getTable_ID(tableName);
 		return loadOutOfTrx(tableID, I_AD_Table.class); // load out of trx to benefit from caching
 	}
-
 
 	@Override
 	public I_AD_Table retrieveTable(@NonNull final AdTableId tableId)

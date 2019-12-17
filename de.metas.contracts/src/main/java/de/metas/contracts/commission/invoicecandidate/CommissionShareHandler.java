@@ -141,7 +141,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Commission_Share.class));
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Commission_Share.class));
 	}
 
 	@Override

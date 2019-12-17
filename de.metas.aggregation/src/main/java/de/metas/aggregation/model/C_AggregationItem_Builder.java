@@ -1,5 +1,11 @@
 package de.metas.aggregation.model;
 
+import static de.metas.util.Check.isEmpty;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.table.api.AdTableId;
+
 /*
  * #%L
  * de.metas.aggregation
@@ -10,37 +16,36 @@ package de.metas.aggregation.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.ModelColumn;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Column;
-
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Builder class for {@link I_C_AggregationItem}
- * 
+ *
  * @author tsa
  *
  */
 public class C_AggregationItem_Builder
 {
 	private final C_Aggregation_Builder parentBuilder;
+	private final AdTableId adTableId;
 
 	private I_C_Aggregation aggregation;
 	private String type;
@@ -49,10 +54,12 @@ public class C_AggregationItem_Builder
 	private I_C_Aggregation_Attribute attribute;
 	private String includeLogic;
 
-	public C_AggregationItem_Builder(C_Aggregation_Builder parentBuilder)
+	public C_AggregationItem_Builder(
+			@NonNull final C_Aggregation_Builder parentBuilder,
+			@NonNull final AdTableId adTableId)
 	{
-		super();
 		this.parentBuilder = parentBuilder;
+		this.adTableId = adTableId;
 	}
 
 	public I_C_AggregationItem build()
@@ -104,17 +111,16 @@ public class C_AggregationItem_Builder
 		return type;
 	}
 
-	public C_AggregationItem_Builder setAD_Column(final ModelColumn<?, ?> column)
+	public C_AggregationItem_Builder setAD_Column(@Nullable final String columnName)
 	{
-		if (column == null)
+		if (isEmpty(columnName, true))
 		{
 			this.adColumn = null;
 		}
 		else
 		{
-			final String tableName = column.getTableName();
-			final String columnName = column.getColumnName();
-			this.adColumn = Services.get(IADTableDAO.class).retrieveColumn(tableName, columnName);
+
+			this.adColumn = Services.get(IADTableDAO.class).retrieveColumn(adTableId, columnName);
 		}
 		return this;
 	}
