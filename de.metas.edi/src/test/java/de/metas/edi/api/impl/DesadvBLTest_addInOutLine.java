@@ -12,6 +12,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -94,7 +95,7 @@ class DesadvBLTest_addInOutLine
 		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
-		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", OrgId.ANY.getRepoId());
+		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
 
 		// setup HU packing instructions
 		uomRecord = newInstance(I_C_UOM.class);
