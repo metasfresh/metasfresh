@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.util.lang.ObjectUtils;
 
@@ -35,6 +36,8 @@ import de.metas.inout.model.I_M_QualityNote;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -159,10 +162,22 @@ import lombok.NonNull;
 		//
 		// Qty & Quality
 		final Percent qualityDiscountPercent = Percent.of(attributes.getQualityDiscountPercent());
-		final ReceiptQty qtyAndQuality = ReceiptQty.newWithoutCatchWeight(productId);
+		final ReceiptQty qtyAndQuality;
+		final Optional<Quantity> weight = attributes.getWeight();
+		if (weight.isPresent())
+		{
+			qtyAndQuality = ReceiptQty.newWithCatchWeight(productId, weight.get().getUomId());
+
+			final StockQtyAndUOMQty stockAndCatchQty = StockQtyAndUOMQtys.createConvert(_qty, productId, weight.get());
+			qtyAndQuality.addQtyAndQualityDiscountPercent(stockAndCatchQty, qualityDiscountPercent);
+		}
+		else
+		{
+			qtyAndQuality = ReceiptQty.newWithoutCatchWeight(productId);
+			qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
+		}
 		I_M_QualityNote qualityNote = null;
 
-		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
 
 		//
 		// Quality Notice (only if we have a discount percentage)
