@@ -10,14 +10,14 @@ package org.adempiere.plaf;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -34,6 +35,7 @@ import javax.swing.UIManager;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IDeveloperModeBL.ContextRunnable;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DB;
@@ -45,7 +47,7 @@ import org.compiere.util.Env;
  * <li>load all UIDefaults from {@link I_AD_SysConfig} table: {@link #loadAllFromSysConfigTo(UIDefaults)}
  * <li>persist one value to {@link I_AD_SysConfig} table: {@link #setValue(Object, Object)}
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
@@ -104,12 +106,10 @@ public class SysConfigUIDefaultsRepository
 
 		developerModeBL.executeAsSystem(new ContextRunnable()
 		{
-
 			@Override
 			public void run(Properties sysCtx)
 			{
-				final int adOrgId = Env.CTXVALUE_AD_Org_ID_System;
-				sysConfigBL.setValue(sysconfigName, sysconfigValue, adOrgId);
+				sysConfigBL.setValue(sysconfigName, sysconfigValue, ClientId.SYSTEM, OrgId.ANY);
 			}
 		});
 	}

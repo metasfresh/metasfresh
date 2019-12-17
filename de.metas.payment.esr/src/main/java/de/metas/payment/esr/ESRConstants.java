@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
 import de.metas.util.Services;
 
@@ -119,7 +120,7 @@ public final class ESRConstants
 	/**
 	 * @return true if ESR module is enabled
 	 */
-	public static final boolean isEnabled(final Properties ctx)
+	public static boolean isEnabled(final Properties ctx)
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_Enabled,
 				true, // defaultValue
@@ -130,10 +131,9 @@ public final class ESRConstants
 	/**
 	 * Sets (and persist in database) if the ESR module shall be enabled.
 	 */
-	public static final void setEnabled(final Properties ctx, final boolean enabled)
+	public static void setEnabled(final Properties ctx, final boolean enabled)
 	{
-		final int AD_Org_ID = Env.CTXVALUE_AD_Org_ID_System; // all orgs
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_Enabled, enabled, AD_Org_ID);
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_Enabled, enabled, Env.getClientId(ctx), OrgId.ANY);
 	}
 
 }

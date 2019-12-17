@@ -58,6 +58,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
@@ -83,6 +84,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -2611,8 +2613,7 @@ public final class DB
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
 				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
-		final int adOrgId = 0;
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, adOrgId);
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	public static String getTableSequenceName(final String tableName)
@@ -3014,6 +3015,55 @@ public final class DB
 			DB.close(conn);
 		}
 
+	}
+
+	/**
+	 * @param sqlStatement	SQL statement to be executed
+	 * @param parameters	Parameters to be used in the {@param sqlStatement}
+	 * @param trxName		transaction name
+	 * @return each resulted row as a {@link List<String>}
+	 */
+	public static ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
+	{
+		List<List<String>> result = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sqlStatement, trxName);
+
+			setParameters(pstmt, parameters);
+
+			rs = pstmt.executeQuery();
+
+			final int columnsCount = rs.getMetaData().getColumnCount();
+
+			if (columnsCount > 0)
+			{
+				result = new ArrayList<>();
+
+				while (rs.next())
+				{
+					List<String> row = new ArrayList<>();
+
+					for (int i = 1; i <= columnsCount; i++)
+					{
+						row.add(rs.getString(i));
+					}
+
+					result.add(row);
+				}
+			}
+		}
+		catch (final SQLException sqlException)
+		{
+			throw new DBException(sqlException, sqlStatement, parameters);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+		return result != null ? ImmutableList.copyOf(result) : ImmutableList.of();
 	}
 
 } // DB
