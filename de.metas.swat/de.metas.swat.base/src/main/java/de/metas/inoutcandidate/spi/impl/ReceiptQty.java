@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.spi.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -58,6 +60,16 @@ public final class ReceiptQty
 
 	private static final transient Logger logger = LogManager.getLogger(ReceiptQty.class);
 
+	public static ReceiptQty newWithoutCatchWeight(@NonNull final ProductId productId)
+	{
+		return new ReceiptQty(productId, null/* catchUomId */);
+	}
+
+	public static ReceiptQty newWithCatchWeight(@NonNull final ProductId productId, @NonNull final UomId catchUomId)
+	{
+		return new ReceiptQty(productId, catchUomId);
+	}
+
 	/** Precision used to store internal quantities */
 	/* package */static final int INTERNAL_PRECISION = 12;
 
@@ -79,17 +91,9 @@ public final class ReceiptQty
 	 */
 	private QualityNoticesCollection qualityNotices = new QualityNoticesCollection();
 
-	public ReceiptQty(@NonNull final ProductId productId)
-	{
-		this.productId = productId;
-		this.catchUomId = null;
-		this.qtyTotal = StockQtyAndUOMQtys.createZero(productId, null);
-		this.qtyWithIssues = StockQtyAndUOMQtys.createZero(productId, null);
-	}
-
-	public ReceiptQty(
+	private ReceiptQty(
 			@NonNull final ProductId productId,
-			@NonNull final UomId catchUomId)
+			@Nullable final UomId catchUomId)
 	{
 		this.productId = productId;
 		this.catchUomId = catchUomId;

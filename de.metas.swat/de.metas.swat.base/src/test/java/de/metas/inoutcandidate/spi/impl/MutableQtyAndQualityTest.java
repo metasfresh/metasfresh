@@ -118,8 +118,8 @@ public class MutableQtyAndQualityTest
 	{
 		final int qtyPrecision = expectationForOneTransaction.getQtyPrecisionToUse();
 
-		final ReceiptQty qv1 = new ReceiptQty(productId, uomId); // used to test #add(BigDecimal, BigDecimal)
-		final ReceiptQty qv2 = new ReceiptQty(productId, uomId); // used to test #add(IQtyAndQuality)
+		final ReceiptQty qv1 = ReceiptQty.newWithCatchWeight(productId, uomId); // used to test #add(BigDecimal, BigDecimal)
+		final ReceiptQty qv2 = ReceiptQty.newWithCatchWeight(productId, uomId); // used to test #add(IQtyAndQuality)
 
 		final ReceiptQtyExpectation<Object> expectation = ReceiptQtyExpectation.newInstance()
 				.qtyPrecision(qtyPrecision);
@@ -141,7 +141,7 @@ public class MutableQtyAndQualityTest
 			{
 				qv1.addQtyAndQualityDiscountPercent(qtyToAdd, qualityDiscountPercent);
 
-				final ReceiptQty qvToAdd = new ReceiptQty(productId, uomId);
+				final ReceiptQty qvToAdd = ReceiptQty.newWithCatchWeight(productId, uomId);
 				qvToAdd.addQtyAndQualityDiscountPercent(qtyToAdd, qualityDiscountPercent);
 				qv2.add(qvToAdd);
 
@@ -174,7 +174,7 @@ public class MutableQtyAndQualityTest
 	@Test
 	public void test_copy()
 	{
-		final ReceiptQty qv = new ReceiptQty(productId, uomId);
+		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
 
 		qv.addQtyAndQualityDiscountPercent(
 				StockQtyAndUOMQtys.create(new BigDecimal("23"), productId, new BigDecimal("123"), uomId),
@@ -188,14 +188,14 @@ public class MutableQtyAndQualityTest
 	@Test
 	public void test_getQualityDiscountPercent_zeroQtys()
 	{
-		final ReceiptQty qv = new ReceiptQty(productId, uomId);
+		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
 		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent().toBigDecimal(), Matchers.comparesEqualTo(ZERO));
 	}
 
 	@Test
 	public void test_getQualityDiscountPercent_QtyTotalIsZero_QtyWithIssuesNotZero()
 	{
-		final ReceiptQty qv = new ReceiptQty(productId, uomId);
+		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
 
 		qv.addQtyAndQtyWithIssues(
 				StockQtyAndUOMQtys.createZero(productId, uomId),

@@ -56,19 +56,21 @@ public class InOutCandidateBL implements IInOutCandidateBL
 
 		final BigDecimal qtyInUOM;
 		final UomId uomId;
+		final ReceiptQty qtys;
 		if (InterfaceWrapperHelper.isNull(inoutLine, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch))
 		{
-			qtyInUOM = inoutLine.getQtyEntered();
-			uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
+			qtyInUOM = null;
+			uomId = null;
+			qtys = ReceiptQty.newWithoutCatchWeight(productId);
 		}
 		else
 		{
 			qtyInUOM = inoutLine.getQtyDeliveredCatch();
 			uomId = UomId.ofRepoId(inoutLine.getCatch_UOM_ID());
+			qtys = ReceiptQty.newWithCatchWeight(productId, uomId);
 		}
 
 		final StockQtyAndUOMQty qtyMoved = StockQtyAndUOMQtys.create(inoutLine.getMovementQty(), productId, qtyInUOM, uomId);
-
 		final StockQtyAndUOMQty qtyMovedWithIssues;
 		if (inoutLine.isInDispute())
 		{
@@ -78,8 +80,6 @@ public class InOutCandidateBL implements IInOutCandidateBL
 		{
 			qtyMovedWithIssues = qtyMoved.toZero();
 		}
-
-		final ReceiptQty qtys = new ReceiptQty(productId, uomId);
 
 		qtys.addQtyAndQtyWithIssues(qtyMoved, qtyMovedWithIssues);
 		qtys.addQualityNotices(QualityNoticesCollection.valueOfQualityNoticesString(inoutLine.getQualityNote()));

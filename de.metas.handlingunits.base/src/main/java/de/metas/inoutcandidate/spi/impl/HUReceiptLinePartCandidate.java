@@ -159,7 +159,7 @@ import lombok.NonNull;
 		//
 		// Qty & Quality
 		final Percent qualityDiscountPercent = Percent.of(attributes.getQualityDiscountPercent());
-		final ReceiptQty qtyAndQuality = new ReceiptQty(productId);
+		final ReceiptQty qtyAndQuality = ReceiptQty.newWithoutCatchWeight(productId);
 		I_M_QualityNote qualityNote = null;
 
 		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
