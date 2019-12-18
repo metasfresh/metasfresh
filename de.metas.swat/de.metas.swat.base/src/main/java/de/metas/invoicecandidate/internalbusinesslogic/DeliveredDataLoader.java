@@ -18,7 +18,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
 import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
-import de.metas.invoicecandidate.internalbusinesslogic.ShippedQtyItem.ShippedQtyItemBuilder;
+import de.metas.invoicecandidate.internalbusinesslogic.DeliveredQtyItem.DeliveredQtyItemBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
@@ -133,11 +133,11 @@ public class DeliveredDataLoader
 
 	private ShipmentData loadShipmentData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
-		final ImmutableList<ShippedQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
+		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
 
 		final ShipmentDataBuilder result = ShipmentData.builder()
 				.productId(productId)
-				.shippedQtyItems(shippedQtyItems);
+				.deliveredQtyItems(shippedQtyItems);
 
 		if (shippedQtyItems.isEmpty())
 		{
@@ -153,9 +153,9 @@ public class DeliveredDataLoader
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
-		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
-		final ArrayList<ShippedQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
-		for (final ShippedQtyItem shippedQtyItem : shippedQtyItems)
+		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
+		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
+		for (final DeliveredQtyItem shippedQtyItem : shippedQtyItems)
 		{
 			qtyInStockUom = Quantitys.add(conversionCtx,
 					qtyInStockUom,
@@ -189,17 +189,90 @@ public class DeliveredDataLoader
 			result.qtyCatch(qtyCatch);
 		}
 		return result.build();
-
 	}
 
-
-	private ImmutableList<ShippedQtyItem> loadshippedQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	private ReceiptData loadReceiptQualityData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
-		final Builder<ShippedQtyItem> result = ImmutableList.builder();
+		if (icIolAssociationRecords.isEmpty())
+		{
+			return ReceiptData.builder()
+					.productId(productId)
+					.qtyTotalInStockUom(defaultQtyDelivered.getStockQty())
+					.qtyTotalNominal(defaultQtyDelivered.getUOMQtyNotNull())
+					.qtyWithIssuesInStockUom(Quantitys.createZero(productId))
+					.qtyWithIssuesNominal(Quantitys.createZero(icUomId))
+					.build();
+		}
+
+		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
+
+		// StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.createZero(productId, icUomId);
+
+		Quantity qtyTotalInStockUom = Quantitys.createZero(stockUomId);
+		Quantity qtyTotalNominal = Quantitys.createZero(icUomId);
+		Quantity qtyTotalCatch = Quantitys.createZero(icUomId);
+
+		Quantity qtyWithIssuesInStockUom = Quantitys.createZero(stockUomId);
+		Quantity qtyWithIssuesNominal = Quantitys.createZero(icUomId);
+		Quantity qtyWithIssuesCatch = Quantitys.createZero(icUomId);
+
+		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
+		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+
+		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
+		{
+
+			final Quantity currentQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
+			final Quantity currentQtyNominal = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal());
+			final Quantity currentQtyCatch = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyCatch());
+
+			qtyTotalInStockUom = Quantitys.add(conversionCtx, qtyTotalInStockUom, currentQtyInStockUom);
+			qtyTotalNominal = Quantitys.add(conversionCtx, qtyTotalNominal, currentQtyNominal);
+
+			if (currentQtyCatch != null)
+			{
+				deliveredQtyItemsWithCatch.add(deliveredQtyItem);
+				qtyTotalCatch = Quantitys.add(conversionCtx, qtyTotalCatch, currentQtyCatch);
+			}
+			else
+			{
+				deliveredQtyItemsWithoutCatch.add(deliveredQtyItem);
+			}
+
+			if (deliveredQtyItem.isInDispute())
+			{
+				qtyWithIssuesInStockUom = Quantitys.add(conversionCtx, qtyWithIssuesInStockUom, currentQtyInStockUom);
+				qtyWithIssuesNominal = Quantitys.add(conversionCtx, qtyWithIssuesNominal, currentQtyNominal);
+				if (currentQtyCatch != null)
+				{
+					qtyWithIssuesCatch = Quantitys.add(conversionCtx, qtyWithIssuesCatch, currentQtyCatch);
+				}
+
+			}
+		}
+
+		return ReceiptData.builder()
+				.productId(productId)
+				.qtyTotalInStockUom(qtyTotalInStockUom)
+				.qtyTotalNominal(qtyTotalNominal)
+				.qtyTotalCatch(qtyTotalCatch)
+				.qtyWithIssuesInStockUom(qtyWithIssuesInStockUom)
+				.qtyWithIssuesNominal(qtyWithIssuesNominal)
+				.qtyWithIssuesCatch(qtyWithIssuesCatch)
+				.build();
+	}
+
+	private ImmutableList<DeliveredQtyItem> loadshippedQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	{
+		final Builder<DeliveredQtyItem> result = ImmutableList.builder();
 
 		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
 		{
-			final ShippedQtyItemBuilder deliveredQtyItem = ShippedQtyItem.builder();
+			final I_M_InOutLine inoutLine = create(icIolAssociationRecord.getM_InOutLine(), I_M_InOutLine.class);
+
+			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
+					.inDispute(inoutLine.isInDispute());
 
 			final Quantity qtyInStockUom = Quantitys
 					.create(
@@ -238,41 +311,5 @@ public class DeliveredDataLoader
 			result.add(deliveredQtyItem.build());
 		}
 		return result.build();
-	}
-
-	private ReceiptData loadReceiptQualityData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
-	{
-		StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.createZero(productId, icUomId);
-
-		if (icIolAssociationRecords.isEmpty())
-		{
-			return ReceiptData.builder()
-					.qtysTotal(defaultQtyDelivered)
-					.qtysWithIssues(qtysWithIssues)
-					.build();
-		}
-
-		StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.createZero(productId, icUomId);
-		for (final I_C_InvoiceCandidate_InOutLine iciol : icIolAssociationRecords)
-		{
-			final I_M_InOutLine inoutLine = create(iciol.getM_InOutLine(), I_M_InOutLine.class);
-
-			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys
-					.create(
-							iciol.getQtyDelivered(), productId,
-							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoIdOrNull(iciol.getC_UOM_ID()))
-					.negateIf(negateQtys);
-
-			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);
-			if (inoutLine.isInDispute())
-			{
-				qtysWithIssues = StockQtyAndUOMQtys.add(qtysWithIssues, qtys);
-			}
-		}
-
-		return ReceiptData.builder()
-				.qtysTotal(qtysTotal)
-				.qtysWithIssues(qtysWithIssues)
-				.build();
 	}
 }

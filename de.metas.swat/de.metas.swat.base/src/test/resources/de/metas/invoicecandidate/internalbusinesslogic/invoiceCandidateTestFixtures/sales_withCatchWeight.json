@@ -28,7 +28,7 @@
         "qty" : "43",
         "uomId" : 110000
       },
-      "shippedQtyItems" : [ {
+      "deliveredQtyItems" : [ {
         "qtyInStockUom" : {
           "qty" : "10",
           "uomId" : 100000
