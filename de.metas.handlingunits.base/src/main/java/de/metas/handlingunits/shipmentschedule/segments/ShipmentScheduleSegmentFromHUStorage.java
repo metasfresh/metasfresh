@@ -81,7 +81,7 @@ public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSe
 			loaded = true;
 			return;
 		}
-		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
+		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
 		if (hu == null)
 		{
 			return;

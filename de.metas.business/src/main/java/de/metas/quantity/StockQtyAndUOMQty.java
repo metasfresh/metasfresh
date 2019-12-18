@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.product.ProductId;
+import de.metas.uom.UOMPrecision;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -160,14 +161,15 @@ public class StockQtyAndUOMQty
 	}
 
 	public StockQtyAndUOMQty setScale(
-			final int newScale,
+			@NonNull final UOMPrecision stockQtyPrecision,
+			@Nullable final UOMPrecision uomQtyPrecision,
 			@NonNull final RoundingMode roundingMode)
 	{
 		final StockQtyAndUOMQtyBuilder builder = this.toBuilder()
-				.stockQty(stockQty.setScale(newScale, roundingMode));
-		if (uomQty != null)
+				.stockQty(stockQty.setScale(stockQtyPrecision, roundingMode));
+		if (uomQty != null && uomQtyPrecision != null)
 		{
-			builder.uomQty(uomQty.setScale(newScale, roundingMode));
+			builder.uomQty(uomQty.setScale(uomQtyPrecision, roundingMode));
 		}
 		return builder.build();
 	}

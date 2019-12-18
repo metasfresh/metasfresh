@@ -735,14 +735,14 @@ public final class Quantity implements Comparable<Quantity>
 				: new Quantity(qtyRounted, uom, sourceQty, sourceUom);
 	}
 
-	public Quantity setScale(final int newScale, @NonNull final RoundingMode roundingMode)
+	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)
 	{
-		final BigDecimal newQty = qty.setScale(newScale, roundingMode);
+		final BigDecimal newQty = qty.setScale(newScale.toInt(), roundingMode);
 
 		return new Quantity(
 				newQty,
 				uom,
-				sourceQty != null ? sourceQty.setScale(newScale, roundingMode) : newQty,
+				sourceQty != null ? sourceQty.setScale(newScale.toInt(), roundingMode) : newQty,
 				sourceUom != null ? sourceUom : uom);
 	}
 }
