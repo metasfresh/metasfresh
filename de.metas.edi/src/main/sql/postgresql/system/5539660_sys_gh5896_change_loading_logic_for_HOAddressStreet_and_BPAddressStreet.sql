@@ -1,3 +1,4 @@
+drop view if exists edi_desadvpack_sscc_label;
 
 CREATE OR REPLACE VIEW edi_desadvpack_sscc_label
             (no_of_labels, SSCC, order_reference, date_shipped, GTIN, product_description, amount, weight, best_before, lot_no,
@@ -30,10 +31,10 @@ SELECT
     ho_address_location.city                                                    AS ho_address_city,
     t_sel.ad_pinstance_id                                                       AS p_instance_id
 from t_selection t_sel
-    inner join edi_desadvline_pack dl_pack on t_sel.t_selection_id = dl_pack.edi_desadvline_pack_id
-    inner join edi_desadvline dl on dl_pack.edi_desadvline_id = dl.edi_desadvline_id
-    inner join edi_desadv dh on dl_pack.edi_desadv_id = dh.edi_desadv_id
-    left join c_bpartner_location bp_address on dh.c_bpartner_location_id = bp_address.c_bpartner_location_id
-    left join c_location bp_address_location on bp_address.c_location_id = bp_address_location.c_location_id
-    left join c_bpartner_location ho_address on dh.handover_location_id = ho_address.c_bpartner_location_id
-    left join c_location ho_address_location on ho_address.c_location_id = ho_address_location.c_location_id;
+         inner join edi_desadvline_pack dl_pack on t_sel.t_selection_id = dl_pack.edi_desadvline_pack_id
+         inner join edi_desadvline dl on dl_pack.edi_desadvline_id = dl.edi_desadvline_id
+         inner join edi_desadv dh on dl_pack.edi_desadv_id = dh.edi_desadv_id
+         left join c_bpartner_location bp_address on dh.c_bpartner_location_id = bp_address.c_bpartner_location_id
+         left join c_location bp_address_location on bp_address.c_location_id = bp_address_location.c_location_id
+         left join c_bpartner_location ho_address on dh.handover_location_id = ho_address.c_bpartner_location_id
+         left join c_location ho_address_location on ho_address.c_location_id = ho_address_location.c_location_id;
