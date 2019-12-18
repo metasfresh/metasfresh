@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -239,7 +240,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(
-			final Properties ctx,
+			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -426,6 +427,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			filters.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID, packingMaterialQuery);
 		}
 
+		if (queryVO.isDefaultForProduct())
+		{
+			filters.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMN_IsDefaultForProduct, true);
+		}
+
 		return filters;
 	}
 
@@ -468,12 +474,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	private final IQueryBuilder<I_M_HU_PI_Item_Product> createHU_PI_Item_Product_QueryBuilder(
-			final Properties ctx,
-			final IHUPIItemProductQuery queryVO,
-			final String trxName)
+			@NonNull final Properties ctx,
+			@NonNull final IHUPIItemProductQuery queryVO,
+			@Nullable final String trxName)
 	{
-		Check.assumeNotNull(queryVO, "queryVO not null");
-
 		//
 		// Final Query
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = Services.get(IQueryBL.class)
@@ -661,4 +665,19 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return piip1Qty != null && piip1Qty.compareTo(piip2Qty) == 0;
 	}
 
+	@Override
+	public Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(
+			@NonNull final ProductId productId,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ZonedDateTime date)
+	{
+		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
+		query.setBPartnerId(bpartnerId);
+		query.setProductId(productId);
+		query.setDate(date);
+		query.setDefaultForProduct(true);
+
+		final I_M_HU_PI_Item_Product huPIItemProduct = retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
+		return Optional.ofNullable(huPIItemProduct);
+	}
 }

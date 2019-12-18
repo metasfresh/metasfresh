@@ -97,4 +97,9 @@ public interface IHUPIItemProductQuery
 	void setM_Product_Packaging_ID(int packagingProductId);
 	int getM_Product_Packaging_ID();
 	// @formatter:on
+
+	// @formatter:off
+	void setDefaultForProduct(final boolean defaultForProduct);
+	boolean isDefaultForProduct();
+	// @formatter:on
 }
