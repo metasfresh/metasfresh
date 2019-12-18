@@ -42,7 +42,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -57,6 +56,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
@@ -195,10 +195,8 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then bpartnerLocationId may not be null", pricingSystemId);
-		final I_C_BPartner_Location bpartnerLocation = loadOutOfTrx(bpartnerLocationId, I_C_BPartner_Location.class);
-		final CountryId countryId = CountryId.ofRepoId(bpartnerLocation.getC_Location().getC_Country_ID());
+		final CountryId countryId = Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpartnerLocationId);
 
-		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then soTrx may not be null", pricingSystemId);
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 
 		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
