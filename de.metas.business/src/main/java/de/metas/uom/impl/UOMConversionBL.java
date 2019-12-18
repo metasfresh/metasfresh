@@ -135,7 +135,10 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public Quantity convertQuantityTo(@NonNull final Quantity quantity, final UOMConversionContext conversionCtx, @NonNull final UomId uomToId)
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final UOMConversionContext conversionCtx,
+			@NonNull final UomId uomToId)
 	{
 		final I_C_UOM uomTo = uomDAO.getById(uomToId);
 		return convertQuantityTo(quantity, conversionCtx, uomTo);
@@ -144,7 +147,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public Quantity convertQuantityTo(
 			@NonNull final Quantity quantity,
-			@NonNull final UOMConversionContext conversionCtx,
+			@Nullable final UOMConversionContext conversionCtx,
 			@NonNull final I_C_UOM uomTo)
 	{
 		final UomId uomToId = UomId.ofRepoId(uomTo.getC_UOM_ID());

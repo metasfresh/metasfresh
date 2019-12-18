@@ -30,6 +30,8 @@ import java.util.TreeMap;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -61,7 +63,6 @@ import lombok.NonNull;
 	//
 	// Services
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
 
 	//
 	// Params
@@ -81,10 +82,12 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * This constructor exist to that the class can be overridden by unit tests. If you override this class, please make sure to override all its public methods.
+	 * This constructor exist to that the class can be overridden by unit tests. If you override this class, please make sure to override all its public methods.<br>
+	 * Also, make sure that huContext is set.
 	 * <p>
 	 * If you need a "real" instance, please use {@link #newInstance(IHUContext, I_M_HU)}.
 	 */
+	@VisibleForTesting
 	HUReceiptLinePartAttributes()
 	{
 		this.id = "<NULL>";
@@ -205,6 +208,7 @@ import lombok.NonNull;
 
 	public Optional<Quantity> getWeight()
 	{
+		final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class); // note that weightableFactory is not a singleton-service, so we only get our instance in this method.
 		final IWeightable weightable = weightableFactory.createWeightableOrNull(getAttributeStorage());
 		if (weightable == null)
 		{
@@ -240,7 +244,6 @@ import lombok.NonNull;
 		}
 
 		return Services.get(IQualityNoteDAO.class).retrieveQualityNoteForValue(huContext.getCtx(), qualityNoticeCode.toString());
-
 	}
 
 }

@@ -70,14 +70,21 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, UomId uomFrom, UomId uomTo);
 
 	/**
+	 * @deprecated please consider using {@link #convertQtyToProductUOM(UOMConversionContext, BigDecimal, I_C_UOM)}
+	 */
+	@Deprecated
+	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
+
+
+	/**
 	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
 	 * <p>
 	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
 	 *
+	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
+	 *
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
-	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
-
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, UomId uomToId);
 
 	/**
