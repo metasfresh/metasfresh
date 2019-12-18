@@ -53,6 +53,7 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCUOMType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
@@ -527,17 +528,8 @@ public class StepComXMLDesadvBean
 		{
 			final EDIExpDesadvLinePackType pack = lineAndPack.getPack();
 
-			if (settings.isDesadvLineMEASUREMENTUNITRequired())
-			{
-				final String x12DE355 = ValidationHelper.validateString(pack.getCUOMID().getX12DE355(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @C_UOM_ID@");
-				final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(x12DE355);
-				if (!settings.isMeasurementUnitAllowed(measurementUnit))
-				{
-					throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + line.getLine() + " @C_UOM_ID@=" + settings.getDesadvLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
-				}
-				cuQuantity.setMEASUREMENTUNIT(measurementUnit.name());
-			}
+			final MeasurementUnit measurementUnit = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
+			cuQuantity.setMEASUREMENTUNIT(measurementUnit == null ? null : measurementUnit.name());
 
 			if (settings.isDesadvLineCUTURequired())
 			{
@@ -554,7 +546,7 @@ public class StepComXMLDesadvBean
 			if (dmark1Required)
 			{
 				final String lotNumber = validateString(pack.getLotNumber(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNo@");
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNumber@");
 
 				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
 				dmark1.setDOCUMENTID(documentId);
@@ -587,26 +579,22 @@ public class StepComXMLDesadvBean
 		for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
 		{
 			qtyDelivered = qtyDelivered.add(extractQtyDelivered(pack));
+			measurementUnit = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
+		}
 
-			final String x12DE355 = ValidationHelper.validateString(pack.getCUOMID().getX12DE355(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @C_UOM_ID@");
-			measurementUnit = MeasurementUnit.fromMetasfreshUOM(x12DE355);
-			if (!settings.isMeasurementUnitAllowed(measurementUnit))
-			{
-				throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + line.getLine() + " @C_UOM_ID@=" + settings.getDesadvLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
-			}
+		if (measurementUnit == null) // case: there were no packs
+		{
+			measurementUnit = extractMeasurementUnitOrNull(line.getCUOMID(), line, settings);
 		}
 
 		final String documentId = xmlDesadv.getDocumentNo();
 		final String lineNumber = extractLineNumber(line, decimalFormat);
 
 		final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
-		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
 		detail.getDQUAN1().add(cuQuantity);
-		if (measurementUnit != null)
-		{
-			cuQuantity.setMEASUREMENTUNIT(measurementUnit.name());
-		}
+
+		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
+		cuQuantity.setMEASUREMENTUNIT(measurementUnit == null ? null : measurementUnit.name());
 
 		// check if we need a discrepancy information
 		final BigDecimal quantityDiff = qtyDelivered.subtract(line.getQtyEntered());
@@ -620,6 +608,28 @@ public class StepComXMLDesadvBean
 		}
 
 		return detail;
+	}
+
+	private MeasurementUnit extractMeasurementUnitOrNull(
+			@Nullable final EDIExpCUOMType uom,
+			@NonNull final EDIExpDesadvLineType line,
+			@NonNull final StepComDesadvSettings settings)
+	{
+		if (!settings.isDesadvLineMEASUREMENTUNITRequired())
+		{
+			return null;
+		}
+
+		final String x12DE355 = ValidationHelper.validateString(
+				uom == null ? null : uom.getX12DE355(),
+				"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @C_UOM_ID@");
+
+		final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(x12DE355);
+		if (!settings.isMeasurementUnitAllowed(measurementUnit))
+		{
+			throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + line.getLine() + " @C_UOM_ID@=" + settings.getDesadvLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
+		}
+		return measurementUnit;
 	}
 
 	private String extractLineNumber(@NonNull final EDIExpDesadvLineType line, @NonNull final DecimalFormat decimalFormat)
