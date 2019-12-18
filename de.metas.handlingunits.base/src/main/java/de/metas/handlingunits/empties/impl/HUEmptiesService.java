@@ -1,10 +1,12 @@
 package de.metas.handlingunits.empties.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -126,10 +128,10 @@ public class HUEmptiesService implements IHUEmptiesService
 	}
 
 	@Override
-	public boolean isEmptiesInOut(final I_M_InOut inout)
+	public boolean isEmptiesInOut(@NonNull final I_M_InOut inout)
 	{
-		final I_C_DocType docType = inout.getC_DocType();
-		if(docType == null || docType.getC_DocType_ID() <= 0)
+		final I_C_DocType docType = loadOutOfTrx(inout.getC_DocType_ID(), I_C_DocType.class);
+		if (docType == null || docType.getC_DocType_ID() <= 0)
 		{
 			return false;
 		}
@@ -144,6 +146,5 @@ public class HUEmptiesService implements IHUEmptiesService
 	{
 		return new EmptiesInOutProducer(ctx);
 	}
-
 
 }

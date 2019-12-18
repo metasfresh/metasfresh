@@ -21,6 +21,7 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
@@ -93,7 +95,6 @@ import lombok.NonNull;
  * <li>generate shipment
  * <li>shipper transportation: make sure M_Packages are updated correctly after shipment
  * </ul>
- *
  */
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest
 {
@@ -294,9 +295,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Aggregates Picked TUs ({@link #afterAggregation_HUExpectations}) and creates Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 *
+	 * <p>
 	 * NOTE: in most of the cases they are LUs but not necesary.
-	 *
+	 * <p>
 	 * Also allocates the aggregated HUs to original shipment schedules ({@link #afterAggregation_ShipmentScheduleQtyPickedExpectations}).
 	 */
 	protected abstract void step30_aggregateHUs();
@@ -307,7 +308,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Adds Aggregated HUs ({@link #afterAggregation_HUExpectations}) to {@link #shipperTransportation}.
-	 *
+	 * <p>
 	 * Resulting packages will be added to {@link #mpackagesForAggregatedHUs}.
 	 */
 	protected void step40_addAggregatedHUsToShipperTransportation()
@@ -327,7 +328,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
-							shipperTransportation.getM_ShipperTransportation_ID(),
+							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
 							Collections.singletonList(afterAggregation_HU));
 
 			//
@@ -345,7 +346,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Generates {@link #generatedShipments} from Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 *
+	 * <p>
 	 * Validates if {@link #mpackagesForAggregatedHUs} were correctly updated.
 	 */
 	protected void step50_GenerateShipment()

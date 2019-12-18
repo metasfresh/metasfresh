@@ -19,7 +19,7 @@ import de.metas.process.SelectionSize;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;

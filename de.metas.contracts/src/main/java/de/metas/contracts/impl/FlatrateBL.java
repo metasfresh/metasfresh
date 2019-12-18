@@ -323,7 +323,7 @@ public class FlatrateBL implements IFlatrateBL
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
 		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions())
-				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
 				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
 						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
 
@@ -605,10 +605,6 @@ public class FlatrateBL implements IFlatrateBL
 	/**
 	 * Returns the price for one unit, given a flatrate term, qty (to consider discounts) and data entry.
 	 *
-	 * @param flatrateTerm
-	 * @param qty
-	 * @param dataEntry
-	 * @return
 	 */
 	BigDecimal getFlatFeePricePerUnit(
 			final I_C_Flatrate_Term flatrateTerm,
@@ -695,7 +691,7 @@ public class FlatrateBL implements IFlatrateBL
 				flatrateTerm,
 				startDate,
 				endDate,
-				uom != null ? UomId.ofRepoId(uom.getC_UOM_ID()) : null);
+				UomId.ofRepoId(uom.getC_UOM_ID()));
 
 		final List<I_C_Period> periodsOfTerm = Services.get(ICalendarDAO.class).retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), startDate, endDate, trxName);
@@ -1339,7 +1335,7 @@ public class FlatrateBL implements IFlatrateBL
 		updateNoticeDate(transition, term);
 	}
 
-	private I_C_Flatrate_Transition getTransitionForTerm(I_C_Flatrate_Term term)
+	private I_C_Flatrate_Transition getTransitionForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Transition transition;
 		if (term.getC_Flatrate_Transition_ID() > 0)
@@ -1448,8 +1444,6 @@ public class FlatrateBL implements IFlatrateBL
 	/**
 	 * Update NoticeDate of the given term. Uses the given transition and the term's EndDate.
 	 *
-	 * @param transition
-	 * @param term
 	 */
 	private void updateNoticeDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
@@ -1484,8 +1478,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * @param term the contract term that the method retrieves the doc type for. Note that we can assume such a doc type exists, because it should have been made sure by {@link C_Flatrate_Term}.
-	 *
-	 * @returns the doc type for the given term
+	 * @return the doc type for the given term
 	 */
 	@Override
 	public I_C_DocType getDocTypeFor(final I_C_Flatrate_Term term)
@@ -1566,10 +1559,10 @@ public class FlatrateBL implements IFlatrateBL
 			final I_M_InOutLine document,
 			final boolean substract)
 	{
-		final I_C_BPartner partner = document.getM_InOut().getC_BPartner();
+		final int partnerId = document.getM_InOut().getC_BPartner_ID();
 		final Timestamp movementDate = document.getM_InOut().getMovementDate();
 
-		final I_C_Flatrate_DataEntry entry = flatrateDAO.retrieveRefundableDataEntry(partner.getC_BPartner_ID(), movementDate, product);
+		final I_C_Flatrate_DataEntry entry = flatrateDAO.retrieveRefundableDataEntry(partnerId, movementDate, product);
 
 		final BigDecimal documentAmount = substract ? qty.negate() : qty;
 
@@ -1757,9 +1750,6 @@ public class FlatrateBL implements IFlatrateBL
 	/**
 	 * Check if 2 flatrate terms overlap in product or product category
 	 *
-	 * @param newTerm
-	 * @param term
-	 * @return
 	 */
 	private boolean productsOverlap(final I_C_Flatrate_Term newTerm, final I_C_Flatrate_Term term)
 	{
@@ -1882,11 +1872,8 @@ public class FlatrateBL implements IFlatrateBL
 	/**
 	 * Check if the startDate and endDate of 2 terms overlap.
 	 *
-	 * @param term1
-	 * @param term2
-	 * @return
 	 */
-	private boolean periodsOverlap(final I_C_Flatrate_Term term1, I_C_Flatrate_Term term2)
+	private boolean periodsOverlap(@NonNull final I_C_Flatrate_Term term1, @NonNull final I_C_Flatrate_Term term2)
 	{
 		final Timestamp startDate1 = term1.getStartDate();
 		final Timestamp startDate2 = term2.getStartDate();

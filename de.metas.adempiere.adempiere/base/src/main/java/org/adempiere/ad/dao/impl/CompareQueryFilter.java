@@ -43,6 +43,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 @EqualsAndHashCode(doNotUseGetters = true, exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -100,10 +102,10 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	/* package */ CompareQueryFilter(
 			final String columnName,
 			@NonNull final Operator operator,
-			final Object value,
+			@Nullable final Object value,
 			final IQueryFilterModifier modifier)
 	{
-		this.operand1 = ModelColumnNameValue.<T> forColumnName(columnName);
+		this.operand1 = ModelColumnNameValue.<T>forColumnName(columnName);
 		this.operand2 = value;
 
 		this.operator = operator;

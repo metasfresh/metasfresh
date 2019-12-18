@@ -22,32 +22,9 @@ package de.metas.invoice.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.exceptions.TaxCategoryNotFoundException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MTax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.location.CountryId;
@@ -73,6 +50,30 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.TaxCategoryNotFoundException;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MTax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -126,7 +127,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(io.getM_Warehouse_ID());
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
-		final I_C_BPartner_Location locationTo = InterfaceWrapperHelper.create(io.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location locationTo = Services.get(IBPartnerDAO.class).getBPartnerLocationById(partnerLocationId);
 
 		final Timestamp shipDate = io.getMovementDate();
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(ctx,

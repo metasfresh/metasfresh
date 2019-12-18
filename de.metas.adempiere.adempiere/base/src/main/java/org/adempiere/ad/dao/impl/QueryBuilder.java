@@ -48,6 +48,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>
 {
 	private final Class<T> modelClass;
@@ -81,7 +83,7 @@ import lombok.NonNull;
 	 * Exceptions might be some test cases, but there is think that a developer can carry the border of explicitly giving a <code>null</code> parameter. On the upside, we don't have multiple different constructors to choose from.
 	 *
 	 * @param modelClass
-	 * @param tableName may be <code>null</code>. If <code>null</code>, then the table's name will be deducted from the given modelClass when it is required.
+	 * @param tableName  may be <code>null</code>. If <code>null</code>, then the table's name will be deducted from the given modelClass when it is required.
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
@@ -504,7 +506,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IQueryBuilder<T> addEqualsFilter(final String columnName, final Object value)
+	public IQueryBuilder<T> addEqualsFilter(final String columnName, @Nullable final Object value)
 	{
 		filters.addEqualsFilter(columnName, value);
 		return this;
