@@ -7,19 +7,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.uom.UomId;
 import de.metas.uom.impl.UOMTestHelper;
 
 public class HUReceiptLineCandidatesBuilderTest
@@ -32,7 +34,6 @@ public class HUReceiptLineCandidatesBuilderTest
 	//
 	// Master data
 	private I_C_UOM uomRecord;
-	private UomId uomId;
 
 	private I_M_ReceiptSchedule receiptSchedule;
 
@@ -41,21 +42,22 @@ public class HUReceiptLineCandidatesBuilderTest
 	@Before
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
+		// the code under tests includes WeightableFactory which assumes that some weight-related I_AD_Attributes to exist. that's why we use HUTestHelper to set them up.
+		new HUTestHelper();
 		context = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 
 		//
 		// Master data
 		uomHelper = new UOMTestHelper(context.getCtx());
 		uomRecord = uomHelper.createUOM("UOM1", 2);
-		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
 		final I_C_UOM stockUOMRecord = uomHelper.createUOM("StockUOM1", 2);
-
-		final I_M_Product productRecord = newInstance(I_M_Product.class, context);
-		productRecord.setC_UOM_ID(stockUOMRecord.getC_UOM_ID());
-		saveRecord(productRecord);
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("TestProduct", stockUOMRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+
+		final I_C_BPartner bpPartnerRecord = BusinessTestHelper.createBPartner("TestVendor");
+
+		final I_M_Warehouse warehouseRecord = BusinessTestHelper.createWarehouse("TestWarehouse");
 
 		// we need to be able to convert between stocking-uom and the receiptSchedule's UOM
 		// we use a trivial conversion because we don'T want to complicate the tests (and we don't want to test uom-conversion in here)
@@ -64,6 +66,8 @@ public class HUReceiptLineCandidatesBuilderTest
 		receiptSchedule = newInstance(I_M_ReceiptSchedule.class, context);
 		receiptSchedule.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		receiptSchedule.setM_Product_ID(productRecord.getM_Product_ID());
+		receiptSchedule.setC_BPartner_ID(bpPartnerRecord.getC_BPartner_ID());
+		receiptSchedule.setM_Warehouse_ID(warehouseRecord.getM_Warehouse_ID());
 		saveRecord(receiptSchedule);
 	}
 
@@ -252,7 +256,7 @@ public class HUReceiptLineCandidatesBuilderTest
 
 		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.create(new BigDecimal(430), productId, null, null);
 		final StockQtyAndUOMQty qty_5 = StockQtyAndUOMQtys.create(new BigDecimal(435 - 430), productId, null, null);
-		final StockQtyAndUOMQty qty_minus_5 = StockQtyAndUOMQtys.create(new BigDecimal(425-430), productId, null, null);
+		final StockQtyAndUOMQty qty_minus_5 = StockQtyAndUOMQtys.create(new BigDecimal(425 - 430), productId, null, null);
 
 		final StockQtyAndUOMQty qty_4300 = StockQtyAndUOMQtys.create(new BigDecimal(4300), productId, null, null); // = (430 + 5) + (430 - 5) + 8*430
 		final StockQtyAndUOMQty qty_64_25 = StockQtyAndUOMQtys.create(new BigDecimal("64.25"), productId, null, null);  // = (430 + 5)*5% + (430 - 5)*10%
