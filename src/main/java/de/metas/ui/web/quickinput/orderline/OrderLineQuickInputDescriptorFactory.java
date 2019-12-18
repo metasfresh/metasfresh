@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
@@ -72,11 +71,8 @@ import lombok.NonNull;
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 
-		final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
-
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
-				.huOrderBL(huOrderBL)
 				.build();
 	}
 
