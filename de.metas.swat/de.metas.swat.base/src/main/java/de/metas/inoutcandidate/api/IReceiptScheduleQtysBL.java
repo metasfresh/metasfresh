@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
 /**
@@ -63,7 +64,7 @@ public interface IReceiptScheduleQtysBL extends ISingletonService
 	 * @param rs
 	 * @return qty to move
 	 */
-	BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs);
+	StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs);
 
 	/**
 	 * Gets QtyMoved

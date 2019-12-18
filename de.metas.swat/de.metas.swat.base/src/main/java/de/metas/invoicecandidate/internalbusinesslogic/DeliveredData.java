@@ -48,7 +48,7 @@ public class DeliveredData
 		this.shipmentData = shipmentData;
 		this.receiptData = receiptData;
 
-		if (shipmentData != null ^ receiptData != null)
+		if (shipmentData != null ^ /* XOR */ receiptData != null)
 		{
 			return; // OK
 		}

@@ -108,7 +108,7 @@ CREATE OR REPLACE VIEW de_metas_invoicecandidate.c_invoice_candidate_failed_to_u
     ic.task_08848_fixed,
     ic.lineaggregationkeybuilder_id,
     ic.ispackagingmaterial,
-    ic.isedirecipient,
+    ic.IsEdiInvoicRecipient,
     ic.isedienabled,
     ic.m_pricelist_version_id,
     ic.qualityinvoicelinegrouptype
@@ -222,7 +222,7 @@ UNION
     ic.task_08848_fixed,
     ic.lineaggregationkeybuilder_id,
     ic.ispackagingmaterial,
-    ic.isedirecipient,
+    ic.IsEdiInvoicRecipient,
     ic.isedienabled,
     ic.m_pricelist_version_id,
     ic.qualityinvoicelinegrouptype
@@ -336,7 +336,7 @@ UNION
     ic.task_08848_fixed,
     ic.lineaggregationkeybuilder_id,
     ic.ispackagingmaterial,
-    ic.isedirecipient,
+    ic.IsEdiInvoicRecipient,
     ic.isedienabled,
     ic.m_pricelist_version_id,
     ic.qualityinvoicelinegrouptype
@@ -450,7 +450,7 @@ UNION
     ic.task_08848_fixed,
     ic.lineaggregationkeybuilder_id,
     ic.ispackagingmaterial,
-    ic.isedirecipient,
+    ic.IsEdiInvoicRecipient,
     ic.isedienabled,
     ic.m_pricelist_version_id,
     ic.qualityinvoicelinegrouptype
@@ -564,7 +564,7 @@ UNION
     ic.task_08848_fixed,
     ic.lineaggregationkeybuilder_id,
     ic.ispackagingmaterial,
-    ic.isedirecipient,
+    ic.IsEdiInvoicRecipient,
     ic.isedienabled,
     ic.m_pricelist_version_id,
     ic.qualityinvoicelinegrouptype
@@ -678,7 +678,7 @@ UNION
     ic.task_08848_fixed,
     ic.lineaggregationkeybuilder_id,
     ic.ispackagingmaterial,
-    ic.isedirecipient,
+    ic.IsEdiInvoicRecipient,
     ic.isedienabled,
     ic.m_pricelist_version_id,
     ic.qualityinvoicelinegrouptype

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -20,9 +21,10 @@ import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Abstract implementation of {@link IHUAllocations} which:
@@ -74,16 +76,13 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	/**
 	 * Creates allocations for HUs. By allocations, we mean records that can later be represented by {@link IHUAllocations}. Current example is {@code M_ReceiptSchedule_Alloc}.
 	 *
-	 * @param luHU
-	 * @param tuHU
-	 * @param qtyToAllocate
 	 * @param deleteOldTUAllocations if true, delete ALL old allocations between the TU and the document (be careful with this, as it might delete allocations which are still desired)
 	 */
-	protected abstract void createAllocation(final I_M_HU luHU,
-			final I_M_HU tuHU,
-			final I_M_HU vhu,
-			final Quantity qtyToAllocate,
-			final boolean deleteOldTUAllocations);
+	protected abstract void createAllocation(I_M_HU luHU,
+			I_M_HU tuHU,
+			I_M_HU vhu,
+			StockQtyAndUOMQty qtyToAllocate,
+			boolean deleteOldTUAllocations);
 
 	/**
 	 * Deletes allocation records between the given <code>husToUnassign</code> and specific records.
@@ -124,10 +123,11 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	}
 
 	@Override
-	public final void allocate(final I_M_HU luHU,
-			final I_M_HU tuHU,
-			final I_M_HU vhu,
-			final Quantity qtyToAllocate,
+	public final void allocate(
+			@Nullable final I_M_HU luHU,
+			@Nullable final I_M_HU tuHU,
+			@Nullable final I_M_HU vhu,
+			@NonNull final StockQtyAndUOMQty qtyToAllocate,
 			final boolean deleteOldTUAllocations)
 	{
 		//
@@ -153,7 +153,10 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 		}
 		else
 		{
-			throw new AdempiereException("LU or TU shall be not null");
+			throw new AdempiereException("LU, TU or VHU shall be not null")
+					.appendParametersToMessage()
+					.setParameter("deleteOldTUAllocations", deleteOldTUAllocations)
+					.setParameter("qtyToAllocate", qtyToAllocate);
 		}
 
 		//

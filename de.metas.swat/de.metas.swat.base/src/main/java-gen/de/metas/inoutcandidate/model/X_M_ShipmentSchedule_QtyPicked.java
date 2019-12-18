@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 96106947L;
+	private static final long serialVersionUID = -1932142607L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (Properties ctx, int M_ShipmentSchedule_QtyPicked_ID, String trxName)
@@ -180,7 +180,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -189,7 +189,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

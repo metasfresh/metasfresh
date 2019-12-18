@@ -5,6 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -23,6 +25,7 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -68,7 +71,7 @@ public final class BusinessTestHelper
 		uomKg.setX12DE355("KGM");
 		save(uomKg);
 		return uomKg;
-	};
+	}
 
 	public static I_C_UOM createUomEach()
 	{
@@ -117,16 +120,31 @@ public final class BusinessTestHelper
 	}
 
 	public static void createUOMConversion(
-			final I_M_Product product,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final BigDecimal fromToMultiplier,
-			final BigDecimal toFromMultiplier)
+			@Nullable final I_M_Product product,
+			@NonNull final I_C_UOM uomFrom,
+			@NonNull final I_C_UOM uomTo,
+			@NonNull final BigDecimal fromToMultiplier,
+			@NonNull final BigDecimal toFromMultiplier)
+	{
+		createUOMConversion(
+				product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null,
+				UomId.ofRepoId(uomFrom.getC_UOM_ID()),
+				UomId.ofRepoId(uomTo.getC_UOM_ID()),
+				fromToMultiplier,
+				toFromMultiplier);
+	}
+
+	public static void createUOMConversion(
+			@Nullable final ProductId productId,
+			@NonNull final UomId uomFromId,
+			@NonNull final UomId uomToId,
+			@NonNull final BigDecimal fromToMultiplier,
+			@NonNull final BigDecimal toFromMultiplier)
 	{
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null)
-				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
+				.productId(productId)
+				.fromUomId(uomFromId)
+				.toUomId(uomToId)
 				.fromToMultiplier(fromToMultiplier)
 				.toFromMultiplier(toFromMultiplier)
 				.build());

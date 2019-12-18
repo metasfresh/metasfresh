@@ -47,7 +47,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -202,15 +205,19 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		rsAllocations = new ReceiptScheduleHUAllocations(receiptSchedule);
 		rsAllocations.addAssignedHUs(tusToAllocate);
 
+		final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+
 		final I_M_HU luHU = null; // no LU
 		for (final I_M_HU tuHU : tusToAllocate)
 		{
 			InterfaceWrapperHelper.setTrxName(tuHU, ITrx.TRXNAME_None); // FIXME workaround
 			for (final I_M_HU vhu : handlingUnitsDAO.retrieveIncludedHUs(tuHU))
 			{
-				final Quantity qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
+				final Quantity qty = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
 
+				final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(qty, productId, (Quantity)null/* uomQty */);
 				final boolean deleteOldTUAllocations = false; // don't care; there shall be none
+
 				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocations);
 			}
 
@@ -222,6 +229,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 	protected final void recreateAllocationsForTopLevelTUs(final List<I_M_HU> tusToAllocate, final boolean deleteOldTUAllocations)
 	{
+		final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
 		final I_M_HU luHU = null; // no LU
 		for (final I_M_HU tuHU : tusToAllocate)
 		{
@@ -238,7 +246,8 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 			boolean deleteOldTUAllocationsToUse = deleteOldTUAllocations;
 			for (final I_M_HU vhu : vhus)
 			{
-				final Quantity qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
+				final Quantity qty = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
+				final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(qty, productId, (Quantity)null/* uomQty */);
 
 				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocationsToUse);
 				deleteOldTUAllocationsToUse = false;

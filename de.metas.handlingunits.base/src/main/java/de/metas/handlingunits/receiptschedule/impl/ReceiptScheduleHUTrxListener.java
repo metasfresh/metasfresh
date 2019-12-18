@@ -39,9 +39,13 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  *
@@ -93,7 +97,10 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		createReceiptScheduleAllocFromTrxLine(trxLine, receiptSchedule, huItem);
 	}
 
-	private void createReceiptScheduleAllocFromTrxLine(final I_M_HU_Trx_Line trxLine, final I_M_ReceiptSchedule receiptSchedule, final I_M_HU_Item huItem)
+	private void createReceiptScheduleAllocFromTrxLine(
+			@NonNull final I_M_HU_Trx_Line trxLine,
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@NonNull final I_M_HU_Item huItem)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -109,17 +116,15 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		final I_M_HU vhu = vhuItem == null ? null : vhuItem.getM_HU();
 
 		//
-		// Case: our HU is an LU
+		// Case: our HU is a LU
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
 			// Make sure this is just a dummy transaction used to LU assignments, attribute transfers etc
 			Check.assume(qtyToAllocateOnHU.signum() == 0, "Transactions about LUs shall always have Qty=0: {}", trxLine);
-			// tuHU = null;
-			// luHU = hu;
 			return;
 		}
 		//
-		// Case: our HU is an TU or a top level VHU
+		// Case: our HU is a TU or a top level VHU
 		else
 		{
 			tuHU = hu;
@@ -129,11 +134,14 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Create TU/LU allocation to Receipt Schedule
 		final ReceiptScheduleHUAllocations huAllocations = new ReceiptScheduleHUAllocations(receiptSchedule);
-// "\nluHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(luHU))+"\ntuHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(tuHU))+"\nvhu\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(vhu))
+		// "\nluHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(luHU))+"\ntuHU\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(tuHU))+"\nvhu\n"+de.metas.handlingunits.HUXmlConverter.toString(de.metas.handlingunits.HUXmlConverter.toXml(vhu))
 		//
 		// 07698: do not delete old allocations when creating them from transaction line
 		final boolean deleteOldTUAllocations = false;
-		huAllocations.allocate(luHU, tuHU, vhu, Quantity.of(qtyToAllocateOnHU, uom), deleteOldTUAllocations);
+		final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(Quantity.of(qtyToAllocateOnHU, uom), productId, (Quantity)null/* uomQty */);
+
+		huAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocations);
 	}
 
 	/**

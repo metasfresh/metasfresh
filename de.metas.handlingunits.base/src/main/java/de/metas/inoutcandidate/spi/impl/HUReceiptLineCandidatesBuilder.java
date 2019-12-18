@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +33,10 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Collects {@link I_M_ReceiptSchedule_Alloc}s and produces {@link HUReceiptLineCandidate}s.
@@ -57,14 +59,16 @@ import de.metas.util.Check;
 	private final transient List<HUReceiptLineCandidate> receiptLineCandidatesRO = Collections.unmodifiableList(receiptLineCandidates);
 	private boolean stale = true;
 
-	public HUReceiptLineCandidatesBuilder(final I_M_ReceiptSchedule receiptSchedule)
+	private final ProductId productId;
+	private final UomId uomId;
+
+	public HUReceiptLineCandidatesBuilder(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		super();
-
-		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
 		_receiptSchedule = receiptSchedule;
-
 		stale = true;
+
+		this.productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+		this.uomId = UomId.ofRepoId(receiptSchedule.getC_UOM_ID());
 	}
 
 	@Override
@@ -101,7 +105,7 @@ import de.metas.util.Check;
 		final IHUContext huContext = getHUContext();
 		final I_M_HU tuHU = rsa.getM_TU_HU();
 		final HUReceiptLinePartAttributes partAttributes = HUReceiptLinePartAttributes.newInstance(huContext, tuHU);
-		final HUReceiptLinePartCandidate receiptLinePartToAdd = new HUReceiptLinePartCandidate(partAttributes);
+		final HUReceiptLinePartCandidate receiptLinePartToAdd = new HUReceiptLinePartCandidate(partAttributes, productId, uomId);
 		receiptLinePartToAdd.add(rsa);
 
 		//
@@ -136,7 +140,7 @@ import de.metas.util.Check;
 			// shall not happen
 			throw new AdempiereException("New candidate " + receiptLineCandidate + " refused to add " + receiptLinePartToAdd);
 		}
-		receiptLineCandidates.add(receiptLineCandidate); // 06135: don't forget to add the fruits of our falbour :-P
+		receiptLineCandidates.add(receiptLineCandidate); // 06135: don't forget to add the fruits of our labour :-P
 		stale = true; // we need to recompute the amounts
 	}
 
@@ -155,7 +159,7 @@ import de.metas.util.Check;
 		//
 		// Compute qty&quality (qtys, discount percent, quality notices)
 		// Collect receipt schedule allocations
-		final ReceiptQty qtyAndQuality = new ReceiptQty();
+		final ReceiptQty qtyAndQuality = ReceiptQty.newWithoutCatchWeight(productId);
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLineCandidate receiptLineCandidate : receiptLineCandidates)
 		{

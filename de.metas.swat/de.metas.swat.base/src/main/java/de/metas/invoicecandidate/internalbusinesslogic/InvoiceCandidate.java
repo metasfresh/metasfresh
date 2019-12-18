@@ -138,8 +138,6 @@ public class InvoiceCandidate
 		}
 		if (soTrx.isPurchase())
 		{
-			Check.assumeEquals(invoicableQtyBasedOn, InvoicableQtyBasedOn.NominalWeight, "Purchase invoice candidates does not support invoicableQtyBasedOn={}" + invoicableQtyBasedOn);
-
 			Check.assumeNull(deliveredData.getShipmentData(), "If soTrx={}, then shipmentData needs to be null", soTrx);
 			Check.assumeNotNull(deliveredData.getReceiptData(), "If soTrx={}, then receiptData may not be null", soTrx);
 		}
@@ -212,7 +210,7 @@ public class InvoiceCandidate
 				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12);
 
 				// if qtyToInvoiceOverride <= qtyDelivered and catchWeight, then get the appropriate fraction
-				for (final ShippedQtyItem shippedQtyItem : deliveredData.getShipmentData().getShippedQtyItems())
+				for (final DeliveredQtyItem shippedQtyItem : deliveredData.getShipmentData().getDeliveredQtyItems())
 				{
 					final Quantity itemQtyInStockUom = shippedQtyItem.getQtyInStockUom();
 					final Quantity itemUomQty = coalesce(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyCatch());
@@ -381,8 +379,8 @@ public class InvoiceCandidate
 		}
 		else
 		{
-			qtysToInvoiceRaw = deliveredData.getReceiptData().getQtysTotal();
-			qtysToInvoiceCalc = deliveredData.getReceiptData().computeInvoicableQtyDelivered(qualityDiscountOverride);
+			qtysToInvoiceRaw = deliveredData.getReceiptData().getQtysTotal(invoicableQtyBasedOn);
+			qtysToInvoiceCalc = deliveredData.getReceiptData().computeInvoicableQtyDelivered(qualityDiscountOverride, invoicableQtyBasedOn);
 		}
 		return new ToInvoiceExclOverride(
 				ToInvoiceExclOverride.InvoicedQtys.NOT_SUBTRACTED,
@@ -399,8 +397,7 @@ public class InvoiceCandidate
 		}
 		else
 		{
-			qtysDelivered = deliveredData.getReceiptData().getQtysTotal();
-
+			qtysDelivered = deliveredData.getReceiptData().getQtysTotal(invoicableQtyBasedOn);
 		}
 		return qtysDelivered;
 	}
