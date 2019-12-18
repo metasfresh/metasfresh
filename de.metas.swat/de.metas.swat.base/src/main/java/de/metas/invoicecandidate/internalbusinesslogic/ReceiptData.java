@@ -46,19 +46,37 @@ import lombok.Value;
 @Value
 public class ReceiptData
 {
+	ProductId productId;
+
 	Quantity qtyTotalInStockUom;
-
 	Quantity qtyTotalNominal;
-
 	Quantity qtyTotalCatch;
 
 	Quantity qtyWithIssuesInStockUom;
-
 	Quantity qtyWithIssuesNominal;
-
 	Quantity qtyWithIssuesCatch;
 
-	private ProductId productId;
+	@Builder
+	@JsonCreator
+	public ReceiptData(
+			@JsonProperty("productId") @NonNull final ProductId productId,
+			@JsonProperty("qtyTotalInStockUom") @NonNull final Quantity qtyTotalInStockUom,
+			@JsonProperty("qtyTotalNominal") @NonNull final Quantity qtyTotalNominal,
+			@JsonProperty("qtyTotalCatch") @Nullable final Quantity qtyTotalCatch,
+			@JsonProperty("qtyWithIssuesInStockUom") @NonNull final Quantity qtyWithIssuesInStockUom,
+			@JsonProperty("qtyWithIssuesNominal") @NonNull final Quantity qtyWithIssuesNominal,
+			@JsonProperty("qtyWithIssuesCatch") @Nullable final Quantity qtyWithIssuesCatch)
+	{
+		this.productId = productId;
+
+		this.qtyTotalInStockUom = qtyTotalInStockUom;
+		this.qtyTotalNominal = qtyTotalNominal;
+		this.qtyTotalCatch = qtyTotalCatch;
+
+		this.qtyWithIssuesInStockUom = qtyWithIssuesInStockUom;
+		this.qtyWithIssuesNominal = qtyWithIssuesNominal;
+		this.qtyWithIssuesCatch = qtyWithIssuesCatch;
+	}
 
 	public StockQtyAndUOMQty getQtysTotal(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
@@ -138,25 +156,5 @@ public class ReceiptData
 		return Percent.of(
 				getQtysWithIssues(invoicableQtyBasedOn).getUOMQtyNotNull().toBigDecimal(),
 				getQtysTotal(invoicableQtyBasedOn).getUOMQtyNotNull().toBigDecimal());
-	}
-
-	@Builder
-	@JsonCreator
-	public ReceiptData(
-			@JsonProperty("productId") @NonNull final ProductId productId,
-			@JsonProperty("qtyTotalInStockUom") @NonNull final Quantity qtyTotalInStockUom,
-			@JsonProperty("qtyTotalNominal") @NonNull final Quantity qtyTotalNominal,
-			@JsonProperty("qtyTotalCatch") @Nullable final Quantity qtyTotalCatch,
-			@JsonProperty("qtyWithIssuesInStockUom") @NonNull final Quantity qtyWithIssuesInStockUom,
-			@JsonProperty("qtyWithIssuesNominal") @NonNull final Quantity qtyWithIssuesNominal,
-			@JsonProperty("qtyWithIssuesCatch") @Nullable final Quantity qtyWithIssuesCatch)
-	{
-		this.productId = productId;
-		this.qtyTotalInStockUom = qtyTotalInStockUom;
-		this.qtyTotalNominal = qtyTotalNominal;
-		this.qtyTotalCatch = qtyTotalCatch;
-		this.qtyWithIssuesInStockUom = qtyWithIssuesInStockUom;
-		this.qtyWithIssuesNominal = qtyWithIssuesNominal;
-		this.qtyWithIssuesCatch = qtyWithIssuesCatch;
 	}
 }

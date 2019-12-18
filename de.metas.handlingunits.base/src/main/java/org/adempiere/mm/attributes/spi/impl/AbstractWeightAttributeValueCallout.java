@@ -237,7 +237,7 @@ import de.metas.util.Services;
 		}
 	}
 
-	protected boolean isTopLevelVHU(IAttributeSet attributeSet)
+	protected boolean isLUorTUorTopLevelVHU(IAttributeSet attributeSet)
 	{
 		if (!isVirtualHU(attributeSet))
 		{

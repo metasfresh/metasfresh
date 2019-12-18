@@ -31,23 +31,14 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.spi.impl.QualityNoticesCollection;
 import de.metas.inoutcandidate.spi.impl.ReceiptQty;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.NonNull;
 
-/**
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
 	@Override
 	public BigDecimal getQtyOrdered(final I_M_ReceiptSchedule rs)
 	{
@@ -130,7 +121,6 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	{
 		final QualityNoticesCollection qualityNotices = QualityNoticesCollection.valueOfQualityNoticesString(rs.getQualityNote());
 
-		// TODO add catch-stuff to M_ReceiptSchedule
 		final ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
 		final UomId catchUomId = UomId.ofRepoIdOrNull(rs.getCatch_UOM_ID());
 
