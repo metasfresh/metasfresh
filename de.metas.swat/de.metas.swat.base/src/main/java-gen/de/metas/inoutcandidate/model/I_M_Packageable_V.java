@@ -105,7 +105,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_BPartnerLocationName = "BPartnerLocationName";
 
 	/**
-	 * Set BPartner name.
+	 * Set Name Geschäftspartner.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -114,7 +114,7 @@ public interface I_M_Packageable_V
 	public void setBPartnerName (java.lang.String BPartnerName);
 
 	/**
-	 * Get BPartner name.
+	 * Get Name Geschäftspartner.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -278,29 +278,6 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -327,6 +304,29 @@ public interface I_M_Packageable_V
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Auftragsdatum.

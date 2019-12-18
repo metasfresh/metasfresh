@@ -63,7 +63,6 @@ import de.metas.util.Services;
  * Defines mater-data and standard helpers for testing the WaschProbe use-case.
  *
  * @author tsa
- *
  * @task http://dewiki908/mediawiki/index.php/07371_Beleg_Waschprobe_%28109323219023%29
  */
 public class WaschprobeStandardMasterData
@@ -72,7 +71,9 @@ public class WaschprobeStandardMasterData
 
 	public I_C_UOM uomFee;
 	public I_C_UOM uomScrap;
-	/** default UOM which is used in BOM, BOM Lines etc */
+	/**
+	 * default UOM which is used in BOM, BOM Lines etc
+	 */
 	public I_C_UOM uom;
 
 	public I_C_Country materialReceiptOrigin;
@@ -289,7 +290,7 @@ public class WaschprobeStandardMasterData
 
 		final I_M_InOut io = InterfaceWrapperHelper.newInstance(I_M_InOut.class, context);
 		io.setMovementDate(materialReceiptDate);
-		io.setC_BPartner_Location(bpl);
+		io.setC_BPartner_Location_ID(bpl.getC_BPartner_Location_ID());
 		InterfaceWrapperHelper.save(io);
 
 		final I_M_InOutLine iol = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, context);

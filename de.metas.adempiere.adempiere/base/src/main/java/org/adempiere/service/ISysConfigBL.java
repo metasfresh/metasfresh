@@ -25,6 +25,7 @@ package org.adempiere.service;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -75,7 +76,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @return boolean
 	 */
 	boolean getBooleanValue(String Name, boolean defaultValue);
-	
+
 	default <T extends ReferenceListAwareEnum> T getReferenceListAware(final String name, final T defaultValue, final Class<T> type)
 	{
 		final String code = getValue(name, null);
@@ -86,11 +87,11 @@ public interface ISysConfigBL extends ISingletonService
 
 		return ReferenceListAwareEnums.ofCode(code, type);
 	}
-	
+
 	default <T extends Enum<T>> T getEnumValue(final String name, final T defaultValue, final Class<T> enumType)
 	{
 		final String valueStr = getValue(name, null);
-		if(Check.isEmpty(valueStr, true))
+		if (Check.isEmpty(valueStr, true))
 		{
 			return defaultValue;
 		}
@@ -202,13 +203,13 @@ public interface ISysConfigBL extends ISingletonService
 	 */
 	boolean getBooleanValue(String Name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 
-	void setValue(String name, int value, int AD_Org_ID);
+	void setValue(String name, int value, ClientId clientId, OrgId orgId);
 
-	void setValue(String name, double value, int AD_Org_ID);
+	void setValue(String name, double value, ClientId clientId, OrgId orgId);
 
-	void setValue(String name, boolean value, int AD_Org_ID);
+	void setValue(String name, boolean value, ClientId clientId, OrgId orgId);
 
-	void setValue(String name, String value, int AD_Org_ID);
+	void setValue(String name, String value, ClientId clientId, OrgId orgId);
 
 	List<String> getNamesForPrefix(String prefix, int adClientId, int adOrgId);
 

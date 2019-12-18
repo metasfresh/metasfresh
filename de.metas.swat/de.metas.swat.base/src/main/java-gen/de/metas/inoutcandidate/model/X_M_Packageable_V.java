@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -718478906L;
+	private static final long serialVersionUID = 757740166L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -73,16 +73,16 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerLocationName);
 	}
 
-	/** Set BPartner name.
-		@param BPartnerName BPartner name	  */
+	/** Set Name Geschäftspartner.
+		@param BPartnerName Name Geschäftspartner	  */
 	@Override
 	public void setBPartnerName (java.lang.String BPartnerName)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerName, BPartnerName);
 	}
 
-	/** Get BPartner name.
-		@return BPartner name	  */
+	/** Get Name Geschäftspartner.
+		@return Name Geschäftspartner	  */
 	@Override
 	public java.lang.String getBPartnerName () 
 	{

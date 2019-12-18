@@ -1,0 +1,10 @@
+-- 2019-12-17T10:55:01.804Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET EntityType='D',Updated=TO_TIMESTAMP('2019-12-17 12:55:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540331
+;
+
+-- 2019-12-17T10:55:05.616Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540331,Updated=TO_TIMESTAMP('2019-12-17 12:55:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540294
+;
+

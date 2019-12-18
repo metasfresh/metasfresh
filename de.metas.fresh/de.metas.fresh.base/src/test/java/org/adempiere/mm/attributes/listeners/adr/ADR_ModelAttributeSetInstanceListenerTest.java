@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.listeners.adr;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,7 @@ import org.adempiere.mm.attributes.api.impl.ADRAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
 import org.adempiere.mm.attributes.spi.impl.ADRAttributeGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
@@ -44,6 +45,7 @@ import de.metas.edi.api.impl.EDIOLCandBL;
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -55,7 +57,7 @@ import de.metas.util.Services;
  * <li> {@link InOutLineADRModelAttributeSetInstanceListener}
  * <li> {@link OrderLineAllocADRModelAttributeSetInstanceListener}
  * </ul>
- * 
+ *
  * Test case:
  * <ul>
  * <li>have a product which has the ADR attribute in it's AttributeSet
@@ -65,7 +67,7 @@ import de.metas.util.Services;
  * <li>check how the document line's ADR Attribute Instance was set
  * <li>
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
@@ -102,7 +104,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 			InterfaceWrapperHelper.save(attr_ADR);
 			helper.createM_AttributeUse(helper.product_attributeSet, attr_ADR);
 
-			helper.sysConfigBL.setValue(ADRAttributeDAO.SYSCONFIG_ADRAttribute, attr_ADR.getM_Attribute_ID(), 0);
+			helper.sysConfigBL.setValue(ADRAttributeDAO.SYSCONFIG_ADRAttribute, attr_ADR.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 
 			helper.createAD_Ref_List_Items(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID
 					, I_C_BPartner.ADRZertifizierung_L_GMAA
@@ -123,7 +125,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 			{
 				Check.assumeNotNull(isEDIInput_ReturnValue, "isEDIInput_ReturnValue shall be set before");
 				return isEDIInput_ReturnValue;
-			};
+			}
 		};
 		Services.registerService(IEDIOLCandBL.class, ediOLCandBL);
 	}
@@ -159,7 +161,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: always set the ADR attribute for purchase documents
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -177,7 +179,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: ADR is not set because we don't deal with an ADR Vendor
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -196,7 +198,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: don't set the ADR on sales documents
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -214,7 +216,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: ADR attribute shall be copied even if it's from EDI or not
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08692_EDI_-_ADR_and_other_Attributes_from_PLV_not_in_Orderline_%28102526374063%29
 	 */
 	@Test
@@ -233,7 +235,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: ADR attribute shall be copied even if it's from EDI or not
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08692_EDI_-_ADR_and_other_Attributes_from_PLV_not_in_Orderline_%28102526374063%29
 	 */
 	@Test
@@ -252,7 +254,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: ADR attribute shall <b>not</b> be copied,even though the C_OLCand is from EDI
-	 * 
+	 *
 	 * @task dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	@Test
@@ -272,7 +274,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: ADR attribute shall be copied only if the C_OLCand is from EDI
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08692_EDI_-_ADR_and_other_Attributes_from_PLV_not_in_Orderline_%28102526374063%29
 	 */
 	@Test
@@ -291,7 +293,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: always set the ADR attribute for purchase documents, if ADR is relevant for for invoices
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -310,7 +312,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: always set the ADR attribute for purchase documents, if ADR is relevant for for invoices
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -331,7 +333,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Expectation: don't set the ADR on sales documents, even if the ADR attribute is relevant for invoices
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -351,9 +353,9 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Test for Material Receipt.
-	 * 
+	 *
 	 * Expectation: ADR attribute is copied
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
@@ -374,9 +376,9 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Test for Material Shipment.
-	 * 
+	 *
 	 * Expectation: ADR attribute not copied even if it's a document relevant
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test

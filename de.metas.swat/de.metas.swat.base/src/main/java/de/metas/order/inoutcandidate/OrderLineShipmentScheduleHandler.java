@@ -60,7 +60,6 @@ import lombok.NonNull;
  * Default implementation for sales order lines.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
@@ -196,6 +195,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setBill_BPartner_ID(order.getBill_BPartner_ID());
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
+		shipmentSchedule.setM_Tour_ID(order.getM_Tour_ID());
 
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
 		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);

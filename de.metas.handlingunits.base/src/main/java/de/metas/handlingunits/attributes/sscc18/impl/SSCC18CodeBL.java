@@ -22,11 +22,8 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * #L%
  */
 
-import java.util.Properties;
-
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -49,6 +46,8 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	 * Manufacturer code consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
 	 */
 	public static final String SYSCONFIG_ManufacturerCode = "de.metas.handlingunit.GS1ManufacturerCode";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * The extended digit in SSCC18. Usually 0 (the package type - a carton)
@@ -79,10 +78,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		this.nextSerialNumberProvider = nextSerialNumberProvider;
 	}
 
-	protected String getManufacturerCode()
+	protected String getManufacturerCode(@NonNull final OrgId orgId)
 	{
-		final Properties ctx = Env.getCtx();
-		final String manufacturerCode_SysConfig = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ManufacturerCode, null, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final String manufacturerCode_SysConfig = sysConfigBL.getValue(SYSCONFIG_ManufacturerCode, null,
+				ClientId.METASFRESH.getRepoId(),
+				orgId.getRepoId());
+
 		return manufacturerCode_SysConfig;
 	}
 
@@ -142,18 +143,19 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	@Override
 	public SSCC18 generate(@NonNull final OrgId orgId)
 	{
-		return generate(nextSerialNumberProvider.provideNextSerialNumber(orgId));
+		return generate(orgId, nextSerialNumberProvider.provideNextSerialNumber(orgId));
 	}
 
 	@Override
-	public SSCC18 generate(final int serialNumber)
+	public SSCC18 generate(@NonNull final OrgId orgId, final int serialNumber)
 	{
 		Check.assume(serialNumber > 0, "serialNumber > 0");
-
 		//
 		// Retrieve and validate ManufacturerCode
-		final String manufacturerCode_SysConfig = getManufacturerCode();
-		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} is not a number", manufacturerCode_SysConfig);
+		final String manufacturerCode_SysConfig = getManufacturerCode(orgId);
+		Check.assumeNotEmpty(manufacturerCode_SysConfig, "Manufacturer code {} may not be empty; orgId={}", manufacturerCode_SysConfig, orgId);
+		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} need to be a number; orgId={}", manufacturerCode_SysConfig, orgId);
+
 		final int manufacturerCodeSize = manufacturerCode_SysConfig.length();
 		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {}", manufacturerCode_SysConfig);
 
@@ -161,12 +163,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		// Validate serialNumber and adjust serialNumber and manufacturerCode paddings
 		final String serialNumberStr = String.valueOf(serialNumber);
 		final int serialNumberSize = serialNumberStr.length();
-		Check.assume(serialNumberSize <= 9, "Serial number too long: {}", serialNumberStr);
+		Check.assume(serialNumberSize <= 9, "Serial number too long: {}; orgId={}", serialNumberStr, orgId);
 		final String finalManufacturerCode;
 		final String finalSerialNumber;
 		if (manufacturerCodeSize == 8)
 		{
-			Check.assume(serialNumberSize <= 8, "Serial number too long: {}", serialNumberStr);
+			Check.assume(serialNumberSize <= 8, "Serial number too long: {}; orgId={}", serialNumberStr, orgId);
 			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 8, "Manufacturer code size shoult be 8");
 
 			finalManufacturerCode = manufacturerCode_SysConfig;

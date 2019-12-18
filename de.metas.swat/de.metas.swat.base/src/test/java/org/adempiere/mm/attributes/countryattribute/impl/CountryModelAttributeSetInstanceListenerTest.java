@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
@@ -46,7 +48,7 @@ import de.metas.util.Services;
  * <li>{@link InvoiceLineCountryModelAttributeSetInstanceListener}
  * <li>{@link InOutLineCountryModelAttributeSetInstanceListener}
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
@@ -76,7 +78,7 @@ public class CountryModelAttributeSetInstanceListenerTest
 
 			helper.createM_AttributeUse(helper.product_attributeSet, attr_Country);
 
-			helper.sysConfigBL.setValue(CountryAttributeDAO.SYSCONFIG_CountryAttribute, attr_Country.getM_Attribute_ID(), 0);
+			helper.sysConfigBL.setValue(CountryAttributeDAO.SYSCONFIG_CountryAttribute, attr_Country.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 		}
 
 		//
