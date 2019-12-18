@@ -14,6 +14,6 @@ UPDATE M_HU_PI_Version SET Description='Packing instructions version for CUs (a.
 ;
 
 -- Generally activate gross-weight and tare for "no packing items" (i.e. CUs / VHUs)
--- the attribute-value-callout will decide wherther it's really displayed
+-- the attribute-value-callout will decide whether it's *really* displayed
 UPDATE M_HU_PI_Attribute SET IsActive='Y', UpdatedBy=99, Updated='2019-12-12 16:49:14.203799+00' where M_Attribute_ID=540005 AND M_HU_PI_Version_ID=101;
 UPDATE M_HU_PI_Attribute SET IsActive='Y', UpdatedBy=99, Updated='2019-12-12 16:49:14.203799+00' where M_Attribute_ID=540006 AND M_HU_PI_Version_ID=101;

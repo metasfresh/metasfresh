@@ -1,8 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-
-
-
 /*
  * #%L
  * de.metas.swat.base
@@ -227,25 +224,10 @@ public final class ReceiptQty
 		return qtyTotal;
 	}
 
-	/**
-	 * @return true if total quantity is zero
-	 */
 	public boolean isZero()
 	{
 		return qtyTotal.signum() == 0 && qtyWithIssues.signum() == 0;
 	}
-
-//	private StockQtyAndUOMQty getQtyTotal(
-//			@NonNull final UOMPrecision stockQtyPrecision,
-//			@Nullable final UOMPrecision catchQtyPrecision)
-//	{
-//		final StockQtyAndUOMQty qtyTotal = getQtyTotal();
-//		if (qtyTotal.signum() == 0)
-//		{
-//			return qtyTotal.toZero();
-//		}
-//		return qtyTotal.setScale(stockQtyPrecision, catchQtyPrecision, QtyTotal_RoundingMode);
-//	}
 
 	/**
 	 * @return weighted average quality discount percent, based on the UOM-quantities.
@@ -302,17 +284,6 @@ public final class ReceiptQty
 	}
 
 	/**
-	 * @return quantity with issues; i.e. QtyTotal * Quality Discount Percent%
-	 */
-//	public StockQtyAndUOMQty getQtyWithIssues(
-//			@NonNull final UOMPrecision stockQtyPrecision,
-//			@Nullable final UOMPrecision catchQtyPrecision)
-//	{
-//		return getQtyWithIssuesExact()
-//				.setScale(stockQtyPrecision, catchQtyPrecision, QtyWithIssues_RoundingMode);
-//	}
-
-	/**
 	 * @return quantity with issues (precise, high scale value)
 	 */
 	public StockQtyAndUOMQty getQtyWithIssuesExact()
@@ -327,30 +298,6 @@ public final class ReceiptQty
 	{
 		return qtyTotal.subtract(qtyWithIssues);
 	}
-
-//	public StockQtyAndUOMQty getQtyWithoutIssues(@NonNull final UOMPrecision stockQtyPrecision)
-//	{
-//		assumeNull(catchUomId, "If this method is called, this receiptQty may not have a catch-quantity; receiptQty={}", this);
-//
-//		final StockQtyAndUOMQty qtyTotal = getQtyTotal(stockQtyPrecision, null/* catchQtyPrecision */);
-//		final StockQtyAndUOMQty qtyWithIssues = getQtyWithIssues(stockQtyPrecision, null/* catchQtyPrecision */);
-//		final StockQtyAndUOMQty qtyWithoutIssues = qtyTotal.subtract(qtyWithIssues);
-//
-//		return qtyWithoutIssues;
-//	}
-
-//	public StockQtyAndUOMQty getQtyWithoutIssues(
-//			@NonNull final UOMPrecision stockQtyPrecision,
-//			@NonNull final UOMPrecision catchQtyPrecision)
-//	{
-//		assumeNotNull(catchUomId, "If this method is called, this receiptQty may not have a catch-quantity; receiptQty={}", this);
-//
-//		final StockQtyAndUOMQty qtyTotal = getQtyTotal(stockQtyPrecision, catchQtyPrecision);
-//		final StockQtyAndUOMQty qtyWithIssues = getQtyWithIssues(stockQtyPrecision, catchQtyPrecision);
-//		final StockQtyAndUOMQty qtyWithoutIssues = qtyTotal.subtract(qtyWithIssues);
-//
-//		return qtyWithoutIssues;
-//	}
 
 	public void addQualityNotices(final QualityNoticesCollection qualityNoticesToAdd)
 	{

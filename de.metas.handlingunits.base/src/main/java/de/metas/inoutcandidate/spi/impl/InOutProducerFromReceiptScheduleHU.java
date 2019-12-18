@@ -216,9 +216,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
 		final ReceiptQty qtyAndQuality = receiptLineCandidate.getQtyAndQuality();
-		// final I_C_UOM lineUOMRecord = receiptLineCandidate.getC_UOM();
-		// final UOMPrecision lineUOMPrecision = UOMPrecision.ofInt(lineUOMRecord.getStdPrecision());
-		//
+
 		// The receipt lines created.
 		// Could be maximum 2: one with QtyWithoutIssues, one with QtyWithIssues
 		final List<I_M_InOutLine> receiptLines = new ArrayList<>(2);
@@ -266,7 +264,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		return receiptLines;
-
 	}
 
 	/**

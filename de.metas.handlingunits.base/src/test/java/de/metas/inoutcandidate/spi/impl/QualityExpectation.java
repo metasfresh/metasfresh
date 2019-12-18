@@ -230,7 +230,6 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 	public QualityExpectation<ParentExpectationType> uom(final I_C_UOM uom)
 	{
 		this.uom = uom;
-		//qtyAndQuality().qtyPrecision(uom == null ? 0 : uom.getStdPrecision());
 		return this;
 	}
 

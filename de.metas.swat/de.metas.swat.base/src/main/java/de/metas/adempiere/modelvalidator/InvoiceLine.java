@@ -127,8 +127,9 @@ public class InvoiceLine implements ModelValidator
 		// 02362: begin
 		else if (type == TYPE_AFTER_CHANGE)
 		{
-			// this code i wrong because it changes il but is executed after il was saved (so this change won't be in the persisted il)
-			// TODO: check if this code "accidentally" works (by setting the discount to a value that is then used by a *different* model interceptor),
+			// This code is wrong because it changes il, but is executed after il was saved.
+			// So this change won't be in the persisted il anyways.
+			// TODO: check if this code is "accidentally" important (by setting the discount to a value that is then used by a *different* model interceptor),
 			// or if we can just drop it.
 			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
 			if (!il.isProcessed())

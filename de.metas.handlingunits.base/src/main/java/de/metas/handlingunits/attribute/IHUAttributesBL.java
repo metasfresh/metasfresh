@@ -49,7 +49,6 @@ public interface IHUAttributesBL extends ISingletonService
 	 *
 	 * If there is no underlying HU, this method will return <code>null</code>.
 	 *
-	 * @param attributeSet
 	 * @return underlying HU or <code>null</code> if given <code>attributeSet</code> does not support HUs.
 	 */
 	I_M_HU getM_HU_OrNull(IAttributeSet attributeSet);

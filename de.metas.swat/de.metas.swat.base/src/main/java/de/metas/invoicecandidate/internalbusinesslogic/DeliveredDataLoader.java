@@ -206,8 +206,6 @@ public class DeliveredDataLoader
 
 		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
 
-		// StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.createZero(productId, icUomId);
-
 		Quantity qtyTotalInStockUom = Quantitys.createZero(stockUomId);
 		Quantity qtyTotalNominal = Quantitys.createZero(icUomId);
 		Quantity qtyTotalCatch = Quantitys.createZero(icUomId);

@@ -415,18 +415,14 @@ public class HUTransformService
 	/**
 	 * Update {@link IHUAllocations}. Currently know examples are receipt schedule allocations and shipment schedule allocations.
 	 *
-	 * @param luHU
-	 * @param tuHU
 	 * @param cuHU if {@code null}, then all cuHus of the given tuHU are iterated.
 	 * @param qtyCU ignored if cuHU is {@code null} may be null, then it's also ignored. If ignored, then this method uses the respective CU's storage's Qty instead.
-	 * @param negateQtyCU
-	 * @param localHuContext
 	 */
 	private void updateAllocation(
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
-			@Nullable final I_M_HU cuHU, // may be null
-			@Nullable final Quantity qtyCU, // may be null
+			@Nullable final I_M_HU cuHU,
+			@Nullable final Quantity qtyCU,
 			final boolean negateQtyCU,
 			final IHUContext localHuContext)
 	{

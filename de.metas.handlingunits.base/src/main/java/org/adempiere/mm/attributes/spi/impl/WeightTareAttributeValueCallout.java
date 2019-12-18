@@ -211,6 +211,6 @@ public class WeightTareAttributeValueCallout
 	@Override
 	public boolean isDisplayedUI(@NonNull final IAttributeSet attributeSet, @NonNull final I_M_Attribute attribute)
 	{
-		return isTopLevelVHU(attributeSet);
+		return isLUorTUorTopLevelVHU(attributeSet);
 	}
 }
