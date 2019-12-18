@@ -78,7 +78,7 @@ public class MutableQtyAndQualityTest
 	public void test_add_sameQty_ExpectConstantPercent_SimpleTest01()
 	{
 		final ReceiptQtyExpectation<Object> expectationForOneTransaction = ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(2)
+				//.qtyPrecision(2)
 				.qty(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("7"), uomId)) // note that at the end of the day, we care for the uomQty, i.e. the potential catch quantity
 				.qualityDiscountPercent("3")
 				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("0.24"), productId, new BigDecimal("0.21"), uomId)) // 3% of 8=0.24 resp. 3% of 7=0.21
@@ -90,7 +90,7 @@ public class MutableQtyAndQualityTest
 	public void test_add_sameQty_ExpectConstantPercent_SimpleTest02()
 	{
 		final ReceiptQtyExpectation<Object> expectationForOneTransaction = ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(2)
+				//.qtyPrecision(2)
 				.qty(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("437.35"), uomId))
 				.qualityDiscountPercent("93.18")
 				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("7.4544"), productId, new BigDecimal("407.52273"), uomId)) // = 437.35 * 93.18% = 407.52273
@@ -117,13 +117,13 @@ public class MutableQtyAndQualityTest
 
 	private void test_add_sameQty_ExpectConstantPercent(@NonNull final ReceiptQtyExpectation<?> expectationForOneTransaction)
 	{
-		final int qtyPrecision = expectationForOneTransaction.getQtyPrecisionToUse();
+		//final int qtyPrecision = expectationForOneTransaction.getQtyPrecisionToUse();
 
 		final ReceiptQty qv1 = ReceiptQty.newWithCatchWeight(productId, uomId); // used to test #add(BigDecimal, BigDecimal)
 		final ReceiptQty qv2 = ReceiptQty.newWithCatchWeight(productId, uomId); // used to test #add(IQtyAndQuality)
 
-		final ReceiptQtyExpectation<Object> expectation = ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(qtyPrecision);
+		final ReceiptQtyExpectation<Object> expectation = ReceiptQtyExpectation.newInstance();
+			//	.qtyPrecision(qtyPrecision);
 
 		final Percent qualityDiscountPercent = expectationForOneTransaction.getQualityDiscountPercent();
 		final StockQtyAndUOMQty qtyToAdd = expectationForOneTransaction.getQty();
@@ -147,7 +147,7 @@ public class MutableQtyAndQualityTest
 				qv2.add(qvToAdd);
 
 				message = message
-						.addContextInfo("QtyPrecision", qtyPrecision)
+						//.addContextInfo("QtyPrecision", qtyPrecision)
 						.addContextInfo("QtyToAdd", qtyToAdd)
 						.addContextInfo("QualityDiscountPercent", qualityDiscountPercent)
 						.addContextInfo("Values after - QV1: ", qv1)
@@ -156,11 +156,11 @@ public class MutableQtyAndQualityTest
 			}
 
 			final StockQtyAndUOMQty qtyTotalExpected = qtyToAdd
-					.multiply(BigDecimal.valueOf(i))
-					.setScale(qtyPrecision, RoundingMode.HALF_UP); // mind the rounding mode (this is what we agreed)
+					.multiply(BigDecimal.valueOf(i));
+			//		.setScale(qtyPrecision, RoundingMode.HALF_UP); // mind the rounding mode (this is what we agreed)
 			final StockQtyAndUOMQty qtyWithIssuesExpected = qtyWithIssuesExpectedForOneTransaction
-					.multiply(BigDecimal.valueOf(i))
-					.setScale(qtyPrecision, RoundingMode.HALF_DOWN); // mind the rounding mode (this is what we agreed)
+					.multiply(BigDecimal.valueOf(i));
+//					.setScale(qtyPrecision, RoundingMode.HALF_DOWN); // mind the rounding mode (this is what we agreed)
 			final StockQtyAndUOMQty qtyWithoutIssuesExpected = qtyTotalExpected.subtract(qtyWithIssuesExpected);
 			expectation
 					.qty(qtyTotalExpected)
@@ -226,7 +226,7 @@ public class MutableQtyAndQualityTest
 				.divide(BigDecimal.valueOf(100), ReceiptQty.INTERNAL_PRECISION, RoundingMode.UNNECESSARY);
 
 		return ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(qtyPrecision)
+			//	.qtyPrecision(qtyPrecision)
 				.qty(qtyToAdd)
 				.qualityDiscountPercent(qualityDiscountPercent)
 				.qtyWithIssues(qtyWithIssuesExpectedForOneTransactionExact);
