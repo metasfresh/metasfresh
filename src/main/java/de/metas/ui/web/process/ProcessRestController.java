@@ -282,7 +282,7 @@ public class ProcessRestController
 				});
 	}
 
-	@ApiOperation("Retrieves and serves a report that was previously create by a reporting process.")
+	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getReport(
 			@PathVariable("processId") final String processIdStr //
