@@ -5,7 +5,7 @@ import java.util.Set;
 
 import de.metas.mpackage.PackageId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;

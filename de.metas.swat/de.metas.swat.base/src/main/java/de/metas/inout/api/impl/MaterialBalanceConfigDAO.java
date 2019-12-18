@@ -1,5 +1,6 @@
 package de.metas.inout.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -60,7 +61,7 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_Category_ID, product.getM_Product_Category_ID(), null);
 
 		// partner
-		final I_C_BPartner partner = inout.getC_BPartner();
+		final I_C_BPartner partner = load(inout.getC_BPartner_ID(), I_C_BPartner.class);
 		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID(), null);
 
 		// partner group

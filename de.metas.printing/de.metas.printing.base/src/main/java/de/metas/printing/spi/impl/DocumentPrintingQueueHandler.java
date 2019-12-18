@@ -156,8 +156,8 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		// services
 		final IShipmentScheduleAllocDAO schedAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-		queueItem.setC_BPartner(inout.getC_BPartner());
-		queueItem.setC_BPartner_Location(inout.getC_BPartner_Location());
+		queueItem.setC_BPartner_ID(inout.getC_BPartner_ID());
+		queueItem.setC_BPartner_Location_ID(inout.getC_BPartner_Location_ID());
 
 		// find the delivery date from the lieferdispo
 		if (!inout.isSOTrx())

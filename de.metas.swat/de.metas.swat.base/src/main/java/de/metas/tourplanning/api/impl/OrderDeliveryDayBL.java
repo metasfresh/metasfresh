@@ -3,9 +3,11 @@ package de.metas.tourplanning.api.impl;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.tourplanning.model.TourId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -72,23 +74,29 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final ZonedDateTime calculationTime = CoalesceUtil.coalesce(
 				TimeUtil.asZonedDateTime(order.getCreated()),
 				SystemTime.asZonedDateTime());
-		final ZonedDateTime preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
+		final ImmutablePair<TourId, ZonedDateTime> tourAndDate = deliveryDayBL.calculateTourAndPreparationDate(
 				context,
 				soTrx,
 				calculationTime,
 				datePromised,
 				bpartnerLocationId);
+		final ZonedDateTime preparationDate = tourAndDate.getRight();
 
 		//
 		// Update order
+		// only set the date if it has not yet passed.
+		// if it has, leave the field empty and let the user pick a new preparation date
 		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
-			// task 08931: only set the date if it has not yet passed.
-			// if it has, leave the field empty and let the user pick a new preparation date
 			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
-			logger.debug("Setting PreparationDate={} for C_Order {} (fallbackToDatePromised={}, systemTime={})",
-					new Object[] { preparationDate, order, isUseFallback, systemTime });
+			// never update an existing tour
+			if (order.getM_Tour_ID() == 0)
+			{
+				order.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
+			}
+			logger.debug("Setting PreparationDate={}, for C_Order {} (fallbackToDatePromised={}, systemTime={})",
+					preparationDate, order, isUseFallback, systemTime);
 		}
 		else if (isUseFallback)
 		{

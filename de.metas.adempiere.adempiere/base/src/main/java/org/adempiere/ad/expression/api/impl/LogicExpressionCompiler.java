@@ -32,11 +32,13 @@ import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionCompiler;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -52,7 +54,6 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 
 	private LogicExpressionCompiler()
 	{
-		super();
 	}
 
 	@Override
@@ -68,8 +69,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 	@Override
 	public void setUseOperatorPrecedence(final boolean enabled)
 	{
-		final int adOrgId = 0;
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_UseOperatorPrecedence, enabled, adOrgId);
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_UseOperatorPrecedence, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Override
@@ -198,7 +198,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 }
