@@ -119,6 +119,11 @@ public class ProductPriceQuery
 		return toQuery().list();
 	}
 
+	public <T extends I_M_ProductPrice> List<T> list(final Class<T> type)
+	{
+		return toQuery().list(type);
+	}
+
 	/** @return first matching product price or null */
 	public I_M_ProductPrice firstMatching()
 	{
@@ -166,7 +171,7 @@ public class ProductPriceQuery
 	 *
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
 	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
-	 *            @param type
+	 * 			@param type
 	 * @return
 	 */
 	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)

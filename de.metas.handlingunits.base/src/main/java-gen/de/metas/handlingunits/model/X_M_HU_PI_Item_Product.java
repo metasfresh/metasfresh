@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2094292850L;
+	private static final long serialVersionUID = 143178414L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
       /** if (M_HU_PI_Item_Product_ID == 0)
         {
 			setIsAllowAnyProduct (false); // N
+			setIsDefaultForProduct (false); // N
 			setIsInfiniteCapacity (false); // N
 			setM_HU_PI_Item_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
@@ -159,6 +160,29 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	public boolean isAllowAnyProduct () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAllowAnyProduct);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Standard-Produkt.
+		@param IsDefaultForProduct Standard-Produkt	  */
+	@Override
+	public void setIsDefaultForProduct (boolean IsDefaultForProduct)
+	{
+		set_Value (COLUMNNAME_IsDefaultForProduct, Boolean.valueOf(IsDefaultForProduct));
+	}
+
+	/** Get Standard-Produkt.
+		@return Standard-Produkt	  */
+	@Override
+	public boolean isDefaultForProduct () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDefaultForProduct);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
