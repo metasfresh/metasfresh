@@ -42,17 +42,14 @@ import lombok.ToString;
 @Service
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {
+	public static final String SYSCONFIG_ExtensionDigit = "de.metas.handlingunit.GS1ExtensionDigit";
+
 	/**
-	 * Manufacturer code consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
+	 * Manufacturer code as assigne by GS1. Consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
 	 */
 	public static final String SYSCONFIG_ManufacturerCode = "de.metas.handlingunit.GS1ManufacturerCode";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	/**
-	 * The extended digit in SSCC18. Usually 0 (the package type - a carton)
-	 */
-	private final int EXTENDED_DIGIT = 0;
 
 	private final NextSerialNumberProvider nextSerialNumberProvider;
 	/** for debugging */
@@ -78,7 +75,16 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		this.nextSerialNumberProvider = nextSerialNumberProvider;
 	}
 
-	protected String getManufacturerCode(@NonNull final OrgId orgId)
+	private int getExtensionDigit(@NonNull final OrgId orgId)
+	{
+		final int extensionDigit_SysConfig = sysConfigBL.getIntValue(SYSCONFIG_ExtensionDigit, 0,
+				ClientId.METASFRESH.getRepoId(),
+				orgId.getRepoId());
+
+		return extensionDigit_SysConfig;
+	}
+
+	private String getManufacturerCode(@NonNull final OrgId orgId)
 	{
 		final String manufacturerCode_SysConfig = sysConfigBL.getValue(SYSCONFIG_ManufacturerCode, null,
 				ClientId.METASFRESH.getRepoId(),
@@ -187,9 +193,10 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 			finalManufacturerCode = StringUtils.lpadZero(manufacturerCode_SysConfig, 7, "Manufacturer code size shoult be " + 7);
 		}
 
-		final int checkDigit = computeCheckDigit(EXTENDED_DIGIT + finalManufacturerCode + finalSerialNumber);
+		final int extensionDigit = getExtensionDigit(orgId);
+		final int checkDigit = computeCheckDigit(extensionDigit + finalManufacturerCode + finalSerialNumber);
 
-		return new SSCC18(EXTENDED_DIGIT, finalManufacturerCode, finalSerialNumber, checkDigit);
+		return new SSCC18(extensionDigit, finalManufacturerCode, finalSerialNumber, checkDigit);
 	}
 
 	@Override
@@ -209,10 +216,8 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	}
 
 	@Override
-	public String toString(final SSCC18 sscc18, final boolean humanReadable)
+	public String toString(@NonNull final SSCC18 sscc18, final boolean humanReadable)
 	{
-		Check.assumeNotNull(sscc18, "sscc18 not null");
-
 		if (!humanReadable)
 		{
 			return sscc18.getExtensionDigit()
