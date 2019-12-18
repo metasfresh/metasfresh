@@ -27,12 +27,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_QualityNote;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * It's a part of an {@link HUReceiptLineCandidate}.
@@ -55,21 +64,29 @@ import de.metas.util.Check;
 	 */
 	private I_M_QualityNote _qualityNote = null;
 	private ReceiptQty _qtyAndQuality = null;
-	private BigDecimal _qty = BigDecimal.ZERO;
+	private Quantity _qty;
 	private int _subProducerBPartnerId = -1;
 	private Object _attributeStorageAggregationKey = null;
 	//
 	private final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 	private final transient List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocsRO = Collections.unmodifiableList(receiptScheduleAllocs);
 
-	public HUReceiptLinePartCandidate(final HUReceiptLinePartAttributes attributes)
-	{
-		super();
+	private final ProductId productId;
 
-		Check.assumeNotNull(attributes, "attributes not null");
+	/**
+	 * @param uomId ID of he receipt-line's UOM; not the catch-UOM
+	 */
+	public HUReceiptLinePartCandidate(
+			@NonNull final HUReceiptLinePartAttributes attributes,
+			@NonNull final ProductId productId,
+			@NonNull final UomId uomId)
+	{
 		_attributes = attributes;
 
+		this.productId = productId;
+
 		_stale = true; // stale by default
+		_qty = Quantitys.createZero(uomId);
 	}
 
 	@Override
@@ -78,22 +95,21 @@ import de.metas.util.Check;
 		return ObjectUtils.toString(this);
 	}
 
-	public void add(final I_M_ReceiptSchedule_Alloc rsa)
+	public void add(@NonNull final I_M_ReceiptSchedule_Alloc rsa)
 	{
 		final BigDecimal rsaQty = rsa.getHU_QtyAllocated();
+		final Quantity huAllocatedQty = Quantitys.create(rsaQty, UomId.ofRepoId(rsa.getM_ReceiptSchedule().getC_UOM_ID()));
 
-		_qty = _qty.add(rsaQty);
+		_qty = Quantitys.add(UOMConversionContext.of(productId), _qty, huAllocatedQty);
 
 		receiptScheduleAllocs.add(rsa);
 		_stale = true;
 	}
 
 	/**
-	 *
-	 * @param receiptLinePart
 	 * @return true if added
 	 */
-	public boolean add(final HUReceiptLinePartCandidate receiptLinePart)
+	public boolean add(@NonNull final HUReceiptLinePartCandidate receiptLinePart)
 	{
 		if (!canAdd(receiptLinePart))
 		{
@@ -108,10 +124,8 @@ import de.metas.util.Check;
 		return true;
 	}
 
-	public boolean canAdd(final HUReceiptLinePartCandidate receiptLinePart)
+	public boolean canAdd(@NonNull final HUReceiptLinePartCandidate receiptLinePart)
 	{
-		Check.assumeNotNull(receiptLinePart, "receiptLinePart not null");
-
 		// Cannot add to it self
 		if (equals(receiptLinePart))
 		{
@@ -147,10 +161,23 @@ import de.metas.util.Check;
 
 		//
 		// Qty & Quality
-		final BigDecimal qualityDiscountPercent = attributes.getQualityDiscountPercent();
-		final ReceiptQty qtyAndQuality = new ReceiptQty();
+		final Percent qualityDiscountPercent = Percent.of(attributes.getQualityDiscountPercent());
+		final ReceiptQty qtyAndQuality;
+		final Optional<Quantity> weight = attributes.getWeight();
+		if (weight.isPresent())
+		{
+			qtyAndQuality = ReceiptQty.newWithCatchWeight(productId, weight.get().getUomId());
+
+			final StockQtyAndUOMQty stockAndCatchQty = StockQtyAndUOMQtys.createConvert(_qty, productId, weight.get());
+			qtyAndQuality.addQtyAndQualityDiscountPercent(stockAndCatchQty, qualityDiscountPercent);
+		}
+		else
+		{
+			qtyAndQuality = ReceiptQty.newWithoutCatchWeight(productId);
+			qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
+		}
 		I_M_QualityNote qualityNote = null;
-		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
+
 
 		//
 		// Quality Notice (only if we have a discount percentage)

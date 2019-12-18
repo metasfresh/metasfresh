@@ -25,19 +25,18 @@ package de.metas.inoutcandidate.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.spi.impl.ReceiptQty;
 import de.metas.inoutcandidate.spi.impl.QualityNoticesCollection;
+import de.metas.inoutcandidate.spi.impl.ReceiptQty;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
+import lombok.NonNull;
 
-/**
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 {
 	@Override
@@ -65,9 +64,14 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	}
 
 	@Override
-	public BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs)
+	public StockQtyAndUOMQty getQtyToMove(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		return rs.getQtyToMove();
+		final ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
+		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(rs.getCatch_UOM_ID());
+
+		return StockQtyAndUOMQtys.create(
+				rs.getQtyToMove(), productId,
+				rs.getQtyMovedWithIssuesInCatchUOM(), catchUomIdOrNull);
 	}
 
 	@Override
@@ -78,11 +82,17 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 
 	private final ReceiptQty getQtysIfActive(final I_M_ReceiptSchedule_Alloc rsa)
 	{
-		final ReceiptQty qtys = new ReceiptQty();
+		final ProductId productId = ProductId.ofRepoId(rsa.getM_ReceiptSchedule().getM_Product_ID());
+		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(rsa.getCatch_UOM_ID());
+
+		final ReceiptQty qtys = catchUomIdOrNull == null ? ReceiptQty.newWithoutCatchWeight(productId) : ReceiptQty.newWithCatchWeight(productId, catchUomIdOrNull);
 
 		if (rsa.isActive())
 		{
-			qtys.addQtyAndQtyWithIssues(rsa.getQtyAllocated(), rsa.getQtyWithIssues());
+			final StockQtyAndUOMQty qtyAllocated = StockQtyAndUOMQtys.create(rsa.getQtyAllocated(), productId, rsa.getQtyAllocatedInCatchUOM(), catchUomIdOrNull);
+			final StockQtyAndUOMQty qtyWithIssues = StockQtyAndUOMQtys.create(rsa.getQtyWithIssues(), productId, rsa.getQtyWithIssuesInCatchUOM(), catchUomIdOrNull);
+
+			qtys.addQtyAndQtyWithIssues(qtyAllocated, qtyWithIssues);
 
 			if (rsa.getM_InOutLine_ID() > 0)
 			{
@@ -107,23 +117,32 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 	 * @param rs
 	 * @return receipt schedule quantities
 	 */
-	private final ReceiptQty getQtysForUpdate(final I_M_ReceiptSchedule rs)
+	private final ReceiptQty getQtysForUpdate(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		final BigDecimal qtyMoved = rs.getQtyMoved();
-		final BigDecimal qtyMovedWithIssues = rs.getQtyMovedWithIssues();
 		final QualityNoticesCollection qualityNotices = QualityNoticesCollection.valueOfQualityNoticesString(rs.getQualityNote());
-		final ReceiptQty qtys = new ReceiptQty();
+
+		final ProductId productId = ProductId.ofRepoId(rs.getM_Product_ID());
+		final UomId catchUomId = UomId.ofRepoIdOrNull(rs.getCatch_UOM_ID());
+
+		final StockQtyAndUOMQty qtyMoved = StockQtyAndUOMQtys.create(rs.getQtyMoved(), productId, rs.getQtyMovedInCatchUOM(), catchUomId);
+		final StockQtyAndUOMQty qtyMovedWithIssues = StockQtyAndUOMQtys.create(rs.getQtyMovedWithIssues(), productId, rs.getQtyMovedWithIssuesInCatchUOM(), catchUomId);
+
+		final ReceiptQty qtys = catchUomId == null ? ReceiptQty.newWithoutCatchWeight(productId) : ReceiptQty.newWithCatchWeight(productId, catchUomId);
+
 		qtys.addQtyAndQtyWithIssues(qtyMoved, qtyMovedWithIssues);
 		qtys.addQualityNotices(qualityNotices);
 
 		return qtys;
 	}
 
-	private final void setQtys(final I_M_ReceiptSchedule rs, final ReceiptQty qtys)
+	private void setQtys(
+			@NonNull final I_M_ReceiptSchedule rs,
+			@NonNull final ReceiptQty qtys)
 	{
-		rs.setQtyMoved(qtys.getQtyTotal());
-		rs.setQtyMovedWithIssues(qtys.getQtyWithIssuesExact());
-		rs.setQualityDiscountPercent(qtys.getQualityDiscountPercent());
+		rs.setQtyMoved(qtys.getQtyTotal().getStockQty().toBigDecimal());
+		rs.setQtyMovedWithIssues(qtys.getQtyWithIssuesExact().getStockQty().toBigDecimal());
+
+		rs.setQualityDiscountPercent(qtys.getQualityDiscountPercent().toBigDecimal());
 		rs.setQualityNote(qtys.getQualityNotices().asQualityNoticesString());
 	}
 

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -22,7 +24,6 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,9 +36,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Manage HU allocations to a particular {@link I_M_ReceiptSchedule}. See {@link ReceiptScheduleHUGenerator} for the code that creates those HUs.
@@ -81,15 +83,15 @@ public class ReceiptScheduleHUAllocations extends AbstractHUAllocations
 	protected final void createAllocation(final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU vhu,
-			final Quantity qtyToAllocate,
+			@NonNull final StockQtyAndUOMQty qtyToAllocate,
 			final boolean deleteOldTUAllocations)
 	{
 		// In case TU is null, consider using VHU as HU (i.e. the case of an VHU on LU, or free VHU)
 		// NOTE: we do this shit because in some BLs TU is assumed to be there not null
 		// and also, before VHU level allocation the TU field was filled with VHU.
-		final I_M_HU tuHUActual = tuHU == null ? vhu : tuHU;
 
-		Check.assumeNotNull(tuHUActual, "tuHU not null");
+		final I_M_HU tuHUActual = coalesce(tuHU, vhu);
+		Check.assumeNotNull(tuHUActual, "At least one of tuHU or vhu needs to be not null; qtyToAllocate={}", qtyToAllocate);
 
 		final IContextAware contextProvider = getContextProvider();
 		final I_M_ReceiptSchedule receiptSchedule = getDocumentLineModel();
@@ -103,8 +105,8 @@ public class ReceiptScheduleHUAllocations extends AbstractHUAllocations
 		builder.setContext(contextProvider)
 				.setM_ReceiptSchedule(receiptSchedule)
 				.setM_InOutLine(null)
-				.setQtyToAllocate(BigDecimal.ZERO)
-				.setQtyWithIssues(BigDecimal.ZERO) // to be sure...
+				.setQtyToAllocate(qtyToAllocate.toZero())
+				.setQtyWithIssues(qtyToAllocate.toZero()) // to be sure...
 		;
 		builder.setHU_QtyAllocated(qtyToAllocate)
 				.setM_LU_HU(luHU)
@@ -116,12 +118,7 @@ public class ReceiptScheduleHUAllocations extends AbstractHUAllocations
 	}
 
 	/**
-	 * Remove existing receipt schedule allocations for the given TU
-	 *
-	 * @param contextProvider
-	 * @param receiptSchedule
-	 * @param tuHU
-	 * @param luHU
+	 * Remove existing receipt schedule allocations for the given TU.
 	 */
 	private final void deleteAllocationsOfTU(final I_M_ReceiptSchedule receiptSchedule, final I_M_HU tuHU)
 	{

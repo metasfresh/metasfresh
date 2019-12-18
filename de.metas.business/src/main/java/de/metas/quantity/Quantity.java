@@ -699,7 +699,10 @@ public final class Quantity implements Comparable<Quantity>
 				sourceUom);
 	}
 
-	public Quantity divide(final BigDecimal divisor, final int scale, final RoundingMode roundingMode)
+	public Quantity divide(
+			@NonNull final BigDecimal divisor,
+			final int scale,
+			@NonNull final RoundingMode roundingMode)
 	{
 		return new Quantity(
 				qty.divide(divisor, scale, roundingMode),
@@ -730,5 +733,16 @@ public final class Quantity implements Comparable<Quantity>
 		return qty.equals(qtyRounted)
 				? this
 				: new Quantity(qtyRounted, uom, sourceQty, sourceUom);
+	}
+
+	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)
+	{
+		final BigDecimal newQty = qty.setScale(newScale.toInt(), roundingMode);
+
+		return new Quantity(
+				newQty,
+				uom,
+				sourceQty != null ? sourceQty.setScale(newScale.toInt(), roundingMode) : newQty,
+				sourceUom != null ? sourceUom : uom);
 	}
 }

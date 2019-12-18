@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
@@ -55,6 +57,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -64,8 +67,10 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public abstract class ReceiptScheduleTestBase
@@ -146,9 +151,12 @@ public abstract class ReceiptScheduleTestBase
 		warehouse2 = createWarehouse("WH2");
 		warehouse2_locator1 = createLocator(warehouse2);
 
-		product1_wh1 = createProduct("P1", warehouse1_locator1);
-		product2_wh1 = createProduct("P2", warehouse1_locator1);
-		product3_wh2 = createProduct("P3", warehouse2_locator1);
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM");
+		final UomId stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
+
+		product1_wh1 = createProduct("P1", stockUomId, warehouse1_locator1);
+		product2_wh1 = createProduct("P2", stockUomId, warehouse1_locator1);
+		product3_wh2 = createProduct("P3", stockUomId, warehouse2_locator1);
 
 		receiptDocType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, ITrx.TRXNAME_None);
 		receiptDocType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
@@ -200,7 +208,10 @@ public abstract class ReceiptScheduleTestBase
 		return bp;
 	}
 
-	public I_M_Product createProduct(final String productName, final I_M_Locator locator)
+	public I_M_Product createProduct(
+			final String productName,
+			@NonNull final UomId stockUOMId,
+			@Nullable final I_M_Locator locator)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
 		product.setValue(productName);
@@ -210,6 +221,8 @@ public abstract class ReceiptScheduleTestBase
 		{
 			product.setM_Locator_ID(locator.getM_Locator_ID());
 		}
+
+		product.setC_UOM_ID(stockUOMId.getRepoId());
 
 		saveRecord(product);
 		return product;

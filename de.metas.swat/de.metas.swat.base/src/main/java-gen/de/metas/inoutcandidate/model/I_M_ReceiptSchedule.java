@@ -172,6 +172,29 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
+	 * Set Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCatch_UOM_ID();
+
+    /** Column name Catch_UOM_ID */
+    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -877,7 +900,7 @@ public interface I_M_ReceiptSchedule
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -887,7 +910,7 @@ public interface I_M_ReceiptSchedule
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -924,6 +947,29 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QtyMoved = "QtyMoved";
 
 	/**
+	 * Set Bewegte Catch-Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyMovedInCatchUOM (java.math.BigDecimal QtyMovedInCatchUOM);
+
+	/**
+	 * Get Bewegte Catch-Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyMovedInCatchUOM();
+
+    /** Column definition for QtyMovedInCatchUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_QtyMovedInCatchUOM = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "QtyMovedInCatchUOM", null);
+    /** Column name QtyMovedInCatchUOM */
+    public static final String COLUMNNAME_QtyMovedInCatchUOM = "QtyMovedInCatchUOM";
+
+	/**
 	 * Set Qty Moved (With Issues).
 	 *
 	 * <br>Type: Quantity
@@ -945,6 +991,29 @@ public interface I_M_ReceiptSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_QtyMovedWithIssues = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "QtyMovedWithIssues", null);
     /** Column name QtyMovedWithIssues */
     public static final String COLUMNNAME_QtyMovedWithIssues = "QtyMovedWithIssues";
+
+	/**
+	 * Set Bewegte minderwertige Catch-Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyMovedWithIssuesInCatchUOM (java.math.BigDecimal QtyMovedWithIssuesInCatchUOM);
+
+	/**
+	 * Get Bewegte minderwertige Catch-Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyMovedWithIssuesInCatchUOM();
+
+    /** Column definition for QtyMovedWithIssuesInCatchUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_QtyMovedWithIssuesInCatchUOM = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "QtyMovedWithIssuesInCatchUOM", null);
+    /** Column name QtyMovedWithIssuesInCatchUOM */
+    public static final String COLUMNNAME_QtyMovedWithIssuesInCatchUOM = "QtyMovedWithIssuesInCatchUOM";
 
 	/**
 	 * Set Bestellt/ Beauftragt.

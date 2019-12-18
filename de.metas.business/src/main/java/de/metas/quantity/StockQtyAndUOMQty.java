@@ -3,6 +3,7 @@ package de.metas.quantity;
 import static de.metas.util.Check.assumeNotNull;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.product.ProductId;
+import de.metas.uom.UOMPrecision;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,7 +48,7 @@ public class StockQtyAndUOMQty
 	{
 		return Optional.ofNullable(uomQty);
 	}
-	
+
 	@JsonIgnore
 	public boolean isUOMQtySet()
 	{
@@ -125,7 +127,7 @@ public class StockQtyAndUOMQty
 	{
 		return toBuilder()
 				.stockQty(stockQty.toZero())
-				.uomQty(uomQty.toZero())
+				.uomQty(uomQty != null ? uomQty.toZero() : null)
 				.build();
 	}
 
@@ -156,5 +158,44 @@ public class StockQtyAndUOMQty
 			result.uomQty(uomQty.multiply(factor));
 		}
 		return result.build();
+	}
+
+	public StockQtyAndUOMQty setScale(
+			@NonNull final UOMPrecision stockQtyPrecision,
+			@Nullable final UOMPrecision uomQtyPrecision,
+			@NonNull final RoundingMode roundingMode)
+	{
+		final StockQtyAndUOMQtyBuilder builder = this.toBuilder()
+				.stockQty(stockQty.setScale(stockQtyPrecision, roundingMode));
+		if (uomQty != null && uomQtyPrecision != null)
+		{
+			builder.uomQty(uomQty.setScale(uomQtyPrecision, roundingMode));
+		}
+		return builder.build();
+	}
+
+	public StockQtyAndUOMQty divide(
+			@NonNull final BigDecimal divident,
+			final int scale,
+			@NonNull final RoundingMode roundingMode)
+	{
+		final StockQtyAndUOMQtyBuilder result = this
+				.toBuilder()
+				.stockQty(stockQty.divide(divident, scale, roundingMode));
+		if (uomQty != null)
+		{
+			result.uomQty(uomQty.divide(divident, scale, roundingMode));
+		}
+		return result.build();
+	}
+
+	/** @return the minimum by looking at the stock quantities. */
+	public StockQtyAndUOMQty min(@NonNull final StockQtyAndUOMQty other)
+	{
+		if (this.getStockQty().compareTo(other.getStockQty()) < 0)
+		{
+			return this;
+		}
+		return other;
 	}
 }

@@ -89,6 +89,9 @@ public class HUStatusBL implements IHUStatusBL
 			// shipped => active is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
 			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Active)
 
+			// shipped => picked is used if a shipment with picked HUs is reversed
+			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Picked)
+
 			.build();
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(

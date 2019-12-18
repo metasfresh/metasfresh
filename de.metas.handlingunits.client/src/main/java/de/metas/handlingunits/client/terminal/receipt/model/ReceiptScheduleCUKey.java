@@ -1,5 +1,6 @@
 package de.metas.handlingunits.client.terminal.receipt.model;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -15,15 +16,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,6 +51,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 
 /**
@@ -63,6 +64,7 @@ public class ReceiptScheduleCUKey extends CUKey
 {
 	// services
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final transient IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	// Parameters
 	private final ReceiptScheduleTableRow receiptScheduleRow;
@@ -75,8 +77,8 @@ public class ReceiptScheduleCUKey extends CUKey
 		receiptScheduleRow = row;
 		receiptSchedule = row.getM_ReceiptSchedule();
 
-		final BigDecimal qtyToMove = Services.get(IReceiptScheduleQtysBL.class).getQtyToMove(receiptSchedule);
-		setSuggestedQty(qtyToMove.signum() >= 0 ? qtyToMove : BigDecimal.ZERO);
+		final StockQtyAndUOMQty qtyToMove = receiptScheduleQtysBL.getQtyToMove(receiptSchedule);
+		setSuggestedQty(qtyToMove.signum() >= 0 ? qtyToMove.getStockQty().toBigDecimal() : ZERO);
 
 		uom = loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class);
 	}
@@ -97,6 +99,7 @@ public class ReceiptScheduleCUKey extends CUKey
 
 	/**
 	 * Keep in sync with {@code de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator.createAllocationRequest(Quantity)}
+	 *
 	 * @return
 	 */
 	public I_M_HU createVHU()

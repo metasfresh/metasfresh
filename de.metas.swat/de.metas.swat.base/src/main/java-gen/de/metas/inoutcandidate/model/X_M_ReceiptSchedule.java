@@ -157,6 +157,31 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress_Override);
 	}
 
+	/** Set Catch Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -898,7 +923,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -907,7 +932,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
@@ -941,6 +966,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return bd;
 	}
 
+	/** Set Bewegte Catch-Menge.
+		@param QtyMovedInCatchUOM Bewegte Catch-Menge	  */
+	@Override
+	public void setQtyMovedInCatchUOM (java.math.BigDecimal QtyMovedInCatchUOM)
+	{
+		set_Value (COLUMNNAME_QtyMovedInCatchUOM, QtyMovedInCatchUOM);
+	}
+
+	/** Get Bewegte Catch-Menge.
+		@return Bewegte Catch-Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyMovedInCatchUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMovedInCatchUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Qty Moved (With Issues).
 		@param QtyMovedWithIssues Qty Moved (With Issues)	  */
 	@Override
@@ -955,6 +999,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.math.BigDecimal getQtyMovedWithIssues () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMovedWithIssues);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Bewegte minderwertige Catch-Menge.
+		@param QtyMovedWithIssuesInCatchUOM Bewegte minderwertige Catch-Menge	  */
+	@Override
+	public void setQtyMovedWithIssuesInCatchUOM (java.math.BigDecimal QtyMovedWithIssuesInCatchUOM)
+	{
+		set_Value (COLUMNNAME_QtyMovedWithIssuesInCatchUOM, QtyMovedWithIssuesInCatchUOM);
+	}
+
+	/** Get Bewegte minderwertige Catch-Menge.
+		@return Bewegte minderwertige Catch-Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyMovedWithIssuesInCatchUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMovedWithIssuesInCatchUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,8 @@ package org.adempiere.mm.attributes.spi.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -161,12 +163,6 @@ import de.metas.util.Services;
 
 	/**
 	 * See {@link #onValueChanged(IAttributeValueContext, IAttributeSet, I_M_Attribute, Object, Object)}.
-	 *
-	 * @param attributeValueContext
-	 * @param attributeSet
-	 * @param attribute
-	 * @param valueOld
-	 * @param valueNew
 	 */
 	protected abstract void onValueChanged0(final IAttributeValueContext attributeValueContext,
 			final IAttributeSet attributeSet,
@@ -174,7 +170,7 @@ import de.metas.util.Services;
 			final Object valueOld,
 			final Object valueNew);
 
-	protected final IWeightable getWeightableOrNull(final IAttributeSet attributeSet)
+	protected final IWeightable getWeightableOrNull(@Nullable final IAttributeSet attributeSet)
 	{
 		if (attributeSet == null)
 		{
@@ -185,13 +181,6 @@ import de.metas.util.Services;
 
 	/**
 	 * See {@link #onValueChanged(IAttributeValueContext, IAttributeSet, I_M_Attribute, Object, Object)}.
-	 *
-	 * @param attributeValueContext
-	 * @param attributeSet
-	 * @param attribute
-	 * @param valueOld
-	 * @param valueNew
-	 * @return
 	 */
 	protected abstract boolean isExecuteCallout(final IAttributeValueContext attributeValueContext,
 			final IAttributeSet attributeSet,
@@ -246,6 +235,18 @@ import de.metas.util.Services;
 			weightable.setWeightNet(weightNetActual);
 			weightable.setWeightNetNoPropagate(weightNet); // directly set the correct value we're expecting
 		}
+	}
+
+	protected boolean isLUorTUorTopLevelVHU(IAttributeSet attributeSet)
+	{
+		if (!isVirtualHU(attributeSet))
+		{
+			return true;
+		}
+
+		final I_M_HU hu = huAttributesBL.getM_HU_OrNull(attributeSet);
+		final boolean virtualTopLevelHU = handlingUnitsBL.isTopLevel(hu);
+		return virtualTopLevelHU;
 	}
 
 	@Override

@@ -99,7 +99,7 @@ public class StockQtyAndUOMQtys
 		{
 			Check.assume(qtyInUOM == null || qtyInUOM.signum() == 0, "qtyInUOM={} shall be ZERO when uomId is null", qtyInUOM);
 		}
-		
+
 		return validate(result.build());
 	}
 
@@ -165,7 +165,7 @@ public class StockQtyAndUOMQtys
 
 	/**
 	 * @param stockQtyInAnyUom converted to the product's stock UOM is needed
-	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is-
+	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
 	 */
 	public StockQtyAndUOMQty createConvert(
 			@NonNull final Quantity stockQtyInAnyUom,

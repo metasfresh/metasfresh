@@ -1054,10 +1054,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		assertNotDisposed();
 
-		// Instance Attributes are always readonly
 		if (!attribute.isInstanceAttribute())
 		{
-			return true;
+			return true; // only instance attributes *might* be read-write
 		}
 
 		final IAttributeValueCallout callout = getAttributeValueCallout(attribute);
