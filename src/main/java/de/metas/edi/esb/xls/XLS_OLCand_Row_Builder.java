@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.edi.esb.commons.Util;
+import lombok.NonNull;
 
 /**
  * Builds {@link XLS_OLCand_Row}.
@@ -106,9 +107,9 @@ public class XLS_OLCand_Row_Builder
 		return new XLS_OLCand_Row(this);
 	}
 
-	public XLS_OLCand_Row_Builder setFromMap(final Map<String, Object> map)
+	public XLS_OLCand_Row_Builder setFromMap(@NonNull final Map<String, Object> map)
 	{
-		// NOTE: we need to create a new map, beacause we want to use case insensitive keys.
+		// NOTE: we need to create a new map, because we want to use case insensitive keys.
 		final TreeMap<String, Object> map2 = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
 		map2.putAll(map);
 
@@ -196,7 +197,7 @@ public class XLS_OLCand_Row_Builder
 		}
 	}
 
-	private static final BigDecimal extractBigDecimal(Map<String, Object> map, final String key)
+	private static final BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 		if (value == null)
