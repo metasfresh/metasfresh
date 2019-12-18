@@ -96,9 +96,9 @@ public class ShipmentCandidatesView_Launcher extends ViewBasedProcessTemplate im
 		else
 		{
 			return selectedRowIds
-					.stream()
-					.map(rowId -> ShipmentScheduleId.ofRepoId(rowId.toInt()))
-					.collect(ImmutableSet.toImmutableSet());
-		}
+				.stream()
+				.map(rowId -> ShipmentScheduleId.ofRepoId(rowId.toInt()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
+}
 }
