@@ -10,25 +10,26 @@ package de.metas.edi.esb.xls;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -38,7 +39,7 @@ import de.metas.edi.esb.commons.Util;
 
 /**
  * Builds {@link XLS_OLCand_Row}.
- * 
+ *
  * @author tsa
  * @task 08839
  */
@@ -53,7 +54,7 @@ public class XLS_OLCand_Row_Builder
 	String productDescription;
 	private static final String MAPKEY_ProductAttributes = "Merkmale";
 	String productAttributes;
-	
+
 	//
 	private static final String MAPKEY_UOM_x12de355 = "uom_x12de355";
 	String UOM_x12de355;
@@ -63,7 +64,7 @@ public class XLS_OLCand_Row_Builder
 	BigDecimal qtyCUsPerTU;
 	private static final String MAPKEY_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	int M_HU_PI_Item_Product_ID;
-	
+
 	//
 	private static final String MAPKEY_Price = "Preis";
 	BigDecimal price;
@@ -91,9 +92,13 @@ public class XLS_OLCand_Row_Builder
 			.add(new SimpleDateFormat("MM/dd/yy")) // US format
 			.build();
 
+	private static final List<NumberFormat> numberFormats = ImmutableList.<NumberFormat> builder()
+			.add(NumberFormat.getInstance(Locale.GERMAN))
+			.add(NumberFormat.getInstance(Locale.ENGLISH))
+			.build();
+
 	XLS_OLCand_Row_Builder()
 	{
-		super();
 	}
 
 	public XLS_OLCand_Row build()
@@ -208,8 +213,20 @@ public class XLS_OLCand_Row_Builder
 		{
 			return null;
 		}
-		final BigDecimal valueBD = new BigDecimal(valueStr);
-		return valueBD;
+
+		for (final NumberFormat numberFormat : numberFormats)
+		{
+			try
+			{
+				final Number parsed = numberFormat.parse(valueStr);
+				return new BigDecimal(parsed.toString());
+			}
+			catch (ParseException e)
+			{
+				// ignore it
+			}
+		}
+		return null;
 	}
 
 	private Date extractDate(final Map<String, Object> map, final String key)
@@ -226,7 +243,7 @@ public class XLS_OLCand_Row_Builder
 
 		//
 		// Fallback: try parsing the dates from strings using some common predefined formats
-		// NOTE: this shall not happen very often because we take care of dates when we are parsing the Excel file. 
+		// NOTE: this shall not happen very often because we take care of dates when we are parsing the Excel file.
 		final String valueStr = value.toString().trim();
 		if (valueStr.isEmpty())
 		{
@@ -235,13 +252,9 @@ public class XLS_OLCand_Row_Builder
 
 		for (final DateFormat dateFormat : dateFormats)
 		{
-
 			try
 			{
-				synchronized (dateFormat)
-				{
-					return dateFormat.parse(valueStr);
-				}
+				return dateFormat.parse(valueStr);
 			}
 			catch (ParseException e)
 			{
