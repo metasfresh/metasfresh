@@ -87,8 +87,8 @@ public class HUReceiptLineCandidatesBuilderTest
 		uomRecord.setStdPrecision(0); // NOTE: Stuck/Each has precision=0
 
 		final StockQtyAndUOMQty qty_8 = StockQtyAndUOMQtys.create(new BigDecimal("8.00"), productId, null, null);
-		final StockQtyAndUOMQty qty_6 = StockQtyAndUOMQtys.create(new BigDecimal("6.00"), productId, null, null);
-		final StockQtyAndUOMQty qty_2 = StockQtyAndUOMQtys.create(new BigDecimal("2.00"), productId, null, null);
+		final StockQtyAndUOMQty qty_5_6 = StockQtyAndUOMQtys.create(new BigDecimal("5.6"), productId, null, null);
+		final StockQtyAndUOMQty qty_2_4 = StockQtyAndUOMQtys.create(new BigDecimal("2.4"), productId, null, null);
 
 		//
 		// Create HUReceiptLinePartCandidate
@@ -99,8 +99,8 @@ public class HUReceiptLineCandidatesBuilderTest
 					.uom(uomRecord)
 					.qty(qty_8)
 					.qualityDiscountPercent("70")
-					.qtyWithIssues(qty_6) // = 5.6 rounded half up to 0 decimals
-					.qtyWithoutIssues(qty_2)
+					.qtyWithIssues(qty_5_6)
+					.qtyWithoutIssues(qty_2_4)
 					.endExpectation();
 		//@formatter:on
 		final HUReceiptLineCandidatesBuilder huReceiptLineCandidatesBuilder = partsExpectations.createHUReceiptLineCandidatesBuilder();
