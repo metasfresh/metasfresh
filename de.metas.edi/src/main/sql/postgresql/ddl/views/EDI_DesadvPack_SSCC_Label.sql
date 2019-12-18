@@ -1,4 +1,6 @@
-CREATE OR REPLACE VIEW  edi_desadvpack_sscc_label
+drop view if exists edi_desadvpack_sscc_label;
+
+CREATE VIEW  edi_desadvpack_sscc_label
             (no_of_labels, SSCC, order_reference, date_shipped, GTIN, product_description, amount, weight, best_before, lot_no,
              bp_address_GLN, bp_address_name1, bp_address_name2, bp_address_street, bp_address_zip_code, bp_address_city,
              ho_address_GLN, ho_address_name1, ho_address_name2, ho_address_street, ho_address_zip_code, ho_address_city,
@@ -16,15 +18,15 @@ SELECT
     dl_pack.bestBeforeDate                                                      AS best_before,
     dl_pack.lotnumber                                                           AS lot_no,
     bp_address.GLN                                                              AS bp_address_gln,
-    bp_address.name                                                             AS bp_address_name1,
-    ''::text                                                                    AS bp_address_name2,
-    bp_address_location.address1 || bp_address_location.address2                AS bp_address_street,
+    bp_address_location.address1                                                AS bp_address_name1,
+    bp_address_location.address2                                                AS bp_address_name2,
+    concat(bp_address_location.address1,' ', bp_address_location.address2)      AS bp_address_street,
     bp_address_location.postal                                                  AS bp_address_zip_code,
     bp_address_location.city                                                    AS bp_address_city,
     ho_address.GLN                                                              AS ho_address_gln,
-    ho_address.name                                                             AS ho_address_name1,
-    ''::text                                                                    AS ho_address_name2,
-    ho_address_location.address1 || bp_address_location.address2                AS ho_address_street,
+    ho_address_location.address1                                                AS ho_address_name1,
+    ho_address_location.address2                                                AS ho_address_name2,
+    concat(ho_address_location.address1,' ', ho_address_location.address2)      AS ho_address_street,
     ho_address_location.postal                                                  AS ho_address_zip_code,
     ho_address_location.city                                                    AS ho_address_city,
     t_sel.ad_pinstance_id                                                       AS p_instance_id
