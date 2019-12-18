@@ -59,6 +59,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
 
 /*
@@ -281,6 +282,7 @@ public class ProcessRestController
 				});
 	}
 
+	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getReport(
 			@PathVariable("processId") final String processIdStr //
