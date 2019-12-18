@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -33,7 +35,7 @@ import lombok.Value;
  */
 
 @Value
-public class ShippedQtyItem
+public class DeliveredQtyItem
 {
 	Quantity qtyInStockUom;
 
@@ -43,18 +45,24 @@ public class ShippedQtyItem
 
 	Quantity qtyOverride;
 
+	/** default: {@code false} */
+	boolean inDispute;
+
 	@Builder
 	@JsonCreator
-	private ShippedQtyItem(
+	private DeliveredQtyItem(
 			@JsonProperty("qtyInStockUom") @NonNull final Quantity qtyInStockUom,
 			@JsonProperty("qtyNominal") @NonNull final Quantity qtyNominal,
 			@JsonProperty("qtyCatch") @Nullable final Quantity qtyCatch,
-			@JsonProperty("qtyOverride") @Nullable final Quantity qtyOverride)
+			@JsonProperty("qtyOverride") @Nullable final Quantity qtyOverride,
+			@JsonProperty("inDispute") @Nullable final Boolean inDispute)
 	{
 		this.qtyInStockUom = qtyInStockUom;
 		this.qtyNominal = qtyNominal;
 		this.qtyCatch = qtyCatch;
 		this.qtyOverride = qtyOverride;
+
+		this.inDispute = coalesce(inDispute, false);
 	}
 
 }

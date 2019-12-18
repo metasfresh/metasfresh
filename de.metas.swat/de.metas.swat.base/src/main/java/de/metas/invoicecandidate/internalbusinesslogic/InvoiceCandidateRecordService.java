@@ -88,10 +88,9 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
-			invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight; // for purchase candidates it's *always* nominal weight
 			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
 			{
 				qualityDiscountOverride = Optional.of(Percent.of(icRecord.getQualityDiscountPercent_Override()));
@@ -174,14 +173,23 @@ public class InvoiceCandidateRecordService
 			final ReceiptData receiptData = deliveredData.getReceiptData();
 
 			final Percent qualityDiscountOverride = invoiceCandidate.getQualityDiscountOverride();
+			final InvoicableQtyBasedOn invoicableQtyBasedOn = invoiceCandidate.getInvoicableQtyBasedOn();
+
 			icRecord.setQualityDiscountPercent_Override(qualityDiscountOverride == null ? null : qualityDiscountOverride.toBigDecimal());
 
-			icRecord.setQtyWithIssues(receiptData.getQtysWithIssues().getStockQty().toBigDecimal());
-			icRecord.setQtyWithIssues_Effective(receiptData.computeQtysWithIssuesEffective(qualityDiscountOverride).getStockQty().toBigDecimal());
+			icRecord.setQtyWithIssues(
+					receiptData
+							.getQtysWithIssues(invoicableQtyBasedOn)
+							.getStockQty().toBigDecimal());
+
+			icRecord.setQtyWithIssues_Effective(
+					receiptData
+							.computeQtysWithIssuesEffective(qualityDiscountOverride, invoicableQtyBasedOn)
+							.getStockQty().toBigDecimal());
 
 			// check if QualityDiscountPercent from the inout lines equals the effective quality-percent which we currently have
 			final BigDecimal qualityDiscountPercentOld = icRecord.getQualityDiscountPercent();
-			final BigDecimal qualityDiscountPercentNew = receiptData.computeQualityDiscount().toBigDecimal();
+			final BigDecimal qualityDiscountPercentNew = receiptData.computeQualityDiscount(invoicableQtyBasedOn).toBigDecimal();
 
 			final boolean isQualityDiscountPercentChanged = qualityDiscountPercentOld.compareTo(qualityDiscountPercentNew) != 0;
 			if (isQualityDiscountPercentChanged)

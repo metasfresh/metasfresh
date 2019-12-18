@@ -40,7 +40,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -236,17 +235,17 @@ public final class ReceiptQty
 		return qtyTotal.signum() == 0 && qtyWithIssues.signum() == 0;
 	}
 
-	private StockQtyAndUOMQty getQtyTotal(
-			@NonNull final UOMPrecision stockQtyPrecision,
-			@Nullable final UOMPrecision catchQtyPrecision)
-	{
-		final StockQtyAndUOMQty qtyTotal = getQtyTotal();
-		if (qtyTotal.signum() == 0)
-		{
-			return qtyTotal.toZero();
-		}
-		return qtyTotal.setScale(stockQtyPrecision, catchQtyPrecision, QtyTotal_RoundingMode);
-	}
+//	private StockQtyAndUOMQty getQtyTotal(
+//			@NonNull final UOMPrecision stockQtyPrecision,
+//			@Nullable final UOMPrecision catchQtyPrecision)
+//	{
+//		final StockQtyAndUOMQty qtyTotal = getQtyTotal();
+//		if (qtyTotal.signum() == 0)
+//		{
+//			return qtyTotal.toZero();
+//		}
+//		return qtyTotal.setScale(stockQtyPrecision, catchQtyPrecision, QtyTotal_RoundingMode);
+//	}
 
 	/**
 	 * @return weighted average quality discount percent, based on the UOM-quantities.
