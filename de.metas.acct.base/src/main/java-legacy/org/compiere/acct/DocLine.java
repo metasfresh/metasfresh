@@ -29,7 +29,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
@@ -40,6 +39,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IProductAcctDAO;
@@ -419,21 +419,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return getAccountDefault(acctType, as);
 		}
 
-		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, productId);
-		if (productAcct == null)
-		{
-			final String productName = Services.get(IProductBL.class).getProductName(productId);
-			throw newPostingException().setAcctSchema(as).setDetailMessage("Product " + productName + " has no accounting definition records");
-		}
-
-		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
-		if (validCombinationId == null || validCombinationId <= 0)
+		final AccountId accountId = productAcctDAO.getProductAcct(as.getId(), productId, acctType).orElse(null);
+		if (accountId == null)
 		{
 			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
-		return accountDAO.getById(validCombinationId);
+		return accountDAO.getById(accountId);
 	}
 
 	/**
@@ -607,7 +600,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return productBL.getStockUOMId(getProductId());
 	}
-
 
 	/**
 	 * Get Revenue Recognition
