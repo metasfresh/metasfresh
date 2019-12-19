@@ -193,6 +193,8 @@ UPDATE C_Tax_Acct SET C_Tax_Acct_ID=540032 WHERE 1=1 AND C_AcctSchema_ID=1000000
 ALTER TABLE C_Tax_Acct ALTER COLUMN C_Tax_Acct_ID SET DEFAULT nextval('c_tax_acct_seq')
 ;
 
+UPDATE C_Tax_Acct SET C_Tax_Acct_ID=nextval('c_tax_acct_seq') WHERE C_Tax_Acct_ID IS NULL;
+
 -- 2019-12-19T05:14:07.439Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 ALTER TABLE C_Tax_Acct ALTER COLUMN C_Tax_Acct_ID SET NOT NULL
