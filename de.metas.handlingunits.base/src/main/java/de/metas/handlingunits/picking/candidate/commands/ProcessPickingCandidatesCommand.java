@@ -218,7 +218,8 @@ public class ProcessPickingCandidatesCommand
 						qtyPicked,
 						hu),
 				hu,
-				huContext);
+				huContext,
+				false);
 	}
 
 	private void issueRawProductsToPickingOrder(

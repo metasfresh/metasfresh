@@ -1,5 +1,39 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHULockBL;
+import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IInOutPackageDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.inout.InOutId;
+import de.metas.lock.api.LockOwner;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -23,43 +57,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.handlingunits.IInOutPackageDAO;
-import de.metas.inout.InOutId;
-import de.metas.shipping.model.ShipperTransportationId;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUPackageBL;
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
-import de.metas.lock.api.LockOwner;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
-import javax.annotation.Nullable;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
@@ -211,6 +208,18 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		{
 			return false;
 		}
+
+		//
+		// @tobias using this is not good as when running the action "Generate Shipments" with "Quantity to deliver",
+		// 		a NEW (not existing!) VHU is created and added to the Shipment.
+		// 		If we leave this check here, we introduce a bug where the shipment is not created (don't have time to figure out why).
+		//
+		// HUs picked anonymously 'onTheFly' for Shipments should be rejected
+		//noinspection RedundantIfStatement
+		// if (handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
+		// {
+		// 	return false;
+		// }
 
 		return true;
 	}
