@@ -158,6 +158,15 @@ public class SSCC18CodeBLTests
 	}
 
 	@Test
+	public void testGenerateSSCC18value9DigitManufacturerCode()
+	{
+		setManufacturerCode("123456789");
+		final SSCC18CodeBL sscc18CodeBL = new SSCC18CodeBL(orgId -> 23);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY);
+		assertThat(sscc18CodeBL.toString(generatedSSCC18, false)).hasSize(18).isEqualTo("012345678900000234");
+	}
+
+	@Test
 	public void testcheckValidSSCC18() // NOPMD by ts on 26.07.13 15:15 OK, method under test is expected to just return without exception
 	{
 		final String manufacturerCode = "0718908 ";
@@ -193,8 +202,20 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
+	}
 
-		StaticHUAssert.assertMock("mock");
+	@Test
+	public void testcheckValidSSCC18_9digitManufacturerCode()
+	{
+		final String manufacturerCode = "764011946";
+		final String serialNumber = "0000002";
+		final int checkDigit = 4;
+		final int extensionDigit = 0;
+
+		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
+		sscc18CodeBL.validate(sscc18ToValidate);
+
+		assertThat(sscc18CodeBL.toString(sscc18ToValidate, false)).hasSize(18).isEqualTo("0" + manufacturerCode + serialNumber + checkDigit);
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -207,8 +228,6 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
-
-		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -221,8 +240,6 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
-
-		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test
