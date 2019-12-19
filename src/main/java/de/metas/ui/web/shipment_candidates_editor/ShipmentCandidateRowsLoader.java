@@ -165,7 +165,7 @@ final class ShipmentCandidateRowsLoader
 				.packingInfo(packingInfo)
 				.preparationDate(extractPreparationTime(record))
 				//
-				.qtyOrdered(qtyOrdered)
+				.qtyOrdered(packingInfo.computeQtyUserEnteredByQtyCUs(qtyOrdered))
 				//
 				.qtyToDeliverUserEnteredInitial(qtyToDeliverUserEntered)
 				.qtyToDeliverUserEntered(qtyToDeliverUserEntered)
