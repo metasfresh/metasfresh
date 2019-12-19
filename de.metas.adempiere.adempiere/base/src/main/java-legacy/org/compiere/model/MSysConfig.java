@@ -36,14 +36,14 @@ import de.metas.logging.LogManager;
  * @version $Id: MSysConfig.java,v 1.5 2005/11/28 11:56:45 armen Exp $
  *          Contributor: Carlos Ruiz - globalqss - [ 1800371 ] System Configurator Enhancements
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1885496 ] Performance NEEDS
- * 
+ *
  * @deprecated Please use {@link ISysConfigBL}
  */
 @Deprecated
 public class MSysConfig extends X_AD_SysConfig
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5271070197457739666L;
 
@@ -78,12 +78,12 @@ public class MSysConfig extends X_AD_SysConfig
 	private static Logger s_log = LogManager.getLogger(MSysConfig.class);
 	/** Cache */
 	private static CCache<String, String> s_cache = new CCache<>(Table_Name, 40, 0); // expire=never
-	
+
 	private static final String NO_Value = new String(""); // NOTE: new instance to make sure it's unique
 
 	/**
 	 * Reset Cache
-	 * 
+	 *
 	 */
 	public static void resetCache()
 	{
@@ -92,7 +92,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type string
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @return String
@@ -104,7 +104,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type string
-	 * 
+	 *
 	 * @param Name
 	 * @return String
 	 */
@@ -115,7 +115,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type int
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @return int
@@ -142,7 +142,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type double
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @return double
@@ -166,7 +166,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type boolean
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @return boolean
@@ -187,7 +187,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get client configuration property of type string
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -200,7 +200,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type string
-	 * 
+	 *
 	 * @param Name
 	 * @param Client ID
 	 * @return String
@@ -212,7 +212,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type int
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -240,7 +240,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type double
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -265,7 +265,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type boolean
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -287,7 +287,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get client configuration property of type string
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -308,7 +308,7 @@ public class MSysConfig extends X_AD_SysConfig
 				return valueRetrieved == null ? NO_Value : valueRetrieved;
 			}
 		});
-		
+
 		//
 		// If we got no value, return the defaultValue provided.
 		// NOTE: we don't expect "value" to be null, but it would be the same decission as for NO_Value.
@@ -316,12 +316,12 @@ public class MSysConfig extends X_AD_SysConfig
 		{
 			return defaultValue;
 		}
-		
+
 		return value;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param Name
 	 * @param AD_Client_ID
 	 * @param AD_Org_ID
@@ -341,7 +341,7 @@ public class MSysConfig extends X_AD_SysConfig
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			
+
 			if (rs.next())
 			{
 				value = rs.getString(1);
@@ -351,7 +351,7 @@ public class MSysConfig extends X_AD_SysConfig
 		{
 			final DBException ex = new DBException(sqlEx, sql, sqlParams);
 			s_log.error("Failed retrieving the sysconfig value", ex);
-			
+
 			value = null;
 		}
 		finally
@@ -360,13 +360,13 @@ public class MSysConfig extends X_AD_SysConfig
 			rs = null;
 			pstmt = null;
 		}
-		
+
 		return value;
 	}
 
 	/**
 	 * Get system configuration property of type string
-	 * 
+	 *
 	 * @param Name
 	 * @param Client ID
 	 * @param Organization ID
@@ -379,7 +379,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type int
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -408,7 +408,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type double
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -434,7 +434,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 	/**
 	 * Get system configuration property of type boolean
-	 * 
+	 *
 	 * @param Name
 	 * @param defaultValue
 	 * @param Client ID
@@ -471,7 +471,7 @@ public class MSysConfig extends X_AD_SysConfig
 
 			// Get the configuration level from the System Record
 			String configLevel = null;
-			String sql = "SELECT ConfigurationLevel FROM AD_SysConfig WHERE Name=? AND AD_Client_ID = 0 AND AD_Org_ID = 0";
+			String sql = "SELECT ConfigurationLevel FROM AD_SysConfig WHERE Name=? AND AD_Client_ID = 0 AND AD_Org_ID = 0 AND IsActive='Y'";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try

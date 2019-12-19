@@ -1,12 +1,18 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -38,24 +44,91 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class ReceiptData
 {
-	@NonNull
-	StockQtyAndUOMQty qtysWithIssues;
+	ProductId productId;
 
-	@NonNull
-	StockQtyAndUOMQty qtysTotal;
+	Quantity qtyTotalInStockUom;
+	Quantity qtyTotalNominal;
+	Quantity qtyTotalCatch;
 
-	public StockQtyAndUOMQty computeQtysWithIssuesEffective(@Nullable final Percent qualityDiscountOverride)
+	Quantity qtyWithIssuesInStockUom;
+	Quantity qtyWithIssuesNominal;
+	Quantity qtyWithIssuesCatch;
+
+	@Builder
+	@JsonCreator
+	public ReceiptData(
+			@JsonProperty("productId") @NonNull final ProductId productId,
+			@JsonProperty("qtyTotalInStockUom") @NonNull final Quantity qtyTotalInStockUom,
+			@JsonProperty("qtyTotalNominal") @NonNull final Quantity qtyTotalNominal,
+			@JsonProperty("qtyTotalCatch") @Nullable final Quantity qtyTotalCatch,
+			@JsonProperty("qtyWithIssuesInStockUom") @NonNull final Quantity qtyWithIssuesInStockUom,
+			@JsonProperty("qtyWithIssuesNominal") @NonNull final Quantity qtyWithIssuesNominal,
+			@JsonProperty("qtyWithIssuesCatch") @Nullable final Quantity qtyWithIssuesCatch)
+	{
+		this.productId = productId;
+
+		this.qtyTotalInStockUom = qtyTotalInStockUom;
+		this.qtyTotalNominal = qtyTotalNominal;
+		this.qtyTotalCatch = qtyTotalCatch;
+
+		this.qtyWithIssuesInStockUom = qtyWithIssuesInStockUom;
+		this.qtyWithIssuesNominal = qtyWithIssuesNominal;
+		this.qtyWithIssuesCatch = qtyWithIssuesCatch;
+	}
+
+	public StockQtyAndUOMQty getQtysTotal(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		Quantity deliveredInUom;
+		switch (invoicableQtyBasedOn)
+		{
+			case CatchWeight:
+				deliveredInUom = coalesce(getQtyTotalCatch(), getQtyTotalNominal());
+				break;
+			case NominalWeight:
+				deliveredInUom = getQtyTotalNominal();
+				break;
+			default:
+				throw new AdempiereException("Unexpected InvoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
+		return StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyTotalInStockUom)
+				.uomQty(deliveredInUom).build();
+	}
+
+	public StockQtyAndUOMQty getQtysWithIssues(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		Quantity deliveredInUom;
+		switch (invoicableQtyBasedOn)
+		{
+			case CatchWeight:
+				deliveredInUom = coalesce(getQtyWithIssuesCatch(), getQtyWithIssuesNominal());
+				break;
+			case NominalWeight:
+				deliveredInUom = getQtyWithIssuesNominal();
+				break;
+			default:
+				throw new AdempiereException("Unexpected InvoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
+		return StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(qtyWithIssuesInStockUom)
+				.uomQty(deliveredInUom).build();
+	}
+
+	public StockQtyAndUOMQty computeQtysWithIssuesEffective(
+			@Nullable final Percent qualityDiscountOverride,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
 		if (qualityDiscountOverride == null)
 		{
-			return qtysWithIssues;
+			return getQtysWithIssues(invoicableQtyBasedOn);
 		}
 
-		final Quantity qtyTotal = qtysTotal.getUOMQtyOpt().get();
-		final Quantity qtyTotalInStockUom = qtysTotal.getStockQty();
+		final Quantity qtyTotal = getQtysTotal(invoicableQtyBasedOn).getUOMQtyNotNull();
+		final Quantity qtyTotalInStockUom = getQtysTotal(invoicableQtyBasedOn).getStockQty();
 
 		final BigDecimal qtyWithIssuesEffective = qualityDiscountOverride.computePercentageOf(
 				qtyTotal.toBigDecimal(),
@@ -66,32 +139,22 @@ public class ReceiptData
 				qtyTotalInStockUom.getUOM().getStdPrecision());
 
 		return StockQtyAndUOMQtys.create(
-				qtyWithIssuesInStockUomEffective, qtysWithIssues.getProductId(),
+				qtyWithIssuesInStockUomEffective, productId,
 				qtyWithIssuesEffective, qtyTotal.getUomId());
 	}
 
-	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@Nullable final Percent qualityDiscountOverride)
+	public StockQtyAndUOMQty computeInvoicableQtyDelivered(
+			@Nullable final Percent qualityDiscountOverride,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
-		final StockQtyAndUOMQty qtysWithIssuesEffective = computeQtysWithIssuesEffective(qualityDiscountOverride);
-		return qtysTotal.subtract(qtysWithIssuesEffective);
+		final StockQtyAndUOMQty qtysWithIssuesEffective = computeQtysWithIssuesEffective(qualityDiscountOverride, invoicableQtyBasedOn);
+		return getQtysTotal(invoicableQtyBasedOn).subtract(qtysWithIssuesEffective);
 	}
 
-	public Percent computeQualityDiscount()
+	public Percent computeQualityDiscount(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
 		return Percent.of(
-				qtysWithIssues.getStockQty().toBigDecimal(),
-				qtysTotal.getStockQty().toBigDecimal());
+				getQtysWithIssues(invoicableQtyBasedOn).getUOMQtyNotNull().toBigDecimal(),
+				getQtysTotal(invoicableQtyBasedOn).getUOMQtyNotNull().toBigDecimal());
 	}
-
-	@JsonCreator
-	private ReceiptData(
-			@JsonProperty("qtysWithIssues") @NonNull final StockQtyAndUOMQty qtysWithIssues,
-			@JsonProperty("qtysTotal") @NonNull final StockQtyAndUOMQty qtysTotal)
-	{
-		this.qtysWithIssues = qtysWithIssues;
-		this.qtysTotal = qtysTotal;
-
-		StockQtyAndUOMQtys.assumeCommonProductAndUom(qtysWithIssues, qtysTotal);
-	}
-
 }

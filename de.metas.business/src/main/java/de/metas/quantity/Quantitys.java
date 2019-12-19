@@ -22,6 +22,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -114,7 +115,10 @@ public class Quantitys
 		final I_C_UOM nonStockUomRecord = uomDao.getById(nonStockUomId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final Quantity stockQty = uomConversionBL.convertQuantityTo(Quantity.of(qty, nonStockUomRecord), UOMConversionContext.of(productId), stockUomId);
+		final Quantity stockQty = uomConversionBL.convertQuantityTo(
+				Quantity.of(qty, nonStockUomRecord),
+				UOMConversionContext.of(productId, Rounding.PRESERVE_SCALE),
+				stockUomId);
 		return stockQty;
 	}
 

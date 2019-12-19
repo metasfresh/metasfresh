@@ -72,43 +72,45 @@ public class InOutCandidateBLTest
 	}
 
 	@Test
-	public void test_getQtyAndQuality_NotInDispute()
+	public void test_getQtyAndQuality_NotInDispute_noCatchWeight()
 	{
 		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.create(
-				new BigDecimal("33"), productId,
-				new BigDecimal("33"), stockUomId);
+				new BigDecimal("33"), productId, null, null);
 
 		final I_M_InOutLine inoutLine = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_33)
+				.stockQtyAndMaybeCatchQty(qtys_33)
 				.inDispute(false)
+				.uomId(stockUomId)
 				.qualityNote("note 1. note 2. note 3")
 				.createInOutLine(I_M_InOutLine.class);
 
+		// invoke the method under test
 		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
+
 		ReceiptQtyExpectation.newInstance()
-				.qty("33")
-				.qtyWithIssuesExact("0")
+				.qty(qtys_33)
+				.qtyWithIssuesExact(StockQtyAndUOMQtys.createZero(productId, null))
 				.qualityNotices("note 1. note 2. note 3")
 				.assertExpected(qtys);
 	}
 
 	@Test
-	public void test_getQtyAndQuality_InDispute()
+	public void test_getQtyAndQuality_InDispute_noCatchWeight()
 	{
 		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.create(
-				new BigDecimal("33"), productId,
-				new BigDecimal("33"), stockUomId);
+				new BigDecimal("33"), productId, null, null);
 
 		final I_M_InOutLine inoutLine = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_33)
+				.stockQtyAndMaybeCatchQty(qtys_33)
 				.inDispute(true)
+				.uomId(stockUomId)
 				.qualityNote("note 1. note 2. note 3")
 				.createInOutLine(I_M_InOutLine.class);
 
 		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
 		ReceiptQtyExpectation.newInstance()
-				.qty("33")
-				.qtyWithIssuesExact("33")
+				.qty(qtys_33)
+				.qtyWithIssuesExact(StockQtyAndUOMQtys.create(new BigDecimal("33"), productId, null, null))
 				.qualityNotices("note 1. note 2. note 3")
 				.assertExpected(qtys);
 	}

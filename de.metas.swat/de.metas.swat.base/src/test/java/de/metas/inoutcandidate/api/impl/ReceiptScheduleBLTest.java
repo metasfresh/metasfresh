@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static java.math.BigDecimal.ONE;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,34 +12,37 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -62,8 +67,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner2, warehouse1, date, product2_wh1, 10),
-				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10)
-				).iterator();
+				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10)).iterator();
 
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
@@ -79,8 +83,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10),
-				createReceiptSchedule(bpartner2, warehouse1, date, product2_wh1, 10)
-				);
+				createReceiptSchedule(bpartner2, warehouse1, date, product2_wh1, 10));
 
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules.iterator(), result, complete);
@@ -103,8 +106,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10),
-				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10)
-				).iterator();
+				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10)).iterator();
 
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
@@ -120,8 +122,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10),
-				createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10)
-				).iterator();
+				createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10)).iterator();
 
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
@@ -135,6 +136,8 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final List<I_M_ReceiptSchedule> schedulesList = Arrays.asList(createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10));
 
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
+
+		// invoke method under test
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 
 		final I_M_ReceiptSchedule schedule = schedulesList.get(0);
@@ -174,11 +177,23 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 	public void testReceiptLines()
 	{
 		final List<I_M_ReceiptSchedule> schedulesList = Arrays.asList(createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10));
+
+		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("ReceiptScheduleUOM");
+		BusinessTestHelper.createUOMConversion(
+				ProductId.ofRepoId(product1_wh1.getM_Product_ID()),
+				UomId.ofRepoId(product1_wh1.getC_UOM_ID()),
+				UomId.ofRepoId(uomRecord.getC_UOM_ID()),
+				ONE,
+				ONE);
+
 		schedulesList.get(0).setC_OrderLine_ID(111);
-		schedulesList.get(0).setC_UOM_ID(1);
+		schedulesList.get(0).setC_UOM_ID(uomRecord.getC_UOM_ID());
 		schedulesList.get(0).setAD_Org_ID(3);
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
+
+		// invoke the method under test
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
+
 		final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 
 		final I_M_ReceiptSchedule schedule = schedulesList.get(0);
@@ -240,7 +255,10 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		Assert.assertEquals("MovementQtys do not match", schedule.getQtyToMove(), receiptLine.getMovementQty());
 		// Assert.assertEquals("MovementQtys do not match", receiptScheduleBL.getQtyToMove(schedule), receiptLine.getMovementQty());
 
-		Assert.assertEquals("C_UOM_IDs do not match", schedule.getC_UOM_ID(), receiptLine.getC_UOM_ID());
+		if (schedule.getC_UOM_ID() > 0)
+		{
+			Assert.assertEquals("C_UOM_IDs do not match", schedule.getC_UOM_ID(), receiptLine.getC_UOM_ID());
+		}
 		Assert.assertEquals("C_OrderLine_IDs do not match", schedule.getC_OrderLine_ID(), receiptLine.getC_OrderLine_ID());
 	}
 }

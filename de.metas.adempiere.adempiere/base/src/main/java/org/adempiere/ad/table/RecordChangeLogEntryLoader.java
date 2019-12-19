@@ -326,7 +326,7 @@ public class RecordChangeLogEntryLoader
 		final RecordChangeLogEntry logEntry = recordRefWithLogEntry.getRecordChangeLogEntry();
 
 		final Object valueOld = logEntry.getValueOld();
-		if (valueOld == null || !(valueOld instanceof KeyNamePair)) //might be a bug
+		if (valueOld == null || !(valueOld instanceof KeyNamePair)) // might be a bug
 		{
 			throw new AdempiereException("The RecordChangeLogEntry's column references C_Location, so its valueOld needs to be KeyNamePair and not-null")
 					.appendParametersToMessage()

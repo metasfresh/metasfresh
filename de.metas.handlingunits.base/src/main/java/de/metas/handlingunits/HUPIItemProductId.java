@@ -103,4 +103,10 @@ public class HUPIItemProductId implements RepoIdAware
 		return repoId == VIRTUAL_HU.repoId;
 	}
 
+	public boolean isRegular()
+	{
+		return repoId != VIRTUAL_HU.repoId
+				&& repoId != TEMPLATE_HU.repoId;
+	}
+
 }
