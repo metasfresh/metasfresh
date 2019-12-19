@@ -24,12 +24,14 @@ package de.metas.ui.web.inout.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -51,7 +53,14 @@ import java.util.Objects;
 public class InOutToTransportationOrderService
 {
 	/**
-	 * - take all the Shipments
+	 * There are 2 cases for this:
+	 * Case 1: a Shipment has no HUs (ie this may happen when going th route: Completed Sales Order -> Shipment Disposition -> Generate Shipments (w/o picking)
+	 * - filter and take the HUs which don't already have a Transportation Order linked
+	 * - create a ShippingPackage and link it to the Transportation Order
+	 * - create a Package which holds a link to the Shipment, and link it to the ShippingPackage
+	 * - no HUs are created here and we're taking a shortcut. Let's see if this will bite our ass later.
+	 * <p>
+	 * Case 2: a Shipment has HUs
 	 * - filter and take all the unshipped HUs for all the shipments
 	 * - assume that all the HUs are already packed correctly
 	 * - add the HUs to Transportation Order by calling "huShipperTransportationBL.addHUsToShipperTransportation"
@@ -62,21 +71,58 @@ public class InOutToTransportationOrderService
 		final I_M_ShipperTransportation transportationOrder = shipperTransportationDAO.retrieve(transportationOrderId);
 
 		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
+
 		final ImmutableList<I_M_InOut> selectedInOuts = retrieveAllInOuts(inOutIds);
 
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(Objects.requireNonNull(transportationOrder).getM_ShipperTransportation_ID());
 		for (final I_M_InOut inOut : selectedInOuts)
 		{
-			final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(inOut);
-			final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(Objects.requireNonNull(transportationOrder).getM_ShipperTransportation_ID());
-			final boolean anyAdded = !huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered).isEmpty();
-			if (anyAdded)
+			final List<I_M_HU> husToTest = retrieveAllNonAnonymousHUs(inOut);
+			if (husToTest.isEmpty())
 			{
-				// only link the InOut and the ShipperTransportation if any HUs were added.
-				inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+				if (inOut.getM_ShipperTransportation_ID() != 0)
+				{
+					continue;
+				}
+				huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(inOut));
 				InterfaceWrapperHelper.save(inOut);
-				Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", shipperTransportationId);
+				Loggables.addLog("M_InOut={} added to M_ShipperTransportation_ID={}", inOut.getM_InOut_ID(), shipperTransportationId);
+			}
+			else
+			{
+				final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(inOut);
+				final boolean anyAdded = !huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered).isEmpty();
+				if (anyAdded)
+				{
+					// only link the InOut and the ShipperTransportation if any HUs were added.
+					inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+					InterfaceWrapperHelper.save(inOut);
+					Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", shipperTransportationId);
+				}
 			}
 		}
+	}
+
+	// this was made in extreme haste.
+	private static ImmutableList<I_M_HU> retrieveAllNonAnonymousHUs(final org.compiere.model.I_M_InOut inOut)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final ImmutableList<InOutLineId> lineIds = inOutDAO.retrieveLines(inOut).stream().map(it -> InOutLineId.ofRepoId(it.getM_InOutLine_ID())).collect(GuavaCollectors.toImmutableList());
+
+		final List<I_M_HU> allHUs = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(inOut);
+
+		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
+		for (final I_M_HU hu : allHUs)
+		{
+
+			if (!handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu, lineIds))
+			{
+				result.add(hu);
+			}
+		}
+		return result.build();
 	}
 
 	private ImmutableList<I_M_InOut> retrieveAllInOuts(final ImmutableList<InOutId> inOutIds)
@@ -95,7 +141,7 @@ public class InOutToTransportationOrderService
 	@NonNull
 	private static ImmutableList<I_M_HU> selectOnlyHUsWithoutShipperTransportation(final I_M_InOut inOut)
 	{
-		final List<I_M_HU> huList = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(inOut);
+		final List<I_M_HU> huList = retrieveAllNonAnonymousHUs(inOut);
 		final ImmutableList<Integer> allHuIds = huList.stream().map(I_M_HU::getM_HU_ID).collect(GuavaCollectors.toImmutableList());
 
 		final ImmutableList<Integer> alreadyInHUs = findAllHUsWithAShipperTransportation(allHuIds);
