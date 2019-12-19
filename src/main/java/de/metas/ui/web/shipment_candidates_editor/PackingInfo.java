@@ -67,10 +67,14 @@ final class PackingInfo
 
 	public BigDecimal computeQtyUserEnteredByQtyCUs(@NonNull final Quantity qtyCUs)
 	{
-		return isNone()
-				? qtyCUs.toBigDecimal()
-				: computeQtyTUsByQtyCUs(qtyCUs.toBigDecimal());
+		return computeQtyUserEnteredByQtyCUs(qtyCUs.toBigDecimal());
+	}
 
+	public BigDecimal computeQtyUserEnteredByQtyCUs(@NonNull final BigDecimal qtyCUs)
+	{
+		return isNone()
+				? qtyCUs
+				: computeQtyTUsByQtyCUs(qtyCUs);
 	}
 
 	public BigDecimal computeQtyCUsByQtyUserEntered(@NonNull final BigDecimal qtyUserEntered)
