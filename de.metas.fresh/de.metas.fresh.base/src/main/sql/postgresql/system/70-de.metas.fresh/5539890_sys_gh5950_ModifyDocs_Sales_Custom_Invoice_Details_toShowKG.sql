@@ -47,8 +47,8 @@ FROM C_Customs_Invoice_Line il
 
 
 WHERE il.C_Customs_Invoice_ID = p_C_Customs_Invoice_ID
-GROUP BY ct.Name, ct.value, COALESCE(uomt.UOMSymbol, uom.UOMSymbol), c.cursymbol, i.DocumentNo
-ORDER BY ct.value, ct.Name
+GROUP BY ct.Name, ct.value, COALESCE(uomt.UOMSymbol, uom.UOMSymbol), c.cursymbol, i.DocumentNo, ct.Seqno
+ORDER BY ct.Seqno, ct.value, ct.Name
 
 $$
     LANGUAGE sql

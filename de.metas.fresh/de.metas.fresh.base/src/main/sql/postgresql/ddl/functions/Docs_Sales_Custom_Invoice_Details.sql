@@ -1,4 +1,3 @@
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details (IN p_C_Customs_Invoice_ID numeric, IN p_AD_Language Character Varying(6));
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details(IN p_C_Customs_Invoice_ID numeric,
                                                                                                  IN p_AD_Language Character Varying(6))
@@ -47,8 +46,8 @@ FROM C_Customs_Invoice_Line il
 
 
 WHERE il.C_Customs_Invoice_ID = p_C_Customs_Invoice_ID
-GROUP BY ct.Name, ct.value, COALESCE(uomt.UOMSymbol, uom.UOMSymbol), c.cursymbol, i.DocumentNo
-ORDER BY ct.value, ct.Name
+GROUP BY ct.Name, ct.value, COALESCE(uomt.UOMSymbol, uom.UOMSymbol), c.cursymbol, i.DocumentNo, ct.Seqno
+ORDER BY ct.Seqno, ct.value, ct.Name
 
 $$
     LANGUAGE sql
