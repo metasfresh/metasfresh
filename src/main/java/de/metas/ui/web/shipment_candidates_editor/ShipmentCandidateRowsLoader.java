@@ -68,7 +68,6 @@ final class ShipmentCandidateRowsLoader
 	private final LookupDataSource warehousesLookup;
 	private final LookupDataSource productsLookup;
 	private final LookupDataSource asiLookup;
-	private final LookupDataSource uomsLookup;
 	private final LookupDataSource catchUOMsLookup;
 
 	private final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
@@ -84,7 +83,6 @@ final class ShipmentCandidateRowsLoader
 			@NonNull final LookupDataSource warehousesLookup,
 			@NonNull final LookupDataSource productsLookup,
 			@NonNull final LookupDataSource asiLookup,
-			@NonNull final LookupDataSource uomsLookup,
 			@NonNull final LookupDataSource catchUOMsLookup,
 			//
 			final Set<ShipmentScheduleId> shipmentScheduleIds)
@@ -98,7 +96,6 @@ final class ShipmentCandidateRowsLoader
 		this.warehousesLookup = warehousesLookup;
 		this.productsLookup = productsLookup;
 		this.asiLookup = asiLookup;
-		this.uomsLookup = uomsLookup;
 		this.catchUOMsLookup = catchUOMsLookup;
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
 	}
@@ -148,13 +145,15 @@ final class ShipmentCandidateRowsLoader
 
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
-
-		final Quantity qtyToDeliverStockOverride = extractQtyToDeliver(record);
-		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
 
 		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
+		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
+
+		final PackingInfo packingInfo = extractPackingInfo(record);
+		final Quantity qtyCUsToDeliver = extractQtyCUToDeliver(record);
+		final BigDecimal qtyToDeliverUserEntered = packingInfo.computeQtyUserEnteredByQtyCUs(qtyCUsToDeliver);
 
 		return ShipmentCandidateRow.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
@@ -163,22 +162,21 @@ final class ShipmentCandidateRowsLoader
 				.customer(extractCustomer(record))
 				.warehouse(extractWarehouse(record))
 				.product(extractProduct(record))
-				.packingDescription(record.getPackDescription())
+				.packingInfo(packingInfo)
 				.preparationDate(extractPreparationTime(record))
 				//
 				.qtyOrdered(qtyOrdered)
-				.uom(extractStockUOM(record))
 				//
-				.qtyToDeliverStockInitial(qtyToDeliverStockOverride)
-				.qtyToDeliverStockOverride(qtyToDeliverStockOverride.toBigDecimal())
+				.qtyToDeliverUserEnteredInitial(qtyToDeliverUserEntered)
+				.qtyToDeliverUserEntered(qtyToDeliverUserEntered)
 				//
+				.catchWeight(catchWeight)
 				.qtyToDeliverCatchOverrideInitial(qtyToDeliverCatchOverride)
 				.qtyToDeliverCatchOverride(qtyToDeliverCatchOverride)
 				.catchUOM(extractCatchUOM(record))
 				//
 				.asiIdInitial(asiId)
 				.asi(toLookupValue(asiId))
-				.catchWeight(catchWeight)
 				//
 				.build();
 	}
@@ -209,12 +207,20 @@ final class ShipmentCandidateRowsLoader
 		return productsLookup.findById(productId);
 	}
 
-	private LookupValue extractStockUOM(@NonNull final I_M_ShipmentSchedule record)
+	private static PackingInfo extractPackingInfo(@NonNull final I_M_ShipmentSchedule record)
 	{
-		final UomId stockUOMId = shipmentScheduleBL.getUomIdOfProduct(record);
-		return stockUOMId != null
-				? uomsLookup.findById(stockUOMId)
-				: null;
+		final BigDecimal qtyCUsPerTU = record.getQtyItemCapacity();
+		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
+		{
+			return PackingInfo.NONE;
+		}
+		else
+		{
+			return PackingInfo.builder()
+					.qtyCUsPerTU(qtyCUsPerTU)
+					.description(record.getPackDescription())
+					.build();
+		}
 	}
 
 	private LookupValue extractCatchUOM(@NonNull final I_M_ShipmentSchedule record)
@@ -237,7 +243,7 @@ final class ShipmentCandidateRowsLoader
 		return shipmentScheduleBL.getPreparationDate(record);
 	}
 
-	private Quantity extractQtyToDeliver(@NonNull final I_M_ShipmentSchedule record)
+	private Quantity extractQtyCUToDeliver(@NonNull final I_M_ShipmentSchedule record)
 	{
 		return shipmentScheduleBL.getQtyToDeliver(record);
 	}
