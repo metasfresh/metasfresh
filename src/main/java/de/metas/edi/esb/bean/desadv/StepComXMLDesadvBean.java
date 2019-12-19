@@ -211,10 +211,11 @@ public class StepComXMLDesadvBean
 			@NonNull final HEADERXlief header,
 			@NonNull final String supplierGln)
 	{
+
 		final HADRE1 buyerAddress = DESADV_objectFactory.createHADRE1();
 		buyerAddress.setDOCUMENTID(header.getDOCUMENTID());
 		buyerAddress.setADDRESSQUAL(AddressQual.BUYR.toString());
-		buyerAddress.setPARTYIDGLN(xmlDesadv.getBillLocationID().getGLN());
+		buyerAddress.setPARTYIDGLN(xmlDesadv.getCBPartnerLocationID().getGLN());
 		header.getHADRE1().add(buyerAddress);
 
 		EDIExpCBPartnerLocationType deliveryLocation = xmlDesadv.getHandOverLocationID();
