@@ -88,15 +88,27 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
+		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_DESADV_REMOTE, "");
+
+		final LoggingLevel fileEPLogLevel;
+		if (Util.isEmpty(remoteEndpoint)) // if we send everything to the remote-EP, then log what we send to file only on "TRACE" log level
+		{
+			fileEPLogLevel = LoggingLevel.INFO;
+		}
+		else
+		{
+			fileEPLogLevel = LoggingLevel.TRACE;
+		}
+
 		final RouteDefinition routeDefinition = from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
 
-				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
+				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN).constant(supplierGln)
 				.setProperty(StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
+				.log(LoggingLevel.INFO, "Setting EDI feedback headers...")
 				.process(exchange -> {
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
@@ -107,32 +119,32 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 				})
 
-				.log(LoggingLevel.INFO, "EDI: Converting metasfresh-XML Java Object -> stepCOM-XML Java Object...")
+				.log(LoggingLevel.INFO, "Converting metasfresh-XML Java Object -> stepCOM-XML Java Object...")
 				.bean(StepComXMLDesadvBean.class, StepComXMLDesadvBean.METHOD_createXMLEDIData)
-				.log(LoggingLevel.INFO, "EDI: Marshalling stepCOM-XML Java Object -> XML...")
+				.log(LoggingLevel.INFO, "Marshalling stepCOM-XML Java Object -> XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
+				.log(LoggingLevel.INFO, "Setting output filename pattern from properties...")
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Sending the stepCOM-XML to the FILE component...")
+				.log(fileEPLogLevel, "Storing stepCOM-XML to the FILE endpoint:\r\n" + body())
 				.to(StepComXMLDesadvRoute.OUTPUT_DESADV_LOCAL);
 
-		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_DESADV_REMOTE, "");
 		if (!Util.isEmpty(remoteEndpoint))
 		{
 			routeDefinition
-					.log(LoggingLevel.TRACE, "Uploading file to remote endpoint")
+					.log(LoggingLevel.INFO, "Uploading stepCOM-XML file to remote endpoint:\r\n" + body())
 					.to(remoteEndpoint);
 		}
 
-		routeDefinition.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
+		routeDefinition
+				.log(LoggingLevel.INFO, "Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, StepComXMLDesadvRoute.EDIDesadvFeedback_QNAME, StepComXMLDesadvRoute.METHOD_setEDIDesadvID))
 
-				.log(LoggingLevel.INFO, "EDI: Marshalling metasfresh feedback XML Java Object -> XML...")
+				.log(LoggingLevel.INFO, "Marshalling metasfresh feedback XML Java Object -> XML...")
 				.marshal(jaxb)
 
-				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
+				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.to(Constants.EP_AMQP_TO_AD);
 
