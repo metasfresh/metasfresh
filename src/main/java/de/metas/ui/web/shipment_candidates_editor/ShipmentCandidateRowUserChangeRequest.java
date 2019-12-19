@@ -35,7 +35,7 @@ import lombok.Value;
 public class ShipmentCandidateRowUserChangeRequest
 {
 	@Nullable
-	BigDecimal qtyToDeliverStockOverride;
+	BigDecimal qtyToDeliverUserEntered;
 
 	@Nullable
 	BigDecimal qtyToDeliverCatchOverride;

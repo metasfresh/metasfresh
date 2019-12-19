@@ -49,7 +49,6 @@ final class ShipmentCandidateRowsRepository
 	private final LookupDataSource warehousesLookup;
 	private final LookupDataSource productsLookup;
 	private final LookupDataSource asiLookup;
-	private final LookupDataSource uomsLookup;
 	private final LookupDataSource catchUOMsLookup;
 
 	@Builder
@@ -63,7 +62,6 @@ final class ShipmentCandidateRowsRepository
 		warehousesLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
 		productsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 		asiLookup = LookupDataSourceFactory.instance.productAttributes();
-		uomsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
 		catchUOMsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
 	}
 
@@ -77,7 +75,6 @@ final class ShipmentCandidateRowsRepository
 				.warehousesLookup(warehousesLookup)
 				.productsLookup(productsLookup)
 				.asiLookup(asiLookup)
-				.uomsLookup(uomsLookup)
 				.catchUOMsLookup(catchUOMsLookup)
 				//
 				.shipmentScheduleIds(shipmentScheduleIds)

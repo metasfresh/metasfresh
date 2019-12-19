@@ -109,9 +109,9 @@ final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidate
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();
-			if (ShipmentCandidateRow.FIELD_qtyToDeliverStockOverride.equals(fieldName))
+			if (ShipmentCandidateRow.FIELD_qtyToDeliverUserEntered.equals(fieldName))
 			{
-				builder.qtyToDeliverStockOverride(fieldChangeRequest.getValueAsBigDecimal());
+				builder.qtyToDeliverUserEntered(fieldChangeRequest.getValueAsBigDecimal());
 			}
 			else if (ShipmentCandidateRow.FIELD_qtyToDeliverCatchOverride.equals(fieldName))
 			{
