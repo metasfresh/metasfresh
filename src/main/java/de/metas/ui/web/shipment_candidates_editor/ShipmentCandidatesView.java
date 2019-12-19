@@ -2,12 +2,9 @@ package de.metas.ui.web.shipment_candidates_editor;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
-import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewCloseAction;
@@ -17,7 +14,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 
 /*
  * #%L

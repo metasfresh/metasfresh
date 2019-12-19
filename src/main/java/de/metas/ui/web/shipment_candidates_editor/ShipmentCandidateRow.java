@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
+
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -19,7 +20,6 @@ import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest.ShipmentScheduleUserChangeRequestBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.pattribute.WebuiASIEditingInfo;
 import de.metas.ui.web.pattribute.WebuiASIEditingInfoAware;
 import de.metas.ui.web.view.IViewRow;
@@ -32,7 +32,6 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -76,28 +75,29 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
 	private final LookupValue asi;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
-	private final String packingDescription;
-
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ZonedDateTime, widgetSize = WidgetSize.Small, captionKey = "PreparationDate")
-	private final ZonedDateTime preparationDate;
-
-	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
 	private final BigDecimal qtyOrdered;
 
-	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_UOM_ID")
-	private final LookupValue uom;
+	public static final String FIELD_qtyToDeliverUserEntered = "qtyToDeliverUserEntered";
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverUserEntered, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	private final BigDecimal qtyToDeliverUserEntered;
 
-	public static final String FIELD_qtyToDeliverStockOverride = "qtyToDeliverStockOverride";
-	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
-	private final BigDecimal qtyToDeliverStockOverride;
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
+	private final String packingDescription;
 
 	public static final String FIELD_qtyToDeliverCatchOverride = "qtyToDeliverCatchOverride";
-	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverCatchOverride;
 
-	@ViewColumn(seqNo = 120, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
+	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
 	private final LookupValue catchUOM;
+
+	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.ZonedDateTime, widgetSize = WidgetSize.Small, captionKey = "PreparationDate")
+	private final ZonedDateTime preparationDate;
+
+	//
+	//
+	//
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final DocumentId rowId;
@@ -109,27 +109,24 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	private boolean catchWeight;
 
 	// also store the editable value's initial values, so we know what was changed and can be persisted
-	private final Quantity qtyToDeliverStockInitial;
+	private final PackingInfo packingInfo;
+	private final BigDecimal qtyToDeliverUserEnteredInitial;
 	private final BigDecimal qtyToDeliverCatchOverrideInitial;
 	private final AttributeSetInstanceId asiIdInitial;
 
-	/**
-	 * If {@code catchUOM} is null, then the user is not supposed to enter a catch weight override quantity.
-	 */
 	@Builder(toBuilder = true)
 	private ShipmentCandidateRow(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final LookupValue salesOrder,
 			final int salesOrderLineNo,
+			@NonNull final ZonedDateTime preparationDate,
 			@NonNull final LookupValue customer,
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
-			@Nullable final String packingDescription,
-			@NonNull final ZonedDateTime preparationDate,
+			@NonNull final PackingInfo packingInfo,
 			@NonNull final BigDecimal qtyOrdered,
-			@NonNull final LookupValue uom,
-			@NonNull final Quantity qtyToDeliverStockInitial,
-			@NonNull final BigDecimal qtyToDeliverStockOverride,
+			@NonNull final BigDecimal qtyToDeliverUserEnteredInitial,
+			@NonNull final BigDecimal qtyToDeliverUserEntered,
 			//
 			final boolean catchWeight,
 			@Nullable final BigDecimal qtyToDeliverCatchOverrideInitial,
@@ -141,17 +138,18 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	{
 		this.salesOrder = salesOrder;
 		this.salesOrderLineNo = salesOrderLineNo;
+		this.preparationDate = preparationDate;
 		this.customer = customer;
 		this.warehouse = warehouse;
 		this.product = product;
-		this.packingDescription = !Check.isEmpty(packingDescription, true) ? packingDescription.trim() : null;
-		this.preparationDate = preparationDate;
+
+		this.packingInfo = packingInfo;
+		this.packingDescription = this.packingInfo != null ? this.packingInfo.getDescription() : null;
 
 		this.qtyOrdered = qtyOrdered;
-		this.uom = uom;
 
-		this.qtyToDeliverStockInitial = qtyToDeliverStockInitial;
-		this.qtyToDeliverStockOverride = qtyToDeliverStockOverride;
+		this.qtyToDeliverUserEnteredInitial = qtyToDeliverUserEnteredInitial;
+		this.qtyToDeliverUserEntered = qtyToDeliverUserEntered;
 
 		this.catchWeight = catchWeight;
 		this.qtyToDeliverCatchOverrideInitial = qtyToDeliverCatchOverrideInitial;
@@ -224,21 +222,21 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 	public ShipmentCandidateRow withChanges(@NonNull final ShipmentCandidateRowUserChangeRequest userChanges)
 	{
-		final ShipmentCandidateRowBuilder builder = toBuilder();
+		final ShipmentCandidateRowBuilder rowBuilder = toBuilder();
 
-		if (userChanges.getQtyToDeliverStockOverride() != null)
+		if (userChanges.getQtyToDeliverUserEntered() != null)
 		{
-			builder.qtyToDeliverStockOverride(userChanges.getQtyToDeliverStockOverride());
+			rowBuilder.qtyToDeliverUserEntered(userChanges.getQtyToDeliverUserEntered());
 		}
 		if (userChanges.getQtyToDeliverCatchOverride() != null)
 		{
-			builder.qtyToDeliverCatchOverride(userChanges.getQtyToDeliverCatchOverride());
+			rowBuilder.qtyToDeliverCatchOverride(userChanges.getQtyToDeliverCatchOverride());
 		}
 		if (userChanges.getAsi() != null)
 		{
-			builder.asi(userChanges.getAsi());
+			rowBuilder.asi(userChanges.getAsi());
 		}
-		return builder.build();
+		return rowBuilder.build();
 	}
 
 	@Override
@@ -265,9 +263,10 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 		boolean changes = false;
 
-		if (qtyToDeliverStockInitial.toBigDecimal().compareTo(qtyToDeliverStockOverride) != 0)
+		if (qtyToDeliverUserEnteredInitial.compareTo(qtyToDeliverUserEntered) != 0)
 		{
-			builder.qtyToDeliverStockOverride(qtyToDeliverStockOverride);
+			BigDecimal qtyCUsToDeliver = packingInfo.computeQtyCUsByQtyUserEntered(qtyToDeliverUserEntered);
+			builder.qtyToDeliverStockOverride(qtyCUsToDeliver);
 			changes = true;
 		}
 
@@ -295,11 +294,11 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		return nullValuechanged.orElseGet(() -> qtyToDeliverCatchOverrideInitial.compareTo(qtyToDeliverCatchOverride) != 0);
 	}
 
-	private Optional<Boolean> isNullValuesChanged(
-			@Nullable final Object initital,
+	private static Optional<Boolean> isNullValuesChanged(
+			@Nullable final Object initial,
 			@Nullable final Object current)
 	{
-		final boolean wasNull = initital == null;
+		final boolean wasNull = initial == null;
 		final boolean isNull = current == null;
 
 		if (wasNull)
