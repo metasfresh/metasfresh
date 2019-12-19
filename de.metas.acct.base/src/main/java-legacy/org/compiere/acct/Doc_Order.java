@@ -41,6 +41,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 
 /**
@@ -177,7 +178,7 @@ public class Doc_Order extends Doc<DocLine_Order>
 			final ImmutableList.Builder<DocTax> list = ImmutableList.builder();
 			while (rs.next())
 			{
-				int C_Tax_ID = rs.getInt(1);
+				final TaxId taxId = TaxId.ofRepoId(rs.getInt(1));
 				String name = rs.getString(2);
 				BigDecimal rate = rs.getBigDecimal(3);
 				BigDecimal taxBaseAmt = rs.getBigDecimal(4);
@@ -185,8 +186,8 @@ public class Doc_Order extends Doc<DocLine_Order>
 				boolean salesTax = DisplayType.toBoolean(rs.getString(6));
 				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
 				//
-				final DocTax taxLine = new DocTax(Env.getCtx(),
-						C_Tax_ID, name, rate,
+				final DocTax taxLine = new DocTax(
+						taxId, name, rate,
 						taxBaseAmt, amount, salesTax, taxIncluded);
 				list.add(taxLine);
 			}

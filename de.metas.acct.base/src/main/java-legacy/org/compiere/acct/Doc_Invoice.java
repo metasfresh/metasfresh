@@ -41,7 +41,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -52,6 +51,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.DocLine_Invoice;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 
 /**
@@ -126,7 +126,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final ImmutableList.Builder<DocTax> docTaxes = ImmutableList.builder();
 			while (rs.next())
 			{
-				final int C_Tax_ID = rs.getInt(1);
+				final TaxId taxId = TaxId.ofRepoId(rs.getInt(1));
 				final String taxName = rs.getString(2);
 				final BigDecimal rate = rs.getBigDecimal(3);
 				final BigDecimal taxBaseAmt = rs.getBigDecimal(4);
@@ -135,8 +135,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
 				//
 				final DocTax taxLine = new DocTax(
-						Env.getCtx(),
-						C_Tax_ID, taxName, rate,
+						taxId, taxName, rate,
 						taxBaseAmt, taxAmt, salesTax, taxIncluded);
 				docTaxes.add(taxLine);
 			}
