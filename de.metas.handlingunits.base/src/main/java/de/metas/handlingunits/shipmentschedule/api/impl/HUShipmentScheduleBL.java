@@ -21,6 +21,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -140,7 +141,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext);
+		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, false);
 	}
 
 	@Override
@@ -148,7 +149,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,
-			@NonNull final IHUContext huContext)
+			@NonNull final IHUContext huContext,
+			final boolean anonymousHuPickedOnTheFly)
 	{
 		// Services
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
@@ -161,7 +163,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		// Create ShipmentSchedule Qty Picked record
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
-		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
+				schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
+
+		// mark this as an 'anonymousOnTheFly` pick
+		schedQtyPicked.setisAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
@@ -203,7 +208,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * This method updates the given <code>hu</code>'s <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> from the given <code>sched</code>'s effective values.
-	 *
+	 * <p>
 	 * NOTE:
 	 * * this method is NOT saving the <code>hu</code>
 	 * * these changes will be propagated to the HU's children by a model interceptor.
@@ -324,7 +329,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU#createShipmentHeader(I_M_ShipmentSchedule)}
-	 *
 	 */
 	@Override
 	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final LocalDate movementDate)

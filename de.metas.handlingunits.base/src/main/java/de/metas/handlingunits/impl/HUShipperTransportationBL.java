@@ -1,5 +1,39 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHULockBL;
+import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IInOutPackageDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.inout.InOutId;
+import de.metas.lock.api.LockOwner;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -23,40 +57,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.shipping.model.ShipperTransportationId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUPackageBL;
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
-import de.metas.lock.api.LockOwner;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
-import javax.annotation.Nullable;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
@@ -140,6 +140,54 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		return ImmutableList.copyOf(result);
 	}
 
+	@NonNull
+	@Override
+	public ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final ImmutableList<de.metas.inout.model.I_M_InOut> inOuts)
+	{
+		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
+
+		// Make sure Shipper Transportation is still open
+		if (shipperTransportation.isProcessed())
+		{
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+		}
+
+		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
+
+		// services
+		final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
+
+		//
+		// Iterate InOuts and:
+		// - create M_Packages
+		// - assign M_Packages them to Shipper Transportation document
+		// - assign ShipperTransportation to the InOut
+		final ImmutableList.Builder<I_M_Package> result = ImmutableList.builder();
+		for (final de.metas.inout.model.I_M_InOut inOut : inOuts)
+		{
+			// Skip the InOuts which already have a Shipper Transportation
+			if (inOut.getM_ShipperTransportation_ID() != 0)
+			{
+				continue;
+			}
+
+			//
+			// Create M_Package
+			final I_M_Package mpackage = inOutPackageDAO.createM_Package(InOutId.ofRepoId(inOut.getM_InOut_ID()), shipperId);
+			result.add(mpackage);
+
+			//
+			// Add M_Package to Shipper Transportation document
+			shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
+
+			// Add ShipperTransportation to InOut
+			inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+		}
+
+		return result.build();
+	}
+
 	@Override
 	public boolean isEligibleForAddingToShipperTransportation(@Nullable final I_M_HU hu)
 	{
@@ -160,6 +208,18 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		{
 			return false;
 		}
+
+		//
+		// @tobias using this is not good as when running the action "Generate Shipments" with "Quantity to deliver",
+		// 		a NEW (not existing!) VHU is created and added to the Shipment.
+		// 		If we leave this check here, we introduce a bug where the shipment is not created (don't have time to figure out why).
+		//
+		// HUs picked anonymously 'onTheFly' for Shipments should be rejected
+		//noinspection RedundantIfStatement
+		// if (handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
+		// {
+		// 	return false;
+		// }
 
 		return true;
 	}

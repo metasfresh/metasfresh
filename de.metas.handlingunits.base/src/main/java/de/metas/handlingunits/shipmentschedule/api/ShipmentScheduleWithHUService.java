@@ -297,17 +297,19 @@ public class ShipmentScheduleWithHUService
 					firstHU = false;
 				}
 				// We don't extract the HU's catch weight; see method's javadoc comment.
-				// but if this is the first HU, then we add the ship ment schedule's override quantity (if any)
+				// but if this is the first HU, then we add the shipment schedule's override quantity (if any)
 				final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.createConvert(
 						qtyOfNewHU/* qtyInAnyUom */,
 						productId,
 						catchQtyOverride);
 
+				final boolean anonymousTuPickedOnTheFly = true;
 				result.add(huShipmentScheduleBL.addQtyPickedAndUpdateHU(
 						scheduleRecord,
 						qtys,
 						newHURecord,
-						huContext));
+						huContext,
+						anonymousTuPickedOnTheFly));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
 
 			}

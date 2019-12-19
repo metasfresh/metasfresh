@@ -6,6 +6,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.inout.InOutLineId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -68,7 +70,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Create HU Context.
-	 *
+	 * <p>
 	 * Compared with {@link #createMutableHUContext(IContextAware)} this method optimizes the HU Context for HU generation/processing (i.e. enable caching etc etc).
 	 *
 	 * @param contextProvider
@@ -116,14 +118,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @param hu
 	 * @return true if HU was destroyed
-	 *
 	 * @throws AdempiereException if hu has local changes
 	 */
 	boolean isDestroyedRefreshFirst(I_M_HU hu) throws AdempiereException;
 
 	/**
 	 * Build a user friendly display name of given HU.
-	 *
+	 * <p>
 	 * If u want more options, please use {@link #buildDisplayName(I_M_HU)}.
 	 *
 	 * @param hu
@@ -134,14 +135,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	IHUDisplayNameBuilder buildDisplayName(I_M_HU hu);
 
 	/**
-	 *
 	 * @param hu may be {@code null}
 	 * @return true if this is a virtual HU
 	 */
 	boolean isVirtual(I_M_HU hu);
 
 	/**
-	 *
 	 * @param huItem
 	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
 	 */
@@ -149,13 +148,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Checks if given <code>huItem</code> is part of a pure virtual HU.
-	 *
+	 * <p>
 	 * A HU is considered pure virtual when:
 	 * <ul>
 	 * <li>{@link #isVirtual(I_M_HU)}
 	 * <li>and its parent HU Item ({@link I_M_HU#getM_HU_Item_Parent()}) is a material line (i.e. {@link #getItemType(I_M_HU_Item)} is {@link X_M_HU_PI_Item#ITEMTYPE_Material})
 	 * </ul>
-	 *
+	 * <p>
 	 * e.g.
 	 * <ul>
 	 * <li>a VHU on a palet is virtual but it's NOT PURE virtual (i.e. it's parent HU Item is an item of type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit})
@@ -230,7 +229,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
 	 * @param query see {@link TopLevelHusQuery}.
-	 *
 	 * @return top level HUs; never return {@code null}
 	 */
 	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery query);
@@ -264,11 +262,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @param hu
 	 * @return top level parent; never return null; more preciselly:
-	 *         <ul>
-	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
-	 *         <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
-	 *         <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
-	 *         </ul>
+	 * <ul>
+	 * <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
+	 * <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
+	 * <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
+	 * </ul>
 	 */
 	LUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
@@ -316,9 +314,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isTopLevel(I_M_HU hu);
 
+	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu, final ImmutableList<InOutLineId> lineIds);
+
 	/**
 	 * Gets top level LU of given HU.
-	 *
+	 * <p>
 	 * If given HU is a loading unit then given HU will be returned.
 	 *
 	 * @param hu
@@ -350,14 +350,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	String getHU_UnitType(I_M_HU hu);
 
 	/**
-	 *
 	 * @param piItem
 	 * @return true if given <code>piItem</code> is null or is NoPI
 	 */
 	boolean isNoPI(I_M_HU_PI_Item piItem);
 
 	/**
-	 *
 	 * @param huPI
 	 * @return true if given HU PI is not null and is Virtual PI
 	 */
@@ -375,7 +373,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
 	 * @param huContext
-	 * @param hus HUs to mark as destroyed
+	 * @param hus       HUs to mark as destroyed
 	 */
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
 

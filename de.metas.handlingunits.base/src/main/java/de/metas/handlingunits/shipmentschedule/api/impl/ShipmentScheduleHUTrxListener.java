@@ -84,7 +84,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		//
 		// Link VHU to shipment schedule
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, false);
 	}
 
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)

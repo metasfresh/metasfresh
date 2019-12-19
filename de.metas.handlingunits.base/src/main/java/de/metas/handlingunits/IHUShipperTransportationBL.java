@@ -22,20 +22,20 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.shipping.model.ShipperTransportationId;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Package;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Package;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public interface IHUShipperTransportationBL extends ISingletonService
 {
@@ -45,6 +45,15 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 * This method adds only those HUs which are eligible (see {@link #isEligibleForAddingToShipperTransportation(I_M_HU)}).
 	 */
 	List<I_M_Package> addHUsToShipperTransportation(ShipperTransportationId shipperTransportationId, Collection<I_M_HU> hus);
+
+	/**
+	 * Adds given list of InOuts to ShipperTransportation, by creating the needed M_Packages.
+	 * This method adds only those InOuts which have no HUs and which don't already have a ShipperTransportation.
+	 * <p>
+	 * It is likely that you should use {@link #addHUsToShipperTransportation(ShipperTransportationId, Collection)} instead of this method.
+	 */
+	@NonNull
+	ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final ImmutableList<de.metas.inout.model.I_M_InOut> inOuts);
 
 	/**
 	 * Generates Material Shipments from previously enqueued HUs to shipper transportation.
