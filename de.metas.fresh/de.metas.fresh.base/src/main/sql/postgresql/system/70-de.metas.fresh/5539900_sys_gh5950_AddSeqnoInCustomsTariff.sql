@@ -88,3 +88,37 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2019-12-19 18:39:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=563746
 ;
 
+
+
+-- 2019-12-19T16:57:22.998Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540518,0,541431,TO_TIMESTAMP('2019-12-19 18:57:22','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','M_CustomsTariff__Unique_name','N',TO_TIMESTAMP('2019-12-19 18:57:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-12-19T16:57:23.003Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Index_Table_ID=540518 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2019-12-19T16:57:54.718Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Table SET EntityType='D', IsUnique='Y', Name='M_CustomsTariff__Unique_Value',Updated=TO_TIMESTAMP('2019-12-19 18:57:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540518
+;
+
+-- 2019-12-19T16:58:22.801Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,569330,540987,540518,0,TO_TIMESTAMP('2019-12-19 18:58:22','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2019-12-19 18:58:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-12-19T16:58:32.956Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,569302,540988,540518,0,TO_TIMESTAMP('2019-12-19 18:58:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2019-12-19 18:58:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-12-19T16:58:34.547Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX M_CustomsTariff__Unique_Value ON M_CustomsTariff (Value,AD_Client_ID)
+;
+
+
+
