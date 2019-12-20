@@ -42,6 +42,6 @@ public interface IDocumentHandOverLocation
 
 	void setHandOverAddress(String address);
 	
-	boolean isHandOverLocation();
+	boolean isUseHandOver_Location();
 
 }

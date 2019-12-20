@@ -190,7 +190,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 	@Override
 	public void setHandOverAddress(final IDocumentHandOverLocation docHandOverLocation) 
 	{
-		if (!docHandOverLocation.isHandOverLocation() 
+		if (!docHandOverLocation.isUseHandOver_Location() 
 				|| docHandOverLocation.getHandOver_Partner_ID() <= 0
 				|| docHandOverLocation.getHandOver_Location_ID() <= 0) 
 		{
@@ -200,7 +200,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		final I_C_BPartner bp = InterfaceWrapperHelper.create(docHandOverLocation.getHandOver_Partner(), I_C_BPartner.class);
 
 		
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(docHandOverLocation.getHandOver_Location_ID(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.load(docHandOverLocation.getHandOver_Location_ID(), I_C_BPartner_Location.class);
 
 		final de.metas.adempiere.model.I_AD_User user;
 		if (docHandOverLocation.getHandOver_User_ID() > 0)
