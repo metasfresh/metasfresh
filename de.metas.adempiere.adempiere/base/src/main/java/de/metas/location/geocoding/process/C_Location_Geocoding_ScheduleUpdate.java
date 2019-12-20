@@ -1,16 +1,6 @@
 package de.metas.location.geocoding.process;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_Location;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.location.LocationId;
@@ -20,6 +10,15 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_Location;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 /*
  * #%L
@@ -55,7 +54,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		final IEventBusFactory eventBusFactory = Adempiere.getBean(IEventBusFactory.class);
+		final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
 		eventBus = eventBusFactory.getEventBus(C_Location.EVENTS_TOPIC);
 	}
 
@@ -82,7 +81,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 				.addInArrayOrAllFilter(I_C_Location.COLUMN_GeocodingStatus, Arrays.asList(X_C_Location.GEOCODINGSTATUS_Error, X_C_Location.GEOCODINGSTATUS_NotChecked))
 				//
 				.addCompareFilter(I_C_Location.COLUMN_C_Location_ID, Operator.GREATER, LocationId.toRepoIdOr(maxLocationIdScheduled, 0))
-				.orderByDescending(I_C_Location.COLUMN_C_Location_ID)
+				.orderBy(I_C_Location.COLUMN_C_Location_ID)
 				//
 				.setLimit(limit)
 				//
@@ -100,22 +99,14 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 		eventBus.postObject(LocationGeocodeEventRequest.of(locationId));
 
 		countScheduled++;
-		maxLocationIdScheduled = max(maxLocationIdScheduled, locationId);
-	}
 
-	private static LocationId max(final LocationId locationId1, final LocationId locationId2)
-	{
-		if (locationId1 == null)
+		if (maxLocationIdScheduled == null)
 		{
-			return locationId2;
-		}
-		else if (locationId2 == null)
-		{
-			return locationId1;
+			maxLocationIdScheduled = locationId;
 		}
 		else
 		{
-			return locationId1.getRepoId() >= locationId2.getRepoId() ? locationId1 : locationId2;
+			maxLocationIdScheduled = Collections.max(Arrays.asList(maxLocationIdScheduled, locationId));
 		}
 	}
 }
