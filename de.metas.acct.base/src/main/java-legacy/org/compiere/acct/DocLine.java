@@ -29,7 +29,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
@@ -40,11 +39,15 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.tax.ITaxAcctBL;
+import de.metas.acct.tax.TaxAcctType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -60,6 +63,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
@@ -83,6 +87,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	protected final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final transient IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
 	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	/** Persistent Object */
@@ -412,6 +417,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private MAccount getProductAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
+		//
+		// Product Revenue: check/use the override defined on tax level
+		if (acctType == ProductAcctType.Revenue)
+		{
+			final MAccount productRevenueAcct = getTaxAccount(TaxAcctType.ProductRevenue_Override, as.getId()).orElse(null);
+			if (productRevenueAcct != null)
+			{
+				return productRevenueAcct;
+			}
+		}
+
 		// No Product - get Default from Product Category
 		final ProductId productId = getProductId();
 		if (productId == null)
@@ -419,21 +435,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return getAccountDefault(acctType, as);
 		}
 
-		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, productId);
-		if (productAcct == null)
-		{
-			final String productName = Services.get(IProductBL.class).getProductName(productId);
-			throw newPostingException().setAcctSchema(as).setDetailMessage("Product " + productName + " has no accounting definition records");
-		}
-
-		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
-		if (validCombinationId == null || validCombinationId <= 0)
+		final AccountId accountId = productAcctDAO.getProductAcct(as.getId(), productId, acctType).orElse(null);
+		if (accountId == null)
 		{
 			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
-		return accountDAO.getById(validCombinationId);
+		return accountDAO.getById(accountId);
 	}
 
 	/**
@@ -453,6 +462,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 
 		return accountDAO.getById(validCombinationId);
+	}
+
+	private final Optional<MAccount> getTaxAccount(@NonNull final TaxAcctType taxAcctType, final AcctSchemaId acctSchemaId)
+	{
+		final TaxId taxId = TaxId.ofRepoIdOrNull(getC_Tax_ID());
+		return taxId != null
+				? taxAcctBL.getAccountIfExists(taxId, acctSchemaId, taxAcctType)
+				: Optional.empty();
 	}
 
 	/**
@@ -607,7 +624,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return productBL.getStockUOMId(getProductId());
 	}
-
 
 	/**
 	 * Get Revenue Recognition

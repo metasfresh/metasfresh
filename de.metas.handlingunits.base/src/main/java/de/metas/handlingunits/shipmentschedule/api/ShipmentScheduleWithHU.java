@@ -492,6 +492,12 @@ public class ShipmentScheduleWithHU
 	 */
 	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
+		if (getQtyTypeToUse().isOnlyUseToDeliver()
+				&& (shipmentScheduleQtyPicked == null || shipmentScheduleQtyPicked.isAnonymousHuPickedOnTheFly()))
+		{
+			return retrievePiipForReferencedRecord();
+		}
+
 		final I_M_HU topLevelHU = getTopLevelHU();
 		if (topLevelHU == null)
 		{
