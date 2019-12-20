@@ -279,6 +279,7 @@ public class OrderFactory
 		assertNotBuilt();
 		order.setHandOver_Partner_ID(bpartnerId);
 		order.setHandOver_Location_ID(bpartnerLocationId);
+		order.setHandOver_User_IDD(contactId);
 		order.setIsUseHandOver_Location(bpartnerLocationId > 0);
 		return this;
 	}
