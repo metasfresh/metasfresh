@@ -31,6 +31,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -197,16 +198,19 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			return;
 		}
 
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(docHandOverLocation.getHandOver_Partner(), I_C_BPartner.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		
+		final I_C_BPartner bp = bpartnerDAO.getById(docHandOverLocation.getHandOver_Partner_ID(), I_C_BPartner.class);
 
 		
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.load(docHandOverLocation.getHandOver_Location_ID(), I_C_BPartner_Location.class);
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_Location_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(bpLocationId);
 
 		final de.metas.adempiere.model.I_AD_User user;
 		if (docHandOverLocation.getHandOver_User_ID() > 0)
 		{
-			final I_AD_User userPO = docHandOverLocation.getHandOver_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			final BPartnerContactId contactId = BPartnerContactId.ofRepoId(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_User_ID());
+			user = bpartnerDAO.getContactById(contactId, de.metas.adempiere.model.I_AD_User.class);
 		}
 		else
 		{

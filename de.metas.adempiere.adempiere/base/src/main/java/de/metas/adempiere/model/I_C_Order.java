@@ -63,7 +63,7 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut,
 	//@formatter:off
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 	int getHandOver_User_ID();
-	void setHandOver_User_IDD(int HandOver_User_ID);
+	void setHandOver_User_ID(int HandOver_User_ID);
 	//@formatter:on
 
 	//@formatter:off
