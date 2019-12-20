@@ -10,18 +10,17 @@ package de.metas.tourplanning.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 
@@ -197,7 +196,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		// Make sure shipper transportation is not processed
 		if (p_M_ShipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { p_M_ShipperTransportation.getM_ShipperTransportation_ID() });
 		}
 
 		return p_M_ShipperTransportation;

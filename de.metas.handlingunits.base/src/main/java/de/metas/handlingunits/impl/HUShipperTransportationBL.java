@@ -75,7 +75,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		// Make sure Shipper Transportation is still open
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { shipperTransportation.getM_ShipperTransportation_ID() });
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
@@ -149,7 +149,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		// Make sure Shipper Transportation is still open
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { shipperTransportation.getM_ShipperTransportation_ID() });
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
