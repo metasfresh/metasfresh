@@ -352,6 +352,11 @@ final class MasterdataProvider
 			return PaymentRule.OnCredit;
 		}
 
+		if (JSONPaymentRule.DirectDebit.equals(jsonPaymentRule))
+		{
+			return PaymentRule.DirectDebit;
+		}
+
 		throw MissingResourceException.builder()
 				.resourceName("paymentRule")
 				.resourceIdentifier(jsonPaymentRule.getCode())
