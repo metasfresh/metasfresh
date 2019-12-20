@@ -37,6 +37,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -184,6 +185,38 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		final String address = bPartnerBL.mkFullAddress(bpartner, bpLocation, bpContact, ITrx.TRXNAME_None);
 
 		return address;
+	}
+
+	@Override
+	public void setHandOverAddress(final IDocumentHandOverLocation docHandOverLocation) 
+	{
+		if (!docHandOverLocation.isHandOverLocation() 
+				|| docHandOverLocation.getHandOver_Partner_ID() <= 0
+				|| docHandOverLocation.getHandOver_Location_ID() <= 0) 
+		{
+			return;
+		}
+
+		final I_C_BPartner bp = InterfaceWrapperHelper.create(docHandOverLocation.getHandOver_Partner(), I_C_BPartner.class);
+
+		
+		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(docHandOverLocation.getHandOver_Location_ID(), I_C_BPartner_Location.class);
+
+		final de.metas.adempiere.model.I_AD_User user;
+		if (docHandOverLocation.getHandOver_User_ID() > 0)
+		{
+			final I_AD_User userPO = docHandOverLocation.getHandOver_User();
+			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+		}
+		else
+		{
+			user = null;
+		}
+
+		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+		final String address = bPartnerBL.mkFullAddress(bp,  bpartnerLocation, user, ITrx.TRXNAME_None);
+		docHandOverLocation.setHandOverAddress(address);
+		
 	}
 
 }

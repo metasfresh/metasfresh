@@ -253,3 +253,43 @@ UPDATE AD_Column SET MandatoryLogic='@IsDropShip/''N''@=''Y''',Updated=TO_TIMEST
 UPDATE AD_Column SET MandatoryLogic='@IsUseHandOver_Location/''N''@=''Y''',Updated=TO_TIMESTAMP('2019-12-20 14:17:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549936
 ;
 
+-- 2019-12-20T12:23:36.024Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-12-20 14:23:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549935
+;
+
+-- 2019-12-20T12:28:20.221Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2019-12-20 14:28:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=569790
+;
+
+-- 2019-12-20T12:30:17.468Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNo=415,Updated=TO_TIMESTAMP('2019-12-20 14:30:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553692
+;
+
+-- 2019-12-20T12:30:22.482Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNo=414,Updated=TO_TIMESTAMP('2019-12-20 14:30:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=593812
+;
+
+-- 2019-12-20T12:37:45.624Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=168,Updated=TO_TIMESTAMP('2019-12-20 14:37:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=55316
+;
+
+-- 2019-12-20T12:37:56.658Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_order','DropShip_User_ID','NUMERIC(10)',null,null)
+;
+
+-- 2019-12-20T12:39:41.004Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNo=416,Updated=TO_TIMESTAMP('2019-12-20 14:39:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=593813
+;
+
+-- 2019-12-20T13:04:30.891Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_ColumnCallout (AD_Client_ID,AD_Column_ID,AD_ColumnCallout_ID,AD_Org_ID,AD_Table_ID,Classname,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,549936,541061,0,259,'de.metas.document.callout.DocumentLocation.handOverLocationId',TO_TIMESTAMP('2019-12-20 15:04:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2019-12-20 15:04:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+

@@ -4,8 +4,9 @@ import java.sql.Timestamp;
 
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 
-public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut, IDocumentBillLocation, IDocumentDeliveryLocation
+public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut, IDocumentBillLocation, IDocumentDeliveryLocation, IDocumentHandOverLocation
 {
 	String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
 
