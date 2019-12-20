@@ -519,7 +519,7 @@ public class HU2PackingItemsAllocator
 		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext, false);
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
 		packFromVHUToDestination(pickFromVHU, packedPart);
