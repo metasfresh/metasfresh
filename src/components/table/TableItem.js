@@ -673,6 +673,8 @@ TableItem.propTypes = {
   includedDocuments: PropTypes.array,
   contextType: PropTypes.any,
   focusOnFieldName: PropTypes.string,
+  isGerman: PropTypes.bool,
+  modalVisible: PropTypes.bool,
 };
 
 export default TableItem;

@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { toggleOverlay } from '../../actions/WindowActions';
 import QRCode from './QRCode';
 
-class Overlay extends Component {
+class Overlay extends PureComponent {
   handleKeyDown = e => {
     const { toggleOverlay } = this.props;
 

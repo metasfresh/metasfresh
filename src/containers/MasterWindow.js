@@ -17,6 +17,7 @@ import {
   getTab,
   sortTab,
 } from '../actions/WindowActions';
+import { docStatusSelector } from '../reducers/windowHandler';
 import BlankPage from '../components/BlankPage';
 import Container from '../components/Container';
 import Window from '../components/Window';
@@ -376,6 +377,7 @@ class MasterWindow extends Component {
   render() {
     const {
       master,
+      docStatusData,
       modal,
       breadcrumb,
       params,
@@ -404,12 +406,6 @@ class MasterWindow extends Component {
     if (master.layout) {
       activeTab = master.layout.activeTab;
     }
-
-    const docStatusData = {
-      status: master.data.DocStatus || -1,
-      action: master.data.DocAction || -1,
-      displayed: true,
-    };
     const docSummaryData =
       documentSummaryElement &&
       master.data[documentSummaryElement.fields[0].field];
@@ -512,6 +508,7 @@ class MasterWindow extends Component {
 MasterWindow.propTypes = {
   modal: PropTypes.object.isRequired,
   master: PropTypes.object.isRequired,
+  docStatusData: PropTypes.object.isRequired,
   breadcrumb: PropTypes.array.isRequired,
   dispatch: PropTypes.func.isRequired,
   rawModal: PropTypes.object.isRequired,
@@ -532,19 +529,30 @@ MasterWindow.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = state => ({
-  master: state.windowHandler.master,
-  modal: state.windowHandler.modal,
-  rawModal: state.windowHandler.rawModal,
-  pluginModal: state.windowHandler.pluginModal,
-  overlay: state.windowHandler.overlay,
-  indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
-  allowShortcut: state.windowHandler.allowShortcut,
-  enableTutorial: state.appHandler.enableTutorial,
-  processStatus: state.appHandler.processStatus,
-  me: state.appHandler.me,
-  breadcrumb: state.menuHandler.breadcrumb,
-});
+const mapStateToProps = ({
+  windowHandler,
+  appHandler,
+  menuHandler,
+  listHandler,
+}) => {
+  const { master } = windowHandler;
+  const docStatusData = docStatusSelector(windowHandler);
+
+  return {
+    master,
+    docStatusData,
+    modal: windowHandler.modal,
+    rawModal: windowHandler.rawModal,
+    pluginModal: windowHandler.pluginModal,
+    overlay: windowHandler.overlay,
+    indicator: windowHandler.indicator,
+    includedView: listHandler.includedView,
+    allowShortcut: windowHandler.allowShortcut,
+    enableTutorial: appHandler.enableTutorial,
+    processStatus: appHandler.processStatus,
+    me: appHandler.me,
+    breadcrumb: menuHandler.breadcrumb,
+  };
+};
 
 export default connect(mapStateToProps)(MasterWindow);

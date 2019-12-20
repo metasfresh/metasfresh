@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import { connect } from 'react-redux';
 
@@ -9,11 +9,7 @@ import { connect } from 'react-redux';
  * @module Indicator
  * @extends Component
  */
-class Indicator extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+class Indicator extends PureComponent {
   /**
    * @method render
    * @summary ToDo: Describe the method

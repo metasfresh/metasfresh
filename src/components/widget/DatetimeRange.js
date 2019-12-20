@@ -1,5 +1,5 @@
 import Moment from 'moment';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import DateRangePicker from 'react-bootstrap-daterangepicker';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
  * @module DateTimeRange
  * @extends Component
  */
-class DatetimeRange extends Component {
+class DatetimeRange extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
