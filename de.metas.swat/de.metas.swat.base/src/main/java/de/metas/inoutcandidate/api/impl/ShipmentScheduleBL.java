@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -69,6 +70,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -109,6 +111,8 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
+	private static final String MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = "ShipmentScheduleAlreadyProcessed";
+
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 
@@ -582,10 +586,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
 		for (final I_M_ShipmentSchedule record : records)
 		{
-			if (!record.isClosed() && !record.isProcessed())
+			if (record.isClosed())
 			{
-				closeShipmentSchedule(record);
+				continue;
 			}
+			if (record.isProcessed())
+			{
+				throw new AdempiereException(
+						Services.get(IMsgBL.class)
+								.getTranslatableMsgText(MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID()))
+										.markAsUserValidationError();
+			}
+			closeShipmentSchedule(record);
 		}
 	}
 
