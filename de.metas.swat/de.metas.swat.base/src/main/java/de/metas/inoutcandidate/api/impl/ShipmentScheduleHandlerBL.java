@@ -196,7 +196,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					{
 						newSched.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
 						saveRecord(newSched);
-						
+
 						result.add(ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID()));
 					}
 
@@ -230,15 +230,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	}
 
 	@Override
-	public void invalidateCandidatesFor(final Object model, final String tableName)
+	public void updateShipmentScheduleFromReferencedRecord(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
-		if (handler == null)
-		{
-			return;
-		}
-
-		handler.invalidateCandidatesFor(model);
+		final ShipmentScheduleHandler handler = getHandlerFor(shipmentScheduleRecord);
+		handler.updateShipmentScheduleFromReferencedRecord(shipmentScheduleRecord);
 	}
 
 	private void saveHandlerLog(

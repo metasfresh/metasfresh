@@ -64,7 +64,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * This interface declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
+ * This abstract class declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
  * other records from a specific source table (e.g. order lines or subscription lines).
  *
  * Implementors are also related to {@link I_M_IolCandHandler} records.
@@ -142,6 +142,9 @@ public abstract class ShipmentScheduleHandler
 	 * @return
 	 */
 	public abstract List<I_M_ShipmentSchedule> createCandidatesFor(Object model);
+
+	public abstract void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentSchedule);
+
 
 	/**
 	 * Invalidates invoice candidates for the given model.

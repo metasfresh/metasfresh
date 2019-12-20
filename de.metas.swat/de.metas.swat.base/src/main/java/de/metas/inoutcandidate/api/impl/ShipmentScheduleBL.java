@@ -71,6 +71,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -279,6 +280,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		Check.errorUnless(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
 
 		shipmentSchedule.setIsClosed(false);
+
+		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentSchedule);
 		updateQtyOrdered(shipmentSchedule);
 
 		save(shipmentSchedule);

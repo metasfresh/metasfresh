@@ -21,7 +21,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IShipmentScheduleHandlerBL extends ISingletonService
 {
-
 	/**
 	 * Registers a handler instance for the given table name. This method is intended to be called by various specific
 	 * modules to register their SPI implementations.
@@ -47,13 +46,8 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * <li>there can be zero, one or many listeners for each table name</li>
 	 * <li>it is allowed to register a listener for a table name when no handler has (yet) been registered for the same table name</li>
 	 * </ul>
-	 *
-	 * @param vetoer
-	 * @param tableName
 	 */
 	void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName);
-
-	void invalidateCandidatesFor(Object model, String tableName);
 
 	/**
 	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates.
@@ -69,4 +63,6 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 
 	ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched);
+
+	void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentScheduleRecord);
 }

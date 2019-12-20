@@ -15,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
@@ -43,6 +44,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -63,6 +65,8 @@ import lombok.NonNull;
  */
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
@@ -154,6 +158,19 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
 	}
 
+	@Override
+	public void updateShipmentScheduleFromReferencedRecord(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final I_C_OrderLine orderLineRecord = TableRecordReference
+				.ofReferenced(shipmentSchedule)
+				.getModel(I_C_OrderLine.class);
+
+		updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLineRecord);
+
+		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()), I_C_Order.class);
+		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
+	}
+
 	private static void updateShipmentScheduleFromOrderLine(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_OrderLine orderLine)
@@ -206,13 +223,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	/**
 	 * For a given order line this method invalidates all shipment schedule lines that have the same product or (if the given order has a "complete order" delivery rule) even does the same with all
 	 * order lines of the given order.
-	 *
-	 * @param orderLine
-	 * @param order
-	 * @param trxName
 	 */
 	@Override
-	public void invalidateCandidatesFor(Object model)
+	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 
@@ -229,7 +242,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(order.getDeliveryRule());
 		if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
-			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
+			for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 			{
 				shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
 				shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
