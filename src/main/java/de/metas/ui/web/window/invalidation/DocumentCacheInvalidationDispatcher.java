@@ -160,8 +160,27 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 				return;
 			}
 
-			final DocumentToInvalidate documentToInvalidate = documents.getDocumentToInvalidate(rootDocumentRef);
+			//
+			// If we are still collecting document, we will collect this event.
+			// If not, we will have to fire this event directly.
+			final DocumentToInvalidateMap documentsToCollect = this.documents;
+			final DocumentToInvalidateMap documents;
+			final boolean autoflush;
+			if (documentsToCollect != null)
+			{
+				documents = documentsToCollect;
+				autoflush = false;
+			}
+			else
+			{
+				// Basically this shall not happen, but for some reason it's happening.
+				// So, for that case, instead of just ignoring event, better to fire it directly.
+				documents = new DocumentToInvalidateMap();
+				autoflush = true;
+			}
 
+			//
+			final DocumentToInvalidate documentToInvalidate = documents.getDocumentToInvalidate(rootDocumentRef);
 			final String childTableName = request.getChildTableName();
 			if (childTableName == null)
 			{
@@ -180,6 +199,13 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 			{
 				final int childRecordId = request.getChildRecordId();
 				documentToInvalidate.addIncludedDocument(childTableName, childRecordId);
+			}
+
+			//
+			if (autoflush && !documents.isEmpty())
+			{
+				logger.trace("Auto-flushing {} collected requests for on `{}`", documents.size(), name);
+				DocumentCacheInvalidationDispatcher.this.resetAsync(documents);
 			}
 		}
 
