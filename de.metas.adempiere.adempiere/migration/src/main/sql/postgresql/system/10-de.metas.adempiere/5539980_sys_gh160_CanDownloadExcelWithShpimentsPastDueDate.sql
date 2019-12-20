@@ -133,4 +133,138 @@ UPDATE AD_Process_Trl SET Name='Export Overdue Orders',Updated=TO_TIMESTAMP('201
 UPDATE AD_Process_Para SET AD_Element_ID=542828, ColumnName='PreparationDate_Effective', Name='Bereitstellungsdatum eff.',Updated=TO_TIMESTAMP('2019-12-20 17:09:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541658
 ;
 
+-- 2019-12-20T15:20:18.294Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auftragszeile', PrintName='Auftragszeile',Updated=TO_TIMESTAMP('2019-12-20 17:20:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542252 AND AD_Language='de_DE'
+;
+
+-- 2019-12-20T15:20:18.296Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542252,'de_DE')
+;
+
+-- 2019-12-20T15:20:18.312Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(542252,'de_DE')
+;
+
+-- 2019-12-20T15:20:18.314Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='OrderLine', Name='Auftragszeile', Description=NULL, Help=NULL WHERE AD_Element_ID=542252
+;
+
+-- 2019-12-20T15:20:18.316Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='OrderLine', Name='Auftragszeile', Description=NULL, Help=NULL, AD_Element_ID=542252 WHERE UPPER(ColumnName)='ORDERLINE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-12-20T15:20:18.317Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='OrderLine', Name='Auftragszeile', Description=NULL, Help=NULL WHERE AD_Element_ID=542252 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-12-20T15:20:18.317Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auftragszeile', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=542252) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 542252)
+;
+
+-- 2019-12-20T15:20:18.331Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Auftragszeile', Name='Auftragszeile' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=542252)
+;
+
+-- 2019-12-20T15:20:18.332Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Auftragszeile', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 542252
+;
+
+-- 2019-12-20T15:20:18.333Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Auftragszeile', Description=NULL, Help=NULL WHERE AD_Element_ID = 542252
+;
+
+-- 2019-12-20T15:20:18.334Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Auftragszeile', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 542252
+;
+
+-- 2019-12-20T15:20:23.071Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auftragszeile', PrintName='Auftragszeile',Updated=TO_TIMESTAMP('2019-12-20 17:20:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542252 AND AD_Language='de_CH'
+;
+
+-- 2019-12-20T15:20:23.072Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542252,'de_CH')
+;
+
+-- 2019-12-20T15:20:30.992Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:20:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542252 AND AD_Language='en_GB'
+;
+
+-- 2019-12-20T15:20:30.993Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542252,'en_GB')
+;
+
+-- 2019-12-20T15:20:34.407Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:20:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542252 AND AD_Language='de_CH'
+;
+
+-- 2019-12-20T15:20:34.408Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542252,'de_CH')
+;
+
+-- 2019-12-20T15:20:36.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:20:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542252 AND AD_Language='en_US'
+;
+
+-- 2019-12-20T15:20:36.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542252,'en_US')
+;
+
+-- 2019-12-20T15:20:48.672Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:20:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542252 AND AD_Language='de_DE'
+;
+
+-- 2019-12-20T15:20:48.673Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542252,'de_DE')
+;
+
+-- 2019-12-20T15:20:48.680Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(542252,'de_DE')
+;
+
+-- 2019-12-20T15:21:42.552Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:21:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=561 AND AD_Language='de_CH'
+;
+
+-- 2019-12-20T15:21:42.554Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(561,'de_CH')
+;
+
+-- 2019-12-20T15:21:49.345Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:21:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=561 AND AD_Language='de_DE'
+;
+
+-- 2019-12-20T15:21:49.346Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(561,'de_DE')
+;
+
+-- 2019-12-20T15:21:49.361Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(561,'de_DE')
+;
 
