@@ -209,18 +209,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			return false;
 		}
 
-		//
-		// @tobias using this is not good as when running the action "Generate Shipments" with "Quantity to deliver",
-		// 		a NEW (not existing!) VHU is created and added to the Shipment.
-		// 		If we leave this check here, we introduce a bug where the shipment is not created (don't have time to figure out why).
-		//
-		// HUs picked anonymously 'onTheFly' for Shipments should be rejected
-		//noinspection RedundantIfStatement
-		// if (handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
-		// {
-		// 	return false;
-		// }
-
 		return true;
 	}
 
@@ -294,6 +282,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		return shippingPackagesMatchingHU;
 	}
 
+	@Nullable
 	@Override
 	public I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(final Collection<I_M_HU> hus)
 	{
@@ -329,7 +318,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		}
 
 		final I_M_ShippingPackage firstPackage = shippingPackages.iterator().next();
-		final I_M_ShipperTransportation shipperTransportation = firstPackage.getM_ShipperTransportation(); // get the common shipper transportation document of the HUs
-		return shipperTransportation;
+		return firstPackage.getM_ShipperTransportation();
 	}
 }

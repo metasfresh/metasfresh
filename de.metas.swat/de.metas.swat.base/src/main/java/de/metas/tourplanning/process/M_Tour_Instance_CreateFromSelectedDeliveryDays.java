@@ -119,7 +119,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 	}
 
 	@Override
-	protected void postProcess(boolean success)
+	protected void postProcess(final boolean success)
 	{
 		if (!success)
 		{
@@ -227,7 +227,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 	{
 		Check.assumeNotNull(tourInstance, "tourInstance not null");
 
-		I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, this);
+		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, this);
 		shipperTransportation.setDateDoc(tourInstance.getDeliveryDate());
 		shipperTransportation.setShipper_BPartner_ID(p_Shipper_BPartner_ID);
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);

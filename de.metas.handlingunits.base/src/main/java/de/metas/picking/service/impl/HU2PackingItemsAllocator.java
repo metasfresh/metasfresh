@@ -59,7 +59,7 @@ import lombok.Singular;
 
 /**
  * Class responsible for allocating given HUs to underlying shipment schedules from {@link IPackingItem}.
- *
+ * <p>
  * As a result of an allocation, you shall get:
  * <ul>
  * <li>From {@link #getItemToPack()}'s Qty, the HU's Qtys will be subtracted
@@ -68,7 +68,6 @@ import lombok.Singular;
  * </ul>
  *
  * @author tsa
- *
  */
 public class HU2PackingItemsAllocator
 {
@@ -106,10 +105,6 @@ public class HU2PackingItemsAllocator
 	private Quantity _qtyToPackRemaining = null;
 
 	/**
-	 *
-	 * @param packingContext
-	 * @param itemToPack
-	 * @param allowOverDelivery
 	 * @param pickFromHUs the HUs to assign to the shipment schedule. IMPORTANT: The all need be out of transaction.
 	 */
 	@Builder
@@ -146,14 +141,11 @@ public class HU2PackingItemsAllocator
 
 	/**
 	 * Creates initial {@link IHUContext} to be used when performing.
-	 *
-	 * @return
 	 */
 	private IHUContext createHUContextInitial()
 	{
 		final PlainContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx();
-		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(contextProvider);
-		return huContext;
+		return huContextFactory.createMutableHUContextForProcessing(contextProvider);
 	}
 
 	private ProductId getProductId()
@@ -164,20 +156,20 @@ public class HU2PackingItemsAllocator
 	/**
 	 * @return processing {@link IHUContext}; never returns <code>null</code>
 	 */
-	private final IHUContext getHUContext()
+	private IHUContext getHUContext()
 	{
 		Check.assumeNotNull(_huContext, "_huContext not null");
 		return _huContext;
 	}
 
-	private final void setHUContext(final IHUContext huContext)
+	private void setHUContext(final IHUContext huContext)
 	{
 		Check.assumeNotNull(huContext, "huContext not null");
 		Check.assumeNull(_huContext, "huContext not already configured");
 		_huContext = huContext;
 	}
 
-	private final ImmutableList<I_M_HU> getPickFromHUs()
+	private ImmutableList<I_M_HU> getPickFromHUs()
 	{
 		return _pickFromHUs;
 	}
@@ -205,13 +197,13 @@ public class HU2PackingItemsAllocator
 	/**
 	 * @return Qty that remains to be package (in itemToPack's UOM)
 	 */
-	private final Quantity getQtyToPackRemaining()
+	private Quantity getQtyToPackRemaining()
 	{
 		Check.assumeNotNull(_qtyToPackRemaining, "_qtyToPackRemaining not null");
 		return _qtyToPackRemaining;
 	}
 
-	private final void subtractFromQtyToPackRemaining(final Quantity qtyPicked)
+	private void subtractFromQtyToPackRemaining(final Quantity qtyPicked)
 	{
 		// Do nothing if we are not tracking remaining qty to pack
 		if (!isQtyToPackEnforced())
@@ -222,7 +214,7 @@ public class HU2PackingItemsAllocator
 		_qtyToPackRemaining = _qtyToPackRemaining.subtract(qtyPicked);
 	}
 
-	private final boolean isQtyToPackEnforced()
+	private boolean isQtyToPackEnforced()
 	{
 		return _qtyToPackEnforced;
 	}
@@ -230,7 +222,7 @@ public class HU2PackingItemsAllocator
 	/**
 	 * @return true if we still have enforced quantity to pack; if the quantity to pack is not enforced, this method will always return <code>true</code>.
 	 */
-	private final boolean hasRemainingQtyToPack()
+	private boolean hasRemainingQtyToPack()
 	{
 		// If the qtyToPack is not enforced, then we can allocate as much as we want
 		if (!isQtyToPackEnforced())
@@ -244,11 +236,9 @@ public class HU2PackingItemsAllocator
 	/**
 	 * If {@link #isQtyToPackEnforced()} then adjusts <code>qtyToPack</code> based on {@link #getQtyToPackRemaining()}.
 	 *
-	 * @param qtyToPack
-	 * @param uom
 	 * @return qtyToPack (adjusted)
 	 */
-	private final Quantity adjustQtyToPackConsideringRemaining(final Quantity qtyToPack)
+	private Quantity adjustQtyToPackConsideringRemaining(@NonNull final Quantity qtyToPack)
 	{
 		// If we are not tracking the remaining qty to pack,
 		// then directly accept the given quantity
@@ -265,11 +255,12 @@ public class HU2PackingItemsAllocator
 
 		// Make sure QtyToPick is greather then zero
 		// shall not happen, but just to be sure
-		if (qtyToPack == null || qtyToPack.signum() <= 0)
+		if (qtyToPack.signum() <= 0)
 		{
 			return qtyToPack.toZero();
 		}
 
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final Quantity qtyToPackActual = _qtyToPackRemaining.min(qtyToPack);
 		return qtyToPackActual;
 	}
@@ -277,7 +268,7 @@ public class HU2PackingItemsAllocator
 	/**
 	 * Asserts this builder is still in configuration stage
 	 */
-	private final void assertConfigurable()
+	private void assertConfigurable()
 	{
 		final boolean configurable = _huContext == null; // i.e. processing HUContext was not already set
 		Check.assume(configurable, "Builder is in configurable mode: {}", this);
@@ -285,15 +276,13 @@ public class HU2PackingItemsAllocator
 
 	/**
 	 * Allocates the given <code>hus</code> to this instance's current item to pack (see {@link #getItemToPack()}).
-	 *
+	 * <p>
 	 * The allocated qty will be the HUs' qty for the product that is currently packed (i.e. the qty will be defined by the handling units, not e.g. by the underlying shipment schedule's
 	 * QtyToDeliver).
-	 *
+	 * <p>
 	 * The quantity that was allocated on HUs will be subtracted from {@link #getItemToPack()}.
-	 *
-	 * @param hus
 	 */
-	private final void allocate()
+	private void allocate()
 	{
 		// Make sure we did not run "allocate" before
 		// i.e. this builder is still configurable
@@ -318,7 +307,7 @@ public class HU2PackingItemsAllocator
 				.run(this::allocate0);
 	}
 
-	private final void allocate0(final IHUContext huContext)
+	private void allocate0(final IHUContext huContext)
 	{
 		setHUContext(huContext);
 
@@ -347,7 +336,7 @@ public class HU2PackingItemsAllocator
 	 *
 	 * @param pickFromHU LU or TU
 	 */
-	private final void pickFromHU(@NonNull final I_M_HU pickFromHU)
+	private void pickFromHU(@NonNull final I_M_HU pickFromHU)
 	{
 		//
 		// Case: Loading Unit
@@ -377,7 +366,7 @@ public class HU2PackingItemsAllocator
 		handlingUnitsBL.destroyIfEmptyStorage(huContext, pickFromHU);
 	}
 
-	private final void pickFromTU(final I_M_HU tuHU)
+	private void pickFromTU(final I_M_HU tuHU)
 	{
 		// Make sure we have remaining qty to pack
 		if (!hasRemainingQtyToPack())
@@ -388,8 +377,7 @@ public class HU2PackingItemsAllocator
 		// Case our TU is a VHU
 		if (handlingUnitsBL.isVirtual(tuHU))
 		{
-			final I_M_HU vhu = tuHU;
-			pickFromVHU(vhu);
+			pickFromVHU(tuHU);
 		}
 		// Case our TU is really a TU (stricly speaking)
 		else if (handlingUnitsBL.isTransportUnit(tuHU))
@@ -425,7 +413,7 @@ public class HU2PackingItemsAllocator
 				.load(request);
 	}
 
-	private static final IAllocationRequest createShipmentScheduleAllocationRequest(final IHUContext huContext, final PackingItemPart part)
+	private static IAllocationRequest createShipmentScheduleAllocationRequest(final IHUContext huContext, final PackingItemPart part)
 	{
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
@@ -519,7 +507,8 @@ public class HU2PackingItemsAllocator
 		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext, false);
+		final boolean anonymousHuPickedOnTheFly = true;
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext, anonymousHuPickedOnTheFly);
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
 		packFromVHUToDestination(pickFromVHU, packedPart);
@@ -583,7 +572,7 @@ public class HU2PackingItemsAllocator
 		}
 	}
 
-	private final void packRemainingQtyToDestination()
+	private void packRemainingQtyToDestination()
 	{
 		if (!hasPackToDestination())
 		{
