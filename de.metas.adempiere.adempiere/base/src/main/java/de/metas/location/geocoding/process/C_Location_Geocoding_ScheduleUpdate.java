@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 
@@ -50,12 +50,12 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 	private IEventBus eventBus;
 
 	private int countScheduled = 0;
-	private LocationId maxLocationIdScheduled = null;
+	private LocationId minLocationIdScheduled = null;
 
 	@Override
 	protected void prepare()
 	{
-		final IEventBusFactory eventBusFactory = Adempiere.getBean(IEventBusFactory.class);
+		final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
 		eventBus = eventBusFactory.getEventBus(C_Location.EVENTS_TOPIC);
 	}
 
@@ -63,6 +63,9 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
+		 TODO tbp: we should send batches of 100 per request, instead of just 1 single location.
+		this has to be tested in C_Location_Geocoding_ScheduleUpdateTest
+
 		Set<LocationId> locationIds = retrieveLocationIdsToUpdate(FETCH_SIZE);
 		while (!locationIds.isEmpty())
 		{
@@ -81,7 +84,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 				.addOnlyActiveRecordsFilter()
 				.addInArrayOrAllFilter(I_C_Location.COLUMN_GeocodingStatus, Arrays.asList(X_C_Location.GEOCODINGSTATUS_Error, X_C_Location.GEOCODINGSTATUS_NotChecked))
 				//
-				.addCompareFilter(I_C_Location.COLUMN_C_Location_ID, Operator.GREATER, LocationId.toRepoIdOr(maxLocationIdScheduled, 0))
+				.addCompareFilter(I_C_Location.COLUMN_C_Location_ID, Operator.GREATER, LocationId.toRepoIdOr(minLocationIdScheduled, 0))
 				.orderByDescending(I_C_Location.COLUMN_C_Location_ID)
 				//
 				.setLimit(limit)
@@ -100,10 +103,10 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 		eventBus.postObject(LocationGeocodeEventRequest.of(locationId));
 
 		countScheduled++;
-		maxLocationIdScheduled = max(maxLocationIdScheduled, locationId);
+		minLocationIdScheduled = min(minLocationIdScheduled, locationId);
 	}
 
-	private static LocationId max(final LocationId locationId1, final LocationId locationId2)
+	private static LocationId min(final LocationId locationId1, final LocationId locationId2)
 	{
 		if (locationId1 == null)
 		{
@@ -115,7 +118,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 		}
 		else
 		{
-			return locationId1.getRepoId() >= locationId2.getRepoId() ? locationId1 : locationId2;
+			return locationId1.getRepoId() <= locationId2.getRepoId() ? locationId1 : locationId2;
 		}
 	}
 }
