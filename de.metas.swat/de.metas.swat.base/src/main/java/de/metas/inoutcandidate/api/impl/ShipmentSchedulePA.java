@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -452,8 +453,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void deleteAllForReference(
-			@Nullable final TableRecordReference referencedRecord)
+	public void deleteAllForReference(@Nullable final TableRecordReference referencedRecord)
 	{
 		if (referencedRecord == null)
 		{
@@ -465,7 +465,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID())
 				.create()
-				.delete();
+				.delete(); // don't "deleteDirectly". we need model interceptors to fire
+
 		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
 	}
 
@@ -491,5 +492,29 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public void save(@NonNull final I_M_ShipmentSchedule record)
 	{
 		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	@Override
+	public ImmutableList<I_M_ShipmentSchedule> getByReferences(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.setJoinOr()
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
+
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> filter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID());
+			queryBuilder.filter(filter);
+		}
+
+		return queryBuilder
+				.create()
+				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 }

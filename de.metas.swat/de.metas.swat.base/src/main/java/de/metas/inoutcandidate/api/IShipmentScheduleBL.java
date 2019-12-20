@@ -32,8 +32,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -164,4 +167,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void applyUserChangesInTrx(ShipmentScheduleUserChangeRequestsList userChanges);
 
 	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
+
+	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
 }

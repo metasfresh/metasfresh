@@ -47,6 +47,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
@@ -61,6 +62,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
@@ -274,7 +276,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		Check.assume(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
+		Check.errorUnless(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
 
 		shipmentSchedule.setIsClosed(false);
 		updateQtyOrdered(shipmentSchedule);
@@ -557,7 +559,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
-
 		if (orderLineId <= 0)
 		{
 			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
@@ -571,4 +572,31 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn);
 	}
 
+	@Override
+	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			if (!record.isClosed() && !record.isProcessed())
+			{
+				closeShipmentSchedule(record);
+			}
+		}
+	}
+
+	@Override
+	public void openShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			if (record.isClosed())
+			{
+				openShipmentSchedule(record);
+			}
+		}
+	}
 }

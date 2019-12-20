@@ -65,7 +65,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -288,18 +287,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
-		for (final DeliveryLineCandidate inOutLine : firstRun.getAllLines())
+		for (final DeliveryLineCandidate shipmentLineCandidate : firstRun.getAllLines())
 		{
-			if (inOutLine.isDiscarded())
+			if (shipmentLineCandidate.isDiscarded())
 			{
-				inOutLine.setQtyToDeliver(BigDecimal.ZERO);
+				shipmentLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
 			}
 			else
 			{
 				// remember: 'removeLine' means that a *new* line might be
 				// created for the corresponding olAndSched
-				inOutLine.removeFromGroup();
-				firstRun.removeLine(inOutLine);
+				shipmentLineCandidate.removeFromGroup();
+				firstRun.removeLine(shipmentLineCandidate);
 			}
 		}
 
@@ -333,18 +332,19 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			markAsChangedByUpdateProcess(sched);
 
-			if (olAndSched.hasSalesOrderLine())
-			{
-				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
-				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
-						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
-						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
-						&& sched.getQtyPickList().signum() == 0)
-				{
-					InterfaceWrapperHelper.delete(sched);
-					continue;
-				}
-			}
+			// we don't do this anymore; instead, there is a model interceptor that closes the schedule if the order is reactivated
+//			if (olAndSched.hasSalesOrderLine())
+//			{
+//				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
+//				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
+//						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
+//						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
+//						&& sched.getQtyPickList().signum() == 0)
+//				{
+//					InterfaceWrapperHelper.delete(sched);
+//					continue;
+//				}
+//			}
 
 			updateProcessedFlag(sched);
 			if (sched.isProcessed())

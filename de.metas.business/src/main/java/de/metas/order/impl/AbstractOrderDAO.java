@@ -172,13 +172,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public final List<Integer> retrieveAllOrderLineIds(final I_C_Order order)
+	public final ImmutableList<OrderLineId> retrieveAllOrderLineIds(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
-				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds();
+				.listIds()
+				.stream()
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
