@@ -187,6 +187,20 @@ public class Order implements ModelValidator
 					}
 				}
 			}
+			
+			// handover address
+			{
+				if (order.getHandOver_Location_ID() > 0)
+				{
+					final String handOverAddress = order.getHandOverAddress();
+					if (Check.isEmpty(handOverAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_HandOver_Partner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_HandOver_Location_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_HandOver_User_ID))
+					{
+						Services.get(IDocumentLocationBL.class).setHandOverAddress(order);
+					}
+				}
+			}
 		}
 		// end: c.ghita@metas.ro: 01447
 
