@@ -1,5 +1,8 @@
 
--- DROP FUNCTION de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_find_log_fix();
+
+ALTER TABLE de_metas_invoicecandidate.C_Invoice_Candidate_Failed_To_Update RENAME COLUMN IF EXISTS IsEdiRecipient TO IsEdiInvoicRecipient;
+
+DROP FUNCTION de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_find_log_fix();
 
 CREATE OR REPLACE FUNCTION de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_find_log_fix()
   RETURNS void AS
