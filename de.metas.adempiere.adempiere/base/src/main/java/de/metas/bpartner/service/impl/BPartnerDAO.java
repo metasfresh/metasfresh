@@ -249,6 +249,12 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
+	
+	@Override
+	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass) 
+	{
+		return getContactById(contactId, modelClass);
+	}
 
 	@Override
 	public EMailAddress getContactEMail(@NonNull final BPartnerContactId contactId)

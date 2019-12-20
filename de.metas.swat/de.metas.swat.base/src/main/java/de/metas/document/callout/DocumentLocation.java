@@ -8,6 +8,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.util.Services;
 
@@ -77,6 +78,18 @@ public class DocumentLocation extends CalloutEngine
 			return;
 		}
 		Services.get(IDocumentLocationBL.class).setDeliveryToAddress(docDeliveryLocation);
+	}
+	
+	// HandoverLocationId
+	public void handOverLocationId(final ICalloutField calloutField)
+	{
+		if (calloutField.isRecordCopyingModeIncludingDetails())
+		{
+			return;
+		}
+
+		final IDocumentHandOverLocation docLocation = calloutField.getModel(IDocumentHandOverLocation.class);
+		Services.get(IDocumentLocationBL.class).setHandOverAddress(docLocation);
 	}
 
 	public void billUserId(final ICalloutField calloutField)

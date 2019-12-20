@@ -31,12 +31,14 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -184,6 +186,41 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		final String address = bPartnerBL.mkFullAddress(bpartner, bpLocation, bpContact, ITrx.TRXNAME_None);
 
 		return address;
+	}
+
+	@Override
+	public void setHandOverAddress(final IDocumentHandOverLocation docHandOverLocation) 
+	{
+		if (!docHandOverLocation.isUseHandOver_Location() 
+				|| docHandOverLocation.getHandOver_Partner_ID() <= 0
+				|| docHandOverLocation.getHandOver_Location_ID() <= 0) 
+		{
+			return;
+		}
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		
+		final I_C_BPartner bp = bpartnerDAO.getById(docHandOverLocation.getHandOver_Partner_ID(), I_C_BPartner.class);
+
+		
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_Location_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(bpLocationId);
+
+		final de.metas.adempiere.model.I_AD_User user;
+		if (docHandOverLocation.getHandOver_User_ID() > 0)
+		{
+			final BPartnerContactId contactId = BPartnerContactId.ofRepoId(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_User_ID());
+			user = bpartnerDAO.getContactById(contactId, de.metas.adempiere.model.I_AD_User.class);
+		}
+		else
+		{
+			user = null;
+		}
+
+		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+		final String address = bPartnerBL.mkFullAddress(bp,  bpartnerLocation, user, ITrx.TRXNAME_None);
+		docHandOverLocation.setHandOverAddress(address);
+		
 	}
 
 }

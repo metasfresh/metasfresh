@@ -190,6 +190,7 @@ class OLCandOrderFactory
 		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
 		order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
 		order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
+		order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
 		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() != null);
 
 		if (candidateOfGroup.getC_Currency_ID() > 0)

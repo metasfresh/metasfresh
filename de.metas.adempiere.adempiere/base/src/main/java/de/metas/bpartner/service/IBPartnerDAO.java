@@ -131,6 +131,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
+	
+	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
 
 	EMailAddress getContactEMail(BPartnerContactId contactId);
 
