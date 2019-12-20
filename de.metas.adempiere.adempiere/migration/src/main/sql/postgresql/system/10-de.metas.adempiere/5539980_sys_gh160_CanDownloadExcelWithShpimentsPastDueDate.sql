@@ -100,7 +100,7 @@ UPDATE AD_Process_Trl SET Name='Export Overdue Orders',Updated=TO_TIMESTAMP('201
 
 -- 2019-12-20T15:06:10.066Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Name='ÃœberfÃ¤llige Auftragpositionen Exportieren',Updated=TO_TIMESTAMP('2019-12-20 17:06:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541238
+UPDATE AD_Process_Trl SET Name='Überfällige Auftragpositionen Exportieren',Updated=TO_TIMESTAMP('2019-12-20 17:06:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541238
 ;
 
 -- 2019-12-20T15:06:19.483Z
@@ -115,12 +115,12 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-12-20 17:0
 
 -- 2019-12-20T15:07:09.962Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Name='ÃœberfÃ¤llige Auftragpositionen Exportieren', Value='ÃœberfÃ¤llige Auftragpositionen Exportieren',Updated=TO_TIMESTAMP('2019-12-20 17:07:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541238
+UPDATE AD_Process SET Name='Überfällige Auftragpositionen Exportieren', Value='Überfällige Auftragpositionen Exportieren',Updated=TO_TIMESTAMP('2019-12-20 17:07:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541238
 ;
 
 -- 2019-12-20T15:07:20.866Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Name='ÃœberfÃ¤llige Auftragpositionen Exportieren',Updated=TO_TIMESTAMP('2019-12-20 17:07:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541238
+UPDATE AD_Process_Trl SET Name='Überfällige Auftragpositionen Exportieren',Updated=TO_TIMESTAMP('2019-12-20 17:07:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541238
 ;
 
 -- 2019-12-20T15:07:41.330Z
