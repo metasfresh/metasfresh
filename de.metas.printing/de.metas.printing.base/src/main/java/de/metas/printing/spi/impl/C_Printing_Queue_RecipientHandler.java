@@ -15,6 +15,8 @@ import de.metas.printing.model.I_AD_User;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /*
@@ -48,7 +50,7 @@ import de.metas.util.Services;
  * It will also deal with loops gracefully, i.e. stop traversing when it already saw a certain {@code AD_User_ID}.
  * <p>
  * Note: we assume that this handler will always be called last, when other handlers already did their stuff with {@link I_C_Printing_Queue_Recipient}s.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/1081
  */
@@ -70,9 +72,9 @@ public class C_Printing_Queue_RecipientHandler extends PrintingQueueHandlerAdapt
 		{
 			return false;
 		}
-		
+
 		// return true if the item's user has a C_Printing_Queue_Recipient
-		final I_AD_User queueUser = InterfaceWrapperHelper.create(queueItem.getAD_User(), I_AD_User.class);
+		final I_AD_User queueUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(queueItem.getAD_User_ID()), I_AD_User.class);
 		return queueUser.getC_Printing_Queue_Recipient_ID() > 0;
 	}
 
@@ -108,7 +110,7 @@ public class C_Printing_Queue_RecipientHandler extends PrintingQueueHandlerAdapt
 
 	private void resetToUserPrintingQueueRecipient(final I_C_Printing_Queue queueItem)
 	{
-		final I_AD_User itemUser = InterfaceWrapperHelper.create(queueItem.getAD_User(), I_AD_User.class);
+		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(queueItem.getAD_User_ID()), I_AD_User.class);
 
 		final int userToPrintId = getEffectiveUserToPrint(itemUser, new HashSet<>()).getAD_User_ID();
 

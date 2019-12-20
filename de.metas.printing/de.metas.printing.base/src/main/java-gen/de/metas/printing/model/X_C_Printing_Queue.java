@@ -14,7 +14,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -44111796L;
+	private static final long serialVersionUID = -252352242L;
 
     /** Standard Constructor */
     public X_C_Printing_Queue (Properties ctx, int C_Printing_Queue_ID, String trxName)
@@ -23,8 +23,8 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
       /** if (C_Printing_Queue_ID == 0)
         {
 			setAD_Archive_ID (0);
-			setCopies (0); // 1
 			setC_Printing_Queue_ID (0);
+			setCopies (0); // 1
 			setIsPrintoutForOtherUser (false); // N
 			setProcessed (false); // N
         } */
@@ -46,7 +46,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
     }
 
 	@Override
-	public org.compiere.model.I_AD_Archive getAD_Archive() throws RuntimeException
+	public org.compiere.model.I_AD_Archive getAD_Archive()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Archive_ID, org.compiere.model.I_AD_Archive.class);
 	}
@@ -108,7 +108,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
@@ -145,7 +145,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	public org.compiere.model.I_AD_Role getAD_Role()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
 	}
@@ -181,16 +181,29 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
+	/** Set DB-Tabelle.
+		@param AD_Table_ID 
+		Database Table information
+	  */
 	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	public void setAD_Table_ID (int AD_Table_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+		if (AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
+	/** Get DB-Tabelle.
+		@return Database Table information
+	  */
 	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	public int getAD_Table_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Ansprechpartner.
@@ -218,21 +231,9 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
-	}
-
 	/** Set Rechnungspartner.
 		@param Bill_BPartner_ID 
-		Geschäftspartners für die Rechnungsstellung
+		Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
@@ -244,7 +245,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Get Rechnungspartner.
-		@return Geschäftspartners für die Rechnungsstellung
+		@return Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public int getBill_BPartner_ID () 
@@ -253,18 +254,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getBill_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Bill_Location);
 	}
 
 	/** Set Rechnungsstandort.
@@ -314,18 +303,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -349,18 +326,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
 	}
 
 	/** Set Standort.
@@ -388,18 +353,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Belegart oder Verarbeitungsvorgaben
@@ -425,28 +378,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
-	/** Set Kopien.
-		@param Copies 
-		Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public void setCopies (int Copies)
-	{
-		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
-	}
-
-	/** Get Kopien.
-		@return Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public int getCopies () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Druck-Warteschlangendatensatz.
 		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
 	@Override
@@ -464,6 +395,28 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	public int getC_Printing_Queue_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kopien.
+		@param Copies 
+		Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public void setCopies (int Copies)
+	{
+		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
+	}
+
+	/** Get Kopien.
+		@return Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public int getCopies () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -606,7 +559,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -615,7 +568,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
