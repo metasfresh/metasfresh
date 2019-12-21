@@ -38,15 +38,18 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
@@ -61,14 +64,17 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -106,6 +112,8 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
+	private static final String MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = "ShipmentScheduleAlreadyProcessed";
+
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 
@@ -274,9 +282,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		Check.assume(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
+		Check.errorUnless(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
 
 		shipmentSchedule.setIsClosed(false);
+
+		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentSchedule);
 		updateQtyOrdered(shipmentSchedule);
 
 		save(shipmentSchedule);
@@ -557,7 +567,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
-
 		if (orderLineId <= 0)
 		{
 			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
@@ -571,4 +580,45 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn);
 	}
 
+	@Override
+	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			if (record.isClosed())
+			{
+				continue;
+			}
+			if (record.isProcessed())
+			{
+				throw new AdempiereException(
+						Services.get(IMsgBL.class)
+								.getTranslatableMsgText(MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID()))
+										.markAsUserValidationError();
+			}
+			closeShipmentSchedule(record);
+		}
+	}
+
+	@Override
+	public void openShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			if (record.isClosed())
+			{
+				openShipmentSchedule(record);
+			}
+		}
+	}
+
+	@Override
+	public IAttributeSetInstanceAware toAttributeSetInstanceAware(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return InterfaceWrapperHelper.create(shipmentSchedule, IAttributeSetInstanceAware.class);
+	}
 }

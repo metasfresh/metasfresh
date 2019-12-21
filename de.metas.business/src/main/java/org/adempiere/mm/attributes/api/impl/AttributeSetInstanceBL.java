@@ -17,6 +17,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -169,7 +170,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public void setAttributeInstanceValue(
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final String attributeValue,
-			@NonNull final Object value)
+			@Nullable final Object value)
 	{
 		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeValue);
 		final I_M_AttributeInstance attributeInstance = getCreateAttributeInstance(asiId, AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID()));
@@ -181,7 +182,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public void setAttributeInstanceValue(
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final AttributeId attributeId,
-			@NonNull final Object value)
+			@Nullable final Object value)
 	{
 
 		final I_M_Attribute attributeRecord = attributeDAO.getAttributeById(attributeId);
@@ -190,21 +191,24 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		setAttributeInstanceValue(attributeRecord, attributeInstance, value);
 	}
 
-	private void setAttributeInstanceValue(final I_M_Attribute attributeRecord, final I_M_AttributeInstance attributeInstance, final Object value)
+	private void setAttributeInstanceValue(
+			@NonNull final I_M_Attribute attributeRecord,
+			@NonNull final I_M_AttributeInstance attributeInstance,
+			@Nullable final Object value)
 	{
 		final String attributeValueType = attributeRecord.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			attributeInstance.setValueDate(Env.parseTimestamp(value.toString()));
+			attributeInstance.setValueDate(value == null ? null : Env.parseTimestamp(value.toString()));
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			attributeInstance.setValueNumber(NumberUtils.asBigDecimal(value.toString(), null));
+			attributeInstance.setValueNumber(value == null ? null : NumberUtils.asBigDecimal(value.toString(), null));
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType)
 				|| X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			attributeInstance.setValue(value.toString());
+			attributeInstance.setValue(value == null ? null : value.toString());
 		}
 		else
 		{
@@ -373,5 +377,28 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
 	{
 		return attributeDAO.getImmutableAttributeSetById(asiId);
+	}
+
+	@Override
+	public void syncAttributesToASIAware(@NonNull final IAttributeSet attributeSet, @NonNull final IAttributeSetInstanceAware asiAware)
+	{
+		final AttributeSetInstanceId oldAsiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId;
+		if (oldAsiId.isRegular())
+		{
+			final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(oldAsiId).copy();
+			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
+		}
+		else
+		{
+			final I_M_AttributeSetInstance asiNew = createASI(ProductId.ofRepoId(asiAware.getM_Product_ID()));
+			asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
+		}
+
+		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
+		{
+			setAttributeInstanceValue(asiId, attributeRecord.getValue(), attributeSet.getValue(attributeRecord));
+		}
+		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}
 }

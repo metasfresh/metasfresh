@@ -1,6 +1,8 @@
 package de.metas.order.inoutcandidate;
 
+import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -11,10 +13,14 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
@@ -34,6 +40,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
@@ -43,6 +50,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -63,6 +71,14 @@ import lombok.NonNull;
  */
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
+
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
@@ -78,8 +94,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			@NonNull final I_C_OrderLine orderLine,
 			@Nullable final PPOrderId pickingOrderId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
 		// sanity check ol.getM_Product_ID()
 		if (orderLine.getQtyOrdered().signum() <= 0 || orderLine.getQtyReserved().signum() < 0)
@@ -87,59 +101,12 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			throw new AdempiereException(orderLine + " has QtyOrdered<=0 or QtyReserved<0");
 		}
 
-		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
-
-		final I_M_ShipmentSchedule newSched = InterfaceWrapperHelper.create(ctx, I_M_ShipmentSchedule.class, trxName);
-
-		updateShipmentScheduleFromOrderLine(newSched, orderLine);
-
-		updateShipmentScheduleFromOrder(newSched, order);
-
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
+		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class);
 
 		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
 				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
-		// 04290
-		newSched.setM_Warehouse_ID(getWarehouseId(orderLine).getRepoId());
-
-		final String bPartnerAddress;
-		if (!Check.isEmpty(orderLine.getBPartnerAddress()))
-		{
-			bPartnerAddress = orderLine.getBPartnerAddress();
-		}
-		else if (!Check.isEmpty(order.getDeliveryToAddress()))
-		{
-			bPartnerAddress = order.getDeliveryToAddress();
-		}
-		else
-		{
-			bPartnerAddress = order.getBPartnerAddress();
-		}
-		newSched.setBPartnerAddress(bPartnerAddress);
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final I_C_UOM priceUOM = Services.get(IUOMDAO.class).getById(orderLine.getPrice_UOM_ID());
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, priceUOM, orderLine.getQtyReserved());
-		newSched.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
-
-		final String groupingOrderLineLabel = DB
-				.getSQLValueStringEx(
-						trxName,
-						" select ( o.DocumentNo || ' - ' || spt.Line ) " +
-								" from C_OrderLine ol INNER JOIN C_OrderLine spt ON spt.C_OrderLine_ID=ol.SinglePriceTag_ID INNER JOIN C_Order o ON o.C_Order_ID=spt.C_Order_ID " +
-								" where ol.C_OrderLine_ID=?",
-						orderLine.getC_OrderLine_ID());
-		// TODO column SinglePriceTag_ID has entity type de.metas.orderlineGrouping
-		// either "adopt" it into the core or into de.metas.inoutcandidate or add a way to let external modules set
-		// tthier values
-		newSched.setSinglePriceTag_ID(groupingOrderLineLabel);
-		// 03152 end
-
-		// only display item products
-		final boolean display = Services.get(IProductBL.class).isItem(productId);
-		newSched.setIsDisplayed(display);
+		updateShipmentScheduleFromOrderLine(newSched, orderLine);
 
 		newSched.setPickFrom_Order_ID(PPOrderId.toRepoId(pickingOrderId));
 
@@ -154,7 +121,17 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
 	}
 
-	private static void updateShipmentScheduleFromOrderLine(
+	@Override
+	public void updateShipmentScheduleFromReferencedRecord(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final I_C_OrderLine orderLineRecord = TableRecordReference
+				.ofReferenced(shipmentSchedule) // Record_Id and AD_Table_ID are mandatory
+				.getModel(I_C_OrderLine.class);
+
+		updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLineRecord);
+	}
+
+	private void updateShipmentScheduleFromOrderLine(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_OrderLine orderLine)
 	{
@@ -185,6 +162,48 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setShipmentAllocation_BestBefore_Policy(orderLine.getShipmentAllocation_BestBefore_Policy());
 
 		shipmentSchedule.setM_Shipper_ID(orderLine.getM_Shipper_ID());
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+		if (asiId.isRegular())
+		{
+			final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(shipmentSchedule);
+			final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+			attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
+		}
+
+		// 04290
+		shipmentSchedule.setM_Warehouse_ID(getWarehouseId(orderLine).getRepoId());
+		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
+
+		final String bPartnerAddress = firstNotEmptyTrimmed(
+				orderLine.getBPartnerAddress(),
+				orderRecord.getDeliveryToAddress(),
+				orderRecord.getBPartnerAddress());
+		shipmentSchedule.setBPartnerAddress(bPartnerAddress);
+
+		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final I_C_UOM priceUOM = uomdao.getById(orderLine.getPrice_UOM_ID());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, priceUOM, orderLine.getQtyReserved());
+		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
+
+		// only display item products
+		final boolean display = productBL.isItem(productId);
+		shipmentSchedule.setIsDisplayed(display);
+
+		final String groupingOrderLineLabel = DB
+				.getSQLValueStringEx(
+						ITrx.TRXNAME_ThreadInherited,
+						" select ( o.DocumentNo || ' - ' || spt.Line ) " +
+								" from C_OrderLine ol INNER JOIN C_OrderLine spt ON spt.C_OrderLine_ID=ol.SinglePriceTag_ID INNER JOIN C_Order o ON o.C_Order_ID=spt.C_Order_ID " +
+								" where ol.C_OrderLine_ID=?",
+						orderLine.getC_OrderLine_ID());
+		// TODO column SinglePriceTag_ID has entity type de.metas.orderlineGrouping
+		// either "adopt" it into the core or into de.metas.inoutcandidate or add a way to let external modules set
+		// tthier values
+		shipmentSchedule.setSinglePriceTag_ID(groupingOrderLineLabel);
+		// 03152 end
 	}
 
 	private static void updateShipmentScheduleFromOrder(
@@ -206,13 +225,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	/**
 	 * For a given order line this method invalidates all shipment schedule lines that have the same product or (if the given order has a "complete order" delivery rule) even does the same with all
 	 * order lines of the given order.
-	 *
-	 * @param orderLine
-	 * @param order
-	 * @param trxName
 	 */
 	@Override
-	public void invalidateCandidatesFor(Object model)
+	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 
@@ -224,12 +239,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	public void invalidateForOrderLine(final I_C_OrderLine orderLine, final I_C_Order order, final String trxName)
 	{
-		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 
 		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(order.getDeliveryRule());
 		if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
-			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
+			for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 			{
 				shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
 				shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);

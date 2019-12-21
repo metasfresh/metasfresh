@@ -241,4 +241,10 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final TableRecordReference ref = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
 		return ref.getModel(contextAware, I_C_SubscriptionProgress.class);
 	}
+
+	@Override
+	public void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentSchedule)
+	{
+		// does nothing
+	}
 }
