@@ -60,7 +60,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		registerSSAggregationKeyDependencies();
 
 		engine.addModelValidator(new C_Order(), client);
-		engine.addModelValidator(new C_Order_ShipmentSchedule(), client);
+		//engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initilized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_Shipment_Constraint(), client);

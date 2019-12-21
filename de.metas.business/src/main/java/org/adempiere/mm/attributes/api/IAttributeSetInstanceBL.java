@@ -114,6 +114,16 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
 
 	boolean isStorageRelevant(I_M_AttributeInstance ai);
-	
+
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
+
+	/**
+	 * Synchs the given {@code attributeSet}  to the given {@code asiAware}.
+	 * <p/>
+	 * Creates a new ASI if neccessary.
+	 * Existing attribute instances that are not part of the given {@code attributeSet} are left untouched.
+	 * {@code null}-Values from the given {@code attributeSet} are also synched to the given {@code asiAware}.
+	 * The given {@code asiAware} is <b>not</b> saved, but the the respective ASI and AIs are saved
+	 */
+	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 }

@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-
-
 /*
  * #%L
  * de.metas.swat.base
@@ -34,6 +32,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -130,10 +129,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_Effective(final I_M_ReceiptSchedule rs, final I_M_AttributeSetInstance asi)
+	public void setM_AttributeSetInstance_Effective(final I_M_ReceiptSchedule rs, @NonNull final AttributeSetInstanceId asiId)
 	{
 		// TODO: introduce M_AttributeSetInstance_Override_ID
-		rs.setM_AttributeSetInstance(asi);
+		rs.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}
 
 	@Override

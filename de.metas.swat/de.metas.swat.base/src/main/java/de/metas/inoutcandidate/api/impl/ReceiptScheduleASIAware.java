@@ -2,6 +2,10 @@ package de.metas.inoutcandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -15,15 +19,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -31,8 +34,8 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Wraps an {@link I_M_ReceiptSchedule} and makes it behave like an {@link IAttributeSetInstanceAware}
@@ -42,13 +45,12 @@ import de.metas.util.Services;
  */
 /* package */class ReceiptScheduleASIAware implements IAttributeSetInstanceAware
 {
+	final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
 	private final I_M_ReceiptSchedule rs;
 
-	public ReceiptScheduleASIAware(final I_M_ReceiptSchedule rs)
+	public ReceiptScheduleASIAware(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		super();
-
-		Check.assumeNotNull(rs, "rs not null");
 		this.rs = rs;
 	}
 
@@ -77,8 +79,18 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(I_M_AttributeSetInstance asi)
+	public void setM_AttributeSetInstance(@Nullable final I_M_AttributeSetInstance asi)
 	{
-		Services.get(IReceiptScheduleBL.class).setM_AttributeSetInstance_Effective(rs, asi);
+		AttributeSetInstanceId asiId = asi == null
+				? AttributeSetInstanceId.NONE
+				: AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
+		receiptScheduleBL.setM_AttributeSetInstance_Effective(rs, asiId);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(M_AttributeSetInstance_ID);
+		receiptScheduleBL.setM_AttributeSetInstance_Effective(rs, asiId);
 	}
 }

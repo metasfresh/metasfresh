@@ -96,6 +96,12 @@ public class OLCandASIAwareFactory implements IAttributeSetInstanceAwareFactory
 			{
 				return "IAttributeSetInstanceAware[" + olCand.toString() + "]";
 			}
+
+			@Override
+			public void setM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
+			{
+				olCand.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
+			}
 		};
 	}
 }
