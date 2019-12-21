@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { CSSTransition } from 'react-transition-group';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import classnames from 'classnames';
 
 /**
@@ -301,14 +301,15 @@ export default class SelectionDropdown extends Component {
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
-    <CSSTransition
+    <ReactCSSTransitionGroup
       transitionName="rotate"
-      timeout={{ exit: 1000, enter: 1000 }}
+      transitionEnterTimeout={1000}
+      transitionLeaveTimeout={1000}
     >
       <div className="rotate icon-rotate">
         <i className="meta-icon-settings" />
       </div>
-    </CSSTransition>
+    </ReactCSSTransitionGroup>
   );
 
   /**

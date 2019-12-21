@@ -1,5 +1,5 @@
 import counterpart from 'counterpart';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import PropTypes from 'prop-types';
 
@@ -11,7 +11,11 @@ import Tooltips from '../tooltips/Tooltips';
  * @module UserDropdown
  * @extends Component
  */
-class UserDropdown extends PureComponent {
+class UserDropdown extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   /**
    * @method handleClickOutside
    * @summary ToDo: Describe the method

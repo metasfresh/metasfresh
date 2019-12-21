@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
@@ -33,7 +33,7 @@ import UserDropdown from './UserDropdown';
  * @module Header
  * @extends Component
  */
-class Header extends PureComponent {
+class Header extends Component {
   state = {
     isSubheaderShow: false,
     isSideListShow: false,
@@ -127,12 +127,8 @@ class Header extends PureComponent {
    * @summary ToDo: Describe the method
    * @param {object} state
    */
-  closeInbox = () => {
-    this.setState({ isInboxOpen: false });
-  };
-
-  openInbox = () => {
-    this.setState({ isInboxOpen: true });
+  handleInboxOpen = state => {
+    this.setState({ isInboxOpen: !!state });
   };
 
   /**
@@ -508,14 +504,6 @@ class Header extends PureComponent {
     }
   };
 
-  closeSubheaderOverlays = () => {
-    this.closeOverlays('isSubheaderShow');
-  };
-
-  closeDropdownOverlays = () => {
-    this.closeOverlays('dropdown');
-  };
-
   /**
    * @method redirect
    * @summary ToDo: Describe the method
@@ -524,15 +512,6 @@ class Header extends PureComponent {
   redirect = where => {
     const { dispatch } = this.props;
     dispatch(push(where));
-  };
-
-  getWidgetData = () => {
-    const { docStatusData } = this.props;
-
-    if (docStatusData && docStatusData.status) {
-      return [docStatusData];
-    }
-    return [{}];
   };
 
   /**
@@ -545,6 +524,7 @@ class Header extends PureComponent {
       siteName,
       docNoData,
       docStatus,
+      docStatusData,
       dataId,
       breadcrumb,
       showSidelist,
@@ -600,7 +580,7 @@ class Header extends PureComponent {
             <div className="header-container">
               <div className="header-left-side">
                 <div
-                  onClick={this.closeSubheaderOverlays}
+                  onClick={() => this.closeOverlays('isSubheaderShow')}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
@@ -660,10 +640,12 @@ class Header extends PureComponent {
                       dataId={dataId}
                       docId={docId}
                       activeTab={activeTab}
-                      getWidgetData={this.getWidgetData}
+                      widgetData={[docStatusData]}
                       noLabel
                       type="primary"
-                      dropdownOpenCallback={this.closeDropdownOverlays}
+                      dropdownOpenCallback={() =>
+                        this.closeOverlays('dropdown')
+                      }
                       {...docStatus}
                     />
                     {tooltipOpen === keymap.DOC_STATUS && (
@@ -687,7 +669,9 @@ class Header extends PureComponent {
                       'header-item-open': isInboxOpen,
                     }
                   )}
-                  onClick={() => this.closeOverlays('', this.openInbox)}
+                  onClick={() =>
+                    this.closeOverlays('', () => this.handleInboxOpen(true))
+                  }
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
@@ -713,8 +697,8 @@ class Header extends PureComponent {
                 <Inbox
                   ref={this.inboxRef}
                   open={isInboxOpen}
-                  close={this.closeInbox}
-                  onFocus={this.openInbox}
+                  close={this.handleInboxOpen}
+                  onFocus={() => this.handleInboxOpen(true)}
                   disableOnClickOutside={true}
                   inbox={inbox}
                 />
@@ -774,7 +758,7 @@ class Header extends PureComponent {
 
         {isSubheaderShow && (
           <Subheader
-            closeSubheader={this.closeSubheaderOverlays}
+            closeSubheader={() => this.closeOverlays('isSubheaderShow')}
             docNo={docNoData && docNoData.value}
             openModal={this.openModal}
             openModalRow={this.openModalRow}

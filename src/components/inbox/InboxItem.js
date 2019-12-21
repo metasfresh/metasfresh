@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import Moment from 'moment';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -8,7 +8,11 @@ import PropTypes from 'prop-types';
  * @module InboxItem
  * @extends Component
  */
-export default class InboxItem extends PureComponent {
+class InboxItem extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   /**
    * @method renderIconFromTarget
    * @summary ToDo: Describe the method
@@ -133,3 +137,5 @@ InboxItem.propTypes = {
   onClick: PropTypes.any,
   onDelete: PropTypes.any,
 };
+
+export default InboxItem;

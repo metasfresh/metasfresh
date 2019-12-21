@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 
 import MasterWidget from './widget/MasterWidget';
 
@@ -8,21 +8,10 @@ import MasterWidget from './widget/MasterWidget';
  * @module Process
  * @extends Component
  */
-class Process extends PureComponent {
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  getWidgetData = item => {
-    const widgetData = item.fields.reduce(result => result, []);
-
-    if (widgetData.length) {
-      return widgetData;
-    }
-
-    return [{}];
-  };
+class Process extends Component {
+  constructor(props) {
+    super(props);
+  }
 
   /**
    * @method renderElements
@@ -36,6 +25,7 @@ class Process extends PureComponent {
     const { disabled } = this.props;
     const elements = layout.elements;
     return elements.map((elem, id) => {
+      const widgetData = elem.fields.map(item => data[item.field] || -1);
       return (
         <div key={`${id}-${layout.pinstanceId}`}>
           <MasterWidget
@@ -43,18 +33,22 @@ class Process extends PureComponent {
             key={'element' + id}
             windowType={type}
             dataId={layout.pinstanceId}
-            getWidgetData={this.getWidgetData}
+            widgetData={widgetData}
             isModal={true}
             disabled={disabled}
             autoFocus={id === 0}
             {...elem}
-            item={elem}
           />
         </div>
       );
     });
   };
 
+  /**
+   * @method render
+   * @summary ToDo: Describe the method
+   * @todo Write the documentation
+   */
   render() {
     const { data, layout, type } = this.props;
     return (

@@ -1,7 +1,7 @@
 import update from 'immutability-helper';
 import { is } from 'immutable';
 import * as _ from 'lodash';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
@@ -42,7 +42,7 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-class Table extends PureComponent {
+class Table extends Component {
   _isMounted = false;
 
   constructor(props) {
@@ -1311,12 +1311,12 @@ class Table extends PureComponent {
           <DocumentListContextShortcuts
             handleAdvancedEdit={
               selected && selected.length > 0 && selected[0]
-                ? this.handleAdvancedEdit
+                ? () => this.handleAdvancedEdit(windowId, tabId, selected)
                 : undefined
             }
             handleOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
-                ? handleOpenNewTab
+                ? () => handleOpenNewTab(selected, windowId)
                 : undefined
             }
             handleDelete={
@@ -1326,11 +1326,6 @@ class Table extends PureComponent {
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
-            {...{
-              windowId,
-              tabId,
-              selected,
-            }}
           />
         )}
 
