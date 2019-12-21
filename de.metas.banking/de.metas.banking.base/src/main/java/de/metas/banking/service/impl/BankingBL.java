@@ -27,6 +27,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -178,7 +179,7 @@ public class BankingBL implements IBankingBL
 		{
 			name.append(bankAccount.getC_Bank().getName());
 		}
-		else
+		else if (!Check.isBlank(bankAccount.getA_Name()))
 		{
 			// fallback
 			name.append(bankAccount.getA_Name());
