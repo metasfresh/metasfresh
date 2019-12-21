@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.money.CurrencyId;
 
 /*
  * #%L
@@ -53,6 +54,7 @@ class BPartnerCompositeTest
 		final BPartnerBankAccount bankAccount = BPartnerBankAccount.builder()
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, 10))
 				.iban("IBAN")
+				.currencyId(CurrencyId.ofRepoId(123))
 				.build();
 
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
