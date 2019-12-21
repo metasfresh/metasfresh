@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -49,10 +50,16 @@ class BPartnerCompositeTest
 				.id(BPartnerLocationId.ofRepoId(bpartnerId, 10))
 				.build();
 
+		final BPartnerBankAccount bankAccount = BPartnerBankAccount.builder()
+				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, 10))
+				.iban("IBAN")
+				.build();
+
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
 				.bpartner(BPartner.builder().id(bpartnerId).build())
 				.contact(contact)
 				.location(location)
+				.bankAccount(bankAccount)
 				.build();
 
 		// invoke the method under test

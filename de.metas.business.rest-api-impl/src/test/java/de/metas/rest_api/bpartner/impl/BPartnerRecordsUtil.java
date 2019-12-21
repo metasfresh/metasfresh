@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Recent_V;
@@ -12,6 +13,9 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.money.CurrencyId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -55,6 +59,7 @@ public class BPartnerRecordsUtil
 	public static final int C_BPARTNER_ID = 20;
 	public static final int AD_USER_ID = 30;
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
+	public static final int C_BP_BANKACCOUNT_ID = 50;
 
 	public static void createBPartnerData(final int idOffSet)
 	{
@@ -134,6 +139,22 @@ public class BPartnerRecordsUtil
 		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
 		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
 		saveRecord(bpartnerLocationRecord);
+
+		{
+			final CurrencyRepository currencyRepo = new CurrencyRepository();
+			final CurrencyId currencyId = currencyRepo.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
+
+			final I_C_BP_BankAccount bpBankAccountRecord = newInstance(I_C_BP_BankAccount.class);
+			bpBankAccountRecord.setAD_Org_ID(AD_ORG_ID);
+			bpBankAccountRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+			bpBankAccountRecord.setC_BP_BankAccount_ID(C_BP_BANKACCOUNT_ID + idOffSet);
+			bpBankAccountRecord.setIBAN("INITIAL-IBAN-1");
+			bpBankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
+			InterfaceWrapperHelper.setValue(bpBankAccountRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
+			InterfaceWrapperHelper.setValue(bpBankAccountRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
+			InterfaceWrapperHelper.setValue(bpBankAccountRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
+			saveRecord(bpBankAccountRecord);
+		}
 
 		resetTimeSource();
 	}

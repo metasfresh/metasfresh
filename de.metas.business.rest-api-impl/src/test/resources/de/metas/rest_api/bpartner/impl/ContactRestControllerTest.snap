@@ -8,7 +8,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
           "AD_User_ID"
         ],
         "keysByColumnName": {
-          "AD_User_ID": 100004
+          "AD_User_ID": 100010
         }
       },
       "createdByUserId": 0,
@@ -59,7 +59,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
     },
     "id": {
       "bpartnerId": 20,
-      "userId": 100004
+      "userId": 100010
     },
     "name": "jsonContact.name",
     "newsletter": true
@@ -82,6 +82,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "sales": false,
     "salesDefault": false,
     "purchase": false,
     "purchaseDefault": false,
@@ -91,8 +92,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    },
-    "sales": false
+    }
   }
 ]
 
@@ -112,6 +112,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "sales": false,
     "salesDefault": false,
     "purchase": false,
     "purchaseDefault": false,
@@ -121,9 +122,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    },
-    "sales": false
     }
+  }
 ]
 
 
@@ -178,6 +178,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "sales": false,
     "salesDefault": false,
     "purchase": false,
     "purchaseDefault": false,
@@ -187,9 +188,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    },
-    "sales": false
     }
+  }
 ]
 
 
@@ -214,6 +214,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -223,8 +224,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "createdBy": 30,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 30
-      	},
-        "sales": false
+        }
       },
       {
         "metasfreshId": 31,
@@ -240,6 +240,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -248,8 +249,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "createdMillis": 1561133544,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 31
-        },
-        "sales": false
+        }
       }
     ]
   },
@@ -273,6 +273,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -281,8 +282,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "createdMillis": 1561133544,
           "createdBy": 32,
           "lastUpdatedMillis": 1561133544
-        },
-        "sales": false
+        }
       },
       {
         "metasfreshId": 33,
@@ -298,6 +298,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -305,9 +306,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "lastUpdatedMillis": 1561133544
-        },
-        "sales": false
         }
+      }
     ]
   },
   {
@@ -329,6 +329,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -338,9 +339,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "createdBy": 34,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 34
-        },
-        "sales": false
         }
+      }
     ]
   }
 ]

@@ -11,6 +11,7 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -22,12 +23,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
@@ -37,6 +41,7 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -115,6 +120,7 @@ final class BPartnerCompositesLoader
 					.bpartner(bpartner)
 					.contacts(ofContactRecords(id, relatedRecords))
 					.locations(ofLocationRecords(id, relatedRecords))
+					.bankAccounts(ofBankAccountRecords(id, relatedRecords))
 					.build();
 
 			result.put(id, bpartnerComposite);
@@ -178,6 +184,8 @@ final class BPartnerCompositesLoader
 		final ImmutableMap<Integer, I_C_Country> countryId2Country = Maps.uniqueIndex(countryRecords, I_C_Country::getC_Country_ID);
 		countryRecords.forEach(countryRecord -> allTableRecordRefs.add(TableRecordReference.of(countryRecord)));
 
+		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = Services.get(IBPBankAccountDAO.class).getByBPartnerIds(bPartnerIds);
+
 		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
 				.tableRecordReferences(allTableRecordRefs)
 				.followLocationIdChanges(true)
@@ -191,6 +199,7 @@ final class BPartnerCompositesLoader
 				locationId2Location,
 				postalId2Postal,
 				countryId2Country,
+				bpBankAccounts,
 				recordRef2LogEntries);
 	}
 
@@ -337,4 +346,38 @@ final class BPartnerCompositesLoader
 				.build();
 	}
 
+	private Collection<? extends BPartnerBankAccount> ofBankAccountRecords(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final ImmutableList<I_C_BP_BankAccount> bankAccountRecords = relatedRecords
+				.getBpartnerId2BankAccounts()
+				.get(bpartnerId);
+
+		final ImmutableList.Builder<BPartnerBankAccount> result = ImmutableList.builder();
+		for (final I_C_BP_BankAccount bankAccountRecord : bankAccountRecords)
+		{
+			final BPartnerBankAccount contact = ofBankAccountRecord(bankAccountRecord, relatedRecords);
+			result.add(contact);
+		}
+
+		return result.build();
+	}
+
+	private static BPartnerBankAccount ofBankAccountRecord(
+			@NonNull final I_C_BP_BankAccount bankAccountRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bankAccountRecord.getC_BPartner_ID());
+
+		return BPartnerBankAccount.builder()
+				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
+				.active(bankAccountRecord.isActive())
+				.iban(bankAccountRecord.getIBAN())
+				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
+				.changeLog(changeLog)
+				.build();
+	}
 }

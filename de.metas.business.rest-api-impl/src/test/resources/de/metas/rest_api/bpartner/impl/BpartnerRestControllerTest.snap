@@ -1,7 +1,7 @@
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_Update_BPartner_Name_Insert_Location=[
   {
     "bpartner": {
-      "metasfreshId": 100004,
+      "metasfreshId": 100010,
       "code": "12345",
       "active": true,
       "name": "bpartnerRecord.name_updated",
@@ -18,7 +18,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
     },
     "locations": [
       {
-        "metasfreshId": 100006,
+        "metasfreshId": 100012,
         "externalId": "123",
         "active": true,
         "postal": "5040",
@@ -42,6 +42,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_create=[
   {
+    "bankAccounts": [ ],
     "bpartner": {
       "active": true,
       "changeLog": {
@@ -51,7 +52,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "C_BPartner_ID"
           ],
           "keysByColumnName": {
-            "C_BPartner_ID": 100006
+            "C_BPartner_ID": 100012
           }
         },
         "createdByUserId": 0,
@@ -70,7 +71,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       "customer": false,
       "externalId": "fghij_2",
       "groupId": 15,
-      "id": 100006,
+      "id": 100012,
       "language": {
         "m_name": "Deutsch",
         "m_AD_Language": "de_DE",
@@ -84,9 +85,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "decimalPoint": false,
         "leftToRight": true,
-        "baseLanguage": true
+        "baseLanguage": true,
+        "decimalPoint": false
       },
       "name": "bPartner.name",
       "parentId": 1,
@@ -105,7 +106,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100011
+              "AD_User_ID": 100017
             }
           },
           "createdByUserId": 0,
@@ -157,8 +158,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "email": "c1_email@email.net",
         "externalId": "c1_externalId",
         "id": {
-          "bpartnerId": 100006,
-          "userId": 100011
+          "bpartnerId": 100012,
+          "userId": 100017
         },
         "name": "c1_name",
         "newsletter": true,
@@ -173,7 +174,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100012
+              "AD_User_ID": 100018
             }
           },
           "createdByUserId": 0,
@@ -225,8 +226,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "email": "c2_email@email.net",
         "externalId": "c2_externalId",
         "id": {
-          "bpartnerId": 100006,
-          "userId": 100012
+          "bpartnerId": 100012,
+          "userId": 100018
         },
         "name": "c2_name",
         "newsletter": true,
@@ -245,7 +246,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName": {
-              "C_BPartner_Location_ID": 100008
+              "C_BPartner_Location_ID": 100014
             }
           },
           "createdByUserId": 0,
@@ -265,8 +266,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": "l1_externalId",
         "gln": "l1_gln",
         "id": {
-          "repoId": 100008,
-          "bpartnerId": 100006
+          "repoId": 100014,
+          "bpartnerId": 100012
         },
         "locationType": {
           "billTo": {
@@ -301,7 +302,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName": {
-              "C_BPartner_Location_ID": 100010
+              "C_BPartner_Location_ID": 100016
             }
           },
           "createdByUserId": 0,
@@ -321,8 +322,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": "l2_externalId",
         "gln": "l2_gln",
         "id": {
-          "repoId": 100010,
-          "bpartnerId": 100006
+          "repoId": 100016,
+          "bpartnerId": 100012
         },
         "locationType": {
           "billTo": {
@@ -354,6 +355,39 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact_create=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "changeLog": {
+          "tableName": "C_BP_BankAccount",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BP_BankAccount_ID"
+            ],
+            "keysByColumnName": {
+              "C_BP_BankAccount_ID": 50
+            }
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        },
+        "currencyId": 100009,
+        "iban": "INITIAL-IBAN-1",
+        "id": {
+          "repoId": 50,
+          "bpartnerId": 20
+        }
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeLog": {
@@ -466,7 +500,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
               "AD_User_ID"
             ],
             "keysByColumnName": {
-              "AD_User_ID": 100004
+              "AD_User_ID": 100010
             }
           },
           "createdByUserId": 0,
@@ -519,7 +553,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "externalId": "newContact-_externalId",
         "id": {
           "bpartnerId": 20,
-          "userId": 100004
+          "userId": 100010
         },
         "name": "newContact-_name",
         "newsletter": true,
@@ -592,6 +626,39 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocation_create=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "changeLog": {
+          "tableName": "C_BP_BankAccount",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BP_BankAccount_ID"
+            ],
+            "keysByColumnName": {
+              "C_BP_BankAccount_ID": 50
+            }
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        },
+        "currencyId": 100009,
+        "iban": "INITIAL-IBAN-1",
+        "id": {
+          "repoId": 50,
+          "bpartnerId": 20
+        }
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeLog": {
@@ -765,7 +832,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName": {
-              "C_BPartner_Location_ID": 100006
+              "C_BPartner_Location_ID": 100012
             }
           },
           "createdByUserId": 0,
@@ -785,7 +852,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "externalId": "newLocation-_externalId",
         "gln": "newLocation-_gln",
         "id": {
-          "repoId": 100006,
+          "repoId": 100012,
           "bpartnerId": 20
         },
         "locationType": {
@@ -831,6 +898,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerConta
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "sales": false,
     "salesDefault": false,
     "purchase": false,
     "purchaseDefault": false,
@@ -840,8 +908,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerConta
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    },
-    "sales": false
+    }
   }
 ]
 
@@ -933,6 +1000,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -942,8 +1010,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
           "createdBy": 30,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 30
-        },
-        "sales": false
+        }
       }
     ]
   }
@@ -1009,6 +1076,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -1018,8 +1086,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
           "createdBy": 30,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 30
-        },
-        "sales": false
+        }
       }
     ]
   }
@@ -1085,6 +1152,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "sales": false,
         "salesDefault": false,
         "purchase": false,
         "purchaseDefault": false,
@@ -1094,8 +1162,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
           "createdBy": 30,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 30
-        },
-        "sales": false
+        }
       }
     ]
   }
@@ -1167,6 +1234,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
+            "sales": false,
             "salesDefault": false,
             "purchase": false,
             "purchaseDefault": false,
@@ -1176,8 +1244,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
               "createdBy": 30,
               "lastUpdatedMillis": 1561133544,
               "lastUpdatedBy": 30
-            },
-            "sales": false
+            }
           }
         ]
       },
@@ -1239,6 +1306,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
+            "sales": false,
             "salesDefault": false,
             "purchase": false,
             "purchaseDefault": false,
@@ -1248,8 +1316,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
               "createdBy": 31,
               "lastUpdatedMillis": 1561133544,
               "lastUpdatedBy": 31
-            },
-            "sales": false
+            }
           }
         ]
       }
@@ -1319,6 +1386,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
+            "sales": false,
             "salesDefault": false,
             "purchase": false,
             "purchaseDefault": false,
@@ -1328,8 +1396,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
               "createdBy": 32,
               "lastUpdatedMillis": 1561133544,
               "lastUpdatedBy": 32
-            },
-            "sales": false
+            }
           }
         ]
       },
@@ -1391,6 +1458,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
+            "sales": false,
             "salesDefault": false,
             "purchase": false,
             "purchaseDefault": false,
@@ -1400,8 +1468,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
               "createdBy": 33,
               "lastUpdatedMillis": 1561133544,
               "lastUpdatedBy": 33
-            },
-            "sales": false
+            }
           }
         ]
       }
@@ -1470,6 +1537,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
+            "sales": false,
             "salesDefault": false,
             "purchase": false,
             "purchaseDefault": false,
@@ -1479,8 +1547,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
               "createdBy": 34,
               "lastUpdatedMillis": 1561133544,
               "lastUpdatedBy": 34
-            },
-            "sales": false
+            }
           }
         ]
       }

@@ -1,6 +1,14 @@
 package de.metas.rest_api.bpartner.impl;
 
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.*;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.resetTimeSource;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.setupTimeSource;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -34,6 +42,7 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
@@ -109,7 +118,8 @@ class ContactRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository());
+				new RecordChangeLogRepository(),
+				new CurrencyRepository());
 
 		contactRestController = new ContactRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
