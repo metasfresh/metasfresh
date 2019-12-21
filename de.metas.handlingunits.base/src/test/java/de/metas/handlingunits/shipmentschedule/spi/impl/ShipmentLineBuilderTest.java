@@ -32,6 +32,9 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -81,6 +84,7 @@ public class ShipmentLineBuilderTest
 		catchUOMConversionRecord.setIsActive(true);
 		saveRecord(catchUOMConversionRecord);
 
+		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 	}
