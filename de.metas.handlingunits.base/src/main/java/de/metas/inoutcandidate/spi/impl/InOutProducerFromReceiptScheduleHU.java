@@ -451,7 +451,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		final Optional<Quantity> catchQty = qtyToReceive.getUOMQtyOpt();
-		if (catchQty.isPresent())
+
+		final boolean hasUsableCatchQty = catchQty.isPresent() && !catchQty.get().isZero() && !catchQty.get().isInfinite();
+		if (hasUsableCatchQty)
 		{
 			final UOMPrecision catchQtyRecision = uomdao.getStandardPrecision(catchQty.get().getUomId());
 			final Quantity roundedCatchQty = catchQty.get().setScale(catchQtyRecision, RoundingMode.HALF_UP);
