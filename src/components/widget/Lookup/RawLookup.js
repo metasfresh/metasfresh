@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
@@ -14,7 +14,7 @@ import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesAction
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 
-export class RawLookup extends PureComponent {
+export class RawLookup extends Component {
   constructor(props) {
     super(props);
 
@@ -128,7 +128,7 @@ export class RawLookup extends PureComponent {
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.handleDropdownListToggle(false);
+      this.props.onDropdownListToggle(false);
     }
   };
 
@@ -141,12 +141,6 @@ export class RawLookup extends PureComponent {
     });
   };
 
-  handleDropdownListToggle = (val, mouse) => {
-    const { field, onDropdownListToggle } = this.props;
-
-    onDropdownListToggle(val, mouse, field);
-  };
-
   handleSelect = (select, mouse) => {
     const {
       onChange,
@@ -157,7 +151,7 @@ export class RawLookup extends PureComponent {
       subentity,
     } = this.props;
     let selected = select;
-    let mainProp = mainProperty;
+    let mainProp = mainProperty[0];
 
     this.setState({
       selected: null,
@@ -183,7 +177,7 @@ export class RawLookup extends PureComponent {
       }
     } else {
       if (subentity === 'quickInput') {
-        onChange(mainProperty.field, selected, () =>
+        onChange(mainProperty[0].field, selected, () =>
           setNextProperty(mainProp.field)
         );
       } else {
@@ -235,7 +229,7 @@ export class RawLookup extends PureComponent {
         null,
         null,
         'NEW',
-        filterWidget ? parameterName : mainProperty.field
+        filterWidget ? parameterName : mainProperty[0].field
       )
     );
   };
@@ -246,7 +240,7 @@ export class RawLookup extends PureComponent {
         isFocused: false,
       },
       () => {
-        this.handleDropdownListToggle(false, mouse);
+        this.props.onDropdownListToggle(false, mouse);
       }
     );
   }
@@ -263,7 +257,7 @@ export class RawLookup extends PureComponent {
         },
         () => {
           if (!mandatory && mouse) {
-            this.handleDropdownListToggle(true);
+            this.props.onDropdownListToggle(true);
           }
         }
       );
@@ -293,7 +287,7 @@ export class RawLookup extends PureComponent {
     let typeaheadRequest;
     const typeaheadParams = {
       docId: filterWidget ? viewId : dataId,
-      propertyName: filterWidget ? parameterName : mainProperty.field,
+      propertyName: filterWidget ? parameterName : mainProperty[0].field,
       query: inputValue,
       rowId,
       tabId,
@@ -304,7 +298,7 @@ export class RawLookup extends PureComponent {
         windowType,
         viewId,
         dataId,
-        mainProperty.field,
+        mainProperty[0].field,
         inputValue
       );
     } else if (viewId && !filterWidget) {
@@ -358,6 +352,7 @@ export class RawLookup extends PureComponent {
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
+      recent,
       handleInputEmptyStatus,
       enableAutofocus,
       isOpen,
@@ -396,7 +391,7 @@ export class RawLookup extends PureComponent {
       this.setState({
         isInputEmpty: true,
         query: inputValue,
-        list: [],
+        list: recent,
       });
 
       handleInputEmptyStatus && handleInputEmptyStatus(true);
@@ -555,6 +550,10 @@ export class RawLookup extends PureComponent {
   }
 }
 
+const mapStateToProps = state => ({
+  filter: state.windowHandler.filter,
+});
+
 RawLookup.propTypes = {
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
@@ -562,7 +561,6 @@ RawLookup.propTypes = {
   forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onDropdownListToggle: PropTypes.func,
-  field: PropTypes.string,
 };
 
-export default connect()(RawLookup);
+export default connect(mapStateToProps)(RawLookup);

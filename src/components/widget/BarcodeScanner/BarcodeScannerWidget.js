@@ -1,10 +1,10 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import BarcodeScanner from './BarcodeScanner';
 
 import currentDevice from 'current-device';
 
 function addBarcodeScanner(WrappedComponent) {
-  return class BarcodeScannerWidget extends PureComponent {
+  return class BarcodeScannerWidget extends Component {
     constructor(props) {
       super(props);
 

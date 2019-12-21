@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
@@ -13,7 +13,7 @@ import MenuOverlay from './MenuOverlay';
  * @module Breadcrumb
  * @extends Component
  */
-class Breadcrumb extends PureComponent {
+class Breadcrumb extends Component {
   constructor(props) {
     super(props);
     this.state = {
