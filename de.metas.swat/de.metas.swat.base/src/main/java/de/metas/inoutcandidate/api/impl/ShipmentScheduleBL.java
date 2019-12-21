@@ -43,6 +43,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -613,5 +614,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				openShipmentSchedule(record);
 			}
 		}
+	}
+
+	@Override
+	public IAttributeSetInstanceAware toAttributeSetInstanceAware(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return InterfaceWrapperHelper.create(shipmentSchedule, IAttributeSetInstanceAware.class);
 	}
 }

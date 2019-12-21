@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -171,4 +172,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
 
 	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
+
+	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 }
