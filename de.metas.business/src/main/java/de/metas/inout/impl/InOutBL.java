@@ -57,7 +57,6 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
@@ -127,28 +126,21 @@ public class InOutBL implements IInOutBL
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(inOut.getDateOrdered()));
+
+		pricingCtx.setFailIfNotCalculated();
+
 		// note: the qty was already passed to the pricingCtx upon creation, further up.
-
 		return pricingCtx;
-	}
-
-	@Override
-	public IPricingResult getProductPrice(final IPricingContext pricingCtx)
-	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
-		if (!result.isCalculated())
-		{
-			throw new ProductNotOnPriceListException(pricingCtx);
-		}
-		return result;
 	}
 
 	@Override
 	public IPricingResult getProductPrice(final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
-		return getProductPrice(pricingCtx);
+
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		return  pricingBL.calculatePrice(pricingCtx);
+
 	}
 
 	@Override

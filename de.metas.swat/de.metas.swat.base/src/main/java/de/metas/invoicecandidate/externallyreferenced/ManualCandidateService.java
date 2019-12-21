@@ -20,7 +20,6 @@ import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.ITaxBL;
@@ -82,15 +81,9 @@ public class ManualCandidateService
 						newIC.getQtyOrdered().getStockQty(),
 						newIC.getSoTrx())
 				.setCountryId(countryId)
-				.setPriceDate(newIC.getDateOrdered());
+				.setPriceDate(newIC.getDateOrdered())
+				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-		if (!pricingResult.isCalculated())
-		{
-			throw ProductNotOnPriceListException.builder()
-					.pricingCtx(pricingContext)
-					.productId(newIC.getProductId())
-					.build();
-		}
 
 		candidate.pricingSystemId(pricingResult.getPricingSystemId());
 		candidate.priceListVersionId(pricingResult.getPriceListVersionId());
