@@ -16,7 +16,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -41,9 +43,11 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
@@ -74,6 +78,7 @@ import lombok.NonNull;
 
 final class BPartnerCompositesLoader
 {
+	private static final Logger logger = LogManager.getLogger(BPartnerCompositesLoader.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -350,32 +355,33 @@ final class BPartnerCompositesLoader
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		final ImmutableList<I_C_BP_BankAccount> bankAccountRecords = relatedRecords
+		return relatedRecords
 				.getBpartnerId2BankAccounts()
-				.get(bpartnerId);
-
-		final ImmutableList.Builder<BPartnerBankAccount> result = ImmutableList.builder();
-		for (final I_C_BP_BankAccount bankAccountRecord : bankAccountRecords)
-		{
-			final BPartnerBankAccount contact = ofBankAccountRecord(bankAccountRecord, relatedRecords);
-			result.add(contact);
-		}
-
-		return result.build();
+				.get(bpartnerId)
+				.stream()
+				.map(record -> ofBankAccountRecordOrNull(record, relatedRecords))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static BPartnerBankAccount ofBankAccountRecord(
+	private static BPartnerBankAccount ofBankAccountRecordOrNull(
 			@NonNull final I_C_BP_BankAccount bankAccountRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
+		final String iban = bankAccountRecord.getIBAN();
+		if (Check.isBlank(iban))
+		{
+			logger.warn("ofBankAccountRecordOrNull: Return null for {} because IBAN is not set", bankAccountRecord);
+			return null;
+		}
 
+		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bankAccountRecord.getC_BPartner_ID());
 
 		return BPartnerBankAccount.builder()
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
 				.active(bankAccountRecord.isActive())
-				.iban(bankAccountRecord.getIBAN())
+				.iban(iban)
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.changeLog(changeLog)
 				.build();
