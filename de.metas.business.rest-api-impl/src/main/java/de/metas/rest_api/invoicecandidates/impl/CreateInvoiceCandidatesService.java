@@ -6,11 +6,15 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.invoicecandidate.externallyreferenced.*;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +31,6 @@ import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
-import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
-import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
-import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -259,6 +258,17 @@ public class CreateInvoiceCandidatesService
 			candidate.lineDescription(item.getLineDescription().trim());
 		}
 
+		//invoice detail items
+		if (CollectionUtils.isNotEmpty(item.getInvoiceDetailItems()))
+		{
+			final List<InvoiceDetailItem> invoiceDetailItems = item.getInvoiceDetailItems()
+					.stream()
+					.map(jsonDetail -> new InvoiceDetailItem(jsonDetail.getSeqNo(), jsonDetail.getLabel(), jsonDetail.getDescription()))
+					.collect(Collectors.toList());
+
+			candidate.invoiceDetailItems(invoiceDetailItems);
+		}
+
 		return candidate
 				.externalHeaderId(JsonExternalIds.toExternalId(item.getExternalHeaderId()))
 				.externalLineId(JsonExternalIds.toExternalId(item.getExternalLineId()))
@@ -310,7 +320,7 @@ public class CreateInvoiceCandidatesService
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
 		final OrgId orgId;
-		if (!Check.isEmpty(item.getOrgCode()))
+		if (Check.isNotBlank(item.getOrgCode()))
 		{
 			final OrgQuery query = OrgQuery.builder()
 					.orgValue(item.getOrgCode())
@@ -352,7 +362,7 @@ public class CreateInvoiceCandidatesService
 			return;
 		}
 
-		candidate.invoiceDocTypeId(docTypeService.getDocTypeId(docType, orgId));
+		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docType, orgId));
 	}
 
 	private void syncBPartnerToCandidate(

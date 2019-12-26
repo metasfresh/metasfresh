@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,8 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +42,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ReceiptScheduleQtysHandlerTest
 {
@@ -60,9 +63,13 @@ public class ReceiptScheduleQtysHandlerTest
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("test").getC_BPartner_ID());
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(BusinessTestHelper.createWarehouse("test").getM_Warehouse_ID());
 
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("test");
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("test", stockUOMRecord);
+
 		this.receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, context);
 		receiptSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
 		receiptSchedule.setC_BPartner_ID(bpartnerId.getRepoId());
+		receiptSchedule.setM_Product_ID(productRecord.getM_Product_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 
@@ -248,7 +255,9 @@ public class ReceiptScheduleQtysHandlerTest
 				.assertExpected(receiptSchedule);
 	}
 
-	private I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(final String qtyAllocatedStr, final String qtyWithIssuesStr)
+	private I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
+			@NonNull final String qtyAllocatedStr,
+			@NonNull final String qtyWithIssuesStr)
 	{
 		final I_M_ReceiptSchedule_Alloc rsa = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class, receiptSchedule);
 		rsa.setM_ReceiptSchedule(receiptSchedule);

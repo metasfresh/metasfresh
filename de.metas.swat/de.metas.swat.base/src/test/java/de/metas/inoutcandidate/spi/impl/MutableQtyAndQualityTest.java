@@ -1,5 +1,10 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,37 +18,67 @@ package de.metas.inoutcandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.test.ErrorMessage;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 public class MutableQtyAndQualityTest
 {
+	private ProductId productId;
+	private UomId uomId;
+
+	@Before
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		final I_C_UOM stockUomRecord = newInstance(I_C_UOM.class);
+		saveRecord(stockUomRecord);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
+		saveRecord(productRecord);
+		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
+	}
+
 	/**
-	 * Tests {@link ReceiptQty#addQtyAndQualityDiscountPercent(BigDecimal, BigDecimal)} and {@link ReceiptQty#add(IQtyAndQuality)}.
+	 * Tests {@link ReceiptQty#addQtyAndQualityDiscountPercent(StockQtyAndUOMQty, Percent) and {@link ReceiptQty#add(IQtyAndQuality)}.
 	 */
 	@Test
 	public void test_add_sameQty_ExpectConstantPercent_SimpleTest01()
 	{
 		final ReceiptQtyExpectation<Object> expectationForOneTransaction = ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(2)
-				.qty("7")
+				.qty(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("7"), uomId)) // note that at the end of the day, we care for the uomQty, i.e. the potential catch quantity
 				.qualityDiscountPercent("3")
-				.qtyWithIssues("0.21") // = 3 * 7% = 0.21
+				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("0.24"), productId, new BigDecimal("0.21"), uomId)) // 3% of 8=0.24 resp. 3% of 7=0.21
 		;
 		test_add_sameQty_ExpectConstantPercent(expectationForOneTransaction);
 	}
@@ -52,10 +87,9 @@ public class MutableQtyAndQualityTest
 	public void test_add_sameQty_ExpectConstantPercent_SimpleTest02()
 	{
 		final ReceiptQtyExpectation<Object> expectationForOneTransaction = ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(2)
-				.qty("437.35")
+				.qty(StockQtyAndUOMQtys.create(new BigDecimal("8"), productId, new BigDecimal("437.35"), uomId))
 				.qualityDiscountPercent("93.18")
-				.qtyWithIssues("407.52273") // = 437.35 * 93.18% = 407.52273
+				.qtyWithIssues(StockQtyAndUOMQtys.create(new BigDecimal("7.4544"), productId, new BigDecimal("407.52273"), uomId)) // = 437.35 * 93.18% = 407.52273
 		;
 		test_add_sameQty_ExpectConstantPercent(expectationForOneTransaction);
 	}
@@ -70,26 +104,23 @@ public class MutableQtyAndQualityTest
 		{
 			for (int i = 1; i <= 10; i++)
 			{
-				final ReceiptQtyExpectation<Object> expectationForOneTransaction = randomQtyAndQualityExpectation(qtyPrecision);
+				final ReceiptQtyExpectation<Object> expectationForOneTransaction = randomQtyAndQualityExpectation(productId, uomId, qtyPrecision);
 				test_add_sameQty_ExpectConstantPercent(expectationForOneTransaction);
 			}
 		}
 
 	}
 
-	private void test_add_sameQty_ExpectConstantPercent(final ReceiptQtyExpectation<?> expectationForOneTransaction)
+	private void test_add_sameQty_ExpectConstantPercent(@NonNull final ReceiptQtyExpectation<?> expectationForOneTransaction)
 	{
-		final int qtyPrecision = expectationForOneTransaction.getQtyPrecisionToUse();
+		final ReceiptQty qv1 = ReceiptQty.newWithCatchWeight(productId, uomId); // used to test #add(BigDecimal, BigDecimal)
+		final ReceiptQty qv2 = ReceiptQty.newWithCatchWeight(productId, uomId); // used to test #add(IQtyAndQuality)
 
-		final ReceiptQty qv1 = new ReceiptQty(); // used to test #add(BigDecimal, BigDecimal)
-		final ReceiptQty qv2 = new ReceiptQty(); // used to test #add(IQtyAndQuality)
+		final ReceiptQtyExpectation<Object> expectation = ReceiptQtyExpectation.newInstance();
 
-		final ReceiptQtyExpectation<Object> expectation = ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(qtyPrecision);
-
-		final BigDecimal qualityDiscountPercent = expectationForOneTransaction.getQualityDiscountPercent();
-		final BigDecimal qtyToAdd = expectationForOneTransaction.getQty();
-		final BigDecimal qtyWithIssuesExpectedForOneTransaction = expectationForOneTransaction.getQtyWithIssues();
+		final Percent qualityDiscountPercent = expectationForOneTransaction.getQualityDiscountPercent();
+		final StockQtyAndUOMQty qtyToAdd = expectationForOneTransaction.getQty();
+		final StockQtyAndUOMQty qtyWithIssuesExpectedForOneTransaction = expectationForOneTransaction.getQtyWithIssues();
 
 		for (int i = 1; i <= 100; i++)
 		{
@@ -104,12 +135,11 @@ public class MutableQtyAndQualityTest
 			{
 				qv1.addQtyAndQualityDiscountPercent(qtyToAdd, qualityDiscountPercent);
 
-				final ReceiptQty qvToAdd = new ReceiptQty();
+				final ReceiptQty qvToAdd = ReceiptQty.newWithCatchWeight(productId, uomId);
 				qvToAdd.addQtyAndQualityDiscountPercent(qtyToAdd, qualityDiscountPercent);
 				qv2.add(qvToAdd);
 
 				message = message
-						.addContextInfo("QtyPrecision", qtyPrecision)
 						.addContextInfo("QtyToAdd", qtyToAdd)
 						.addContextInfo("QualityDiscountPercent", qualityDiscountPercent)
 						.addContextInfo("Values after - QV1: ", qv1)
@@ -117,13 +147,12 @@ public class MutableQtyAndQualityTest
 
 			}
 
-			final BigDecimal qtyTotalExpected = qtyToAdd
-					.multiply(BigDecimal.valueOf(i))
-					.setScale(qtyPrecision, RoundingMode.HALF_UP); // mind the rounding mode (this is what we agreed)
-			final BigDecimal qtyWithIssuesExpected = qtyWithIssuesExpectedForOneTransaction
-					.multiply(BigDecimal.valueOf(i))
-					.setScale(qtyPrecision, RoundingMode.HALF_DOWN); // mind the rounding mode (this is what we agreed)
-			final BigDecimal qtyWithoutIssuesExpected = qtyTotalExpected.subtract(qtyWithIssuesExpected);
+			final StockQtyAndUOMQty qtyTotalExpected = qtyToAdd
+					.multiply(BigDecimal.valueOf(i));
+			final StockQtyAndUOMQty qtyWithIssuesExpected = qtyWithIssuesExpectedForOneTransaction
+					.multiply(BigDecimal.valueOf(i));
+
+			final StockQtyAndUOMQty qtyWithoutIssuesExpected = qtyTotalExpected.subtract(qtyWithIssuesExpected);
 			expectation
 					.qty(qtyTotalExpected)
 					.qualityDiscountPercent(qualityDiscountPercent) // percent shall be constant ALL the time
@@ -137,47 +166,57 @@ public class MutableQtyAndQualityTest
 	@Test
 	public void test_copy()
 	{
-		final ReceiptQty qv = new ReceiptQty();
-		qv.addQtyAndQualityDiscountPercent(new BigDecimal("123"), new BigDecimal("10"));
+		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
+
+		qv.addQtyAndQualityDiscountPercent(
+				StockQtyAndUOMQtys.create(new BigDecimal("23"), productId, new BigDecimal("123"), uomId),
+				Percent.of("10"));
 
 		final ReceiptQty qvCopy = qv.copy();
-		Assert.assertThat("Invalid Qty", qvCopy.getQtyTotal(), Matchers.comparesEqualTo(qv.getQtyTotal()));
-		Assert.assertThat("Invalid QtyWithIssues", qvCopy.getQtyWithIssuesExact(), Matchers.comparesEqualTo(qv.getQtyWithIssuesExact()));
+		assertThat(qvCopy.getQtyTotal()).isEqualTo(qv.getQtyTotal());
+		assertThat(qvCopy.getQtyWithIssuesExact()).isEqualTo(qv.getQtyWithIssuesExact());
 	}
 
 	@Test
 	public void test_getQualityDiscountPercent_zeroQtys()
 	{
-		final ReceiptQty qv = new ReceiptQty();
-		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent(), Matchers.comparesEqualTo(BigDecimal.ZERO));
+		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
+		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent().toBigDecimal(), Matchers.comparesEqualTo(ZERO));
 	}
 
 	@Test
 	public void test_getQualityDiscountPercent_QtyTotalIsZero_QtyWithIssuesNotZero()
 	{
-		final ReceiptQty qv = new ReceiptQty();
-		qv.addQtyAndQtyWithIssues(BigDecimal.ZERO, new BigDecimal("123"));
+		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
+
+		qv.addQtyAndQtyWithIssues(
+				StockQtyAndUOMQtys.createZero(productId, uomId),
+				StockQtyAndUOMQtys.create(new BigDecimal("23"), productId, new BigDecimal("123"), uomId));
 
 		// NOTE: at the moment we expect to return ZERO and an WARNING shall be logged
 		// TBD: throwing an exception in this case...
-		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent(), Matchers.comparesEqualTo(BigDecimal.ZERO));
+		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent().toBigDecimal(), Matchers.comparesEqualTo(BigDecimal.ZERO));
 	}
 
-	public static ReceiptQtyExpectation<Object> randomQtyAndQualityExpectation(final int qtyPrecision)
+	public static ReceiptQtyExpectation<Object> randomQtyAndQualityExpectation(
+			final ProductId productId,
+			final UomId uomId,
+			final int qtyPrecision)
 	{
 		// Generate random QtyToAdd
 		// Avoid having qtyToAdd == 0 because that makes no sense to our test
-		BigDecimal qtyToAdd = BigDecimal.ZERO;
-		while(qtyToAdd.signum() == 0)
+		StockQtyAndUOMQty qtyToAdd = StockQtyAndUOMQtys.createZero(productId, uomId);
+		while (qtyToAdd.getStockQty().signum() == 0 || qtyToAdd.getUOMQtyNotNull().signum() == 0)
 		{
-			qtyToAdd = randomBigDecimal(1000, qtyPrecision);
+			qtyToAdd = StockQtyAndUOMQtys.create(randomBigDecimal(1000, qtyPrecision), productId, randomBigDecimal(1000, qtyPrecision), uomId);
 		}
 
-		final BigDecimal qualityDiscountPercent = randomBigDecimal(100, ReceiptQty.QualityDiscountPercent_Precision);
-		final BigDecimal qtyWithIssuesExpectedForOneTransactionExact = qtyToAdd.multiply(qualityDiscountPercent)
+		final Percent qualityDiscountPercent = Percent.of(randomBigDecimal(100, ReceiptQty.QualityDiscountPercent_Precision));
+		final StockQtyAndUOMQty qtyWithIssuesExpectedForOneTransactionExact = qtyToAdd
+				.multiply(qualityDiscountPercent.toBigDecimal())
 				.divide(BigDecimal.valueOf(100), ReceiptQty.INTERNAL_PRECISION, RoundingMode.UNNECESSARY);
+
 		return ReceiptQtyExpectation.newInstance()
-				.qtyPrecision(qtyPrecision)
 				.qty(qtyToAdd)
 				.qualityDiscountPercent(qualityDiscountPercent)
 				.qtyWithIssues(qtyWithIssuesExpectedForOneTransactionExact);

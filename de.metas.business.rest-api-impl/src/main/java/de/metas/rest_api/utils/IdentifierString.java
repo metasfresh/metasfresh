@@ -59,7 +59,9 @@ public class IdentifierString
 
 		VALUE,
 
-		GLN
+		GLN,
+
+		INTERNALNAME
 	}
 
 	Type type;
@@ -69,6 +71,7 @@ public class IdentifierString
 
 	public static final String PREFIX_EXTERNAL_ID = "ext-";
 	public static final String PREFIX_VALUE = "val-";
+	public static final String PREFIX_INTERNALNAME = "int-";
 	public static final String PREFIX_GLN = "gln-";
 
 	public static final IdentifierString ofOrNull(@Nullable final String value)
@@ -101,6 +104,15 @@ public class IdentifierString
 				throw new AdempiereException("Invalid value: `" + value + "`");
 			}
 			return new IdentifierString(Type.VALUE, valueString);
+		}
+		else if (value.toLowerCase().startsWith(PREFIX_INTERNALNAME))
+		{
+			final String valueString = value.substring(4).trim();
+			if (valueString.isEmpty())
+			{
+				throw new AdempiereException("Invalid inernal name: `" + value + "`");
+			}
+			return new IdentifierString(Type.INTERNALNAME, valueString);
 		}
 		else if (value.toLowerCase().startsWith(PREFIX_GLN))
 		{
@@ -138,6 +150,9 @@ public class IdentifierString
 		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
 	}
 
+	/**
+	 * @deprecated please use {@link #toJson()} instead
+	 */
 	@Override
 	@Deprecated
 	public String toString()
@@ -165,6 +180,10 @@ public class IdentifierString
 		else if (Type.GLN.equals(type))
 		{
 			prefix = PREFIX_GLN;
+		}
+		else if(Type.INTERNALNAME.equals(type))
+		{
+			prefix = PREFIX_INTERNALNAME;
 		}
 		else
 		{
@@ -214,6 +233,13 @@ public class IdentifierString
 	public String asValue()
 	{
 		Check.assume(Type.VALUE.equals(type), "The type of this instace needs to be {}; this={}", Type.VALUE, this);
+
+		return value;
+	}
+
+	public String asInternalName()
+	{
+		Check.assume(Type.INTERNALNAME.equals(type), "The type of this instace needs to be {}; this={}", Type.INTERNALNAME, this);
 
 		return value;
 	}

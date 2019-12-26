@@ -313,17 +313,13 @@ public abstract class AbstractHUIterator implements IHUIterator
 		return nodeIterator;
 	}
 
-	protected final <T> void registerNodeIterator(final Class<T> nodeType, final AbstractNodeIterator<T> nodeIterator)
+	protected final <T> void registerNodeIterator(@NonNull final Class<T> nodeType, @NonNull final AbstractNodeIterator<T> nodeIterator)
 	{
-		Check.assumeNotNull(nodeType, "nodeType not null");
-		Check.assumeNotNull(nodeIterator, "nodeIterator not null");
-
 		nodeIterators.put(nodeType, nodeIterator);
 	}
 
-	protected final <T> void unregisterNodeIterator(final Class<T> nodeType)
+	protected final <T> void unregisterNodeIterator(@NonNull final Class<T> nodeType)
 	{
-		Check.assumeNotNull(nodeType, "nodeType not null");
 		if (nodeIterators.containsKey(nodeType))
 		{
 			nodeIterators.remove(nodeType);
@@ -423,10 +419,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 
 		/**
 		 * Iterate downstream nodes of given <code>node</code>
-		 *
-		 * @param node
 		 */
-		private final void iterateDownstream(final T node)
+		private final void iterateDownstream(@NonNull final T node)
 		{
 			//
 			// If we reached maximum allowed depth, don't iterate downstream

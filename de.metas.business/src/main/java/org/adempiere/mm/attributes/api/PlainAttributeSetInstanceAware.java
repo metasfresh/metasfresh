@@ -23,12 +23,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,5 +108,11 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 	public void setM_AttributeSetInstance(I_M_AttributeSetInstance asi)
 	{
 		throw new UnsupportedOperationException("Changing the M_AttributeSetInstance is not supported for " + PlainAttributeSetInstanceAware.class.getName());
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID)
+	{
+		throw new UnsupportedOperationException("Changing the M_AttributeSetInstance_ID is not supported for " + PlainAttributeSetInstanceAware.class.getName());
 	}
 }

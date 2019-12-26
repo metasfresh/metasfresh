@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.tourplanning.model.TourId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
@@ -46,6 +47,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -63,7 +65,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -146,7 +147,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	/**
 	 * Flag which is set to true when shipment schedule updater is running.
-	 *
+	 * <p>
 	 * This information is stored on thread level.
 	 */
 	private final ThreadLocal<Boolean> running = new ThreadLocal<>();
@@ -246,9 +247,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
-	 *
+	 * <p>
 	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
-	 *
 	 *
 	 * @param olsAndScheds
 	 */
@@ -287,18 +287,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
-		for (final DeliveryLineCandidate inOutLine : firstRun.getAllLines())
+		for (final DeliveryLineCandidate shipmentLineCandidate : firstRun.getAllLines())
 		{
-			if (inOutLine.isDiscarded())
+			if (shipmentLineCandidate.isDiscarded())
 			{
-				inOutLine.setQtyToDeliver(BigDecimal.ZERO);
+				shipmentLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
 			}
 			else
 			{
 				// remember: 'removeLine' means that a *new* line might be
 				// created for the corresponding olAndSched
-				inOutLine.removeFromGroup();
-				firstRun.removeLine(inOutLine);
+				shipmentLineCandidate.removeFromGroup();
+				firstRun.removeLine(shipmentLineCandidate);
 			}
 		}
 
@@ -332,18 +332,19 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			markAsChangedByUpdateProcess(sched);
 
-			if (olAndSched.hasSalesOrderLine())
-			{
-				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
-				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
-						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
-						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
-						&& sched.getQtyPickList().signum() == 0)
-				{
-					InterfaceWrapperHelper.delete(sched);
-					continue;
-				}
-			}
+			// we don't do this anymore; instead, there is a model interceptor that closes the schedule if the order is reactivated
+//			if (olAndSched.hasSalesOrderLine())
+//			{
+//				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
+//				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
+//						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
+//						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
+//						&& sched.getQtyPickList().signum() == 0)
+//				{
+//					InterfaceWrapperHelper.delete(sched);
+//					continue;
+//				}
+//			}
 
 			updateProcessedFlag(sched);
 			if (sched.isProcessed())
@@ -359,9 +360,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				{
 					Check.errorUnless(sched.getQtyToDeliver().signum() == 0, "{} has QtyToDeliver = {} (should be zero)", sched, sched.getQtyToDeliver());
 				}
-				
+
 				shipmentSchedulePA.save(sched);
-				
+
 				continue;
 			}
 
@@ -410,16 +411,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
 				final ZonedDateTime calculationTime = TimeUtil.asZonedDateTime(sched.getCreated());
-				final ZonedDateTime preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
+				final ImmutablePair<TourId, ZonedDateTime> tourAndDate = deliveryDayBL.calculateTourAndPreparationDate(
 						contextAwareSched,
 						SOTrx.SALES,
 						calculationTime,
 						deliveryDate,
 						bpLocationId);
+				final ZonedDateTime preparationDate = tourAndDate.getRight();
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
-
+				sched.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
 			}
 
 			shipmentSchedulePA.save(sched);
@@ -745,7 +747,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	/**
-	 *
 	 * @param sched
 	 * @return
 	 * @task 08336
@@ -799,8 +800,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	/**
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/298
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
+	 * @task https://github.com/metasfresh/metasfresh/issues/298
 	 */
 	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{

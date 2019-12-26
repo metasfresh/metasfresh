@@ -32,10 +32,6 @@ public interface I_M_InOut
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_Client>(I_M_InOut.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_M_InOut
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,18 +49,12 @@ public interface I_M_InOut
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_Org>(I_M_InOut.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -88,12 +78,6 @@ public interface I_M_InOut
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
-
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_Org>(I_M_InOut.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
@@ -117,12 +101,6 @@ public interface I_M_InOut
 	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User>(I_M_InOut.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
@@ -169,12 +147,6 @@ public interface I_M_InOut
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
-
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Activity>(I_M_InOut.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
@@ -198,12 +170,6 @@ public interface I_M_InOut
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner>(I_M_InOut.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -227,12 +193,6 @@ public interface I_M_InOut
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner_Location>(I_M_InOut.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -285,17 +245,11 @@ public interface I_M_InOut
 	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge();
-
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
-
-    /** Column definition for C_Charge_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Charge>(I_M_InOut.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Customs Invoice.
+	 * Set Zollrechnung.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -304,7 +258,7 @@ public interface I_M_InOut
 	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID);
 
 	/**
-	 * Get Customs Invoice.
+	 * Get Zollrechnung.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -341,14 +295,31 @@ public interface I_M_InOut
 	 */
 	public int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_DocType>(I_M_InOut.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getChargeAmt();
+
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Rechnung.
@@ -428,37 +399,8 @@ public interface I_M_InOut
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
-
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Project>(I_M_InOut.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getChargeAmt();
-
-    /** Column definition for ChargeAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "ChargeAmt", null);
-    /** Column name ChargeAmt */
-    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Create Confirm.
@@ -508,8 +450,6 @@ public interface I_M_InOut
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User>(I_M_InOut.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -858,12 +798,6 @@ public interface I_M_InOut
 	 */
 	public int getDropShip_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner();
-
-	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner);
-
-    /** Column definition for DropShip_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner>(I_M_InOut.class, "DropShip_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name DropShip_BPartner_ID */
     public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
@@ -887,12 +821,6 @@ public interface I_M_InOut
 	 */
 	public int getDropShip_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location();
-
-	public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
-
-    /** Column definition for DropShip_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner_Location> COLUMN_DropShip_Location_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_BPartner_Location>(I_M_InOut.class, "DropShip_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name DropShip_Location_ID */
     public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
@@ -916,12 +844,6 @@ public interface I_M_InOut
 	 */
 	public int getDropShip_User_ID();
 
-	public org.compiere.model.I_AD_User getDropShip_User();
-
-	public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
-
-    /** Column definition for DropShip_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User> COLUMN_DropShip_User_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User>(I_M_InOut.class, "DropShip_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name DropShip_User_ID */
     public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
@@ -1149,7 +1071,7 @@ public interface I_M_InOut
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Exported To Customs Invoice.
+	 * Set Zollrechnung erstellt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1158,7 +1080,7 @@ public interface I_M_InOut
 	public void setIsExportedToCustomsInvoice (boolean IsExportedToCustomsInvoice);
 
 	/**
-	 * Get Exported To Customs Invoice.
+	 * Get Zollrechnung erstellt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1341,6 +1263,56 @@ public interface I_M_InOut
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMovementDate();
+
+    /** Column definition for MovementDate */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementDate", null);
+    /** Column name MovementDate */
+    public static final String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
+	 * Set Bewegungs-Art.
+	 * Method of moving the inventory
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementType (java.lang.String MovementType);
+
+	/**
+	 * Get Bewegungs-Art.
+	 * Method of moving the inventory
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMovementType();
+
+    /** Column definition for MovementType */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementType = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementType", null);
+    /** Column name MovementType */
+    public static final String COLUMNNAME_MovementType = "MovementType";
+
+	/**
 	 * Set Warenrücksendung - Freigabe (RMA).
 	 * Return Material Authorization
 	 *
@@ -1399,6 +1371,29 @@ public interface I_M_InOut
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
+	 * Set Tour.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Tour_ID (int M_Tour_ID);
+
+	/**
+	 * Get Tour.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Tour_ID();
+
+    /** Column definition for M_Tour_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_M_Tour_ID = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "M_Tour_ID", null);
+    /** Column name M_Tour_ID */
+    public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
+
+	/**
 	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
@@ -1418,64 +1413,8 @@ public interface I_M_InOut
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_M_Warehouse>(I_M_InOut.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
-	 * Set Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMovementDate();
-
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
-	 * Set Bewegungs-Art.
-	 * Method of moving the inventory
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementType (java.lang.String MovementType);
-
-	/**
-	 * Get Bewegungs-Art.
-	 * Method of moving the inventory
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMovementType();
-
-    /** Column definition for MovementType */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementType = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementType", null);
-    /** Column name MovementType */
-    public static final String COLUMNNAME_MovementType = "MovementType";
 
 	/**
 	 * Set Kommissionierdatum.
@@ -1649,7 +1588,7 @@ public interface I_M_InOut
     public static final String COLUMNNAME_Ref_InOut_ID = "Ref_InOut_ID";
 
 	/**
-	 * Set Reversal ID.
+	 * Set Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
@@ -1659,7 +1598,7 @@ public interface I_M_InOut
 	public void setReversal_ID (int Reversal_ID);
 
 	/**
-	 * Get Reversal ID.
+	 * Get Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
@@ -1678,7 +1617,7 @@ public interface I_M_InOut
     public static final String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
-	 * Set Aussendienst.
+	 * Set Kundenbetreuer.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1687,7 +1626,7 @@ public interface I_M_InOut
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Aussendienst.
+	 * Get Kundenbetreuer.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1695,12 +1634,6 @@ public interface I_M_InOut
 	 */
 	public int getSalesRep_ID();
 
-	public org.compiere.model.I_AD_User getSalesRep();
-
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
-
-    /** Column definition for SalesRep_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User>(I_M_InOut.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
     /** Column name SalesRep_ID */
     public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
@@ -1754,8 +1687,6 @@ public interface I_M_InOut
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_AD_User>(I_M_InOut.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

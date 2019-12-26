@@ -141,6 +141,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -2034,8 +2035,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		iciol.setQtyDelivered(inOutLine.getMovementQty());
 
-		if (inOutLine.getCatch_UOM_ID() > 0)
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(iciol.getC_Invoice_Candidate().getInvoicableQtyBasedOn());
+		if (inOutLine.getCatch_UOM_ID() > 0 && invoicableQtyBasedOn.isCatchWeight())
 		{
+			// only if the ic is about catch-weight, then we attempt to record it in the iciol.
+			// the inoutline may have a catch-weight, because the respective goods may have a weight.
 			iciol.setC_UOM_ID(inOutLine.getCatch_UOM_ID());
 
 			// if inOutLine.QtyDeliveredCatch is null, then iciol.QtyDeliveredInUOM_Catch must also be null and not zero.

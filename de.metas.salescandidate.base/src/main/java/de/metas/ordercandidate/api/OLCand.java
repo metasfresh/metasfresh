@@ -13,7 +13,9 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -107,10 +109,18 @@ public final class OLCand implements IProductPriceAware
 	private final InvoiceRule invoiceRule;
 
 	@Getter
+	private final BPartnerId salesRepId;
+
+	@Getter
 	private final Quantity qty;
 
 	@Getter
 	private final BigDecimal qtyItemCapacity;
+
+	@Getter
+	private final DocTypeId orderDocTypeId;
+
+
 
 	@Builder
 	private OLCand(
@@ -124,7 +134,9 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final PricingSystemId pricingSystemId,
-			@Nullable final ShipperId shipperId)
+			@Nullable final ShipperId shipperId,
+			@Nullable final DocTypeId orderDocTypeId,
+			@Nullable final BPartnerId salesRepId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -171,6 +183,10 @@ public final class OLCand implements IProductPriceAware
 		this.qtyItemCapacity = olCandRecord.getQtyItemCapacity();
 
 		this.shipperId = shipperId;
+
+		this.salesRepId = salesRepId;
+
+		this.orderDocTypeId = orderDocTypeId;
 	}
 
 	@Override

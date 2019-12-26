@@ -1,5 +1,6 @@
 package de.metas.uom.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -32,6 +33,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
@@ -49,6 +51,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UOMPrecision;
@@ -71,7 +74,10 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final UomId uomFrom,
 			@NonNull final UomId uomTo)
 	{
-		return convertQty(conversionCtx.getProductId(), qty,
+		return convertQty(
+				conversionCtx.getProductId(),
+				conversionCtx.getRounding(),
+				qty,
 				uomDAO.getById(uomFrom),
 				uomDAO.getById(uomTo));
 	}
@@ -79,11 +85,26 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public BigDecimal convertQty(
 			@Nullable final ProductId productId,
+			@Nullable final Rounding rounding,
 			@NonNull final BigDecimal qty,
 			@NonNull final I_C_UOM fromUOM,
 			@NonNull final I_C_UOM toUOM)
 	{
-		final UOMPrecision precision = extractStandardPrecision(toUOM);
+		final Rounding roundingEff = coalesce(rounding, Rounding.TO_TARGET_UOM_PRECISION);
+		final UOMPrecision toUOMPrecision = extractStandardPrecision(toUOM);
+
+		final UOMPrecision precision;
+		switch (roundingEff)
+		{
+			case TO_TARGET_UOM_PRECISION:
+				precision = toUOMPrecision;
+				break;
+			case PRESERVE_SCALE:
+				precision = UOMPrecision.ofInt(Math.max(qty.scale(), toUOMPrecision.toInt()));
+				break;
+			default:
+				throw new AdempiereException("Unexpected rounding=" + roundingEff);
+		}
 
 		if (qty.signum() == 0)
 		{
@@ -99,20 +120,35 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertQty(@NonNull final UOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
+	public BigDecimal convertQty(
+			@NonNull final UOMConversionContext conversionCtx,
+			final BigDecimal qty,
+			final I_C_UOM uomFrom,
+			final I_C_UOM uomTo)
 	{
-		return convertQty(conversionCtx.getProductId(), qty, uomFrom, uomTo);
+		return convertQty(
+				conversionCtx.getProductId(),
+				conversionCtx.getRounding(),
+				qty,
+				uomFrom,
+				uomTo);
 	}
 
 	@Override
-	public Quantity convertQuantityTo(@NonNull final Quantity quantity, final UOMConversionContext conversionCtx, @NonNull final UomId uomToId)
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final UOMConversionContext conversionCtx,
+			@NonNull final UomId uomToId)
 	{
 		final I_C_UOM uomTo = uomDAO.getById(uomToId);
 		return convertQuantityTo(quantity, conversionCtx, uomTo);
 	}
 
 	@Override
-	public Quantity convertQuantityTo(@NonNull final Quantity quantity, final UOMConversionContext conversionCtx, @NonNull final I_C_UOM uomTo)
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final UOMConversionContext conversionCtx,
+			@NonNull final I_C_UOM uomTo)
 	{
 		final UomId uomToId = UomId.ofRepoId(uomTo.getC_UOM_ID());
 
@@ -136,6 +172,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final BigDecimal sourceQtyNew = quantity.toBigDecimal();
 		final int sourceUOMNewId = currentUomId.getRepoId();
 		final I_C_UOM sourceUOMNew = uomDAO.getById(sourceUOMNewId);
+
 		final BigDecimal qtyNew = convertQty(conversionCtx,
 				sourceQtyNew,
 				sourceUOMNew, // From UOM
@@ -212,7 +249,12 @@ public class UOMConversionBL implements IUOMConversionBL
 			I_C_UOM uomTo,
 			int pricePrecision)
 	{
-		BigDecimal priceConv = convertQty(ProductId.ofRepoIdOrNull(productId), price, uomFrom, uomTo);
+		BigDecimal priceConv = convertQty(
+				ProductId.ofRepoIdOrNull(productId),
+				null /* rounding */,
+				price,
+				uomFrom,
+				uomTo);
 		if (priceConv.scale() > pricePrecision)
 		{
 			priceConv = priceConv.setScale(pricePrecision, RoundingMode.HALF_UP);

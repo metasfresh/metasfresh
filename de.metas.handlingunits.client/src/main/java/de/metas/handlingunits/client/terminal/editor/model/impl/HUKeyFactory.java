@@ -22,7 +22,6 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +58,8 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
@@ -494,10 +495,10 @@ public class HUKeyFactory implements IHUKeyFactory
 
 					//
 					// Create new allocation
-					final BigDecimal qtyToAllocate = vhuProductStorage.getQty(uom).getQty();
-
+					final Quantity qty = vhuProductStorage.getQty(uom);
+					final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(qty, productId, (Quantity)null/* uomQty */);
 					//
-					huAllocations.allocate(luHU, tuHU, vhu, Quantity.of(qtyToAllocate, uom), deleteOldTUAllocations);
+					huAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocations);
 					deleteOldTUAllocations = false; // set it to false to not delete what we freshly created
 				}
 			}

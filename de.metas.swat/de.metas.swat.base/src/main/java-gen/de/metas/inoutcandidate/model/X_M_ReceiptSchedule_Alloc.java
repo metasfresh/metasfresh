@@ -15,7 +15,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -669384970L;
+	private static final long serialVersionUID = -82847932L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule_Alloc (Properties ctx, int M_ReceiptSchedule_Alloc_ID, String trxName)
@@ -43,6 +43,31 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Catch Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** 
 	 * DocStatus AD_Reference_ID=131
@@ -237,6 +262,28 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 		return bd;
 	}
 
+	/** Set Zugeordnet Catch.
+		@param QtyAllocatedInCatchUOM 
+		Tatsächlich zugeordnete Menge
+	  */
+	@Override
+	public void setQtyAllocatedInCatchUOM (java.math.BigDecimal QtyAllocatedInCatchUOM)
+	{
+		set_Value (COLUMNNAME_QtyAllocatedInCatchUOM, QtyAllocatedInCatchUOM);
+	}
+
+	/** Get Zugeordnet Catch.
+		@return Tatsächlich zugeordnete Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyAllocatedInCatchUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAllocatedInCatchUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Minderwertige Menge.
 		@param QtyWithIssues 
 		Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
@@ -254,6 +301,25 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	public java.math.BigDecimal getQtyWithIssues () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Minderwertige Catch-Menge.
+		@param QtyWithIssuesInCatchUOM Minderwertige Catch-Menge	  */
+	@Override
+	public void setQtyWithIssuesInCatchUOM (java.math.BigDecimal QtyWithIssuesInCatchUOM)
+	{
+		set_Value (COLUMNNAME_QtyWithIssuesInCatchUOM, QtyWithIssuesInCatchUOM);
+	}
+
+	/** Get Minderwertige Catch-Menge.
+		@return Minderwertige Catch-Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyWithIssuesInCatchUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssuesInCatchUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

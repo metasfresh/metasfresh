@@ -13,59 +13,95 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Properties;
-
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
+@Service
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {
+	public static final String SYSCONFIG_ExtensionDigit = "de.metas.handlingunit.GS1ExtensionDigit";
+
 	/**
-	 * Manufacturer code consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
+	 * Manufacturer code as assigne by GS1. Consists of 7 or 8 digits. For the system default it is 0000000 (7 zeros)
 	 */
 	public static final String SYSCONFIG_ManufacturerCode = "de.metas.handlingunit.GS1ManufacturerCode";
 
-	/**
-	 * The extended digit in SSCC18. Usually 0 (the package type - a carton)
-	 */
-	private final int EXTENDED_DIGIT = 0;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	protected String getManufacturerCode(final Properties ctx)
+	private final NextSerialNumberProvider nextSerialNumberProvider;
+	/** for debugging */
+	private boolean hasCustomNextSerialNumberProvider;
+
+	public SSCC18CodeBL()
 	{
-		final String manufacturerCode_SysConfig = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ManufacturerCode, null, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		this.hasCustomNextSerialNumberProvider = false;
+
+		this.nextSerialNumberProvider = orgId -> {
+			final String sscc18SerialNumberStr = Services.get(IDocumentNoBuilderFactory.class)
+					.forTableName(SSCC18_SERIALNUMBER_SEQUENCENAME, ClientId.METASFRESH.getRepoId(), orgId.getRepoId())
+					.build();
+			return Integer.parseInt(sscc18SerialNumberStr);
+		};
+	}
+
+	/** Then unit testing, you can use this constructor to register an instances to services where you provide the next serial number. */
+	@VisibleForTesting
+	public SSCC18CodeBL(@NonNull final NextSerialNumberProvider nextSerialNumberProvider)
+	{
+		this.hasCustomNextSerialNumberProvider = true;
+		this.nextSerialNumberProvider = nextSerialNumberProvider;
+	}
+
+	private int getExtensionDigit(@NonNull final OrgId orgId)
+	{
+		final int extensionDigit_SysConfig = sysConfigBL.getIntValue(SYSCONFIG_ExtensionDigit, 0,
+				ClientId.METASFRESH.getRepoId(),
+				orgId.getRepoId());
+
+		return extensionDigit_SysConfig;
+	}
+
+	private String getManufacturerCode(@NonNull final OrgId orgId)
+	{
+		final String manufacturerCode_SysConfig = sysConfigBL.getValue(SYSCONFIG_ManufacturerCode, null,
+				ClientId.METASFRESH.getRepoId(),
+				orgId.getRepoId());
+
 		return manufacturerCode_SysConfig;
 	}
 
+	/**
+	 * @return true if the check digit is correct, false otherwise
+	 */
 	@Override
-	public boolean isCheckDigitValid(final SSCC18 sscc18)
+	public boolean isCheckDigitValid(@NonNull final SSCC18 sscc18)
 	{
+		final int result = computeCheckDigit(sscc18);
 
-		final int extentionDigit = sscc18.getExtensionDigit();
-		final String manufacturerCode = sscc18.getManufacturerCode().trim();
-		final String serialNumber = sscc18.getSerialNumber().trim();
 		final int checkDigit = sscc18.getCheckDigit();
-
-		final String stringSSCC18ToVerify = extentionDigit
-				+ manufacturerCode
-				+ serialNumber;
-
-		final int result = computeCheckDigit(stringSSCC18ToVerify);
 
 		if (checkDigit == result % 10)
 		{
@@ -75,10 +111,25 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		return false;
 	}
 
+	private int computeCheckDigit(final SSCC18 sscc18)
+	{
+		final int extentionDigit = sscc18.getExtensionDigit();
+		final String manufacturerCode = sscc18.getManufacturerCode().trim();
+		final String serialNumber = sscc18.getSerialNumber().trim();
+
+		final String stringSSCC18ToVerify = extentionDigit
+				+ manufacturerCode
+				+ serialNumber;
+
+		final int result = computeCheckDigit(stringSSCC18ToVerify);
+		return result;
+	}
+
 	@Override
 	public int computeCheckDigit(final String stringSSCC18ToVerify)
 	{
-		Check.assume(stringSSCC18ToVerify.length() == 17, "Incorrect SSCC18");
+		Check.assume(stringSSCC18ToVerify.length() == 17,
+				"The given SSCC18-String={} needs to have 17 digits, but has {}", stringSSCC18ToVerify, stringSSCC18ToVerify.length());
 
 		int sumOdd = 0;
 		int sumEven = 0;
@@ -88,12 +139,12 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 			// odd
 			if (i % 2 != 0)
 			{
-				sumOdd += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i-1)));
+				sumOdd += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i - 1)));
 			}
 
 			else
 			{
-				sumEven += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i-1)));
+				sumEven += Integer.parseInt(Character.toString(stringSSCC18ToVerify.charAt(i - 1)));
 			}
 		}
 
@@ -104,48 +155,43 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 	}
 
 	@Override
-	public SSCC18 generate(final Properties ctx, final int serialNumber)
+	public SSCC18 generate(@NonNull final OrgId orgId)
+	{
+		return generate(orgId, nextSerialNumberProvider.provideNextSerialNumber(orgId));
+	}
+
+	@Override
+	public SSCC18 generate(@NonNull final OrgId orgId, final int serialNumber)
 	{
 		Check.assume(serialNumber > 0, "serialNumber > 0");
-
 		//
 		// Retrieve and validate ManufacturerCode
-		final String manufacturerCode_SysConfig = getManufacturerCode(ctx);
-		Check.assume(StringUtils.isNumber(manufacturerCode_SysConfig), "Manufacturer code {} is not a number", manufacturerCode_SysConfig);
-		final int manufacturerCodeSize = manufacturerCode_SysConfig.length();
-		Check.assume(manufacturerCodeSize <= 8, "Manufacturer code too long: {}", manufacturerCode_SysConfig);
+		final String manufacturerCode_SysConfig = getManufacturerCode(orgId);
+		Check.assumeNotEmpty(manufacturerCode_SysConfig, "Manufacturer code may not be empty; orgId={}", orgId);
 
-		//
-		// Validate serialNumber and adjust serialNumber and manufacturerCode paddings
-		final String serialNumberStr = String.valueOf(serialNumber);
-		final int serialNumberSize = serialNumberStr.length();
-		Check.assume(serialNumberSize <= 9, "Serial number too long: {}", serialNumberStr);
-		final String finalManufacturerCode;
-		final String finalSerialNumber;
-		if (manufacturerCodeSize == 8)
+		final String manufacturerCode;
+		if (manufacturerCode_SysConfig.length() < 7)
 		{
-			Check.assume(serialNumberSize <= 8, "Serial number too long: {}", serialNumberStr);
-			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 8, "Manufacturer code size shoult be 8");
-
-			finalManufacturerCode = manufacturerCode_SysConfig;
+			manufacturerCode = StringUtils.lpadZero(getManufacturerCode(orgId), 7, "lpad the manufacturerCode to at least 7");
 		}
-		else if (manufacturerCodeSize == 7)
-		{
-			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 9, "Manufacturer code size shoult be 9");
-
-			finalManufacturerCode = manufacturerCode_SysConfig;
-		}
-		// manufacturer code smaller than 7
 		else
 		{
-			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 9, "Manufacturer code size shoult be " + 9);
-
-			finalManufacturerCode = StringUtils.lpadZero(manufacturerCode_SysConfig, 7, "Manufacturer code size shoult be " + 7);
+			manufacturerCode = manufacturerCode_SysConfig;
 		}
 
-		final int checkDigit = computeCheckDigit(EXTENDED_DIGIT + finalManufacturerCode + finalSerialNumber);
+		Check.assume(StringUtils.isNumber(manufacturerCode), "Manufacturer code {} need to be a number; orgId={}", manufacturerCode, orgId);
 
-		return new SSCC18(EXTENDED_DIGIT, finalManufacturerCode, finalSerialNumber, checkDigit);
+		validateManufacturerCode(manufacturerCode);
+
+		final String serialNumberStr = String.valueOf(serialNumber);
+		final int serialNumberTargetSize = validateSerialNumber(manufacturerCode, serialNumberStr);
+
+		final String finalSerialNumber = StringUtils.lpadZero(serialNumberStr, serialNumberTargetSize, "");
+
+		final int extensionDigit = getExtensionDigit(orgId);
+		final int checkDigit = computeCheckDigit(extensionDigit + manufacturerCode + finalSerialNumber);
+
+		return new SSCC18(extensionDigit, manufacturerCode, finalSerialNumber, checkDigit);
 	}
 
 	@Override
@@ -154,21 +200,38 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		final String manufactCode = sscc18ToValidate.getManufacturerCode().trim();
 		final String serialNumber = sscc18ToValidate.getSerialNumber().trim();
 
-		Check.assume(StringUtils.isNumber(manufactCode), "The manufacturer code " + manufactCode + " is not a number");
-		Check.assume(manufactCode.length() <= 8, "The manufacturer code " + manufactCode + "is too long");
+		validateManufacturerCode(manufactCode);
 
-		Check.assume(StringUtils.isNumber(serialNumber), "The serial number " + serialNumber + " is not a number");
-		Check.assume(serialNumber.length() <= 9, "The serial number " + serialNumber + "is too long");
+		final int digitsAvailableForSerialNumber = validateSerialNumber(manufactCode, serialNumber);
+		Check.errorIf(serialNumber.length() > digitsAvailableForSerialNumber, "With a {}-digit manufactoring code={}, the serial number={} may only have {} digits", manufactCode.length(), manufactCode, serialNumber, digitsAvailableForSerialNumber);
 
-		Check.assume((serialNumber + manufactCode).length() == 16, "Manufacturer code + serial number must be 16");
-		Check.assume(isCheckDigitValid(sscc18ToValidate), "Check digit is not valid");
+		final int computeCheckDigit = computeCheckDigit(sscc18ToValidate);
+		Check.errorUnless(sscc18ToValidate.getCheckDigit() == computeCheckDigit, "The check digit of SSCC18={} is not valid; It needs to be={}", toString(sscc18ToValidate, false), computeCheckDigit);
+		Check.errorUnless(isCheckDigitValid(sscc18ToValidate), "Check digit is not valid");
+	}
+
+	private int validateSerialNumber(final String manufactCode, final String serialNumber)
+	{
+		final int digitsAvailableForSerialNumber = computeLenghtOfSerialNumber(manufactCode);
+		Check.errorUnless(StringUtils.isNumber(serialNumber), "The serial number " + serialNumber + " is not a number");
+		return digitsAvailableForSerialNumber;
+	}
+
+	private int computeLenghtOfSerialNumber(final String manufactCode)
+	{
+		final int digitsAvailableForSerialNumber = 18 - 1/* extension-digit */ - manufactCode.length() - 1/* check-digit */;
+		return digitsAvailableForSerialNumber;
+	}
+
+	private void validateManufacturerCode(@NonNull final String manufactCode)
+	{
+		Check.errorUnless(StringUtils.isNumber(manufactCode), "The manufacturer code " + manufactCode + " is not a number");
+		Check.errorIf(manufactCode.length() > 9, "The manufacturer code " + manufactCode + " is too long");
 	}
 
 	@Override
-	public String toString(final SSCC18 sscc18, final boolean humanReadable)
+	public String toString(@NonNull final SSCC18 sscc18, final boolean humanReadable)
 	{
-		Check.assumeNotNull(sscc18, "sscc18 not null");
-
 		if (!humanReadable)
 		{
 			return sscc18.getExtensionDigit()
@@ -180,5 +243,11 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		{
 			throw new IllegalStateException("Not implemented");
 		}
+	}
+
+	@FunctionalInterface
+	public interface NextSerialNumberProvider
+	{
+		int provideNextSerialNumber(OrgId orgId);
 	}
 }

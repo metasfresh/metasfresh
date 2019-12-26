@@ -15,7 +15,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2025653177L;
+	private static final long serialVersionUID = -394691916L;
 
     /** Standard Constructor */
     public X_C_Order (Properties ctx, int C_Order_ID, String trxName)
@@ -1276,6 +1276,22 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
+	/** Set External ID.
+		@param ExternalId External ID	  */
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/** Get External ID.
+		@return External ID	  */
+	@Override
+	public java.lang.String getExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+	}
+
 	/** Set Frachtbetrag.
 		@param FreightAmt 
 		Freight Amount 
@@ -2017,6 +2033,28 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getM_Shipper_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Tour.
+		@param M_Tour_ID Tour	  */
+	@Override
+	public void setM_Tour_ID (int M_Tour_ID)
+	{
+		if (M_Tour_ID < 1) 
+			set_Value (COLUMNNAME_M_Tour_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Tour_ID, Integer.valueOf(M_Tour_ID));
+	}
+
+	/** Get Tour.
+		@return Tour	  */
+	@Override
+	public int getM_Tour_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Tour_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

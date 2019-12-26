@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
@@ -30,6 +29,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -316,12 +316,12 @@ final class OrderLinePriceCalculator
 		}
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 				ProductId.ofRepoId(productId),
 				bpartnerId,
 				qtyInPriceUOM,
 				SOTrx.ofBoolean(isSOTrx));
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(date));
-
 
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(orderLine);
@@ -368,8 +368,7 @@ final class OrderLinePriceCalculator
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
-		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
+		return Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpLocationId);
 	}
 
 	private PricingConditionsBreak getPricingConditionsBreakFromRequest()

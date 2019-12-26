@@ -36,7 +36,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
  * Your annotated method can have following formats:
  * <ul>
  * <li>public void myMethod(final MyModelClass model)
- * <li>public void myMethod(final MyModelClass model, final int timing)
+ * <li>public void myMethod(final MyModelClass model, final ModelChangeType changeType)
  * </ul>
  *
  * @author tsa

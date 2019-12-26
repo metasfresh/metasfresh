@@ -14,7 +14,7 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -102836041L;
+	private static final long serialVersionUID = 280039243L;
 
     /** Standard Constructor */
     public X_M_Shipper (Properties ctx, int M_Shipper_ID, String trxName)
@@ -198,5 +198,24 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getTrackingURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TrackingURL);
+	}
+
+	/** Set Suchschlüssel.
+		@param Value 
+		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	  */
+	@Override
+	public void setValue (java.lang.String Value)
+	{
+		set_Value (COLUMNNAME_Value, Value);
+	}
+
+	/** Get Suchschlüssel.
+		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	  */
+	@Override
+	public java.lang.String getValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

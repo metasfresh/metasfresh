@@ -15,7 +15,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2003472398L;
+	private static final long serialVersionUID = -1024116806L;
 
     /** Standard Constructor */
     public X_PP_Order_Workflow (Properties ctx, int PP_Order_Workflow_ID, String trxName)
@@ -49,7 +49,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
     }
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getAD_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
@@ -243,7 +243,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
 	}
@@ -277,7 +277,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_Node getPP_Order_Node() throws RuntimeException
+	public org.eevolution.model.I_PP_Order_Node getPP_Order_Node()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_Node_ID, org.eevolution.model.I_PP_Order_Node.class);
 	}
@@ -408,7 +408,7 @@ public class X_PP_Order_Workflow extends org.compiere.model.PO implements I_PP_O
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}

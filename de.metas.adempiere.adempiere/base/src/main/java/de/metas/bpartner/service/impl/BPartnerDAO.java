@@ -211,6 +211,18 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public Optional<BPartnerId> getBPartnerIdByExternalId(@NonNull final ExternalId externalId)
+	{
+		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_ExternalId, externalId.getValue())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
+		return Optional.ofNullable(bpartnerId);
+	}
+
+	@Override
 	public I_C_BPartner getByIdInTrx(@NonNull final BPartnerId bpartnerId)
 	{
 		return load(bpartnerId, I_C_BPartner.class);
@@ -236,6 +248,12 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(contact -> contact.getAD_User_ID() == contactId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+	
+	@Override
+	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass) 
+	{
+		return getContactById(contactId, modelClass);
 	}
 
 	@Override
@@ -465,6 +483,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId);
+		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
+	}
+
+	@Override
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
 	public List<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
@@ -573,12 +598,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
 	 *
 	 * @param bPartnerId the ID of the BPartner for which we need the pricing system id
-	 * @param soTrx      <ul>
-	 *                   <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
-	 *                   <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
-	 *                   <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
-	 *                   <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
-	 *                   </ul>
+	 * @param soTrx
+	 *            <ul>
+	 *            <li>if <code>true</code>, then the method first checks <code>C_BPartner.M_PricingSystem_ID</code> , then (if the BPartner has a C_BP_Group_ID) in
+	 *            <code>C_BP_Group.M_PricingSystem_ID</code> and finally (if the C_BPArtner has a AD_Org_ID>0) in <code>AD_OrgInfo.M_PricingSystem_ID</code></li>
+	 *            <li>if <code>false</code></li>, then the method first checks <code>C_BPartner.PO_PricingSystem_ID</code>, then (if the BPartner has a C_BP_Group_ID!) in
+	 *            <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
+	 *            </ul>
 	 */
 	private PricingSystemId retrievePricingSystemIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
@@ -1187,9 +1213,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	public ImmutableSet<BPartnerId> retrieveBPartnerIdsBy(@NonNull final BPartnerQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
-				// .addOnlyContextClient()
-				// .addOnlyActiveRecordsFilter() also load inactive records!
-				;
+		// .addOnlyContextClient()
+		// .addOnlyActiveRecordsFilter() also load inactive records!
+		;
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{

@@ -3,14 +3,19 @@ package de.metas.edi.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.handlingunits.generichumodel.HURepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 
 /*
@@ -35,39 +40,55 @@ import de.metas.uom.IUOMDAO;
  * #L%
  */
 
-class DesadvBLTest
+public class DesadvBLTest
 {
+	private DesadvBL desadvBL;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		desadvBL = new DesadvBL(new HURepository());
 	}
 
+	// 9 CUs per COLI and 20.5 CUs => 3 COLIs
 	@Test
 	void setQty_isUOMForTUs()
 	{
-		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
-		uomRecord.setX12DE355(IUOMDAO.X12DE355_COLI);
-		saveRecord(uomRecord);
+		final I_C_UOM coliUomRecord = newInstance(I_C_UOM.class);
+		coliUomRecord.setX12DE355(IUOMDAO.X12DE355_COLI);
+		saveRecord(coliUomRecord);
 
-		final I_EDI_DesadvLine desadvLineRecord = newInstance(I_EDI_DesadvLine.class);
-		desadvLineRecord.setQtyItemCapacity(new BigDecimal("9"));
-		desadvLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
-		desadvLineRecord.setQtyEntered(new BigDecimal("99"));
-		saveRecord(desadvLineRecord);
+		final I_C_UOM eachUomRecord = newInstance(I_C_UOM.class);
+		eachUomRecord.setX12DE355(IUOMDAO.X12DE355_Each);
+		saveRecord(eachUomRecord);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(eachUomRecord.getC_UOM_ID());
+		saveRecord(productRecord);
+
+		final I_EDI_DesadvLine_Pack desadvLinePackRecord = newInstance(I_EDI_DesadvLine_Pack.class);
+		//desadvLinePackRecord.setQtyCU(new BigDecimal("9"));
+		desadvLinePackRecord.setC_UOM_ID(coliUomRecord.getC_UOM_ID());
+		desadvLinePackRecord.setQtyItemCapacity(new BigDecimal("9"));
+		desadvLinePackRecord.setQtyCUsPerLU(new BigDecimal("99"));
+		saveRecord(desadvLinePackRecord);
 
 		// invoke the method under test
-		new DesadvBL().setQty(desadvLineRecord, new BigDecimal("20.5"));
+		desadvBL.setQty(
+				ProductId.ofRepoId(productRecord.getM_Product_ID()),
+				desadvLinePackRecord,
+				Quantity.of("99999", eachUomRecord) /*qtyCUInStockUom*/,
+				Quantity.of("20.5", eachUomRecord) /*qtyCUsPerLUInStockUom*/);
 
-		assertThat(desadvLineRecord)
+		assertThat(desadvLinePackRecord)
 				.extracting(
-						"QtyEntered",
-						"MovementQty",
-						"QtyDeliveredInUOM")
+						"QtyCUsPerLU",
+						"QtyCU")
 				.containsExactly(
-						new BigDecimal("99"),
-						new BigDecimal("20.5"),
-						new BigDecimal("3"));
+						new BigDecimal("3"),
+						new BigDecimal("1"));
 	}
 
 }

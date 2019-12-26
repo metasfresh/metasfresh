@@ -12,6 +12,7 @@ public interface IAttributeStorageFactoryService extends ISingletonService
 	 */
 	void addAttributeStorageListener(IAttributeStorageListener listener);
 
+	/** Create a "standard" attribute storage factory, ready to use. */
 	IAttributeStorageFactory createHUAttributeStorageFactory();
 
 	/**

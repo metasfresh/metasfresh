@@ -142,6 +142,7 @@ public class PhonecallScheduleService
 				.startTime(schemaVersionLine.getStartTime())
 				.endTime(schemaVersionLine.getEndTime())
 				.salesRepId(salesRepId)
+				.description(schemaVersionLine.getDescription())
 				.build();
 
 		schedulesRepo.save(schedule);

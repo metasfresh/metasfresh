@@ -10,6 +10,81 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.132
+## Features
+* metasfresh
+  * [#5800](https://github.com/metasfresh/metasfresh/issues/5800) Add Payment Type, Shipper, Sales Partner to order candidate endpoint
+  * [#5856](https://github.com/metasfresh/metasfresh/issues/5856) Add payment rest endpoint
+  * [#5865](https://github.com/metasfresh/metasfresh/issues/5865) Picklist not working: "Type not supported: UNALLOCABLE"
+  * [#5887](https://github.com/metasfresh/metasfresh/issues/5887) Additional Invoice Information
+  * [#5888](https://github.com/metasfresh/metasfresh/issues/5888) Picklist ordered by locator name + dimensions
+  * [#5895](https://github.com/metasfresh/metasfresh/issues/5895) Create Window for managing Manufactoring Workflow
+  * [#5900](https://github.com/metasfresh/metasfresh/issues/5900) product proposals: Copy product price from other price list shall set IsInvalidPrice=N
+  * [#5901](https://github.com/metasfresh/metasfresh/issues/5901) Automatically create C_ValidCombination(s) when a new C_ElementValue is created
+  * [#5906](https://github.com/metasfresh/metasfresh/issues/5906) Add poreference field in the sql function to get data for sales order report
+  * [#5908](https://github.com/metasfresh/metasfresh/issues/5908) SQL Process for BPartner Products as Excel List
+  * [#5912](https://github.com/metasfresh/metasfresh/issues/5912) Read documentno field in the report for customer invoice with credit memo
+  * [#5917](https://github.com/metasfresh/metasfresh/issues/5917) Product price not found if ASI was added to order line
+* metasfresh-webui-api
+  * [#1330](https://github.com/metasfresh/metasfresh-webui-api/issues/1330) Reduce the number of websocket events we are sending to frontend
+  * [#2469](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2469) Re-fetch tab's actions when the document status changes
+
+* metasfresh-webui-frontend
+  * [#2436](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2436) Follow-Up: Customer Proposal List navigation with arrow keys (qty arrows out)
+
+## Fixes
+* metasfresh
+  * [#5903](https://github.com/metasfresh/metasfresh/issues/5903) Fix country code from de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root
+
+* metasfresh-webui-frontend
+  * [#2471](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2471) Attributes cannot be set in orderline grid view
+  * [#2477](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2477) Location name seems to get lost when editing the location
+  * [#2488](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2488) Add new button doesn't work anymore
+
+# metasfresh 5.131
+## Features
+* metasfresh
+  * [#5850](https://github.com/metasfresh/metasfresh/issues/5850) Add Net Amount and Gross Amount in Partner Window, Tab Request
+  * [#5861](https://github.com/metasfresh/metasfresh/issues/5861) Initial Cost Price via Inventory import
+  * [#5869](https://github.com/metasfresh/metasfresh/issues/5869) Add Check for isCreditMemo in function Docs_Sales_Invoice_Description
+  * [#5880](https://github.com/metasfresh/metasfresh/issues/5880) Support inheriting Attribute from Phantom BOM to order line to support pricing
+  * [#5882](https://github.com/metasfresh/metasfresh/issues/5882) migration scripts: avoid logging AD_Preference changes
+
+* metasfresh-webui-frontend
+  * [#2475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2475) Refresh quickActions in both included and parent view when selection changes
+
+## Fixes
+* metasfresh
+  * [#5874](https://github.com/metasfresh/metasfresh/issues/5874) Reactivate Shipment, update Shipmentline delivery catch weight => does not update invoice candidate
+  * [#5878](https://github.com/metasfresh/metasfresh/issues/5878) automatically create native sequence when an AD_Table is created
+  * [#5802](https://github.com/metasfresh/metasfresh/issues/5802) Bug in Pricelistversion update for Basepricelists and customer proposals
+
+* metasfreseh-webui-frontend
+  * [#2454](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2454) Time not displayed in widgets
+  * [#2472](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2472) Purchase order from sales order not working anymore
+  * [#2474](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2474) X button not working for several fields
+
+# metasfresh 5.130
+## Features
+* metasfresh
+  * [#5070](https://github.com/metasfresh/metasfresh/issues/5070) Discount Schema Lines in separate window
+  * [#5799](https://github.com/metasfresh/metasfresh/issues/5799) Pricelist Schema export-import for Basepricelists
+  * [#5806](https://github.com/metasfresh/metasfresh/issues/5806) OLCand - Improve support for TU UOMs
+  * [#5824](https://github.com/metasfresh/metasfresh/issues/5824) IBAN Liechtenstein not accepted as Bank Account
+  * [#5834](https://github.com/metasfresh/metasfresh/issues/5834) Sales Order recording without Billto Partner
+  * [#5840](https://github.com/metasfresh/metasfresh/issues/5840) Allow manual creation of Phonecall Schedule
+  * [#5845](https://github.com/metasfresh/metasfresh/issues/5845) Invoice reversal via REST-EP
+  * [#5851](https://github.com/metasfresh/metasfresh/issues/5851) Add currency in doc_sales_invoice_root and in doc_sales_order_root functions
+
+* metasfresh-webui-api
+  * [#1315](https://github.com/metasfresh/metasfresh-webui-api/issues/1315) Product proposal view: show customer name in header
+  * [#1320](https://github.com/metasfresh/metasfresh-webui-api/issues/1320) Payment Allocation Window in WebUI
+
+## Fixes
+* metasfresh
+  * [#5802](https://github.com/metasfresh/metasfresh/issues/5802) Bug in Pricelistversion update for Basepricelists and customer proposals
+  * [#5829](https://github.com/metasfresh/metasfresh/issues/5829) Report aren't working anymore
+
 # metasfresh 5.129
 ## Features
 * metasfresh 

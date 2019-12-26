@@ -67,8 +67,8 @@ public class RelatedInvoicesForSubscriptionsProvider implements RelatedRecordsPr
 
 		final ImmutableList<ITableRecordReference> invoiceReferences = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, flatrateTermIds)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, flatrateTermIds)
 				.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)

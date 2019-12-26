@@ -76,11 +76,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
-	/** @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead. */
+	/**
+	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.
+	 */
 	@Deprecated
 	Optional<BPartnerId> getBPartnerIdByValue(String bpartnerValue);
 
 	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode);
+
+	Optional<BPartnerId> getBPartnerIdByExternalId(@NonNull ExternalId externalId);
 
 	I_C_BPartner getByIdInTrx(BPartnerId bpartnerId);
 
@@ -127,6 +131,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
+
+	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
 
 	EMailAddress getContactEMail(BPartnerContactId contactId);
 
@@ -226,6 +232,8 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
+
+	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
 
 	/**
 	 * Retrieve default/first bill to location.

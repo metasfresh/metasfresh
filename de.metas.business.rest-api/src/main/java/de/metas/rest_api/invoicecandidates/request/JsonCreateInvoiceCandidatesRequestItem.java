@@ -1,11 +1,12 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCTIDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -67,7 +68,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	String poReference;
 
 	@ApiModelProperty(position = 50, required = true, //
-			value = BPARTER_IDENTIFIER_DOC)
+			value = BPARTNER_IDENTIFIER_DOC)
 	String billPartnerIdentifier;
 
 	@ApiModelProperty(position = 60, required = true, //
@@ -79,7 +80,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	String billContactIdentifier;
 
 	@ApiModelProperty(position = 80, required = true, //
-			value = PRODUCTIDENTIFIER_DOC)
+			value = PRODUCT_IDENTIFIER_DOC)
 	String productIdentifier;
 
 	@ApiModelProperty(position = 130, required = false, //
@@ -131,6 +132,10 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			value = "optional invoice line description")
 	String lineDescription;
 
+	@ApiModelProperty(position = 190, required = false, //
+			value = "Optional invoice detail items. Will be persisted as `C_Invoice_Detail` records together with the new invoice candidate.")
+	List<JSONInvoiceDetailItem> invoiceDetailItems;
+
 	@JsonCreator
 	@Builder
 	private JsonCreateInvoiceCandidatesRequestItem(
@@ -152,7 +157,8 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("uomCode") @Nullable final String uomCode,
 			@JsonProperty("priceEnteredOverride") @Nullable final JsonPrice priceEnteredOverride,
 			@JsonProperty("discountOverride") @Nullable final BigDecimal discountOverride,
-			@JsonProperty("lineDescription") @Nullable final String lineDescription)
+			@JsonProperty("lineDescription") @Nullable final String lineDescription,
+			@JsonProperty("invoiceDetailItems") @Nullable final List<JSONInvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;
@@ -173,5 +179,6 @@ public class JsonCreateInvoiceCandidatesRequestItem
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
 		this.lineDescription = lineDescription;
+		this.invoiceDetailItems = invoiceDetailItems;
 	}
 }

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
@@ -58,6 +59,15 @@ public class CacheInvalidateMultiRequest
 	public static final CacheInvalidateMultiRequest of(@NonNull final Collection<CacheInvalidateRequest> requests)
 	{
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
+	}
+
+	public static final CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
+	{
+		final Set<CacheInvalidateRequest> requests = multiRequests.stream()
+				.flatMap(multiRequest -> multiRequest.getRequests().stream())
+				.collect(ImmutableSet.toImmutableSet());
+
+		return new CacheInvalidateMultiRequest(requests);
 	}
 
 	public static CacheInvalidateMultiRequest all()
@@ -130,6 +140,17 @@ public class CacheInvalidateMultiRequest
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");
 		this.requests = ImmutableSet.copyOf(requests);
+	}
+
+	@Override
+	public String toString()
+	{
+		final int requestsCount = requests.size();
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("requestsCount", requestsCount)
+				.add("requests", requestsCount > 0 ? requests : null)
+				.toString();
 	}
 
 	public boolean isResetAll()

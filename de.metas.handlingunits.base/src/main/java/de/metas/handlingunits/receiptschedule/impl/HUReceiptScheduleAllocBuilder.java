@@ -13,36 +13,37 @@ package de.metas.handlingunits.receiptschedule.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleAllocBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUReceiptScheduleAllocBuilder extends ReceiptScheduleAllocBuilder
 {
 	// services
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private Quantity _huQtyAllocated;
+	private StockQtyAndUOMQty _huQtyAllocated;
 	private I_M_HU _luHU;
 	private I_M_HU _tuHU;
 	private I_M_HU _vhu;
@@ -56,18 +57,18 @@ public class HUReceiptScheduleAllocBuilder extends ReceiptScheduleAllocBuilder
 
 		//
 		// HU_QtyAllocated
-		final Quantity huQtyAllocatedSrc = getHU_QtyAllocated();
+		final StockQtyAndUOMQty huQtyAllocatedSrc = getHU_QtyAllocated();
 		final BigDecimal huQtyAllocated;
 		if (huQtyAllocatedSrc != null)
 		{
 			//
-			// Convert Qty from given UOM to receipt schedule's UOM
+			// Convert qty in Stock-UOM from given UOM to receipt schedule's UOM
 			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
 			final UomId uomIdTo = UomId.ofRepoId(receiptSchedule.getC_UOM_ID());
 			final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 			huQtyAllocated = uomConversionBL
-					.convertQuantityTo(huQtyAllocatedSrc, uomConversionCtx, uomIdTo)
+					.convertQuantityTo(huQtyAllocatedSrc.getStockQty(), uomConversionCtx, uomIdTo)
 					.toBigDecimal();
 		}
 		else
@@ -83,13 +84,13 @@ public class HUReceiptScheduleAllocBuilder extends ReceiptScheduleAllocBuilder
 		rsaHU.setVHU(getVHU());
 	}
 
-	public HUReceiptScheduleAllocBuilder setHU_QtyAllocated(final Quantity huQtyAllocated)
+	public HUReceiptScheduleAllocBuilder setHU_QtyAllocated(@NonNull final StockQtyAndUOMQty huQtyAllocated)
 	{
 		_huQtyAllocated = huQtyAllocated;
 		return this;
 	}
 
-	private Quantity getHU_QtyAllocated()
+	private StockQtyAndUOMQty getHU_QtyAllocated()
 	{
 		return _huQtyAllocated;
 	}

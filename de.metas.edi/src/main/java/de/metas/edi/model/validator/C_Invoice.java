@@ -80,6 +80,8 @@ public class C_Invoice
 		{
 			// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
 			// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
+			final String errorMessage = ediDocumentBL.buildFeedback(feedback);
+			document.setEDIErrorMsg(errorMessage);
 			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Invalid);
 		}
 	}

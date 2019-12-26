@@ -338,6 +338,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
+				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 			}
 		}
 

@@ -30,11 +30,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.tourplanning.model.TourId;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -236,23 +238,22 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		deliveryDay.setDeliveryDateTimeMax(deliveryDateTimeMax);
 	}
 
+	/**
+	 * The search will initially be made for the first deliveryDay of the day of the promised date.
+	 * For example, if there are 3 deliveryDay entries for a certain date and the products are
+	 * promised to be shipped in that day's evening, the first deliveryDay of that day will be chosen.
+	 * If there are no deliveryDay entries for the given date that are before the promised date/time,
+	 * select the last available deliveryDay that is before the promised date/time
+	 */
+	@NonNull
 	@Override
-	public ZonedDateTime calculatePreparationDateOrNull(
-			final IContextAware context,
-			final SOTrx soTrx,
-			final ZonedDateTime calculationTime,
-			final ZonedDateTime datePromised,
-			final BPartnerLocationId bpartnerLocationId)
+	public ImmutablePair<TourId, ZonedDateTime> calculateTourAndPreparationDate(
+			@NonNull final IContextAware context,
+			@NonNull final SOTrx soTrx,
+			@NonNull final ZonedDateTime calculationTime,
+			@NonNull final ZonedDateTime datePromised,
+			@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		// #1211
-		// Note: I am commenting this out instead of deleting it for traceability. This functionality changed several times in the past.
-		// task 09004: add the current time as parameter and fetch the closest next fit delivery day
-		// final Timestamp calculationTime = SystemTime.asTimestamp();
-
-		// task #1211
-		// The search will initially be made for the first deliveryDay of the day of the promised date
-		// For example, if there are 3 deliveryDay entries for a certain date and the products are
-		// promised to be shipped in that day's evening, the first deliveryDay of that day will be chosen.
 		LocalDate preparationDay = datePromised.toLocalDate();
 
 		//
@@ -270,29 +271,27 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		final IDeliveryDayDAO deliveryDayDAO = Services.get(IDeliveryDayDAO.class);
 		I_M_DeliveryDay dd = deliveryDayDAO.retrieveDeliveryDay(context, deliveryDayQueryParams);
 
-		// task #1211
-		// If there are no deliveryDay entries for the given date that are before the promised date/time,
-		// select the last available deliveryDay that is before the promised date/time
+		// No same-day deliveryDay found => chose the closest one
 		if (dd == null)
 		{
 			preparationDay = null;
 			deliveryDayQueryParams.setPreparationDay(preparationDay);
 			dd = deliveryDayDAO.retrieveDeliveryDay(context, deliveryDayQueryParams);
-
 		}
 
 		//
 		// Extract PreparationDate from DeliveryDay record
-		final ZonedDateTime preparationDate;
+		final ImmutablePair<TourId, ZonedDateTime> ret;
 		if (dd == null)
 		{
-			preparationDate = null;
+			ret = ImmutablePair.of(null, null);
 		}
 		else
 		{
-			preparationDate = TimeUtil.asZonedDateTime(dd.getDeliveryDate());
+			ret = ImmutablePair.of(TourId.ofRepoIdOrNull(dd.getM_Tour_ID()), TimeUtil.asZonedDateTime(dd.getDeliveryDate()));
 		}
 
-		return preparationDate;
+		return ret;
 	}
+
 }

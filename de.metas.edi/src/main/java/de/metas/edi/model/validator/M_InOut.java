@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -61,6 +62,14 @@ public class M_InOut
 		if (order == null || order.getC_Order_ID() <= 0)
 		{
 			// nothing to do
+			return;
+		}
+
+		// order.isEdiEnabled might be for DESADV or INVOIC; so we also need to check the bpartner's flag
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
+		if (!bpartner.isEdiDesadvRecipient())
+		{
+			inout.setIsEdiEnabled(false);
 			return;
 		}
 

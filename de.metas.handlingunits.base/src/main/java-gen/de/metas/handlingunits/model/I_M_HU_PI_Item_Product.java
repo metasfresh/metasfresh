@@ -250,6 +250,29 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_IsAllowAnyProduct = "IsAllowAnyProduct";
 
 	/**
+	 * Set Standard-Produkt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDefaultForProduct (boolean IsDefaultForProduct);
+
+	/**
+	 * Get Standard-Produkt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDefaultForProduct();
+
+    /** Column definition for IsDefaultForProduct */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsDefaultForProduct = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsDefaultForProduct", null);
+    /** Column name IsDefaultForProduct */
+    public static final String COLUMNNAME_IsDefaultForProduct = "IsDefaultForProduct";
+
+	/**
 	 * Set Unbestimmte Kapazität.
 	 *
 	 * <br>Type: YesNo

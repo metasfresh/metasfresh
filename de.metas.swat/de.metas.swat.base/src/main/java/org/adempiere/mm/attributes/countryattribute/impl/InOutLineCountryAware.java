@@ -10,18 +10,17 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
@@ -38,16 +37,15 @@ public class InOutLineCountryAware implements ICountryAware
 {
 	public static final ICountryAwareFactory factory = new ICountryAwareFactory()
 	{
-		
+
 		@Override
-		public ICountryAware createCountryAware(Object model)
+		public ICountryAware createCountryAware(final Object model)
 		{
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
-			final ICountryAware countryAware = new InOutLineCountryAware(inoutLine);
-			return countryAware;
+			return new InOutLineCountryAware(inoutLine);
 		}
 	};
-	
+
 	private final I_M_InOutLine inoutLine;
 
 	private InOutLineCountryAware(final I_M_InOutLine inoutLine)
@@ -80,7 +78,7 @@ public class InOutLineCountryAware implements ICountryAware
 	public I_C_Country getC_Country()
 	{
 		final I_M_InOut inout = getM_InOut();
-		final I_C_BPartner_Location bpLocation = inout.getC_BPartner_Location();
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.load(inout.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
 		if (bpLocation == null)
 		{
 			return null;
@@ -88,7 +86,7 @@ public class InOutLineCountryAware implements ICountryAware
 		return bpLocation.getC_Location().getC_Country();
 	}
 
-	private final I_M_InOut getM_InOut()
+	private I_M_InOut getM_InOut()
 	{
 		final I_M_InOut inout = inoutLine.getM_InOut();
 		if (inout == null)

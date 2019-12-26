@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
@@ -56,6 +57,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -298,14 +301,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	<T extends org.compiere.model.I_M_InOutLine> List<T> retrieveInOutLinesForCandidate(I_C_Invoice_Candidate ic, Class<T> clazz);
 
 	/**
-	 * Checks if there exists an allocation between given invoice candidate and given receipt/shipment line.
-	 *
-	 * @param ic invoice candidate
-	 * @param iol receipt/shipment line
-	 * @return true if an allocation exists
+	 * Return the unique allocation between the given invoice candidate and receipt/shipment line.
+	 * We know it's unique as there is a Unique Index on the 2 columns named C_IC_IOL_Unique_Active.
 	 * @see I_C_InvoiceCandidate_InOutLine
 	 */
-	boolean existsInvoiceCandidateInOutLinesForInvoiceCandidate(I_C_Invoice_Candidate ic, I_M_InOutLine iol);
+	@Nullable
+	I_C_InvoiceCandidate_InOutLine retrieveInvoiceCandidateInOutLine(@NonNull I_C_Invoice_Candidate ic, @NonNull I_M_InOutLine iol);
 
 	/**
 	 * Checks if the given <code>ic</code> is referenced by a <code>C_Invoice_Candidate_Recompute</code> record. The check is made within the ic's transaction.<br>

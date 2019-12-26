@@ -305,4 +305,29 @@ public interface I_M_Shipper
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Suchschlüssel.
+	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setValue (java.lang.String Value);
+
+	/**
+	 * Get Suchschlüssel.
+	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getValue();
+
+    /** Column definition for Value */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Value", null);
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
 }

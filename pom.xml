@@ -28,7 +28,7 @@
 
 		<servicemix.java.version>1.7</servicemix.java.version>
 
-		<poi.version>3.12</poi.version>
+		<poi.version>3.15</poi.version>
 		<zxing.version>2.3.0</zxing.version>
 
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->

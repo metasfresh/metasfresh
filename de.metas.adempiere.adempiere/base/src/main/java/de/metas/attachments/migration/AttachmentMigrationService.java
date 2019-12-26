@@ -13,6 +13,7 @@ import java.util.zip.ZipInputStream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Attachment;
@@ -24,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryFactory;
+import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -173,7 +175,7 @@ public class AttachmentMigrationService
 				.anyMatch();
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		sysConfigBL.setValue(SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, existRecordsToMigrate, 0);
+		sysConfigBL.setValue(SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, existRecordsToMigrate, ClientId.SYSTEM, OrgId.ANY);
 		Loggables.addLog("Setting SysConfig {} to {}", SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, StringUtils.ofBoolean(existRecordsToMigrate));
 
 		return existRecordsToMigrate;

@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

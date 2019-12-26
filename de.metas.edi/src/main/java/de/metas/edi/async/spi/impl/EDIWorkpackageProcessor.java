@@ -13,15 +13,14 @@ package de.metas.edi.async.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -41,6 +40,7 @@ import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 /**
@@ -91,7 +91,17 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			//
 			// Export & enlist feedback
 			final List<Exception> exportFeedback = export.doExport();
-			feedback.addAll(exportFeedback);
+			if (exportFeedback.isEmpty())
+			{
+				Loggables.get().addLog("Successfully exported ediDocumentNo={}", ediDocument.getDocumentNo());
+			}
+			else
+			{
+				final String errorMessage = ediDocumentBL.buildFeedback(exportFeedback);
+				Loggables.get().addLog("Did not export ediDocument because of validation error(s); ediDocumentNo={}; errorMsg={}",
+						ediDocument.getDocumentNo(), errorMessage);
+				feedback.addAll(exportFeedback);
+			}
 		}
 
 		if (feedback.isEmpty())

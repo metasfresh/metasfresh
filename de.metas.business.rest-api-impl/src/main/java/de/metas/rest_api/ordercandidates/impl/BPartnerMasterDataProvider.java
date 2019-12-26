@@ -624,6 +624,9 @@ final class BPartnerMasterDataProvider
 		bpContactRecord.setEMail(json.getEmail());
 		bpContactRecord.setPhone(json.getPhone());
 		bpContactRecord.setExternalId(json.getExternalId().getValue());
+		bpContactRecord.setFirstname(json.getFirstName());
+		bpContactRecord.setLastname(json.getLastName());
+		bpContactRecord.setPhone(json.getPhone());
 	}
 
 	public JsonResponseContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)

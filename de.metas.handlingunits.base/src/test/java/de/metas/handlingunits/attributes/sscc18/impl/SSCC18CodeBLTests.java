@@ -18,50 +18,44 @@ import java.util.Map;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 public class SSCC18CodeBLTests
 {
-	private Properties ctx;
 	private SSCC18CodeBL sscc18CodeBL;
+
+	static int nextSSCC18SerialNumber = 0;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		ctx = Env.getCtx();
-
-		// BL under test
-		sscc18CodeBL = (SSCC18CodeBL)Services.get(ISSCC18CodeBL.class);
+		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++nextSSCC18SerialNumber);
 	}
 
 	public static void setManufacturerCode(final String manufacturerCode)
 	{
-		final int adOrgId = 0;
-		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, manufacturerCode, adOrgId);
+		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, manufacturerCode, ClientId.METASFRESH, OrgId.ANY);
 	}
 
 	@Test
@@ -111,7 +105,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"01000000", // expected,
@@ -124,7 +118,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("0000000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -137,7 +131,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("00000");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -150,7 +144,7 @@ public class SSCC18CodeBLTests
 	{
 		setManufacturerCode("2");
 
-		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(ctx, 1000000);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -161,6 +155,15 @@ public class SSCC18CodeBLTests
 				"0000002", // expected,
 				generatedSSCC18.getManufacturerCode() // actual
 		);
+	}
+
+	@Test
+	public void testGenerateSSCC18value9DigitManufacturerCode()
+	{
+		setManufacturerCode("123456789");
+		final SSCC18CodeBL sscc18CodeBL = new SSCC18CodeBL(orgId -> 23);
+		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY);
+		assertThat(sscc18CodeBL.toString(generatedSSCC18, false)).hasSize(18).isEqualTo("012345678900000234");
 	}
 
 	@Test
@@ -199,8 +202,20 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
+	}
 
-		StaticHUAssert.assertMock("mock");
+	@Test
+	public void testcheckValidSSCC18_9digitManufacturerCode()
+	{
+		final String manufacturerCode = "764011946";
+		final String serialNumber = "0000002";
+		final int checkDigit = 4;
+		final int extensionDigit = 0;
+
+		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
+		sscc18CodeBL.validate(sscc18ToValidate);
+
+		assertThat(sscc18CodeBL.toString(sscc18ToValidate, false)).hasSize(18).isEqualTo("0" + manufacturerCode + serialNumber + checkDigit);
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -213,8 +228,6 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
-
-		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -227,8 +240,6 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
-
-		StaticHUAssert.assertMock("mock");
 	}
 
 	@Test

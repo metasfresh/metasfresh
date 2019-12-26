@@ -21,6 +21,7 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
@@ -75,11 +76,15 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -93,7 +98,6 @@ import lombok.NonNull;
  * <li>generate shipment
  * <li>shipper transportation: make sure M_Packages are updated correctly after shipment
  * </ul>
- *
  */
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest
 {
@@ -145,6 +149,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	{
 		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
 
+		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 
 		// Prepare context
@@ -294,9 +299,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Aggregates Picked TUs ({@link #afterAggregation_HUExpectations}) and creates Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 *
+	 * <p>
 	 * NOTE: in most of the cases they are LUs but not necesary.
-	 *
+	 * <p>
 	 * Also allocates the aggregated HUs to original shipment schedules ({@link #afterAggregation_ShipmentScheduleQtyPickedExpectations}).
 	 */
 	protected abstract void step30_aggregateHUs();
@@ -307,7 +312,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Adds Aggregated HUs ({@link #afterAggregation_HUExpectations}) to {@link #shipperTransportation}.
-	 *
+	 * <p>
 	 * Resulting packages will be added to {@link #mpackagesForAggregatedHUs}.
 	 */
 	protected void step40_addAggregatedHUsToShipperTransportation()
@@ -327,7 +332,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
-							shipperTransportation.getM_ShipperTransportation_ID(),
+							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
 							Collections.singletonList(afterAggregation_HU));
 
 			//
@@ -345,7 +350,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Generates {@link #generatedShipments} from Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 *
+	 * <p>
 	 * Validates if {@link #mpackagesForAggregatedHUs} were correctly updated.
 	 */
 	protected void step50_GenerateShipment()

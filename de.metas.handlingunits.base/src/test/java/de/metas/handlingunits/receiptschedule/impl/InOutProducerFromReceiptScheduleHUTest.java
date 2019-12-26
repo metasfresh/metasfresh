@@ -146,11 +146,11 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(null).endExpectation()
 				.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(paloxes.get(9)).endExpectation()
 				//
-				.qtys(qtys_4300).noASIDescription()
+				.stockQtyAndMaybeCatchQty(qtys_4300).noASIDescription()
 				.inDispute(false)
 				.endExpectation()
 			.newInOutLineExpectation()
-			.qtys(qtys_10).noASIDescription()
+			.stockQtyAndMaybeCatchQty(qtys_10).noASIDescription()
 				.inDispute(false)
 				.endExpectation()
 			.assertExpected(receipt); // lines count expected: 2
@@ -232,7 +232,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.qtys(qtys_408_5)
+					.stockQtyAndMaybeCatchQty(qtys_408_5)
 					.noASIDescription()
 					.noQualityDiscountPercent().noQualityNote()
 					.inDispute(false)
@@ -243,7 +243,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(0) // does *not* reference packaging iol, because it has no HUs
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.qtys(qtys_21_5)
+					.stockQtyAndMaybeCatchQty(qtys_21_5)
 					.noASIDescription()
 					.qualityDiscountPercent("5").qualityNote(HUTestHelper.QUALITYNOTICE_Test1)
 					.inDispute(true)
@@ -256,7 +256,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.qtys(qtys_387)
+					.stockQtyAndMaybeCatchQty(qtys_387)
 					.noASIDescription()
 					.noQualityDiscountPercent().noQualityNote()
 					.inDispute(false)
@@ -267,7 +267,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(0) // does *not* reference packaging iol, because it has no HUs
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.qtys(qtys_43)
+					.stockQtyAndMaybeCatchQty(qtys_43)
 					.noASIDescription()
 					.qualityDiscountPercent("10").qualityNote(HUTestHelper.QUALITYNOTICE_Test2)
 					.inDispute(true)
@@ -294,7 +294,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.qtys(qtys_433_x_8)
+					.stockQtyAndMaybeCatchQty(qtys_433_x_8)
 					.noASIDescription()
 					.noQualityDiscountPercent()
 					.noQualityNote()
@@ -305,7 +305,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(0) // is packaging material and does not reference another packing material line
 					//
 					.packagingmaterialLine(true)
-					.qtys(qtys_10).noASIDescription()
+					.stockQtyAndMaybeCatchQty(qtys_10).noASIDescription()
 					.noQualityDiscountPercent().noQualityNote()
 					.endExpectation()
 				//
@@ -394,21 +394,21 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(null).endExpectation()
 					.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(paloxes.get(9)).endExpectation()
 					//
-					.qtys(qtys_4235_75)
+					.stockQtyAndMaybeCatchQty(qtys_4235_75)
 					.noQualityDiscountPercent()
 					.noASIDescription()
 					.inDispute(false)
 					.endExpectation()
 				.newInOutLineExpectation()// Quality issue: NOK
 					.qtyEnteredTU(0)
-					.qtys(qtys_64_25)
+					.stockQtyAndMaybeCatchQty(qtys_64_25)
 					.qualityDiscountPercent("1.49") // = 64.25 / 4235.75 * 100 = 1.4941860465
 					.noASIDescription()
 					.inDispute(true)
 					.endExpectation()
 				.newInOutLineExpectation() // Packing materials line
 					.qtyEnteredTU(0)
-					.qtys(qtys_10)
+					.stockQtyAndMaybeCatchQty(qtys_10)
 					.noQualityDiscountPercent()
 					.noASIDescription()
 					.inDispute(false)
@@ -468,19 +468,19 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			.newInOutLineExpectation()
 				.qtyEnteredTU(10 / 2)
 				//
-				.qtys(qtys_2150)
+				.stockQtyAndMaybeCatchQty(qtys_2150)
 				.inDispute(false)
 				.attribute(attr_LotNumberDate, lotNumberDate1)
 				.endExpectation()
 			.newInOutLineExpectation()
 				.qtyEnteredTU(10 / 2)
 				//
-				.qtys(qtys_2150)
+				.stockQtyAndMaybeCatchQty(qtys_2150)
 				.inDispute(false)
 				.attribute(attr_LotNumberDate, lotNumberDate2)
 				.endExpectation()
 			.newInOutLineExpectation()
-				.qtys(qtys_10)
+				.stockQtyAndMaybeCatchQty(qtys_10)
 				.inDispute(false)
 				.endExpectation()
 			.assertExpected(receipt); // lines count expected: 3

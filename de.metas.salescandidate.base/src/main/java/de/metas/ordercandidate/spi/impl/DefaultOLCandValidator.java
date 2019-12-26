@@ -9,11 +9,13 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -22,6 +24,7 @@ import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
@@ -60,10 +63,12 @@ import lombok.NonNull;
 @Component
 public class DefaultOLCandValidator implements IOLCandValidator
 {
+	private static final String MSG_NO_UOM_CONVERSION = "NoUOMConversion_Params";
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultOLCandValidator.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
@@ -282,22 +287,24 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	/**
 	 * Validates the UOM conversion; we will need convertToProductUOM in order to get the QtyOrdered in the order line.
 	 */
-	private boolean validateUOM(@NonNull final I_C_OLCand olCand)
+	private void validateUOM(@NonNull final I_C_OLCand olCand)
 	{
-		try
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
+		final I_C_UOM targetUOMRecord = olCandEffectiveValuesBL.getC_UOM_Effective(olCand);
+
+		final BigDecimal convertedQty = uomConversionBL.convertToProductUOM(
+				productId,
+				targetUOMRecord,
+				olCand.getQtyEntered());
+		if (convertedQty == null)
 		{
-			final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
-			uomConversionBL.convertToProductUOM(
-					productId,
-					olCandEffectiveValuesBL.getC_UOM_Effective(olCand),
-					olCand.getQtyEntered());
+			final String productName = productBL.getProductName(productId);
+			final String productValue = productBL.getProductValue(productId);
+			final String productX12de355 = productBL.getStockUOM(productId).getX12DE355();
+			final String targetX12de355 = targetUOMRecord.getX12DE355();
+
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_NO_UOM_CONVERSION, productValue + "_" + productName, productX12de355, targetX12de355);
+			throw new AdempiereException(msg).markAsUserValidationError();
 		}
-		catch (AdempiereException e)
-		{
-			olCand.setErrorMsg(e.getLocalizedMessage());
-			olCand.setIsError(true);
-			return false;
-		}
-		return true;
 	}
 }

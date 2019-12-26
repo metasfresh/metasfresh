@@ -188,9 +188,9 @@ public class RequestBLTest
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
 		inout.setIsSOTrx(true);
 
-		inout.setC_BPartner(createPartner("Partner 1"));
+		inout.setC_BPartner_ID(createPartner("Partner 1").getC_BPartner_ID());
 
-		inout.setAD_User(createUser("User1"));
+		inout.setAD_User_ID(createUser("User1").getAD_User_ID());
 
 		inout.setMovementDate(SystemTime.asDayTimestamp());
 		save(inout);

@@ -23,6 +23,8 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -49,7 +51,6 @@ import de.metas.util.Services;
  * Handles {@link I_M_InOut}s. Mainly all invoice candidates creation logic is delegated to {@link M_InOutLine_Handler}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 {
@@ -78,7 +79,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Don't create InvoiceCandidates for DocSubType Saldokorrektur (FRESH-454)
-		final I_C_DocType docType = inout.getC_DocType();
+		final I_C_DocType docType = load(inout.getC_DocType_ID(), I_C_DocType.class);
 		final String docSubType = docType.getDocSubType();
 		if (de.metas.interfaces.I_C_DocType.DOCSUBTYPE_InOutAmountCorrection.equals(docSubType))
 		{

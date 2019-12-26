@@ -39,6 +39,7 @@ import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -140,6 +141,11 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	@Override
 	public BigDecimal calculateQtyTU(@NonNull final IHUPackingAware record)
 	{
+		if (uomDAO.isUOMForTUs(UomId.ofRepoId(record.getC_UOM_ID())))
+		{
+			return record.getQty(); // the quantity *is* already the number of TUs
+		}
+
 		final Capacity capacity = calculateCapacity(record);
 		if (capacity == null)
 		{

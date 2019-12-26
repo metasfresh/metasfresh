@@ -4,8 +4,9 @@ import java.sql.Timestamp;
 
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 
-public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut, IDocumentBillLocation, IDocumentDeliveryLocation
+public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut, IDocumentBillLocation, IDocumentDeliveryLocation, IDocumentHandOverLocation
 {
 	String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
 
@@ -58,10 +59,22 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut,
 	int getHandOver_Location_ID();
 	void setHandOver_Location_ID(int HandOver_Location_ID);
 	//@formatter:on
+	
+	//@formatter:off
+	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
+	int getHandOver_User_ID();
+	void setHandOver_User_ID(int HandOver_User_ID);
+	//@formatter:on
 
 	//@formatter:off
 	String COLUMNNAME_IsUseHandOver_Location = "IsUseHandOver_Location";
 	boolean getIsUseHandOver_Location();
 	void setIsUseHandOver_Location(boolean IsUseHandOver_Location);
+	//@formatter:on
+	
+	//@formatter:off
+	String COLUMNNAME_HandOverAddress = "HandOverAddress";
+	String getHandOverAddress();
+	void setHandOverAddress(String address);
 	//@formatter:on
 }

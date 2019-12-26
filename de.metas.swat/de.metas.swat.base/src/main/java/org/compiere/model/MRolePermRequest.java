@@ -36,6 +36,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
 import de.metas.document.DocTypeId;
+import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -77,7 +78,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 	{
 		final Properties ctx = Env.getCtx();
 
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_PermLogLevel, permLogLevel, 0);
+		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_PermLogLevel, permLogLevel, Env.getClientId(), OrgId.ANY);
 		Env.setContext(ctx, "P|" + SYSCONFIG_PermLogLevel, permLogLevel);
 	}
 

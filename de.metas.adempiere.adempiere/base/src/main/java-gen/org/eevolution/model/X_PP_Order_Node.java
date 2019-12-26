@@ -15,7 +15,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -888768243L;
+	private static final long serialVersionUID = 1736826172L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (Properties ctx, int PP_Order_Node_ID, String trxName)
@@ -50,7 +50,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
     }
 
 	@Override
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node() throws RuntimeException
+	public org.compiere.model.I_AD_WF_Node getAD_WF_Node()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
 	}
@@ -87,7 +87,41 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
+	public org.compiere.model.I_AD_WF_Node_Template getAD_WF_Node_Template()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_Template_ID, org.compiere.model.I_AD_WF_Node_Template.class);
+	}
+
+	@Override
+	public void setAD_WF_Node_Template(org.compiere.model.I_AD_WF_Node_Template AD_WF_Node_Template)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_WF_Node_Template_ID, org.compiere.model.I_AD_WF_Node_Template.class, AD_WF_Node_Template);
+	}
+
+	/** Set Workflow Steps Template.
+		@param AD_WF_Node_Template_ID Workflow Steps Template	  */
+	@Override
+	public void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID)
+	{
+		if (AD_WF_Node_Template_ID < 1) 
+			set_Value (COLUMNNAME_AD_WF_Node_Template_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_WF_Node_Template_ID, Integer.valueOf(AD_WF_Node_Template_ID));
+	}
+
+	/** Get Workflow Steps Template.
+		@return Workflow Steps Template	  */
+	@Override
+	public int getAD_WF_Node_Template_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_Template_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
 	}
@@ -124,7 +158,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getAD_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
@@ -160,18 +194,6 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
@@ -195,18 +217,6 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -514,7 +524,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
 	}
@@ -573,7 +583,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException
+	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class);
 	}
@@ -708,7 +718,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}

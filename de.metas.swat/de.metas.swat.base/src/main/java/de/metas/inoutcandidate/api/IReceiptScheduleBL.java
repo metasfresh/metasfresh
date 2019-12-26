@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -41,6 +42,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
 public interface IReceiptScheduleBL extends ISingletonService
@@ -89,11 +91,9 @@ public interface IReceiptScheduleBL extends ISingletonService
 	BigDecimal getQtyMovedWithIssues(I_M_ReceiptSchedule rs);
 
 	/**
-	 *
-	 * @param rs
 	 * @return override-qty or the qty (if no override set) of the given {@code rs}.
 	 */
-	BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs);
+	StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs);
 
 	/**
 	 *
@@ -166,11 +166,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	/**
 	 * Sets the effective attribute set instance (i.e. M_AttributeSetInstance_Override_ID)
-	 *
-	 * @param rs
-	 * @param asi
 	 */
-	void setM_AttributeSetInstance_Effective(I_M_ReceiptSchedule rs, I_M_AttributeSetInstance asi);
+	void setM_AttributeSetInstance_Effective(I_M_ReceiptSchedule rs, AttributeSetInstanceId asiId);
 
 	IAggregationKeyBuilder<I_M_ReceiptSchedule> getHeaderAggregationKeyBuilder();
 

@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.ModelColumn;
 
-import de.metas.util.Check;
 import lombok.NonNull;
 
 final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
@@ -102,14 +101,13 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 	}
 
 	@Override
-	public IQueryOrderByBuilder<T> addColumn(final ModelColumn<T, ?> column, final Direction direction, final Nulls nulls)
+	public IQueryOrderByBuilder<T> addColumn(@NonNull final ModelColumn<T, ?> column, final Direction direction, final Nulls nulls)
 	{
-		Check.assumeNotNull(column, "column not null");
 		final String columnName = column.getColumnName();
 		return addColumn(columnName, direction, nulls);
 	}
 
-	private final Nulls getNulls(final Direction direction)
+	private Nulls getNulls(final Direction direction)
 	{
 		// NOTE: keeping backward compatibility
 		// i.e. postgresql 9.1. specifications:

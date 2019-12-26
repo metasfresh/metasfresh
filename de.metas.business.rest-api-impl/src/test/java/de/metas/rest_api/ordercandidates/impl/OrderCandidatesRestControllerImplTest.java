@@ -1,10 +1,16 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static de.metas.ordercandidate.model.I_C_OLCand.*;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -25,6 +31,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.MimeType;
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,8 +75,10 @@ import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.OrderDocType;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
@@ -163,6 +172,16 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDataSource(DATA_SOURCE_INTERNALNAME);
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
+
+			testMasterdata.createShipper("DPD");
+
+			testMasterdata.createSalesRep("SalesRep");
+
+			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
+					X_C_DocType.DOCSUBTYPE_StandardOrder));
+
+			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
+					X_C_DocType.DOCSUBTYPE_PrepayOrder));
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -308,6 +327,8 @@ public class OrderCandidatesRestControllerImplTest
 
 		testMasterdata.createProduct("productCode", uomId);
 
+
+
 		testDateOrdered(null);
 		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 2));
@@ -317,8 +338,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void testDateOrdered(@Nullable final LocalDate dateOrdered)
 	{
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(dateOrdered)
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
 				.qty(new BigDecimal("66"))
@@ -337,6 +358,11 @@ public class OrderCandidatesRestControllerImplTest
 						.docBaseType("ARI")
 						.docSubType("KV")
 						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
 				.build());
 
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
@@ -354,8 +380,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void error_NoBPartnerFound()
 	{
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
 				.qty(new BigDecimal("66"))
 				.externalHeaderId("externalHeaderId")
@@ -412,8 +438,8 @@ public class OrderCandidatesRestControllerImplTest
 		startInterceptors();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
@@ -436,6 +462,89 @@ public class OrderCandidatesRestControllerImplTest
 								.gln("gln1")
 								.build())
 						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
+				.warehouseDestCode("testWarehouseDest")
+				.invoiceDocType(JsonDocTypeInfo.builder()
+						.docBaseType("ARI")
+						.docSubType("KV")
+						.build())
+				.build());
+
+		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
+				.createOrderLineCandidates(request)
+				.getBody();
+
+		final List<JsonOLCand> olCands = response.getResult();
+		assertThat(olCands).hasSize(1);
+
+		final JsonOLCand olCand = olCands.get(0);
+		System.out.println(olCand);
+
+		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
+		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
+	}
+
+
+	@Test
+	public void test_CreateProductPrice_WarehouseDestId_DirectDebit()
+	{
+		//
+		// Masterdata: pricing
+		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
+		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
+		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
+		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
+		testMasterdata.createPricingRules();
+
+		//
+		// Masterdata: BPartner & Location
+		testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("bpCode")
+				.salesPricingSystemId(pricingSystemId)
+				.countryId(countryId_DE)
+				.gln(GLN.ofString("gln1"))
+				.build();
+
+		//
+		// Masterdata: Warehouse
+		final WarehouseId testWarehouseDestId = testMasterdata.createWarehouse("testWarehouseDest");
+
+		startInterceptors();
+
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
+				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
+				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
+				.qty(new BigDecimal("66"))
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.poReference("poRef")
+				.product(JsonProductInfo.builder()
+						.code("productCode")
+						.name("productName")
+						.type(Type.ITEM)
+						.uomCode(UOM_CODE)
+						.priceStd(new BigDecimal("13.24"))
+						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
+						.build())
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("bpCode")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("gln1")
+								.build())
+						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.DirectDebit)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
 				.invoiceDocType(JsonDocTypeInfo.builder()
 						.docBaseType("ARI")
@@ -467,8 +576,8 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		//
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
@@ -479,6 +588,11 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.syncAdvise(SyncAdvise.READ_ONLY)
 						.build())
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(JsonRequestBPartner.builder()
@@ -578,14 +692,21 @@ public class OrderCandidatesRestControllerImplTest
 		startInterceptors();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" +DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
 				.externalHeaderId("externalHeaderId")
 				.externalLineId("externalLineId")
 				.poReference("poRef")
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
+
+
 				.product(JsonProductInfo.builder()
 						.code("productCode")
 						.name("productName")
@@ -638,6 +759,115 @@ public class OrderCandidatesRestControllerImplTest
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
 	}
+
+
+	@Test
+	public void test_no_location_specified_DirectDebit()
+	{
+		//
+		// Masterdata: pricing
+		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
+		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
+		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
+		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
+		testMasterdata.createPricingRules();
+
+		//
+		// Masterdata: BPartner & Location
+		final BPartnerLocationId bpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("mainPartner")
+				.salesPricingSystemId(pricingSystemId)
+				.countryId(countryId_DE)
+				.build();
+
+		final BPartnerLocationId billBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("billPartner")
+				.salesPricingSystemId(pricingSystemId)
+				.countryId(countryId_DE)
+				.build();
+
+		final BPartnerLocationId dropShipBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("droptShipPartner")
+				.salesPricingSystemId(pricingSystemId)
+				.gln(GLN.ofString("redHerring!"))
+				.countryId(countryId_DE)
+				.build();
+		final BPartnerLocationId expectedDropShipLocation = testMasterdata.prepareBPartnerLocation().bpartnerId(dropShipBpartnerAndLocation.getBpartnerId())
+				.countryId(countryId_DE)
+				.gln(GLN.ofString("expectedDropShipLocation"))
+				.build();
+
+		startInterceptors();
+
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" +DATA_DEST_INVOICECANDIDATE)
+				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
+				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
+				.qty(new BigDecimal("66"))
+				.externalHeaderId("externalHeaderId")
+				.externalLineId("externalLineId")
+				.poReference("poRef")
+				.shipper("val-DPD")
+				.salesPartnerCode("SalesRep")
+				.paymentRule(JSONPaymentRule.DirectDebit)
+				.orderDocType(OrderDocType.PrepayOrder)
+				.shipper("val-DPD")
+
+
+				.product(JsonProductInfo.builder()
+						.code("productCode")
+						.name("productName")
+						.type(Type.ITEM)
+						.uomCode(UOM_CODE)
+						.priceStd(new BigDecimal("13.24"))
+						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
+						.build())
+				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("mainPartner")
+								.build()) // no location specified!
+						.build())
+				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("billPartner")
+								.build()) // again, no location specified!
+						.build())
+				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(JsonRequestBPartner.builder()
+								.code("droptShipPartner")
+								.build())
+						.location(JsonRequestLocation.builder()
+								.gln("expectedDropShipLocation")
+								.build())
+						.build())
+
+				.build());
+
+		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
+				.createOrderLineCandidates(request)
+				.getBody();
+
+		final List<JsonOLCand> olCands = response.getResult();
+		assertThat(olCands).hasSize(1);
+		final JsonOLCand olCand = olCands.get(0);
+
+		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
+		assertThat(olCandRecords).hasSize(1)
+				.extracting(COLUMNNAME_C_OLCand_ID)
+				.contains(olCand.getId());
+
+		assertThat(olCandRecords).extracting(COLUMNNAME_C_BPartner_ID, COLUMNNAME_C_BPartner_Location_ID)
+				.contains(tuple(bpartnerAndLocation.getBpartnerId().getRepoId(), bpartnerAndLocation.getRepoId()));
+
+		assertThat(olCandRecords).extracting(COLUMNNAME_Bill_BPartner_ID, COLUMNNAME_Bill_Location_ID)
+				.contains(tuple(billBpartnerAndLocation.getBpartnerId().getRepoId(), billBpartnerAndLocation.getRepoId()));
+
+		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
+				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
+	}
+
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 	{

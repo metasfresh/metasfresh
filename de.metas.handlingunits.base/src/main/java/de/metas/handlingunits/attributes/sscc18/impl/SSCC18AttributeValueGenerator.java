@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
-import org.apache.ecs.xhtml.code;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
@@ -34,8 +33,10 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerator
 {
@@ -52,21 +53,20 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 		return true;
 	}
 
-	/**
-	 * @param ctx the context used to determine (from {@link code AD_Client_ID} and {@code AD_Org_ID}) which manufacturer code to use.
-	 */
 	@Override
-	public String generateStringValue(final Properties ctx, final IAttributeSet attributeSet, final I_M_Attribute attribute)
+	public String generateStringValue(
+			final Properties ctx_IGNORED,
+			@NonNull final IAttributeSet attributeSet,
+			final I_M_Attribute attribute_IGNORED)
 	{
-		final ISSCC18CodeBL creator = Services.get(ISSCC18CodeBL.class);
-
 		final I_M_HU hu = Services.get(IHUAttributesBL.class).getM_HU(attributeSet);
+		final ISSCC18CodeBL creator = Services.get(ISSCC18CodeBL.class);
 
 		// We use M_HU_ID for SSCC18 serial number (06852)
 		final int serialNumber = hu.getM_HU_ID();
 		Check.errorIf(serialNumber <= 0, "M_HU_ID={} for M_HU={}", serialNumber, hu);
 
-		final SSCC18 sscc18 = creator.generate(ctx, serialNumber);
+		final SSCC18 sscc18 = creator.generate(OrgId.ofRepoIdOrAny(hu.getAD_Org_ID()), serialNumber);
 		return creator.toString(sscc18, false); // humanReadable=false
 	}
 }

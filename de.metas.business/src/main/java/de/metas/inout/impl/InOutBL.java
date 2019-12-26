@@ -51,6 +51,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -84,6 +85,7 @@ public class InOutBL implements IInOutBL
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
 				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
 				bPartnerId,
 				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
@@ -108,7 +110,7 @@ public class InOutBL implements IInOutBL
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
 					+ "\n @M_InOut_ID@: " + inOut
-					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner().getValue());
+					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
@@ -159,7 +161,7 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner().getValue());
+						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
@@ -168,10 +170,6 @@ public class InOutBL implements IInOutBL
 	/**
 	 * Find the pricing system based on the soTrx. This method will be used in the rare cases when we are not relying upon the SOTrx of the inout, because we need the pricing system for the opposite
 	 * SOTrx nature.
-	 *
-	 * @param inOut
-	 * @param isSOTrx
-	 * @return
 	 */
 	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final SOTrx soTrx)
 	{
@@ -256,7 +254,7 @@ public class InOutBL implements IInOutBL
 		line.setAD_Org_ID(inout.getAD_Org_ID());
 		line.setM_InOut(inout);
 
-		final I_M_Warehouse warehouse = inout.getM_Warehouse();
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
 		final I_M_Locator locator = warehouseBL.getDefaultLocator(warehouse);
 		if (locator != null)
 		{

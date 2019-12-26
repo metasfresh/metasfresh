@@ -13,29 +13,31 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.List;
 
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 public class OrderLineReceiptScheduleProducerTest extends ReceiptScheduleTestBase
@@ -60,7 +62,8 @@ public class OrderLineReceiptScheduleProducerTest extends ReceiptScheduleTestBas
 		final I_M_Warehouse productWarehouse = createWarehouse("WH_Product");
 		final I_M_Locator productWarehouseLocator = createLocator(productWarehouse);
 
-		final I_M_Product product = createProduct("Test Product", productWarehouseLocator);
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM");
+		final I_M_Product product = createProduct("Test Product", UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()), productWarehouseLocator);
 
 		final I_C_Order order = createOrder(orderWarehouse);
 		createOrderLine(order, product);

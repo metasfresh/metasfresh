@@ -37,9 +37,10 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
 	 *
 	 * @param tuOrVHU TU or VirtualHU to link on
+	 * @param anonymousTuPickedOnTheFly
 	 * @return qtyPicked record for this addition
 	 */
-	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext);
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext, final boolean anonymousTuPickedOnTheFly);
 
 	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, StockQtyAndUOMQty qtyPicked, HuId tuOrVHUId, IHUContext huContext);
 
