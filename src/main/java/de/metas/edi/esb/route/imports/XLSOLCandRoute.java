@@ -57,7 +57,7 @@ import de.metas.edi.esb.xls.XlsToMapListConverter;
  * <li>from: Excel file (from {@link #EP_OLCAND_INPUT_ORDERS})
  * <li>{@link XLS_OLCand_Row} (internal representation of an customer's excel row)
  * <li> {@link XLSImpCOLCandType} (XML representation of an excel row/C_OLCand that will be sent to metasfresh)
- * <li>to: {@link Constants#EP_AMQP_TO_AD}
+ * <li>to: {@link Constants#EP_AMQP_TO_MF}
  * </ul>
  *
  * @author tsa
@@ -145,6 +145,6 @@ public class XLSOLCandRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 				//
 				.log(LoggingLevel.TRACE, "XLS_OLCand: Sending XML Order document to metasfresh...")
-				.to(Constants.EP_AMQP_TO_AD);
+				.to(Constants.EP_AMQP_TO_MF);
 	}
 }

@@ -34,12 +34,9 @@ public final class Constants
 	 */
 	public static final String METASFRESH_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS"; // TODO extract pattern to props file
 
-	/**
-	 * @see http://fusesource.com/docs/router/2.8/component_ref/_IDU_ActiveMQ.html
-	 */
-	public static final String EP_AMQP_FROM_AD = "{{ep.rabbitmq.from.ad}}";
-	public static final String EP_AMQP_TO_AD = "{{ep.rabbitmq.to.ad}}";
-	public static final String EP_AMQP_TO_AD_DURABLE_ROUTING_KEY = "{{rabbitmq.out.exchange.durable}}";
+	public static final String EP_AMQP_FROM_MF = "{{ep.rabbitmq.from.mf}}";
+	public static final String EP_AMQP_TO_MF = "{{ep.rabbitmq.to.mf}}";
+	public static final String EP_AMQP_TO_MF_DURABLE_ROUTING_KEY = "{{rabbitmq.out.exchange.durable}}";
 
 	public static final String JAXB_ContextPath = ObjectFactory.class.getPackage().getName();
 	public static final ObjectFactory JAXB_ObjectFactory = new ObjectFactory();

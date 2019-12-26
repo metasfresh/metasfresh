@@ -59,7 +59,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 	@Override
 	public void configure()
 	{
-		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 
 		// Catch any exception in feedback, log it, and stop the route from continuing execution.
 		onException(Exception.class)
@@ -116,7 +116,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 						// Send the feedback to metasfresh
 						.log(LoggingLevel.INFO, "EDI: Sending error response to metasfresh...")
 						.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
-						.to(Constants.EP_AMQP_TO_AD)
+						.to(Constants.EP_AMQP_TO_MF)
 				.end();
 		// @formatter:on
 	}

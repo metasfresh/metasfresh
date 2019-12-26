@@ -96,6 +96,6 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 
 		.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
-				.to(Constants.EP_AMQP_TO_AD);
+				.to(Constants.EP_AMQP_TO_MF);
 	}
 }

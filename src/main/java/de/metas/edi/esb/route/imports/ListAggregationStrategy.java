@@ -30,7 +30,7 @@ import org.apache.camel.processor.aggregate.AggregationStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EDIAggregationStrategy implements AggregationStrategy
+public class ListAggregationStrategy implements AggregationStrategy
 {
 	@Override
 	public Exchange aggregate(final Exchange oldExchange, final Exchange newExchange)

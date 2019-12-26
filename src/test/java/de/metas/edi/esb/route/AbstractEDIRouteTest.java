@@ -44,7 +44,7 @@ import de.metas.edi.esb.route.imports.CompuDataOrdersRoute;
 
 public abstract class AbstractEDIRouteTest extends AbstractEDITest
 {
-	@Produce(uri = Constants.EP_AMQP_FROM_AD)
+	@Produce(uri = Constants.EP_AMQP_FROM_MF)
 	private ProducerTemplate inputXMLInvoice;
 
 	@EndpointInject(uri = CompuDataInvoicRoute.EP_EDI_FILE_INVOICE)

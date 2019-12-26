@@ -47,7 +47,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 	{
 		final String isXMLInvoice = Util.resolveProperty(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_STEPCOM_XML);
 		final String isXMLDesadv = Util.resolveProperty(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_STEPCOM_XML);
-		from(Constants.EP_AMQP_FROM_AD)
+		from(Constants.EP_AMQP_FROM_MF)
 				.routeId("XML-To-EDI-Common")
 
 				.log(LoggingLevel.INFO, "EDI: Processing XML body:\r\n" + body())

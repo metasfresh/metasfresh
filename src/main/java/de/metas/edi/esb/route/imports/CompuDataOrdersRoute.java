@@ -121,13 +121,13 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 				.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
 					//
 					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
-					.aggregationStrategy(new EDIAggregationStrategy())
+					.aggregationStrategy(new ListAggregationStrategy())
 					//
 					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
 					.marshal(jaxb)
 					//
 					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
-					.to(Constants.EP_AMQP_TO_AD)
+					.to(Constants.EP_AMQP_TO_MF)
 				.end();
 		// @formatter:on
 	}
