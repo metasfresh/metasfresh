@@ -249,9 +249,9 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
-	
+
 	@Override
-	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass) 
+	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass)
 	{
 		return getContactById(contactId, modelClass);
 	}
@@ -1202,7 +1202,11 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing BPartner; Searched via the following properties (one-by-one, may be empty): {}", searchedByInfo.toString());
+			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
+					+ " Searched via the following properties one-after-one (list may be empty): {};"
+					+ " The search was restricted to the following orgIds (empty means no restriction): {}",
+					searchedByInfo.toString(),
+					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 
