@@ -13,6 +13,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -263,7 +264,6 @@ final class MasterdataProvider
 				queryBuilder.value(dataSource.asValue());
 				break;
 
-
 			default:
 				throw new InvalidIdentifierException(dataSource);
 		}
@@ -312,25 +312,29 @@ final class MasterdataProvider
 
 	}
 
-	public BPartnerId getSalesRepId(final JsonOLCandCreateRequest request)
+	/**
+	 * @param orgId the method filters for the given orgId or {@link OrgId#ANY}.
+	 * @return the sales bpartnerId for the given {@code request}'s {@code salesPartnerCode} and orgId.
+	 */
+	public BPartnerId getSalesRepId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId)
 	{
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final String salesRepValue = request.getSalesPartnerCode();
 
-		if(Check.isEmpty(salesRepValue))
+		if (Check.isEmpty(salesRepValue))
 		{
 			return null;
 		}
 
-		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode = bPartnerDAO.getBPartnerIdBySalesPartnerCode(salesRepValue);
+		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode = bPartnerDAO.getBPartnerIdBySalesPartnerCode(salesRepValue, ImmutableSet.of(OrgId.ANY, orgId));
 
-		return bPartnerIdBySalesPartnerCode.orElseThrow(() ->
-				MissingResourceException.builder().
-				resourceName("salesPartnerCode").
-				resourceIdentifier(salesRepValue).
-				parentResource(request).
-				build());
+		return bPartnerIdBySalesPartnerCode.orElseThrow(() -> MissingResourceException.builder()
+				.resourceName("salesPartnerCode")
+				.resourceIdentifier(salesRepValue)
+				.parentResource(request).build());
 	}
 
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)
@@ -363,5 +367,4 @@ final class MasterdataProvider
 				.parentResource(request)
 				.build();
 	}
-
 }

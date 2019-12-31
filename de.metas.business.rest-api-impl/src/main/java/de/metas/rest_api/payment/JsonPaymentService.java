@@ -91,7 +91,9 @@ public class JsonPaymentService
 		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(orgBPartnerIdOptional.get(), currencyId, jsonInboundPaymentInfo.getTargetIBAN());
 		if (!bankAccountIdOptional.isPresent())
 		{
-			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonInboundPaymentInfo.getBpartnerIdentifier(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
+			return ResponseEntity.unprocessableEntity().body(String.format(
+					"Cannot find Bank Account for org-bpartner-id: %s, currency: %s and account: %s",
+					orgBPartnerIdOptional.get().getRepoId(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
 		}
 
 		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonInboundPaymentInfo.getBpartnerIdentifier()));

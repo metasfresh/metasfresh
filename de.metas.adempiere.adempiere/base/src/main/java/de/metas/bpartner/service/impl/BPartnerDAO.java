@@ -195,7 +195,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(@NonNull final String salesPartnerCode)
+	public Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(
+			@NonNull final String salesPartnerCode,
+			@NonNull final Set<OrgId> onlyOrgIds)
 	{
 		if (isEmpty(salesPartnerCode, true))
 		{
@@ -203,8 +205,9 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesPartnerCode, salesPartnerCode.trim())
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesPartnerCode, salesPartnerCode.trim())
+				.addInArrayOrAllFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, onlyOrgIds)
 				.create()
 				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
 		return Optional.ofNullable(bpartnerId);

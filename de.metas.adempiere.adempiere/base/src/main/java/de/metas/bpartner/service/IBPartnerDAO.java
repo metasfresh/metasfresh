@@ -50,6 +50,7 @@ import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -82,7 +83,12 @@ public interface IBPartnerDAO extends ISingletonService
 	@Deprecated
 	Optional<BPartnerId> getBPartnerIdByValue(String bpartnerValue);
 
-	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode);
+	/**
+	 * @param onlyOrgIds restrict to any of the given orgIds. If empty, then don't filter for orgIds
+	 * @return empty if the given {@code salesPartnerCode} is empty.
+	 * @throws exception if the given parameters match more than one bPartner.
+	 */
+	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode, Set<OrgId> onlyOrgIds);
 
 	Optional<BPartnerId> getBPartnerIdByExternalId(@NonNull ExternalId externalId);
 
@@ -131,7 +137,7 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
-	
+
 	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
 
 	EMailAddress getContactEMail(BPartnerContactId contactId);
