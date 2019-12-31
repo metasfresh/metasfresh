@@ -165,7 +165,10 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
 	{
-		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
+		// NOTE: generally, don't load out of trx unless knowing the context that therefore knowing that it's OK.
+		// You *don not* know that the C_BPartner wasn't just created and the DB was not yet committed.
+		// Therefore, you can't assume that loading out of trx will be OK.
+		final T bpartner = load(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
 	}
 

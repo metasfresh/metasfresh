@@ -56,6 +56,7 @@ class LocationGeocodeEventHandler
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final GeocodingService geocodingService;
 	private final IEventBusFactory eventBusFactory;
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	public LocationGeocodeEventHandler(
 			@NonNull final IEventBusFactory eventBusFactory,
@@ -77,11 +78,11 @@ class LocationGeocodeEventHandler
 	@VisibleForTesting
 	void handleEvent(@NonNull final LocationGeocodeEventRequest request)
 	{
-		final I_C_Location locationRecord = locationsRepo.getById(request.getLocationId());
-		final GeoCoordinatesRequest coordinatesRequest = createGeoCoordinatesRequest(locationRecord);
-
+		I_C_Location locationRecord = null;
 		try
 		{
+			locationRecord = locationsRepo.getById(request.getLocationId());
+			final GeoCoordinatesRequest coordinatesRequest = createGeoCoordinatesRequest(locationRecord);
 			final Optional<GeographicalCoordinates> xoy = geocodingService.findBestCoordinates(coordinatesRequest);
 			if (xoy.isPresent())
 			{
@@ -100,14 +101,19 @@ class LocationGeocodeEventHandler
 		}
 		catch (final Exception ex)
 		{
-			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
-
-			locationRecord.setGeocodingStatus(X_C_Location.GEOCODINGSTATUS_Error);
-			locationRecord.setGeocoding_Issue_ID(issueId.getRepoId());
+			final AdIssueId issueId = errorManager.createIssue(ex);
+			if (locationRecord != null)
+			{
+				locationRecord.setGeocodingStatus(X_C_Location.GEOCODINGSTATUS_Error);
+				locationRecord.setGeocoding_Issue_ID(issueId.getRepoId());
+			}
 		}
 		finally
 		{
-			locationsRepo.save(locationRecord);
+			if (locationRecord != null)
+			{
+				locationsRepo.save(locationRecord);
+			}
 		}
 	}
 

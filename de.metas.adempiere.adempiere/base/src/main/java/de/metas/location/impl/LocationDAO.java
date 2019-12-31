@@ -2,8 +2,7 @@ package de.metas.location.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +89,10 @@ public class LocationDAO implements ILocationDAO
 	public LocationId createLocation(@NonNull final LocationCreateRequest request)
 	{
 		// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
-		final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
+		// NOTE2: Don't create records OOT unless you really know what's going on and also know the possible contexts in which a method might be called.
+		// * this method is (also) called as part of a full bpartner-creation workflow we need to be able to roll it back, without leaving back this dangling C_Location.
+		// * more, as of writing this the getPostalId(..) method which is called below doesn't care about trx, so (by default) it's running within the thread-inherited trx
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
 		locationRecord.setAddress1(request.getAddress1());
 		locationRecord.setAddress2(request.getAddress2());
 		locationRecord.setAddress3(request.getAddress3());
