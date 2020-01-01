@@ -41,6 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.camel.Exchange;
@@ -129,6 +130,8 @@ public class StepComXMLDesadvBean
 		final String documentId = xmlDesadv.getDocumentNo();
 
 		// TODO instead of adding all the properties above to the exchange, add them to this settings instance
+
+
 		final StepComDesadvSettings settings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
 		header.setDOCUMENTID(documentId);
@@ -211,43 +214,37 @@ public class StepComXMLDesadvBean
 			@NonNull final HEADERXlief header,
 			@NonNull final String supplierGln)
 	{
+		final EDIExpCBPartnerLocationType buyrLocation = validateObject(xmlDesadv.getCBPartnerLocationID(),
+				"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_Location_ID@");
 
 		final HADRE1 buyerAddress = DESADV_objectFactory.createHADRE1();
 		buyerAddress.setDOCUMENTID(header.getDOCUMENTID());
 		buyerAddress.setADDRESSQUAL(AddressQual.BUYR.toString());
-		buyerAddress.setPARTYIDGLN(xmlDesadv.getCBPartnerLocationID().getGLN());
+		buyerAddress.setPARTYIDGLN(buyrLocation.getGLN());
 		header.getHADRE1().add(buyerAddress);
 
-		EDIExpCBPartnerLocationType deliveryLocation = xmlDesadv.getHandOverLocationID();
-		if (deliveryLocation == null)
-		{
-			deliveryLocation = xmlDesadv.getCBPartnerLocationID();
-		}
+		final EDIExpCBPartnerLocationType delvLocation = xmlDesadv.getHandOverLocationID() != null ? xmlDesadv.getHandOverLocationID() : buyrLocation;
 
 		final HADRE1 deliveryAddress = DESADV_objectFactory.createHADRE1();
 		deliveryAddress.setDOCUMENTID(header.getDOCUMENTID());
 		deliveryAddress.setADDRESSQUAL(AddressQual.DELV.toString());
-		deliveryAddress.setPARTYIDGLN(deliveryLocation.getGLN());
+		deliveryAddress.setPARTYIDGLN(delvLocation.getGLN());
 		header.getHADRE1().add(deliveryAddress);
 
 		final HADRE1 supplierAddress = DESADV_objectFactory.createHADRE1();
 		supplierAddress.setDOCUMENTID(header.getDOCUMENTID());
 		supplierAddress.setADDRESSQUAL(AddressQual.SUPL.toString());
 		supplierAddress.setPARTYIDGLN(supplierGln);
-
-		// address HCTAD1 contact not mapped for now
-
 		header.getHADRE1().add(supplierAddress);
 
-		if (xmlDesadv.getCBPartnerLocationID() != null)
-		{
+		// TODO: add shipToLocation to the desadv
 			final HADRE1 ucAddress = DESADV_objectFactory.createHADRE1();
 			ucAddress.setDOCUMENTID(header.getDOCUMENTID());
 			ucAddress.setADDRESSQUAL(AddressQual.ULCO.toString());
-			ucAddress.setPARTYIDGLN(xmlDesadv.getCBPartnerLocationID().getGLN());
+		ucAddress.setPARTYIDGLN(buyrLocation.getGLN());
 			header.getHADRE1().add(ucAddress);
-		}
 
+		// address HCTAD1 contact not mapped for now
 		// transport details HTRSD1 not mapped for now
 	}
 

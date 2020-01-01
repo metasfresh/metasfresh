@@ -40,8 +40,6 @@ public class EDIXmlErrorFeedbackProcessor<T> implements Processor
 
 	public EDIXmlErrorFeedbackProcessor(final Class<T> feedbackType, final QName feedbackQName, final String recordIdSetter)
 	{
-		super();
-
 		this.feedbackType = feedbackType;
 		this.feedbackQName = feedbackQName;
 		this.recordIdSetter = recordIdSetter;

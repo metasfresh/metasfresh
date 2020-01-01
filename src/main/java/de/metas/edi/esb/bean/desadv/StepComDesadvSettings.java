@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.camel.CamelContext;
-
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.pojo.common.MeasurementUnit;
 import lombok.Builder;

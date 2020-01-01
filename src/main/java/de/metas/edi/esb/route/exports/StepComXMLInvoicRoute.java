@@ -30,8 +30,8 @@ import javax.xml.namespace.QName;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spi.DataFormat;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.bean.invoic.StepComXMLInvoicBean;
@@ -45,6 +45,7 @@ import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
 @Component
+@PropertySource(value = { "classpath:/invoic-customer.properties" })
 public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoic-To-STEPCOM-XML-Invoic";
@@ -84,17 +85,28 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOICE_SENDER_GLN);
 		final String ownerId = Util.resolveProperty(getContext(), EDI_XML_OWNER_ID);
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 
-		final RouteDefinition routeDefinition = from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
+		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_INVOIC_REMOTE, "");
+		final String[] endPointURIs;
+		if (Util.isEmpty(remoteEndpoint)) // if we send everything to the remote-EP, then log what we send to file only on "TRACE" log level
+		{
+			endPointURIs = new String[] { OUTPUT_INVOIC_LOCAL };
+		}
+		else
+		{
+			endPointURIs = new String[] { OUTPUT_INVOIC_LOCAL, remoteEndpoint };
+		}
+
+		from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
-				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
+				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
+				.log(LoggingLevel.INFO, "Setting EDI feedback headers...")
 				.process(exchange -> {
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
@@ -105,34 +117,25 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 				})
 
-				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI XML Java Object...")
+				.log(LoggingLevel.INFO, "Converting XML Java Object -> EDI XML Java Object...")
 				.bean(StepComXMLInvoicBean.class, StepComXMLInvoicBean.METHOD_createXMLEDIData)
 
-				.log(LoggingLevel.INFO, "EDI: Marshalling EDI XML Java Object to XML...")
+				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
+				.log(LoggingLevel.INFO, "Setting output filename pattern from properties...")
 				.setHeader(Exchange.FILE_NAME).simple(invoiceXMLFilenamePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(OUTPUT_INVOIC_LOCAL);
+				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
+				.multicast().stopOnException().to(endPointURIs)
+				.end()
 
-		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_INVOIC_REMOTE, "");
-		if (!Util.isEmpty(remoteEndpoint))
-		{
-			routeDefinition
-					.log(LoggingLevel.TRACE, "Uploading file to remote endpoint")
-					.to(remoteEndpoint);
-		}
-
-		routeDefinition.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EDIInvoiceFeedback_QNAME, METHOD_setCInvoiceID))
-
-				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
+				.log(LoggingLevel.INFO, "Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
-
-				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
+				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
 				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
-				.to(Constants.EP_AMQP_TO_AD);
+				.to(Constants.EP_AMQP_TO_MF);
 	}
 }

@@ -25,7 +25,10 @@ package de.metas.edi.esb.pojo.desadv.stepcom.qualifier;
 
 public enum AddressQual
 {
-	BUYR, SUPL, DELV,
+	BUYR, SUPL,
+
+	/** delivery party */
+	DELV,
 
 	/** ultimate consignee */
 	ULCO

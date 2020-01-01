@@ -106,7 +106,7 @@ public class StepComXMLOrdersRoute
 					.marshal(jaxbDataFormat)
 					//
 					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
-					.to(Constants.EP_AMQP_TO_AD)
+					.to(Constants.EP_AMQP_TO_MF)
 				.end();
 		// @formatter:on
 	}

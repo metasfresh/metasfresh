@@ -56,7 +56,7 @@ public abstract class AbstractEDITest extends CamelTestSupport
 	protected static final transient Logger logger = Logger.getLogger(AbstractEDITest.class.getName());
 
 	/** metasfresh amqp endpoint */
-	@EndpointInject(uri = de.metas.edi.esb.commons.Constants.EP_AMQP_TO_AD)
+	@EndpointInject(uri = de.metas.edi.esb.commons.Constants.EP_AMQP_TO_MF)
 	protected MockEndpoint outamqpADEP;
 
 	protected FixedTimeSource timeSource;
