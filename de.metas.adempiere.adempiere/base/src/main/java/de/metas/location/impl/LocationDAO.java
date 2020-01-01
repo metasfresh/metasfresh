@@ -1,7 +1,7 @@
 package de.metas.location.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.util.List;
@@ -63,7 +63,10 @@ public class LocationDAO implements ILocationDAO
 	@Override
 	public I_C_Location getById(@NonNull final LocationId id)
 	{
-		return loadOutOfTrx(id, I_C_Location.class);
+		// Don't load records out-of-trx unless you really know what's going on and also know the possible contexts in which a method might be called.
+		// * this method is (also) called as part of a full bpartner-creation workflow and we need to be able to roll it back, without leaving back this dangling C_Location.
+		// * since the c_location is created in-trx, we also need to (re-)load it in-trx later when we try to create its product-price
+		return load(id, I_C_Location.class);
 	}
 
 	@Override

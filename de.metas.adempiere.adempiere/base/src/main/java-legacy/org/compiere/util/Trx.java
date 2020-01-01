@@ -363,6 +363,12 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			// it will be performed in a separate thread so here we don't have to wait.
 			// m_connection.setClientInfo("ApplicationName", "adempiere/CLOSED"); // task 08353
 
+			if (!m_connection.isClosed() && !m_connection.getAutoCommit())
+			{
+				// make sure not to leave dangling locks; it's not 100% clear (to me) what postgresql-jdbc otherwise does with uncommitted changes.
+				// note that usually the rollback does nothing, because at this stage there are no uncommitted changes
+				m_connection.rollback();
+			}
 			m_connection.close();
 		}
 		catch (SQLException e)

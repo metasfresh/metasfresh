@@ -127,7 +127,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 	 *
 	 * NOTE: this method assumes that {@link #trxName2trxLock} is already locked.
 	 *
-	 * @param trxName
 	 * @return created transaction name
 	 */
 	@VisibleForTesting
@@ -279,10 +278,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 		return get(trxName, onTrxMissingPolicy, autoCommit);
 	}
 
-	private final ITrx get(String trxName, final OnTrxMissingPolicy onTrxMissingPolicy, final boolean autoCommit)
+	private ITrx get(String trxName, @NonNull final OnTrxMissingPolicy onTrxMissingPolicy, final boolean autoCommit)
 	{
-		Check.assumeNotNull(onTrxMissingPolicy, TrxException.class, "onTrxMissingPolicy not null");
-
 		//
 		// Avoid null trxName
 		if (isNull(trxName))
@@ -484,14 +481,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public void run(final String trxName, final Runnable runnable)
+	public void run(final String trxName, @NonNull final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		call(trxName, callable);
 	}
 
 	@Override
-	public <T> T call(final String trxName, final TrxCallable<T> callable)
+	public <T> T call(final String trxName, @NonNull final TrxCallable<T> callable)
 	{
 		final boolean manageTrx = false;
 		return call(trxName, manageTrx, callable);
@@ -824,7 +821,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 					// metas-ts: setting 'trx' to null only if we have a non-local trx.
 					// Otherwise we could not close the trx and it would be left dangling
 					trx = null;
-					savepoint = null; // get rid of savepoint, because even if it failed there is not match we can do
+					savepoint = null; // get rid of savepoint, because even if it failed there is not much we can do
 				}
 				else
 				{
@@ -894,9 +891,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public void runOutOfTransaction(final TrxRunnable r)
+	public void runOutOfTransaction(@NonNull final TrxRunnable r)
 	{
-		Check.assumeNotNull(r, "TrxRunnable not null");
 		final TrxRunnable2 runnable = TrxRunnable2Wrapper.wrapIfNeeded(r);
 
 		//
@@ -1213,10 +1209,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public ITrx getThreadInheritedTrx(final OnTrxMissingPolicy onTrxMissingPolicy)
+	public ITrx getThreadInheritedTrx(@NonNull final OnTrxMissingPolicy onTrxMissingPolicy)
 	{
-		Check.assumeNotNull(onTrxMissingPolicy, "onTrxMissingPolicy not null");
-
 		final String trxName = threadLocalTrx.get();
 
 		//
