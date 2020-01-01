@@ -446,14 +446,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}	// createTrxName
 
 	@Override
-	public <T> T callInNewTrx(final Callable<T> callable)
+	public <T> T callInNewTrx(@NonNull final Callable<T> callable)
 	{
 		final TrxCallable<T> trxCallable = TrxCallableWrappers.wrapIfNeeded(callable);
 		return callInNewTrx(trxCallable);
 	}
 
 	@Override
-	public void runInNewTrx(final Runnable runnable)
+	public void runInNewTrx(@NonNull final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		callInNewTrx(callable);
@@ -514,7 +514,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public <T> T call(final String trxName, final boolean manageTrx, final TrxCallable<T> callable)
+	public <T> T call(@Nullable final String trxName, final boolean manageTrx, @NonNull final TrxCallable<T> callable)
 	{
 		final TrxPropagation trxMode;
 		final OnRunnableSuccess onRunnableSuccess;
@@ -574,7 +574,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public <T> T call(final String trxName, final ITrxRunConfig cfg, final TrxCallable<T> callable)
+	public <T> T call(@Nullable final String trxName, @NonNull final ITrxRunConfig cfg, @NonNull final TrxCallable<T> callable)
 	{
 		//
 		// Determine which trxName we shall use based on trx run configuration
@@ -686,7 +686,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		// Validate trxName
 		if (isNull(trxName))
 		{
-			throw new IllegalTrxRunStateException("A concrete transaction name is expected")
+			throw new IllegalTrxRunStateException("A concrete transaction name is expected at this point")
 					.setTrxRunConfig(cfg)
 					.setTrxName(trxName);
 		}
