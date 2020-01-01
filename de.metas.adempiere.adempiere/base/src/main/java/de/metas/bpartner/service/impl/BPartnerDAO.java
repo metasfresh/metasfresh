@@ -210,6 +210,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesPartnerCode, salesPartnerCode.trim())
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsSalesRep, true)
 				.addInArrayOrAllFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, onlyOrgIds)
 				.create()
 				.firstIdOnly(BPartnerId::ofRepoIdOrNull);

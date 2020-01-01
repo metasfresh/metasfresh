@@ -84,6 +84,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerId> getBPartnerIdByValue(String bpartnerValue);
 
 	/**
+	 * Get the ID of the BPArtner with the given {@code salesPartnerCode} and {@code IsSalesRep='Y'}.
+	 *
 	 * @param onlyOrgIds restrict to any of the given orgIds. If empty, then don't filter for orgIds
 	 * @return empty if the given {@code salesPartnerCode} is empty.
 	 * @throws exception if the given parameters match more than one bPartner.
