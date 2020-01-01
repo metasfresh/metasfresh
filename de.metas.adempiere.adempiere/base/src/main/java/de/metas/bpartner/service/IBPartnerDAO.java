@@ -110,6 +110,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
+	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
+
 	boolean exists(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(BPartnerId bpartnerId);
@@ -137,6 +139,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
+
+	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
 
 	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
 

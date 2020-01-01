@@ -257,6 +257,16 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public I_AD_User getContactByIdInTrx(@NonNull final BPartnerContactId contactId)
+	{
+		return retrieveContactsInTrx(contactId.getBpartnerId())
+				.stream()
+				.filter(contact -> contact.getAD_User_ID() == contactId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Override
 	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass)
 	{
 		return getContactById(contactId, modelClass);
@@ -343,6 +353,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orElse(null);
 	}
 
+	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
@@ -519,6 +530,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	public List<I_AD_User> retrieveContacts(@NonNull final BPartnerId bpartnerId)
 	{
 		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+	}
+
+	public List<I_AD_User> retrieveContactsInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
