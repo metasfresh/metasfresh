@@ -78,17 +78,17 @@ class PaymentRestEndpointTest
 	{
 		final OrgId orgId = createOrgAndBankAccount();
 
-		final IdentifierString orderIdentifier = IdentifierString.of("ext-Order");
+		final ExternalId externalOrderId = ExternalId.of("Order");
 		final IdentifierString partnerIdentifier = IdentifierString.of("ext-bPartner");
 
 		// create test data
-		final I_C_Order salesOrder = createSalesOrder(orgId, orderIdentifier);
+		final I_C_Order salesOrder = createSalesOrder(orgId, externalOrderId);
 		createBPartner(partnerIdentifier);
 
 		// create JsonPaymentInfo
 		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
 				.orgCode(AD_Org_Value)
-				.externalOrderId(orderIdentifier.toJson())
+				.externalOrderId(externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
@@ -97,7 +97,7 @@ class PaymentRestEndpointTest
 
 		assertEquals(JsonInboundPaymentInfo.builder()
 				.orgCode(AD_Org_Value)
-				.externalOrderId("ext-Order")
+				.externalOrderId("Order")
 				.bpartnerIdentifier("ext-bPartner")
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
@@ -111,11 +111,11 @@ class PaymentRestEndpointTest
 		assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
 
 		// noinspection OptionalGetWithoutIsPresent
-		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(orderIdentifier.asExternalId().getValue()), orgId).get();
+		final I_C_Payment payment = paymentDAO.getByExternalOrderId(externalOrderId, orgId).get();
 
 		assertEquals(0, salesOrder.getC_Payment_ID());
 		assertEquals(0, payment.getC_Order_ID());
-		assertEquals(orderIdentifier.asExternalId().getValue(), payment.getExternalOrderId());
+		assertEquals(externalOrderId.getValue(), payment.getExternalOrderId());
 
 		// enable auto linking SO <-> Payment
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
@@ -132,11 +132,11 @@ class PaymentRestEndpointTest
 	@NonNull
 	private I_C_Order createSalesOrder(
 			@NonNull final OrgId orgId,
-			@NonNull final IdentifierString orderIdentifier)
+			@NonNull final ExternalId externalOrderId)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setAD_Org_ID(orgId.getRepoId());
-		order.setExternalId(orderIdentifier.asExternalId().getValue());
+		order.setExternalId(externalOrderId.getValue());
 		order.setIsSOTrx(true);
 
 		saveRecord(order);
