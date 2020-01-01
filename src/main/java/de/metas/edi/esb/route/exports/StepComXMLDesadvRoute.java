@@ -32,6 +32,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.bean.desadv.StepComXMLDesadvBean;
@@ -46,7 +47,10 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 import lombok.NonNull;
 
 @Component
-@PropertySource(value = { "classpath:/desadv-customer.properties" })
+@PropertySources(value = {
+		@PropertySource(value = "classpath:/desadv-customer.properties"),
+		@PropertySource(value = "file:./desadv-customer.properties", ignoreResourceNotFound = true)
+})
 public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Desadv-To-STEPCOM-XML-Desadv";

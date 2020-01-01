@@ -32,6 +32,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.bean.invoic.StepComXMLInvoicBean;
@@ -45,7 +46,10 @@ import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
 @Component
-@PropertySource(value = { "classpath:/invoic-customer.properties" })
+@PropertySources(value = {
+		@PropertySource(value = "classpath:/invoic-customer.properties"),
+		@PropertySource(value = "file:./invoic-customer.properties", ignoreResourceNotFound = true)
+})
 public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoic-To-STEPCOM-XML-Invoic";
