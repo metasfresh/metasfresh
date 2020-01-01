@@ -114,7 +114,7 @@ public class JsonPaymentService
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		final String externalOrderId = IdentifierString.of(jsonInboundPaymentInfo.getExternalOrderId()).asExternalId().getValue();
+		final String externalOrderId = jsonInboundPaymentInfo.getExternalOrderId();
 		payment.setExternalOrderId(externalOrderId);
 		payment.setIsAutoAllocateAvailableAmt(true);
 		InterfaceWrapperHelper.save(payment);
