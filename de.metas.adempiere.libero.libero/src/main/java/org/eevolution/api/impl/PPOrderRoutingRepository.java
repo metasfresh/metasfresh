@@ -69,6 +69,7 @@ import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -433,7 +434,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		// Set First Activity
 		routingRecord.setPP_Order_Node_ID(orderRouting.getFirstActivity().getId().getRepoId());
 		saveRecord(routingRecord);
-
 		//
 		// Transitions
 		{
@@ -498,7 +498,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setSetupTime(0);
 		record.setMovingTime(0);
 		record.setDuration(0);
-		
+
 		updateOrderWorkflowRecord(record, from);
 
 		return record;
@@ -531,7 +531,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final TemporalUnit durationUnit = from.getDurationUnit();
 
 		record.setIsActive(true);
-
 		record.setValue(from.getCode().getAsString());
 
 		record.setAD_Workflow_ID(from.getRoutingActivityId().getRoutingId().getRepoId());
@@ -561,7 +560,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
 		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
 		record.setQtyRequiered(from.getQtyRequired().toBigDecimal());
-		record.setC_UOM_ID(from.getQtyRequired().getUOMId());
+		record.setC_UOM_ID(from.getQtyRequired().getUomId().getRepoId());
 
 		//
 		// Reported values
@@ -572,6 +571,9 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setQtyReject(from.getQtyRejected().toBigDecimal());
 		record.setDateStart(TimeUtil.asTimestamp(from.getDateStart()));
 		record.setDateFinish(TimeUtil.asTimestamp(from.getDateFinish()));
+
+		final PPRoutingActivityTemplateId activityTemplateId = from.getActivityTemplateId();
+		record.setAD_WF_Node_Template_ID(PPRoutingActivityTemplateId.toRepoId(activityTemplateId));
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)

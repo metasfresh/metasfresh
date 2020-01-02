@@ -25,7 +25,7 @@ package de.metas.rest_api.payment;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -57,7 +57,6 @@ public class JsonPaymentService
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
 
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -78,34 +77,44 @@ public class JsonPaymentService
 		}
 
 		final OrgId orgId = retrieveOrg(jsonInboundPaymentInfo);
+		if (!orgId.isRegular())
+		{
+			return ResponseEntity.unprocessableEntity().body("Cannot find the orgId from either orgCode=" + jsonInboundPaymentInfo.getOrgCode() + " or the current user's context.");
+		}
+
+		final Optional<BPartnerId> orgBPartnerIdOptional = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartnerId(orgId);
+		if (!orgBPartnerIdOptional.isPresent())
+		{
+			return ResponseEntity.unprocessableEntity().body("Cannot find the org-bpartner linked to orgId=" + orgId + "; orgCode=" + jsonInboundPaymentInfo.getOrgCode());
+		}
+
+		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(orgBPartnerIdOptional.get(), currencyId, jsonInboundPaymentInfo.getTargetIBAN());
+		if (!bankAccountIdOptional.isPresent())
+		{
+			return ResponseEntity.unprocessableEntity().body(String.format(
+					"Cannot find Bank Account for org-bpartner-id: %s, currency: %s and account: %s",
+					orgBPartnerIdOptional.get().getRepoId(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
+		}
 
 		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonInboundPaymentInfo.getBpartnerIdentifier()));
 		if (!bPartnerIdOptional.isPresent())
 		{
 			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonInboundPaymentInfo.getBpartnerIdentifier());
 		}
-
 		final BPartnerId bPartnerId = bPartnerIdOptional.get();
-		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(bPartnerId, currencyId, jsonInboundPaymentInfo.getTargetIBAN());
-
-		if (!bankAccountIdOptional.isPresent())
-		{
-			return ResponseEntity.unprocessableEntity().body(String.format("Cannot find Bank Account for bpartner: %s, currency: %s and account: %s", jsonInboundPaymentInfo.getBpartnerIdentifier(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
-		}
 
 		final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
 				.bpartnerId(bPartnerId)
 				.payAmt(jsonInboundPaymentInfo.getAmount())
 				.currencyId(currencyId)
 				.bpBankAccountId(bankAccountIdOptional.get())
-
 				.adOrgId(orgId)
 				.tenderType(TenderType.DirectDeposit)
 				.dateAcct(dateTrx)
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		final String externalOrderId = IdentifierString.of(jsonInboundPaymentInfo.getExternalOrderId()).asExternalId().getValue();
+		final String externalOrderId = jsonInboundPaymentInfo.getExternalOrderId();
 		payment.setExternalOrderId(externalOrderId);
 		payment.setIsAutoAllocateAvailableAmt(true);
 		InterfaceWrapperHelper.save(payment);

@@ -33,10 +33,10 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
@@ -47,6 +47,9 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -56,6 +59,7 @@ class PaymentRestEndpointTest
 	public static final String CURRENCY_CODE_EUR = "EUR";
 	public static final BigDecimal PAYMENT_AMOUNT = BigDecimal.valueOf(123.456);
 	public static final String TARGET_IBAN = "012345678901234";
+	public static final String AD_Org_Value = "orgCode";
 
 	private final CurrencyService currencyService = new CurrencyService();
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade();
@@ -72,18 +76,19 @@ class PaymentRestEndpointTest
 	@Test
 	void normalInboundFlow()
 	{
-		final IdentifierString orderIdentifier = IdentifierString.of("ext-Order");
+		final OrgId orgId = createOrgAndBankAccount();
+
+		final ExternalId externalOrderId = ExternalId.of("Order");
 		final IdentifierString partnerIdentifier = IdentifierString.of("ext-bPartner");
 
-		final OrgId orgId = OrgId.ANY;
-
 		// create test data
-		final I_C_Order salesOrder = createSalesOrder(orderIdentifier);
-		createBPartnerAndBankAccount(partnerIdentifier);
+		final I_C_Order salesOrder = createSalesOrder(orgId, externalOrderId);
+		createBPartner(partnerIdentifier);
 
 		// create JsonPaymentInfo
 		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
-				.externalOrderId(orderIdentifier.toJson())
+				.orgCode(AD_Org_Value)
+				.externalOrderId(externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
@@ -91,12 +96,13 @@ class PaymentRestEndpointTest
 				.build();
 
 		assertEquals(JsonInboundPaymentInfo.builder()
-						.externalOrderId("ext-Order")
-						.bpartnerIdentifier("ext-bPartner")
-						.currencyCode(CURRENCY_CODE_EUR)
-						.amount(PAYMENT_AMOUNT)
-						.targetIBAN(TARGET_IBAN)
-						.build(),
+				.orgCode(AD_Org_Value)
+				.externalOrderId("Order")
+				.bpartnerIdentifier("ext-bPartner")
+				.currencyCode(CURRENCY_CODE_EUR)
+				.amount(PAYMENT_AMOUNT)
+				.targetIBAN(TARGET_IBAN)
+				.build(),
 				jsonInboundPaymentInfo);
 
 		// process JsonPaymentInfo
@@ -104,12 +110,12 @@ class PaymentRestEndpointTest
 		assertNull(response.getBody());
 		assertEquals(HttpStatus.OK.value(), response.getStatusCodeValue());
 
-		//noinspection OptionalGetWithoutIsPresent
-		final I_C_Payment payment = paymentDAO.getByExternalOrderId(ExternalId.of(orderIdentifier.asExternalId().getValue()), orgId).get();
+		// noinspection OptionalGetWithoutIsPresent
+		final I_C_Payment payment = paymentDAO.getByExternalOrderId(externalOrderId, orgId).get();
 
 		assertEquals(0, salesOrder.getC_Payment_ID());
 		assertEquals(0, payment.getC_Order_ID());
-		assertEquals(orderIdentifier.asExternalId().getValue(), payment.getExternalOrderId());
+		assertEquals(externalOrderId.getValue(), payment.getExternalOrderId());
 
 		// enable auto linking SO <-> Payment
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
@@ -119,28 +125,46 @@ class PaymentRestEndpointTest
 
 		// test that SO is linked with the payment
 		assertEquals(payment.getC_Payment_ID(), salesOrder.getC_Payment_ID());
-		InterfaceWrapperHelper.refresh(payment);
+		refresh(payment);
 		assertEquals(payment.getC_Order_ID(), salesOrder.getC_Order_ID());
 	}
 
 	@NonNull
-	private I_C_Order createSalesOrder(@NonNull final IdentifierString orderIdentifier)
+	private I_C_Order createSalesOrder(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalId externalOrderId)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-		order.setExternalId(orderIdentifier.asExternalId().getValue());
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setAD_Org_ID(orgId.getRepoId());
+		order.setExternalId(externalOrderId.getValue());
 		order.setIsSOTrx(true);
 
-		InterfaceWrapperHelper.save(order);
+		saveRecord(order);
 		return order;
 	}
 
-	private void createBPartnerAndBankAccount(@NonNull final IdentifierString bpartnerIdentifier)
+	private void createBPartner(@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		bPartner.setExternalId(bpartnerIdentifier.asExternalId().getValue());
 
-		InterfaceWrapperHelper.save(bPartner);
+		saveRecord(bPartner);
+	}
+
+	private OrgId createOrgAndBankAccount()
+	{
+		final I_AD_Org orgRecord = newInstance(I_AD_Org.class);
+		orgRecord.setValue(AD_Org_Value);
+		saveRecord(orgRecord);
+
+		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
+		bPartner.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		bPartner.setAD_OrgBP_ID(orgRecord.getAD_Org_ID());
+		saveRecord(bPartner);
+
 		createBpBankAccount(bPartner.getC_BPartner_ID());
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
 	private void createBpBankAccount(final int bPartnerId)
@@ -148,11 +172,11 @@ class PaymentRestEndpointTest
 		final CurrencyId currencyId = currencyService.getCurrencyId(CURRENCY_CODE_EUR);
 		assertNotNull(currencyId);
 
-		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
 		bpBankAccount.setIBAN(TARGET_IBAN);
 		bpBankAccount.setC_BPartner_ID(bPartnerId);
 		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
 
-		InterfaceWrapperHelper.save(bpBankAccount);
+		saveRecord(bpBankAccount);
 	}
 }

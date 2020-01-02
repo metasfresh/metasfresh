@@ -10,12 +10,12 @@ package de.metas.contracts.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ public class C_Invoice_Clearing_Alloc
 {
 	/**
 	 * If there is a <code>C_Flatrate_DataEntry </code> record for the given <code>ica</code>'s candidate and term, then retrieve and reference it.
-	 * 
+	 *
 	 * @param ica
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -64,7 +64,7 @@ public class C_Invoice_Clearing_Alloc
 						term,
 						invoiceCand.getDateOrdered(),
 						X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased,
-						UomId.ofRepoId(term.getC_UOM_ID()),
+						UomId.ofRepoIdOrNull(term.getC_UOM_ID()),
 						true); // onlyNonSim
 
 		final I_C_Flatrate_DataEntry dataEntry;

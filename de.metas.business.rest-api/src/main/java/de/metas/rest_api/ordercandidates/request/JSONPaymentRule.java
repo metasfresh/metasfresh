@@ -32,7 +32,10 @@ public enum JSONPaymentRule
 	Paypal("L"),
 
 	@ApiEnum("Specifies that the order will have paymentRule = On Credit")
-	OnCredit("P");
+	OnCredit("P"),
+
+	@ApiEnum("Specifies that the order will have paymentRule = Direct Debit")
+	DirectDebit("D");
 
 	@Getter
 	private final String code;
@@ -41,6 +44,5 @@ public enum JSONPaymentRule
 	{
 		this.code = code;
 	}
-
 
 }

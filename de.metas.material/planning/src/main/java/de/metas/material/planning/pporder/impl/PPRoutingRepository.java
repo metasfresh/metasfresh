@@ -39,6 +39,7 @@ import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingChangeRequest;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductDAO;
@@ -77,7 +78,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 {
 	private static final Logger logger = LogManager.getLogger(PPRoutingRepository.class);
 
-	private final CCache<PPRoutingId, PPRouting> routingsById = CCache.<PPRoutingId, PPRouting> builder()
+	private final CCache<PPRoutingId, PPRouting> routingsById = CCache.<PPRoutingId, PPRouting>builder()
 			.tableName(I_AD_Workflow.Table_Name)
 			.additionalTableNameToResetFor(I_AD_WF_Node.Table_Name)
 			.additionalTableNameToResetFor(I_AD_WF_NodeNext.Table_Name)
@@ -210,6 +211,8 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				//
 				.nextActivityIds(nextActivityIds)
 				//
+				.activityTemplateId(PPRoutingActivityTemplateId.ofRepoIdOrNull(activityRecord.getAD_WF_Node_Template_ID()))
+				//
 				.build();
 	}
 
@@ -245,7 +248,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	}
 
 	@Cached(cacheName = I_AD_Workflow.Table_Name + "#by#" + I_AD_Workflow.COLUMNNAME_Value)
-	/* package */ PPRoutingId retrievePPRoutingIdByProductValue(@NonNull final String productValue, @NonNull final ClientId clientId)
+		/* package */ PPRoutingId retrievePPRoutingIdByProductValue(@NonNull final String productValue, @NonNull final ClientId clientId)
 	{
 		Check.assumeNotEmpty(productValue, "productValue is not empty");
 

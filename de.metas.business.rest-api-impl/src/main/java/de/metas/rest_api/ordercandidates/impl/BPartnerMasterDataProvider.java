@@ -476,7 +476,7 @@ final class BPartnerMasterDataProvider
 		final I_C_BPartner_Location bpLocationRecord;
 		if (existingBPLocationId != null)
 		{
-			bpLocationRecord = bpartnerDAO.getBPartnerLocationById(existingBPLocationId);
+			bpLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(existingBPLocationId);
 		}
 		else
 		{
@@ -602,7 +602,7 @@ final class BPartnerMasterDataProvider
 		I_AD_User contactRecord;
 		if (existingContactId != null)
 		{
-			contactRecord = bpartnerDAO.getContactById(existingContactId);
+			contactRecord = bpartnerDAO.getContactByIdInTrx(existingContactId);
 		}
 		else
 		{

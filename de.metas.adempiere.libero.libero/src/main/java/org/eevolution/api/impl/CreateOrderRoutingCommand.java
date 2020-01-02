@@ -196,6 +196,8 @@ final class CreateOrderRoutingCommand
 				.qtyScrapped(zero)
 				.qtyRejected(zero)
 				//
+				.activityTemplateId(activity.getActivityTemplateId())
+				//
 				.build();
 	}
 }
