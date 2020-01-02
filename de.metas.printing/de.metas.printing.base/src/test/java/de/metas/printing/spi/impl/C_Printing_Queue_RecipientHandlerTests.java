@@ -28,12 +28,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,7 +59,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		InterfaceWrapperHelper.save(itemUser);
 
 		item = InterfaceWrapperHelper.newInstance(I_C_Printing_Queue.class);
-		item.setAD_User(itemUser);
+		item.setAD_User_ID(itemUser.getAD_User_ID());
 		InterfaceWrapperHelper.save(item);
 		assertThat(item.isPrintoutForOtherUser(), is(false)); // guard
 	}
@@ -76,7 +76,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipient = InterfaceWrapperHelper.newInstance(I_AD_User.class);
 		InterfaceWrapperHelper.save(printRecipient);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.create(item.getAD_User(), I_AD_User.class);
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
 		InterfaceWrapperHelper.save(itemUser);
 
@@ -89,7 +89,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipient = InterfaceWrapperHelper.newInstance(I_AD_User.class);
 		InterfaceWrapperHelper.save(printRecipient);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.create(item.getAD_User(), I_AD_User.class);
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
 		InterfaceWrapperHelper.save(itemUser);
 
@@ -111,7 +111,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		printRecipientMiddle.setC_Printing_Queue_Recipient(printRecipientEffective);
 		InterfaceWrapperHelper.save(printRecipientMiddle);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.create(item.getAD_User(), I_AD_User.class);
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		InterfaceWrapperHelper.save(itemUser);
 
@@ -136,7 +136,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		printRecipientEffective.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		InterfaceWrapperHelper.save(printRecipientEffective);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.create(item.getAD_User(), I_AD_User.class);
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		InterfaceWrapperHelper.save(itemUser);
 
@@ -149,7 +149,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	@Test
 	public void testAfterEnqueueAfterUpdateRecipients()
@@ -158,10 +158,10 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipientWrong = InterfaceWrapperHelper.newInstance(I_AD_User.class);
 		InterfaceWrapperHelper.save(printRecipientWrong);
 		// .. despite the fact that is it the item user's recipient
-		final I_AD_User itemUser = InterfaceWrapperHelper.create(item.getAD_User(), I_AD_User.class);
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipientWrong);
 		InterfaceWrapperHelper.save(itemUser);
-		
+
 		final I_AD_User printRecipientEffective = InterfaceWrapperHelper.newInstance(I_AD_User.class);
 		InterfaceWrapperHelper.save(printRecipientEffective);
 
@@ -174,7 +174,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		// call the testee
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
-		
+
 		// expect the result to be printRecipientEffective, because that's what printRecipientIntermediate links to
 		// the result shall *not* be printRecipientWrong. We want the handler to update the existing record no to reset it
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);

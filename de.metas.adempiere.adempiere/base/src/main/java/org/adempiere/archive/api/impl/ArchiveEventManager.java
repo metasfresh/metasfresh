@@ -29,10 +29,9 @@ import javax.annotation.Nullable;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_User;
-
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.user.UserId;
 import lombok.NonNull;
 
 public class ArchiveEventManager implements IArchiveEventManager
@@ -48,24 +47,24 @@ public class ArchiveEventManager implements IArchiveEventManager
 	@Override
 	public void firePdfUpdate(
 			@NonNull final I_AD_Archive archive,
-			@Nullable final I_AD_User user,
+			@Nullable final UserId userId,
 			@NonNull final String action)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
-			listener.onPdfUpdate(archive, user, action);
+			listener.onPdfUpdate(archive, userId, action);
 		}
 	}
 
 	@Override
 	public void fireEmailSent(
-			final I_AD_Archive archive, 
-			final String action, 
-			final UserEMailConfig user, 
-			final EMailAddress emailFrom, 
-			final EMailAddress emailTo, 
-			final EMailAddress emailCc, 
-			final EMailAddress emailBcc, 
+			final I_AD_Archive archive,
+			final String action,
+			final UserEMailConfig user,
+			final EMailAddress emailFrom,
+			final EMailAddress emailTo,
+			final EMailAddress emailCc,
+			final EMailAddress emailBcc,
 			final String status)
 	{
 		for (final IArchiveEventListener listener : listeners)
@@ -75,11 +74,16 @@ public class ArchiveEventManager implements IArchiveEventManager
 	}
 
 	@Override
-	public void firePrintOut(final I_AD_Archive archive, final I_AD_User user, final String printerName, final int copies, final String status)
+	public void firePrintOut(
+			final I_AD_Archive archive,
+			@Nullable final UserId userId,
+			final String printerName,
+			final int copies,
+			final String status)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
-			listener.onPrintOut(archive, user, printerName, copies, status);
+			listener.onPrintOut(archive, userId, printerName, copies, status);
 		}
 	}
 
