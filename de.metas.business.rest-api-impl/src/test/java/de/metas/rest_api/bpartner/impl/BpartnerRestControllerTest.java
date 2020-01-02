@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -37,15 +38,18 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -54,11 +58,15 @@ import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
@@ -76,6 +84,7 @@ import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -109,11 +118,13 @@ import lombok.Value;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
+	private CurrencyRepository currencyRepository;
 
 	@BeforeAll
 	static void initStatic()
@@ -135,12 +146,15 @@ class BpartnerRestControllerTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		currencyRepository = new CurrencyRepository();
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository());
+				new RecordChangeLogRepository(),
+				currencyRepository);
 
 		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
@@ -587,6 +601,35 @@ class BpartnerRestControllerTest
 		assertThat(persistedLocation.get().getId().getRepoId()).isEqualTo(metasfreshId.getValue());
 
 		expect(persistedResult).toMatchSnapshot();
+	}
+
+	@Test
+	void createOrUpdateBankAccount_create()
+	{
+		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBankAccount(
+				IdentifierString.ofRepoId(C_BPARTNER_ID).toJson(),
+				JsonRequestBankAccountsUpsert.builder()
+						.requestItem(JsonRequestBankAccountUpsertItem.builder()
+								.iban("iban-1")
+								.currencyCode("EUR")
+								.build())
+						.build());
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		final JsonResponseUpsert response = result.getBody();
+		assertThat(response.getResponseItems()).hasSize(1);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		assertThat(responseItem.getIdentifier()).isEqualTo("iban-1");
+		assertThat(responseItem.getMetasfreshId()).isNotNull();
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(C_BPARTNER_ID);
+		final BPartnerComposite bpartnerComposite = bpartnerCompositeRepository.getById(bpartnerId);
+
+		final BPartnerBankAccount bankAccount = bpartnerComposite.getBankAccountByIBAN("iban-1").get();
+		assertThat(bankAccount.getId()).isEqualTo(BPartnerBankAccountId.ofRepoId(bpartnerId, responseItem.getMetasfreshId().getValue()));
+		assertThat(bankAccount.getIban()).isEqualTo("iban-1");
+		assertThat(bankAccount.getCurrencyId()).isEqualTo(currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode("EUR")));
+		assertThat(bankAccount.isActive()).isTrue();
 	}
 
 	@Test
