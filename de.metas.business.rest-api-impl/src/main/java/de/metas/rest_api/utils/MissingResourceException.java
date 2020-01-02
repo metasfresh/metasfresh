@@ -35,7 +35,7 @@ import lombok.NonNull;
  * #L%
  */
 
-/** Thrown if a request could not be processed, because one of the required ressources (e.g. product, or business partner) does not exist in metasfresh. */
+/** Thrown if a request could not be processed, because one of the required resources (e.g. product, or business partner) does not exist in metasfresh. */
 public class MissingResourceException extends AdempiereException
 {
 	private static final long serialVersionUID = -3485523266695546853L;

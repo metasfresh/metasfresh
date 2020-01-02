@@ -135,7 +135,7 @@ public class ArchiveBL implements IArchiveBL
 		archive.setRecord_ID(info.getRecord_ID());
 		archive.setC_BPartner_ID(info.getC_BPartner_ID());
 		storage.setBinaryData(archive, data);
-		
+
 		//FRESH-349: Set ad_pinstance
 		
 		archive.setAD_PInstance_ID(PInstanceId.toRepoId(info.getAD_PInstance_ID()));

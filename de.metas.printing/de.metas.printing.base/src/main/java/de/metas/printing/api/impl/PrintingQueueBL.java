@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -123,7 +124,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
 		// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
 		// Also note that right now I don't know any case where a user can set copies-per-archive in a case that is also handled by a printingQueueHandler.
-		final Optional<Integer> copiesIfExists = COPIES_PER_ARCHIVE.getValueIfExists(printOut);
+		final Optional<Integer> copiesIfExists = IArchiveBL.COPIES_PER_ARCHIVE.getValueIfExists(printOut);
 		if (copiesIfExists.isPresent())
 		{
 			final int oldItemCopies = Math.max(item.getCopies(), 1); // note about Math.max(): it should not happen that a printingQueueHandler sets copies:=0, but if it happens and COPIES_PER_ARCHIVE contained a value, then go with COPIES_PER_ARCHIVE
