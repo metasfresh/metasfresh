@@ -333,18 +333,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			markAsChangedByUpdateProcess(sched);
 
 			// we don't do this anymore; instead, there is a model interceptor that closes the schedule if the order is reactivated
-//			if (olAndSched.hasSalesOrderLine())
-//			{
-//				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
-//				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
-//						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
-//						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
-//						&& sched.getQtyPickList().signum() == 0)
-//				{
-//					InterfaceWrapperHelper.delete(sched);
-//					continue;
-//				}
-//			}
+			// if (olAndSched.hasSalesOrderLine())
+			// {
+			// final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
+			// if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
+			// && !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
+			// && sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
+			// && sched.getQtyPickList().signum() == 0)
+			// {
+			// InterfaceWrapperHelper.delete(sched);
+			// continue;
+			// }
+			// }
 
 			updateProcessedFlag(sched);
 			if (sched.isProcessed())
@@ -402,7 +402,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// 08860
 			// update preparation date override based on delivery date effective
 			// DO this only if the preparationDate_Override was not already set manually or by the process
-
 			if (sched.getDeliveryDate_Override() != null && sched.getPreparationDate_Override() == null)
 			{
 				final ZonedDateTime deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(sched);
@@ -417,11 +416,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						calculationTime,
 						deliveryDate,
 						bpLocationId);
-				final ZonedDateTime preparationDate = tourAndDate.getRight();
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
+				final ZonedDateTime preparationDate = tourAndDate.getRight();
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
-				sched.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
+				sched.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
+
 			}
 
 			shipmentSchedulePA.save(sched);

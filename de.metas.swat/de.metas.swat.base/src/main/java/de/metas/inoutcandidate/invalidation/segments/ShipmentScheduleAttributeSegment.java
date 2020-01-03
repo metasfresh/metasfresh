@@ -28,8 +28,8 @@ public class ShipmentScheduleAttributeSegment
 		return new ShipmentScheduleAttributeSegment(attributeSetInstanceId, attributeId);
 	}
 
-	private final AttributeSetInstanceId attributeSetInstanceId;
-	private final AttributeId attributeId;
+	AttributeSetInstanceId attributeSetInstanceId;
+	AttributeId attributeId;
 
 	private ShipmentScheduleAttributeSegment(
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
