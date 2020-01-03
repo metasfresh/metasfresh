@@ -64,11 +64,8 @@ import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class PrintingQueueBL implements IPrintingQueueBL
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
@@ -207,9 +204,8 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final Properties ctx, final IPrintingQueueQuery query)
+	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final Properties ctx, @NonNull final IPrintingQueueQuery query)
 	{
-		Check.assumeNotNull(query, "Param query shall not be null");
 		Check.assumeNotNull(query.getAggregationKey(), "IPrintingQueueQuery {} shall have an aggregation key", query);
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);

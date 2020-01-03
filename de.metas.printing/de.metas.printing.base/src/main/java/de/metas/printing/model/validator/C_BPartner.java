@@ -83,9 +83,9 @@ public class C_BPartner
 
 					final int updatedCount = queryBL.createQueryBuilder(I_C_Printing_Queue.class, ctx, ITrx.TRXNAME_ThreadInherited)
 							.addOnlyActiveRecordsFilter()
-							.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_BPartner_ID, bPartner.getC_BPartner_ID())
+							.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 							.addEqualsFilter(I_C_Printing_Queue.COLUMN_Processed, false)
-							.addInSubQueryFilter(I_C_Printing_Queue.COLUMN_C_DocType_ID, I_C_DocType.COLUMN_C_DocType_ID, invoicedocTypeQuery)
+							.addInSubQueryFilter(I_C_Printing_Queue.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, invoicedocTypeQuery)
 							.addNotEqualsFilter(I_C_Printing_Queue.COLUMN_Copies, documentCopies)
 							.create()
 							.updateDirectly()

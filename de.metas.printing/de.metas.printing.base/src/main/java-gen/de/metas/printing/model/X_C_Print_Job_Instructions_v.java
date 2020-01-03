@@ -14,7 +14,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1313716271L;
+	private static final long serialVersionUID = -826221349L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Instructions_v (Properties ctx, int C_Print_Job_Instructions_v_ID, String trxName)
@@ -41,7 +41,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
     }
 
 	@Override
-	public org.compiere.model.I_AD_Archive getAD_Archive() throws RuntimeException
+	public org.compiere.model.I_AD_Archive getAD_Archive()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Archive_ID, org.compiere.model.I_AD_Archive.class);
 	}
@@ -78,7 +78,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Session getAD_Session() throws RuntimeException
+	public org.compiere.model.I_AD_Session getAD_Session()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Session_ID, org.compiere.model.I_AD_Session.class);
 	}
@@ -114,18 +114,6 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
@@ -152,7 +140,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -189,7 +177,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job_Instructions getC_Print_Job_Instructions() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job_Instructions getC_Print_Job_Instructions()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Job_Instructions_ID, de.metas.printing.model.I_C_Print_Job_Instructions.class);
 	}
@@ -223,7 +211,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Package getC_Print_Package() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Package getC_Print_Package()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Package_ID, de.metas.printing.model.I_C_Print_Package.class);
 	}
@@ -256,18 +244,6 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
-	}
-
 	/** Set Lager.
 		@param M_Warehouse_ID 
 		Lager oder Ort für Dienstleistung
@@ -294,7 +270,7 @@ public class X_C_Print_Job_Instructions_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}

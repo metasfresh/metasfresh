@@ -14,7 +14,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -434827618L;
+	private static final long serialVersionUID = 572480466L;
 
     /** Standard Constructor */
     public X_C_Print_PackageInfo (Properties ctx, int C_Print_PackageInfo_ID, String trxName)
@@ -46,7 +46,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
     }
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
 	}
@@ -80,7 +80,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
 	}
@@ -152,7 +152,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Package getC_Print_Package() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Package getC_Print_Package()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Package_ID, de.metas.printing.model.I_C_Print_Package.class);
 	}
@@ -210,6 +210,21 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set Name.
+		@param Name Name	  */
+	@Override
+	public void setName (java.lang.String Name)
+	{
+		throw new IllegalArgumentException ("Name is virtual column");	}
+
+	/** Get Name.
+		@return Name	  */
+	@Override
+	public java.lang.String getName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
 	/** Set Von Seite.
 		@param PageFrom Von Seite	  */
 	@Override
@@ -261,24 +276,6 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	public java.lang.String getPrintServiceName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PrintServiceName);
-	}
-
-	/** Set PrintServiceTray.
-		@param PrintServiceTray 
-		Alphanumeric identifier of the entity
-	  */
-	@Override
-	public void setPrintServiceTray (java.lang.String PrintServiceTray)
-	{
-		throw new IllegalArgumentException ("PrintServiceTray is virtual column");	}
-
-	/** Get PrintServiceTray.
-		@return Alphanumeric identifier of the entity
-	  */
-	@Override
-	public java.lang.String getPrintServiceTray () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PrintServiceTray);
 	}
 
 	/** Set Schachtnummer.

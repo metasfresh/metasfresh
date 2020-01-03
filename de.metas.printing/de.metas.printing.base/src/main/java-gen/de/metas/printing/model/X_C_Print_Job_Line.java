@@ -14,7 +14,7 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1688159078L;
+	private static final long serialVersionUID = 1048204004L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Line (Properties ctx, int C_Print_Job_Line_ID, String trxName)
@@ -45,7 +45,7 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
     }
 
 	@Override
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
 	}
@@ -79,7 +79,7 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job getC_Print_Job() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job getC_Print_Job()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Job_ID, de.metas.printing.model.I_C_Print_Job.class);
 	}
@@ -135,7 +135,7 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Package getC_Print_Package() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Package getC_Print_Package()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Package_ID, de.metas.printing.model.I_C_Print_Package.class);
 	}
