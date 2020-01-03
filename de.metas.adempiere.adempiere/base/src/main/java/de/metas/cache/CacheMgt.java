@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -618,7 +620,7 @@ public final class CacheMgt
 			}
 		}
 
-		private static final long invalidateNoFail(final CacheInterface cacheInstance)
+		private static final long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
 			if (cacheInstance == null)
 			{

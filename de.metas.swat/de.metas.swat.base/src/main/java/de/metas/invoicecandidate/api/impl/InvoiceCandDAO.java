@@ -85,7 +85,6 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
@@ -430,8 +429,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.endOrderBy()
-				//
-				;
+		//
+		;
 	}
 
 	@Override
@@ -848,9 +847,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(pinstanceId)
-				// Invalidate no matter if Processed or not
-				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-				;
+		// Invalidate no matter if Processed or not
+		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+		;
 
 		invalidateCandsFor(icQueryBuilder);
 		// logger.info("Invalidated {} C_Invoice_Candidates for AD_PInstance_ID={}", new Object[] { count, adPInstanceId });
@@ -954,7 +953,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			if (invoiceCandidateIds == null || invoiceCandidateIds.isEmpty())
 			{
 				// i.e. tag none
-				queryBuilder.filter(ConstantQueryFilter.<I_C_Invoice_Candidate_Recompute>of(false));
+				queryBuilder.filter(ConstantQueryFilter.<I_C_Invoice_Candidate_Recompute> of(false));
 			}
 			else
 			{
@@ -1048,12 +1047,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 		else
 		{
-			final ImmutableList<CacheInvalidateRequest> cacheInvalidateRequests = onlyInvoiceCandidateIds
-					.stream()
-					.filter(Predicates.notNull())
-					.map(invoiceCandidateId -> CacheInvalidateRequest.fromTableNameAndRecordId(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId))
-					.collect(ImmutableList.toImmutableList());
-			multiRequest = CacheInvalidateMultiRequest.of(cacheInvalidateRequests);
+			multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_Invoice_Candidate.Table_Name, onlyInvoiceCandidateIds);
 		}
 
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
@@ -1273,9 +1267,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	 * If there were any changes, those invoice candidates will be invalidated.
 	 *
 	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
-	 * @param value                      value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull           if true then it will update only if column value is null (not set)
-	 * @param selectionId                invoice candidates selection (AD_PInstance_ID)
+	 * @param value value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
+	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
 	 */
 	private final <T> void updateColumnForSelection(
 			@NonNull final String columnName,
@@ -1291,7 +1285,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.setOnlySelection(selectionId)
 				.addNotEqualsFilter(columnName, value) // skip those which have our value set
-				;
+		;
 		if (updateOnlyIfNull)
 		{
 			selectionQueryBuilder.addEqualsFilter(columnName, null);
