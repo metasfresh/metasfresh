@@ -18,7 +18,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Locator;
@@ -27,6 +28,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -433,17 +436,21 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildAttributeInstanceWhereClause(final Set<ShipmentScheduleAttributeSegment> attributeSegments, final List<Object> sqlParams)
+	private String buildAttributeInstanceWhereClause(
+			@Nullable final Set<ShipmentScheduleAttributeSegment> attributeSegments,
+			@NonNull final List<Object> sqlParams)
 	{
 		if (Check.isEmpty(attributeSegments))
 		{
 			return null;
 		}
 
+		final Set<ShipmentScheduleAttributeSegment> attributeSegmentsEff = explodeToAttributeOnlySegments(attributeSegments);
+
 		final StringBuilder attributeSegmentsWhereClause = new StringBuilder();
-		for (final ShipmentScheduleAttributeSegment attributeSegment : attributeSegments)
+		for (final ShipmentScheduleAttributeSegment attributeSegment : attributeSegmentsEff)
 		{
-			final String attributeSegmentWhereClause = buildAttributeInstanceWhereClause(attributeSegment, sqlParams);
+			final String attributeSegmentWhereClause = buildSingleAttributeInstanceWhereClause(attributeSegment.getAttributeId(), sqlParams);
 			if (Check.isEmpty(attributeSegmentWhereClause, true))
 			{
 				continue;
@@ -464,6 +471,38 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return attributeSegmentsWhereClause.toString();
 	}
 
+	/** convert the given {@code attributeSegments} to a set of segments that are attributeId-only and where the attributeIds are all storage-relevant. */
+	private final Set<ShipmentScheduleAttributeSegment> explodeToAttributeOnlySegments(
+			@NonNull final Set<ShipmentScheduleAttributeSegment> attributeSegments)
+	{
+		final ImmutableSet.Builder<ShipmentScheduleAttributeSegment> result = ImmutableSet.builder();
+		for (final ShipmentScheduleAttributeSegment segment : attributeSegments)
+		{
+			final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+			if (segment.getAttributeId() != null)
+			{
+				if (attributesBL.isStorageRelevant(segment.getAttributeId()))
+				{
+					result.add(segment);
+				}
+				continue;
+			}
+			if (!segment.getAttributeSetInstanceId().isRegular())
+			{
+				continue;
+			}
+			attributeDAO
+					.getAttributeIdsByAttributeSetInstanceId(segment.getAttributeSetInstanceId())
+					.stream()
+					.filter(attributesBL::isStorageRelevant)
+					.map(ShipmentScheduleAttributeSegment::ofAttributeId)
+					.forEach(result::add);
+		}
+		return result.build();
+	}
+
 	/**
 	 * Build SQL where clause for given storage attribute segment.
 	 *
@@ -476,45 +515,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildAttributeInstanceWhereClause(final ShipmentScheduleAttributeSegment attributeSegment, final List<Object> sqlParams)
+	private String buildSingleAttributeInstanceWhereClause(@Nullable final AttributeId attributeId, @NonNull final List<Object> sqlParams)
 	{
-		if (attributeSegment == null)
+		if (attributeId == null)
 		{
 			return null;
 		}
-
 		final StringBuilder whereClause = new StringBuilder();
 
-		//
-		// Filter by M_AttributeSetInstance_ID
-		final AttributeSetInstanceId attributeSetInstanceId = attributeSegment.getAttributeSetInstanceId();
-		if (attributeSetInstanceId.isRegular())
-		{
-			if (whereClause.length() > 0)
-			{
-				whereClause.append(" AND ");
-			}
-			whereClause.append("ai.").append(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID).append("=?");
-			sqlParams.add(attributeSetInstanceId);
-		}
-
-		//
 		// Filter by M_Attribute_ID
-		final AttributeId attributeId = attributeSegment.getAttributeId();
-		if (attributeId != null)
-		{
-			if (whereClause.length() > 0)
-			{
-				whereClause.append(" AND ");
-			}
-			whereClause.append("ai.").append(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID).append("=?");
-			sqlParams.add(attributeId);
-		}
-
-		if (whereClause.length() <= 0)
-		{
-			return null;
-		}
+		whereClause.append("ai.").append(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID).append("=?");
+		sqlParams.add(attributeId);
 
 		return whereClause.toString();
 	}
