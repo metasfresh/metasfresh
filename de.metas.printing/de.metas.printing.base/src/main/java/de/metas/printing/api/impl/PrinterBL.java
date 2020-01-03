@@ -101,6 +101,7 @@ public class PrinterBL implements IPrinterBL
 		newPrinterConfig.setAD_Org_ID(printerHW.getAD_Org_ID());
 		newPrinterConfig.setConfigHostKey(printerHW.getHostKey());
 		newPrinterConfig.setIsSharedPrinterConfig(false); // not shared by default
+		newPrinterConfig.setAD_User_PrinterMatchingConfig_ID(printerHW.getUpdatedBy());
 		save(newPrinterConfig);
 
 		return newPrinterConfig;

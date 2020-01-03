@@ -57,7 +57,7 @@
 		
 		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
 		<woodstox.version>5.1.0</woodstox.version>
-		
+
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -192,15 +192,21 @@
 
 		<module>vertical-healthcare_ch</module>
 
-    </modules>
+	</modules>
 
 	<dependencyManagement>
 		<dependencies>
 
 			<dependency>
+				<groupId>com.mchange</groupId>
+				<artifactId>c3p0</artifactId>
+				<version>0.9.5.5</version>
+			</dependency>
+
+			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>42.2.5</version>
+				<version>42.2.9</version>
 			</dependency>
 
 			<dependency>
