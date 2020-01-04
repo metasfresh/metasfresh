@@ -332,20 +332,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			markAsChangedByUpdateProcess(sched);
 
-			// we don't do this anymore; instead, there is a model interceptor that closes the schedule if the order is reactivated
-			// if (olAndSched.hasSalesOrderLine())
-			// {
-			// final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
-			// if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
-			// && !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
-			// && sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
-			// && sched.getQtyPickList().signum() == 0)
-			// {
-			// InterfaceWrapperHelper.delete(sched);
-			// continue;
-			// }
-			// }
-
 			updateProcessedFlag(sched);
 			if (sched.isProcessed())
 			{
