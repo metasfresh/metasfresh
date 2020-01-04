@@ -8,3 +8,6 @@ INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Role_ID,AD_Scheduler_ID,Crea
 UPDATE AD_Scheduler SET CronPattern=NULL, IsActive='N',Updated=TO_TIMESTAMP('2020-01-04 13:29:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550057
 ;
 
+update ad_scheduler set ad_process_id=541239 where ad_scheduler_id=550057
+;
+
