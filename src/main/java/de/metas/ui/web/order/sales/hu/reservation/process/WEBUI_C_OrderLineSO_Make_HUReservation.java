@@ -102,7 +102,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 			final Quantity reservedQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
 					reservedQty,
 					UOMConversionContext.of(productId),
-					orderedQty.getUOM());
+					orderedQty.getUomId());
 
 			final Quantity requiredQty = orderedQty
 					.subtract(salesOrderLine.getDeliveredQty())
@@ -113,7 +113,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 			final Quantity reservableQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
 					reservableQty,
 					UOMConversionContext.of(productId),
-					orderedQty.getUOM());
+					orderedQty.getUomId());
 
 			return requiredQty.min(reservableQtyInSalesOrderUOM).toBigDecimal();
 		}
