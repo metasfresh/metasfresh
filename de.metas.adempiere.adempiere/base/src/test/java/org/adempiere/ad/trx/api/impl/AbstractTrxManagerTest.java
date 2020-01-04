@@ -9,8 +9,12 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
+import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.util.TrxRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +25,7 @@ import lombok.NonNull;
 public class AbstractTrxManagerTest
 {
 	@BeforeEach
-	public void init()
+	void init()
 	{
 		AdempiereTestHelper.get().init();
 	}
@@ -39,7 +43,7 @@ public class AbstractTrxManagerTest
 	}
 
 	@Test
-	public void runInNewTrx_withException()
+	void runInNewTrx_withException()
 	{
 		final MockedTrxManager trxManager = new MockedTrxManager();
 
@@ -59,7 +63,7 @@ public class AbstractTrxManagerTest
 	}
 
 	@Test
-	public void runInNewTrx()
+	void runInNewTrx()
 	{
 		final MockedTrxManager trxManager = new MockedTrxManager();
 
@@ -77,7 +81,7 @@ public class AbstractTrxManagerTest
 	}
 
 	@Test
-	public void runInNewTrx_nested()
+	void runInNewTrx_nested()
 	{
 		final Runnable innerRunnable = () -> {
 			/* nothing to do */ };
@@ -97,7 +101,7 @@ public class AbstractTrxManagerTest
 	}
 
 	@Test
-	public void runInNewTrx_nested_exception()
+	void runInNewTrx_nested_exception()
 	{
 		final Runnable innerRunnable = () -> {
 			throw new RuntimeException("something went wrong");
@@ -119,7 +123,9 @@ public class AbstractTrxManagerTest
 		assertThat(removedTrx.getActiveSavepoints()).isEmpty();
 	}
 
-	private MockedTrx invokedTrxManagerNested(@NonNull final MockedTrxManager trxManager, @NonNull final Runnable innerRunnable)
+	private MockedTrx invokedTrxManagerNested(
+			@NonNull final MockedTrxManager trxManager,
+			@NonNull final Runnable innerRunnable)
 	{
 		final ITrxRunConfig outerTrxRunCfg = trxManager.newTrxRunConfigBuilder().build();
 		final Mutable<MockedTrx> trx = new Mutable<>();
@@ -139,7 +145,20 @@ public class AbstractTrxManagerTest
 	}
 
 	@Test
-	public void runInNewTrx_nested_twice_2ndWithException()
+	void runInNewTrx_nested_twice_2ndWithException_trxNamePrefixNull()
+	{
+		final String trxNamePrefix = ITrx.TRXNAME_None;
+		perform_run_nested_twice_2ndWithException(trxNamePrefix);
+	}
+
+	@Test
+	void runInNewTrx_nested_twice_2ndWithException_trxNamePrefixNotNull()
+	{
+		final String trxNamePrefix = this.getClass().getSimpleName();
+		perform_run_nested_twice_2ndWithException(trxNamePrefix);
+	}
+
+	private void perform_run_nested_twice_2ndWithException(final String trxNamePrefix)
 	{
 		// @formatter:off
 		final Runnable successfulInnerRunnable = () -> { /* nothing to do */ };
@@ -148,12 +167,14 @@ public class AbstractTrxManagerTest
 
 		final MockedTrxManager trxManager = new MockedTrxManager();
 
-		final ITrxRunConfig outerTrxRunCfg = trxManager.newTrxRunConfigBuilder().build();
+		final ITrxRunConfig outerTrxRunCfg = trxManager.newTrxRunConfigBuilder().setOnRunnableFail(OnRunnableFail.ROLLBACK).build();
+		assertThat(outerTrxRunCfg.getTrxPropagation()).isEqualTo(TrxPropagation.REQUIRES_NEW); // guard
+
 		final Mutable<MockedTrx> trx = new Mutable<>();
 
 		assertThatThrownBy(
 				() -> trxManager.run(
-						ITrx.TRXNAME_None,
+						trxNamePrefix,
 						outerTrxRunCfg,
 						localTrxName -> {
 
@@ -179,7 +200,38 @@ public class AbstractTrxManagerTest
 	}
 
 	@Test
-	public void getPropertyAndProcessAfterCommit()
+	void run_withTrxNamePrefix_OnRunnableFailRollback_exception()
+	{
+		final MockedTrxManager trxManager = new MockedTrxManager();
+		final String trxNamePrefix = this.getClass().getSimpleName();
+
+		final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
+				.setTrxPropagation(TrxPropagation.REQUIRES_NEW).setOnRunnableSuccess(OnRunnableSuccess.COMMIT).setOnRunnableFail(OnRunnableFail.ROLLBACK)
+				.build();
+
+		assertThatThrownBy(() -> trxManager.run(
+				trxNamePrefix,
+				trxRunConfig,
+				(TrxRunnable)trxName_IGNORED -> {
+					throw new RuntimeException("something went wrong");
+				}))
+						.hasMessage("RuntimeException: something went wrong");
+
+		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
+
+		assertThat(removedTransactions).hasSize(1);
+		final MockedTrx removedTrx = (MockedTrx)removedTransactions.get(0);
+
+		assertThat(removedTrx.isCloseCalled()).isTrue();
+		assertThat(removedTrx.isCommitCalled()).isFalse();
+		assertThat(removedTrx.isRollbackCalled()).isTrue();
+		assertThat(removedTrx.getCreatedSavepoints()).isEmpty();
+		assertThat(removedTrx.getReleasedSavepoints()).isEmpty();
+		assertThat(removedTrx.getActiveSavepoints()).isEmpty();
+	}
+
+	@Test
+	void getPropertyAndProcessAfterCommit()
 	{
 		final PlainTrxManager trxManager = new PlainTrxManager();
 		final PlainTrx trx = trxManager.createTrx("TestTrx", false);

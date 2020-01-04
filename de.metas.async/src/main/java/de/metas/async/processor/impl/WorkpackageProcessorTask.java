@@ -111,10 +111,8 @@ import lombok.NonNull;
 
 	public WorkpackageProcessorTask(final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
-			final I_C_Queue_WorkPackage workPackage)
+			@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
-		Check.assumeNotNull(workPackage, "workPackage not null");
-
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
 
