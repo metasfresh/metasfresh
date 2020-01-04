@@ -1,12 +1,14 @@
 package de.metas.rest_api.bpartner.impl;
 
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_LOCATION_GLN;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_VALUE;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
@@ -68,6 +70,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
@@ -564,6 +567,59 @@ class BpartnerRestControllerTest
 
 		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
 		expect(persistedResult).toMatchSnapshot();
+	}
+
+	@Test
+	void createOrUpdateContact_update_extContactIdentifier()
+	{
+		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + AD_USER_EXTERNAL_ID);
+		expect(persistedResult).toMatchSnapshot();
+	}
+
+	@Test
+	void createOrUpdateContact_update_idContactIdentifier()
+	{
+		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update(Integer.toString(AD_USER_ID));
+		expect(persistedResult).toMatchSnapshot();
+	}
+
+	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
+	{
+		final JsonRequestContact jsonContact = JsonRequestContact.builder()
+				.name("jsonContact.name-UPDATED")
+				.code("jsonContact.code-UPDATED")
+				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
+				.build();
+
+		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+
+		// invoke the method under test
+		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
+				"val-" + C_BPARTNER_VALUE,
+				JsonRequestContactUpsert.builder().requestItem(JsonRequestContactUpsertItem
+						.builder()
+						.contactIdentifier(contactIdentifier)
+						.contact(jsonContact)
+						.build()).build());
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+
+		final JsonResponseUpsert response = result.getBody();
+		assertThat(response.getResponseItems()).hasSize(1);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		assertThat(responseItem.getIdentifier()).isEqualTo(contactIdentifier);
+
+		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+
+		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().userId(UserId.ofRepoId(metasfreshId.getValue())).build();
+		final Optional<BPartnerCompositeAndContactId> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
+		assertThat(optContactIdAndBPartner).isPresent();
+
+		final BPartnerContactId resultContactId = optContactIdAndBPartner.get().getBpartnerContactId();
+		assertThat(resultContactId.getRepoId()).isEqualTo(metasfreshId.getValue());
+
+		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
+		return persistedResult;
 	}
 
 	@Test
