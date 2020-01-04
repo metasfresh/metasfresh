@@ -1153,7 +1153,8 @@ public final class Document
 		setValue(documentField, value, reason);
 
 		// FIXME: hardcoded DocAction processing
-		if (WindowConstants.FIELDNAME_DocAction.equals(fieldName))
+		if (WindowConstants.FIELDNAME_DocAction.equals(fieldName)
+				&& DocumentType.Window.equals(getDocumentPath().getDocumentType()))
 		{
 			processDocAction();
 		}
