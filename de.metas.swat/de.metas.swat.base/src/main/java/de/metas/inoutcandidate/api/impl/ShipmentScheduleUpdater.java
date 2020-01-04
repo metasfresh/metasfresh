@@ -61,6 +61,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -101,6 +102,7 @@ import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -179,6 +181,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@Override
 	public int updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleUpdater - Invoked with ShipmentScheduleUpdateInvalidRequest={}", request);
+
 		final PInstanceId selectionId = request.getSelectionId();
 
 		final Boolean running = this.running.get();
@@ -190,18 +194,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		try
 		{
-			shipmentSchedulePA.deleteSchedulesWithoutOrderLines();
-
-			//
 			// Create and invalidate missing shipment schedules, if asked
 			if (request.isCreateMissingShipmentSchedules())
 			{
 				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentScheduleHandlerBL.createMissingCandidates(request.getCtx());
 				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
+
+				Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleUpdater - created {} missing candidates", shipmentSchedulesNewIds.size());
 			}
 
 			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
-			logger.debug("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
 
@@ -863,7 +866,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 	}
 
-	private void invalidatePickingBOMProducts(final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
+	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
 	{
 		if (olsAndScheds.isEmpty())
 		{
