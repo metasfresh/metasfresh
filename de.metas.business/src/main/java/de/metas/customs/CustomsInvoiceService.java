@@ -30,7 +30,6 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -209,8 +208,29 @@ public class CustomsInvoiceService
 
 	private Money getInOutLinePriceConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final CurrencyId currencyId)
 	{
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
+		final Money priceActual = getPriceActual(inoutAndLineId);
+
+		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
+				priceActual.toBigDecimal(),
+				priceActual.getCurrencyId(),
+				currencyId,
+				Env.getClientId(),
+				Env.getOrgId());
+
+		if (shipmentLinePriceConverted == null)
+		{
+			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
+		}
+
+		return Money.of(shipmentLinePriceConverted, currencyId);
+
+	}
+
+	private Money getPriceActual(final InOutAndLineId inoutAndLineId)
+	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
 		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
 
@@ -227,21 +247,7 @@ public class CustomsInvoiceService
 		final OrderLine orderLine = orderLineRepo.getById(orderLineId);
 
 		final Money priceActual = orderLine.getPriceActual();
-
-		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
-				priceActual.toBigDecimal(),
-				priceActual.getCurrencyId(),
-				currencyId,
-				Env.getClientId(),
-				Env.getOrgId());
-
-		if (shipmentLinePriceConverted == null)
-		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
-		}
-
-		return Money.of(shipmentLinePriceConverted, currencyId);
-
+		return priceActual;
 	}
 
 	private Quantity getInOutLineQtyConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final UomId uomId)
@@ -284,13 +290,6 @@ public class CustomsInvoiceService
 		return documentNo;
 	}
 
-	public void setCustomsInvoiceToShipments(final ImmutableSet<InOutId> exportedShippmentIds, final CustomsInvoiceId customsInvoiceId)
-	{
-		exportedShippmentIds
-				.stream()
-				.forEach(exportedShipmentId -> customsInvoiceRepo.setCustomsInvoiceToShipment(exportedShipmentId, customsInvoiceId));
-	}
-
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
 	{
 		return customsInvoiceRepo.retrieveCustomsInvoiceDocTypeId();
@@ -316,7 +315,7 @@ public class CustomsInvoiceService
 
 		for (final InOutAndLineId shipmentLine : shipmentLines)
 		{
-			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId);
+			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId, getPriceActual(shipmentLine));
 
 		}
 	}
