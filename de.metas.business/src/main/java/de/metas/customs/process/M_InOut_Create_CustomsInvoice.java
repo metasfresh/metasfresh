@@ -12,7 +12,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.bpartner.BPartnerId;
@@ -138,18 +137,12 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(customsInvoiceRequest);
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
-		.notifyGenerated(customsInvoice);
+				.notifyGenerated(customsInvoice);
 
 		if (p_IsComplete)
 		{
 			customsInvoiceService.completeCustomsInvoice(customsInvoice);
 		}
-
-		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
-				.map(InOutAndLineId::getInOutId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice.getId());
 
 		customsInvoiceService.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
