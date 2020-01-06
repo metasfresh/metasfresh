@@ -55,6 +55,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -162,19 +163,26 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(scheduleRecord);
-		if (qtyToDeliver.signum() <= 0)
-		{
-			throw new AdempiereException("M_ShipmentSchedule_ID=" + scheduleRecord.getM_ShipmentSchedule_ID() + " was enqueued, but now it doesn not have any quantity to deliver anymore.")
-					.appendParametersToMessage()
-					.setParameter("qtyToDeliver", qtyToDeliver)
-					.setParameter("M_ShipmentSchedule", scheduleRecord)
-					.markAsUserValidationError();
-		}
 
-		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
-		if (pickAvailableHUsOnTheFly)
+		if (retrievePickAvailableHUsOntheFly(huContext))
 		{
-			result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
+			final IProductBL productBL = Services.get(IProductBL.class);
+			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
+			{
+				if (qtyToDeliver.signum() <= 0)
+				{
+					throw new AdempiereException("M_ShipmentSchedule_ID=" + scheduleRecord.getM_ShipmentSchedule_ID() + " was enqueued for shipping, but now it has no quantity to deliver anymore.")
+							.appendParametersToMessage()
+							.setParameter("qtyToDeliver", qtyToDeliver)
+							.setParameter("M_ShipmentSchedule", scheduleRecord)
+							.markAsUserValidationError();
+				}
+				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
+			}
+			else
+			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
+			}
 		}
 
 		// find out if and what what the pickHUsOnTheFly() method did for us
@@ -182,7 +190,7 @@ public class ShipmentScheduleWithHUService
 				.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver.toZero(), Quantity::add);
-		Loggables.addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
 
 		final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
 		if (remainingQtyToAllocate.signum() > 0)
@@ -221,8 +229,9 @@ public class ShipmentScheduleWithHUService
 						adClientId,
 						adOrgId);
 
-		Loggables.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
-				SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
+						SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
 
 		return pickAvailableHUsOntheFly;
 	}
@@ -278,7 +287,7 @@ public class ShipmentScheduleWithHUService
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 
-			final ILoggable loggable = Loggables.get();
+			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			// split a part out of the current HU
