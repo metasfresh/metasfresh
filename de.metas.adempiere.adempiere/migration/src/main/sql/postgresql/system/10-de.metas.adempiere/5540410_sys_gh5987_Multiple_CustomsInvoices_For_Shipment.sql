@@ -1082,4 +1082,159 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 
 
 
+-- 2020-01-06T15:07:24.738Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET AD_Reference_Target_ID=541093,Updated=TO_TIMESTAMP('2020-01-06 17:07:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540235
+;
+
+-- 2020-01-06T15:08:04.819Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsActive='N',Updated=TO_TIMESTAMP('2020-01-06 17:08:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540235
+;
+
+-- 2020-01-06T15:09:06.178Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsActive='Y', Name='M_InOutLine -> C_Customs_Invoice_Line',Updated=TO_TIMESTAMP('2020-01-06 17:09:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540235
+;
+
+-- 2020-01-06T15:10:04.179Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Reference SET Name='C_Customs_InvoiceLine_Target _For_M_InOutLine',Updated=TO_TIMESTAMP('2020-01-06 17:10:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541093
+;
+
+-- 2020-01-06T15:11:47.548Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Key=568000, AD_Table_ID=541361, WhereClause='EXISTS (SELECT 1  from C_Customs_Invoice_Line ci            INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID      INNER JOIN M_InOutLine io on alloc.M_InOutLine_ID = io.M_InOutLine_ID and io.M_InOutLine_ID = @M_InOutLine_ID / -1@ )',Updated=TO_TIMESTAMP('2020-01-06 17:11:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541093
+;
+
+-- 2020-01-06T15:12:02.715Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET AD_Reference_Source_ID=295,Updated=TO_TIMESTAMP('2020-01-06 17:12:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540235
+;
+
+-- 2020-01-06T15:40:13.245Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1  from C_Customs_Invoice_Line ci             INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID       INNER JOIN M_InOutLine io on alloc.M_InOutLine_ID = io.M_InOutLine_ID and io.M_InOutLine_ID = @M_InOutLine_ID / -1@ )',Updated=TO_TIMESTAMP('2020-01-06 17:40:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541093
+;
+
+-- 2020-01-06T15:43:39.211Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1  from C_Customs_Invoice_Line ci             INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID        INNER JOIN M_InOutLine io on alloc.M_InOutLine_ID = io.M_InOutLine_ID  where  io.M_InOutLine_ID = @M_InOutLine_ID / -1@ and ci.ci.C_Customs_Invoice_Line_ID = ci.C_Customs_Invoice_Line.ci.C_Customs_Invoice_Line_ID )',Updated=TO_TIMESTAMP('2020-01-06 17:43:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541093
+;
+
+-- 2020-01-06T15:47:05.776Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544953,0,TO_TIMESTAMP('2020-01-06 17:47:05','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Unter den ausgewählten Lieferungen sind keine exportierbaren Zeilen.','E',TO_TIMESTAMP('2020-01-06 17:47:05','YYYY-MM-DD HH24:MI:SS'),100,'M_InOut_Create_CustomsInvoice_NoValidLines')
+;
+
+-- 2020-01-06T15:47:05.785Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Message_ID=544953 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- 2020-01-06T15:47:45.114Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='No valid lines found in the selected shipments.',Updated=TO_TIMESTAMP('2020-01-06 17:47:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544953
+;
+
+-- 2020-01-06T15:57:37.434Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsActive='N',Updated=TO_TIMESTAMP('2020-01-06 17:57:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540225
+;
+
+-- 2020-01-06T16:11:25.499Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsActive='N',Updated=TO_TIMESTAMP('2020-01-06 18:11:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540235
+;
+
+-- 2020-01-06T16:13:04.096Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsActive='Y',Updated=TO_TIMESTAMP('2020-01-06 18:13:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540225
+;
+
+-- 2020-01-06T16:15:09.173Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1  from C_Customs_Invoice ci             INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_ID = alloc.C_Customs_Invoice_ID         INNER JOIN M_InOut io on alloc.M_InOut_ID = io.M_InOut_ID  where  io.M_InOut_ID = @M_InOut_ID / -1@ and ci.C_Customs_Invoice_ID = C_Customs_Invoice.C_Customs_Invoice_ID )',Updated=TO_TIMESTAMP('2020-01-06 18:15:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540999
+;
+
+-- 2020-01-06T16:17:34.818Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1  from C_Customs_Invoice ci              INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_ID = alloc.C_Customs_Invoice_ID          INNER JOIN M_InOut io on alloc.M_InOut_ID = io.M_InOut_ID   where  io.M_InOut_ID = @M_InOut_ID / -1@ and ci.C_Customs_Invoice_ID = C_Customs_Invoice.C_Customs_Invoice_ID )',Updated=TO_TIMESTAMP('2020-01-06 18:17:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540999
+;
+
+-- 2020-01-06T16:19:09.208Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541094,TO_TIMESTAMP('2020-01-06 18:19:08','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_Customs_Invoice Source',TO_TIMESTAMP('2020-01-06 18:19:08','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2020-01-06T16:19:09.212Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Reference_ID=541094 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- 2020-01-06T16:19:25.111Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy) VALUES (0,567982,0,541094,541360,TO_TIMESTAMP('2020-01-06 18:19:25','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N',TO_TIMESTAMP('2020-01-06 18:19:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2020-01-06T16:19:33.466Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Window_ID=540643,Updated=TO_TIMESTAMP('2020-01-06 18:19:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541094
+;
+
+-- 2020-01-06T16:20:08.255Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541095,TO_TIMESTAMP('2020-01-06 18:20:08','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','M_InOut Target for C_Customs_Invoice',TO_TIMESTAMP('2020-01-06 18:20:08','YYYY-MM-DD HH24:MI:SS'),100,'T')
+;
+
+-- 2020-01-06T16:20:08.258Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Reference_ID=541095 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- 2020-01-06T16:21:22.140Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy,WhereClause) VALUES (0,3521,0,541095,319,169,TO_TIMESTAMP('2020-01-06 18:21:22','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N',TO_TIMESTAMP('2020-01-06 18:21:22','YYYY-MM-DD HH24:MI:SS'),100,'EXISTS (SELECT 1  from C_Customs_Invoice ci              INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_ID = alloc.C_Customs_Invoice_ID          INNER JOIN M_InOut io on alloc.M_InOut_ID = io.M_InOut_ID   where  io.M_InOut_ID = M_InOut.M_InOut_ID and ci.C_Customs_Invoice_ID = @C_Customs_Invoice_ID / -1@ )')
+;
+
+-- 2020-01-06T16:21:30.596Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsDirected,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541094,541095,540236,TO_TIMESTAMP('2020-01-06 18:21:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','N','C_Customs_Invoice -> M_InOut',TO_TIMESTAMP('2020-01-06 18:21:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2020-01-06T16:22:13.353Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='1=1',Updated=TO_TIMESTAMP('2020-01-06 18:22:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541094
+;
+
+-- 2020-01-06T16:23:03.138Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1  from C_Customs_Invoice ci              INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on ci.C_Customs_Invoice_ID = alloc.C_Customs_Invoice_ID          INNER JOIN M_InOut io on alloc.M_InOut_ID = io.M_InOut_ID   where  io.M_InOut_ID = M_InOut.M_InOut_ID and ci.C_Customs_Invoice_ID = @C_Customs_Invoice_ID / -1@  AND io.IsSOTrx = ''Y'')',Updated=TO_TIMESTAMP('2020-01-06 18:23:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541095
+;
+
+-- 2020-01-06T16:24:03.788Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET IsDirected='Y',Updated=TO_TIMESTAMP('2020-01-06 18:24:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540236
+;
+
+-- 2020-01-06T16:24:34.993Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='',Updated=TO_TIMESTAMP('2020-01-06 18:24:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541094
+;
+
+-- 2020-01-06T16:24:40.323Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='1=1',Updated=TO_TIMESTAMP('2020-01-06 18:24:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541094
+;
+
+-- 2020-01-06T16:26:28.594Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1 from m_inout io INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on alloc.M_InOut_ID = io.M_InOut_ID Inner join  C_Customs_Invoice ci       on ci.C_Customs_Invoice_ID = alloc.C_Customs_Invoice_ID           where  io.M_InOut_ID = M_InOut.M_InOut_ID and ci.C_Customs_Invoice_ID = @C_Customs_Invoice_ID / -1@  AND io.IsSOTrx = ''Y'')',Updated=TO_TIMESTAMP('2020-01-06 18:26:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541095
+;
+
+-- 2020-01-06T16:28:26.396Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsGenericZoomOrigin='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-01-06 18:28:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=567982
+;
+
 
