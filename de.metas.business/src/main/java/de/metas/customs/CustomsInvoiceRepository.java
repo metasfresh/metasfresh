@@ -1,7 +1,31 @@
 package de.metas.customs;
 
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_C_Customs_Invoice_Line;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -10,7 +34,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -20,32 +43,9 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_C_Customs_Invoice_Line;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
-import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -74,6 +74,11 @@ public class CustomsInvoiceRepository
 	I_C_Customs_Invoice getByIdInTrx(final CustomsInvoiceId id)
 	{
 		return load(id, I_C_Customs_Invoice.class);
+	}
+
+	I_C_Customs_Invoice_Line getLineByIdInTrx(final CustomsInvoiceLineId id)
+	{
+		return load(id, I_C_Customs_Invoice_Line.class);
 	}
 
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
@@ -275,32 +280,31 @@ public class CustomsInvoiceRepository
 				.build();
 	}
 
-	public void setCustomsInvoiceToShipment(
-			@NonNull final InOutId shipmentId,
-			@NonNull final CustomsInvoiceId customsInvoiceId)
-	{
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-
-		final I_M_InOut shipmentRecord = inoutDAO.getById(shipmentId);
-
-		shipmentRecord.setC_Customs_Invoice_ID(customsInvoiceId.getRepoId());
-
-		shipmentRecord.setIsExportedToCustomsInvoice(true);
-
-		saveRecord(shipmentRecord);
-	}
-
 	public void setCustomsInvoiceLineToShipmentLine(
 			@NonNull final InOutAndLineId shipmentLine,
-			@NonNull final CustomsInvoiceLineId customsInvoiceLineId)
+			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
+			@NonNull final Money priceActual)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
 		final I_M_InOutLine shipmentLineRecord = inoutDAO.getLineById(shipmentLine.getInOutLineId());
+		final I_C_Customs_Invoice_Line customsInvoiceLineRecord = getLineByIdInTrx(customsInvoiceLineId);
 
-		shipmentLineRecord.setC_Customs_Invoice_Line_ID(customsInvoiceLineId.getRepoId());
+		final I_M_InOutLine_To_C_Customs_Invoice_Line inoutLineToCustomsInvoiceLine = newInstance(I_M_InOutLine_To_C_Customs_Invoice_Line.class);
 
-		saveRecord(shipmentLineRecord);
+		inoutLineToCustomsInvoiceLine.setM_InOutLine_ID(shipmentLineRecord.getM_InOutLine_ID());
+		inoutLineToCustomsInvoiceLine.setM_InOut_ID(shipmentLineRecord.getM_InOut_ID());
+		inoutLineToCustomsInvoiceLine.setC_Customs_Invoice_Line_ID(customsInvoiceLineRecord.getC_Customs_Invoice_Line_ID());
+		inoutLineToCustomsInvoiceLine.setC_Customs_Invoice_ID(customsInvoiceLineRecord.getC_Customs_Invoice_ID());
+
+		inoutLineToCustomsInvoiceLine.setM_Product_ID(shipmentLineRecord.getM_Product_ID());
+		inoutLineToCustomsInvoiceLine.setC_UOM_ID(shipmentLineRecord.getC_UOM_ID());
+		inoutLineToCustomsInvoiceLine.setMovementQty(shipmentLineRecord.getMovementQty());
+
+		inoutLineToCustomsInvoiceLine.setPriceActual(priceActual.toBigDecimal());
+		inoutLineToCustomsInvoiceLine.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
+
+		saveRecord(inoutLineToCustomsInvoiceLine);
 
 	}
 
@@ -316,9 +320,12 @@ public class CustomsInvoiceRepository
 
 	private boolean hasNoCustomsTariff(final I_C_Customs_Invoice_Line line)
 	{
-		final String customsTariff = line.getM_Product().getCustomsTariff();
 
-		return Check.isEmpty(customsTariff);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+		final I_M_Product product = productDAO.getById(line.getM_Product_ID());
+
+		return product.getM_CustomsTariff_ID() <= 0;
 	}
 
 }

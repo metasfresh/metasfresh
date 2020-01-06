@@ -7,12 +7,12 @@ import java.util.function.Function;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.bpartner.BPartnerId;
@@ -25,6 +25,8 @@ import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.impl.PlainDocumentLocation;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -38,6 +40,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -65,6 +68,8 @@ import lombok.NonNull;
 
 public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProcessPrecondition
 {
+	private static final String ERR_NoValidLines = "M_InOut_Create_CustomsInvoice_NoValidLines";
+
 	private final CustomsInvoiceService customsInvoiceService = SpringContextHolder.instance.getBean(CustomsInvoiceService.class);
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = SpringContextHolder.instance.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
 
@@ -97,6 +102,13 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 		final List<InOutAndLineId> linesToExport = retrieveLinesToExport();
+
+		if(Check.isEmpty(linesToExport))
+		{
+			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
+
+			throw new AdempiereException(errorMessage);
+		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
 				.stream()
@@ -138,18 +150,12 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(customsInvoiceRequest);
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
-		.notifyGenerated(customsInvoice);
+				.notifyGenerated(customsInvoice);
 
-		if (p_IsComplete)
+		if (p_IsComplete && !Check.isEmpty(customsInvoice.getLines()))
 		{
 			customsInvoiceService.completeCustomsInvoice(customsInvoice);
 		}
-
-		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
-				.map(InOutAndLineId::getInOutId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice.getId());
 
 		customsInvoiceService.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
