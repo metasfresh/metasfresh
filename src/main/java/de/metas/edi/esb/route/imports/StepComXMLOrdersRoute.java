@@ -55,6 +55,7 @@ public class StepComXMLOrdersRoute
 	{
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_ORDER_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
+		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
 		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_ORDERS_REMOTE, "");
 		if (!Util.isEmpty(remoteEndpoint))
@@ -65,11 +66,18 @@ public class StepComXMLOrdersRoute
 					.to(INPUT_ORDERS_LOCAL);
 		}
 
-		ProcessorDefinition<?> ediToXMLOrdersRoute = from(StepComXMLOrdersRoute.INPUT_ORDERS_LOCAL)
+		final String stepComCharsetName=Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+
+		ProcessorDefinition<?> ediToXMLOrdersRoute = from(INPUT_ORDERS_LOCAL)
 				.routeId("STEPCOM-XML-Orders-To-MF-OLCand")
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
+
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
+				.setProperty(Exchange.CHARSET_NAME).constant(stepComCharsetName)
+
 				.convertBodyTo(String.class, StandardCharsets.UTF_8.name())
+				.setProperty(Exchange.CHARSET_NAME).constant(StandardCharsets.UTF_8.name())
+
 				.unmarshal(dataFormat);
 
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
@@ -93,7 +101,7 @@ public class StepComXMLOrdersRoute
 				.setProperty(AbstractEDIRoute.EDI_ORDER_DELIVERY_RULE).constant(defaultDeliveryRule)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_DELIVERY_VIA_RULE).constant(defaultDeliveryViaRule);
 
-		final JaxbDataFormat jaxbDataFormat = new JaxbDataFormat(Constants.JAXB_ContextPath);
+		final JaxbDataFormat olCandsJaxbDataFormat = new JaxbDataFormat(Constants.JAXB_ContextPath);
 
 		// process the unmarshalled output
 		// @formatter:off
@@ -102,7 +110,8 @@ public class StepComXMLOrdersRoute
 				.split().method(StepComXMLOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
 
 					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
-					.marshal(jaxbDataFormat)
+
+					.marshal(olCandsJaxbDataFormat)
 
 					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
 					.to(Constants.EP_AMQP_TO_MF)

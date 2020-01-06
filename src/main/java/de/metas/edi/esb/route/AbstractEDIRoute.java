@@ -49,7 +49,7 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	protected static final String IS_CREATE_XML_FEEDBACK = "IsCreateXMLFeedback";
 
 	protected static final String EDI_COMPUDATA_CHARSET_NAME = "edi.compudata.charset.name";
-	protected static final String EDI_STEPCOM_CHARSET_NAME = "edi.stepcom.charset.name";
+	public static final String EDI_STEPCOM_CHARSET_NAME = "edi.stepcom.charset.name";
 
 
 	public static final String EDI_ORDER_EDIMessageDatePattern = "edi.order.edi_message_date_pattern";
