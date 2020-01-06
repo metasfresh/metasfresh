@@ -152,7 +152,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		CustomsInvoiceUserNotificationsProducer.newInstance()
 				.notifyGenerated(customsInvoice);
 
-		if (p_IsComplete)
+		if (p_IsComplete && !Check.isEmpty(customsInvoice.getLines()))
 		{
 			customsInvoiceService.completeCustomsInvoice(customsInvoice);
 		}
