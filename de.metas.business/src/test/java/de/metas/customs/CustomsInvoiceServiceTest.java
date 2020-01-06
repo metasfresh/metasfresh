@@ -216,7 +216,7 @@ public class CustomsInvoiceServiceTest
 		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
 		refresh(shipmentLineRecord1);
-		assertThat(shipmentLineRecord1.getC_Customs_Invoice_Line_ID(), is(customsInvoiceLine.getId().getRepoId()));
+
 
 	}
 
