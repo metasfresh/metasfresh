@@ -205,6 +205,14 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		{
 			return UomId.ofRepoId(olCandRecord.getC_UOM_ID());
 		}
+
+		// If the olCand did not come with a UOM, then we assume that the customer-ordered-quantity-amount is in the customer specific price-UOM rather than in the product's internal stock-UOM
+		if (olCandRecord.getPrice_UOM_Internal_ID() > 0)
+		{
+			return UomId.ofRepoId(olCandRecord.getPrice_UOM_Internal_ID());
+		}
+
+		// only if we have nothing else to work with, we go with our internal stock-UOM
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final UomId stockUOMId = productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
 		return stockUOMId;
@@ -223,19 +231,22 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 
 	private int getHandOver_Partner_Effective_ID(final I_C_OLCand olCand)
 	{
-		final Integer handOverPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_HandOver_Partner_ID);
-		final int handOverPartnerID = handOverPartnerOverride == null ? 0 : handOverPartnerOverride;
-
-		final int bpartnerId = getC_BPartner_Effective_ID(olCand);
-
+		final int handOverPartnerID;
+		if (olCand.getHandOver_Partner_Override_ID() > 0)
+		{
+			handOverPartnerID = olCand.getHandOver_Partner_Override_ID();
+		}
+		else
+		{
+			handOverPartnerID = olCand.getHandOver_Partner_ID();
+		}
 		if (handOverPartnerID > 0)
 		{
-			// the handover partner was set
-
-			return handOverPartnerID;
+			return handOverPartnerID; // the handover partner was set
 		}
 
 		// fall-back to C_BPartner
+		final int bpartnerId = getC_BPartner_Effective_ID(olCand);
 		return bpartnerId;
 
 	}

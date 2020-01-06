@@ -227,21 +227,8 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		final BigDecimal priceInternal = pricingResult.getPriceStd();
 		final UomId priceUOMInternalId = pricingResult.getPriceUomId();
 
-		// FIXME: move this part to handlingUnits !!!
-		if (priceUOMInternalId != null && uomsRepo.isUOMForTUs(priceUOMInternalId))
-		{
-			// this olCand has a TU/Gebinde price-UOM; that mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
-			olCand.setC_UOM_Internal_ID(priceUOMInternalId.getRepoId());
-		}
-		else
-		{
-			// this olCand has no TU/Gebinde price-UOM, so we just continue with the olCand's imported UOM
-			final UomId internalUomId = olCandEffectiveValuesBL.getRecordOrStockUOMId(olCand);
-			olCand.setC_UOM_Internal_ID(internalUomId.getRepoId());
-		}
 
 		// note: the customer's price remains as it is in the "PriceEntered" column
-
 		// set the internal pricing info for the user's information
 		olCand.setPriceInternal(priceInternal);
 		olCand.setPrice_UOM_Internal_ID(UomId.toRepoId(priceUOMInternalId));
@@ -255,6 +242,18 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
 		DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.setValue(olCand, pricingResult);
+
+		if (priceUOMInternalId != null && uomsRepo.isUOMForTUs(priceUOMInternalId))
+		{
+			// this olCand has a TU/Gebinde price-UOM; that mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
+			olCand.setC_UOM_Internal_ID(priceUOMInternalId.getRepoId());
+		}
+		else
+		{
+			// this olCand has no TU/Gebinde price-UOM, so we just continue with the olCand's imported UOM
+			final UomId internalUomId = olCandEffectiveValuesBL.getRecordOrStockUOMId(olCand);
+			olCand.setC_UOM_Internal_ID(internalUomId.getRepoId());
+		}
 	}
 
 	private IPricingResult getPricingResult(@NonNull final I_C_OLCand olCand)
