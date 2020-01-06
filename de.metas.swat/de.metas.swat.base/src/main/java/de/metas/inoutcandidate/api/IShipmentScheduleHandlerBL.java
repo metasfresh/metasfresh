@@ -31,11 +31,11 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * <li>makes sure that a {@link I_M_IolCandHandler} record is created for every registered handler</li>
 	 * </ul>
 	 *
-	 * @param handler-class
+	 * @param handler
 	 *            the implementation to register. This method will call {@link ShipmentScheduleHandler#getSourceTable()} to
 	 *            find out for which table the handler is registered.
 	 */
-	void registerHandler(Class<? extends ShipmentScheduleHandler> handler);
+	<T extends ShipmentScheduleHandler> void registerHandler(T handler);
 
 	/**
 	 * Registers a listener for the given table name. The listener is informed if a handler found a data record with a
