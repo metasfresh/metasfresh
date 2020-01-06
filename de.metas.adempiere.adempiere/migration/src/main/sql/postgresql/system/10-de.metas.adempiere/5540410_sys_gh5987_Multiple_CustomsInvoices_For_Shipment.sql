@@ -1237,4 +1237,9 @@ UPDATE AD_Ref_Table SET WhereClause='EXISTS (SELECT 1 from m_inout io INNER JOIN
 UPDATE AD_Column SET IsGenericZoomOrigin='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-01-06 18:28:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=567982
 ;
 
+-- 2020-01-06T17:00:21.848Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=559338
+;
+
 
