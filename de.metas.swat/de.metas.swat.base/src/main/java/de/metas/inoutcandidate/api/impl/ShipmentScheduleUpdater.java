@@ -61,11 +61,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -102,6 +102,7 @@ import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -180,6 +181,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@Override
 	public int updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleUpdater - Invoked with ShipmentScheduleUpdateInvalidRequest={}", request);
+
 		final PInstanceId selectionId = request.getSelectionId();
 
 		final Boolean running = this.running.get();
@@ -191,18 +194,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		try
 		{
-			shipmentSchedulePA.deleteSchedulesWithoutOrderLines();
-
-			//
 			// Create and invalidate missing shipment schedules, if asked
 			if (request.isCreateMissingShipmentSchedules())
 			{
 				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentScheduleHandlerBL.createMissingCandidates(request.getCtx());
 				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
+
+				Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleUpdater - created {} missing candidates", shipmentSchedulesNewIds.size());
 			}
 
 			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
-			logger.debug("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
 
@@ -288,18 +290,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
-		for (final DeliveryLineCandidate inOutLine : firstRun.getAllLines())
+		for (final DeliveryLineCandidate shipmentLineCandidate : firstRun.getAllLines())
 		{
-			if (inOutLine.isDiscarded())
+			if (shipmentLineCandidate.isDiscarded())
 			{
-				inOutLine.setQtyToDeliver(BigDecimal.ZERO);
+				shipmentLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
 			}
 			else
 			{
 				// remember: 'removeLine' means that a *new* line might be
 				// created for the corresponding olAndSched
-				inOutLine.removeFromGroup();
-				firstRun.removeLine(inOutLine);
+				shipmentLineCandidate.removeFromGroup();
+				firstRun.removeLine(shipmentLineCandidate);
 			}
 		}
 
@@ -332,19 +334,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun);
 
 			markAsChangedByUpdateProcess(sched);
-
-			if (olAndSched.hasSalesOrderLine())
-			{
-				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
-				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
-						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
-						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
-						&& sched.getQtyPickList().signum() == 0)
-				{
-					InterfaceWrapperHelper.delete(sched);
-					continue;
-				}
-			}
 
 			updateProcessedFlag(sched);
 			if (sched.isProcessed())
@@ -402,7 +391,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// 08860
 			// update preparation date override based on delivery date effective
 			// DO this only if the preparationDate_Override was not already set manually or by the process
-
 			if (sched.getDeliveryDate_Override() != null && sched.getPreparationDate_Override() == null)
 			{
 				final ZonedDateTime deliveryDate = shipmentScheduleEffectiveBL.getDeliveryDate(sched);
@@ -417,11 +405,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						calculationTime,
 						deliveryDate,
 						bpLocationId);
-				final ZonedDateTime preparationDate = tourAndDate.getRight();
 
 				// In case the DeliveryDate Override is set, also update the preparationDate override
+				final ZonedDateTime preparationDate = tourAndDate.getRight();
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
-				sched.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
+				sched.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
+
 			}
 
 			shipmentSchedulePA.save(sched);
@@ -877,7 +866,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 	}
 
-	private void invalidatePickingBOMProducts(final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
+	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
 	{
 		if (olsAndScheds.isEmpty())
 		{

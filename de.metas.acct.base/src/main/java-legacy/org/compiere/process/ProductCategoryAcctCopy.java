@@ -19,9 +19,11 @@ package org.compiere.process;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_M_Product_Acct;
 import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.cache.CacheMgt;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.product.ProductCategoryId;
@@ -110,5 +112,14 @@ public class ProductCategoryAcctCopy extends JavaProcess
 		}
 
 		return "@Created@=" + countCreated + ", @Updated@=" + countUpdated;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (success)
+		{
+			CacheMgt.get().reset(I_M_Product_Acct.Table_Name);
+		}
 	}
 }

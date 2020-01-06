@@ -14,7 +14,7 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -67932610L;
+	private static final long serialVersionUID = 712790834L;
 
     /** Standard Constructor */
     public X_C_Print_Job (Properties ctx, int C_Print_Job_ID, String trxName)
@@ -41,18 +41,6 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
 
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
@@ -103,7 +91,7 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -112,7 +100,7 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

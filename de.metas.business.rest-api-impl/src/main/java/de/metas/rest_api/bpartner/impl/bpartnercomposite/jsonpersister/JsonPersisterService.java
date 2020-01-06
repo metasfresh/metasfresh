@@ -1,6 +1,7 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 
 import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
@@ -15,6 +16,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -24,14 +26,19 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
@@ -40,8 +47,8 @@ import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
@@ -83,25 +90,26 @@ import lombok.ToString;
 @ToString
 public class JsonPersisterService
 {
-
-	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
-
-	private final transient BPGroupRepository bpGroupRepository;
-
 	private final transient JsonRetrieverService jsonRetrieverService;
+	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
+	private final transient BPGroupRepository bpGroupRepository;
+	private final transient CurrencyRepository currencyRepository;
 
 	@Getter
 	private final String identifier;
 
 	public JsonPersisterService(
+			@NonNull final JsonRetrieverService jsonRetrieverService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
-			@NonNull final JsonRetrieverService jsonRetrieverService,
+			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
+		this.currencyRepository = currencyRepository;
+
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
 
@@ -191,7 +199,7 @@ public class JsonPersisterService
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				contactQuery.externalId(JsonExternalIds.toExternalIdOrNull((contactIdentifier.asJsonExternalId())));
+				contactQuery.externalId(JsonExternalIds.toExternalIdOrNull(contactIdentifier.asJsonExternalId()));
 				break;
 			case METASFRESH_ID:
 				final UserId userId = contactIdentifier.asMetasfreshId(UserId::ofRepoId);
@@ -275,13 +283,51 @@ public class JsonPersisterService
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 		for (final JsonRequestContactUpsertItem requestItem : jsonContactUpsert.getRequestItems())
 		{
-			final IdentifierString locationIdentifier = IdentifierString.of(requestItem.getContactIdentifier());
+			final IdentifierString contactIdentifier = IdentifierString.of(requestItem.getContactIdentifier());
 
-			final BPartnerContact bpartnerContact = shortTermIndex.extract(locationIdentifier);
+			final BPartnerContact bpartnerContact = shortTermIndex.extract(contactIdentifier);
 
 			response.responseItem(JsonResponseUpsertItem.builder()
 					.identifier(requestItem.getContactIdentifier())
 					.metasfreshId(MetasfreshId.of(bpartnerContact.getId()))
+					.build());
+		}
+
+		return Optional.of(response.build());
+	}
+
+	public Optional<JsonResponseUpsert> persistForBPartner(
+			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final JsonRequestBankAccountsUpsert jsonBankAccountsUpsert,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		final BPartnerComposite bpartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier).orElse(null);
+		if (bpartnerComposite == null)
+		{
+			return Optional.empty(); // 404
+		}
+
+		final ShortTermBankAccountIndex shortTermIndex = new ShortTermBankAccountIndex(bpartnerComposite);
+
+		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBankAccountsUpsert.getSyncAdvise(), parentSyncAdvise);
+
+		for (final JsonRequestBankAccountUpsertItem requestItem : jsonBankAccountsUpsert.getRequestItems())
+		{
+			syncJsonBankAccount(requestItem, effectiveSyncAdvise, shortTermIndex);
+		}
+
+		bpartnerCompositeRepository.save(bpartnerComposite);
+
+		// now collect what we got
+		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
+		for (final JsonRequestBankAccountUpsertItem requestItem : jsonBankAccountsUpsert.getRequestItems())
+		{
+			final String iban = requestItem.getIban();
+			final BPartnerBankAccount bankAccount = shortTermIndex.extract(iban);
+
+			response.responseItem(JsonResponseUpsertItem.builder()
+					.identifier(iban)
+					.metasfreshId(MetasfreshId.of(bankAccount.getId()))
 					.build());
 		}
 
@@ -300,6 +346,8 @@ public class JsonPersisterService
 		syncJsonToContacts(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
 
 		syncJsonToLocations(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
+
+		syncJsonToBankAccounts(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 	}
@@ -630,7 +678,6 @@ public class JsonPersisterService
 		if (existingContact != null)
 		{
 			contact = existingContact;
-			shortTermIndex.remove(existingContact.getId());
 		}
 		else
 		{
@@ -801,6 +848,101 @@ public class JsonPersisterService
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getLocations().removeAll(shortTermIndex.getRemainingLocations());
 		}
+	}
+
+	private void syncJsonToBankAccounts(
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		final ShortTermBankAccountIndex shortTermIndex = new ShortTermBankAccountIndex(bpartnerComposite);
+
+		final JsonRequestBankAccountsUpsert bankAccounts = jsonBPartnerComposite.getBankAccountsNotNull();
+		final SyncAdvise bankAccountsSyncAdvise = coalesce(bankAccounts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+
+		for (final JsonRequestBankAccountUpsertItem bankAccountRequestItem : bankAccounts.getRequestItems())
+		{
+			syncJsonBankAccount(bankAccountRequestItem, bankAccountsSyncAdvise, shortTermIndex);
+		}
+
+		if (bankAccountsSyncAdvise.getIfExists().isUpdateRemove())
+		{
+			// deactivate the remaining bpartner locations that we did not see
+			bpartnerComposite.getBankAccounts().removeAll(shortTermIndex.getRemainingBankAccounts());
+		}
+	}
+
+	private void syncJsonBankAccount(
+			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
+			@NonNull final SyncAdvise parentSyncAdvise,
+			@NonNull final ShortTermBankAccountIndex shortTermIndex)
+	{
+		final String iban = jsonBankAccount.getIban();
+		final BPartnerBankAccount existingBankAccount = shortTermIndex.extract(iban);
+
+		final BPartnerBankAccount bankAccount;
+		if (existingBankAccount != null)
+		{
+			bankAccount = existingBankAccount;
+			shortTermIndex.remove(existingBankAccount.getId());
+		}
+		else
+		{
+			if (parentSyncAdvise.isFailIfNotExists())
+			{
+				throw MissingResourceException.builder().resourceName("bankAccount").resourceIdentifier(iban).parentResource(jsonBankAccount).build()
+						.setParameter("parentSyncAdvise", parentSyncAdvise);
+			}
+
+			final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
+			if (currencyId == null)
+			{
+				throw MissingResourceException.builder().resourceName("bankAccount.currencyId").resourceIdentifier(iban).parentResource(jsonBankAccount).build()
+						.setParameter("parentSyncAdvise", parentSyncAdvise);
+			}
+
+			bankAccount = shortTermIndex.newBankAccount(iban, currencyId);
+		}
+
+		syncJsonToBankAccount(jsonBankAccount, bankAccount, parentSyncAdvise);
+	}
+
+	private void syncJsonToBankAccount(
+			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
+			@NonNull final BPartnerBankAccount bankAccount,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		final SyncAdvise syncAdvise = coalesce(jsonBankAccount.getSyncAdvise(), parentSyncAdvise);
+		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
+
+		// active
+		if (jsonBankAccount.getActive() != null)
+		{
+			bankAccount.setActive(jsonBankAccount.getActive());
+		}
+
+		// currency
+		final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
+		if (currencyId != null)
+		{
+			bankAccount.setCurrencyId(currencyId);
+		}
+		else if (isUpdateRemove)
+		{
+			bankAccount.setCurrencyId(null);
+		}
+
+	}
+
+	private CurrencyId extractCurrencyIdOrNull(final JsonRequestBankAccountUpsertItem jsonBankAccount)
+	{
+		if (isBlank(jsonBankAccount.getCurrencyCode()))
+		{
+			return null;
+		}
+
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(jsonBankAccount.getCurrencyCode().trim());
+		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
 	/**

@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,5 +47,8 @@ public interface IAttributeSetInstanceAware
 	I_M_AttributeSetInstance getM_AttributeSetInstance();
 	int getM_AttributeSetInstance_ID();
 	void setM_AttributeSetInstance(final I_M_AttributeSetInstance asi);
+
+	void setM_AttributeSetInstance_ID( int M_AttributeSetInstance_ID);
 	// @formatter:on
+
 }

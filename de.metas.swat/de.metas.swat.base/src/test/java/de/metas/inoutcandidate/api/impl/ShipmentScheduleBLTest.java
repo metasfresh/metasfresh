@@ -6,22 +6,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.shipping.ShipperId;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.util.Services;
 
 public class ShipmentScheduleBLTest
 {
-	private static final ShipperId SHIPPER_ID = ShipperId.ofRepoId(20);
-	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(35);
-
 	private ShipmentScheduleBL shipmentScheduleBL;
 
 	@BeforeEach
@@ -54,6 +57,8 @@ public class ShipmentScheduleBLTest
 	@Test
 	public void openProcessedShipmentSchedule()
 	{
+		setupMockShipmentScheduleHandlerBL();
+
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
 		schedule.setIsClosed(true);
 
@@ -76,6 +81,22 @@ public class ShipmentScheduleBLTest
 		assertThat(schedule.getQtyOrdered())
 				.as("opening a shipmentschedule shall restore its QtyOrdered from its QtyOrdered_Override or .._Calculated value")
 				.isEqualByComparingTo("23");
+	}
+
+	private void setupMockShipmentScheduleHandlerBL()
+	{
+		final IShipmentScheduleHandlerBL mockHandler = new IShipmentScheduleHandlerBL()
+		{
+			// @formatter:off
+			@Override public void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentScheduleRecord)	{ }
+			@Override public void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName) { }
+			@Override public void registerHandler(Class<? extends ShipmentScheduleHandler> handler) { }
+			@Override public ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched) { return null; }
+			@Override public Set<ShipmentScheduleId> createMissingCandidates(Properties ctx) { return null; }
+			@Override public IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, I_C_OrderLine salesOrderLine) { return null; }
+			// @formatter:on
+		};
+		Services.registerService(IShipmentScheduleHandlerBL.class, mockHandler);
 	}
 
 	@Test

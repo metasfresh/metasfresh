@@ -38,6 +38,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -151,7 +153,7 @@ import lombok.NonNull;
 
 	//
 	// Manual packing materials related:
-	private boolean manualPackingMaterial = false;
+	private boolean _manualPackingMaterial = false;
 
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
@@ -303,7 +305,7 @@ import lombok.NonNull;
 		}
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
-		final Quantity qtyToAddConverted = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, qtyEntered.getUOM());
+		final Quantity qtyToAddConverted = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, qtyEntered.getUomId());
 		qtyEntered = qtyEntered.add(qtyToAddConverted);
 
 		// Enqueue candidate's LU/TU to list of HUs to be assigned
@@ -313,7 +315,7 @@ import lombok.NonNull;
 		packingMaterial_huPIItemProducts.add(piip);
 
 		// collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs.
-		if (manualPackingMaterial)
+		if (isManualPackingMaterial())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
@@ -472,7 +474,7 @@ import lombok.NonNull;
 		}
 
 		// Update packing materials info, if there is "one" info
-		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial);
+		shipmentLine.setIsManualPackingMaterial(isManualPackingMaterial());
 
 		// https://github.com/metasfresh/metasfresh/issues/3503
 		if (packingMaterial_huPIItemProducts != null && packingMaterial_huPIItemProducts.size() == 1)
@@ -481,7 +483,12 @@ import lombok.NonNull;
 			shipmentLine.setM_HU_PI_Item_Product_Override(piipForShipmentLine); // this field is currently displayed in the swing client, so we set it, even if it's redundant
 			shipmentLine.setM_HU_PI_Item_Product_Calculated(piipForShipmentLine);
 
-			if (manualPackingMaterial)
+			if (getQtyTypeToUse().isOnlyUseToDeliver())
+			{
+				final int qtyTUs = computeQtyTUs(piipForShipmentLine);
+				shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUs));
+			}
+			else if (isManualPackingMaterial())
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final HUPIItemProductId piipForShipmentLineId = HUPIItemProductId.ofRepoId(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
@@ -495,10 +502,8 @@ import lombok.NonNull;
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final I_C_UOM productUOM = productBL.getStockUOM(productId);
-					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
-					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
-					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUFromCapacity));
+					final int qtyTUsCalculated = computeQtyTUs(piipForShipmentLine);
+					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUsCalculated));
 				}
 			}
 		}
@@ -526,6 +531,19 @@ import lombok.NonNull;
 		return shipmentLine;
 	}
 
+	@Nullable
+	private int computeQtyTUs(final I_M_HU_PI_Item_Product piipForShipmentLine)
+	{
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
+		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
+		final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
+		if (qtyTUFromCapacity == null)
+		{
+			throw new AdempiereException("Invalid capacity: " + capacity);
+		}
+		return qtyTUFromCapacity;
+	}
+
 	/**
 	 * Assign collected LU/TU pairs.
 	 *
@@ -546,7 +564,7 @@ import lombok.NonNull;
 		}
 
 		// Guard: while generating shipment line from candidates, we shall have HUs for them
-		if (!haveHUAssigments && !manualPackingMaterial)
+		if (!haveHUAssigments && !isManualPackingMaterial())
 		{
 			throw new HUException("No HUs to assign and manualPackingMaterial==false."
 					+ "\n @M_InOutLine_ID@: " + shipmentLine
@@ -600,7 +618,13 @@ import lombok.NonNull;
 	 */
 	public void setManualPackingMaterial(final boolean manualPackingMaterial)
 	{
-		this.manualPackingMaterial = manualPackingMaterial;
+		this._manualPackingMaterial = manualPackingMaterial;
+	}
+
+	private boolean isManualPackingMaterial()
+	{
+		return _manualPackingMaterial
+				|| getQtyTypeToUse().isOnlyUseToDeliver();
 	}
 
 	/**

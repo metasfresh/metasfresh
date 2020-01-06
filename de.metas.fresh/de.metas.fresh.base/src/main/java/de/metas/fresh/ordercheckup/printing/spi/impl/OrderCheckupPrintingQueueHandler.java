@@ -10,12 +10,12 @@ package de.metas.fresh.ordercheckup.printing.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,7 +58,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 
 	/**
 	 * Set the number of copies to the configured value.
-	 * Note that this handler is invokes after the "standard" handler, because the main validator of de.metas.fresh 
+	 * Note that this handler is invoked after the "standard" handler, because the main validator of de.metas.fresh
 	 * has a higher SeqNo and is inititalized later.
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/09467_Bestellkontrolle_2x_ausdrucken_%28103975976435%29

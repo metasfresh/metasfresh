@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -17,6 +16,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -28,7 +28,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.MOrderLine;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -238,21 +237,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void deleteSchedulesWithoutOrderLines()
-	{
-		final String sql = "DELETE FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-				+ "WHERE s.AD_Table_ID=" + getTableId(I_C_OrderLine.class) + " "
-				+ "AND NOT EXISTS ("
-				+ "   select 1 from " + org.compiere.model.I_C_OrderLine.Table_Name + " ol "
-				+ "   where ol." + org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "=s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID
-				+ ")";
-
-		final int delCnt = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-
-		logger.debug("Deleted {} shipment schedules whose C_OrderLine is already gone", delCnt);
-	}
-
-	@Override
 	public void setIsDiplayedForProduct(@NonNull final ProductId productId, final boolean displayed)
 	{
 		Services.get(IQueryBL.class)
@@ -452,8 +436,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void deleteAllForReference(
-			@Nullable final TableRecordReference referencedRecord)
+	public void deleteAllForReference(@Nullable final TableRecordReference referencedRecord)
 	{
 		if (referencedRecord == null)
 		{
@@ -465,7 +448,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID())
 				.create()
-				.delete();
+				.delete(); // don't "deleteDirectly". we need model interceptors to fire
+
 		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
 	}
 
@@ -491,5 +475,29 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public void save(@NonNull final I_M_ShipmentSchedule record)
 	{
 		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	@Override
+	public ImmutableList<I_M_ShipmentSchedule> getByReferences(@NonNull final ImmutableList<TableRecordReference> recordRefs)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.setJoinOr()
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
+
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> filter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID());
+			queryBuilder.filter(filter);
+		}
+
+		return queryBuilder
+				.create()
+				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 }

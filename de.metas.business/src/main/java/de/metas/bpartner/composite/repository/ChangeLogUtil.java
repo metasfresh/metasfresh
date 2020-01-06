@@ -13,6 +13,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -25,6 +26,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -141,6 +143,16 @@ final class ChangeLogUtil
 	private static final ImmutableMap<String, String> C_COUNTRY_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
 			.put(I_C_Country.COLUMNNAME_CountryCode, BPartnerLocation.COUNTRYCODE)
+			.build();
+
+	@VisibleForTesting
+	private static final ImmutableMap<String, String> C_BP_BANKACCOUNT_COLUMN_MAP = ImmutableMap
+			.<String, String> builder()
+			.put(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID, BPartnerBankAccount.ID)
+			.put(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, BPartnerBankAccount.BPARTNER_ID)
+			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
+			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
+			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
 			.build();
 
 	public static RecordChangeLog createBPartnerChangeLog(
@@ -263,6 +275,36 @@ final class ChangeLogUtil
 				.lastChangedTimestamp(lastChanged.getLeft())
 				.recordId(ComposedRecordId.singleKey(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationRecord.getC_BPartner_Location_ID()))
 				.tableName(I_C_BPartner_Location.Table_Name)
+				.entries(domainEntries)
+				.build();
+	}
+
+	public static RecordChangeLog createBankAccountChangeLog(
+			@NonNull final I_C_BP_BankAccount bankAccountRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries = relatedRecords.getRecordRef2LogEntries();
+		final ImmutableList<RecordChangeLogEntry> userEntries = recordRef2LogEntries.get(TableRecordReference.of(bankAccountRecord));
+
+		IPair<Instant, UserId> lastChanged = ImmutablePair.of(
+				TimeUtil.asInstant(bankAccountRecord.getUpdated()),
+				UserId.ofRepoIdOrNull(bankAccountRecord.getUpdatedBy()/* might be -1 */));
+
+		final List<RecordChangeLogEntry> domainEntries = new ArrayList<>();
+		for (final RecordChangeLogEntry userEntry : userEntries)
+		{
+			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(userEntry, C_BP_BANKACCOUNT_COLUMN_MAP);
+			lastChanged = latestOf(entry, lastChanged);
+			entry.ifPresent(domainEntries::add);
+		}
+
+		return RecordChangeLog.builder()
+				.createdByUserId(UserId.ofRepoIdOrNull(bankAccountRecord.getCreatedBy()/* might be -1 */))
+				.createdTimestamp(TimeUtil.asInstant(bankAccountRecord.getCreated()))
+				.lastChangedByUserId(lastChanged.getRight())
+				.lastChangedTimestamp(lastChanged.getLeft())
+				.recordId(ComposedRecordId.singleKey(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID, bankAccountRecord.getC_BP_BankAccount_ID()))
+				.tableName(I_C_BP_BankAccount.Table_Name)
 				.entries(domainEntries)
 				.build();
 	}

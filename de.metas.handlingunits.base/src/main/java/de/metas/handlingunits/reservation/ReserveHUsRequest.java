@@ -61,11 +61,12 @@ public class ReserveHUsRequest
 			@NonNull final ProductId productId,
 			@Singular final ImmutableSet<HuId> huIds)
 	{
-		Check.assumeNotEmpty(huIds, "huIds is not empty");
-
 		this.qtyToReserve = qtyToReserve;
 		this.salesOrderLineId = salesOrderLineId;
 		this.productId = productId;
 		this.huIds = huIds;
+
+		Check.assumeNotEmpty(huIds, "huIds needs to be not empty; this={}", this);
+		Check.assume(qtyToReserve.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyToReserve, this);
 	}
 }

@@ -457,7 +457,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	 */
 	private void commitChunkTrx() throws DBException
 	{
-		Check.assumeNotNull(chunkTrx, "chunkTrx shall NOT be null");
+		Check.assumeNotNull(chunkTrx, "chunkTrx shall NOT be null; this=", this);
 
 		//
 		// Case: Locally created transaction => commit it

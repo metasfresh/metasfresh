@@ -64,4 +64,9 @@ public enum InvoicableQtyBasedOn
 	{
 		this.recordString = recordString;
 	}
+
+	public boolean isCatchWeight()
+	{
+		return CatchWeight.equals(this);
+	}
 }

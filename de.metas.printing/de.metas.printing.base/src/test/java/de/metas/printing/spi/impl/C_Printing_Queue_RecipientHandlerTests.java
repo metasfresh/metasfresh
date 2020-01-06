@@ -1,5 +1,6 @@
 package de.metas.printing.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +20,6 @@ import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.impl.PrintingQueueBL;
 import de.metas.printing.model.I_AD_User;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /*
@@ -66,6 +66,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		item.setAD_User_ID(itemUser.getAD_User_ID());
 		save(item);
 		assertFalse(item.isPrintoutForOtherUser()); // guard
+
 	}
 
 	@Test
@@ -80,7 +81,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipient = newInstance(I_AD_User.class);
 		save(printRecipient);
 
-		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(item.getAD_User_ID()), I_AD_User.class);
+
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
 		save(itemUser);
 
@@ -93,7 +96,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipient = newInstance(I_AD_User.class);
 		save(printRecipient);
 
-		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(item.getAD_User_ID()), I_AD_User.class);
+
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
 		save(itemUser);
 
@@ -115,7 +120,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 		printRecipientMiddle.setC_Printing_Queue_Recipient(printRecipientEffective);
 		save(printRecipientMiddle);
 
-		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(item.getAD_User_ID()), I_AD_User.class);
+
+		final I_AD_User itemUser = loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		save(itemUser);
 
@@ -140,7 +147,9 @@ public class C_Printing_Queue_RecipientHandlerTests
 		printRecipientEffective.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		save(printRecipientEffective);
 
-		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(item.getAD_User_ID()), I_AD_User.class);
+
+		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
 		save(itemUser);
 
@@ -162,12 +171,15 @@ public class C_Printing_Queue_RecipientHandlerTests
 		final I_AD_User printRecipientWrong = newInstance(I_AD_User.class);
 		save(printRecipientWrong);
 		// .. despite the fact that is it the item user's recipient
-		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(item.getAD_User_ID()), I_AD_User.class);
+
+		final I_AD_User itemUser = loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipientWrong);
 		save(itemUser);
 
 		final I_AD_User printRecipientEffective = newInstance(I_AD_User.class);
 		save(printRecipientEffective);
+
+
 
 		final I_AD_User printRecipientIntermediate = newInstance(I_AD_User.class);
 		printRecipientIntermediate.setC_Printing_Queue_Recipient(printRecipientEffective);

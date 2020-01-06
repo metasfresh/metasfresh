@@ -14,7 +14,7 @@ public class X_AD_PrinterHW_MediaSize extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1374482697L;
+	private static final long serialVersionUID = -2020553689L;
 
     /** Standard Constructor */
     public X_AD_PrinterHW_MediaSize (Properties ctx, int AD_PrinterHW_MediaSize_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_AD_PrinterHW_MediaSize extends org.compiere.model.PO implements I
     }
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
 	}
@@ -100,9 +100,7 @@ public class X_AD_PrinterHW_MediaSize extends org.compiere.model.PO implements I
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -110,8 +108,7 @@ public class X_AD_PrinterHW_MediaSize extends org.compiere.model.PO implements I
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

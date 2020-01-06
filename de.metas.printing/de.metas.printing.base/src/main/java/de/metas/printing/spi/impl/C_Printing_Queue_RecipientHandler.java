@@ -74,7 +74,9 @@ public class C_Printing_Queue_RecipientHandler extends PrintingQueueHandlerAdapt
 		}
 
 		// return true if the item's user has a C_Printing_Queue_Recipient
+
 		final I_AD_User queueUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(queueItem.getAD_User_ID()), I_AD_User.class);
+
 		return queueUser.getC_Printing_Queue_Recipient_ID() > 0;
 	}
 
@@ -99,7 +101,7 @@ public class C_Printing_Queue_RecipientHandler extends PrintingQueueHandlerAdapt
 		{
 			for (final I_C_Printing_Queue_Recipient queueRecipient : recipients)
 			{
-				final I_AD_User userToPrint = InterfaceWrapperHelper.create(queueRecipient.getAD_User_ToPrint(), I_AD_User.class);
+				final I_AD_User userToPrint = InterfaceWrapperHelper.loadOutOfTrx(queueRecipient.getAD_User_ToPrint_ID(), I_AD_User.class);
 				final int newUserToPrintId = getEffectiveUserToPrint(userToPrint, new HashSet<>()).getAD_User_ID();
 
 				queueRecipient.setAD_User_ToPrint_ID(newUserToPrintId);
@@ -110,6 +112,7 @@ public class C_Printing_Queue_RecipientHandler extends PrintingQueueHandlerAdapt
 
 	private void resetToUserPrintingQueueRecipient(final I_C_Printing_Queue queueItem)
 	{
+
 		final I_AD_User itemUser = Services.get(IUserDAO.class).getByIdInTrx(UserId.ofRepoId(queueItem.getAD_User_ID()), I_AD_User.class);
 
 		final int userToPrintId = getEffectiveUserToPrint(itemUser, new HashSet<>()).getAD_User_ID();

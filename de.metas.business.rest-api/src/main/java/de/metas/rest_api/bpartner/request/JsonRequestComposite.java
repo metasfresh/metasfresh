@@ -68,6 +68,12 @@ public final class JsonRequestComposite
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
+	@ApiModelProperty(position = 50)
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonProperty("bankAccounts")
+	@Getter(AccessLevel.PRIVATE)
+	JsonRequestBankAccountsUpsert bankAccounts;
+
 	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
 			+ READ_ONLY_SYNC_ADVISE_DOC, position = 50)
 	@JsonInclude(Include.NON_NULL)
@@ -80,12 +86,14 @@ public final class JsonRequestComposite
 			@JsonProperty("bpartner") @Nullable final JsonRequestBPartner bpartner,
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
+			@JsonProperty("bankAccounts") @Nullable JsonRequestBankAccountsUpsert bankAccounts,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
 		this.locations = locations;
 		this.contacts = contacts;
+		this.bankAccounts = bankAccounts;
 		this.syncAdvise = syncAdvise;
 	}
 
@@ -108,5 +116,11 @@ public final class JsonRequestComposite
 	public JsonRequestContactUpsert getContactsNotNull()
 	{
 		return coalesce(contacts, JsonRequestContactUpsert.builder().build());
+	}
+
+	@JsonIgnore
+	public JsonRequestBankAccountsUpsert getBankAccountsNotNull()
+	{
+		return coalesce(bankAccounts, JsonRequestBankAccountsUpsert.NONE);
 	}
 }

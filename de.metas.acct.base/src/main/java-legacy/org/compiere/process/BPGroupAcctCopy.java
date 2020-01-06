@@ -19,10 +19,13 @@ package org.compiere.process;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_BP_Customer_Acct;
+import org.compiere.model.I_C_BP_Vendor_Acct;
 import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPGroupId;
+import de.metas.cache.CacheMgt;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
@@ -134,5 +137,16 @@ public class BPGroupAcctCopy extends JavaProcess
 
 		return "@Created@=" + createdTotal + ", @Updated@=" + updatedTotal;
 	}	// doIt
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (success)
+		{
+			final CacheMgt cacheMgt = CacheMgt.get();
+			cacheMgt.reset(I_C_BP_Customer_Acct.Table_Name);
+			cacheMgt.reset(I_C_BP_Vendor_Acct.Table_Name);
+		}
+	}
 
 }	// BPGroupAcctCopy

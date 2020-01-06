@@ -425,7 +425,7 @@ public class JsonRetrieverService
 		{
 			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 
 			throw new InvalidEntityException(TranslatableStrings.constant("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead"), e)

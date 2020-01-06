@@ -104,7 +104,11 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				}
 			}
 		}
-		else if  (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
+		else if (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
+		{
+			addProduct(null);
+		}
+		else if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
 		{
 			addProduct(null);
 		}

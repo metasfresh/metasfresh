@@ -64,6 +64,7 @@ public class PrintingQueueBLTests
 		item.setAD_User_ID(itemUser.getAD_User_ID());
 		save(item);
 		assertFalse(item.isPrintoutForOtherUser()); // guard
+
 	}
 
 	/**

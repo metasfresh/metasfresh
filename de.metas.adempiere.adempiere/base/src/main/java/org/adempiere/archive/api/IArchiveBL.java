@@ -10,12 +10,12 @@ package org.adempiere.archive.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,6 +24,7 @@ package org.adempiere.archive.api;
 
 import java.io.InputStream;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
@@ -33,15 +34,24 @@ import de.metas.util.ISingletonService;
 
 /**
  * Archive related business logic
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IArchiveBL extends ISingletonService
 {
 	/**
+	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
+	 * The value that is set here will be used in the respective printing queue item
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1240
+	 */
+	ModelDynAttributeAccessor<I_AD_Archive, Integer> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(Integer.class);
+
+
+	/**
 	 * Archives the given binary data. Data is archived only if auto-archive option is enabled (see {@link #isToArchive(PrintInfo)})
-	 * 
+	 *
 	 * @param data is it assumed (but not checked) that this is the binary data of a PDF document.
 	 * @param printInfo used to determine if the data will be archived at all.
 	 * @return the AD_Archive_ID of the new entry if the data has been archived, -1 otherwise.
@@ -50,7 +60,7 @@ public interface IArchiveBL extends ISingletonService
 	int archive(byte[] data, PrintInfo printInfo);
 
 	/**
-	 * 
+	 *
 	 * @param data
 	 * @param printInfo
 	 * @param force
@@ -61,7 +71,7 @@ public interface IArchiveBL extends ISingletonService
 
 	/**
 	 * Archives given <code>data</code>.
-	 * 
+	 *
 	 * @param data
 	 * @param printInfo
 	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
@@ -72,7 +82,7 @@ public interface IArchiveBL extends ISingletonService
 
 	/**
 	 * Like {@link #archive(LayoutEngine, PrintInfo, boolean, String)}, but allows to only create the <code>AD_Archive</code> without saving the record.
-	 * 
+	 *
 	 * @param data
 	 * @param printInfo
 	 * @param force
@@ -85,7 +95,7 @@ public interface IArchiveBL extends ISingletonService
 
 	/**
 	 * Converts to PDF and archives given <code>layout</code>.
-	 * 
+	 *
 	 * @param layout
 	 * @param printInfo
 	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
@@ -96,14 +106,14 @@ public interface IArchiveBL extends ISingletonService
 
 	/**
 	 * Do we need to Auto-Archive ?
-	 * 
+	 *
 	 * @return true if we need to auto-archive
 	 */
 	boolean isToArchive(PrintInfo printInfo);
 
 	/**
 	 * Do we need to Auto-Archive ?
-	 * 
+	 *
 	 * @return true if we need to auto-archive
 	 */
 	boolean isToArchive(ProcessInfo processInfo);
