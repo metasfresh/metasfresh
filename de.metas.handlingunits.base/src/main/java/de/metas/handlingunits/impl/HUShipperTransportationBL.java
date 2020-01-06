@@ -70,12 +70,16 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		if (shipperTransportation == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@");
+			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", shipperTransportationId.getRepoId());
 		}
 		// Make sure Shipper Transportation is still open
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { shipperTransportation.getM_ShipperTransportation_ID() });
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", shipperTransportationId);
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());

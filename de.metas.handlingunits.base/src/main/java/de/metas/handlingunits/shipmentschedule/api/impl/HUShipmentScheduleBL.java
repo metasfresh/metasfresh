@@ -167,7 +167,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
 
 		// mark this as an 'anonymousOnTheFly` pick
-		schedQtyPicked.setisAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
+		schedQtyPicked.setIsAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);

@@ -196,7 +196,9 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		// Make sure shipper transportation is not processed
 		if (p_M_ShipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { p_M_ShipperTransportation.getM_ShipperTransportation_ID() });
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", p_M_ShipperTransportation_ID);
 		}
 
 		return p_M_ShipperTransportation;
