@@ -24,6 +24,7 @@
 package de.metas.edi.esb.route.imports;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -68,6 +69,7 @@ public class StepComXMLOrdersRoute
 				.routeId("STEPCOM-XML-Orders-To-MF-OLCand")
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
+				.convertBodyTo(String.class, StandardCharsets.UTF_8.name())
 				.unmarshal(dataFormat);
 
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
@@ -98,13 +100,10 @@ public class StepComXMLOrdersRoute
 		ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Splitting XML document into individual C_OLCands...")
 				.split().method(StepComXMLOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
-					//
-					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
-					//.aggregationStrategy(new EDIAggregationStrategy())
-					//
+
 					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
 					.marshal(jaxbDataFormat)
-					//
+
 					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
 					.to(Constants.EP_AMQP_TO_MF)
 				.end();
