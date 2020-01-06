@@ -31,7 +31,6 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -108,16 +107,13 @@ public class InOutToTransportationOrderService
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final ImmutableList<InOutLineId> lineIds = inOutDAO.retrieveLines(inOut).stream().map(it -> InOutLineId.ofRepoId(it.getM_InOutLine_ID())).collect(GuavaCollectors.toImmutableList());
-
 		final List<I_M_HU> allHUs = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(inOut);
 
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU hu : allHUs)
 		{
 
-			if (!handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu, lineIds))
+			if (!handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
 			{
 				result.add(hu);
 			}
