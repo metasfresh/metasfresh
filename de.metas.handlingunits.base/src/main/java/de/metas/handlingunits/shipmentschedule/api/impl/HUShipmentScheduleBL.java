@@ -141,7 +141,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		final boolean anonymousHuPickedOnTheFly = true;
+		final boolean anonymousHuPickedOnTheFly = false;
 		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, anonymousHuPickedOnTheFly);
 	}
 

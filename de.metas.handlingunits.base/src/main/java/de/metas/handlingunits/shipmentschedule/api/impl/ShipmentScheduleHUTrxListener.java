@@ -83,7 +83,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 
 		//
 		// Link VHU to shipment schedule
-		final boolean anonymousHuPickedOnTheFly = true;
+		final boolean anonymousHuPickedOnTheFly = false;
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, anonymousHuPickedOnTheFly);
 	}

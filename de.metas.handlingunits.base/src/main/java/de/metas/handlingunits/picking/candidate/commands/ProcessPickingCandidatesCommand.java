@@ -210,7 +210,7 @@ public class ProcessPickingCandidatesCommand
 	{
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 
-		final boolean anonymousHuPickedOnTheFly = true;
+		final boolean anonymousHuPickedOnTheFly = false;
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(
 				shipmentSchedule,
 				CatchWeightHelper.extractQtys(
