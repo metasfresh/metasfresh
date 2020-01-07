@@ -123,7 +123,7 @@ public class StepComXMLInvoicBean
 
 		exchange.getIn().setBody(INVOIC_objectFactory.createDocument(document));
 
-		final String fileName = settings.getFileNamePrefix() + "_" + xrech4H.getHEADER().getDOCUMENTID() + "_" + xrech4H.getHEADER().getMESSAGEREF() + ".xml";
+		final String fileName = settings.getFileNamePrefix() + "_" + xrech4H.getHEADER().getDOCUMENTID() /* + "_" + xrech4H.getHEADER().getMESSAGEREF() */ + ".xml";
 		exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 	}
 

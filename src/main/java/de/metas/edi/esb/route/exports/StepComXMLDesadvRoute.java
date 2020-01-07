@@ -27,6 +27,7 @@ import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
@@ -53,8 +54,6 @@ import lombok.NonNull;
 public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Desadv-To-STEPCOM-XML-Desadv";
-
-	//private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.stepcom-xml.filename";
 
 	public static final String EP_EDI_STEPCOM_XML_DESADV_CONSUMER = "direct:edi.xml.desadv.consumer";
 
@@ -84,8 +83,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
-
-		//final String desadvFilenamePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_DESADV_XML_FILENAME_PATTERN);
 
 		final String ownerId = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_OWNER_ID);
 		final String supplierGln = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
@@ -129,9 +126,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Marshalling STEPcom-XML Java Object -> XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "Setting output filename pattern from properties...")
-				//.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
-
+				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}")
 				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
 				.multicast()
 				.stopOnException()
