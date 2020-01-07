@@ -6,8 +6,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.inout.InOutLineId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -314,7 +312,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isTopLevel(I_M_HU hu);
 
-	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu, final ImmutableList<InOutLineId> lineIds);
+	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu);
 
 	/**
 	 * Gets top level LU of given HU.
