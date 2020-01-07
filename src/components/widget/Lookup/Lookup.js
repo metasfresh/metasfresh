@@ -512,7 +512,6 @@ class Lookup extends Component {
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
               let defaultValue = localClearing ? null : itemByProperty.value;
-
               return (
                 <div
                   key={item.field}
@@ -563,6 +562,7 @@ class Lookup extends Component {
                       property,
                       tabIndex,
                     }}
+                    overwritePlaceholder={this.props.overwritePlaceholder}
                   />
                 </div>
               );

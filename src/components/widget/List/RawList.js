@@ -358,10 +358,14 @@ export class RawList extends PureComponent {
     let value = '';
     let placeholder = '';
 
-    if (typeof defaultValue === 'string') {
-      placeholder = defaultValue;
+    if (this.props.overwritePlaceholder) {
+      placeholder = this.props.overwritePlaceholder;
     } else {
-      placeholder = defaultValue && defaultValue.caption;
+      if (typeof defaultValue === 'string') {
+        placeholder = defaultValue;
+      } else {
+        placeholder = defaultValue && defaultValue.caption;
+      }
     }
 
     if (lookupList) {
@@ -532,6 +536,7 @@ RawList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
+  overwritePlaceholder: PropTypes.string,
 };
 
 RawList.defaultProps = {
