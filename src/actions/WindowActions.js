@@ -56,6 +56,7 @@ import {
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
+  UPDATE_TAB_ROWS_DATA,
 } from '../constants/ActionTypes';
 import {
   addNotification,
@@ -258,6 +259,17 @@ export function addRowData(data, scope) {
     type: ADD_ROW_DATA,
     data,
     scope,
+  };
+}
+
+export function updateTabRowsData(scope, tabId, data) {
+  return {
+    type: UPDATE_TAB_ROWS_DATA,
+    payload: {
+      data,
+      tabId,
+      scope,
+    },
   };
 }
 
