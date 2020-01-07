@@ -1,15 +1,15 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
@@ -17,10 +17,11 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -36,6 +37,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
@@ -107,13 +109,16 @@ public class CustomsInvoiceServiceTest
 
 	private ProductId product1;
 
-	@Before
+	private CustomsInvoiceRepository customsInvoiceRepo;
+
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CustomsInvoiceRepository customsInvoiceRepo = new CustomsInvoiceRepository();
+		customsInvoiceRepo = new CustomsInvoiceRepository();
 		final OrderLineRepository orderLineRepo = new OrderLineRepository();
+
 		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo);
 
 		SystemTime.setTimeSource(new FixedTimeSource(2019, 5, 22, 11, 21, 13));
@@ -187,19 +192,20 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice);
 		assertNotNull(customsInvoice.getId());
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+		assertSame(customsInvoice.getBpartnerAndLocationId(), logisticCompany);
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+		assertSame(customsInvoice.getCurrencyId(), chf);
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
+		assertSame(customsInvoice.getDocTypeId(), docTypeId);
+		assertSame(customsInvoice.getInvoiceDate(), invoiceDate);
+		assertSame(customsInvoice.getUserId(), logisticUserId);
+
+		assertSame(DocStatus.Drafted, customsInvoice.getDocStatus());
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
 		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
+		assertEquals(lines.size(), 1);
 
 		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
 
@@ -207,17 +213,33 @@ public class CustomsInvoiceServiceTest
 
 		final Money expectedLineNetAmt = Money.of(priceActual.toBigDecimal().multiply(qty.toBigDecimal()), chf);
 
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
-		assertThat(customsInvoiceLine.getQuantity(), is(qty));
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+		assertEquals(customsInvoiceLine.getLineNetAmt(), expectedLineNetAmt);
+		assertEquals(customsInvoiceLine.getLineNo(), 10);
+		assertSame(customsInvoiceLine.getProductId(), product1);
+		assertEquals(customsInvoiceLine.getQuantity(), qty);
+		assertEquals(customsInvoiceLine.getUomId(), UomId.ofRepoId(uom1.getC_UOM_ID()));
 
+		service.setShipmentExportedToCustomsInvoice(linesToExportMap);
 		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
-		refresh(shipmentLineRecord1);
+		I_M_InOut shipment = Services.get(IInOutDAO.class).getById(inout1, I_M_InOut.class);
 
+		assertTrue(shipment.isExportedToCustomsInvoice());
 
+		final List<I_M_InOutLine_To_C_Customs_Invoice_Line> inOutLineToCustomsInvoiceLines = customsInvoiceRepo.retrieveInOutLineToCustomsInvoiceLines(shipmentLine1.getInOutLineId());
+
+		assertEquals(inOutLineToCustomsInvoiceLines.size(), 1);
+
+		final I_M_InOutLine_To_C_Customs_Invoice_Line firstAllocation = inOutLineToCustomsInvoiceLines.get(0);
+
+		assertEquals(firstAllocation.getC_Customs_Invoice_Line_ID(), customsInvoiceLine.getId().getRepoId());
+		assertEquals(firstAllocation.getC_Customs_Invoice_ID(), customsInvoice.getId().getRepoId());
+		assertEquals(firstAllocation.getM_InOut_ID(), shipment.getM_InOut_ID());
+		assertEquals(firstAllocation.getM_Product_ID(), shipmentLineRecord1.getM_Product_ID());
+		assertEquals(firstAllocation.getC_UOM_ID(), shipmentLineRecord1.getC_UOM_ID());
+		assertEquals(firstAllocation.getMovementQty(), shipmentLineRecord1.getMovementQty());
+		assertEquals(firstAllocation.getPriceActual(), priceActual.toBigDecimal());
+		assertEquals(firstAllocation.getC_Currency_ID(), priceActual.getCurrencyId().getRepoId());
 	}
 
 	@Test
@@ -247,7 +269,7 @@ public class CustomsInvoiceServiceTest
 
 		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
 
-		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+		ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
 				.put(product1, shipmentLine1)
 				.put(product1, shipmentLine2)
 				.build();
@@ -270,19 +292,19 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice);
 		assertNotNull(customsInvoice.getId());
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+		assertSame(customsInvoice.getBpartnerAndLocationId(), logisticCompany);
+		assertSame(customsInvoice.getCurrencyId(), chf);
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+		assertSame(customsInvoice.getDocTypeId(), docTypeId);
+		assertSame(customsInvoice.getInvoiceDate(), invoiceDate);
+		assertSame(customsInvoice.getUserId(), logisticUserId);
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
+		assertSame(DocStatus.Drafted, customsInvoice.getDocStatus());
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
 		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
+		assertEquals(lines.size(), 1);
 
 		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
 
@@ -292,14 +314,35 @@ public class CustomsInvoiceServiceTest
 				.add(priceActual2.toBigDecimal().multiply(qty2.toBigDecimal()));
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
+		assertEquals(customsInvoiceLine.getLineNetAmt(), expectedLineNetAmt);
+		assertEquals(customsInvoiceLine.getLineNo(), 10);
+		assertSame(customsInvoiceLine.getProductId(), product1);
 
 		final Quantity expectedQty = qty1.add(qty2);
-		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+		assertEquals(customsInvoiceLine.getQuantity(), expectedQty);
+		assertEquals(customsInvoiceLine.getUomId(), UomId.ofRepoId(uom1.getC_UOM_ID()));
 
+		service.setShipmentExportedToCustomsInvoice(linesToExportMap);
+		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
+
+		I_M_InOut shipment = Services.get(IInOutDAO.class).getById(inout1, I_M_InOut.class);
+
+		assertTrue(shipment.isExportedToCustomsInvoice());
+
+		final List<I_M_InOutLine_To_C_Customs_Invoice_Line> inOutLineToCustomsInvoiceLines = customsInvoiceRepo.retrieveInOutLineToCustomsInvoiceLines(shipmentLine1.getInOutLineId());
+
+		assertEquals(inOutLineToCustomsInvoiceLines.size(), 1);
+
+		final I_M_InOutLine_To_C_Customs_Invoice_Line firstAllocation = inOutLineToCustomsInvoiceLines.get(0);
+
+		assertEquals(firstAllocation.getC_Customs_Invoice_Line_ID(), customsInvoiceLine.getId().getRepoId());
+		assertEquals(firstAllocation.getC_Customs_Invoice_ID(), customsInvoice.getId().getRepoId());
+		assertEquals(firstAllocation.getM_InOut_ID(), shipment.getM_InOut_ID());
+		assertEquals(firstAllocation.getM_Product_ID(), shipmentLineRecord1.getM_Product_ID());
+		assertEquals(firstAllocation.getC_UOM_ID(), shipmentLineRecord1.getC_UOM_ID());
+		assertEquals(firstAllocation.getMovementQty(), shipmentLineRecord1.getMovementQty());
+		assertEquals(firstAllocation.getPriceActual(), priceActual1.toBigDecimal());
+		assertEquals(firstAllocation.getC_Currency_ID(), priceActual1.getCurrencyId().getRepoId());
 	}
 
 	@Test
@@ -352,19 +395,19 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice);
 		assertNotNull(customsInvoice.getId());
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+		assertSame(customsInvoice.getBpartnerAndLocationId(), logisticCompany);
+		assertSame(customsInvoice.getCurrencyId(), chf);
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+		assertSame(customsInvoice.getDocTypeId(), docTypeId);
+		assertSame(customsInvoice.getInvoiceDate(), invoiceDate);
+		assertSame(customsInvoice.getUserId(), logisticUserId);
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
+		assertSame(DocStatus.Drafted, customsInvoice.getDocStatus());
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
 		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
+		assertEquals(lines.size(), 1);
 
 		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
 
@@ -373,17 +416,17 @@ public class CustomsInvoiceServiceTest
 		final BigDecimal qty2inUom1 = qty2.toBigDecimal().multiply(convertionMultiplier);
 		final Quantity expectedQty = qty1.add(qty2inUom1);
 
-		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
+		assertEquals(customsInvoiceLine.getQuantity(), expectedQty);
 
 		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
 				.add(priceActual2.toBigDecimal().multiply(qty2inUom1));
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
+		assertEquals(customsInvoiceLine.getLineNetAmt(), expectedLineNetAmt);
+		assertEquals(customsInvoiceLine.getLineNo(), 10);
+		assertSame(customsInvoiceLine.getProductId(), product1);
 
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+		assertEquals(customsInvoiceLine.getUomId(), UomId.ofRepoId(uom1.getC_UOM_ID()));
 
 	}
 
@@ -437,19 +480,19 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice);
 		assertNotNull(customsInvoice.getId());
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+		assertSame(customsInvoice.getBpartnerAndLocationId(), logisticCompany);
+		assertSame(customsInvoice.getCurrencyId(), chf);
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+		assertSame(customsInvoice.getDocTypeId(), docTypeId);
+		assertEquals(customsInvoice.getInvoiceDate(), invoiceDate);
+		assertSame(customsInvoice.getUserId(), logisticUserId);
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
+		assertSame(DocStatus.Drafted, customsInvoice.getDocStatus());
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
 		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
+		assertEquals(lines.size(), 1);
 
 		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
 
@@ -458,7 +501,7 @@ public class CustomsInvoiceServiceTest
 		final BigDecimal qty2inUom1 = qty2.toBigDecimal().multiply(convertionMultiplier);
 		final Quantity expectedQty = qty1.add(qty2inUom1);
 
-		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
+		assertEquals(customsInvoiceLine.getQuantity(), expectedQty);
 
 		final BigDecimal price2inCurrency1 = priceActual2.toBigDecimal().multiply(currencyMultiplier);
 
@@ -467,10 +510,10 @@ public class CustomsInvoiceServiceTest
 
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
+		assertEquals(customsInvoiceLine.getLineNo(), 10);
+		assertSame(customsInvoiceLine.getProductId(), product1);
+		assertEquals(customsInvoiceLine.getUomId(), UomId.ofRepoId(uom1.getC_UOM_ID()));
+		assertEquals(customsInvoiceLine.getLineNetAmt(), expectedLineNetAmt);
 	}
 
 	private I_C_OrderLine createOrderLine(final OrderId order, final ProductId product1, final Quantity qty, final Money priceActual)
