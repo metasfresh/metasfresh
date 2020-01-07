@@ -116,7 +116,7 @@ public class StepComXMLDesadvBean
 		document.getXlief4H().add(xlief4H);
 		exchange.getIn().setBody(DESADV_objectFactory.createDocument(document));
 
-		final String fileName = settings.getFileNamePrefix() + "_" + xlief4H.getHEADER().getDOCUMENTID() + "_" + xlief4H.getHEADER().getMESSAGEREF() + ".xml";
+		final String fileName = settings.getFileNamePrefix() + "_" + xlief4H.getHEADER().getDOCUMENTID() + "_" + SystemTime.millis() + ".xml";
 		exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 	}
 

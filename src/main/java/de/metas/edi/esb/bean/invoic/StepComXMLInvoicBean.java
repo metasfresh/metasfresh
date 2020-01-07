@@ -40,6 +40,7 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
@@ -123,7 +124,7 @@ public class StepComXMLInvoicBean
 
 		exchange.getIn().setBody(INVOIC_objectFactory.createDocument(document));
 
-		final String fileName = settings.getFileNamePrefix() + "_" + xrech4H.getHEADER().getDOCUMENTID() /* + "_" + xrech4H.getHEADER().getMESSAGEREF() */ + ".xml";
+		final String fileName = settings.getFileNamePrefix() + "_" + xrech4H.getHEADER().getDOCUMENTID() + "_" + SystemTime.millis() + ".xml";
 		exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 	}
 
