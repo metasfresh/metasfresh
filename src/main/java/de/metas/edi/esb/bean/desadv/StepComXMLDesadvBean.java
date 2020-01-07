@@ -108,14 +108,24 @@ public class StepComXMLDesadvBean
 
 		// validate mandatory exchange properties
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
-		final Document desadvDocument = createDesadvDocumentFromXMLBean(xmlDesadv, exchange);
-		exchange
-				.getIn()
-				.setBody(DESADV_objectFactory.createDocument(desadvDocument));
+
+		final StepComDesadvSettings settings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		final Xlief4H xlief4H = createDesadvDocumentFromXMLBean(xmlDesadv, exchange, settings);
+
+		final Document document = DESADV_objectFactory.createDocument();
+		document.getXlief4H().add(xlief4H);
+		exchange.getIn().setBody(DESADV_objectFactory.createDocument(document));
+
+		final String fileName = settings.getFileNamePrefix() + "_" + xlief4H.getHEADER().getDOCUMENTID() + "_" + xlief4H.getHEADER().getMESSAGEREF() + ".xml";
+		exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 	}
 
-	private Document createDesadvDocumentFromXMLBean(@NonNull final EDIExpDesadvType xmlDesadv, @NonNull final Exchange exchange)
+	private Xlief4H createDesadvDocumentFromXMLBean(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final Exchange exchange,
+			@NonNull final StepComDesadvSettings settings)
 	{
+		// TODO instead of adding all the properties above to the exchange, add them to this settings instance
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 
@@ -123,16 +133,11 @@ public class StepComXMLDesadvBean
 		final String supplierGln = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN, String.class);
 
 		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
-		final Document document = DESADV_objectFactory.createDocument();
+
 		final Xlief4H xlief4H = DESADV_objectFactory.createXlief4H();
 
 		final HEADERXlief header = DESADV_objectFactory.createHEADERXlief();
 		final String documentId = xmlDesadv.getDocumentNo();
-
-		// TODO instead of adding all the properties above to the exchange, add them to this settings instance
-
-
-		final StepComDesadvSettings settings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
 		header.setDOCUMENTID(documentId);
 		header.setPARTNERID(settings.getPartnerId());
@@ -161,8 +166,8 @@ public class StepComXMLDesadvBean
 
 		xlief4H.setHEADER(header);
 		xlief4H.setTRAILR(trailr);
-		document.getXlief4H().add(xlief4H);
-		return document;
+
+		return xlief4H;
 	}
 
 	private void mapDates(
@@ -238,11 +243,11 @@ public class StepComXMLDesadvBean
 		header.getHADRE1().add(supplierAddress);
 
 		// TODO: add shipToLocation to the desadv
-			final HADRE1 ucAddress = DESADV_objectFactory.createHADRE1();
-			ucAddress.setDOCUMENTID(header.getDOCUMENTID());
-			ucAddress.setADDRESSQUAL(AddressQual.ULCO.toString());
+		final HADRE1 ucAddress = DESADV_objectFactory.createHADRE1();
+		ucAddress.setDOCUMENTID(header.getDOCUMENTID());
+		ucAddress.setADDRESSQUAL(AddressQual.ULCO.toString());
 		ucAddress.setPARTYIDGLN(buyrLocation.getGLN());
-			header.getHADRE1().add(ucAddress);
+		header.getHADRE1().add(ucAddress);
 
 		// address HCTAD1 contact not mapped for now
 		// transport details HTRSD1 not mapped for now

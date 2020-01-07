@@ -46,9 +46,10 @@ public class StepComDesadvSettings
 				.builder()
 				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.applicationRef", "DESADV"))
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.partnerId"))
+				.fileNamePrefix(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.fileNamePrefix"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.testIndicator", "T"))
-				.desadvHeaderORIGReference(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.header.ORIG.reference", ""))
 
+				.desadvHeaderORIGReference(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.header.ORIG.reference", ""))
 				.desadvLinePackagingCodeLURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeLU.required", "true"))
 				.desadvLinePackagingCodeTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeTU.required", "false"))
 
@@ -76,6 +77,8 @@ public class StepComDesadvSettings
 	String applicationRef;
 
 	String partnerId;
+
+	String fileNamePrefix;
 
 	String testIndicator;
 

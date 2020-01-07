@@ -114,22 +114,28 @@ public class StepComXMLInvoicBean
 	public void createXMLEDIData(final Exchange exchange)
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
-		final Document document = createDocument(exchange, xmlCctopInvoice);
 
-		exchange
-				.getIn()
-				.setBody(INVOIC_objectFactory.createDocument(document));
+		final StepComInvoicSettings settings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
+		final Xrech4H xrech4H = createDocument(exchange, xmlCctopInvoice, settings);
+
+		final Document document = INVOIC_objectFactory.createDocument();
+		document.getXrech4H().add(xrech4H);
+
+		exchange.getIn().setBody(INVOIC_objectFactory.createDocument(document));
+
+		final String fileName = settings.getFileNamePrefix() + "_" + xrech4H.getHEADER().getDOCUMENTID() + "_" + xrech4H.getHEADER().getMESSAGEREF() + ".xml";
+		exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 	}
 
-	private Document createDocument(final Exchange exchange, final EDICctopInvoicVType invoice)
+	private Xrech4H createDocument(
+			@NonNull final Exchange exchange,
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final StepComInvoicSettings settings)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 		final String ownerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID, String.class);
 
-		final Document document = INVOIC_objectFactory.createDocument();
 		final Xrech4H xrech4H = INVOIC_objectFactory.createXrech4H();
-
-		final StepComInvoicSettings settings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), invoice.getReceivergln());
 
 		final HEADERXrech headerXrech = INVOIC_objectFactory.createHEADERXrech();
 		headerXrech.setTESTINDICATOR(settings.getTestIndicator());
@@ -174,8 +180,8 @@ public class StepComXMLInvoicBean
 
 		xrech4H.setHEADER(headerXrech);
 		xrech4H.setTRAILR(docTrailer);
-		document.getXrech4H().add(xrech4H);
-		return document;
+
+		return xrech4H;
 	}
 
 	private DocumentType mapDocumentType(final String eancomDocType)
