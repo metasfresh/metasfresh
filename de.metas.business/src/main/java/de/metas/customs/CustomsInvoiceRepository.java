@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +13,6 @@ import java.util.function.Function;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_Product;
@@ -40,6 +38,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -200,10 +199,8 @@ public class CustomsInvoiceRepository
 			@NonNull final CurrencyId currencyId)
 	{
 		return customsInvoiceLinePo -> {
-			final I_M_Product product = productDAO.getById(customsInvoiceLinePo.getM_Product_ID());
-			final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-			final Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
 
+			final Quantity qty = Quantitys.create(customsInvoiceLinePo.getInvoicedQty(), UomId.ofRepoId(customsInvoiceLinePo.getC_UOM_ID()));
 			final Money lineNetAmt = Money.of(customsInvoiceLinePo.getLineNetAmt(), currencyId);
 
 			return CustomsInvoiceLine.builder()
@@ -211,7 +208,6 @@ public class CustomsInvoiceRepository
 					.lineNo(customsInvoiceLinePo.getLineNo())
 					.productId(ProductId.ofRepoId(customsInvoiceLinePo.getM_Product_ID()))
 					.quantity(qty)
-					.uomId(UomId.ofRepoId(product.getC_UOM_ID()))
 					.orgId(Env.getOrgId())
 					.lineNetAmt(lineNetAmt)
 					.build();
@@ -258,8 +254,6 @@ public class CustomsInvoiceRepository
 
 		final ProductId productId = line.getProductId();
 		record.setM_Product_ID(productId.getRepoId());
-
-		record.setC_UOM_ID(line.getUomId().getRepoId());
 
 		saveRecord(record);
 

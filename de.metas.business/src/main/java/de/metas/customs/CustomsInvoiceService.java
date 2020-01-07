@@ -1,16 +1,12 @@
 package de.metas.customs;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -36,12 +32,13 @@ import de.metas.money.Money;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProducer;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -89,11 +86,9 @@ public class CustomsInvoiceService
 
 	public CustomsInvoice generateCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
 	{
-
-		CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
+		final CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
 
 		customsInvoiceRepo.save(customsInvoice);
-
 		return customsInvoice;
 	}
 
@@ -169,30 +164,31 @@ public class CustomsInvoiceService
 			@NonNull final Collection<InOutAndLineId> shipmentLinesForProducts,
 			@NonNull final CurrencyId currencyId)
 	{
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final I_M_Product product = productDAO.getById(productId);
-
-		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-
-		Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
+		Quantity qty = null;
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
 
-		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
-
-		for (InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
+		for (final InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
 		{
-			final Quantity inoutLineQtyCoverted = getInOutLineQtyConverted(inoutAndLineId, uomId);
+			final Quantity inoutLineQty = getInOutLineQty(inoutAndLineId);
+			if (qty == null)
+			{
+				qty = inoutLineQty;
+			}
+			else
+			{
+				qty = Quantitys.add(UOMConversionContext.of(productId), qty, inoutLineQty);
+			}
 
-			qty = qty.add(inoutLineQtyCoverted.toBigDecimal());
+			final ProductPrice inoutLinePrice = getInOutLinePriceConverted(inoutAndLineId, currencyId);
+			final Quantity inoutLineQtyInPriceUOM = uomConversionBL.convertQuantityTo(inoutLineQty, UOMConversionContext.of(productId), inoutLinePrice.getUomId());
 
-			final Money inoutLinePriceConverted = getInOutLinePriceConverted(inoutAndLineId, currencyId);
-
-			final Money shipmentLineNetAmt = inoutLinePriceConverted.multiply(inoutLineQtyCoverted.toBigDecimal());
+			final Money shipmentLineNetAmt = inoutLinePrice
+					.toMoney()
+					.multiply(inoutLineQtyInPriceUOM.toBigDecimal());
 
 			lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
-
 		}
 
 		final CustomsInvoiceLine customsInvoiceLine = CustomsInvoiceLine.builder()
@@ -200,17 +196,16 @@ public class CustomsInvoiceService
 				.lineNetAmt(lineNetAmt)
 				.quantity(qty)
 				.orgId(Env.getOrgId())
-				.uomId(uomId)
 				.build();
 
 		return customsInvoiceLine;
 	}
 
-	private Money getInOutLinePriceConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final CurrencyId currencyId)
+	private ProductPrice getInOutLinePriceConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final CurrencyId currencyId)
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-		final Money priceActual = getPriceActual(inoutAndLineId);
+		final ProductPrice priceActual = getPriceActual(inoutAndLineId);
 
 		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
 				priceActual.toBigDecimal(),
@@ -224,11 +219,10 @@ public class CustomsInvoiceService
 			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
 		}
 
-		return Money.of(shipmentLinePriceConverted, currencyId);
-
+		return priceActual.toBuilder().money(Money.of(shipmentLinePriceConverted, currencyId)).build();
 	}
 
-	private Money getPriceActual(final InOutAndLineId inoutAndLineId)
+	private ProductPrice getPriceActual(@NonNull final InOutAndLineId inoutAndLineId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
@@ -246,31 +240,32 @@ public class CustomsInvoiceService
 
 		final OrderLine orderLine = orderLineRepo.getById(orderLineId);
 
-		final Money priceActual = orderLine.getPriceActual();
+		final ProductPrice priceActual = orderLine.getPriceActual();
 		return priceActual;
 	}
 
-	private Quantity getInOutLineQtyConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final UomId uomId)
+	private Quantity getInOutLineQty(@NonNull final InOutAndLineId inoutAndLineId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
-
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inOutLineId);
-
-		final BigDecimal movementQty = inoutLineRecord.getMovementQty();
-
-		final Quantity lineQty = Quantity.of(movementQty, loadOutOfTrx(inoutLineRecord.getC_UOM_ID(), I_C_UOM.class));
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutAndLineId.getInOutLineId());
 
 		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
+		final Quantity lineQty;
+		if (inoutLineRecord.getCatch_UOM_ID() > 0)
+		{
+			lineQty = Quantitys.create(inoutLineRecord.getQtyDeliveredCatch(), UomId.ofRepoId(inoutLineRecord.getCatch_UOM_ID()));
+		}
+		else if (inoutLineRecord.getC_UOM_ID() > 0)
+		{
+			lineQty = Quantitys.create(inoutLineRecord.getQtyEntered(), UomId.ofRepoId(inoutLineRecord.getC_UOM_ID()));
+		}
+		else
+		{
+			final IProductBL productBL = Services.get(IProductBL.class);
+			lineQty = Quantitys.create(inoutLineRecord.getMovementQty(), productBL.getStockUOMId(productId));
+		}
 
-		final Quantity quantityConverted = uomConversionBL.convertQuantityTo(
-				lineQty,
-				UOMConversionContext.of(productId),
-				uomId);
-
-		return quantityConverted;
+		return lineQty;
 	}
 
 	public String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
@@ -310,13 +305,13 @@ public class CustomsInvoiceService
 
 	}
 
-	private void setCustomsInvoiceLine(final ImmutableSet<InOutAndLineId> shipmentLines, final CustomsInvoiceLineId customsInvoiceLineId)
+	private void setCustomsInvoiceLine(
+			@NonNull final ImmutableSet<InOutAndLineId> shipmentLines,
+			@NonNull final CustomsInvoiceLineId customsInvoiceLineId)
 	{
-
 		for (final InOutAndLineId shipmentLine : shipmentLines)
 		{
-			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId, getPriceActual(shipmentLine));
-
+			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId, getPriceActual(shipmentLine).toMoney());
 		}
 	}
 }

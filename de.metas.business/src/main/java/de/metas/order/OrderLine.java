@@ -9,10 +9,10 @@ import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
-import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -60,7 +60,7 @@ public class OrderLine
 	AttributeSetInstanceId asiId;
 
 	@NonNull
-	Money priceActual;
+	ProductPrice priceActual;
 
 	@NonNull
 	Quantity orderedQty;
