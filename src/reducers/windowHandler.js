@@ -427,6 +427,7 @@ export default function windowHandler(state = initialState, action) {
       const rowData = state[scope].rowData.toJS();
       let rows = get(rowData, `${tabId}`, []);
 
+      // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
       if (rows.length) {
         rows.map(row => {
           if (data[row.rowId]) {

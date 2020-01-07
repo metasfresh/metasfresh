@@ -123,6 +123,7 @@ class MasterWindow extends Component {
         const { master } = this.props;
 
         if (stale) {
+          // some tabs data got updated/row was added
           if (includedTabsInfo) {
             const requests = [];
 
@@ -142,6 +143,7 @@ class MasterWindow extends Component {
               });
             });
 
+            // wait for all the rows requests to finish
             return await Promise.all(requests).then(res => {
               const changedTabs = {};
 
@@ -161,6 +163,8 @@ class MasterWindow extends Component {
                 dispatch(updateTabRowsData('master', tabId, changedRows));
               });
             });
+
+            // Check my comment in https://github.com/metasfresh/me03/issues/3628 - Kuba
           } else {
             dispatch(
               fireUpdateData(
