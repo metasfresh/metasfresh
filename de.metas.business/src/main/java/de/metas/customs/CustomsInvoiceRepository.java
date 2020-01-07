@@ -23,6 +23,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -34,6 +35,9 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -280,7 +284,7 @@ public class CustomsInvoiceRepository
 				.build();
 	}
 
-	public void setCustomsInvoiceLineToShipmentLine(
+	public void allocateInoutLineToCustomsInvoiceLine(
 			@NonNull final InOutAndLineId shipmentLine,
 			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
 			@NonNull final Money priceActual)
@@ -308,6 +312,18 @@ public class CustomsInvoiceRepository
 
 	}
 
+	@VisibleForTesting
+	List<I_M_InOutLine_To_C_Customs_Invoice_Line> retrieveInOutLineToCustomsInvoiceLines(@NonNull final InOutLineId inOutLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InOutLine_To_C_Customs_Invoice_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId())
+				.create()
+				.list();
+
+	}
+
 	public Set<ProductId> retrieveProductIdsWithNoCustomsTariff(final CustomsInvoiceId customsInvoiceId)
 	{
 		final List<I_C_Customs_Invoice_Line> lineRecords = retrieveLineRecords(customsInvoiceId);
@@ -326,6 +342,17 @@ public class CustomsInvoiceRepository
 		final I_M_Product product = productDAO.getById(line.getM_Product_ID());
 
 		return product.getM_CustomsTariff_ID() <= 0;
+	}
+
+	public void setExportedInCustomsInvoice(final InOutId shipmentId)
+	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+
+		final I_M_InOut shipment = inoutDAO.getById(shipmentId, I_M_InOut.class);
+
+		shipment.setIsExportedToCustomsInvoice(true);
+
+		saveRecord(shipment);
 	}
 
 }

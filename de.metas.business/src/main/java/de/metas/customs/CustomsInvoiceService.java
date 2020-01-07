@@ -310,12 +310,20 @@ public class CustomsInvoiceService
 
 	}
 
+	public void setShipmentExportedToCustomsInvoice(@NonNull ImmutableSetMultimap<ProductId, InOutAndLineId> exportedLines)
+	{
+		exportedLines.values()
+		.stream()
+		.map(inoutAndLineId -> inoutAndLineId.getInOutId())
+		.distinct()
+		.forEach(inoutId -> customsInvoiceRepo.setExportedInCustomsInvoice(inoutId));
+	}
+
 	private void setCustomsInvoiceLine(final ImmutableSet<InOutAndLineId> shipmentLines, final CustomsInvoiceLineId customsInvoiceLineId)
 	{
-
 		for (final InOutAndLineId shipmentLine : shipmentLines)
 		{
-			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId, getPriceActual(shipmentLine));
+			customsInvoiceRepo.allocateInoutLineToCustomsInvoiceLine(shipmentLine, customsInvoiceLineId, getPriceActual(shipmentLine));
 
 		}
 	}
