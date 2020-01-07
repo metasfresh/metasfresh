@@ -1,11 +1,11 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +14,6 @@ import java.util.function.Function;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_Product;
@@ -40,6 +39,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -200,10 +200,8 @@ public class CustomsInvoiceRepository
 			@NonNull final CurrencyId currencyId)
 	{
 		return customsInvoiceLinePo -> {
-			final I_M_Product product = productDAO.getById(customsInvoiceLinePo.getM_Product_ID());
-			final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-			final Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
 
+			final Quantity qty = Quantitys.create(customsInvoiceLinePo.getInvoicedQty(), UomId.ofRepoId(customsInvoiceLinePo.getC_UOM_ID()));
 			final Money lineNetAmt = Money.of(customsInvoiceLinePo.getLineNetAmt(), currencyId);
 
 			return CustomsInvoiceLine.builder()
@@ -211,7 +209,6 @@ public class CustomsInvoiceRepository
 					.lineNo(customsInvoiceLinePo.getLineNo())
 					.productId(ProductId.ofRepoId(customsInvoiceLinePo.getM_Product_ID()))
 					.quantity(qty)
-					.uomId(UomId.ofRepoId(product.getC_UOM_ID()))
 					.orgId(Env.getOrgId())
 					.lineNetAmt(lineNetAmt)
 					.build();
@@ -259,8 +256,6 @@ public class CustomsInvoiceRepository
 		final ProductId productId = line.getProductId();
 		record.setM_Product_ID(productId.getRepoId());
 
-		record.setC_UOM_ID(line.getUomId().getRepoId());
-
 		saveRecord(record);
 
 		line.setId(CustomsInvoiceLineId.ofRepoId(record.getC_Customs_Invoice_ID(), record.getC_Customs_Invoice_Line_ID()));
@@ -280,9 +275,9 @@ public class CustomsInvoiceRepository
 				.build();
 	}
 
-	public void setCustomsInvoiceLineToShipmentLine(
-			@NonNull final InOutAndLineId shipmentLine,
+	public void setCustomsInvoiceLineToShipmentLine(@NonNull final InOutAndLineId shipmentLine,
 			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
+			@NonNull final Quantity inoutLineQtyInPriceUOM,
 			@NonNull final Money priceActual)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
@@ -298,14 +293,14 @@ public class CustomsInvoiceRepository
 		inoutLineToCustomsInvoiceLine.setC_Customs_Invoice_ID(customsInvoiceLineRecord.getC_Customs_Invoice_ID());
 
 		inoutLineToCustomsInvoiceLine.setM_Product_ID(shipmentLineRecord.getM_Product_ID());
-		inoutLineToCustomsInvoiceLine.setC_UOM_ID(shipmentLineRecord.getC_UOM_ID());
-		inoutLineToCustomsInvoiceLine.setMovementQty(shipmentLineRecord.getMovementQty());
+
+		inoutLineToCustomsInvoiceLine.setC_UOM_ID(inoutLineQtyInPriceUOM.getUomId().getRepoId());
+		inoutLineToCustomsInvoiceLine.setMovementQty(inoutLineQtyInPriceUOM.toBigDecimal());
 
 		inoutLineToCustomsInvoiceLine.setPriceActual(priceActual.toBigDecimal());
 		inoutLineToCustomsInvoiceLine.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
 
 		saveRecord(inoutLineToCustomsInvoiceLine);
-
 	}
 
 	public Set<ProductId> retrieveProductIdsWithNoCustomsTariff(final CustomsInvoiceId customsInvoiceId)
@@ -326,6 +321,11 @@ public class CustomsInvoiceRepository
 		final I_M_Product product = productDAO.getById(line.getM_Product_ID());
 
 		return product.getM_CustomsTariff_ID() <= 0;
+	}
+
+	public void deleteAllocation(I_M_InOutLine_To_C_Customs_Invoice_Line shipmentLineToCustomsInvoiceLineAlloc)
+	{
+		deleteRecord(shipmentLineToCustomsInvoiceLineAlloc);
 	}
 
 }

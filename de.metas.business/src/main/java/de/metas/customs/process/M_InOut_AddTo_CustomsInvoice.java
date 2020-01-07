@@ -7,22 +7,20 @@ import org.compiere.model.I_M_InOut;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.customs.CustomsInvoice;
+import de.metas.customs.CustomsInvoiceId;
 import de.metas.customs.CustomsInvoiceService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.user.UserId;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,10 +38,10 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProcessPrecondition
+public class M_InOut_AddTo_CustomsInvoice extends JavaProcess implements IProcessPrecondition
 {
-
-	public final CustomsInvoiceService customsInvoiceService = SpringContextHolder.instance.getBean(CustomsInvoiceService.class);
+	private final CustomsInvoiceService customsInvoiceService = SpringContextHolder.instance.getBean(CustomsInvoiceService.class);
+	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = SpringContextHolder.instance.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private BPartnerId p_BPartnerId;
@@ -51,11 +49,8 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 	@Param(parameterName = "C_BPartner_Location_ID")
 	private int p_C_BPartner_Location_ID;
 
-	@Param(parameterName = "AD_User_ID")
-	private UserId p_ContactId;
-
-	@Param(parameterName = "IsComplete")
-	private boolean p_IsComplete;
+	@Param(parameterName = "C_Customs_Invoice_ID")
+	private CustomsInvoiceId p_C_Customs_Invoice_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -69,18 +64,21 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 	}
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_M_InOut> queryFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(p_BPartnerId, p_C_BPartner_Location_ID);
 
-		final CustomsInvoice customsInvoice = customsInvoiceService.generateNewCustomsInvoice(bpartnerLocationId, p_ContactId, queryFilter);
-
-		if (p_IsComplete && !Check.isEmpty(customsInvoice.getLines()))
+		if (p_C_Customs_Invoice_ID == null)
 		{
-			customsInvoiceService.completeCustomsInvoice(customsInvoice);
+			customsInvoiceService.generateNewCustomsInvoice(bpartnerLocationId, null, queryFilter);
+		}
+
+		else
+		{
+			customsInvoiceService.addShipmentsToCustomsInvoice(p_C_Customs_Invoice_ID, queryFilter);
 		}
 
 		return MSG_OK;
