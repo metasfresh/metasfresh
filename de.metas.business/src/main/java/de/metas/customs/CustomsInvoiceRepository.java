@@ -1,6 +1,7 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -274,9 +275,9 @@ public class CustomsInvoiceRepository
 				.build();
 	}
 
-	public void setCustomsInvoiceLineToShipmentLine(
-			@NonNull final InOutAndLineId shipmentLine,
+	public void setCustomsInvoiceLineToShipmentLine(@NonNull final InOutAndLineId shipmentLine,
 			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
+			@NonNull final Quantity inoutLineQtyInPriceUOM,
 			@NonNull final Money priceActual)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
@@ -292,14 +293,14 @@ public class CustomsInvoiceRepository
 		inoutLineToCustomsInvoiceLine.setC_Customs_Invoice_ID(customsInvoiceLineRecord.getC_Customs_Invoice_ID());
 
 		inoutLineToCustomsInvoiceLine.setM_Product_ID(shipmentLineRecord.getM_Product_ID());
-		inoutLineToCustomsInvoiceLine.setC_UOM_ID(shipmentLineRecord.getC_UOM_ID());
-		inoutLineToCustomsInvoiceLine.setMovementQty(shipmentLineRecord.getMovementQty());
+
+		inoutLineToCustomsInvoiceLine.setC_UOM_ID(inoutLineQtyInPriceUOM.getUomId().getRepoId());
+		inoutLineToCustomsInvoiceLine.setMovementQty(inoutLineQtyInPriceUOM.toBigDecimal());
 
 		inoutLineToCustomsInvoiceLine.setPriceActual(priceActual.toBigDecimal());
 		inoutLineToCustomsInvoiceLine.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
 
 		saveRecord(inoutLineToCustomsInvoiceLine);
-
 	}
 
 	public Set<ProductId> retrieveProductIdsWithNoCustomsTariff(final CustomsInvoiceId customsInvoiceId)
@@ -320,6 +321,11 @@ public class CustomsInvoiceRepository
 		final I_M_Product product = productDAO.getById(line.getM_Product_ID());
 
 		return product.getM_CustomsTariff_ID() <= 0;
+	}
+
+	public void deleteAllocation(I_M_InOutLine_To_C_Customs_Invoice_Line shipmentLineToCustomsInvoiceLineAlloc)
+	{
+		deleteRecord(shipmentLineToCustomsInvoiceLineAlloc);
 	}
 
 }
