@@ -4,7 +4,6 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -51,9 +50,6 @@ public class CustomsInvoiceLine
 
 	@NonNull
 	Quantity quantity;
-
-	@NonNull
-	UomId uomId;
 
 	@NonNull
 	OrgId orgId;

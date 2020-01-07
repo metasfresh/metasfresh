@@ -48,6 +48,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
@@ -154,13 +156,14 @@ public class CustomsInvoiceServiceTest
 	{
 		final Money priceActual = Money.of(BigDecimal.TEN, chf);
 
-		final Quantity qty = Quantity.of(BigDecimal.valueOf(2), uom1);
+		final StockQtyAndUOMQty orderLineQty = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
 
 		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
-		final OrderId order = createOrder(bpartnerAndLocation2);
-		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty, priceActual);
-		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
+		final OrderId order = createOrder(bpartnerAndLocation2);
+		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty, priceActual);
+
+		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
 
 		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
@@ -182,6 +185,7 @@ public class CustomsInvoiceServiceTest
 				.linesToExportMap(linesToExportMap)
 				.build();
 
+		// invoke the method under test
 		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
 
 		assertNotNull(customsInvoice);
@@ -205,19 +209,17 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final Money expectedLineNetAmt = Money.of(priceActual.toBigDecimal().multiply(qty.toBigDecimal()), chf);
+		final Money expectedLineNetAmt = Money.of(priceActual.toBigDecimal().multiply(orderLineQty.getUOMQtyNotNull().toBigDecimal()), chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
-		assertThat(customsInvoiceLine.getQuantity(), is(qty));
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+		assertThat(customsInvoiceLine.getQuantity(), is(orderLineQty.getUOMQtyNotNull()));
+		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
 
 		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
 		refresh(shipmentLineRecord1);
-
-
 	}
 
 	@Test
@@ -228,9 +230,9 @@ public class CustomsInvoiceServiceTest
 
 		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
 
-		final Quantity qty1 = Quantity.of(BigDecimal.valueOf(2), uom1);
+		final StockQtyAndUOMQty orderLineQty1 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
+		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty1, priceActual1);
 
-		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty1, priceActual1);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
 		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
@@ -239,9 +241,8 @@ public class CustomsInvoiceServiceTest
 
 		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), chf);
 
-		final Quantity qty2 = Quantity.of(BigDecimal.valueOf(5), uom1);
-
-		final I_C_OrderLine orderLine2 = createOrderLine(order, product1, qty2, priceActual2);
+		final StockQtyAndUOMQty orderLineQty2 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
+		final I_C_OrderLine orderLine2 = createOrderLine(order, orderLineQty2, priceActual2);
 
 		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
 
@@ -288,17 +289,17 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
-				.add(priceActual2.toBigDecimal().multiply(qty2.toBigDecimal()));
+		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(orderLineQty1.getUOMQtyNotNull().toBigDecimal()))
+				.add(priceActual2.toBigDecimal().multiply(orderLineQty2.getUOMQtyNotNull().toBigDecimal()));
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
 
-		final Quantity expectedQty = qty1.add(qty2);
+		final Quantity expectedQty = orderLineQty1.getUOMQtyNotNull().add(orderLineQty2.getUOMQtyNotNull());
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
 
 	}
 
@@ -310,9 +311,9 @@ public class CustomsInvoiceServiceTest
 
 		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
 
-		final Quantity qty1 = Quantity.of(BigDecimal.valueOf(2), uom1);
+		final StockQtyAndUOMQty orderLineQty1 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
+		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty1, priceActual1);
 
-		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty1, priceActual1);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
 		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
@@ -321,9 +322,8 @@ public class CustomsInvoiceServiceTest
 
 		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), chf);
 
-		final Quantity qty2 = Quantity.of(BigDecimal.valueOf(5), uom2);
-
-		final I_C_OrderLine orderLine2 = createOrderLine(order, product1, qty2, priceActual2);
+		final StockQtyAndUOMQty orderLineQty2 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, UomId.ofRepoId(uom2.getC_UOM_ID())); // => product1 is in UOM1, so uomQty=2.5
+		final I_C_OrderLine orderLine2 = createOrderLine(order, orderLineQty2, priceActual2);
 
 		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
 
@@ -370,21 +370,20 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal qty2inUom1 = qty2.toBigDecimal().multiply(convertionMultiplier);
-		final Quantity expectedQty = qty1.add(qty2inUom1);
-
+		final BigDecimal qty2inUom1 = orderLineQty2.getUOMQtyNotNull().toBigDecimal().multiply(convertionMultiplier);
+		final Quantity expectedQty = orderLineQty1.getUOMQtyNotNull().add(qty2inUom1);
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
 
-		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
-				.add(priceActual2.toBigDecimal().multiply(qty2inUom1));
+		final BigDecimal expectedPrice = priceActual1.toBigDecimal().multiply(orderLineQty1.getUOMQtyNotNull().toBigDecimal()) // 2 UOM1 x 10 CHF = 20 CHF
+				.add(priceActual2.toBigDecimal().multiply(orderLineQty2.getUOMQtyNotNull().toBigDecimal())); // 2.5 UOM2 x 20 CHF = 50 CHF
+
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
 
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
-
+		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
 	}
 
 	@Test
@@ -395,9 +394,8 @@ public class CustomsInvoiceServiceTest
 
 		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
 
-		final Quantity qty1 = Quantity.of(BigDecimal.valueOf(2), uom1);
-
-		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty1, priceActual1);
+		final StockQtyAndUOMQty orderLineQty1 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
+		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty1, priceActual1);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
 		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
@@ -406,9 +404,8 @@ public class CustomsInvoiceServiceTest
 
 		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), euro);
 
-		final Quantity qty2 = Quantity.of(BigDecimal.valueOf(5), uom2);
-
-		final I_C_OrderLine orderLine2 = createOrderLine(order, product1, qty2, priceActual2);
+		final StockQtyAndUOMQty orderLineQty2 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, UomId.ofRepoId(uom2.getC_UOM_ID()));
+		final I_C_OrderLine orderLine2 = createOrderLine(order, orderLineQty2, priceActual2);
 
 		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
 
@@ -455,43 +452,48 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal qty2inUom1 = qty2.toBigDecimal().multiply(convertionMultiplier);
-		final Quantity expectedQty = qty1.add(qty2inUom1);
-
+		final BigDecimal qty2inUom1 = orderLineQty2.getUOMQtyNotNull().toBigDecimal().multiply(convertionMultiplier);
+		final Quantity expectedQty = orderLineQty1.getUOMQtyNotNull().add(qty2inUom1);
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
 
 		final BigDecimal price2inCurrency1 = priceActual2.toBigDecimal().multiply(currencyMultiplier);
 
-		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(qty1.toBigDecimal()))
-				.add(price2inCurrency1.multiply(qty2inUom1));
+		final BigDecimal expectedPrice = (priceActual1.toBigDecimal()
+				.multiply(orderLineQty1.getUOMQtyNotNull().toBigDecimal()))
+						.add(price2inCurrency1.multiply(orderLineQty2.getUOMQtyNotNull().toBigDecimal()));
 
 		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
-		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 	}
 
-	private I_C_OrderLine createOrderLine(final OrderId order, final ProductId product1, final Quantity qty, final Money priceActual)
+	private I_C_OrderLine createOrderLine(
+			final OrderId order,
+			final StockQtyAndUOMQty stockQtyAndUOMQty,
+			final Money priceActual)
 	{
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
 
 		orderLineRecord.setC_Order_ID(order.getRepoId());
-		orderLineRecord.setM_Product_ID(product1.getRepoId());
-		orderLineRecord.setC_UOM_ID(qty.getUomId().getRepoId());
+
+		orderLineRecord.setM_Product_ID(stockQtyAndUOMQty.getProductId().getRepoId());
+		orderLineRecord.setQtyOrdered(stockQtyAndUOMQty.getStockQty().toBigDecimal());
+
+		orderLineRecord.setQtyEntered(stockQtyAndUOMQty.getUOMQtyNotNull().toBigDecimal());
+		orderLineRecord.setC_UOM_ID(stockQtyAndUOMQty.getUOMQtyNotNull().getUomId().getRepoId());
 
 		orderLineRecord.setPriceActual(priceActual.toBigDecimal());
 		orderLineRecord.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
-
-		orderLineRecord.setQtyOrdered(qty.toBigDecimal());
 
 		save(orderLineRecord);
 
 		return orderLineRecord;
 	}
 
-	private I_M_InOutLine createInOutLine(final InOutId inout1, final I_C_OrderLine orderLineRecord)
+	private I_M_InOutLine createInOutLine(@NonNull final InOutId inout1, @NonNull final I_C_OrderLine orderLineRecord)
 	{
 
 		final I_M_InOutLine shipmentLineRecord = newInstance(I_M_InOutLine.class);
@@ -499,7 +501,9 @@ public class CustomsInvoiceServiceTest
 
 		shipmentLineRecord.setM_Product_ID(orderLineRecord.getM_Product_ID());
 		shipmentLineRecord.setMovementQty(orderLineRecord.getQtyOrdered());
+
 		shipmentLineRecord.setC_UOM_ID(orderLineRecord.getC_UOM_ID());
+		shipmentLineRecord.setQtyEntered(orderLineRecord.getQtyEntered());
 
 		shipmentLineRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
 
@@ -564,7 +568,7 @@ public class CustomsInvoiceServiceTest
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
-
+		uom.setStdPrecision(2);
 		save(uom);
 
 		return uom;
