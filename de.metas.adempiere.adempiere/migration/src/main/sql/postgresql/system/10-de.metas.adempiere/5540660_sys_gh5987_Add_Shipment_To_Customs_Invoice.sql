@@ -63,3 +63,16 @@ UPDATE AD_Process_Para SET AD_Val_Rule_ID=540478,Updated=TO_TIMESTAMP('2020-01-0
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541240,319,540774,169,TO_TIMESTAMP('2020-01-07 19:37:54','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2020-01-07 19:37:54','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
 ;
 
+
+
+
+
+
+-- 2020-01-07T19:22:45.491Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_Customs_Invoice.C_BPartner_ID=@C_BPartner_ID@ AND C_Customs_Invoice.C_BPartner_Location_ID=@C_BPartner_Location_ID@ AND C_Customs_Invoice.DocStatus = ''DR''',Updated=TO_TIMESTAMP('2020-01-07 21:22:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540478
+;
+
+
+
+
