@@ -34,7 +34,9 @@
   else uomConvert(iol.M_Product_ID,iol.C_UOM_ID, catch_uom_id, qtyentered)
   end),0)) as catchweight
 from C_Customs_Invoice_Line cil
-  join M_Inoutline iol on iol.c_customs_invoice_line_id = cil.c_customs_invoice_line_id
+  
+  JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on cil.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID
+  JOIN M_InOutLine iol ON iol.M_InOutLine_id = alloc.M_InOutLine_id
   LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = iol.catch_uom_id
   LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
 where C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id} and  catch_uom_id is not null
