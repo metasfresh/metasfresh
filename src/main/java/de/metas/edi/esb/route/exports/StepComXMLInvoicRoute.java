@@ -27,7 +27,6 @@ import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
 
-import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
@@ -54,7 +53,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoic-To-STEPCOM-XML-Invoic";
 
-	private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoic.stepcom-xml.filename";
+	//private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoic.stepcom-xml.filename";
 
 	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoic.stepcom-xml.consumer";
 
@@ -84,7 +83,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceXMLFilenamePattern = Util.resolveProperty(getContext(), EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN);
+		//final String invoiceXMLFilenamePattern = Util.resolveProperty(getContext(), EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN);
 
 		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOICE_SENDER_GLN);
 		final String ownerId = Util.resolveProperty(getContext(), EDI_XML_OWNER_ID);
@@ -128,7 +127,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.marshal(dataFormat)
 
 				.log(LoggingLevel.INFO, "Setting output filename pattern from properties...")
-				.setHeader(Exchange.FILE_NAME).simple(invoiceXMLFilenamePattern)
+				//.setHeader(Exchange.FILE_NAME).simple(invoiceXMLFilenamePattern)
 
 				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
 				.multicast().stopOnException().to(endPointURIs)
