@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -116,7 +117,8 @@ public class CustomsInvoiceServiceTest
 
 		final CustomsInvoiceRepository customsInvoiceRepo = new CustomsInvoiceRepository();
 		final OrderLineRepository orderLineRepo = new OrderLineRepository();
-		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo);
+		final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = new ShipmentLinesForCustomsInvoiceRepo();
+		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo, shipmentLinesForCustomsInvoiceRepo);
 
 		SystemTime.setTimeSource(new FixedTimeSource(2019, 5, 22, 11, 21, 13));
 
