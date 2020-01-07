@@ -32,15 +32,15 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Add QtyPicked to current QtyPicked of given shipment schedule.
-	 *
+	 * <p>
 	 * Also update the given <code>hu</code>'s (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to the given <code>sched</code>'s effective values.<br>
 	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
 	 *
-	 * @param tuOrVHU TU or VirtualHU to link on
-	 * @param anonymousTuPickedOnTheFly
+	 * @param tuOrVHU                   TU or VirtualHU to link on
+	 * @param anonymousHuPickedOnTheFly true if the HU was picked on the fly for the shipment process
 	 * @return qtyPicked record for this addition
 	 */
-	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext, final boolean anonymousTuPickedOnTheFly);
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext, final boolean anonymousHuPickedOnTheFly);
 
 	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, StockQtyAndUOMQty qtyPicked, HuId tuOrVHUId, IHUContext huContext);
 
@@ -76,7 +76,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
 	 * <li>{@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
 	 * </ul>
-	 *
+	 * <p>
 	 * If no PI item product was found, null will be returned.
 	 *
 	 * @return PI item product or null.
