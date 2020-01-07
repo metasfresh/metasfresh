@@ -77,10 +77,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		Tooltip
 	}
 
-	private final String internalName;
-
 	@Getter
 	private final String field;
+	
+	@Getter
+	private final ITranslatableString caption;
 
 	@Getter
 	private final FieldType fieldType;
@@ -113,9 +114,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	private DocumentLayoutElementFieldDescriptor(@NonNull final Builder builder)
 	{
-		internalName = builder.internalName;
 		field = builder.getFieldName();
-
+		caption = builder.caption;
 		fieldType = builder.fieldType;
 		if (FieldType.Tooltip.equals(fieldType))
 		{
@@ -144,7 +144,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("field", field)
-				.add("internalName", internalName)
 				.add("publicField", publicField)
 				.add("devices", devices.isEmpty() ? null : devices)
 				.toString();
@@ -187,8 +186,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 				.trl("de_CH", "leer")
 				.build();
 
-		private String internalName;
 		private final String fieldName;
+		private ITranslatableString caption = TranslatableStrings.empty();
 		private FieldType fieldType;
 		private String tooltipIconName;
 
@@ -217,7 +216,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		{
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
-					.add("internalName", internalName)
 					.add("fieldName", fieldName)
 					.add("publicField", publicField)
 					.add("fieldActions", _devices.isEmpty() ? null : _devices)
@@ -234,16 +232,16 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return result;
 		}
 
-		public Builder setInternalName(final String internalName)
-		{
-			this.internalName = internalName;
-			return this;
-		}
-
 		public String getFieldName()
 		{
 			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 			return fieldName;
+		}
+		
+		public Builder setCaption(@NonNull final ITranslatableString caption)
+		{
+			this.caption = caption;
+			return this;
 		}
 
 		public Builder setLookupInfos(final LookupDescriptor lookupDescriptor)

@@ -671,6 +671,7 @@ public class LayoutFactory
 		}
 
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
+				.setCaption(field.getCaption())
 				.setLookupInfos(field.getLookupDescriptor().orElse(null))
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
 				.setSupportZoomInto(field.isSupportZoomInto())

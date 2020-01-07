@@ -151,6 +151,9 @@ public final class JSONDocumentLayoutElementField implements Serializable
 
 	@JsonProperty(value = "field", required = true)
 	private final String field;
+	
+	@JsonProperty(value = "caption", required = true)
+	private final String caption;
 
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -201,6 +204,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		field = fieldDescriptor.getField();
+		caption = fieldDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		tooltipIconName = fieldDescriptor.getTooltipIconName();
 		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAdLanguage());
@@ -241,6 +245,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@Builder
 	private JSONDocumentLayoutElementField(
 			@JsonProperty("field") final String field,
+			@JsonProperty("caption") final String caption,
 			@JsonProperty("type") final JSONFieldType type,
 			@JsonProperty("tooltipIconName") final String tooltipIconName,
 			@JsonProperty("emptyText") final String emptyText,
@@ -255,6 +260,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			@JsonProperty("supportZoomInto") final boolean supportZoomInto)
 	{
 		this.field = field;
+		this.caption = caption;
 		this.type = type;
 		this.tooltipIconName = tooltipIconName;
 		this.emptyText = emptyText;
