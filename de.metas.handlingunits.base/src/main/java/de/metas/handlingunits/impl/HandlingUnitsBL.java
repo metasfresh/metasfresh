@@ -34,7 +34,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
-import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -520,19 +519,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu, final ImmutableList<InOutLineId> lineIds)
+	public boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu)
 	{
 		// this was done in extreme haste.
 		final List<I_M_ShipmentSchedule_QtyPicked> scheduleQtyPickeds = Services.get(IHUShipmentScheduleDAO.class).retrieveSchedsQtyPickedForHU(hu);
 
 		for (final I_M_ShipmentSchedule_QtyPicked scheduleQtyPicked : scheduleQtyPickeds)
 		{
-			if (lineIds.stream().anyMatch(it -> it.getRepoId() == scheduleQtyPicked.getM_InOutLine_ID()))
+			if (scheduleQtyPicked.isAnonymousHuPickedOnTheFly())
 			{
-				if (scheduleQtyPicked.isAnonymousHuPickedOnTheFly())
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 		return false;
