@@ -19,6 +19,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -490,29 +491,51 @@ public class CustomsInvoiceService
 
 		final ImmutableList<CustomsInvoiceLine> existingLines = customsInvoice.getLines();
 
-		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
-
-		CustomsInvoiceLine customsInvoiceLineForProduct = findCustomsInvoiceLineForProductId(productId, existingLines).orElse(null);
-
-		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.getByIdInTrx(customsInvoiceId);
-
-		if (customsInvoiceLineForProduct == null)
+		final CustomsInvoiceLine customsInvoiceLineForProductFound = findCustomsInvoiceLineForProductId(productId, existingLines).orElse(null);
+		CustomsInvoiceLine customsInvoiceLineForProduct;
+		if (customsInvoiceLineForProductFound == null)
 		{
+			final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.getByIdInTrx(customsInvoiceId);
 			final CustomsInvoiceLine newCustomsInvoiceLineForProduct = createCustomsInvoiceLine(productId, shipmentLinesForProduct, CurrencyId.ofRepoId(customsInvoiceRecord.getC_Currency_ID()));
 
 			customsInvoiceLineForProduct = newCustomsInvoiceLineForProduct;
 		}
-
 		else
 		{
-			for (InOutAndLineId shipmentLineId : shipmentLinesForProduct)
+			customsInvoiceLineForProduct = customsInvoiceLineForProductFound;
+			for (final InOutAndLineId shipmentLineId : shipmentLinesForProduct)
 			{
 				customsInvoiceLineForProduct = updateCustomsInvoiceLine(shipmentLineId, customsInvoiceLineForProduct, customsInvoice.getCurrencyId());
-
 			}
 		}
-		newLines.add(customsInvoiceLineForProduct);
+
+		//
+		// newLines: existingLines with adding/replacing customsInvoiceLineForProductFound with our created/changed version
+		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
+		{
+			boolean added = false;
+			for (CustomsInvoiceLine existingLine : existingLines)
+			{
+				if (Util.same(customsInvoiceLineForProductFound, existingLine))
+				{
+					newLines.add(customsInvoiceLineForProduct);
+					added = true;
+				}
+				else
+				{
+					newLines.add(existingLine);
+				}
+			}
+
+			if (!added)
+			{
+				newLines.add(customsInvoiceLineForProduct);
+				added = true;
+			}
+		}
+
 		customsInvoice = customsInvoice.toBuilder().lines(ImmutableList.copyOf(newLines)).build();
+
 		customsInvoiceRepo.save(customsInvoice);
 	}
 
@@ -567,8 +590,7 @@ public class CustomsInvoiceService
 
 		lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
 
-		customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(inOutAndLineId, customsInvoiceLineForProduct.getId(), qty, inoutLinePrice
-				.toMoney());
+		customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(inOutAndLineId, customsInvoiceLineForProduct.getId(), qty, inoutLinePrice.toMoney());
 
 		return customsInvoiceLineBuilder
 				.lineNetAmt(lineNetAmt)
@@ -577,7 +599,7 @@ public class CustomsInvoiceService
 
 	}
 
-	private Optional<CustomsInvoiceLine> findCustomsInvoiceLineForProductId(@NonNull final ProductId productId, @NonNull final ImmutableList<CustomsInvoiceLine> existingLines)
+	private Optional<CustomsInvoiceLine> findCustomsInvoiceLineForProductId(@NonNull final ProductId productId, @NonNull final Collection<CustomsInvoiceLine> existingLines)
 	{
 		return existingLines.stream()
 				.filter(line -> line.getProductId().equals(productId))
