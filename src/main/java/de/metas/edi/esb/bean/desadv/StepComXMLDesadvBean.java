@@ -531,8 +531,8 @@ public class StepComXMLDesadvBean
 		{
 			final EDIExpDesadvLinePackType pack = lineAndPack.getPack();
 
-			final MeasurementUnit measurementUnit = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
-			cuQuantity.setMEASUREMENTUNIT(measurementUnit == null ? null : measurementUnit.name());
+			final String measurementUnitNull = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
+			cuQuantity.setMEASUREMENTUNIT(measurementUnitNull);
 
 			if (settings.isDesadvLineCUTURequired())
 			{
@@ -579,17 +579,17 @@ public class StepComXMLDesadvBean
 		BigDecimal qtyCU = null;
 
 		BigDecimal qtyDelivered = ZERO;
-		MeasurementUnit measurementUnit = null;
+		String measurementUnitName = null;
 		for (final EDIExpDesadvLinePackType pack : line.getEDIExpDesadvLinePack())
 		{
 			qtyDelivered = qtyDelivered.add(extractQtyDelivered(pack));
-			measurementUnit = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
+			measurementUnitName = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
 			qtyCU = pack.getQtyCU();
 		}
 
-		if (measurementUnit == null) // case: there were no packs
+		if (measurementUnitName == null) // case: there were no packs
 		{
-			measurementUnit = extractMeasurementUnitOrNull(line.getCUOMID(), line, settings);
+			measurementUnitName = extractMeasurementUnitOrNull(line.getCUOMID(), line, settings);
 		}
 
 		final String documentId = xmlDesadv.getDocumentNo();
@@ -602,13 +602,14 @@ public class StepComXMLDesadvBean
 		detail.getDQUAN1().add(cuQuantity);
 
 		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
-		cuQuantity.setMEASUREMENTUNIT(measurementUnit == null ? null : measurementUnit.name());
+		cuQuantity.setMEASUREMENTUNIT(measurementUnitName);
 		if (qtyDelivered.signum() > 0 && settings.isDesadvLineCUTURequired())
 		{
 			final BigDecimal qtyItemCapacity = validateObject(qtyCU,
 					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
 			final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 			cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
+			cuTuQuantity.setMEASUREMENTUNIT(measurementUnitName);
 			detail.getDQUAN1().add(cuTuQuantity);
 		}
 
@@ -626,7 +627,7 @@ public class StepComXMLDesadvBean
 		return detail;
 	}
 
-	private MeasurementUnit extractMeasurementUnitOrNull(
+	private String extractMeasurementUnitOrNull(
 			@Nullable final EDIExpCUOMType uom,
 			@NonNull final EDIExpDesadvLineType line,
 			@NonNull final StepComDesadvSettings settings)
@@ -645,7 +646,7 @@ public class StepComXMLDesadvBean
 		{
 			throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + line.getLine() + " @C_UOM_ID@=" + settings.getDesadvLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
 		}
-		return measurementUnit;
+		return measurementUnit == null ? null : measurementUnit.name();
 	}
 
 	private String extractLineNumber(@NonNull final EDIExpDesadvLineType line, @NonNull final DecimalFormat decimalFormat)
