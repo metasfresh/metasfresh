@@ -10,12 +10,12 @@ package org.adempiere.ad.table.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +41,7 @@ import de.metas.util.Services;
 
 /**
  * Copy selected columns to given table.
- * 
+ *
  * @author tsa
  *
  */
@@ -105,7 +105,7 @@ public class AD_Column_CopySelectedToTable extends JavaProcess
 
 	protected List<I_AD_Column> getSourceColumns()
 	{
-		final IQueryFilter<I_AD_Column> selectedColumnsFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_AD_Column> selectedColumnsFilter = getProcessInfo().getQueryFilterOrElseFalse();
 		final IQueryBuilder<I_AD_Column> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Column.class, this)
 				.filter(selectedColumnsFilter);
 
