@@ -60,6 +60,9 @@ import lombok.NonNull;
  */
 public class ESRImportEnqueuer
 {
+
+	public static final String LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG = "de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR";
+
 	public static final ESRImportEnqueuer newInstance()
 	{
 		return new ESRImportEnqueuer();
@@ -95,7 +98,8 @@ public class ESRImportEnqueuer
 		final int existingLines = esrImportDAO.countLines(esrImport, null);
 		if (existingLines > 0)
 		{
-			throw new AdempiereException("Lines already exist. Please choose a new ESR.");
+			final String msg = Services.get(IMsgBL.class).getMsg(getCtx(), LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG);
+			throw new AdempiereException(msg);
 		}
 
 		final ESRImportEnqueuerDataSource fromDataSource = getFromDataSource();
