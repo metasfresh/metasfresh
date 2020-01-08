@@ -3,14 +3,11 @@ package de.metas.customs.process;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.customs.CustomsInvoiceLineId;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -134,15 +131,4 @@ public class ShipmentLinesForCustomsInvoiceRepo
 
 		return true;
 	}
-
-	public I_M_InOutLine_To_C_Customs_Invoice_Line retrieveShipmentLineToCustomsInvoiceLineAllocs(final InOutAndLineId inOutAndLineId, final CustomsInvoiceLineId customsInvoiceLineId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOutLine_To_C_Customs_Invoice_Line.class)
-				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMNNAME_M_InOutLine_ID, inOutAndLineId.getInOutLineId())
-				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMNNAME_C_Customs_Invoice_Line_ID, customsInvoiceLineId)
-				.create()
-				.firstOnly(I_M_InOutLine_To_C_Customs_Invoice_Line.class);
-	}
-
 }
