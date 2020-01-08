@@ -357,11 +357,7 @@ export class RawLookup extends PureComponent {
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
-    const {
-      handleInputEmptyStatus,
-      enableAutofocus,
-      isOpen,
-    } = this.props;
+    const { handleInputEmptyStatus, enableAutofocus, isOpen } = this.props;
 
     enableAutofocus();
 

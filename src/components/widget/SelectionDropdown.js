@@ -301,10 +301,7 @@ export default class SelectionDropdown extends Component {
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
-    <CSSTransition
-      className="rotate"
-      timeout={{ exit: 1000, enter: 1000 }}
-    >
+    <CSSTransition className="rotate" timeout={{ exit: 1000, enter: 1000 }}>
       <div className="rotate icon-rotate">
         <i className="meta-icon-settings" />
       </div>
