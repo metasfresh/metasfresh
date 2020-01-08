@@ -1,6 +1,5 @@
 package de.metas.pricing.interceptor;
 
-import de.metas.uom.impl.UOMConversionDAO;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
