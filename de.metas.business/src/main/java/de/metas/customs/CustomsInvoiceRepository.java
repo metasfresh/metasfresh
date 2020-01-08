@@ -1,20 +1,18 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
-import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -23,6 +21,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -31,7 +30,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -71,6 +69,11 @@ import lombok.NonNull;
 @Repository
 public class CustomsInvoiceRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	I_C_Customs_Invoice getByIdInTrx(final CustomsInvoiceId id)
 	{
 		return load(id, I_C_Customs_Invoice.class);
@@ -83,8 +86,6 @@ public class CustomsInvoiceRepository
 
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_CustomsInvoice)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
@@ -163,6 +164,9 @@ public class CustomsInvoiceRepository
 		final I_C_Customs_Invoice customsInvoicePO = load(customsInvoiceId, I_C_Customs_Invoice.class);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(customsInvoicePO.getC_Currency_ID());
+		final ImmutableListMultimap<CustomsInvoiceLineId, CustomsInvoiceLineAlloc> allocs = retrieveAllocations(customsInvoiceId);
+		final ImmutableList<CustomsInvoiceLine> lines = retrieveLines(customsInvoiceId, currencyId, allocs);
+
 		return CustomsInvoice.builder()
 				.id(customsInvoiceId)
 				.createdBy(UserId.ofRepoId(customsInvoicePO.getCreatedBy()))
@@ -177,47 +181,48 @@ public class CustomsInvoiceRepository
 				.invoiceDate(TimeUtil.asLocalDate(customsInvoicePO.getDateInvoiced()))
 				.docAction(customsInvoicePO.getDocAction())
 				.docStatus(DocStatus.ofNullableCode(customsInvoicePO.getDocStatus()))
-				.lines(retrieveLines(customsInvoiceId, currencyId))
+				.lines(lines)
 				.build();
 	}
 
-	private ImmutableList<CustomsInvoiceLine> retrieveLines(@NonNull final CustomsInvoiceId id, @NonNull final CurrencyId currencyId)
+	private ImmutableList<CustomsInvoiceLine> retrieveLines(
+			@NonNull final CustomsInvoiceId id,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final ImmutableListMultimap<CustomsInvoiceLineId, CustomsInvoiceLineAlloc> allocs)
 	{
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final List<I_C_Customs_Invoice_Line> lines = retrieveLineRecords(id);
+
 		return lines.stream()
-				.map(constructCustomsInvoiceLineFromPO(id, productDAO, uomDAO, currencyId))
+				.map(line -> toCustomsInvoiceLine(line, id, currencyId, allocs))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@NonNull
-	private Function<I_C_Customs_Invoice_Line, CustomsInvoiceLine> constructCustomsInvoiceLineFromPO(
+	private CustomsInvoiceLine toCustomsInvoiceLine(
+			@NonNull final I_C_Customs_Invoice_Line record,
 			@NonNull final CustomsInvoiceId customsInvoiceId,
-			@NonNull final IProductDAO productDAO,
-			@NonNull final IUOMDAO uomDAO,
-			@NonNull final CurrencyId currencyId)
+			@NonNull final CurrencyId currencyId,
+			@NonNull final ImmutableListMultimap<CustomsInvoiceLineId, CustomsInvoiceLineAlloc> allocs)
 	{
-		return customsInvoiceLinePo -> {
+		final CustomsInvoiceLineId id = CustomsInvoiceLineId.ofRepoId(customsInvoiceId, record.getC_Customs_Invoice_Line_ID());
+		final Quantity qty = Quantitys.create(record.getInvoicedQty(), UomId.ofRepoId(record.getC_UOM_ID()));
+		final Money lineNetAmt = Money.of(record.getLineNetAmt(), currencyId);
 
-			final Quantity qty = Quantitys.create(customsInvoiceLinePo.getInvoicedQty(), UomId.ofRepoId(customsInvoiceLinePo.getC_UOM_ID()));
-			final Money lineNetAmt = Money.of(customsInvoiceLinePo.getLineNetAmt(), currencyId);
-
-			return CustomsInvoiceLine.builder()
-					.id(CustomsInvoiceLineId.ofRepoId(customsInvoiceId, customsInvoiceLinePo.getC_Customs_Invoice_Line_ID()))
-					.lineNo(customsInvoiceLinePo.getLineNo())
-					.productId(ProductId.ofRepoId(customsInvoiceLinePo.getM_Product_ID()))
-					.quantity(qty)
-					.orgId(Env.getOrgId())
-					.lineNetAmt(lineNetAmt)
-					.build();
-		};
+		return CustomsInvoiceLine.builder()
+				.id(id)
+				.lineNo(record.getLineNo())
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.quantity(qty)
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.lineNetAmt(lineNetAmt)
+				.allocations(new ArrayList<>(allocs.get(id)))
+				.build();
 	}
 
 	private List<I_C_Customs_Invoice_Line> retrieveLineRecords(@NonNull final CustomsInvoiceId customsInvoiceId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Customs_Invoice_Line.class)
 				.addEqualsFilter(I_C_Customs_Invoice_Line.COLUMN_C_Customs_Invoice_ID, customsInvoiceId)
 				.create()
@@ -260,6 +265,7 @@ public class CustomsInvoiceRepository
 
 		line.setId(CustomsInvoiceLineId.ofRepoId(record.getC_Customs_Invoice_ID(), record.getC_Customs_Invoice_Line_ID()));
 
+		saveLineAllocations(line);
 	}
 
 	public CustomsInvoice updateDocActionAndStatus(@NonNull final CustomsInvoice customsInvoice)
@@ -275,34 +281,6 @@ public class CustomsInvoiceRepository
 				.build();
 	}
 
-	public void setCustomsInvoiceLineToShipmentLine(@NonNull final InOutAndLineId shipmentLine,
-			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
-			@NonNull final Quantity inoutLineQtyInPriceUOM,
-			@NonNull final Money priceActual)
-	{
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-
-		final I_M_InOutLine shipmentLineRecord = inoutDAO.getLineById(shipmentLine.getInOutLineId());
-		final I_C_Customs_Invoice_Line customsInvoiceLineRecord = getLineByIdInTrx(customsInvoiceLineId);
-
-		final I_M_InOutLine_To_C_Customs_Invoice_Line inoutLineToCustomsInvoiceLine = newInstance(I_M_InOutLine_To_C_Customs_Invoice_Line.class);
-
-		inoutLineToCustomsInvoiceLine.setM_InOutLine_ID(shipmentLineRecord.getM_InOutLine_ID());
-		inoutLineToCustomsInvoiceLine.setM_InOut_ID(shipmentLineRecord.getM_InOut_ID());
-		inoutLineToCustomsInvoiceLine.setC_Customs_Invoice_Line_ID(customsInvoiceLineRecord.getC_Customs_Invoice_Line_ID());
-		inoutLineToCustomsInvoiceLine.setC_Customs_Invoice_ID(customsInvoiceLineRecord.getC_Customs_Invoice_ID());
-
-		inoutLineToCustomsInvoiceLine.setM_Product_ID(shipmentLineRecord.getM_Product_ID());
-
-		inoutLineToCustomsInvoiceLine.setC_UOM_ID(inoutLineQtyInPriceUOM.getUomId().getRepoId());
-		inoutLineToCustomsInvoiceLine.setMovementQty(inoutLineQtyInPriceUOM.toBigDecimal());
-
-		inoutLineToCustomsInvoiceLine.setPriceActual(priceActual.toBigDecimal());
-		inoutLineToCustomsInvoiceLine.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
-
-		saveRecord(inoutLineToCustomsInvoiceLine);
-	}
-
 	public Set<ProductId> retrieveProductIdsWithNoCustomsTariff(final CustomsInvoiceId customsInvoiceId)
 	{
 		final List<I_C_Customs_Invoice_Line> lineRecords = retrieveLineRecords(customsInvoiceId);
@@ -315,17 +293,91 @@ public class CustomsInvoiceRepository
 
 	private boolean hasNoCustomsTariff(final I_C_Customs_Invoice_Line line)
 	{
-
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
-
 		final I_M_Product product = productDAO.getById(line.getM_Product_ID());
 
 		return product.getM_CustomsTariff_ID() <= 0;
 	}
 
-	public void deleteAllocation(I_M_InOutLine_To_C_Customs_Invoice_Line shipmentLineToCustomsInvoiceLineAlloc)
+	private void saveLineAllocations(final CustomsInvoiceLine line)
 	{
-		deleteRecord(shipmentLineToCustomsInvoiceLineAlloc);
+		final HashMap<InOutAndLineId, I_M_InOutLine_To_C_Customs_Invoice_Line> existingRecords = retrieveAllocationRecords(line.getId())
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(allocRecord -> extractInOutAndLineId(allocRecord)));
+
+		for (final CustomsInvoiceLineAlloc alloc : line.getAllocations())
+		{
+			I_M_InOutLine_To_C_Customs_Invoice_Line record = existingRecords.remove(alloc.getInoutAndLineId());
+			if (record == null)
+			{
+				record = newInstance(I_M_InOutLine_To_C_Customs_Invoice_Line.class);
+			}
+
+			updateAllocationRecord(record, alloc, line.getId(), line.getProductId());
+			saveRecord(record);
+		}
+
+		deleteAll(existingRecords.values());
+	}
+
+	private static void updateAllocationRecord(
+			@NonNull final I_M_InOutLine_To_C_Customs_Invoice_Line record,
+			@NonNull final CustomsInvoiceLineAlloc alloc,
+			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
+			@NonNull final ProductId productId)
+	{
+		record.setM_InOut_ID(alloc.getInoutAndLineId().getInOutId().getRepoId());
+		record.setM_InOutLine_ID(alloc.getInoutAndLineId().getInOutLineId().getRepoId());
+
+		record.setC_Customs_Invoice_ID(customsInvoiceLineId.getCustomsInvoiceId().getRepoId());
+		record.setC_Customs_Invoice_Line_ID(customsInvoiceLineId.getRepoId());
+
+		record.setM_Product_ID(productId.getRepoId());
+
+		record.setC_UOM_ID(alloc.getQuantityInPriceUOM().getUomId().getRepoId());
+		record.setMovementQty(alloc.getQuantityInPriceUOM().toBigDecimal());
+
+		record.setPriceActual(alloc.getPrice().toBigDecimal());
+		record.setC_Currency_ID(alloc.getPrice().getCurrencyId().getRepoId());
+
+		saveRecord(record);
+	}
+
+	private List<I_M_InOutLine_To_C_Customs_Invoice_Line> retrieveAllocationRecords(final CustomsInvoiceLineId customsInvoiceLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOutLine_To_C_Customs_Invoice_Line.class)
+				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMN_C_Customs_Invoice_Line_ID, customsInvoiceLineId)
+				.create()
+				.list();
+	}
+
+	private static InOutAndLineId extractInOutAndLineId(final I_M_InOutLine_To_C_Customs_Invoice_Line record)
+	{
+		return InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID());
+	}
+
+	private ImmutableListMultimap<CustomsInvoiceLineId, CustomsInvoiceLineAlloc> retrieveAllocations(final CustomsInvoiceId customsInvoiceId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOutLine_To_C_Customs_Invoice_Line.class)
+				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMN_C_Customs_Invoice_ID, customsInvoiceId)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						record -> extractCustomsInvoiceLineId(record),
+						record -> toCustomsInvoiceLineAlloc(record)));
+	}
+
+	private CustomsInvoiceLineAlloc toCustomsInvoiceLineAlloc(final I_M_InOutLine_To_C_Customs_Invoice_Line record)
+	{
+		return CustomsInvoiceLineAlloc.builder()
+				.inoutAndLineId(extractInOutAndLineId(record))
+				.price(Money.of(record.getPriceActual(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.quantityInPriceUOM(Quantity.of(record.getMovementQty(), uomDAO.getById(record.getC_UOM_ID())))
+				.build();
+	}
+
+	private static CustomsInvoiceLineId extractCustomsInvoiceLineId(final I_M_InOutLine_To_C_Customs_Invoice_Line record)
+	{
+		return CustomsInvoiceLineId.ofRepoId(record.getC_Customs_Invoice_ID(), record.getC_Customs_Invoice_Line_ID());
 	}
 
 }
