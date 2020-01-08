@@ -21,6 +21,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -448,7 +449,8 @@ public class CustomsInvoiceService
 
 	}
 
-	private void addShipmentLinesToCustomsInvoice(@NonNull ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
+	@VisibleForTesting
+	void addShipmentLinesToCustomsInvoice(@NonNull ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
 	{
 		CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
 

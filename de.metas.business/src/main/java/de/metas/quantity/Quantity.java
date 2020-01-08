@@ -505,6 +505,19 @@ public final class Quantity implements Comparable<Quantity>
 		}
 	}
 
+	public Quantity withoutSource()
+	{
+		if (uom.getC_UOM_ID() == sourceUom.getC_UOM_ID()
+				&& qty.compareTo(sourceQty) == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return new Quantity(qty, uom);
+		}
+	}
+
 	/**
 	 * Returns the signum function of current quantity (i.e. {@link #getQty()} ).
 	 *
