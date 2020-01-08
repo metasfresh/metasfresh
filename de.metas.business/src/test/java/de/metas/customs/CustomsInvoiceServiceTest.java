@@ -1,7 +1,6 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -220,10 +219,6 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
 		assertThat(customsInvoiceLine.getQuantity(), is(orderLineQty.getUOMQtyNotNull()));
 		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
-
-		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
-
-		refresh(shipmentLineRecord1);
 	}
 
 	@Test

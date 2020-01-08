@@ -14,23 +14,20 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
-import de.metas.customs.CustomsInvoiceLine.CustomsInvoiceLineBuilder;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
@@ -193,10 +190,13 @@ public class CustomsInvoiceService
 			@NonNull final Collection<InOutAndLineId> shipmentLinesForProducts,
 			@NonNull final CurrencyId currencyId)
 	{
+		Check.assumeNotEmpty(shipmentLinesForProducts, "shipmentLinesForProducts is not empty");
+
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		Quantity qty = null;
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
+		ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
 
 		for (final InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
 		{
@@ -213,21 +213,23 @@ public class CustomsInvoiceService
 			final ProductPrice inoutLinePrice = getInOutLinePriceConverted(inoutAndLineId, currencyId);
 			final Quantity inoutLineQtyInPriceUOM = uomConversionBL.convertQuantityTo(inoutLineQty, UOMConversionContext.of(productId), inoutLinePrice.getUomId());
 
-			final Money shipmentLineNetAmt = inoutLinePrice
-					.toMoney()
-					.multiply(inoutLineQtyInPriceUOM.toBigDecimal());
+			final CustomsInvoiceLineAlloc alloc = CustomsInvoiceLineAlloc.builder()
+					.inoutAndLineId(inoutAndLineId)
+					.price(inoutLinePrice.toMoney())
+					.quantityInPriceUOM(inoutLineQtyInPriceUOM)
+					.build();
+			allocations.add(alloc);
 
-			lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
+			lineNetAmt = lineNetAmt.add(alloc.getNetAmt());
 		}
 
-		final CustomsInvoiceLine customsInvoiceLine = CustomsInvoiceLine.builder()
+		return CustomsInvoiceLine.builder()
+				.orgId(Env.getOrgId()) // FIXME: use header's Org
 				.productId(productId)
 				.lineNetAmt(lineNetAmt)
 				.quantity(qty)
-				.orgId(Env.getOrgId())
+				.allocations(allocations)
 				.build();
-
-		return customsInvoiceLine;
 	}
 
 	private ProductPrice getInOutLinePriceConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final CurrencyId currencyId)
@@ -341,42 +343,6 @@ public class CustomsInvoiceService
 		return customsInvoiceRepo.retrieveCustomsInvoiceDocTypeId();
 	}
 
-	public void setCustomsInvoiceLineToShipmentLines(@NonNull ImmutableSetMultimap<ProductId, InOutAndLineId> exportedLines, @NonNull CustomsInvoice customsInvoice)
-	{
-
-		final ImmutableMap<ProductId, CustomsInvoiceLineId> customsInvoiceLines = customsInvoice.getLines()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						CustomsInvoiceLine::getProductId, // keyFunction,
-						CustomsInvoiceLine::getId));// valueFunction
-
-		exportedLines.keySet()
-				.stream()
-				.forEach(productId -> setCustomsInvoiceLine(productId, exportedLines.get(productId), customsInvoiceLines.get(productId), customsInvoice.getCurrencyId()));
-
-	}
-
-	private void setCustomsInvoiceLine(
-			@NonNull final ProductId productId,
-			@NonNull final ImmutableSet<InOutAndLineId> shipmentLines,
-			@NonNull final CustomsInvoiceLineId customsInvoiceLineId,
-			@NonNull final CurrencyId currencyId)
-	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		for (final InOutAndLineId shipmentLine : shipmentLines)
-		{
-
-			final Quantity inoutLineQty = getInOutLineQty(shipmentLine);
-
-			final ProductPrice inoutLinePrice = getInOutLinePriceConverted(shipmentLine, currencyId);
-
-			final Quantity inoutLineQtyInPriceUOM = uomConversionBL.convertQuantityTo(inoutLineQty, UOMConversionContext.of(productId), inoutLinePrice.getUomId());
-
-			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId, inoutLineQtyInPriceUOM, inoutLinePrice.toMoney());
-		}
-	}
-
 	public CustomsInvoice generateNewCustomsInvoice(final BPartnerLocationId bpartnerLocationId, UserId contactId, IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -429,8 +395,6 @@ public class CustomsInvoiceService
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
 				.notifyGenerated(customsInvoice);
-
-		setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
 		return customsInvoice;
 	}
@@ -490,94 +454,105 @@ public class CustomsInvoiceService
 
 		final ImmutableList<CustomsInvoiceLine> existingLines = customsInvoice.getLines();
 
-		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
-
-		CustomsInvoiceLine customsInvoiceLineForProduct = findCustomsInvoiceLineForProductId(productId, existingLines).orElse(null);
-
-		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.getByIdInTrx(customsInvoiceId);
-
-		if (customsInvoiceLineForProduct == null)
+		final CustomsInvoiceLine customsInvoiceLineForProductFound = findCustomsInvoiceLineForProductId(productId, existingLines).orElse(null);
+		CustomsInvoiceLine customsInvoiceLineForProduct;
+		if (customsInvoiceLineForProductFound == null)
 		{
+			final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.getByIdInTrx(customsInvoiceId);
 			final CustomsInvoiceLine newCustomsInvoiceLineForProduct = createCustomsInvoiceLine(productId, shipmentLinesForProduct, CurrencyId.ofRepoId(customsInvoiceRecord.getC_Currency_ID()));
 
 			customsInvoiceLineForProduct = newCustomsInvoiceLineForProduct;
 		}
-
 		else
 		{
-			for (InOutAndLineId shipmentLineId : shipmentLinesForProduct)
+			customsInvoiceLineForProduct = customsInvoiceLineForProductFound;
+			for (final InOutAndLineId shipmentLineId : shipmentLinesForProduct)
 			{
-				customsInvoiceLineForProduct = updateCustomsInvoiceLine(shipmentLineId, customsInvoiceLineForProduct, customsInvoice.getCurrencyId());
-
+				customsInvoiceLineForProduct = allocateShipmentLine(customsInvoiceLineForProduct, shipmentLineId, customsInvoice.getCurrencyId());
 			}
 		}
-		newLines.add(customsInvoiceLineForProduct);
-		customsInvoice = customsInvoice.toBuilder().lines(ImmutableList.copyOf(newLines)).build();
+
+		//
+		// newLines: existingLines with adding/replacing customsInvoiceLineForProductFound with our created/changed version
+		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
+		{
+			boolean added = false;
+			for (CustomsInvoiceLine existingLine : existingLines)
+			{
+				if (Util.same(customsInvoiceLineForProductFound, existingLine))
+				{
+					newLines.add(customsInvoiceLineForProduct);
+					added = true;
+				}
+				else
+				{
+					newLines.add(existingLine);
+				}
+			}
+
+			if (!added)
+			{
+				newLines.add(customsInvoiceLineForProduct);
+				added = true;
+			}
+		}
+
+		customsInvoice = customsInvoice.toBuilder()
+				.lines(ImmutableList.copyOf(newLines))
+				.build();
+		customsInvoice.updateLineNos();
+
 		customsInvoiceRepo.save(customsInvoice);
 	}
 
-	private CustomsInvoiceLine updateCustomsInvoiceLine(@NonNull final InOutAndLineId inOutAndLineId, @NonNull final CustomsInvoiceLine customsInvoiceLineForProduct, @NonNull final CurrencyId currencyId)
+	private CustomsInvoiceLine allocateShipmentLine(
+			@NonNull final CustomsInvoiceLine customsInvoiceLineForProduct,
+			@NonNull final InOutAndLineId inOutAndLineId,
+			@NonNull final CurrencyId currencyId)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-		final CustomsInvoiceLineBuilder customsInvoiceLineBuilder = customsInvoiceLineForProduct.toBuilder();
-
-		final I_M_InOutLine_To_C_Customs_Invoice_Line shipmentLineToCustomsInvoiceLineAlloc = shipmentLinesForCustomsInvoiceRepo.retrieveShipmentLineToCustomsInvoiceLineAllocs(inOutAndLineId, customsInvoiceLineForProduct.getId());
+		final CustomsInvoiceLineAlloc existingAlloc = customsInvoiceLineForProduct.getAllocationByInOutLineId(inOutAndLineId).orElse(null);
 
 		Quantity qty = customsInvoiceLineForProduct.getQuantity();
 		Money lineNetAmt = customsInvoiceLineForProduct.getLineNetAmt();
 
-		if (shipmentLineToCustomsInvoiceLineAlloc != null)
+		if (existingAlloc != null)
 		{
-			final I_C_UOM uom = uomDAO.getById(shipmentLineToCustomsInvoiceLineAlloc.getC_UOM_ID());
+			final Quantity existingAllocQty = existingAlloc.getQuantityInPriceUOM();
+			final Money existingAllocNetAmt = existingAlloc.getNetAmt();
 
-			final Quantity shipmentLineToCustomsInvoiceLineAllocQty = Quantity.of(shipmentLineToCustomsInvoiceLineAlloc.getMovementQty(), uom);
+			qty = Quantitys.subtract(UOMConversionContext.of(customsInvoiceLineForProduct.getProductId()), qty, existingAllocQty);
+			lineNetAmt = lineNetAmt.subtract(existingAllocNetAmt);
 
-			qty = Quantitys.subtract(UOMConversionContext.of(customsInvoiceLineForProduct.getProductId()), qty, shipmentLineToCustomsInvoiceLineAllocQty);
-
-			final Money shipmentLineToCustomsInvoiceLineNetAmt = Money.of(
-					shipmentLineToCustomsInvoiceLineAlloc
-							.getPriceActual()
-							.multiply(shipmentLineToCustomsInvoiceLineAlloc.getMovementQty()),
-					currencyId);
-
-			lineNetAmt = lineNetAmt.subtract(shipmentLineToCustomsInvoiceLineNetAmt);
-
-			customsInvoiceRepo.deleteAllocation(shipmentLineToCustomsInvoiceLineAlloc);
-
+			customsInvoiceLineForProduct.removeAllocation(existingAlloc);
 		}
 
-		final Quantity inoutLineQty = getInOutLineQty(inOutAndLineId);
-		if (qty == null)
+		final CustomsInvoiceLineAlloc newAlloc;
 		{
-			qty = inoutLineQty;
+			final Quantity inoutLineQty = getInOutLineQty(inOutAndLineId);
+			final ProductPrice inoutLinePrice = getInOutLinePriceConverted(inOutAndLineId, currencyId);
+			final Quantity inoutLineQtyInPriceUOM = uomConversionBL.convertQuantityTo(inoutLineQty, UOMConversionContext.of(customsInvoiceLineForProduct.getProductId()), inoutLinePrice.getUomId());
+
+			newAlloc = CustomsInvoiceLineAlloc.builder()
+					.inoutAndLineId(inOutAndLineId)
+					.price(inoutLinePrice.toMoney())
+					.quantityInPriceUOM(inoutLineQtyInPriceUOM)
+					.build();
+
+			customsInvoiceLineForProduct.addAllocation(newAlloc);
 		}
-		else
-		{
-			qty = Quantitys.add(UOMConversionContext.of(customsInvoiceLineForProduct.getProductId()), qty, inoutLineQty);
-		}
 
-		final ProductPrice inoutLinePrice = getInOutLinePriceConverted(inOutAndLineId, currencyId);
-		final Quantity inoutLineQtyInPriceUOM = uomConversionBL.convertQuantityTo(inoutLineQty, UOMConversionContext.of(customsInvoiceLineForProduct.getProductId()), inoutLinePrice.getUomId());
+		qty = Quantitys.add(UOMConversionContext.of(customsInvoiceLineForProduct.getProductId()), qty, newAlloc.getQuantityInPriceUOM());
+		lineNetAmt = lineNetAmt.add(newAlloc.getNetAmt());
 
-		final Money shipmentLineNetAmt = inoutLinePrice
-				.toMoney()
-				.multiply(inoutLineQtyInPriceUOM.toBigDecimal());
-
-		lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
-
-		customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(inOutAndLineId, customsInvoiceLineForProduct.getId(), qty, inoutLinePrice
-				.toMoney());
-
-		return customsInvoiceLineBuilder
+		return customsInvoiceLineForProduct.toBuilder()
 				.lineNetAmt(lineNetAmt)
 				.quantity(qty)
 				.build();
-
 	}
 
-	private Optional<CustomsInvoiceLine> findCustomsInvoiceLineForProductId(@NonNull final ProductId productId, @NonNull final ImmutableList<CustomsInvoiceLine> existingLines)
+	private Optional<CustomsInvoiceLine> findCustomsInvoiceLineForProductId(@NonNull final ProductId productId, @NonNull final Collection<CustomsInvoiceLine> existingLines)
 	{
 		return existingLines.stream()
 				.filter(line -> line.getProductId().equals(productId))
