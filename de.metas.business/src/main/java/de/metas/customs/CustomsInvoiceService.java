@@ -12,12 +12,14 @@ import java.util.function.Function;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -45,6 +47,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderLine;
@@ -58,6 +61,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -90,9 +94,10 @@ import lombok.NonNull;
 @Service
 public class CustomsInvoiceService
 {
-
 	public static final String ERR_NoValidLines = "M_InOut_Create_CustomsInvoice_NoValidLines";
 
+	private static final Logger logger = LogManager.getLogger(CustomsInvoiceService.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final CustomsInvoiceRepository customsInvoiceRepo;
 	private final OrderLineRepository orderLineRepo;
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo;
@@ -271,11 +276,13 @@ public class CustomsInvoiceService
 	private Quantity getInOutLineQty(@NonNull final InOutAndLineId inoutAndLineId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+
 		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutAndLineId.getInOutLineId());
 
 		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
+
 		final Quantity lineQty;
-		if (inoutLineRecord.getCatch_UOM_ID() > 0)
+		if (inoutLineRecord.getCatch_UOM_ID() > 0 && inoutLineRecord.getQtyDeliveredCatch().signum() != 0)
 		{
 			lineQty = Quantitys.create(inoutLineRecord.getQtyDeliveredCatch(), UomId.ofRepoId(inoutLineRecord.getCatch_UOM_ID()));
 		}
@@ -289,7 +296,27 @@ public class CustomsInvoiceService
 			lineQty = Quantitys.create(inoutLineRecord.getMovementQty(), productBL.getStockUOMId(productId));
 		}
 
-		return lineQty;
+		return convertToKillogram(lineQty, productId)
+				.orElse(lineQty);
+	}
+
+	private Optional<Quantity> convertToKillogram(final Quantity qty, final ProductId productId)
+	{
+		final UomId kilogram = Services.get(IUOMDAO.class).getUomIdByX12DE355(UOMConstants.X12_KILOGRAM);
+		try
+		{
+			final Quantity quantityInKilograms = uomConversionBL.convertQuantityTo(
+					qty,
+					UOMConversionContext.of(productId),
+					kilogram);
+
+			return Optional.of(quantityInKilograms);
+		}
+		catch (final NoUOMConversionException ex)
+		{
+			logger.debug("No UOM conversion. Returning empty", ex);
+			return Optional.empty();
+		}
 	}
 
 	public String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
