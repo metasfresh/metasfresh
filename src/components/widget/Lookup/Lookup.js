@@ -566,7 +566,6 @@ class Lookup extends Component {
                       property,
                       tabIndex,
                     }}
-                    // overwritePlaceholder={this.props.overwritePlaceholder}
                   />
                 </div>
               );
