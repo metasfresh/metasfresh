@@ -134,13 +134,13 @@ class HURepositoryTest
 		// invoke the method under test
 		final HU result = huRepository.getById(HuId.ofRepoId(lu.getM_HU_ID()));
 
-		assertThat(result.getProductQuantities()).hasSize(1);
-		assertThat(result.getProductQuantities().get(productId).toBigDecimal()).isEqualByComparingTo("49");
+		assertThat(result.getProductQtysInStockUOM()).hasSize(1);
+		assertThat(result.getProductQtysInStockUOM().get(productId).toBigDecimal()).isEqualByComparingTo("49");
 		assertThat(result.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
 
 		assertThat(result.getChildHUs())
 				.hasSize(10)
-				.extracting(hu -> hu.getProductQuantities().get(productId))
+				.extracting(hu -> hu.getProductQtysInStockUOM().get(productId))
 				.containsOnly(
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("5"), uomRecord),

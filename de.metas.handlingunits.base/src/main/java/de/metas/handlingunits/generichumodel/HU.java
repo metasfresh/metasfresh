@@ -17,6 +17,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.UOMConversionContext;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -61,8 +62,11 @@ public class HU
 	Optional<PackagingCode> packagingCode;
 
 	@NonNull
-	@Singular
-	ImmutableMap<ProductId, Quantity> productQuantities;
+	@Singular("productQtyInStockUOM")
+	ImmutableMap<ProductId, Quantity> productQtysInStockUOM;
+
+	@NonNull
+	Optional<Quantity> weightNet;
 
 	@NonNull
 	IAttributeSet attributes;
@@ -105,23 +109,40 @@ public class HU
 		return results.build();
 	}
 
+	/**
+	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code productId}.
+	 */
 	public Optional<HU> retainProduct(@NonNull final ProductId productId)
 	{
-		if (!this.getProductQuantities().containsKey(productId))
+		if (!this.getProductQtysInStockUOM().containsKey(productId))
 		{
 			return Optional.empty(); // we know that the M_HU datamodel is such that if we don't have a product here, the children won't have it either.
 		}
 
-		final Quantity quantity = this.getProductQuantities().get(productId);
+		final Quantity quantity = this.getProductQtysInStockUOM().get(productId);
 		final HUBuilder result = this.toBuilder()
-				.clearProductQuantities()
+				.clearProductQtysInStockUOM()
 				.clearChildHUs()
-				.productQuantity(productId, quantity);
+				.productQtyInStockUOM(productId, quantity);
+
+		Quantity newWeightNet = weightNet.isPresent() ? weightNet.get().toZero() : null;
 
 		for (final HU child : getChildHUs())
 		{
-			child.retainProduct(productId).ifPresent(result::childHU);
+			final Optional<HU> childWithProduct = child.retainProduct(productId);
+			if (childWithProduct.isPresent())
+			{
+				result.childHU(childWithProduct.get());
+
+				final Quantity childWeightNet = childWithProduct.get().getWeightNet().orElse(null);
+				if (newWeightNet != null && childWeightNet != null)
+				{
+					newWeightNet = Quantitys.add(UOMConversionContext.of(productId), newWeightNet, childWeightNet);
+				}
+			}
 		}
+
+		result.weightNet(Optional.ofNullable(newWeightNet));
 		return Optional.of(result.build());
 	}
 
@@ -133,7 +154,7 @@ public class HU
 	{
 		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
 				.stream()
-				.map(hu -> hu.getProductQuantities().get(productId).toBigDecimal())
+				.map(hu -> hu.getProductQtysInStockUOM().get(productId).toBigDecimal())
 				.sorted()
 				.collect(ImmutableList.toImmutableList());
 
