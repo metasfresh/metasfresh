@@ -6,7 +6,12 @@ import classnames from 'classnames';
 import { isEqual } from 'lodash';
 
 import SelectionDropdown from '../SelectionDropdown';
-
+import {
+  C_BPartner_Location_ID,
+  AD_User_ID,
+  Bill_Location_ID,
+  Bill_User_ID,
+} from '../../../utils/fieldMap';
 /*
  * We want the selected option to be displayed first,
  * so in case it has an index other than 0 we will move it
@@ -357,7 +362,6 @@ export class RawList extends PureComponent {
 
     let value = '';
     let placeholder = '';
-
     if (this.props.overwritePlaceholder) {
       placeholder = this.props.overwritePlaceholder;
     } else {
@@ -373,6 +377,13 @@ export class RawList extends PureComponent {
     } else if (selected) {
       value = selected.caption;
     }
+
+    // set custom placeholder based on field ID
+    const { field, caption } = this.props.properties;
+    placeholder = field === C_BPartner_Location_ID ? caption : placeholder;
+    placeholder = field === AD_User_ID ? caption : placeholder;
+    placeholder = field === Bill_Location_ID ? caption : placeholder;
+    placeholder = field === Bill_User_ID ? caption : placeholder;
 
     return (
       <TetherComponent
@@ -536,7 +547,6 @@ RawList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
-  overwritePlaceholder: PropTypes.string,
 };
 
 RawList.defaultProps = {

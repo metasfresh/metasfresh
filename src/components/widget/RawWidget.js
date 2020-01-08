@@ -415,7 +415,7 @@ export class RawWidget extends Component {
       title: widgetValue,
       id,
     };
-    let mainPlaceholder =
+    let customPlaceholder =
       fields[0].field === C_BPartner_ID
         ? fields[0].caption
         : fields[0].emptyText;
@@ -611,7 +611,7 @@ export class RawWidget extends Component {
             properties={fields}
             windowType={windowType}
             widgetData={widgetData}
-            placeholder={mainPlaceholder}
+            placeholder={customPlaceholder}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
             rank={type}
@@ -641,7 +641,6 @@ export class RawWidget extends Component {
             onChange={this.handlePatch}
             onBlurWidget={onBlurWidget}
             onClickOutside={this.props.onClickOutside}
-            overwritePlaceholder={mainPlaceholder}
           />
         );
       case 'List':
