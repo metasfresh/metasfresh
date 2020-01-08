@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -168,7 +169,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 
 	private IQueryBuilder<I_EDI_Desadv> createEDIDesadvQueryBuilder()
 	{
-		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
