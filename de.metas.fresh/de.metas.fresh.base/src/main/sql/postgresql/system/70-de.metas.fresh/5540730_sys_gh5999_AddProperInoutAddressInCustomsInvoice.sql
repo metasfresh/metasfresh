@@ -15,13 +15,6 @@ DECLARE
     v_rows_no           NUMERIC := 0;
     v_bpartner_id       NUMERIC;
     v_address           text;
-    cur_customs_invoice CURSOR (Customs_Invoice_Id NUMERIC) FOR SELECT distinct io.M_InOut_id, io.c_bpartner_id, io.bpartneraddress
-                                                                FROM C_Customs_Invoice_Line cil
-                                                                         JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc
-                                                                              on cil.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID
-                                                                         JOIN M_InOutLine iol ON iol.M_InOutLine_id = alloc.M_InOutLine_id
-                                                                         JOIN M_InOut io ON io.M_InOut_ID = iol.M_InOut_ID
-                                                                WHERE cil.C_Customs_Invoice_Id = p_C_Customs_Invoice_Id;
 BEGIN
 
     SELECT Count(distinct io.M_InOut_ID)::NUMERIC
@@ -52,7 +45,6 @@ $$
     LANGUAGE 'plpgsql';
 
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getShipmentAddressorNull(numeric) IS 'Returns the inout address if is there only one inout linked to customs invoice';
-
 
 --------------
 
