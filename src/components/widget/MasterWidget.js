@@ -295,24 +295,36 @@ class MasterWidget extends PureComponent {
     onBlurWidget && onBlurWidget(fieldName);
   };
 
+  handleFocusTrue = () => {
+    const { handleBackdropLock } = this.props;
+    const handleFocusFn = handleBackdropLock ? handleBackdropLock : noop;
+
+    handleFocusFn(true);
+  };
+
+  handleFocusFalse = () => {
+    const { handleBackdropLock } = this.props;
+    const handleFocusFn = handleBackdropLock ? handleBackdropLock : noop;
+
+    handleFocusFn(false);
+  };
+
   /**
    * @method render
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { handleBackdropLock, onClickOutside } = this.props;
+    const { onClickOutside } = this.props;
     const { updated, data } = this.state;
-    const handleFocusFn = handleBackdropLock ? handleBackdropLock : noop;
-    const localWidgetData = this.getWidgetData();
 
     return (
       <RawWidget
         {...this.props}
-        widgetData={localWidgetData}
+        getWidgetData={this.getWidgetData}
         updated={updated}
         data={data}
-        handleFocus={() => handleFocusFn(true)}
-        handleBlur={() => handleFocusFn(false)}
+        handleFocus={this.handleFocusTrue}
+        handleBlur={this.handleFocusFalse}
         onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}

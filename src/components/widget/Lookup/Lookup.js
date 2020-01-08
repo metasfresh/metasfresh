@@ -77,11 +77,11 @@ class Lookup extends PureComponent {
   _changeWidgetProperty = (field, property, value, callback) => {
     const { lookupWidgets } = this.state;
 
-    if (lookupWidgets[`${field}`][`${property}`] !== property) {
+    if (lookupWidgets[field][property] !== property) {
       const newLookupWidgets = {
         ...lookupWidgets,
         [`${field}`]: {
-          ...lookupWidgets[`${field}`],
+          ...lookupWidgets[field],
           [`${property}`]: value,
         },
       };

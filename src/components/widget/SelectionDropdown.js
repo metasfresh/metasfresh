@@ -302,7 +302,7 @@ export default class SelectionDropdown extends Component {
 
   loading = this.renderHeader(
     <CSSTransition
-      transitionName="rotate"
+      className="rotate"
       timeout={{ exit: 1000, enter: 1000 }}
     >
       <div className="rotate icon-rotate">
