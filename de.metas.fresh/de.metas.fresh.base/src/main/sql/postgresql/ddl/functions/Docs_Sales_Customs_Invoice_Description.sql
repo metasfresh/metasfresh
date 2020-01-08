@@ -41,23 +41,7 @@ FROM
   LEFT OUTER JOIN C_DocType dt ON i.c_doctype_id = dt.C_DocType_ID AND dt.isActive = 'Y'
   LEFT OUTER JOIN C_DocType_Trl dtt ON i.c_doctype_id = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
   LEFT JOIN C_Customs_Invoice_Line il on il.C_Customs_Invoice_id = i.C_Customs_Invoice_ID
-
-  LEFT JOIN LATERAL
-            (
-            SELECT
-              CASE WHEN Count(distinct io.M_InOut_ID) > 1
-                THEN null
-              ELSE io.bpartneraddress END AS inout_bpartneraddress,
-              CASE WHEN Count(distinct io.C_BPartner_ID) > 1
-                THEN null
-              ELSE io.C_BPartner_ID END   AS inout_C_BPartner_ID
-            FROM C_Customs_Invoice_Line cil
-			JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on cil.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID
-              JOIN M_InOutLine iol ON iol.M_InOutLine_id = alloc.M_InOutLine_id
-              JOIN M_InOut io ON io.M_InOut_ID = iol.M_InOut_ID
-            WHERE cil.C_Customs_Invoice_Id = $1
-            GROUP BY io.bpartneraddress, io.C_BPartner_ID
-            ) io ON TRUE
+  LEFT JOIN de_metas_endcustomer_fresh_reports.getShipmentAddressorNull($1) as io on 1=1
 WHERE
   i.C_Customs_Invoice_id = $1
 $$
