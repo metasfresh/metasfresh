@@ -129,6 +129,15 @@ public class ProductPrices
 
 	public static void assertUomConversionExists(final I_M_ProductPrice productPrice)
 	{
+		if (productPrice == null || !productPrice.isActive())
+		{
+			return;
+		}
+
+		if (productPrice.isInvalidPrice())
+		{
+			return;
+		}
 
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final org.compiere.model.I_M_Product product = productDAO.getById(productPrice.getM_Product_ID());
