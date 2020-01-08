@@ -1,7 +1,6 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -53,6 +52,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -137,6 +137,7 @@ public class CustomsInvoiceServiceTest
 
 		uom1 = createUOM("UomCode1");
 		uom2 = createUOM("UomCode2");
+		createUOM(UOMConstants.X12_KILOGRAM);
 
 		convertionMultiplier = BigDecimal.valueOf(2);
 		conversionDivisor = BigDecimal.valueOf(0.5);
@@ -218,10 +219,6 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
 		assertThat(customsInvoiceLine.getQuantity(), is(orderLineQty.getUOMQtyNotNull()));
 		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
-
-		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
-
-		refresh(shipmentLineRecord1);
 	}
 
 	@Test
@@ -571,6 +568,7 @@ public class CustomsInvoiceServiceTest
 		uom.setName(name);
 		uom.setUOMSymbol(name);
 		uom.setStdPrecision(2);
+		uom.setX12DE355(name);
 		save(uom);
 
 		return uom;

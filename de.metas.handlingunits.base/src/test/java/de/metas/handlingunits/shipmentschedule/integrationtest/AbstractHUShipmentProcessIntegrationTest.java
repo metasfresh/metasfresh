@@ -150,7 +150,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
 
 		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
+		
+		final OrderLineShipmentScheduleHandler orderLineShipmentScheduleHandler = OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions();
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(orderLineShipmentScheduleHandler);
 
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName

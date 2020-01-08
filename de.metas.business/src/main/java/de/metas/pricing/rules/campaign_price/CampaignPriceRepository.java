@@ -24,6 +24,7 @@ import de.metas.cache.CCache.CacheMapType;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.GuavaCollectors;
@@ -121,6 +122,7 @@ public class CampaignPriceRepository
 				//
 				.priceStd(Money.of(record.getPriceStd(), currencyId))
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(record.getInvoicableQtyBasedOn()))
 				//
 				.build();
 	}

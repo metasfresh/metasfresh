@@ -35,6 +35,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 
 import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
@@ -94,6 +95,8 @@ public class ServerBoot implements InitializingBean
 
 	public static void main(final String[] args)
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
 
@@ -127,6 +130,8 @@ public class ServerBoot implements InitializingBean
 		//
 		final HouseKeepingService houseKeepingService = SpringContextHolder.instance.getBean(HouseKeepingService.class);
 		houseKeepingService.runStartupHouseKeepingTasks();
+
+		logger.info("Metasfresh Server started in {}", stopwatch);
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()

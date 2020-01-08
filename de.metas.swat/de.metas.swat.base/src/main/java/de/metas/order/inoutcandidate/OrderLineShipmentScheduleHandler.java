@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -31,7 +32,9 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
+import org.springframework.stereotype.Component;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -69,15 +72,41 @@ import lombok.NonNull;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
+
+	private final OrderLineShipmentScheduleHandlerExtension extensions;
+
+	public OrderLineShipmentScheduleHandler(
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final Optional<List<OrderLineShipmentScheduleHandlerExtension>> extensions)
+	{
+		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
+		this.extensions = CompositeOrderLineShipmentScheduleHandlerExtension.of(extensions);
+	}
+
+	public static OrderLineShipmentScheduleHandler newInstanceWithoutExtensions()
+	{
+		return new OrderLineShipmentScheduleHandler(
+				Services.get(IShipmentScheduleInvalidateBL.class),
+				Optional.empty());
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("extensions", extensions)
+				.toString();
+	}
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
@@ -204,6 +233,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// tthier values
 		shipmentSchedule.setSinglePriceTag_ID(groupingOrderLineLabel);
 		// 03152 end
+
+		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}
 
 	private static void updateShipmentScheduleFromOrder(
