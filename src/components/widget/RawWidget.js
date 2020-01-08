@@ -26,7 +26,6 @@ import Labels from './Labels';
 import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
-import { C_BPartner_ID } from '../../utils/fieldMap';
 
 /**
  * @file Class based component.
@@ -415,10 +414,6 @@ export class RawWidget extends Component {
       title: widgetValue,
       id,
     };
-    let customPlaceholder =
-      fields[0].field === C_BPartner_ID
-        ? fields[0].caption
-        : fields[0].emptyText;
 
     switch (widgetType) {
       case 'Date':
@@ -611,7 +606,9 @@ export class RawWidget extends Component {
             properties={fields}
             windowType={windowType}
             widgetData={widgetData}
-            placeholder={customPlaceholder}
+            placeholder={
+              this.props.caption ? this.props.caption : fields[0].emptyText
+            }
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
             rank={type}

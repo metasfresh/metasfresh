@@ -540,7 +540,11 @@ class Lookup extends Component {
                     mainProperty={item}
                     defaultValue={defaultValue ? defaultValue : ''}
                     initialFocus={isFirstProperty ? initialFocus : false}
-                    emptyText={placeholder}
+                    emptyText={
+                      this.props.properties
+                        ? this.props.properties[0].caption
+                        : placeholder
+                    }
                     mandatory={widgetData[index].mandatory}
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
@@ -562,7 +566,7 @@ class Lookup extends Component {
                       property,
                       tabIndex,
                     }}
-                    overwritePlaceholder={this.props.overwritePlaceholder}
+                    // overwritePlaceholder={this.props.overwritePlaceholder}
                   />
                 </div>
               );
