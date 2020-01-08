@@ -575,7 +575,8 @@ public class StepComXMLDesadvBean
 			@NonNull final DecimalFormat decimalFormat,
 			@NonNull final String dateFormat)
 	{
-		final DETAILXlief detail = createDetailAndAddLineData(xmlDesadv, line, settings, decimalFormat);
+
+		BigDecimal qtyCU = null;
 
 		BigDecimal qtyDelivered = ZERO;
 		MeasurementUnit measurementUnit = null;
@@ -583,6 +584,7 @@ public class StepComXMLDesadvBean
 		{
 			qtyDelivered = qtyDelivered.add(extractQtyDelivered(pack));
 			measurementUnit = extractMeasurementUnitOrNull(pack.getCUOMID(), line, settings);
+			qtyCU = pack.getQtyCU();
 		}
 
 		if (measurementUnit == null) // case: there were no packs
@@ -593,11 +595,22 @@ public class StepComXMLDesadvBean
 		final String documentId = xmlDesadv.getDocumentNo();
 		final String lineNumber = extractLineNumber(line, decimalFormat);
 
+		// now create the detail and add our stuff
+		final DETAILXlief detail = createDetailAndAddLineData(xmlDesadv, line, settings, decimalFormat);
+
 		final DQUAN1 cuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.DELV);
 		detail.getDQUAN1().add(cuQuantity);
 
 		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
 		cuQuantity.setMEASUREMENTUNIT(measurementUnit == null ? null : measurementUnit.name());
+		if (qtyDelivered.signum() > 0 && settings.isDesadvLineCUTURequired())
+		{
+			final BigDecimal qtyItemCapacity = validateObject(qtyCU,
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+			final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
+			cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
+			detail.getDQUAN1().add(cuTuQuantity);
+		}
 
 		// check if we need a discrepancy information
 		final BigDecimal quantityDiff = qtyDelivered.subtract(line.getQtyEntered());
