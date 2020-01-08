@@ -108,7 +108,7 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTem
 	private final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesToApproveQuery()
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
-				.filter(getProcessInfo().getQueryFilter())
+				.filter(getProcessInfo().getQueryFilterOrElseFalse())
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, true) // not processed
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, true) // not already approved

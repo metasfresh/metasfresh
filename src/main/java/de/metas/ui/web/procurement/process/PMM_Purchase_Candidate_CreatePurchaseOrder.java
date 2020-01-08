@@ -61,7 +61,7 @@ public class PMM_Purchase_Candidate_CreatePurchaseOrder
 	protected String doIt() throws Exception
 	{
 		recordsEnqueued = PMM_GenerateOrders.prepareEnqueuing()
-				.filter(getProcessInfo().getQueryFilter())
+				.filter(getProcessInfo().getQueryFilterOrElseFalse())
 				.enqueue();
 		return MSG_OK;
 	}
