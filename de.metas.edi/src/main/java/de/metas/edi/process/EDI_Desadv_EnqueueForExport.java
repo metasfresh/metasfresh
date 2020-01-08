@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -46,9 +47,13 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.i18n.IMsgBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Send EDI documents for selected desadv entries.
@@ -56,7 +61,7 @@ import de.metas.util.Services;
  * @task 08646
  *
  */
-public class EDI_Desadv_EnqueueForExport extends JavaProcess
+public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
 	private static final String MSG_DESADV_PerformEnqueuing = "DESADV_PerformEnqueuing";
 	private static final String MSG_EDI_DESADV_RefuseSending = "EDI_DESADV_RefuseSending";
@@ -71,6 +76,16 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 	final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	@RunOutOfTrx
@@ -168,7 +183,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 
 	private IQueryBuilder<I_EDI_Desadv> createEDIDesadvQueryBuilder()
 	{
-		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
