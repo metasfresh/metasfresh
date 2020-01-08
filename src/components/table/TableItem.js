@@ -141,7 +141,7 @@ class TableItem extends PureComponent {
         break;
       default: {
         const inp = String.fromCharCode(e.keyCode);
-        if (/[a-zA-Z0-9]/.test(inp)) {
+        if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
           this.listenOnKeysTrue();
 
           this.handleEditProperty(e, property, true, widgetData, true);
@@ -673,6 +673,9 @@ TableItem.propTypes = {
   includedDocuments: PropTypes.array,
   contextType: PropTypes.any,
   focusOnFieldName: PropTypes.string,
+  modalVisible: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  keyProperty: PropTypes.string,
 };
 
 export default TableItem;
