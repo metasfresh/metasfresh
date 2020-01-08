@@ -36,7 +36,10 @@ export class RawWidget extends PureComponent {
   constructor(props) {
     super(props);
 
-    const { widgetData } = props;
+    const { getWidgetData } = props;
+    let { widgetData } = props;
+    widgetData = widgetData || getWidgetData();
+
     let cachedValue = undefined;
 
     if (widgetData && widgetData[0]) {
@@ -197,7 +200,10 @@ export class RawWidget extends PureComponent {
    * @param {*} valueTo
    */
   willPatch = (property, value, valueTo) => {
-    const { widgetData } = this.props;
+    const { getWidgetData } = this.props;
+    let { widgetData } = this.props;
+    widgetData = widgetData || getWidgetData();
+
     const { cachedValue } = this.state;
 
     // if there's no widget value, then nothing could've changed. Unless
@@ -231,7 +237,7 @@ export class RawWidget extends PureComponent {
    *          calls the parent method (usually from MasterWidget) if the requirements are met
    *          (value changed and patching is not in progress). `isForce` will be used for Datepicker
    *          Datepicker is checking the cached value in datepicker component itself
-   *          and send a patch request only if date is changed
+   *          and send a patch request only if date has changed
    * @param {*} property
    * @param {*} value
    * @param {*} id
@@ -349,7 +355,6 @@ export class RawWidget extends PureComponent {
       windowType,
       dataId,
       type,
-      widgetData,
       rowId,
       tabId,
       docId,
@@ -375,6 +380,9 @@ export class RawWidget extends PureComponent {
       timeZone,
       filter,
     } = this.props;
+    const { getWidgetData } = this.props;
+    let { widgetData } = this.props;
+    widgetData = widgetData || getWidgetData();
 
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
@@ -1000,7 +1008,6 @@ export class RawWidget extends PureComponent {
       fields,
       type,
       noLabel,
-      widgetData,
       rowId,
       isModal,
       handlePatch,
@@ -1018,6 +1025,10 @@ export class RawWidget extends PureComponent {
       tooltipToggled,
       isEdited,
     } = this.state;
+    const { getWidgetData } = this.props;
+    let { widgetData } = this.props;
+    widgetData = widgetData || getWidgetData();
+
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
     const quickInput = subentity === 'quickInput';
