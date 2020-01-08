@@ -53,6 +53,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -137,6 +138,7 @@ public class CustomsInvoiceServiceTest
 
 		uom1 = createUOM("UomCode1");
 		uom2 = createUOM("UomCode2");
+		createUOM(UOMConstants.X12_KILOGRAM);
 
 		convertionMultiplier = BigDecimal.valueOf(2);
 		conversionDivisor = BigDecimal.valueOf(0.5);
@@ -571,6 +573,7 @@ public class CustomsInvoiceServiceTest
 		uom.setName(name);
 		uom.setUOMSymbol(name);
 		uom.setStdPrecision(2);
+		uom.setX12DE355(name);
 		save(uom);
 
 		return uom;
