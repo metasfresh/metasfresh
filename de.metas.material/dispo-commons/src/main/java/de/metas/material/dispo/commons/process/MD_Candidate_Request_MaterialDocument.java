@@ -73,7 +73,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.filter(getProcessInfo().getQueryFilter())
+				.filter(getProcessInfo().getQueryFilterOrElseFalse())
 				.create().list()
 				.stream()
 				.filter(hasSupportedBusinessCase)

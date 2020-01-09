@@ -198,7 +198,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		if (Ini.isSwingClient())
 		{
 			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
-			userSelectionFilter = getProcessInfo().getQueryFilter();
+			userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 		}
 		else
 		{

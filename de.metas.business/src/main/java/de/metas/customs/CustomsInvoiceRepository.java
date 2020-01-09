@@ -346,6 +346,7 @@ public class CustomsInvoiceRepository
 	{
 		return queryBL.createQueryBuilder(I_M_InOutLine_To_C_Customs_Invoice_Line.class)
 				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMN_C_Customs_Invoice_Line_ID, customsInvoiceLineId)
+				.orderBy(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMN_M_InOutLine_To_C_Customs_Invoice_Line_ID)
 				.create()
 				.list();
 	}
@@ -359,6 +360,7 @@ public class CustomsInvoiceRepository
 	{
 		return queryBL.createQueryBuilder(I_M_InOutLine_To_C_Customs_Invoice_Line.class)
 				.addEqualsFilter(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMN_C_Customs_Invoice_ID, customsInvoiceId)
+				.orderBy(I_M_InOutLine_To_C_Customs_Invoice_Line.COLUMN_M_InOutLine_To_C_Customs_Invoice_Line_ID)
 				.create()
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
