@@ -13,15 +13,14 @@ package de.metas.async.processor.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -30,6 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.exceptions.ConfigurationException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
@@ -52,25 +52,22 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 	private long queuePollingTimeout = IWorkPackageQueue.TIMEOUT_Infinite;
 
 	private IWorkpackageProcessorFactory workpackageProcessorFactory = null;
-	private final IMutableQueueProcessorStatistics statistics;
+	private final QueueProcessorStatistics statistics;
 
-	public AbstractQueueProcessor(final IWorkPackageQueue queue)
+	private final IWorkpackageLogsRepository logsRepository;
+
+	public AbstractQueueProcessor(
+			@NonNull final IWorkPackageQueue queue,
+			@NonNull final IWorkpackageLogsRepository logsRepository)
 	{
-		super();
-
-		Check.assumeNotNull(queue != null, "queue not null");
 		this.queue = queue;
-		this.statistics = newMutableQueueProcessorStatistics();
+		this.logsRepository = logsRepository;
+		this.statistics = new QueueProcessorStatistics();
 	}
 
 	protected abstract boolean isRunning();
 
 	protected abstract void executeTask(WorkpackageProcessorTask task);
-
-	protected IMutableQueueProcessorStatistics newMutableQueueProcessorStatistics()
-	{
-		return new QueueProcessorStatistics();
-	}
 
 	@Override
 	public IWorkPackageQueue getQueue()
@@ -188,7 +185,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		try
 		{
 			final IWorkpackageProcessor workPackageProcessor = getWorkpackageProcessor(workPackage);
-			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage);
+			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
 			executeTask(task);
 			success = true;
 		}

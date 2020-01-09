@@ -58,6 +58,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Default implementation of queue processor executor
@@ -72,7 +73,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 
 	private final String threadNamePrefix = "QueueProcessorsExecutor";
 	private final ThreadPoolExecutor threadExecutor;
-	private final Map<Integer, QueueProcessorDescriptor> queueProcessorDescriptors = new ConcurrentHashMap<Integer, QueueProcessorDescriptor>();
+	private final Map<Integer, QueueProcessorDescriptor> queueProcessorDescriptors = new ConcurrentHashMap<>();
 	private final ReentrantLock mainLock = new ReentrantLock();
 
 	public QueueProcessorsExecutor()
@@ -101,10 +102,8 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 	}
 
 	@Override
-	public void addQueueProcessor(final I_C_Queue_Processor processorDef)
+	public void addQueueProcessor(@NonNull final I_C_Queue_Processor processorDef)
 	{
-		Check.assumeNotNull(processorDef, "processorDef not null");
-
 		mainLock.lock();
 		try
 		{
@@ -116,23 +115,18 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 
 			//
 			// Run the processor in one of this executors free slots
-			final Future<?> future = threadExecutor.submit(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					// Set thread name to easly debug and check which processor (poller) in which thread.
-					final String threadNameOld = Threads.setThreadName(threadNamePrefix + "-" + processor.getName());
+			final Future<?> future = threadExecutor.submit(() -> {
+				// Set thread name to easly debug and check which processor (poller) in which thread.
+				final String threadNameOld = Threads.setThreadName(threadNamePrefix + "-" + processor.getName());
 
-					try
-					{
-						processor.run();
-					}
-					finally
-					{
-						// restore thread's name
-						Threads.setThreadName(threadNameOld);
-					}
+				try
+				{
+					processor.run();
+				}
+				finally
+				{
+					// restore thread's name
+					Threads.setThreadName(threadNameOld);
 				}
 			});
 
@@ -165,7 +159,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 		mainLock.lock();
 		try
 		{
-			final List<QueueProcessorDescriptor> descriptors = new ArrayList<QueueProcessorDescriptor>(queueProcessorDescriptors.values());
+			final List<QueueProcessorDescriptor> descriptors = new ArrayList<>(queueProcessorDescriptors.values());
 			for (final QueueProcessorDescriptor descriptor : descriptors)
 			{
 				final int queueProcessorId = descriptor.getQueueProcessorId();
@@ -260,7 +254,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 			logger.info("Shutdown started");
 			threadExecutor.shutdown();
 
-			final List<QueueProcessorDescriptor> descriptors = new ArrayList<QueueProcessorDescriptor>(queueProcessorDescriptors.values());
+			final List<QueueProcessorDescriptor> descriptors = new ArrayList<>(queueProcessorDescriptors.values());
 			for (final QueueProcessorDescriptor desc : descriptors)
 			{
 				removeQueueProcessor0(desc.getQueueProcessorId());

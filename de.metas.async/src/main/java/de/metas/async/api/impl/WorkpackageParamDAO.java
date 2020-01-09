@@ -202,7 +202,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_String(parameterValue.toString());
 		}
-		else if(TimeUtil.isDateOrTimeObject(parameterValue))
+		else if (TimeUtil.isDateOrTimeObject(parameterValue))
 		{
 			final Timestamp date = TimeUtil.asTimestamp(parameterValue);
 			workpackageParam.setAD_Reference_ID(DisplayType.DateTime);
@@ -268,4 +268,15 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		final int blockAD_PInstance_ID = queueBlock == null ? -1 : queueBlock.getAD_PInstance_Creator_ID();
 		return blockAD_PInstance_ID > 0 ? PInstanceId.ofRepoId(blockAD_PInstance_ID) : null;
 	}
+
+	@Override
+	public void deleteWorkpackageParams(@NonNull final QueueWorkPackageId workpackageId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMN_C_Queue_WorkPackage_ID, workpackageId)
+				.create()
+				.delete();
+	}
+
 }

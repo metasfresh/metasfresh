@@ -2,6 +2,7 @@ package de.metas.async.api;
 
 import org.adempiere.util.api.IParams;
 
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.util.ISingletonService;
@@ -18,4 +19,6 @@ public interface IWorkpackageParamDAO extends ISingletonService
 	void setParameterValue(I_C_Queue_WorkPackage_Param queueWorkpackageParamRecord, Object parameterValue);
 
 	void setParameterValue(I_C_Queue_WorkPackage queueWorkPackageRecord, String parameterName, Object parameterValue);
+
+	void deleteWorkpackageParams(QueueWorkPackageId workpackageId);
 }

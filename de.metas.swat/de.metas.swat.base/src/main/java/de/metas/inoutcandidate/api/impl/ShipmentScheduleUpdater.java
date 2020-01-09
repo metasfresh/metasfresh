@@ -33,7 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import de.metas.tourplanning.model.TourId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
@@ -55,7 +54,6 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +77,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
@@ -101,6 +100,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
+import de.metas.tourplanning.model.TourId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -271,7 +271,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// * update HeaderAggregationKey
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
-			try (final MDCCloseable mdcClosable = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(olAndSched.getShipmentScheduleId().getRepoId()));)
+			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -426,7 +426,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines)
 	{
-		try (final MDCCloseable mdcClosable = MDC.putCloseable("ShipmentScheduleUpdater-Run#", "1");)
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleUpdateRunNo(1))
 		{
 			final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
 			return generate(ctx, lines, firstRun);
@@ -438,7 +438,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
-		try (final MDCCloseable mdcClosable = MDC.putCloseable("ShipmentScheduleUpdater-Run#", "2");)
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleUpdateRunNo(2))
 		{
 			return generate(ctx, lines, firstRun);
 		}
@@ -458,7 +458,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			try (final MDCCloseable mdcClosable = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(olAndSched.getShipmentScheduleId().getRepoId()));)
+			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -902,7 +902,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
-		try (final MDCCloseable mdcClosable = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(olAndSched.getShipmentScheduleId().getRepoId()));)
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
 			final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 
