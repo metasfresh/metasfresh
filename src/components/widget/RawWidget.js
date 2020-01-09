@@ -607,7 +607,9 @@ export class RawWidget extends Component {
             windowType={windowType}
             widgetData={widgetData}
             placeholder={
-              this.props.caption ? this.props.caption : fields[0].emptyText
+              this.props.emptyText
+                ? this.props.emptyText
+                : this.props.fields[0].emptyText
             }
             readonly={readonly}
             mandatory={widgetData[0].mandatory}

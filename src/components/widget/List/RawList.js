@@ -6,6 +6,7 @@ import classnames from 'classnames';
 import { isEqual } from 'lodash';
 
 import SelectionDropdown from '../SelectionDropdown';
+
 /*
  * We want the selected option to be displayed first,
  * so in case it has an index other than 0 we will move it
@@ -356,6 +357,7 @@ export class RawList extends PureComponent {
 
     let value = '';
     let placeholder = '';
+
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
     } else {
@@ -369,7 +371,7 @@ export class RawList extends PureComponent {
     }
 
     placeholder = this.props.lookupList
-      ? this.props.properties.caption
+      ? this.props.properties.emptyText
       : placeholder;
 
     return (

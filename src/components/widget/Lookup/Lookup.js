@@ -543,7 +543,7 @@ class Lookup extends Component {
                     initialFocus={isFirstProperty ? initialFocus : false}
                     emptyText={
                       this.props.properties
-                        ? this.props.properties[0].caption
+                        ? this.props.properties[0].emptyText
                         : placeholder
                     }
                     mandatory={widgetData[index].mandatory}
