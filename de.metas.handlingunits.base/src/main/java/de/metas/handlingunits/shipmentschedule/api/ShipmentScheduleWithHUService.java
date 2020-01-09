@@ -1,8 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +49,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -131,7 +129,7 @@ public class ShipmentScheduleWithHUService
 		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
 		final IHUContext huContext = request.getHuContext();
 
-		final I_M_ShipmentSchedule scheduleRecord = load(request.getShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule scheduleRecord = Services.get(IShipmentSchedulePA.class).getById(request.getShipmentScheduleId());
 
 		switch (quantityType)
 		{
@@ -614,16 +612,19 @@ public class ShipmentScheduleWithHUService
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IProductBL productsService = Services.get(IProductBL.class);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(schedule);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
 		//
 		// Create Allocation Request: whole Qty to Deliver
+		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
+		final I_M_Product product = productsService.getById(productId);
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				loadOutOfTrx(schedule.getM_Product_ID(), I_M_Product.class),
+				product,
 				qtyToDeliver,
 				SystemTime.asZonedDateTime(),
 				schedule,      // reference model

@@ -54,17 +54,17 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 {
 	//
 	// Services
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-
 	private static final Logger logger = LogManager.getLogger(GenerateInOutFromShipmentSchedules.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = retriveShipmentSchedules();
-
 		// Create candidates
-		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(shipmentSchedules);
+		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates();
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
@@ -81,7 +81,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean isCreatPackingLines = !onlyUsePicked;
 
-		final InOutGenerateResult result = Services.get(IHUShipmentScheduleBL.class)
+		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatPackingLines)
@@ -107,14 +107,19 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	}
 
 	/**
-	 * Creates the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
+	 * Retrieves the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
 	 *
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
-	private final List<ShipmentScheduleWithHU> retrieveCandidates(
-			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
+	private final List<ShipmentScheduleWithHU> retrieveCandidates()
 	{
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = retriveShipmentSchedules();
+		if (shipmentSchedules.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IHUContext huContext = huContextFactory.createMutableHUContext();
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = getParameters()
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
@@ -124,7 +129,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.huContext(huContext)
 				.quantityType(quantityTypeToUse);
 
-		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
+		final ArrayList<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
@@ -153,7 +158,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 					.shipmentScheduleId(shipmentScheduleId)
 					.build();
 
-			final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
 		}
 	}
