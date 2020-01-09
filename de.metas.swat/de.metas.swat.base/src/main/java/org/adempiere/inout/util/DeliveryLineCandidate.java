@@ -40,12 +40,13 @@ import lombok.Setter;
  */
 
 @Data
-@EqualsAndHashCode(exclude = { "shipmentSchedule", "qtyToDeliver", "discarded", "completeStatus" })
+@EqualsAndHashCode(exclude = { "group", "shipmentSchedule", "qtyToDeliver", "discarded", "completeStatus" })
 public class DeliveryLineCandidate
 {
 	/**
 	 * A more generic replacement for order..needed at least for deliveryRule complete-order
 	 */
+	// FIXME: we shall not have the link to parent here (which introduces a cyclic reference)
 	@NonNull
 	private final DeliveryGroupCandidate group;
 
