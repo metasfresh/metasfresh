@@ -168,7 +168,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	private Iterator<I_C_Payment> createIterator()
 	{
 		// user selection..if any
-		final IQueryFilter<I_C_Payment> userSelectionFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_Payment> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		//
 		// Create the selection which we might need to update

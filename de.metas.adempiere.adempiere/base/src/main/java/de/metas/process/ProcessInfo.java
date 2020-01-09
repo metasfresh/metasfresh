@@ -589,6 +589,7 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
+	 * IMPORTANT: in most cases, {@link #getQueryFilterOrElseFalse()} is what you probably want to use.
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
 	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
@@ -596,10 +597,19 @@ public final class ProcessInfo implements Serializable
 	 * @task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
-	public <T> IQueryFilter<T> getQueryFilter()
+	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
 		final ConstantQueryFilter<T> defaultQueryFilter = ConstantQueryFilter.of(true);
+		return getQueryFilterOrElse(defaultQueryFilter);
+	}
+
+	/**
+	 * Like {@link #getQueryFilterOrElseTrue()} but returns an "all exclusive" query filter if the {@code whereClause} is empty.
+	 */
+	public <T> IQueryFilter<T> getQueryFilterOrElseFalse()
+	{
+		final ConstantQueryFilter<T> defaultQueryFilter = ConstantQueryFilter.of(false);
 		return getQueryFilterOrElse(defaultQueryFilter);
 	}
 

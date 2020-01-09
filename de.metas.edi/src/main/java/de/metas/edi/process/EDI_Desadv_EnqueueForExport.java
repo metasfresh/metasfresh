@@ -183,7 +183,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 
 	private IQueryBuilder<I_EDI_Desadv> createEDIDesadvQueryBuilder()
 	{
-		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
