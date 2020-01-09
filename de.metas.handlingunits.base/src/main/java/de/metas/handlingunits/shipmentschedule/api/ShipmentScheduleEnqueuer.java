@@ -329,7 +329,9 @@ public class ShipmentScheduleEnqueuer
 
 		@NonNull
 		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
-		private String quantityType;
+		
+		@NonNull
+		private M_ShipmentSchedule_QuantityTypeToUse quantityType;
 		private boolean completeShipments;
 		private boolean isShipmentDateToday;
 	}
