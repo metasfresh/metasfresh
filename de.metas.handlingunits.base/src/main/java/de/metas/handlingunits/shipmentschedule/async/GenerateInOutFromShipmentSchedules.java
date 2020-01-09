@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
@@ -73,9 +74,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final IParams parameters = getParameters();
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final String quantityTypeToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-
-		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
+				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
 		final boolean onlyUsePicked = quantityTypeToUse.isOnlyUsePicked();
 
@@ -116,8 +116,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	{
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
-		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = getParameters()
+				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
+				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
 		final CreateCandidatesRequestBuilder requestBuilder = CreateCandidatesRequest.builder()
 				.huContext(huContext)
