@@ -55,6 +55,8 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -204,7 +206,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 
 			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
 
@@ -269,17 +271,20 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// * update HeaderAggregationKey
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
-			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+			try (final MDCCloseable mdcClosable = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(olAndSched.getShipmentScheduleId().getRepoId()));)
+			{
+				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-			updateCatchUomId(sched);
+				updateCatchUomId(sched);
 
-			updateWarehouseId(sched);
+				updateWarehouseId(sched);
 
-			shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(sched);
+				shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(sched);
 
-			shipmentScheduleBL.updateHeaderAggregationKey(sched);
+				shipmentScheduleBL.updateHeaderAggregationKey(sched);
 
-			updateShipmentConstraints(sched);
+				updateShipmentConstraints(sched);
+			}
 		}
 
 		final ShipmentSchedulesDuringUpdate firstRun = generate_FirstRun(ctx, olsAndScheds);
@@ -421,8 +426,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines)
 	{
-		final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
-		return generate(ctx, lines, firstRun);
+		try (final MDCCloseable mdcClosable = MDC.putCloseable("ShipmentScheduleUpdater-Run#", "1");)
+		{
+			final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
+			return generate(ctx, lines, firstRun);
+		}
 	}
 
 	ShipmentSchedulesDuringUpdate generate_SecondRun(
@@ -430,7 +438,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
-		return generate(ctx, lines, firstRun);
+		try (final MDCCloseable mdcClosable = MDC.putCloseable("ShipmentScheduleUpdater-Run#", "2");)
+		{
+			return generate(ctx, lines, firstRun);
+		}
 	}
 
 	private ShipmentSchedulesDuringUpdate generate(
@@ -447,126 +458,131 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-			final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
-
-			//
-			// QtyRequired
-			final BigDecimal qtyRequired;
-			if (olAndSched.getQtyOverride() != null)
+			try (final MDCCloseable mdcClosable = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(olAndSched.getShipmentScheduleId().getRepoId()));)
 			{
-				qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched));
-			}
-			else if (deliveryRule.isManual())
-			{
-				// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
-				qtyRequired = BigDecimal.ZERO;
-			}
-			else
-			{
-				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
-				qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
-			}
+				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-			//
-			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
-			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
-			// * QtyPicked from QtyPicked records
-			final BigDecimal qtyPickList;
-			{
-				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-				final Quantity stockingQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
-				qtyPickList = stockingQty.toBigDecimal();
-
-				// Update shipment schedule's fields
-				sched.setQtyPickList(qtyPickList);
-			}
-
-			//
-			// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
-			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickList);
-
-			final ProductId productId = olAndSched.getProductId();
-			if (!productsService.isStocked(productId))
-			{
-				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
-				createLine(
-						ctx,
-						olAndSched,
-						qtyToDeliver,
-						ShipmentScheduleAvailableStock.of(),
-						true/* force */,
-						CompleteStatus.OK,
-						candidates);
-				continue;
-			}
-			else
-			{
-				//
-				// Get the QtyOnHand storages suitable for our order line
-				final ShipmentScheduleAvailableStock storages = qtyOnHands.getStockDetailsMatching(sched);
-				final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
-				sched.setQtyOnHand(qtyOnHandBeforeAllocation);
-
-				final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
+				final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
 
 				//
-				// Delivery rule: Force
-				if (deliveryRule.isForce())
+				// QtyRequired
+				final BigDecimal qtyRequired;
+				if (olAndSched.getQtyOverride() != null)
 				{
+					qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched));
+				}
+				else if (deliveryRule.isManual())
+				{
+					// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
+					qtyRequired = BigDecimal.ZERO;
+				}
+				else
+				{
+					final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+					qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
+				}
+
+				//
+				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
+				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
+				// * QtyPicked from QtyPicked records
+				final BigDecimal qtyPickedOrOnDraftShipment;
+				{
+					// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
+					final Quantity stockingQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
+					qtyPickedOrOnDraftShipment = stockingQty.toBigDecimal();
+
+					// Update shipment schedule's fields
+					sched.setQtyPickList(qtyPickedOrOnDraftShipment);
+				}
+
+				//
+				// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
+				final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickedOrOnDraftShipment);
+
+				final ProductId productId = olAndSched.getProductId();
+				if (!productsService.isStocked(productId))
+				{
+					// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
+					logger.debug("ProductId={} is not stocked; will use qtyToDeliver={} as-is", productId.getRepoId(), qtyToDeliver);
 					createLine(
 							ctx,
 							olAndSched,
 							qtyToDeliver,
-							storages,
-							true, // force
-							completeStatus,
+							ShipmentScheduleAvailableStock.of(),
+							true/* force */,
+							CompleteStatus.OK,
 							candidates);
+					continue;
 				}
-				//
-				// Delivery rule: Complete Order/Line or Availability or Manual
-				else if (deliveryRule.isCompleteOrderOrLine()
-						|| deliveryRule.isAvailability()
-						|| deliveryRule.isManual())
+				else
 				{
-					if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
-					{
-						//
-						// if there is anything at all to deliver, create a new inOutLine
-						final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
+					//
+					// Get the QtyOnHand storages suitable for our order line
+					final ShipmentScheduleAvailableStock storages = qtyOnHands.getStockDetailsMatching(sched);
+					final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
 
-						// we invoke createLine even if ruleComplete is true and fullLine is false,
-						// because we want the quantity to be allocated.
-						// If the created line will make it into a real shipment will be decided later.
+					logger.debug("For the current schedule we have totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
+					sched.setQtyOnHand(qtyOnHandBeforeAllocation);
+
+					final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
+
+					//
+					// Delivery rule: Force
+					if (deliveryRule.isForce())
+					{
 						createLine(
 								ctx,
 								olAndSched,
-								qtyToDeliverEffective,
+								qtyToDeliver,
 								storages,
-								false, // force
+								true, // force
 								completeStatus,
 								candidates);
 					}
+					//
+					// Delivery rule: Complete Order/Line or Availability or Manual
+					else if (deliveryRule.isCompleteOrderOrLine()
+							|| deliveryRule.isAvailability()
+							|| deliveryRule.isManual())
+					{
+						if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
+						{
+							//
+							// if there is anything at all to deliver, create a new inOutLine
+							final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
+
+							// we invoke createLine even if ruleComplete is true and fullLine is false,
+							// because we want the quantity to be allocated.
+							// If the created line will make it into a real shipment will be decided later.
+							createLine(
+									ctx,
+									olAndSched,
+									qtyToDeliverEffective,
+									storages,
+									false, // force
+									completeStatus,
+									candidates);
+						}
+						else
+						{
+							logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={} (QtyPickList={}), ToDeliver={}, FullLine={}",
+									qtyOnHandBeforeAllocation, qtyPickedOrOnDraftShipment, qtyToDeliver, completeStatus);
+						}
+					}
+					//
+					// Unknown delivery rule
 					else
 					{
-						logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={} (QtyPickList={}), ToDeliver={}, FullLine={}",
-								qtyOnHandBeforeAllocation, qtyPickList, qtyToDeliver, completeStatus);
+						throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
+								.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
+								.setParameter("qtyPickedButNotDelivered", qtyPickedOrOnDraftShipment)
+								.setParameter("qtyToDeliver", qtyToDeliver)
+								.appendParametersToMessage();
 					}
-				}
-				//
-				// Unknown delivery rule
-				else
-				{
-					throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
-							.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
-							.setParameter("qtyPickedButNotDelivered", qtyPickList)
-							.setParameter("qtyToDeliver", qtyToDeliver)
-							.appendParametersToMessage();
 				}
 			}
 		}
-
 		return candidates;
 	} // generate
 
@@ -886,37 +902,39 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
-		final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
-
-		final ProductId componentId = olAndSched.getProductId();
-		final ImmutableSet<ProductId> pickingBOMProductIds = pickingBOMsReversedIndex.getBOMProductIdsByComponentId(componentId);
-		if (pickingBOMProductIds.isEmpty())
+		try (final MDCCloseable mdcClosable = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(olAndSched.getShipmentScheduleId().getRepoId()));)
 		{
-			return Stream.empty();
-		}
+			final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 
-		final Set<WarehouseId> warehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(olAndSched.getWarehouseId());
-
-		final LinkedHashSet<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
-		for (final WarehouseId warehouseId : warehouseIds)
-		{
-			final Set<Integer> locatorRepoIds = warehousesRepo.getLocatorIds(warehouseId)
-					.stream()
-					.map(LocatorId::getRepoId)
-					.collect(ImmutableSet.toImmutableSet());
-
-			for (final ProductId pickingBOMProductId : pickingBOMProductIds)
+			final ProductId componentId = olAndSched.getProductId();
+			final ImmutableSet<ProductId> pickingBOMProductIds = pickingBOMsReversedIndex.getBOMProductIdsByComponentId(componentId);
+			if (pickingBOMProductIds.isEmpty())
 			{
-				final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
-						.anyBPartner()
-						.productId(pickingBOMProductId.getRepoId())
-						.locatorIds(locatorRepoIds)
-						.build();
-
-				segments.add(segment);
+				return Stream.empty();
 			}
-		}
 
-		return segments.stream();
+			final Set<WarehouseId> warehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(olAndSched.getWarehouseId());
+
+			final LinkedHashSet<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
+			for (final WarehouseId warehouseId : warehouseIds)
+			{
+				final Set<Integer> locatorRepoIds = warehousesRepo.getLocatorIds(warehouseId)
+						.stream()
+						.map(LocatorId::getRepoId)
+						.collect(ImmutableSet.toImmutableSet());
+
+				for (final ProductId pickingBOMProductId : pickingBOMProductIds)
+				{
+					final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+							.anyBPartner()
+							.productId(pickingBOMProductId.getRepoId())
+							.locatorIds(locatorRepoIds)
+							.build();
+					logger.debug("Add for pickingBOMProductId={} warehouseId={}: segment={}", pickingBOMProductId.getRepoId(), warehouseId.getRepoId(), segment);
+					segments.add(segment);
+				}
+			}
+			return segments.stream();
+		}
 	}
 }

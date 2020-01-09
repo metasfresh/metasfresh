@@ -1,7 +1,5 @@
 package de.metas.async.processor.impl;
 
-
-
 /*
  * #%L
  * de.metas.async
@@ -49,6 +47,8 @@ import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
@@ -142,7 +142,8 @@ import lombok.NonNull;
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
-				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable))
+				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable);
+				final MDCCloseable mdcRestorer = MDC.putCloseable("C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()));)
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 
