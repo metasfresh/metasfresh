@@ -2,13 +2,12 @@ package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
+import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
@@ -18,12 +17,12 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.SetMultimap;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
@@ -52,12 +51,11 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -85,42 +83,33 @@ import lombok.NonNull;
 public class CustomsInvoiceServiceTest
 {
 	private CustomsInvoiceService service;
+	private CustomsInvoiceRepository customsInvoiceRepo;
 
 	private BPartnerLocationId logisticCompany;
 	private UserId logisticUserId;
 
+	private DocTypeId customsInvoiceDocTypeId;
+
 	private CurrencyId chf;
-
 	private CurrencyId euro;
-
-	private BigDecimal currencyMultiplier;
-
-	private DocTypeId docTypeId;
-
-	private String documentNo;
-
-	private LocalDate invoiceDate;
-
-	private I_C_UOM uom1;
-
-	private I_C_UOM uom2;
-
-	private BigDecimal convertionMultiplier;
-	private BigDecimal conversionDivisor;
+	private final BigDecimal currencyMultiplier = new BigDecimal("1.13");
 
 	private ProductId product1;
 
-	@Before
+	private UomId uom1;
+	private UomId uom2;
+	private final BigDecimal convertionMultiplier = new BigDecimal("2");
+	private final BigDecimal conversionDivisor = new BigDecimal("0.5");
+
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CustomsInvoiceRepository customsInvoiceRepo = new CustomsInvoiceRepository();
+		customsInvoiceRepo = new CustomsInvoiceRepository();
 		final OrderLineRepository orderLineRepo = new OrderLineRepository();
 		final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = new ShipmentLinesForCustomsInvoiceRepo();
 		service = new CustomsInvoiceService(customsInvoiceRepo, orderLineRepo, shipmentLinesForCustomsInvoiceRepo);
-
-		SystemTime.setTimeSource(new FixedTimeSource(2019, 5, 22, 11, 21, 13));
 
 		logisticCompany = createBPartnerAndLocation("LogisticCompany", "Logistic Company Address");
 		logisticUserId = createUser(logisticCompany.getBpartnerId(), "Logistic company user");
@@ -128,345 +117,477 @@ public class CustomsInvoiceServiceTest
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 		euro = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		currencyMultiplier = BigDecimal.valueOf(1.13);
-
-		docTypeId = createDocType("Customs Invoice DocType");
-		documentNo = "12345";
-
-		invoiceDate = SystemTime.asLocalDate();
+		customsInvoiceDocTypeId = createDocType("Customs Invoice DocType");
 
 		uom1 = createUOM("UomCode1");
 		uom2 = createUOM("UomCode2");
 		createUOM(UOMConstants.X12_KILOGRAM);
 
-		convertionMultiplier = BigDecimal.valueOf(2);
-		conversionDivisor = BigDecimal.valueOf(0.5);
-
 		product1 = createProduct("Product1", uom1);
 
-		createUOMConversion(product1, uom2, uom1, convertionMultiplier, conversionDivisor);
-
-		// createCurrencyConversion(euro, chf, currencyMultiplier, currencyDivisor);
-		// createCurrencyConversion(chf, euro, currencyDivisor, currencyMultiplier);
+		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
+		uomConversionsRepo.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(product1)
+				.fromUomId(uom2)
+				.toUomId(uom1)
+				.fromToMultiplier(convertionMultiplier)
+				.toFromMultiplier(conversionDivisor)
+				.build());
 
 		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		currencyDAO.setRate(euro, chf, currencyMultiplier);
-
 	}
 
 	@Test
 	public void createCustomsInvoice_oneShipmentLine()
 	{
-		final Money priceActual = Money.of(BigDecimal.TEN, chf);
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner2", "address2");
+		final OrderId order = createOrder(bpartnerAndLocation);
+		final InOutId shipment = createShipment(bpartnerAndLocation);
 
-		final StockQtyAndUOMQty orderLineQty = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
+		final I_C_OrderLine orderLine1 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of("10", chf));
+		final InOutAndLineId shipmentLine1 = createInOutLine(shipment, orderLine1);
 
-		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
-
-		final OrderId order = createOrder(bpartnerAndLocation2);
-		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty, priceActual);
-
-		final InOutId inout1 = createShipment(bpartnerAndLocation2);
-		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
-
-		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
-
-		ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
-				.put(product1, shipmentLine1)
-				.build();
-
-		final String bpartnerAddress = "Bpartner Address";
-
-		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
+		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
-				.bpartnerAddress(bpartnerAddress)
+				.bpartnerAddress("Bpartner Address")
 				.currencyId(chf)
-				.docTypeId(docTypeId)
-				.documentNo(documentNo)
-				.invoiceDate(invoiceDate)
+				.docTypeId(customsInvoiceDocTypeId)
+				.documentNo("12345")
+				.invoiceDate(LocalDate.of(2019, Month.MAY, 22))
 				.userId(logisticUserId)
-				.linesToExportMap(linesToExportMap)
-				.build();
+				.linesToExportMap(ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+						.put(product1, shipmentLine1)
+						.build())
+				.build());
 
-		// invoke the method under test
-		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
+		assertThat(customsInvoice).isNotNull();
+		assertThat(customsInvoice.getId()).isNotNull();
+		assertThat(customsInvoice.getBpartnerAndLocationId()).isEqualTo(logisticCompany);
+		assertThat(customsInvoice.getCurrencyId()).isEqualTo(chf);
+		assertThat(customsInvoice.getDocTypeId()).isEqualTo(customsInvoiceDocTypeId);
+		assertThat(customsInvoice.getInvoiceDate()).isEqualTo(LocalDate.of(2019, Month.MAY, 22));
+		assertThat(customsInvoice.getUserId()).isEqualTo(logisticUserId);
+		assertThat(customsInvoice.getDocStatus()).isEqualTo(DocStatus.Drafted);
 
-		assertNotNull(customsInvoice);
-		assertNotNull(customsInvoice.getId());
+		//
+		// Customs Invoice Line:
+		{
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			assertThat(customsInvoiceLine.getId()).isNotNull();
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("2", uom1));
+			assertThat(customsInvoiceLine.getQuantity().getUomId()).isEqualTo(uom1);
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of("20", chf)); // 2uom1 x 10chf
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
-
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
-
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
-
-		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
-
-		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
-
-		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
-
-		assertNotNull(customsInvoiceLine.getId());
-
-		final Money expectedLineNetAmt = Money.of(priceActual.toBigDecimal().multiply(orderLineQty.getUOMQtyNotNull().toBigDecimal()), chf);
-
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
-		assertThat(customsInvoiceLine.getQuantity(), is(orderLineQty.getUOMQtyNotNull()));
-		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+			//
+			// Allocation:
+			{
+				assertThat(customsInvoiceLine.getAllocations()).hasSize(1);
+				final CustomsInvoiceLineAlloc alloc = customsInvoiceLine.getAllocations().get(0);
+				assertThat(alloc.getInoutAndLineId()).isEqualTo(shipmentLine1);
+				assertThat(alloc.getPrice()).isEqualTo(Money.of("10", chf));
+				assertThat(alloc.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
+			}
+		}
 	}
 
 	@Test
 	public void createCustomsInvoice_twoShipmentLines()
 	{
-		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
-		final OrderId order = createOrder(bpartnerAndLocation2);
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner", "address");
+		final OrderId order = createOrder(bpartnerAndLocation);
+		final InOutId shipment = createShipment(bpartnerAndLocation);
 
-		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
+		final I_C_OrderLine orderLine1 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of("10", chf));
+		final InOutAndLineId shipmentLine1 = createInOutLine(shipment, orderLine1);
 
-		final StockQtyAndUOMQty orderLineQty1 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
-		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty1, priceActual1);
+		final I_C_OrderLine orderLine2 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, uom1),
+				Money.of("20", chf));
+		final InOutAndLineId shipmentLine2 = createInOutLine(shipment, orderLine2);
 
-		final InOutId inout1 = createShipment(bpartnerAndLocation2);
-
-		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
-
-		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
-
-		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), chf);
-
-		final StockQtyAndUOMQty orderLineQty2 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
-		final I_C_OrderLine orderLine2 = createOrderLine(order, orderLineQty2, priceActual2);
-
-		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
-
-		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
-
-		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
-				.put(product1, shipmentLine1)
-				.put(product1, shipmentLine2)
-				.build();
-
-		final String bpartnerAddress = "Bpartner Address";
-
-		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
+		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
-				.bpartnerAddress(bpartnerAddress)
+				.bpartnerAddress("Bpartner Address")
 				.currencyId(chf)
-				.docTypeId(docTypeId)
-				.documentNo(documentNo)
-				.invoiceDate(invoiceDate)
+				.docTypeId(customsInvoiceDocTypeId)
+				.documentNo("12345")
+				.invoiceDate(LocalDate.of(2019, Month.MAY, 22))
 				.userId(logisticUserId)
-				.linesToExportMap(linesToExportMap)
-				.build();
+				.linesToExportMap(ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+						.put(product1, shipmentLine1)
+						.put(product1, shipmentLine2)
+						.build())
+				.build());
 
-		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
+		assertThat(customsInvoice).isNotNull();
+		assertThat(customsInvoice.getId()).isNotNull();
+		assertThat(customsInvoice.getBpartnerAndLocationId()).isEqualTo(logisticCompany);
+		assertThat(customsInvoice.getCurrencyId()).isEqualTo(chf);
+		assertThat(customsInvoice.getDocTypeId()).isEqualTo(customsInvoiceDocTypeId);
+		assertThat(customsInvoice.getInvoiceDate()).isEqualTo(LocalDate.of(2019, Month.MAY, 22));
+		assertThat(customsInvoice.getUserId()).isEqualTo(logisticUserId);
+		assertThat(customsInvoice.getDocStatus()).isEqualTo(DocStatus.Drafted);
 
-		assertNotNull(customsInvoice);
-		assertNotNull(customsInvoice.getId());
+		//
+		// Customs Invoice Line:
+		{
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			assertThat(customsInvoiceLine.getId()).isNotNull();
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("7", uom1));
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of("120", chf)); // 2uom1 x 10chf + 5uom1 x 20chf
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+			//
+			// Allocations
+			{
+				assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+				assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
+				assertThat(alloc1.getPrice()).isEqualTo(Money.of("10", chf));
+				assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
-
-		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
-
-		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
-
-		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
-
-		assertNotNull(customsInvoiceLine.getId());
-
-		final BigDecimal expectedPrice = (priceActual1.toBigDecimal().multiply(orderLineQty1.getUOMQtyNotNull().toBigDecimal()))
-				.add(priceActual2.toBigDecimal().multiply(orderLineQty2.getUOMQtyNotNull().toBigDecimal()));
-		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
-
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
-
-		final Quantity expectedQty = orderLineQty1.getUOMQtyNotNull().add(orderLineQty2.getUOMQtyNotNull());
-		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
-		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
-
+				final CustomsInvoiceLineAlloc alloc2 = customsInvoiceLine.getAllocations().get(1);
+				assertThat(alloc2.getInoutAndLineId()).isEqualTo(shipmentLine2);
+				assertThat(alloc2.getPrice()).isEqualTo(Money.of("20", chf));
+				assertThat(alloc2.getQuantityInPriceUOM()).isEqualTo(qty("5", uom1));
+			}
+		}
 	}
 
 	@Test
 	public void createCustomsInvoice_twoShipmentLines_DifferentUOM()
 	{
-		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
-		final OrderId order = createOrder(bpartnerAndLocation2);
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner", "address");
+		final OrderId order = createOrder(bpartnerAndLocation);
+		final InOutId shipment = createShipment(bpartnerAndLocation);
 
-		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
+		final I_C_OrderLine orderLine1 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of("10", chf));
+		final InOutAndLineId shipmentLine1 = createInOutLine(shipment, orderLine1);
 
-		final StockQtyAndUOMQty orderLineQty1 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
-		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty1, priceActual1);
+		final I_C_OrderLine orderLine2 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, uom2), // => product1 is in UOM1, so: uomQty=2.5 uom2, stockQty=5 uom1
+				Money.of("20", chf));
+		final InOutAndLineId shipmentLine2 = createInOutLine(shipment, orderLine2);
 
-		final InOutId inout1 = createShipment(bpartnerAndLocation2);
-
-		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
-
-		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
-
-		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), chf);
-
-		final StockQtyAndUOMQty orderLineQty2 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, UomId.ofRepoId(uom2.getC_UOM_ID())); // => product1 is in UOM1, so uomQty=2.5
-		final I_C_OrderLine orderLine2 = createOrderLine(order, orderLineQty2, priceActual2);
-
-		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
-
-		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
-
-		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
-				.put(product1, shipmentLine1)
-				.put(product1, shipmentLine2)
-				.build();
-
-		final String bpartnerAddress = "Bpartner Address";
-
-		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
+		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
-				.bpartnerAddress(bpartnerAddress)
+				.bpartnerAddress("Bpartner Address")
 				.currencyId(chf)
-				.docTypeId(docTypeId)
-				.documentNo(documentNo)
-				.invoiceDate(invoiceDate)
+				.docTypeId(customsInvoiceDocTypeId)
+				.documentNo("12345")
+				.invoiceDate(LocalDate.of(2019, Month.MAY, 22))
 				.userId(logisticUserId)
-				.linesToExportMap(linesToExportMap)
-				.build();
+				.linesToExportMap(ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+						.put(product1, shipmentLine1)
+						.put(product1, shipmentLine2)
+						.build())
+				.build());
 
-		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
+		assertThat(customsInvoice).isNotNull();
+		assertThat(customsInvoice.getId()).isNotNull();
+		assertThat(customsInvoice.getBpartnerAndLocationId()).isEqualTo(logisticCompany);
+		assertThat(customsInvoice.getCurrencyId()).isEqualTo(chf);
+		assertThat(customsInvoice.getDocTypeId()).isEqualTo(customsInvoiceDocTypeId);
+		assertThat(customsInvoice.getInvoiceDate()).isEqualTo(LocalDate.of(2019, Month.MAY, 22));
+		assertThat(customsInvoice.getUserId()).isEqualTo(logisticUserId);
+		assertThat(customsInvoice.getDocStatus()).isEqualTo(DocStatus.Drafted);
 
-		assertNotNull(customsInvoice);
-		assertNotNull(customsInvoice.getId());
+		//
+		// Customs Invoice Line
+		{
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+			assertThat(customsInvoiceLine.getId()).isNotNull();
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("7", uom1));
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of("70", chf));
+			// i.e. LineNetAmt:
+			// shipmentLine1: 2 UOM1 x 10 CHF = 20 CHF
+			// shipmentLine2: + 2.5 UOM2 x 20 CHF = 50 CHF
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+			//
+			// Allocations
+			{
+				assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
+				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+				assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
+				assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
+				assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
 
-		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
-
-		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
-
-		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
-
-		assertNotNull(customsInvoiceLine.getId());
-
-		final BigDecimal qty2inUom1 = orderLineQty2.getUOMQtyNotNull().toBigDecimal().multiply(convertionMultiplier);
-		final Quantity expectedQty = orderLineQty1.getUOMQtyNotNull().add(qty2inUom1);
-		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
-
-		final BigDecimal expectedPrice = priceActual1.toBigDecimal().multiply(orderLineQty1.getUOMQtyNotNull().toBigDecimal()) // 2 UOM1 x 10 CHF = 20 CHF
-				.add(priceActual2.toBigDecimal().multiply(orderLineQty2.getUOMQtyNotNull().toBigDecimal())); // 2.5 UOM2 x 20 CHF = 50 CHF
-
-		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
-
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
-
-		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
+				final CustomsInvoiceLineAlloc alloc2 = customsInvoiceLine.getAllocations().get(1);
+				assertThat(alloc2.getInoutAndLineId()).isEqualTo(shipmentLine2);
+				assertThat(alloc2.getPrice()).isEqualTo(Money.of(20, chf));
+				assertThat(alloc2.getQuantityInPriceUOM()).isEqualTo(qty("2.5", uom2));
+			}
+		}
 	}
 
 	@Test
 	public void createCustomsInvoice_twoShipmentLines_DifferentUOM_DifferentCurrency()
 	{
-		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
-		final OrderId order = createOrder(bpartnerAndLocation2);
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("Partner", "address");
+		final OrderId order = createOrder(bpartnerAndLocation);
+		final InOutId shipment = createShipment(bpartnerAndLocation);
 
-		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
+		final I_C_OrderLine orderLine1 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1),
+				Money.of("10", chf));
+		final InOutAndLineId shipmentLine1 = createInOutLine(shipment, orderLine1);
 
-		final StockQtyAndUOMQty orderLineQty1 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, UomId.ofRepoId(uom1.getC_UOM_ID()));
-		final I_C_OrderLine orderLine1 = createOrderLine(order, orderLineQty1, priceActual1);
-		final InOutId inout1 = createShipment(bpartnerAndLocation2);
+		final I_C_OrderLine orderLine2 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, uom2), // 5 UOM1 = 2.5 UOM2
+				Money.of("20", euro)); // 22.6 CHF
+		final InOutAndLineId shipmentLine2 = createInOutLine(shipment, orderLine2);
 
-		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
-
-		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
-
-		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), euro);
-
-		final StockQtyAndUOMQty orderLineQty2 = StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, UomId.ofRepoId(uom2.getC_UOM_ID()));
-		final I_C_OrderLine orderLine2 = createOrderLine(order, orderLineQty2, priceActual2);
-
-		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
-
-		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
-
-		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
-				.put(product1, shipmentLine1)
-				.put(product1, shipmentLine2)
-				.build();
-
-		final String bpartnerAddress = "Bpartner Address";
-
-		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
+		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
-				.bpartnerAddress(bpartnerAddress)
+				.bpartnerAddress("Bpartner Address")
 				.currencyId(chf)
-				.docTypeId(docTypeId)
-				.documentNo(documentNo)
-				.invoiceDate(invoiceDate)
+				.docTypeId(customsInvoiceDocTypeId)
+				.documentNo("12345")
+				.invoiceDate(LocalDate.of(2019, Month.MAY, 22))
 				.userId(logisticUserId)
-				.linesToExportMap(linesToExportMap)
-				.build();
+				.linesToExportMap(ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+						.put(product1, shipmentLine1)
+						.put(product1, shipmentLine2)
+						.build())
+				.build());
 
-		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
+		//
+		// Customs Invoice
+		assertThat(customsInvoice).isNotNull();
+		assertThat(customsInvoice.getId()).isNotNull();
+		assertThat(customsInvoice.getBpartnerAndLocationId()).isEqualTo(logisticCompany);
+		assertThat(customsInvoice.getCurrencyId()).isEqualTo(chf);
+		assertThat(customsInvoice.getDocTypeId()).isEqualTo(customsInvoiceDocTypeId);
+		assertThat(customsInvoice.getInvoiceDate()).isEqualTo(LocalDate.of(2019, Month.MAY, 22));
+		assertThat(customsInvoice.getUserId()).isEqualTo(logisticUserId);
+		assertThat(customsInvoice.getDocStatus()).isEqualTo(DocStatus.Drafted);
 
-		assertNotNull(customsInvoice);
-		assertNotNull(customsInvoice.getId());
+		//
+		// Customs Invoice Line
+		{
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			assertThat(customsInvoiceLine.getId()).isNotNull();
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("7", uom1)); // i.e. 2 uom1 + 5 uom1
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of("76.5", chf));
+			// i.e. LineNetAmt is
+			// 20 CHF (previous)
+			// + 56.5 CHF (=20 EUR x 2.5 UOM2 = 22.6 CHF x 2.5 UOM2)
 
-		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(chf));
+			//
+			// Allocations
+			{
+				assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
 
-		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
-		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
-		assertThat(customsInvoice.getUserId(), is(logisticUserId));
+				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+				assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
+				assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
+				assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
 
-		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
+				final CustomsInvoiceLineAlloc alloc2 = customsInvoiceLine.getAllocations().get(1);
+				assertThat(alloc2.getInoutAndLineId()).isEqualTo(shipmentLine2);
+				assertThat(alloc2.getPrice()).isEqualTo(Money.of("22.6", chf)); // 20eur x 1.13
+				assertThat(alloc2.getQuantityInPriceUOM()).isEqualTo(qty("2.5", uom2));
+			}
+		}
+	}
 
-		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+	@Test
+	public void addShipmentsToCustomsInvoice_AddSameShipmentLine()
+	{
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("bpartner", "address");
+		final OrderId order = createOrder(bpartnerAndLocation);
+		final I_C_OrderLine orderLine1 = createOrderLine(
+				order,
+				StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), // qty
+				Money.of(10, chf) // price
+		);
 
-		assertNotNull(lines);
-		assertThat(lines.size(), comparesEqualTo(1));
+		final InOutId inout1 = createShipment(bpartnerAndLocation);
+		final InOutAndLineId shipmentLine1 = createInOutLine(inout1, orderLine1);
 
-		final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+		final Consumer<CustomsInvoice> customsInvoiceLineAssertions = customsInvoice -> {
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
 
-		assertNotNull(customsInvoiceLine.getId());
+			assertThat(customsInvoiceLine.getId()).isNotNull();
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("2", uom1));
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of(20, chf));
 
-		final BigDecimal qty2inUom1 = orderLineQty2.getUOMQtyNotNull().toBigDecimal().multiply(convertionMultiplier);
-		final Quantity expectedQty = orderLineQty1.getUOMQtyNotNull().add(qty2inUom1);
-		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
+			//
+			// Allocations
+			assertThat(customsInvoiceLine.getAllocations()).hasSize(1);
 
-		final BigDecimal price2inCurrency1 = priceActual2.toBigDecimal().multiply(currencyMultiplier);
+			final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+			assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
+			assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
+			assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
+		};
 
-		final BigDecimal expectedPrice = (priceActual1.toBigDecimal()
-				.multiply(orderLineQty1.getUOMQtyNotNull().toBigDecimal()))
-						.add(price2inCurrency1.multiply(orderLineQty2.getUOMQtyNotNull().toBigDecimal()));
+		//
+		// Create the customs invoice from one shipment line
+		final CustomsInvoiceId customsInvoiceId;
+		{
+			final CustomsInvoice customsInvoice = service.generateCustomsInvoice(CustomsInvoiceRequest.builder()
+					.bpartnerAndLocationId(logisticCompany)
+					.bpartnerAddress("Bpartner Address")
+					.currencyId(chf)
+					.docTypeId(customsInvoiceDocTypeId)
+					.documentNo("12345")
+					.invoiceDate(LocalDate.of(2019, Month.MAY, 22))
+					.userId(logisticUserId)
+					.linesToExportMap(ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+							.put(product1, shipmentLine1)
+							.build())
+					.build());
+			customsInvoiceId = customsInvoice.getId();
 
-		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
+			customsInvoiceLineAssertions.accept(customsInvoice);
+		}
 
-		assertThat(customsInvoiceLine.getLineNo(), is(10));
-		assertThat(customsInvoiceLine.getProductId(), is(product1));
-		assertThat(customsInvoiceLine.getQuantity().getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
-		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
+		//
+		// Add same shipment line again: expect no change
+		{
+			service.addShipmentLinesToCustomsInvoice(product1,
+					ImmutableSet.of(shipmentLine1),
+					customsInvoiceId);
+
+			final CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
+			customsInvoiceLineAssertions.accept(customsInvoice);
+		}
+	}
+
+	@Test
+	public void addShipmentsToCustomsInvoice_AddSecondShipmentLine_with_DifferentUOM_DifferentCurrency()
+	{
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("bpartner", "address");
+		final OrderId order = createOrder(bpartnerAndLocation);
+
+		//
+		// Create the customs invoice from one shipment line:
+		final CustomsInvoiceId customsInvoiceId;
+		{
+			final I_C_OrderLine orderLine1 = createOrderLine(
+					order,
+					StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), // qty
+					Money.of(10, chf) // price
+			);
+
+			final InOutId inout1 = createShipment(bpartnerAndLocation);
+			final InOutAndLineId shipmentLine1 = createInOutLine(inout1, orderLine1);
+
+			final CustomsInvoice customsInvoice = service.generateCustomsInvoice(CustomsInvoiceRequest.builder()
+					.bpartnerAndLocationId(logisticCompany)
+					.bpartnerAddress("Bpartner Address")
+					.currencyId(chf)
+					.docTypeId(customsInvoiceDocTypeId)
+					.documentNo("12345")
+					.invoiceDate(LocalDate.of(2019, Month.MAY, 22))
+					.userId(logisticUserId)
+					.linesToExportMap(ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+							.put(product1, shipmentLine1)
+							.build())
+					.build());
+			customsInvoiceId = customsInvoice.getId();
+			assertThat(customsInvoiceId).isNotNull();
+			assertThat(customsInvoice.getBpartnerAndLocationId()).isEqualTo(logisticCompany);
+			assertThat(customsInvoice.getCurrencyId()).isEqualTo(chf);
+			assertThat(customsInvoice.getDocTypeId()).isEqualTo(customsInvoiceDocTypeId);
+			assertThat(customsInvoice.getInvoiceDate()).isEqualTo(LocalDate.of(2019, Month.MAY, 22));
+			assertThat(customsInvoice.getUserId()).isEqualTo(logisticUserId);
+			assertThat(customsInvoice.getDocStatus()).isEqualTo(DocStatus.Drafted);
+
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+
+			assertThat(customsInvoiceLine.getId()).isNotNull();
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("2", uom1));
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of(20, chf));
+
+			//
+			// Allocations
+			assertThat(customsInvoiceLine.getAllocations()).hasSize(1);
+
+			final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+			assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
+			assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
+			assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
+		}
+
+		//
+		// Add another shipment line to existing customs invoice
+		{
+			final I_C_OrderLine orderLine2 = createOrderLine(
+					order,
+					StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(5), product1, uom2), // qty: 5 uom1 = 2.5 uom2
+					Money.of(20, euro) // price: 20 EUR = 22.6 CHF
+			);
+			final InOutId inout2 = createShipment(bpartnerAndLocation);
+			final InOutAndLineId shipmentLine2 = createInOutLine(inout2, orderLine2);
+
+			service.addShipmentLinesToCustomsInvoice(product1,
+					ImmutableSet.of(shipmentLine2),
+					customsInvoiceId);
+
+			final CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
+
+			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
+			assertThat(lines).hasSize(1);
+			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
+			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
+			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("7", uom1)); // i.e. 2 uom1 + 5 uom1
+			assertThat(customsInvoiceLine.getLineNetAmt()).isEqualTo(Money.of("76.5", chf));
+			// i.e. LineNetAmt is
+			// 20 CHF (previous)
+			// + 56.5 CHF (=20 EUR x 2.5 UOM2 = 22.6 CHF x 2.5 UOM2)
+
+			//
+			// Allocations
+			assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
+
+			final CustomsInvoiceLineAlloc alloc2 = customsInvoiceLine.getAllocations().get(1);
+			assertThat(alloc2.getInoutAndLineId()).isEqualTo(shipmentLine2);
+			assertThat(alloc2.getPrice()).isEqualTo(Money.of("22.6", chf)); // 20 eur
+			assertThat(alloc2.getQuantityInPriceUOM()).isEqualTo(qty("2.5", uom2));
+		}
 	}
 
 	private I_C_OrderLine createOrderLine(
@@ -492,7 +613,7 @@ public class CustomsInvoiceServiceTest
 		return orderLineRecord;
 	}
 
-	private I_M_InOutLine createInOutLine(@NonNull final InOutId inout1, @NonNull final I_C_OrderLine orderLineRecord)
+	private InOutAndLineId createInOutLine(@NonNull final InOutId inout1, @NonNull final I_C_OrderLine orderLineRecord)
 	{
 
 		final I_M_InOutLine shipmentLineRecord = newInstance(I_M_InOutLine.class);
@@ -508,7 +629,8 @@ public class CustomsInvoiceServiceTest
 
 		save(shipmentLineRecord);
 
-		return shipmentLineRecord;
+		// return shipmentLineRecord;
+		return InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord.getM_InOutLine_ID());
 	}
 
 	private InOutId createShipment(final BPartnerLocationId bpartnerAndLocation)
@@ -551,18 +673,18 @@ public class CustomsInvoiceServiceTest
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
-	private ProductId createProduct(final String productName, final I_C_UOM uom1)
+	private ProductId createProduct(final String productName, final UomId uomId)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setName(productName);
-		product.setC_UOM_ID(uom1.getC_UOM_ID());
+		product.setC_UOM_ID(uomId.getRepoId());
 
 		save(product);
 
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	private I_C_UOM createUOM(final String name)
+	private UomId createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setName(name);
@@ -571,7 +693,7 @@ public class CustomsInvoiceServiceTest
 		uom.setX12DE355(name);
 		save(uom);
 
-		return uom;
+		return UomId.ofRepoId(uom.getC_UOM_ID());
 	}
 
 	private UserId createUser(final BPartnerId bpartnerId, final String userName)
@@ -608,28 +730,11 @@ public class CustomsInvoiceServiceTest
 		save(bpLocationRecord);
 
 		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
-
 	}
 
-	private void createUOMConversion(
-			final ProductId productId,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final BigDecimal multiplyRate,
-			final BigDecimal divideRate)
+	private Quantity qty(final String qtyStr, final UomId uomId)
 	{
-		createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(productId)
-				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.fromToMultiplier(multiplyRate)
-				.toFromMultiplier(divideRate)
-				.build());
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
+		return Quantity.of(qtyStr, uom);
 	}
-
-	private void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
-	{
-		Services.get(IUOMConversionDAO.class).createUOMConversion(request);
-	}
-
 }
