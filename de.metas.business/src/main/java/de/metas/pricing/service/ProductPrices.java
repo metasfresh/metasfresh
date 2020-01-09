@@ -103,6 +103,16 @@ public class ProductPrices
 
 	public static void assertMainProductPriceIsNotDuplicate(final I_M_ProductPrice productPrice)
 	{
+		if (productPrice == null || !productPrice.isActive())
+		{
+			return;
+		}
+
+		if (productPrice.isInvalidPrice())
+		{
+			return;
+		}
+
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
@@ -122,16 +132,6 @@ public class ProductPrices
 
 	public static void assertUomConversionExists(final I_M_ProductPrice productPrice)
 	{
-		if (productPrice == null || !productPrice.isActive())
-		{
-			return;
-		}
-
-		if (productPrice.isInvalidPrice())
-		{
-			return;
-		}
-
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final org.compiere.model.I_M_Product product = productDAO.getById(productPrice.getM_Product_ID());
 
