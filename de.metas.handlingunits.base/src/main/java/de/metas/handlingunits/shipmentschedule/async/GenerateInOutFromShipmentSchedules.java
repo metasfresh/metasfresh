@@ -10,10 +10,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.util.api.IParams;
-
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
@@ -35,6 +33,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
@@ -141,22 +140,19 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			@NonNull final CreateCandidatesRequestBuilder requestBuilder,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		try (final MDCCloseable mdcRestorer = MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(shipmentSchedule.getM_ShipmentSchedule_ID()));)
+		if (shipmentSchedule.isProcessed())
 		{
-			final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
+			return ImmutableList.of();
+		}
 
-			if (shipmentSchedule.isProcessed())
-			{
-
-				return ImmutableList.of();
-			}
-
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.withShipmentScheduleId(shipmentScheduleId))
+		{
 			final CreateCandidatesRequest request = requestBuilder
 					.shipmentScheduleId(shipmentScheduleId)
 					.build();
 
+			final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
 		}
 	}

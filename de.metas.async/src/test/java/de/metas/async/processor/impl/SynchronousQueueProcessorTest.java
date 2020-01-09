@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -96,7 +97,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 	protected void processWorkpackages(final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
-		final IQueueProcessor processor = new SynchronousQueueProcessor(workpackageQueue);
+		final IQueueProcessor processor = newSynchronousQueueProcessor(workpackageQueue);
 		processor.run();
 		processor.shutdown();
 	}
@@ -150,7 +151,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Create processor and run
 		{
-			final IQueueProcessor processor = new SynchronousQueueProcessor(workpackageQueueForProcessing);
+			final IQueueProcessor processor = newSynchronousQueueProcessor(workpackageQueueForProcessing);
 			processor.setWorkpackageProcessorFactory(workpackageProcessorFactory);
 			processor.run();
 			processor.shutdown();
@@ -183,7 +184,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Create processor and run
 		{
-			final IQueueProcessor processor = new SynchronousQueueProcessor(workpackageQueueForProcessing);
+			final IQueueProcessor processor = newSynchronousQueueProcessor(workpackageQueueForProcessing);
 			processor.setWorkpackageProcessorFactory(workpackageProcessorFactory);
 			processor.run();
 			processor.shutdown();
@@ -199,5 +200,10 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 			Assert.assertEquals("Workpackage " + workpackage + " - Shall not be locked", false, Services.get(ILockManager.class).isLocked(workpackage));
 		}
 
+	}
+
+	private SynchronousQueueProcessor newSynchronousQueueProcessor(final IWorkPackageQueue workpackageQueueForProcessing)
+	{
+		return new SynchronousQueueProcessor(workpackageQueueForProcessing, NOPWorkpackageLogsRepository.instance);
 	}
 }
