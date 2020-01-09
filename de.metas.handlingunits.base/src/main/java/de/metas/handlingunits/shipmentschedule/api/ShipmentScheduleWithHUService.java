@@ -16,7 +16,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -612,7 +611,6 @@ public class ShipmentScheduleWithHUService
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IProductBL productsService = Services.get(IProductBL.class);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(schedule);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
@@ -620,11 +618,10 @@ public class ShipmentScheduleWithHUService
 		//
 		// Create Allocation Request: whole Qty to Deliver
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
-		final I_M_Product product = productsService.getById(productId);
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				product,
+				productId,
 				qtyToDeliver,
 				SystemTime.asZonedDateTime(),
 				schedule,      // reference model
