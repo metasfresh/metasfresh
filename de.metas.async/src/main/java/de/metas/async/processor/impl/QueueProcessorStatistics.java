@@ -13,48 +13,49 @@ package de.metas.async.processor.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
+import lombok.ToString;
 
-public class QueueProcessorStatistics implements IMutableQueueProcessorStatistics
+@ToString
+final class QueueProcessorStatistics implements IMutableQueueProcessorStatistics
 {
-	private long countAll = 0;
-	private long countProcessed = 0;
-	private long countErrors = 0;
-	private long countSkipped = 0;
-	private long queueSize = 0;
+	private long countAll;
+	private long countProcessed;
+	private long countErrors;
+	private long countSkipped;
+	private long queueSize;
+
+	public QueueProcessorStatistics()
+	{
+		countAll = 0;
+		countProcessed = 0;
+		countErrors = 0;
+		countSkipped = 0;
+		queueSize = 0;
+	}
+
+	private QueueProcessorStatistics(final QueueProcessorStatistics from)
+	{
+		countAll = from.countAll;
+		countErrors = from.countErrors;
+		countProcessed = from.countProcessed;
+		countSkipped = from.countSkipped;
+		queueSize = from.queueSize;
+	}
 
 	@Override
 	public QueueProcessorStatistics clone()
 	{
-		final QueueProcessorStatistics statisticsNew = new QueueProcessorStatistics();
-		statisticsNew.countAll = countAll;
-		statisticsNew.countErrors = countErrors;
-		statisticsNew.countProcessed = countProcessed;
-		statisticsNew.countSkipped = countSkipped;
-		statisticsNew.queueSize = queueSize;
-		return statisticsNew;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "QueueProcessorStatistics ["
-				+ "countAll=" + countAll
-				+ ", countProcessed=" + countProcessed
-				+ ", countErrors=" + countErrors
-				+ ", countSkipped=" + countSkipped
-				+ ", queueSize=" + queueSize
-				+ "]";
+		return new QueueProcessorStatistics(this);
 	}
 
 	@Override

@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
@@ -53,9 +54,10 @@ import org.slf4j.MDC.MDCCloseable;
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBL;
+import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -77,8 +79,6 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -97,6 +97,7 @@ import lombok.NonNull;
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 	private final transient IAsyncBatchBL iAsyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IWorkpackageLogsRepository logsRepository;
 
 	private final IQueueProcessor queueProcessor;
 	/** Workpackage processor (that we got as parameter) */
@@ -109,10 +110,14 @@ import lombok.NonNull;
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
-	public WorkpackageProcessorTask(final IQueueProcessor queueProcessor,
+	public WorkpackageProcessorTask(
+			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
-			@NonNull final I_C_Queue_WorkPackage workPackage)
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final IWorkpackageLogsRepository logsRepository)
 	{
+		this.logsRepository = logsRepository;
+
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
 
@@ -137,7 +142,7 @@ import lombok.NonNull;
 	public void run()
 	{
 		final Properties processingCtx = createProcessingCtx();
-		final ILoggable loggable = Services.get(IWorkPackageBL.class).createLoggable(workPackage);
+		final WorkpackageLoggable loggable = createLoggable(workPackage);
 
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
 
@@ -232,7 +237,21 @@ import lombok.NonNull;
 		finally
 		{
 			afterWorkpackageProcessed(finallyReleaseElementLockIfAny);
+			loggable.flush();
 		}
+	}
+
+	private WorkpackageLoggable createLoggable(@NonNull final I_C_Queue_WorkPackage workPackage)
+	{
+		final UserId userId = UserId.ofRepoIdOrNull(workPackage.getAD_User_ID()); // NOTE: in junit tests this is -1/null when it's not saved
+
+		return WorkpackageLoggable.builder()
+				.logsRepository(logsRepository)
+				.workpackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))
+				.adClientId(ClientId.ofRepoId(workPackage.getAD_Client_ID()))
+				.userId(userId != null ? userId : UserId.SYSTEM)
+				.bufferSize(100)
+				.build();
 	}
 
 	/**
@@ -424,10 +443,8 @@ import lombok.NonNull;
 	 *
 	 * @param workPackage
 	 */
-	private void markProcessed(final I_C_Queue_WorkPackage workPackage)
+	private void markProcessed(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
-		Check.assumeNotNull(workPackage, "workPackage not null");
-
 		workPackage.setIsError(false); // just in case it was true
 
 		// clear it up; we don't have any issues this time
