@@ -1,4 +1,3 @@
-
 DROP FUNCTION IF EXISTS report.Docs_Sales_Dunning_Report_description ( IN Record_ID numeric, IN AD_Language Character Varying (6)) ;
 
 CREATE FUNCTION report.Docs_Sales_Dunning_Report_description ( IN Record_ID numeric, IN AD_Language Character Varying (6))
