@@ -30,7 +30,6 @@ import org.adempiere.ad.trx.api.impl.AbstractTrx;
 import org.adempiere.ad.trx.api.impl.JdbcTrxSavepoint;
 import org.adempiere.exceptions.DBException;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -52,8 +51,6 @@ import de.metas.util.Services;
  */
 public class Trx extends AbstractTrx implements VetoableChangeListener
 {
-	private static final String MDC_TRX_NAME = "TrxName";
-
 	/**
 	 * Get Transaction
 	 *
@@ -123,7 +120,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	{
 		super(trxManager, trxName, autocommit);
 
-		MDC.put(MDC_TRX_NAME, trxName == null ? ITrx.TRXNAME_NoneNotNull : trxName); // TODO: maybe log if there already was a trxName??
 		setConnection(con);
 	}	// Trx
 
@@ -356,7 +352,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		if (m_connection == null)
 		{
 			log.debug("closeNative - m_connection is already null; just return true");
-			MDC.remove(MDC_TRX_NAME); // TODO: log if there was no TrxName
 			return true; // nothing to do
 		}
 
@@ -377,7 +372,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			log.error(getTrxName(), e);
 		}
 		m_connection = null;
-		MDC.remove(MDC_TRX_NAME); // TODO: log if there was no TrxName
 		return true;
 	}	// close
 

@@ -14,8 +14,11 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
+import org.apache.log4j.MDC;
+import org.assertj.core.api.AbstractObjectAssert;
 import org.compiere.util.TrxRunnable;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -267,7 +270,7 @@ public class AbstractTrxManagerTest
 			assertThat(collector.isProcessed()).isTrue();
 		}
 	}
-	
+
 	private static class ValuesCollector
 	{
 		private final List<String> values = new ArrayList<>();
@@ -291,6 +294,48 @@ public class AbstractTrxManagerTest
 		public boolean isProcessed()
 		{
 			return processed;
+		}
+	}
+
+	@Nested
+	public class MDC_TrxName
+	{
+		private AbstractObjectAssert<?, Object> assertMDCTrxName()
+		{
+			return assertThat(MDC.get("TrxName")).as("MDC TrxName");
+		}
+
+		@Test
+		public void setThreadInheritedTrxName()
+		{
+			final MockedTrxManager trxManager = new MockedTrxManager();
+
+			assertThat(trxManager.getThreadInheritedTrxName()).isNull();
+			assertMDCTrxName().isNull();
+
+			trxManager.setThreadInheritedTrxName("trx1");
+			assertThat(trxManager.getThreadInheritedTrxName()).isEqualTo("trx1");
+			assertMDCTrxName().isEqualTo("trx1");
+
+			trxManager.setThreadInheritedTrxName("trx2");
+			assertThat(trxManager.getThreadInheritedTrxName()).isEqualTo("trx2");
+			assertMDCTrxName().isEqualTo("trx2");
+
+			trxManager.setThreadInheritedTrxName(null);
+			assertThat(trxManager.getThreadInheritedTrxName()).isNull();
+			assertMDCTrxName().isNull();
+		}
+
+		@Test
+		public void runInNewTrx()
+		{
+			final MockedTrxManager trxManager = new MockedTrxManager();
+
+			assertMDCTrxName().isNull();
+
+			trxManager.runInNewTrx((TrxRunnable)localTrxName -> assertMDCTrxName().isEqualTo(localTrxName));
+
+			assertMDCTrxName().isNull();
 		}
 	}
 }
