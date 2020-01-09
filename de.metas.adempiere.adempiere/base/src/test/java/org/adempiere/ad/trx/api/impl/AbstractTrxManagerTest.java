@@ -8,10 +8,10 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
@@ -267,7 +267,7 @@ public class AbstractTrxManagerTest
 			assertThat(collector.isProcessed()).isTrue();
 		}
 	}
-
+	
 	private static class ValuesCollector
 	{
 		private final List<String> values = new ArrayList<>();
