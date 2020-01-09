@@ -290,7 +290,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			//
 			// Allocation request
 			final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext //
-					, IHUPPOrderQtyBL.extractProduct(candidate) // product
+					, ProductId.ofRepoId(candidate.getM_Product_ID()) // product
 					, qtyToIssue // the quantity to issue
 					, SystemTime.asZonedDateTime() // transaction date
 					, null // referenced model: IMPORTANT to be null, else our build won't detect correctly which is the HU transaction and which is the BOMLine-side transaction
