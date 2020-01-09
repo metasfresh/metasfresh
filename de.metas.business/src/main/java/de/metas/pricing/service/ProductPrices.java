@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
@@ -65,6 +66,8 @@ import lombok.NonNull;
 
 public class ProductPrices
 {
+	private static final String MSG_NO_UOM_CONVERSION_AVAILABLE = "de.metas.pricing.service.product.MissingUOMConversion";
+
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> MATCHERS_MainProductPrice = new CopyOnWriteArrayList<>();
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
@@ -152,11 +155,12 @@ public class ProductPrices
 
 		UOMConversionsMap conversionsMap = uomConversionRepo.getProductConversions(productId);
 
-		if (conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isPresent())
+		if (!conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isPresent())
 		{
-			return;
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NO_UOM_CONVERSION_AVAILABLE);
+			throw new AdempiereException(message).markAsUserValidationError();
 		}
-		throw new AdempiereException("UOM Conversion to the selected UOM doesn't exist").markAsUserValidationError();
 	}
 
 	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
