@@ -370,6 +370,10 @@ export class RawList extends PureComponent {
       value = selected.caption;
     }
 
+    placeholder = this.props.lookupList
+      ? this.props.properties.emptyText
+      : placeholder;
+
     return (
       <TetherComponent
         attachment="top left"

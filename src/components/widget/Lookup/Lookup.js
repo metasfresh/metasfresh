@@ -475,6 +475,7 @@ class Lookup extends Component {
                   forcedWidth={width}
                   forceHeight={forceHeight}
                   parentElement={forceFullWidth && this.dropdown}
+                  isComposed={this.props.properties.length > 1 ? true : false}
                   {...{
                     placeholder,
                     tabIndex,
@@ -512,7 +513,6 @@ class Lookup extends Component {
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
               let defaultValue = localClearing ? null : itemByProperty.value;
-
               return (
                 <div
                   key={item.field}
@@ -541,7 +541,11 @@ class Lookup extends Component {
                     mainProperty={item}
                     defaultValue={defaultValue ? defaultValue : ''}
                     initialFocus={isFirstProperty ? initialFocus : false}
-                    emptyText={placeholder}
+                    emptyText={
+                      this.props.properties
+                        ? this.props.properties[0].emptyText
+                        : placeholder
+                    }
                     mandatory={widgetData[index].mandatory}
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
