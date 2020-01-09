@@ -79,7 +79,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	@Getter
 	private final String field;
-	
+
 	@Getter
 	private final ITranslatableString caption;
 
@@ -115,7 +115,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	private DocumentLayoutElementFieldDescriptor(@NonNull final Builder builder)
 	{
 		field = builder.getFieldName();
-		caption = builder.caption;
+		caption = builder.getCaption();
 		fieldType = builder.fieldType;
 		if (FieldType.Tooltip.equals(fieldType))
 		{
@@ -237,11 +237,16 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 			return fieldName;
 		}
-		
+
 		public Builder setCaption(@NonNull final ITranslatableString caption)
 		{
 			this.caption = caption;
 			return this;
+		}
+
+		public ITranslatableString getCaption()
+		{
+			return caption;
 		}
 
 		public Builder setLookupInfos(final LookupDescriptor lookupDescriptor)
@@ -293,6 +298,11 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		{
 			this.fieldType = fieldType;
 			return this;
+		}
+
+		public boolean isRegularField()
+		{
+			return fieldType == null;
 		}
 
 		/** May be {@code null}, unless the field type is {@link FieldType#Tooltip}. */

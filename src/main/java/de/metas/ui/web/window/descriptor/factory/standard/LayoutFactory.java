@@ -448,7 +448,7 @@ public class LayoutFactory
 			logger.trace("Skip layout element for {} because it has no fields: {}", uiElement, layoutElementBuilder);
 			return null;
 		}
-
+		
 		//
 		// Collect advanced fields
 		if (layoutElementBuilder.isAdvancedField())

@@ -334,12 +334,40 @@ public final class DocumentLayoutElementDescriptor
 
 		private Set<DocumentLayoutElementFieldDescriptor> buildFields()
 		{
+			updateFieldsEmptyTexts();
+
 			return _fieldsBuilders
 					.values()
 					.stream()
 					.filter(fieldBuilder -> checkValid(fieldBuilder))
 					.map(fieldBuilder -> fieldBuilder.build())
 					.collect(GuavaCollectors.toImmutableSet());
+		}
+
+		private void updateFieldsEmptyTexts()
+		{
+			if (!isComposedField())
+			{
+				return;
+			}
+
+			for (final DocumentLayoutElementFieldDescriptor.Builder field : _fieldsBuilders.values())
+			{
+				if (field.isRegularField()
+						&& !TranslatableStrings.isBlank(field.getCaption()))
+				{
+					field.setEmptyText(field.getCaption());
+				}
+			}
+		}
+
+		private boolean isComposedField()
+		{
+			final long countRegularFields = _fieldsBuilders.values().stream()
+					.filter(DocumentLayoutElementFieldDescriptor.Builder::isRegularField)
+					.count();
+
+			return countRegularFields > 1;
 		}
 
 		private boolean checkValid(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
