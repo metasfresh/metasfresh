@@ -249,33 +249,6 @@ public interface I_M_InOut
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Zollrechnung.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID);
-
-	/**
-	 * Get Zollrechnung.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Customs_Invoice_ID();
-
-	public org.compiere.model.I_C_Customs_Invoice getC_Customs_Invoice();
-
-	public void setC_Customs_Invoice(org.compiere.model.I_C_Customs_Invoice C_Customs_Invoice);
-
-    /** Column definition for C_Customs_Invoice_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Customs_Invoice> COLUMN_C_Customs_Invoice_ID = new org.adempiere.model.ModelColumn<I_M_InOut, org.compiere.model.I_C_Customs_Invoice>(I_M_InOut.class, "C_Customs_Invoice_ID", org.compiere.model.I_C_Customs_Invoice.class);
-    /** Column name C_Customs_Invoice_ID */
-    public static final String COLUMNNAME_C_Customs_Invoice_ID = "C_Customs_Invoice_ID";
-
-	/**
 	 * Set Belegart.
 	 * Document type or rules
 	 *
@@ -297,29 +270,6 @@ public interface I_M_InOut
 
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getChargeAmt();
-
-    /** Column definition for ChargeAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "ChargeAmt", null);
-    /** Column name ChargeAmt */
-    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Rechnung.
@@ -401,6 +351,29 @@ public interface I_M_InOut
 
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getChargeAmt();
+
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Create Confirm.
@@ -1263,56 +1236,6 @@ public interface I_M_InOut
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMovementDate();
-
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
-	 * Set Bewegungs-Art.
-	 * Method of moving the inventory
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementType (java.lang.String MovementType);
-
-	/**
-	 * Get Bewegungs-Art.
-	 * Method of moving the inventory
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMovementType();
-
-    /** Column definition for MovementType */
-    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementType = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementType", null);
-    /** Column name MovementType */
-    public static final String COLUMNNAME_MovementType = "MovementType";
-
-	/**
 	 * Set Warenrücksendung - Freigabe (RMA).
 	 * Return Material Authorization
 	 *
@@ -1417,6 +1340,56 @@ public interface I_M_InOut
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMovementDate();
+
+    /** Column definition for MovementDate */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementDate", null);
+    /** Column name MovementDate */
+    public static final String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
+	 * Set Bewegungs-Art.
+	 * Method of moving the inventory
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementType (java.lang.String MovementType);
+
+	/**
+	 * Get Bewegungs-Art.
+	 * Method of moving the inventory
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMovementType();
+
+    /** Column definition for MovementType */
+    public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_MovementType = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "MovementType", null);
+    /** Column name MovementType */
+    public static final String COLUMNNAME_MovementType = "MovementType";
+
+	/**
 	 * Set Kommissionierdatum.
 	 * Datum/Zeit der Kommissionierung für die Lieferung
 	 *
@@ -1467,20 +1440,20 @@ public interface I_M_InOut
     public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Verbucht.
-	 * Posting status
+	 * Set Buchungsstatus.
+	 * Buchungsstatus
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPosted (boolean Posted);
 
 	/**
-	 * Get Verbucht.
-	 * Posting status
+	 * Get Buchungsstatus.
+	 * Buchungsstatus
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1518,7 +1491,7 @@ public interface I_M_InOut
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1528,7 +1501,7 @@ public interface I_M_InOut
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
