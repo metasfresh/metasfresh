@@ -515,7 +515,11 @@ export class RawLookup extends Component {
                   readOnly={readonly}
                   disabled={readonly && !disabled}
                   tabIndex={tabIndex}
-                  placeholder={placeholder}
+                  placeholder={
+                    this.props.isComposed
+                      ? placeholder
+                      : this.props.item.emptyText
+                  }
                   onChange={this.handleChange}
                   onClick={this.handleFocus}
                 />
@@ -561,6 +565,7 @@ RawLookup.propTypes = {
   forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onDropdownListToggle: PropTypes.func,
+  isComposed: PropTypes.bool,
 };
 
 export default connect(mapStateToProps)(RawLookup);

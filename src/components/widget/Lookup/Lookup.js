@@ -475,6 +475,7 @@ class Lookup extends Component {
                   forcedWidth={width}
                   forceHeight={forceHeight}
                   parentElement={forceFullWidth && this.dropdown}
+                  isComposed={this.props.properties.length > 1 ? true : false}
                   {...{
                     placeholder,
                     tabIndex,
