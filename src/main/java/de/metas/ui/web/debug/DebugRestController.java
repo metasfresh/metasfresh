@@ -213,7 +213,12 @@ public class DebugRestController
 	{
 		userSession.assertLoggedIn();
 
-		userSession.setShowColumnNamesForCaption(DisplayType.toBoolean(showColumnNamesForCaptionStr));
+		final Boolean showColumnNamesForCaption = DisplayType.toBoolean(showColumnNamesForCaptionStr, null);
+		if (showColumnNamesForCaption == null)
+		{
+			throw new AdempiereException("Invalid boolean value: `" + showColumnNamesForCaptionStr + "`");
+		}
+		userSession.setShowColumnNamesForCaption(showColumnNamesForCaption);
 
 		final boolean forgetNotSavedDocuments = true;
 		cacheReset(forgetNotSavedDocuments);
