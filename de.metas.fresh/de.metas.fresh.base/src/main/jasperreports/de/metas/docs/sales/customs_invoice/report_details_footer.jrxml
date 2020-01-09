@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="intercheeseuat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -27,26 +27,19 @@
 	</parameter>
 	<queryString>
 		<![CDATA[select
-  COALESCE(uomt.UOMSymbol, uom.UOMSymbol)   as UOM,
-  sum(
-  coalesce((case when qtydeliveredcatch is not null
-    then qtydeliveredcatch
-  else uomConvert(iol.M_Product_ID,iol.C_UOM_ID, catch_uom_id, qtyentered)
-  end),0)) as catchweight
-from C_Customs_Invoice_Line cil
-  
-  JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on cil.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID
-  JOIN M_InOutLine iol ON iol.M_InOutLine_id = alloc.M_InOutLine_id
-  LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = iol.catch_uom_id
+ SUM(il.InvoicedQty) as catchweight,
+       COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOM
+from C_Customs_Invoice_Line il
+  LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
   LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
-where cil.C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id} and  catch_uom_id is not null
+where il.C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id}
 group by uomt.UOMSymbol, uom.UOMSymbol]]>
 	</queryString>
-	<field name="uom" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="uom"/>
-	</field>
 	<field name="catchweight" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
+	</field>
+	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<title>
 		<band height="37">
