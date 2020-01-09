@@ -46,7 +46,7 @@ END;
 $$
     LANGUAGE 'plpgsql';
 
-COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getShipmentAddressorNull(numeric) IS 'Returns the inout address if is there only one inout linked to customs invoice';
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getCustomsInvoiceShipmentAddressorNull(numeric) IS 'Returns the inout address if is there only one inout linked to customs invoice';
 
 
 
