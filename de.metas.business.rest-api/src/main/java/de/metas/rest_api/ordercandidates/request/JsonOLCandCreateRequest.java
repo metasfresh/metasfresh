@@ -212,7 +212,7 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
 
-	@ApiModelProperty(value = "Specifies the value for the sales rep that will propagate to the created order")
+	@ApiModelProperty(value = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String salesPartnerCode;
 
