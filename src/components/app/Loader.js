@@ -8,10 +8,11 @@ import { CSSTransition } from 'react-transition-group';
  */
 const Loader = () => (
   <div className="order-list-loader text-center">
-    <CSSTransition classNames="rotate" timeout={{ exit: 1000, enter: 1000 }}>
-      <div className="rotate icon-rotate">
-        <i className="meta-icon-settings" />
-      </div>
+    <CSSTransition
+      className="rotate icon-rotate"
+      timeout={{ exit: 1000, enter: 1000 }}
+    >
+      <i className="meta-icon-settings" />
     </CSSTransition>
   </div>
 );
