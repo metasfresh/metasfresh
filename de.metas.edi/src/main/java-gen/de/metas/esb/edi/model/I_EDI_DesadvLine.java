@@ -329,31 +329,6 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Bewegungs-Menge.
-	 * Menge eines bewegten Produktes.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementQty (java.math.BigDecimal MovementQty);
-
-	/**
-	 * Get Bewegungs-Menge.
-	 * Menge eines bewegten Produktes.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getMovementQty();
-
-    /** Column definition for MovementQty */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "MovementQty", null);
-    /** Column name MovementQty */
-    public static final String COLUMNNAME_MovementQty = "MovementQty";
-
-	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -448,6 +423,54 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_ProductNo = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "ProductNo", null);
     /** Column name ProductNo */
     public static final String COLUMNNAME_ProductNo = "ProductNo";
+
+	/**
+	 * Set Geliefert (Lagereinheit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInStockingUOM (java.math.BigDecimal QtyDeliveredInStockingUOM);
+
+	/**
+	 * Get Geliefert (Lagereinheit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInStockingUOM();
+
+    /** Column definition for QtyDeliveredInStockingUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyDeliveredInStockingUOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyDeliveredInStockingUOM", null);
+    /** Column name QtyDeliveredInStockingUOM */
+    public static final String COLUMNNAME_QtyDeliveredInStockingUOM = "QtyDeliveredInStockingUOM";
+
+	/**
+	 * Set Liefermenge.
+	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM);
+
+	/**
+	 * Get Liefermenge.
+	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInUOM();
+
+    /** Column definition for QtyDeliveredInUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyDeliveredInUOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyDeliveredInUOM", null);
+    /** Column name QtyDeliveredInUOM */
+    public static final String COLUMNNAME_QtyDeliveredInUOM = "QtyDeliveredInUOM";
 
 	/**
 	 * Set Menge.

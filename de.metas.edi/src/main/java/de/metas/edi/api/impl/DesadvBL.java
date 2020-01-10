@@ -53,6 +53,9 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -81,6 +84,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
@@ -104,11 +109,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 @Service
 public class DesadvBL implements IDesadvBL
 {
+	private static final String MSG_EDI_DESADV_RefuseSending = "EDI_DESADV_RefuseSending";
+
 	/** Process used to print the {@link I_EDI_DesadvLine_Pack}s labels */
 	private static final String AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print = "EDI_DesadvLine_SSCC_Print";
 
@@ -170,10 +178,10 @@ public class DesadvBL implements IDesadvBL
 
 	private I_EDI_DesadvLine retrieveOrCreateDesadvLine(
 			final I_C_Order order,
-			final I_EDI_Desadv desadv,
+			final I_EDI_Desadv desadvRecord,
 			final I_C_OrderLine orderLine)
 	{
-		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadv, orderLine.getLine());
+		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadvRecord, orderLine.getLine());
 		if (existingDesadvLine != null)
 		{
 			return existingDesadvLine; // done
@@ -184,8 +192,13 @@ public class DesadvBL implements IDesadvBL
 		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(buyerBPartnerId);
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
-		newDesadvLine.setEDI_Desadv(desadv);
+		newDesadvLine.setEDI_Desadv(desadvRecord);
 		newDesadvLine.setLine(orderLine.getLine());
+
+		final BigDecimal sumOrderedInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(orderLine.getQtyOrdered());
+		desadvRecord.setSumOrderedInStockingUOM(sumOrderedInStockingUOM);
+		updateFullfilmentPercent(desadvRecord);
+		saveRecord(desadvRecord);
 
 		// we'll need this when inoutLines are added, because then we need to add either hte nominal quantity or the catch-quantity
 		newDesadvLine.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
@@ -291,6 +304,7 @@ public class DesadvBL implements IDesadvBL
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
 			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
+			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
 		}
 		return desadv;
@@ -705,6 +719,11 @@ public class DesadvBL implements IDesadvBL
 				.add(UOMConversionContext.of(desadvLineRecord.getM_Product_ID()), desadvLineQtyDelivered, inoutLineQtyDelivered)
 				.toBigDecimal();
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM);
+
+		final I_EDI_Desadv desadvRecord = desadvLineRecord.getEDI_Desadv();
+		final BigDecimal sumDeliveredInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(movementQtyEff);
+		desadvRecord.setSumDeliveredInStockingUOM(sumDeliveredInStockingUOM);
+		saveRecord(desadvRecord);
 	}
 
 	/**
@@ -753,7 +772,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void removeOrderFromDesadv(I_C_Order order)
+	public void removeOrderFromDesadv(@NonNull final I_C_Order order)
 	{
 		if (order.getEDI_Desadv_ID() <= 0)
 		{
@@ -781,7 +800,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void removeOrderLineFromDesadv(final I_C_OrderLine orderLine)
+	public void removeOrderLineFromDesadv(@NonNull final I_C_OrderLine orderLine)
 	{
 		if (orderLine.getEDI_DesadvLine_ID() <= 0)
 		{
@@ -789,6 +808,12 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final I_EDI_DesadvLine desadvLine = orderLine.getEDI_DesadvLine();
+
+		final I_EDI_Desadv desadvRecord = desadvLine.getEDI_Desadv();
+		final BigDecimal sumOrderedInStockingUOM = desadvRecord.getSumOrderedInStockingUOM().subtract(orderLine.getQtyOrdered());
+		desadvRecord.setSumOrderedInStockingUOM(sumOrderedInStockingUOM);
+		updateFullfilmentPercent(desadvRecord);
+		saveRecord(desadvRecord);
 
 		if (desadvDAO.hasInOutLines(desadvLine))
 		{
@@ -803,6 +828,15 @@ public class DesadvBL implements IDesadvBL
 		{
 			InterfaceWrapperHelper.delete(desadvLine);
 		}
+	}
+
+	private void updateFullfilmentPercent(@NonNull final I_EDI_Desadv desadvRecord)
+	{
+		final Percent fullfilment = Percent.of(
+				desadvRecord.getSumDeliveredInStockingUOM(),
+				desadvRecord.getSumOrderedInStockingUOM(),
+				0/* precision */);
+		desadvRecord.setFulfillmentPercent(fullfilment.toBigDecimal());
 	}
 
 	@Override
@@ -840,9 +874,51 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public void setMinimumPercentage(final I_EDI_Desadv desadv)
+	public void setMinimumPercentage(@NonNull final I_EDI_Desadv desadv)
 	{
 		final BigDecimal minimumPercentageAccepted = desadvDAO.retrieveMinimumSumPercentage();
-		desadv.setEDI_DESADV_MinimumSumPercentage(minimumPercentageAccepted);
+		desadv.setFulfillmentPercentMin(minimumPercentageAccepted);
+	}
+
+	@Override
+	public ImmutableList<ITranslatableString> createMsgsForDesadvsBelowMinimumFulfilment(@NonNull final ImmutableList<I_EDI_Desadv> desadvsRecords)
+	{
+		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+		final ImmutableListMultimap<BigDecimal, I_EDI_Desadv> minimum2DesadvRecords = Multimaps.index(desadvsRecords, I_EDI_Desadv::getFulfillmentPercentMin);
+		for (final BigDecimal minimumSumPercentage : minimum2DesadvRecords.keySet())
+		{
+			createSingleMsg(desadvsRecords, minimumSumPercentage).ifPresent(result::add);
+		}
+		return result.build();
+	}
+
+	private Optional<ITranslatableString> createSingleMsg(
+			@NonNull final List<I_EDI_Desadv> desadvsToSkip,
+			@NonNull final BigDecimal minimumSumPercentage)
+	{
+		final StringBuilder skippedDesadvsString = new StringBuilder();
+
+		for (final I_EDI_Desadv desadvRecord : desadvsToSkip)
+		{
+			if (desadvRecord.getFulfillmentPercent().compareTo(desadvRecord.getFulfillmentPercentMin()) <= 0)
+			{
+				skippedDesadvsString.append("#")
+						.append(desadvRecord.getDocumentNo())
+						.append(" - ")
+						.append(desadvRecord.getFulfillmentPercent())
+						.append("\n");
+			}
+		}
+
+		if (skippedDesadvsString.length() <= 0)
+		{
+			return Optional.empty(); // nothing to log
+		}
+
+		// log a message that includes all the skipped lines'documentNo and percentage
+		final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(
+				MSG_EDI_DESADV_RefuseSending,
+				minimumSumPercentage, skippedDesadvsString.toString());
+		return Optional.of(msg);
 	}
 }

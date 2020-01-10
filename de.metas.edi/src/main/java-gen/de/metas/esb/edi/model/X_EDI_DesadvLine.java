@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 344493687L;
+	private static final long serialVersionUID = -301018082L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -254,28 +254,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Menge eines bewegten Produktes.
-	  */
-	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	/** Get Bewegungs-Menge.
-		@return Menge eines bewegten Produktes.
-	  */
-	@Override
-	public java.math.BigDecimal getMovementQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -356,6 +334,47 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.lang.String getProductNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+	}
+
+	/** Set Geliefert (Lagereinheit).
+		@param QtyDeliveredInStockingUOM Geliefert (Lagereinheit)	  */
+	@Override
+	public void setQtyDeliveredInStockingUOM (java.math.BigDecimal QtyDeliveredInStockingUOM)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInStockingUOM, QtyDeliveredInStockingUOM);
+	}
+
+	/** Get Geliefert (Lagereinheit).
+		@return Geliefert (Lagereinheit)	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInStockingUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInStockingUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Liefermenge.
+		@param QtyDeliveredInUOM 
+		Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	  */
+	@Override
+	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInUOM, QtyDeliveredInUOM);
+	}
+
+	/** Get Liefermenge.
+		@return Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Menge.
