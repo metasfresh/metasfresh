@@ -66,7 +66,7 @@ public class StepComXMLOrdersRoute
 					.to(INPUT_ORDERS_LOCAL);
 		}
 
-		final String stepComCharsetName=Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+		final String stepComCharsetName = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
 		ProcessorDefinition<?> ediToXMLOrdersRoute = from(INPUT_ORDERS_LOCAL)
 				.routeId("STEPCOM-XML-Orders-To-MF-OLCand")
