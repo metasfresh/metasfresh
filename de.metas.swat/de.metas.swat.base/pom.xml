@@ -1,4 +1,6 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +16,8 @@
 	<description>Swat base project</description>
 
 	<properties>
-		<!-- empty property because the sql migration dir already contains a list of base directories -->
+		<!-- empty property because the sql migration dir already contains a list 
+			of base directories -->
 		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
@@ -48,8 +51,16 @@
 			<artifactId>de.metas.async</artifactId>
 			<version>10.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 
-		<!-- 07058: Libero (Distribution Network) dependency will be used for warehouse association between OrderLine and ReceiptSchedule warehouses -->
+		<!-- 07058: Libero (Distribution Network) dependency will be used for warehouse 
+			association between OrderLine and ReceiptSchedule warehouses -->
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.libero</artifactId>
@@ -86,12 +97,12 @@
 			<artifactId>de.metas.util</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-		
+
 		<!-- required for shipment schedules -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-cockpit</artifactId>
-			<!-- <artifactId>metasfresh-material-dispo-commons</artifactId>  -->
+			<!-- <artifactId>metasfresh-material-dispo-commons</artifactId> -->
 			<version>10.0.0</version>
 		</dependency>
 
@@ -108,18 +119,15 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
+		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
+			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
+			totally fine Also note that the version is managed by spring-boot. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- unit testing dependencies -->
 		<dependency>
 			<groupId>org.easymock</groupId>
