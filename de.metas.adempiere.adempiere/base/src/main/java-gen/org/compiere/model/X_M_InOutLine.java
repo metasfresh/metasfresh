@@ -15,7 +15,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1250076057L;
+	private static final long serialVersionUID = 2082707940L;
 
     /** Standard Constructor */
     public X_M_InOutLine (Properties ctx, int M_InOutLine_ID, String trxName)
@@ -23,7 +23,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
       super (ctx, M_InOutLine_ID, trxName);
       /** if (M_InOutLine_ID == 0)
         {
-			setC_UOM_ID (0); // @#C_UOM_ID@
+			setC_UOM_ID (0);
 			setIsDescription (false); // N
 			setIsInvoiced (false);
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_InOutLine WHERE M_InOut_ID=@M_InOut_ID@
@@ -76,18 +76,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Activity getC_Activity()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
-
-	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
-	}
-
 	/** Set Kostenstelle.
 		@param C_Activity_ID 
 		Kostenstelle
@@ -108,31 +96,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Catch Einheit.
-		@param Catch_UOM_ID 
-		Aus dem Produktstamm übenommene Catch Weight Einheit.
-	  */
-	@Override
-	public void setCatch_UOM_ID (int Catch_UOM_ID)
-	{
-		if (Catch_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
-	}
-
-	/** Get Catch Einheit.
-		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
-	  */
-	@Override
-	public int getCatch_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -175,18 +138,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
-	}
-
-	@Override
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
-	}
-
 	/** Set Kosten.
 		@param C_Charge_ID 
 		Additional document charges
@@ -210,62 +161,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Customs_Invoice_Line getC_Customs_Invoice_Line()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Customs_Invoice_Line_ID, org.compiere.model.I_C_Customs_Invoice_Line.class);
-	}
-
-	@Override
-	public void setC_Customs_Invoice_Line(org.compiere.model.I_C_Customs_Invoice_Line C_Customs_Invoice_Line)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Customs_Invoice_Line_ID, org.compiere.model.I_C_Customs_Invoice_Line.class, C_Customs_Invoice_Line);
-	}
-
-	/** Set Customs Invoice Line.
-		@param C_Customs_Invoice_Line_ID Customs Invoice Line	  */
-	@Override
-	public void setC_Customs_Invoice_Line_ID (int C_Customs_Invoice_Line_ID)
-	{
-		if (C_Customs_Invoice_Line_ID < 1) 
-			set_Value (COLUMNNAME_C_Customs_Invoice_Line_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Customs_Invoice_Line_ID, Integer.valueOf(C_Customs_Invoice_Line_ID));
-	}
-
-	/** Get Customs Invoice Line.
-		@return Customs Invoice Line	  */
-	@Override
-	public int getC_Customs_Invoice_Line_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customs_Invoice_Line_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Bestätigte Menge.
-		@param ConfirmedQty 
-		Confirmation of a received quantity
-	  */
-	@Override
-	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
-	{
-		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
-	}
-
-	/** Get Bestätigte Menge.
-		@return Confirmation of a received quantity
-	  */
-	@Override
-	public java.math.BigDecimal getConfirmedQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	@Override
@@ -303,18 +198,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Project getC_Project()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
 	}
 
 	/** Set Projekt.
@@ -439,6 +322,53 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Catch Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bestätigte Menge.
+		@param ConfirmedQty 
+		Confirmation of a received quantity
+	  */
+	@Override
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
+	{
+		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
+	}
+
+	/** Get Bestätigte Menge.
+		@return Confirmation of a received quantity
+	  */
+	@Override
+	public java.math.BigDecimal getConfirmedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Beschreibung.
@@ -655,28 +585,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Quantity of a product moved.
-	  */
-	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	/** Get Bewegungs-Menge.
-		@return Quantity of a product moved.
-	  */
-	@Override
-	public java.math.BigDecimal getMovementQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -739,6 +647,28 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
+	/** Set Bewegungs-Menge.
+		@param MovementQty 
+		Quantity of a product moved.
+	  */
+	@Override
+	public void setMovementQty (java.math.BigDecimal MovementQty)
+	{
+		set_Value (COLUMNNAME_MovementQty, MovementQty);
+	}
+
+	/** Get Bewegungs-Menge.
+		@return Quantity of a product moved.
+	  */
+	@Override
+	public java.math.BigDecimal getMovementQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Picked Quantity.
 		@param PickedQty Picked Quantity	  */
 	@Override
@@ -760,7 +690,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -769,7 +699,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
