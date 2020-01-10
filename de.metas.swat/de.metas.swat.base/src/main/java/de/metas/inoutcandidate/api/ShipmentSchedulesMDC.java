@@ -4,6 +4,7 @@ import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -42,4 +43,8 @@ public class ShipmentSchedulesMDC
 		return MDC.putCloseable("ShipmentScheduleUpdater-Run#", Integer.toString(runNo));
 	}
 
+	public static MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
+	{
+		return MDC.putCloseable("AD_PInstance_ID", Integer.toString(selectionId.getRepoId()));
+	}
 }
