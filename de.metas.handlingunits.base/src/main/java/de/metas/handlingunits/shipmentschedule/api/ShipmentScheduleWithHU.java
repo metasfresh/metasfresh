@@ -74,10 +74,12 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -315,12 +317,21 @@ public class ShipmentScheduleWithHU
 		return result;
 	}
 
-	/**
-	 * Might return a value less or equal to zero!
-	 */
+	@Nullable
+	public OrderId getOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
+	}
+
+	@Nullable
 	public OrderAndLineId getOrderLineId()
 	{
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
+	}
+
+	public ShipmentScheduleId getShipmentScheduleId()
+	{
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	public I_M_ShipmentSchedule getM_ShipmentSchedule()
