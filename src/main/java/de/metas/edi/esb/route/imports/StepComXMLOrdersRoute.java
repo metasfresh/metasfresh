@@ -53,9 +53,11 @@ public class StepComXMLOrdersRoute
 	@Override
 	public final void configure()
 	{
-		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_ORDER_CONTEXTPATH);
-		dataFormat.setCamelContext(getContext());
-		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
+		final String stepComCharsetName = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+
+		final JaxbDataFormat stepComDataFormat = new JaxbDataFormat(JAXB_ORDER_CONTEXTPATH);
+		stepComDataFormat.setCamelContext(getContext());
+		stepComDataFormat.setEncoding(stepComCharsetName);
 
 		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_ORDERS_REMOTE, "");
 		if (!Util.isEmpty(remoteEndpoint))
@@ -65,8 +67,6 @@ public class StepComXMLOrdersRoute
 					.log(LoggingLevel.TRACE, "Getting remote file")
 					.to(INPUT_ORDERS_LOCAL);
 		}
-
-		final String stepComCharsetName = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
 		ProcessorDefinition<?> ediToXMLOrdersRoute = from(INPUT_ORDERS_LOCAL)
 				.routeId("STEPCOM-XML-Orders-To-MF-OLCand")
@@ -78,7 +78,7 @@ public class StepComXMLOrdersRoute
 				.convertBodyTo(String.class, StandardCharsets.UTF_8.name())
 				.setProperty(Exchange.CHARSET_NAME).constant(StandardCharsets.UTF_8.name())
 
-				.unmarshal(dataFormat);
+				.unmarshal(stepComDataFormat);
 
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String defaultADClientValue = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_ADClientValue);
