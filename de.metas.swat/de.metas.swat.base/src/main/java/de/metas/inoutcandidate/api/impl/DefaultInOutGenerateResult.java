@@ -29,21 +29,17 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
-/* package */class DefaultInOutGenerateResult implements InOutGenerateResult
+final class DefaultInOutGenerateResult implements InOutGenerateResult
 {
-	@ToStringBuilder(skip = true)
 	private final boolean storeInOuts;
-
 	private int inoutCount = 0;
 	private final List<I_M_InOut> inouts = new ArrayList<>();
-	@ToStringBuilder(skip = true)
 	private final List<I_M_InOut> inoutsRO = Collections.unmodifiableList(inouts);
 
 	public DefaultInOutGenerateResult()
