@@ -13,6 +13,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine_To_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -30,7 +31,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -378,6 +381,20 @@ public class CustomsInvoiceRepository
 	private static CustomsInvoiceLineId extractCustomsInvoiceLineId(final I_M_InOutLine_To_C_Customs_Invoice_Line record)
 	{
 		return CustomsInvoiceLineId.ofRepoId(record.getC_Customs_Invoice_ID(), record.getC_Customs_Invoice_Line_ID());
+	}
+
+	public void setExportedInCustomsInvoice(final InOutId shipmentId)
+	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+
+		final I_M_InOut shipment = inoutDAO.getById(shipmentId, I_M_InOut.class);
+
+		if (!shipment.isExportedToCustomsInvoice())
+		{
+			shipment.setIsExportedToCustomsInvoice(true);
+
+			saveRecord(shipment);
+		}
 	}
 
 }
