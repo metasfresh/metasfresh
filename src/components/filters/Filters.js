@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Map } from 'immutable';
 import _ from 'lodash';
 
@@ -19,7 +19,7 @@ import FiltersNotFrequent from './FiltersNotFrequent';
  * @module Filters
  * @extends Component
  */
-class Filters extends Component {
+export default class Filters extends PureComponent {
   state = {
     activeFilter: null,
     activeFiltersCaptions: null,
@@ -467,11 +467,13 @@ class Filters extends Component {
         : null;
       const activeParameter =
         parameter && isActive && currentFilter && currentFilter.parameters[0];
-      const filterType = unannotatedFilter.parameters
-        ? unannotatedFilter.parameters.find(
-            filter => filter.parameterName === activeParameter.parameterName
-          )
-        : parameter && parameter.widgetType;
+
+      const filterType =
+        unannotatedFilter.parameters && activeParameter
+          ? unannotatedFilter.parameters.find(
+              filter => filter.parameterName === activeParameter.parameterName
+            )
+          : parameter && parameter.widgetType;
 
       const captionValue = activeParameter
         ? TableCell.fieldValueToString(
@@ -580,5 +582,3 @@ Filters.propTypes = {
   filterData: PropTypes.any,
   initialValuesNulled: PropTypes.any,
 };
-
-export default Filters;
