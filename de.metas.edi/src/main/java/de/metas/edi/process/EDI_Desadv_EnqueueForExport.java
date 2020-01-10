@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -249,7 +248,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 	{
 		return createEDIDesadvQueryBuilder()
 				.andCollectChildren(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, I_EDI_DesadvLine.class)
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_MovementQty, BigDecimal.ZERO)
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM, BigDecimal.ZERO)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_EDI_Desadv.COLUMN_EDI_Desadv_ID, I_EDI_Desadv.class)
 				.create()

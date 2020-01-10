@@ -33,6 +33,7 @@ import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.esb.edi.model.X_EDI_DesadvLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
@@ -148,7 +149,8 @@ class DesadvBLTest_addInOutLine
 		desadvLine = newInstance(I_EDI_DesadvLine.class);
 		desadvLine.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		desadvLine.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
-		desadvLine.setMovementQty(new BigDecimal("2")); // initial quantity in stock-UOM..we don't care from where it came..
+		desadvLine.setQtyDeliveredInStockingUOM(new BigDecimal("2")); // initial quantity in stock-UOM..we don't care from where it came..
+		desadvLine.setInvoicableQtyBasedOn(X_EDI_DesadvLine.INVOICABLEQTYBASEDON_CatchWeight); // the code should fall back to "nominal" if the respecive inOutLine doesn't have catch weight data.
 		saveRecord(desadvLine);
 
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
@@ -182,7 +184,7 @@ class DesadvBLTest_addInOutLine
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(desadvLine.getEDI_DesadvLine_ID());
-		assertThat(desadvLine.getMovementQty()).isEqualByComparingTo("86");
+		assertThat(desadvLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("86");
 		assertThat(inOutLineRecord.getQtyEntered()).isEqualByComparingTo("42"); // guard
 
 		final List<I_EDI_DesadvLine_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
@@ -214,7 +216,7 @@ class DesadvBLTest_addInOutLine
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(desadvLine.getEDI_DesadvLine_ID());
-		assertThat(desadvLine.getMovementQty()).isEqualByComparingTo("86"); // the initial 2 plus the inoutLineRecord's 84
+		assertThat(desadvLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("86"); // the initial 2 plus the inoutLineRecord's 84
 
 		final List<I_EDI_DesadvLine_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
 		assertThat(ssccRecords)
@@ -235,7 +237,7 @@ class DesadvBLTest_addInOutLine
 
 		final I_EDI_DesadvLine resultDesadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(resultDesadvLine.getEDI_DesadvLine_ID());
-		assertThat(resultDesadvLine.getMovementQty()).isEqualByComparingTo("86");
+		assertThat(resultDesadvLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("86");
 
 		final List<I_EDI_DesadvLine_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
 		assertThat(packRecords)

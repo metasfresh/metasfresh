@@ -133,8 +133,7 @@ public interface I_EDI_cctop_000_v
     public static final String COLUMNNAME_EDI_cctop_000_v_ID = "EDI_cctop_000_v_ID";
 
 	/**
-	 * Set EDI-ID des Dateiempfängers.
-	 * EDI-ID des Dateiempfängers
+	 * Set EDI-ID des DESADV-Empfängers.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -143,8 +142,7 @@ public interface I_EDI_cctop_000_v
 	public void setEdiRecipientGLN (java.lang.String EdiRecipientGLN);
 
 	/**
-	 * Get EDI-ID des Dateiempfängers.
-	 * EDI-ID des Dateiempfängers
+	 * Get EDI-ID des DESADV-Empfängers.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

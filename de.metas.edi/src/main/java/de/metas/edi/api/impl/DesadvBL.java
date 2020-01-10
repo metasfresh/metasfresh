@@ -2,6 +2,7 @@ package de.metas.edi.api.impl;
 
 import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -39,6 +40,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -84,6 +86,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
@@ -184,13 +187,17 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setEDI_Desadv(desadv);
 		newDesadvLine.setLine(orderLine.getLine());
 
+		// we'll need this when inoutLines are added, because then we need to add either hte nominal quantity or the catch-quantity
+		newDesadvLine.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
+
 		newDesadvLine.setQtyEntered(orderLine.getQtyEntered());
+		newDesadvLine.setQtyDeliveredInUOM(ZERO);
 		newDesadvLine.setC_UOM_ID(orderLine.getC_UOM_ID());
 
 		newDesadvLine.setPriceActual(orderLine.getPriceActual());
 
 		newDesadvLine.setQtyOrdered(orderLine.getQtyOrdered());
-		newDesadvLine.setMovementQty(BigDecimal.ZERO);
+		newDesadvLine.setQtyDeliveredInStockingUOM(ZERO);
 		newDesadvLine.setM_Product_ID(productId.getRepoId());
 
 		newDesadvLine.setProductDescription(orderLine.getProductDescription());
@@ -266,7 +273,9 @@ public class DesadvBL implements IDesadvBL
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
 	{
-		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
+		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
+				order.getPOReference(),
+				InterfaceWrapperHelper.getContextAware(order));
 		if (desadv == null)
 		{
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
@@ -339,7 +348,8 @@ public class DesadvBL implements IDesadvBL
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
 
-		StockQtyAndUOMQty remainingQtyToAdd = extractInitialQuantityToAdd(inOutLineRecord);
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
+		StockQtyAndUOMQty remainingQtyToAdd = extractInitialQuantityToAdd(inOutLineRecord, invoicableQtyBasedOn);
 
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
@@ -354,24 +364,33 @@ public class DesadvBL implements IDesadvBL
 			addPackToLineUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd);
 		}
 
-		final BigDecimal newMovementQty = desadvLineRecord.getMovementQty().add(inOutLineRecord.getMovementQty());
-		desadvLineRecord.setMovementQty(newMovementQty);
+		addOrSubtractInOutLineQtys(desadvLineRecord, inOutLineRecord, true/* add */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
 	}
 
-	private StockQtyAndUOMQty extractInitialQuantityToAdd(@NonNull final I_M_InOutLine inOutLineRecord)
+	private StockQtyAndUOMQty extractInitialQuantityToAdd(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
-		final StockQtyAndUOMQty stockQtyAndCatchQty = inOutBL.getStockQtyAndCatchQty(inOutLineRecord);
-		if (stockQtyAndCatchQty.getUOMQtyOpt().isPresent())
+		switch (invoicableQtyBasedOn)
 		{
-			return stockQtyAndCatchQty;
-		}
+			case CatchWeight:
+				final StockQtyAndUOMQty stockQtyAndCatchQty = inOutBL.getStockQtyAndCatchQty(inOutLineRecord);
+				if (stockQtyAndCatchQty.getUOMQtyOpt().isPresent())
+				{
+					return stockQtyAndCatchQty;
+				}
 
-		// fallback if the given iol simply doesn't have a catch weight (which is a common case)
-		return inOutBL.getStockQtyAndQtyInUOM(inOutLineRecord);
+				// fallback if the given iol simply doesn't have a catch weight (which is a common case)
+				return inOutBL.getStockQtyAndQtyInUOM(inOutLineRecord);
+			case NominalWeight:
+				return inOutBL.getStockQtyAndQtyInUOM(inOutLineRecord);
+			default:
+				throw new AdempiereException("Unsupported invoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
 	}
 
 	private void addPackToLineUsingJustInOutLine(
@@ -650,12 +669,42 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
-		final BigDecimal newDesavLineQty = desadvLine.getMovementQty().subtract(inOutLineRecord.getMovementQty());
-		desadvLine.setMovementQty(newDesavLineQty);
+
+		addOrSubtractInOutLineQtys(desadvLine, inOutLineRecord, false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLine);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(0);
 		InterfaceWrapperHelper.save(inOutLineRecord);
+	}
+
+	private void addOrSubtractInOutLineQtys(
+			final I_EDI_DesadvLine desadvLineRecord,
+			final I_M_InOutLine inOutLineRecord,
+			final boolean add)
+	{
+		final BigDecimal movementQtyEff;
+		final BigDecimal qtyEnteredEff;
+		if (add)
+		{
+			movementQtyEff = inOutLineRecord.getMovementQty();
+			qtyEnteredEff = inOutLineRecord.getQtyEntered();
+		}
+		else
+		{
+			movementQtyEff = inOutLineRecord.getMovementQty().negate();
+			qtyEnteredEff = inOutLineRecord.getQtyEntered().negate();
+		}
+
+		final BigDecimal newMovementQty = desadvLineRecord.getQtyDeliveredInStockingUOM().add(movementQtyEff);
+		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
+
+		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
+		final Quantity inoutLineQtyDelivered = Quantitys.create(qtyEnteredEff, UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
+
+		final BigDecimal newQtyDeliveredInUOM = Quantitys
+				.add(UOMConversionContext.of(desadvLineRecord.getM_Product_ID()), desadvLineQtyDelivered, inoutLineQtyDelivered)
+				.toBigDecimal();
+		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM);
 	}
 
 	/**

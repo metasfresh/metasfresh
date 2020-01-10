@@ -125,7 +125,16 @@ public class HU
 				.clearChildHUs()
 				.productQtyInStockUOM(productId, quantity);
 
-		Quantity newWeightNet = weightNet.isPresent() ? weightNet.get().toZero() : null;
+		Quantity newWeightNet;
+		if (getChildHUs().isEmpty())
+		{
+			newWeightNet = weightNet.isPresent() ? weightNet.get() : null;
+		}
+		else
+		{
+			// we will sum it up from our childrens' weights
+			newWeightNet = weightNet.isPresent() ? weightNet.get().toZero() : null;
+		}
 
 		for (final HU child : getChildHUs())
 		{
