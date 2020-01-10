@@ -133,7 +133,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 	@Override
 	protected Iterable<I_C_BPartner> getBPartners()
 	{
-		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class, getCtx(), ITrx.TRXNAME_ThreadInherited);

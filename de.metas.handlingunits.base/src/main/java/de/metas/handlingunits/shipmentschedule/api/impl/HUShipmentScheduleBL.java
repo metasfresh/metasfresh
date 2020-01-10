@@ -141,7 +141,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, false);
+		final boolean anonymousHuPickedOnTheFly = false;
+		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, anonymousHuPickedOnTheFly);
 	}
 
 	@Override
@@ -163,10 +164,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		// Create ShipmentSchedule Qty Picked record
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
-				schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
+		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
 
 		// mark this as an 'anonymousOnTheFly` pick
-		schedQtyPicked.setisAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
+		schedQtyPicked.setIsAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
@@ -670,28 +671,31 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			return;
 		}
+		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 
 		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse);
-		updateTuQuantitiesFromOrderLine(shipmentScheduleToUse);
+		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
+		updateTuQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
 	}
 
 	private void updatePackingInstructionsFromOrderLine(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 
 		final I_M_HU_PI_Item_Product hupip = orderLine.getM_HU_PI_Item_Product();
 		final I_M_HU_PI_Item_Product piItemProduct_Effective = hupip;
 
 		shipmentSchedule.setM_HU_PI_Item_Product_Calculated(piItemProduct_Effective);
 		shipmentSchedule.setM_HU_PI_Item_Product(piItemProduct_Effective);
+		shipmentSchedule.setPackDescription(orderLine.getPackDescription());
 	}
 
-	private void updateTuQuantitiesFromOrderLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private void updateTuQuantitiesFromOrderLine(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 		final BigDecimal qtyTU_Effective = orderLine.getQtyEnteredTU();
 
 		shipmentSchedule.setQtyTU_Calculated(qtyTU_Effective);
