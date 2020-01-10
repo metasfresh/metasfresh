@@ -104,6 +104,7 @@ import de.metas.tourplanning.model.TourId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -183,7 +184,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	@Override
 	public int updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleUpdater - Invoked with ShipmentScheduleUpdateInvalidRequest={}", request);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+		loggable.addLog("ShipmentScheduleUpdater - Invoked with ShipmentScheduleUpdateInvalidRequest={}", request);
 
 		final PInstanceId selectionId = request.getSelectionId();
 
@@ -202,11 +204,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentScheduleHandlerBL.createMissingCandidates(request.getCtx());
 				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
 
-				Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleUpdater - created {} missing candidates", shipmentSchedulesNewIds.size());
+				loggable.addLog("ShipmentScheduleUpdater - created {} missing candidates", shipmentSchedulesNewIds.size());
 			}
 
 			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
+			loggable.addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
 
