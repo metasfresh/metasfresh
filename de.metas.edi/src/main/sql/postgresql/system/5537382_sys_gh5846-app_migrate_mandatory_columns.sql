@@ -40,7 +40,8 @@ from EDI_DesadvLine_Pack elp
     join EDI_Desadv e ON e.EDI_Desadv_ID=elp.EDI_Desadv_ID
         left join M_InOut io ON io.POReference=e.POReference 
             left join M_InOutLine iol_via_ref ON iol_via_ref.M_InOut_ID=io.M_InOut_ID AND iol_via_ref.Line=el.Line
---where elp.M_InOutLine_ID IS NULL;
+--where elp.M_InOutLine_ID IS NULL
+;
 
 /* this delete would not remove all records with missing iol-references
 DELETE FROM EDI_DesadvLine_Pack p
