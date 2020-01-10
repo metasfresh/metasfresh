@@ -15,7 +15,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1629250795L;
+	private static final long serialVersionUID = -1301986809L;
 
     /** Standard Constructor */
     public X_M_InOut (Properties ctx, int M_InOut_ID, String trxName)
@@ -42,9 +42,9 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 			setIsSOTrx (false); // @IsSOTrx@
 			setIsUseBPartnerAddress (false); // N
 			setM_InOut_ID (0);
+			setM_Warehouse_ID (0);
 			setMovementDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setMovementType (null);
-			setM_Warehouse_ID (0);
 			setPosted (false); // N
 			setPriorityRule (null); // 5
 			setProcessed (false);
@@ -270,40 +270,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Customs_Invoice getC_Customs_Invoice()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Customs_Invoice_ID, org.compiere.model.I_C_Customs_Invoice.class);
-	}
-
-	@Override
-	public void setC_Customs_Invoice(org.compiere.model.I_C_Customs_Invoice C_Customs_Invoice)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Customs_Invoice_ID, org.compiere.model.I_C_Customs_Invoice.class, C_Customs_Invoice);
-	}
-
-	/** Set Zollrechnung.
-		@param C_Customs_Invoice_ID Zollrechnung	  */
-	@Override
-	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID)
-	{
-		if (C_Customs_Invoice_ID < 1) 
-			set_Value (COLUMNNAME_C_Customs_Invoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Customs_Invoice_ID, Integer.valueOf(C_Customs_Invoice_ID));
-	}
-
-	/** Get Zollrechnung.
-		@return Zollrechnung	  */
-	@Override
-	public int getC_Customs_Invoice_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customs_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
@@ -327,25 +293,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
-	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	@Override
@@ -445,6 +392,25 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
+	@Override
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Gebühr.
+		@return Gebühr	  */
+	@Override
+	public java.math.BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Create Confirm.
@@ -1285,74 +1251,6 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return ii.intValue();
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public java.sql.Timestamp getMovementDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
-	}
-
-	/** 
-	 * MovementType AD_Reference_ID=189
-	 * Reference name: M_Transaction Movement Type
-	 */
-	public static final int MOVEMENTTYPE_AD_Reference_ID=189;
-	/** CustomerShipment = C- */
-	public static final String MOVEMENTTYPE_CustomerShipment = "C-";
-	/** CustomerReturns = C+ */
-	public static final String MOVEMENTTYPE_CustomerReturns = "C+";
-	/** VendorReceipts = V+ */
-	public static final String MOVEMENTTYPE_VendorReceipts = "V+";
-	/** VendorReturns = V- */
-	public static final String MOVEMENTTYPE_VendorReturns = "V-";
-	/** InventoryOut = I- */
-	public static final String MOVEMENTTYPE_InventoryOut = "I-";
-	/** InventoryIn = I+ */
-	public static final String MOVEMENTTYPE_InventoryIn = "I+";
-	/** MovementFrom = M- */
-	public static final String MOVEMENTTYPE_MovementFrom = "M-";
-	/** MovementTo = M+ */
-	public static final String MOVEMENTTYPE_MovementTo = "M+";
-	/** ProductionPlus = P+ */
-	public static final String MOVEMENTTYPE_ProductionPlus = "P+";
-	/** ProductionMinus = P- */
-	public static final String MOVEMENTTYPE_ProductionMinus = "P-";
-	/** WorkOrderPlus = W+ */
-	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
-	/** WorkOrderMinus = W- */
-	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
-	/** Set Bewegungs-Art.
-		@param MovementType 
-		Method of moving the inventory
-	  */
-	@Override
-	public void setMovementType (java.lang.String MovementType)
-	{
-
-		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
-	}
-
-	/** Get Bewegungs-Art.
-		@return Method of moving the inventory
-	  */
-	@Override
-	public java.lang.String getMovementType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MovementType);
-	}
-
 	@Override
 	public org.compiere.model.I_M_RMA getM_RMA()
 	{
@@ -1474,6 +1372,74 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return ii.intValue();
 	}
 
+	/** Set Bewegungsdatum.
+		@param MovementDate 
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public void setMovementDate (java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public java.sql.Timestamp getMovementDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+	}
+
+	/** 
+	 * MovementType AD_Reference_ID=189
+	 * Reference name: M_Transaction Movement Type
+	 */
+	public static final int MOVEMENTTYPE_AD_Reference_ID=189;
+	/** CustomerShipment = C- */
+	public static final String MOVEMENTTYPE_CustomerShipment = "C-";
+	/** CustomerReturns = C+ */
+	public static final String MOVEMENTTYPE_CustomerReturns = "C+";
+	/** VendorReceipts = V+ */
+	public static final String MOVEMENTTYPE_VendorReceipts = "V+";
+	/** VendorReturns = V- */
+	public static final String MOVEMENTTYPE_VendorReturns = "V-";
+	/** InventoryOut = I- */
+	public static final String MOVEMENTTYPE_InventoryOut = "I-";
+	/** InventoryIn = I+ */
+	public static final String MOVEMENTTYPE_InventoryIn = "I+";
+	/** MovementFrom = M- */
+	public static final String MOVEMENTTYPE_MovementFrom = "M-";
+	/** MovementTo = M+ */
+	public static final String MOVEMENTTYPE_MovementTo = "M+";
+	/** ProductionPlus = P+ */
+	public static final String MOVEMENTTYPE_ProductionPlus = "P+";
+	/** ProductionMinus = P- */
+	public static final String MOVEMENTTYPE_ProductionMinus = "P-";
+	/** WorkOrderPlus = W+ */
+	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
+	/** WorkOrderMinus = W- */
+	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
+	/** Set Bewegungs-Art.
+		@param MovementType 
+		Method of moving the inventory
+	  */
+	@Override
+	public void setMovementType (java.lang.String MovementType)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
+	}
+
+	/** Get Bewegungs-Art.
+		@return Method of moving the inventory
+	  */
+	@Override
+	public java.lang.String getMovementType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MovementType);
+	}
+
 	/** Set Kommissionierdatum.
 		@param PickDate 
 		Datum/Zeit der Kommissionierung für die Lieferung
@@ -1512,9 +1478,9 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set Verbucht.
+	/** Set Buchungsstatus.
 		@param Posted 
-		Posting status
+		Buchungsstatus
 	  */
 	@Override
 	public void setPosted (boolean Posted)
@@ -1522,8 +1488,8 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
 	}
 
-	/** Get Verbucht.
-		@return Posting status
+	/** Get Buchungsstatus.
+		@return Buchungsstatus
 	  */
 	@Override
 	public boolean isPosted () 
@@ -1575,7 +1541,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1584,7 +1550,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

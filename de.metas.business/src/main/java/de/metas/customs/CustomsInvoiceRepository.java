@@ -382,4 +382,6 @@ public class CustomsInvoiceRepository
 		return CustomsInvoiceLineId.ofRepoId(record.getC_Customs_Invoice_ID(), record.getC_Customs_Invoice_Line_ID());
 	}
 
+
+
 }

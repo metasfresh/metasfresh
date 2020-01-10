@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 651513871L;
+	private static final long serialVersionUID = 470190836L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -173,22 +173,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getCustomerLabelName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
-	}
-
-	/** Set Zolltarifnummer.
-		@param CustomsTariff Zolltarifnummer	  */
-	@Override
-	public void setCustomsTariff (java.lang.String CustomsTariff)
-	{
-		set_Value (COLUMNNAME_CustomsTariff, CustomsTariff);
-	}
-
-	/** Get Zolltarifnummer.
-		@return Zolltarifnummer	  */
-	@Override
-	public java.lang.String getCustomsTariff () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CustomsTariff);
 	}
 
 	/** Set Beschreibung.
