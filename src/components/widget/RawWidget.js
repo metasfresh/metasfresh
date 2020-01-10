@@ -604,36 +604,37 @@ export class RawWidget extends PureComponent {
           <Lookup
             {...{
               attribute,
+              filter,
+              entity,
+              windowType,
+              widgetData,
+              readonly,
+              isModal,
+              updated,
+              filterWidget,
+              subentity,
+              subentityId,
+              dataId,
+              filterId,
+              tabId,
+              rowId,
+              viewId,
+              autoFocus,
+              initialFocus,
+              tabIndex,
             }}
-            filter={filter}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            dataId={dataId}
+            dispatch={this.props.dispatch}
             properties={fields}
-            windowType={windowType}
-            widgetData={widgetData}
             placeholder={
               this.props.emptyText
                 ? this.props.emptyText
                 : this.props.fields[0].emptyText
             }
-            readonly={readonly}
             mandatory={widgetData[0].mandatory}
             rank={type}
             align={gridAlign}
-            isModal={isModal}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
             parameterName={fields[0].parameterName}
             selected={widgetValue}
-            tabId={tabId}
-            rowId={rowId}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            initialFocus={initialFocus}
             forceFullWidth={this.props.forceFullWidth}
             forceHeight={this.props.forceHeight}
             validStatus={widgetData[0].validStatus}

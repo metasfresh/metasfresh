@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -543,6 +542,7 @@ export class RawLookup extends PureComponent {
 }
 
 RawLookup.propTypes = {
+  item: PropTypes.object,
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
@@ -551,6 +551,8 @@ RawLookup.propTypes = {
   onDropdownListToggle: PropTypes.func,
   isComposed: PropTypes.bool,
   field: PropTypes.string,
+  readonly: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
-export default connect()(RawLookup);
+export default RawLookup;

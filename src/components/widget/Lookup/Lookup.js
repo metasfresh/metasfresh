@@ -421,10 +421,8 @@ class Lookup extends PureComponent {
 
               return (
                 <RawLookup
-                  filter={filter}
+                  dispatch={this.props.dispatch}
                   key={index}
-                  idValue={idValue}
-                  defaultValue={defaultValue}
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
                   mainProperty={item}
@@ -433,7 +431,6 @@ class Lookup extends PureComponent {
                   resetLocalClearing={this.resetLocalClearing}
                   setNextProperty={this.setNextProperty}
                   lookupEmpty={isInputEmpty}
-                  fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={
                     index === 0 && this.handleInputEmptyStatus
                   }
@@ -441,11 +438,15 @@ class Lookup extends PureComponent {
                   isOpen={lookupWidget.dropdownOpen}
                   onDropdownListToggle={this.dropdownListToggle}
                   forcedWidth={width}
-                  forceHeight={forceHeight}
                   parentElement={forceFullWidth && this.dropdown}
                   isComposed={this.props.properties.length > 1 ? true : false}
                   {...{
                     field,
+                    filter,
+                    idValue,
+                    defaultValue,
+                    fireDropdownList,
+                    forceHeight,
                     placeholder,
                     tabIndex,
                     windowType,
@@ -558,6 +559,7 @@ Lookup.propTypes = {
   defaultValue: PropTypes.any,
   selected: PropTypes.any,
   mandatory: PropTypes.bool,
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default BarcodeScanner(onClickOutside(Lookup));
