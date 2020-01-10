@@ -526,10 +526,12 @@ public class CustomsInvoiceService
 
 	private void setIsExportedShipmentToCustomsInvoiceLine(@NonNull final CustomsInvoiceLine customsInvoiceLine)
 	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
 		customsInvoiceLine.getAllocations()
 				.stream()
 				.map(alloc -> alloc.getInoutAndLineId().getInOutId())
-				.forEach(customsInvoiceRepo::setExportedInCustomsInvoice);
+				.forEach(shipment -> inOutDAO.setExportedInCustomsInvoice(shipment));
 	}
 
 	private CustomsInvoiceLine allocateShipmentLine(

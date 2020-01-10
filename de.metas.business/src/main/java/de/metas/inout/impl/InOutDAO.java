@@ -2,6 +2,7 @@ package de.metas.inout.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -327,5 +328,18 @@ public class InOutDAO implements IInOutDAO
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
 	{
 		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
+	}
+
+	@Override
+	public void setExportedInCustomsInvoice(final InOutId shipmentId)
+	{
+		final I_M_InOut shipment = getById(shipmentId, I_M_InOut.class);
+
+		if (!shipment.isExportedToCustomsInvoice())
+		{
+			shipment.setIsExportedToCustomsInvoice(true);
+
+			saveRecord(shipment);
+		}
 	}
 }
