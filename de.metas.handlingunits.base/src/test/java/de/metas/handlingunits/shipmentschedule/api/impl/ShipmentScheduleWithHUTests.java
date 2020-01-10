@@ -90,7 +90,7 @@ public class ShipmentScheduleWithHUTests
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
-		ninetyNineNoCatch = StockQtyAndUOMQtys.create(new BigDecimal("99"), productId, null, null);
+		ninetyNineNoCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("99"), productId);
 	}
 
 	@Test
