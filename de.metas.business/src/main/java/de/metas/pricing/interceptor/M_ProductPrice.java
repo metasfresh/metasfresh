@@ -57,7 +57,7 @@ public class M_ProductPrice
 		ProductPrices.assertMainProductPriceIsNotDuplicate(productPrice);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID, I_M_ProductPrice.COLUMNNAME_IsInvalidPrice, I_M_ProductPrice.COLUMNNAME_IsActive })
 	public void assertUomConversionExists(@NonNull final I_M_ProductPrice productPrice)
 	{
 		ProductPrices.assertUomConversionExists(productPrice);
