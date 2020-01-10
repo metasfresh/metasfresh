@@ -431,7 +431,7 @@ public class StepComXMLDesadvBean
 				final String packagingCodeLU;
 				if (!settings.isDesadvLinePackagingCodeLURequired())
 				{
-					// if packagincCodes are not needed, then some add them, to avoid having different keys that we don't actually care for
+					// Even if packagincCodes are not of interest, then still add "something", to avoid having different keys that we don't actually care for
 					packagingCodeLU = "NONE";
 				}
 				else
