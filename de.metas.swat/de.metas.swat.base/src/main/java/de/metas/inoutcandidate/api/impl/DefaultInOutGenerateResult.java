@@ -30,12 +30,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 
-final class DefaultInOutGenerateResult implements InOutGenerateResult
+@VisibleForTesting
+public final class DefaultInOutGenerateResult implements InOutGenerateResult
 {
 	private final boolean storeInOuts;
 	private int inoutCount = 0;
