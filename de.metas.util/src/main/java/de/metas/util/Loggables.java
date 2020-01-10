@@ -58,6 +58,11 @@ public final class Loggables
 		return loggable != null ? loggable : logback(logger, logLevel);
 	}
 
+	public static ILoggable console()
+	{
+		return ConsoleLoggable.instance;
+	}
+
 	public static ILoggable logback(final Logger logger, final Level logLevel)
 	{
 		return new LogbackLoggable(logger, logLevel);

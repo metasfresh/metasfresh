@@ -61,6 +61,7 @@ import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
@@ -183,6 +184,7 @@ public class AdempiereTestHelper
 
 		// Logging
 		LogManager.setLevel(Level.WARN);
+		Loggables.temporarySetLoggable(Loggables.nop());
 
 		// JSON
 		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
