@@ -16,19 +16,13 @@ export function getData(
   viewId
 ) {
   return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      docType +
-      (viewId ? '/' + viewId : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      (isAdvanced ? '?advanced=true' : '') +
-      (orderBy ? '?orderBy=' + orderBy : '')
+    `${config.API_URL}/${entity}/${docType}${viewId ? `/${viewId}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
+      subentity ? `/${subentity}` : ''
+    }${subentityId ? `/${subentityId}` : ''}/${
+      isAdvanced ? `?advanced=true` : ''
+    }${orderBy ? `?orderBy=${orderBy}` : ''}`
   );
 }
 
