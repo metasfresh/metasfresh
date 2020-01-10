@@ -115,6 +115,7 @@ public class CustomsInvoiceService
 		final CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
 
 		customsInvoiceRepo.save(customsInvoice);
+
 		return customsInvoice;
 	}
 
@@ -343,7 +344,10 @@ public class CustomsInvoiceService
 		return customsInvoiceRepo.retrieveCustomsInvoiceDocTypeId();
 	}
 
-	public CustomsInvoice generateNewCustomsInvoice(final BPartnerLocationId bpartnerLocationId, UserId contactId, IQueryFilter<I_M_InOut> queryFilter)
+	public CustomsInvoice generateNewCustomsInvoice(
+			final BPartnerLocationId bpartnerLocationId,
+			final UserId contactId,
+			final IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
@@ -392,6 +396,8 @@ public class CustomsInvoiceService
 				.build();
 
 		final CustomsInvoice customsInvoice = generateCustomsInvoice(customsInvoiceRequest);
+
+		setIsExportedShipmentToCustomsInvoice(customsInvoice);
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
 				.notifyGenerated(customsInvoice);
@@ -445,6 +451,10 @@ public class CustomsInvoiceService
 		linesToExportMap.keySet()
 				.stream()
 				.forEach(productId -> addShipmentLinesToCustomsInvoice(productId, linesToExportMap.get(productId), customsInvoiceId));
+
+		final CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
+
+		setIsExportedShipmentToCustomsInvoice(customsInvoice);
 
 	}
 
@@ -503,6 +513,25 @@ public class CustomsInvoiceService
 		customsInvoice.updateLineNos();
 
 		customsInvoiceRepo.save(customsInvoice);
+	}
+
+	private void setIsExportedShipmentToCustomsInvoice(@NonNull final CustomsInvoice customsInvoice)
+	{
+		customsInvoice
+				.getLines()
+				.stream()
+				.forEach(line -> setIsExportedShipmentToCustomsInvoiceLine(line));
+
+	}
+
+	private void setIsExportedShipmentToCustomsInvoiceLine(@NonNull final CustomsInvoiceLine customsInvoiceLine)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		customsInvoiceLine.getAllocations()
+				.stream()
+				.map(alloc -> alloc.getInoutAndLineId().getInOutId())
+				.forEach(shipment -> inOutDAO.setExportedInCustomsInvoice(shipment));
 	}
 
 	private CustomsInvoiceLine allocateShipmentLine(
