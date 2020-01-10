@@ -101,6 +101,7 @@ export default class DocumentListContextShortcuts extends PureComponent {
   }
 }
 
+// @TODO: Wee need to fix typing as tabId is sometimes number, other times a string
 DocumentListContextShortcuts.propTypes = {
   handleIndent: PropTypes.func,
   getAllLeafs: PropTypes.func,
@@ -109,5 +110,5 @@ DocumentListContextShortcuts.propTypes = {
   handleAdvancedEdit: PropTypes.func,
   selected: PropTypes.any,
   windowId: PropTypes.string,
-  tabId: PropTypes.string,
+  tabId: PropTypes.any,
 };
