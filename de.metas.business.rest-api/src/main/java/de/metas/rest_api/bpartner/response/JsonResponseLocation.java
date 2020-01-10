@@ -43,6 +43,7 @@ public class JsonResponseLocation
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String NAME = "name";
+	public static final String BPARTNERNAME = "bpartnerName";
 	public static final String ADDRESS_1 = "address1";
 	public static final String ADDRESS_2 = "address2";
 	public static final String ADDRESS_3 = "address3";
@@ -75,6 +76,9 @@ public class JsonResponseLocation
 
 	@ApiModelProperty(allowEmptyValue = false)
 	String name;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String address1;
@@ -128,6 +132,7 @@ public class JsonResponseLocation
 			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(NAME) @Nullable final String name,
+			@JsonProperty(BPARTNERNAME) @Nullable final String bpartnerName,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(ADDRESS_1) @Nullable final String address1,
 			@JsonProperty(ADDRESS_2) @Nullable final String address2,
@@ -154,6 +159,8 @@ public class JsonResponseLocation
 		this.active = active;
 
 		this.name = name;
+
+		this.bpartnerName = bpartnerName;
 
 		this.address1 = address1;
 		this.address2 = address2;

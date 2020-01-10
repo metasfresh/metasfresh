@@ -1,17 +1,16 @@
 package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -55,6 +54,9 @@ public class JsonRequestLocation
 
 	@JsonInclude(Include.NON_EMPTY)
 	String name;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String address1;
@@ -132,6 +134,7 @@ public class JsonRequestLocation
 			@JsonProperty("gln") @Nullable final String gln,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("name") @Nullable final String name,
+			@JsonProperty("bpartnerName") @Nullable final String bpartnerName,
 			@JsonProperty("active") @Nullable final Boolean active,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
@@ -153,6 +156,8 @@ public class JsonRequestLocation
 		this.externalId = externalId;
 
 		this.name = name;
+
+		this.bpartnerName = bpartnerName;
 
 		this.active = active;
 

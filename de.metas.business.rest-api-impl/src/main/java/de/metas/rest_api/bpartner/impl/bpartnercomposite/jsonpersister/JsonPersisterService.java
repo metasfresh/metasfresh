@@ -1049,6 +1049,16 @@ public class JsonPersisterService
 			location.setName(null);
 		}
 
+		// bpartnerName
+		if (!isEmpty(jsonBPartnerLocation.getBpartnerName(), true))
+		{
+			location.setBpartnerName(jsonBPartnerLocation.getBpartnerName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			location.setBpartnerName(null);
+		}
+
 		// address1
 		if (!isEmpty(jsonBPartnerLocation.getAddress1(), true))
 		{

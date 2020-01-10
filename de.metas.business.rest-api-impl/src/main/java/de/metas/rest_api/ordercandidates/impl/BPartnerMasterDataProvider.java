@@ -594,6 +594,8 @@ final class BPartnerMasterDataProvider
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
 
+		bpLocationRecord.setBPartnerName(from.getBpartnerName());
+
 		bpLocationRecord.setGLN(from.getGln());
 		if (from.getExternalId() != null)
 		{
@@ -655,6 +657,7 @@ final class BPartnerMasterDataProvider
 				.city(location.getCity())
 				.region(location.getRegionName())
 				.countryCode(countryCode)
+				.bpartnerName(record.getBPartnerName())
 				//
 				.active(record.isActive())
 				//
