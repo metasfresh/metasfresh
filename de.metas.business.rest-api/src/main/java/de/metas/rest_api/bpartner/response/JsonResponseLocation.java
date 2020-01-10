@@ -62,10 +62,10 @@ public class JsonResponseLocation
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 
-	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Integer")
+	@ApiModelProperty(dataType = "java.lang.Integer")
 	MetasfreshId metasfreshId;
 
-	@ApiModelProperty(allowEmptyValue = true, //
+	@ApiModelProperty(
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
@@ -74,10 +74,10 @@ public class JsonResponseLocation
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean active;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
 	String name;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
 	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)

@@ -48,13 +48,15 @@ public class JsonRequestLocation
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	JsonExternalId externalId;
 
-	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new location is created), then `true` is assumed")
+	@ApiModelProperty("If not specified but required (e.g. because a new location is created), then `true` is assumed")
 	@JsonInclude(Include.NON_NULL)
 	Boolean active;
 
+	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
 	@JsonInclude(Include.NON_EMPTY)
 	String name;
 
+	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
 	@JsonInclude(Include.NON_EMPTY)
 	String bpartnerName;
 
@@ -73,12 +75,11 @@ public class JsonRequestLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String poBox;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
-					+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
-					+ "* countryCode\n"
-					+ "* city\n"
-					+ "* region\n")
+	@ApiModelProperty("If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
+			+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
+			+ "* countryCode\n"
+			+ "* city\n"
+			+ "* region\n")
 	@JsonInclude(Include.NON_EMPTY)
 	String postal;
 

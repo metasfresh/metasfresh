@@ -534,7 +534,9 @@ final class BPartnerMasterDataProvider
 				.build();
 	}
 
-	private BPartnerLocationId getCreateBPartnerLocationId(@Nullable final JsonRequestLocation json, @NonNull final BPartnerMasterDataContext context)
+	private BPartnerLocationId getCreateBPartnerLocationId(
+			@Nullable final JsonRequestLocation json,
+			@NonNull final BPartnerMasterDataContext context)
 	{
 		if (json == null)
 		{
@@ -569,7 +571,7 @@ final class BPartnerMasterDataProvider
 			bpLocationRecord.setAD_Org_ID(orgId.getRepoId());
 		}
 
-		updateBPartnerLocationRecord(bpLocationRecord, bpartnerId, jsonBPartnerLocation);
+		updateBPartnerLocationRecord(bpLocationRecord, context, jsonBPartnerLocation);
 		permissionService.assertCanCreateOrUpdate(bpLocationRecord);
 		bpartnerDAO.save(bpLocationRecord);
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
@@ -587,35 +589,55 @@ final class BPartnerMasterDataProvider
 
 	private void updateBPartnerLocationRecord(
 			@NonNull final I_C_BPartner_Location bpLocationRecord,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final JsonRequestLocation from)
+			@NonNull final BPartnerMasterDataContext context,
+			@NonNull final JsonRequestLocation jsonBPartnerLocation)
 	{
-		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpLocationRecord.setC_BPartner_ID(context.getBpartnerId().getRepoId());
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
 
-		bpLocationRecord.setBPartnerName(from.getBpartnerName());
+		final boolean isUpdateRemove = context.getSyncAdvise().getIfExists().isUpdateRemove();
 
-		bpLocationRecord.setGLN(from.getGln());
-		if (from.getExternalId() != null)
+		// name
+		if (!isEmpty(jsonBPartnerLocation.getName(), true))
 		{
-			bpLocationRecord.setExternalId(from.getExternalId().getValue());
+			bpLocationRecord.setName(jsonBPartnerLocation.getName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpLocationRecord.setName(null);
 		}
 
-		final String countryCode = from.getCountryCode();
+		// bpartnerName
+		if (!isEmpty(jsonBPartnerLocation.getBpartnerName(), true))
+		{
+			bpLocationRecord.setBPartnerName(jsonBPartnerLocation.getBpartnerName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpLocationRecord.setBPartnerName(null);
+		}
+
+		bpLocationRecord.setGLN(jsonBPartnerLocation.getGln());
+		if (jsonBPartnerLocation.getExternalId() != null)
+		{
+			bpLocationRecord.setExternalId(jsonBPartnerLocation.getExternalId().getValue());
+		}
+
+		final String countryCode = jsonBPartnerLocation.getCountryCode();
 		if (Check.isEmpty(countryCode))
 		{
-			throw new MissingPropertyException("JsonBPartnerLocation.countryCode", from);
+			throw new MissingPropertyException("JsonBPartnerLocation.countryCode", jsonBPartnerLocation);
 		}
 		final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 		final LocationId locationId = locationsRepo.createLocation(LocationCreateRequest.builder()
-				.address1(from.getAddress1())
-				.address2(from.getAddress2())
-				.address3(from.getAddress3())
-				.address4(from.getAddress4())
-				.postal(from.getPostal())
-				.city(from.getCity())
+				.address1(jsonBPartnerLocation.getAddress1())
+				.address2(jsonBPartnerLocation.getAddress2())
+				.address3(jsonBPartnerLocation.getAddress3())
+				.address4(jsonBPartnerLocation.getAddress4())
+				.postal(jsonBPartnerLocation.getPostal())
+				.city(jsonBPartnerLocation.getCity())
 				.countryId(countryId)
 				.build());
 
