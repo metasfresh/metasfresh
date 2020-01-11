@@ -2,6 +2,7 @@ package de.metas.ui.web.devtools;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -285,7 +286,7 @@ public class MigrationScriptRestController
 		{
 			lines.stream()
 					.map(s -> s + "\n")
-					.map(String::getBytes)
+					.map(s->s.getBytes(StandardCharsets.UTF_8))
 					.forEach(bytes -> {
 						try
 						{
