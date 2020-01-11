@@ -1,5 +1,8 @@
 package de.metas.edi.api.impl;
 
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_MovementQty;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,8 +14,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.*;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;

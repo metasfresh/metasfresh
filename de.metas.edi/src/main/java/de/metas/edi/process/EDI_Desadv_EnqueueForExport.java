@@ -62,8 +62,6 @@ import lombok.NonNull;
  */
 public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
-	private static final String MSG_DESADV_PerformEnqueuing = "DESADV_PerformEnqueuing";
-
 	private final List<I_EDI_Desadv> desadvsToSkip = new ArrayList<I_EDI_Desadv>();
 
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
