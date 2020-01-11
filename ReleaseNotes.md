@@ -19,6 +19,10 @@ Here come the actual release notes:
   * [#6007](https://github.com/metasfresh/metasfresh/issues/6007) UOM Conversion check in Product Prices
   * [#6024](https://github.com/metasfresh/metasfresh/issues/6024) Make sure shipto companyname is transferred to c_bpartner_location.bpartnername
 
+* edi
+  * [#6](https://github.com/metasfresh/metasfresh-edi/issues/6) STEPcom EDI - Convert between input charset and UTF-8
+  * [#7](https://github.com/metasfresh/metasfresh-edi/issues/7) STEPcom EDI - Support customizable output filename prefices
+
 ## Fixes
 * metasfresh
   * [#5931](https://github.com/metasfresh/metasfresh/issues/5931) ESR Import Hashvalue after double upload
