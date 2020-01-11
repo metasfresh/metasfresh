@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.ZonedDateTime;
@@ -17,7 +18,9 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -87,12 +90,19 @@ public class OrderLineRepository
 				.build();
 	}
 
-	private Money extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private ProductPrice extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
+		// note that C_OrderLine C_Currency_ID and M_Product_ID are mandatory, so there won't be an NPE
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLineRecord.getM_Product_ID());
+		final UomId effectivePriceUomId = UomId.ofRepoId(firstGreaterThanZero(orderLineRecord.getPrice_UOM_ID(), orderLineRecord.getC_UOM_ID()));
 
-		return Money.of(orderLineRecord.getPriceActual(), currencyId);
+		return ProductPrice
+				.builder()
+				.money(Money.of(orderLineRecord.getPriceActual(), currencyId))
+				.productId(productId)
+				.uomId(effectivePriceUomId)
+				.build();
 	}
 
 	private Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)

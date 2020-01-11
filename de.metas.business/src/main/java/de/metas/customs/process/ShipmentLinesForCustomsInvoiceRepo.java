@@ -124,17 +124,11 @@ public class ShipmentLinesForCustomsInvoiceRepo
 		}
 
 		final DocStatus shipmentDocStatus = DocStatus.ofCode(shipment.getDocStatus());
-		if(!shipmentDocStatus.isCompletedOrClosed())
-		{
-			return false;
-		}
-
-		if (shipment.isExportedToCustomsInvoice())
+		if (!shipmentDocStatus.isCompletedOrClosed())
 		{
 			return false;
 		}
 
 		return true;
 	}
-
 }

@@ -15,6 +15,10 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionsMap;
+import de.metas.uom.UomId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
@@ -62,6 +66,8 @@ import lombok.NonNull;
 
 public class ProductPrices
 {
+	private static final String MSG_NO_UOM_CONVERSION_AVAILABLE = "de.metas.pricing.service.product.MissingUOMConversion";
+
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> MATCHERS_MainProductPrice = new CopyOnWriteArrayList<>();
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
@@ -76,7 +82,7 @@ public class ProductPrices
 	/**
 	 * Convenient method to check if the main product price exists.
 	 *
-	 * @param plv price list version or null
+	 * @param plv       price list version or null
 	 * @param productId product (negative values are tolerated)
 	 * @return true if exists
 	 */
@@ -102,7 +108,7 @@ public class ProductPrices
 			return;
 		}
 
-		if(productPrice.isInvalidPrice())
+		if (productPrice.isInvalidPrice())
 		{
 			return;
 		}
@@ -122,6 +128,39 @@ public class ProductPrices
 		}
 
 		getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
+	}
+
+	public static void assertUomConversionExists(final I_M_ProductPrice productPrice)
+	{
+		if (productPrice == null || !productPrice.isActive())
+		{
+			return;
+		}
+
+		if (productPrice.isInvalidPrice())
+		{
+			return;
+		}
+
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final org.compiere.model.I_M_Product product = productDAO.getById(productPrice.getM_Product_ID());
+
+		if (UomId.ofRepoId(product.getC_UOM_ID()).equals(UomId.ofRepoId(productPrice.getC_UOM_ID())))
+		{
+			return;
+		}
+
+		final IUOMConversionDAO uomConversionRepo = Services.get(IUOMConversionDAO.class);
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+
+		UOMConversionsMap conversionsMap = uomConversionRepo.getProductConversions(productId);
+
+		if (!conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isPresent())
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NO_UOM_CONVERSION_AVAILABLE);
+			throw new AdempiereException(message).markAsUserValidationError();
+		}
 	}
 
 	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
@@ -254,7 +293,6 @@ public class ProductPrices
 			{
 				return productPrice;
 			}
-
 
 			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion, priceDate);
 		}

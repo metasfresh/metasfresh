@@ -210,29 +210,6 @@ public interface I_M_Product
     public static final String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
 
 	/**
-	 * Set Zolltarifnummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCustomsTariff (java.lang.String CustomsTariff);
-
-	/**
-	 * Get Zolltarifnummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCustomsTariff();
-
-    /** Column definition for CustomsTariff */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_CustomsTariff = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "CustomsTariff", null);
-    /** Column name CustomsTariff */
-    public static final String COLUMNNAME_CustomsTariff = "CustomsTariff";
-
-	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String

@@ -10,6 +10,27 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.133
+## Features
+* metasfresh
+  * [#5885](https://github.com/metasfresh/metasfresh/issues/5885) Tour dependent adjustments
+  * [#5896](https://github.com/metasfresh/metasfresh/issues/5896) SSCC label printing on Zebra printers
+  * [#5915](https://github.com/metasfresh/metasfresh/issues/5915) Support recording of weight also for TopLevel-CUs
+  * [#5922](https://github.com/metasfresh/metasfresh/issues/5922) Customer Order Excel in WebUI
+  * [#5929](https://github.com/metasfresh/metasfresh/issues/5929) Set by default metasfresh C_Element to IsNaturalAccount ='Y'
+  * [#5933](https://github.com/metasfresh/metasfresh/issues/5933) accounting: display Posted flag in ALL documents
+  * [#5958](https://github.com/metasfresh/metasfresh/pull/5958) SQL Process Excel Download: List all orderlines that could not be delivered although due
+  * [#5970](https://github.com/metasfresh/metasfresh/issues/5970) Process to update AD_User_Record_Access from BPartner Hierarchy
+  * [#5972](https://github.com/metasfresh/metasfresh/issues/5972) Set async connection pool size to 1
+
+## Fixes
+* metasfresh
+  * [#4879](https://github.com/metasfresh/metasfresh/issues/4870) Shipment schedule not updated when asi in orderline is updated
+  * [#5924](https://github.com/metasfresh/metasfresh/issues/5924) Accounting/ Costing Issues
+  * [#5947](https://github.com/metasfresh/metasfresh/issues/5947) DocActions displayed incorrectly
+  * [#5960](https://github.com/metasfresh/metasfresh/issues/5960) Shipmentschedule not updated after order reactivate and re-complete
+  * [#5962](https://github.com/metasfresh/metasfresh/issues/5962) Bug at material receipts with weight-unrelated products
+
 # metasfresh 5.132
 ## Features
 * metasfresh
