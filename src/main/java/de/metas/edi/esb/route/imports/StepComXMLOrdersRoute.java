@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.model.ProcessorDefinition;
 import org.springframework.stereotype.Component;
@@ -108,11 +109,12 @@ public class StepComXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Splitting XML document into individual C_OLCands...")
 				.split().method(StepComXMLOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
 
-					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
+					.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object -> XML document...")
 
 					.marshal(olCandsJaxbDataFormat)
 
-					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
+					.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
+					.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 					.to(Constants.EP_AMQP_TO_MF)
 				.end();
 		// @formatter:on

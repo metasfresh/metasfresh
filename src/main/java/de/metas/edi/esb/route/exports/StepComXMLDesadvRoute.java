@@ -23,12 +23,14 @@
 
 package de.metas.edi.esb.route.exports;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.context.annotation.PropertySource;
@@ -138,7 +140,8 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Marshalling metasfresh feedback XML Java Object -> XML...")
 				.marshal(jaxb)
 				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
-				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to(Constants.EP_AMQP_TO_MF);
 	}
 }
