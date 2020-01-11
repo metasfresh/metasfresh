@@ -73,6 +73,8 @@ public class StepComXMLOrdersRoute
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
 
+				.convertBodyTo(String.class, stepComCharsetName)
+
 				.setProperty(Exchange.CHARSET_NAME).constant(StandardCharsets.UTF_8.name())
 				.unmarshal(stepComDataFormat);
 

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
@@ -53,7 +54,7 @@ public class ReaderTypeConverter implements TypeConverters
 	@Converter
 	public Reader toReader(final InputStream is, final Exchange exchange) throws UnsupportedEncodingException
 	{
-		String charSetName = "UTF-8";
+		String charSetName = StandardCharsets.UTF_8.name();
 		if (exchange != null)
 		{
 			String exchangeCharsetName = exchange.getProperty(Exchange.CHARSET_NAME, String.class);
