@@ -17,6 +17,7 @@ Here come the actual release notes:
   * [#5987](https://github.com/metasfresh/metasfresh/issues/5987) Multiple Customs Invoices for the same Shipment
   * [#5992](https://github.com/metasfresh/metasfresh/issues/5992) Improve DESADV Packs window
   * [#6007](https://github.com/metasfresh/metasfresh/issues/6007) UOM Conversion check in Product Prices
+  * [#6024](https://github.com/metasfresh/metasfresh/issues/6024) Make sure shipto companyname is transferred to c_bpartner_location.bpartnername
 
 ## Fixes
 * metasfresh
