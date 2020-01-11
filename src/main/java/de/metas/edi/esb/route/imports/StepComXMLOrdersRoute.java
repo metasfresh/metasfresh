@@ -71,13 +71,9 @@ public class StepComXMLOrdersRoute
 		ProcessorDefinition<?> ediToXMLOrdersRoute = from(INPUT_ORDERS_LOCAL)
 				.routeId("STEPCOM-XML-Orders-To-MF-OLCand")
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
-
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
-				.setProperty(Exchange.CHARSET_NAME).constant(stepComCharsetName)
 
-				.convertBodyTo(String.class, StandardCharsets.UTF_8.name())
 				.setProperty(Exchange.CHARSET_NAME).constant(StandardCharsets.UTF_8.name())
-
 				.unmarshal(stepComDataFormat);
 
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
@@ -102,6 +98,7 @@ public class StepComXMLOrdersRoute
 				.setProperty(AbstractEDIRoute.EDI_ORDER_DELIVERY_VIA_RULE).constant(defaultDeliveryViaRule);
 
 		final JaxbDataFormat olCandsJaxbDataFormat = new JaxbDataFormat(Constants.JAXB_ContextPath);
+		olCandsJaxbDataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
 		// process the unmarshalled output
 		// @formatter:off
