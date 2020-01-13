@@ -1,6 +1,7 @@
 package de.metas.rest_api.data_import;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -74,7 +75,7 @@ public class DataImportRestController
 			@ApiParam("The text file you are importing") //
 			@RequestBody @NonNull final String content)
 	{
-		final Resource data = new ByteArrayResource(content.getBytes());
+		final Resource data = new ByteArrayResource(content.getBytes(StandardCharsets.UTF_8));
 		return importFile(dataImportConfigInternalName, completeDocuments, data);
 	}
 

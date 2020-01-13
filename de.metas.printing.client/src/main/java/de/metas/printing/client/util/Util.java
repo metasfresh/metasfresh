@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public final class Util
 {
@@ -152,7 +153,7 @@ public final class Util
 
 	public static String toString(final InputStream in)
 	{
-		return new String(toByteArray(in));
+		return new String(toByteArray(in), StandardCharsets.UTF_8);
 	}
 
 }

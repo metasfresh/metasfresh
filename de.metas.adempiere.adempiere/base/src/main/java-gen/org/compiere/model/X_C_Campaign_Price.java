@@ -15,7 +15,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -313348007L;
+	private static final long serialVersionUID = 132176614L;
 
     /** Standard Constructor */
     public X_C_Campaign_Price (Properties ctx, int C_Campaign_Price_ID, String trxName)
@@ -216,6 +216,31 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	public int getC_TaxCategory_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

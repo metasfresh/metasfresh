@@ -31,6 +31,7 @@ package org.adempiere.process;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,7 +61,7 @@ public class ApplyMigrationScripts extends JavaProcess {
 			boolean execOk = true;
 			try {
 				StringBuffer tmpSql = new StringBuffer();
-				tmpSql = new StringBuffer(new String(scriptArray));
+				tmpSql = new StringBuffer(new String(scriptArray, StandardCharsets.UTF_8));
 
 				if (tmpSql.length() > 0) {
 					log.info("Executing script " + rs.getString(3));
@@ -157,7 +158,7 @@ public class ApplyMigrationScripts extends JavaProcess {
 						if(!execOk)
 							return false;
 					}
-					sqlBuf.setLength(0);					
+					sqlBuf.setLength(0);
 				}
 			}
 		} catch(SQLException e){
