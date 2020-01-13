@@ -14,7 +14,7 @@ WHERE true
 	AND NOT EXISTS ( 
 				SELECT 1 
 				FROM m_iolcandhandler_log log
-				WHERE log.m_iolcandhandler_id = 1000000: AND log.ad_table_id = 260 AND log.record_id = ol.c_orderline_id AND log.isactive = 'Y'
+				WHERE log.m_iolcandhandler_id = 1000000 AND log.ad_table_id = 260 AND log.record_id = ol.c_orderline_id AND log.isactive = 'Y'
 			);
 
 ALTER TABLE public.c_orderline_id_with_missing_shipmentschedule_v OWNER TO metasfresh;
