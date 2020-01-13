@@ -321,6 +321,7 @@ export default class SelectionDropdown extends Component {
     const empty = this.size(options) === 0;
     const style = {
       width,
+      height: height ? height : '200px',
     };
 
     if (height) {
