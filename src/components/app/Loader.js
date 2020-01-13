@@ -12,7 +12,9 @@ const Loader = () => (
       className="rotate icon-rotate"
       timeout={{ exit: 1000, enter: 1000 }}
     >
-      <i className="meta-icon-settings" />
+      <div>
+        <i className="meta-icon-settings" />
+      </div>
     </CSSTransition>
   </div>
 );
