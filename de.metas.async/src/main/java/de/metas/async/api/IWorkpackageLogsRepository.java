@@ -1,18 +1,15 @@
-package de.metas.handlingunits.pporder.api;
+package de.metas.async.api;
 
-import org.compiere.model.I_C_UOM;
+import java.util.List;
 
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
+import de.metas.async.QueueWorkPackageId;
 import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.async
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,12 +27,11 @@ import lombok.NonNull;
  * #L%
  */
 
-public interface IHUPPOrderQtyBL extends ISingletonService
+public interface IWorkpackageLogsRepository
 {
-	void reverseDraftCandidate(I_PP_Order_Qty candidate);
 
-	static I_C_UOM extractUOM(@NonNull final I_PP_Order_Qty ppOrderQty)
-	{
-		return Services.get(IUOMDAO.class).getById(ppOrderQty.getC_UOM_ID());
-	}
+	void saveLogs(List<WorkpackageLogEntry> logEntries);
+
+	void deleteLogsInTrx(QueueWorkPackageId workpackageId);
+
 }

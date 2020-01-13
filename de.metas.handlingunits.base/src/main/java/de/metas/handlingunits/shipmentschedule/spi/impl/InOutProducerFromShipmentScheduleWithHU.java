@@ -63,10 +63,12 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -85,11 +87,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 {
 	//
 	// Services
-	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final transient IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	//
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -148,7 +151,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -398,74 +401,99 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// Process shipment (if is not empty)
-		if (!isCurrentShipmentEmpty())
+		final BooleanWithReason valid = checkValidCurrentShipment();
+		if (valid.isTrue())
 		{
-			final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
-
-			// because this is the time when we are actually generating the shipment lines,
-			// we want to initialize overrides values too
-			packingMaterialLinesBuilder.setUpdateOverrideValues(true);
-
-			// task 08138
-			if (createPackingLines)
-			{
-				packingMaterialLinesBuilder.setOverrideExistingPackingMaterialLines(true); // delete existing packing material lines, if any
-				packingMaterialLinesBuilder.build();
-			}
-			else
-			{
-				packingMaterialLinesBuilder.collectPackingMaterialsAndUpdateShipmentLines();
-			}
-
-			//
-			// Process current shipment
-			// 07113: if the CompleteShipment is false, we will have them only drafted (as default)
-			if (processShipments)
-			{
-				docActionBL.processEx(currentShipment, IDocument.ACTION_Complete, null);
-			}
-			result.addInOut(currentShipment);
-
-			//
-			// Iterate all candidates which were added on this shipment and notify them about the generated shipment
-			for (final ShipmentScheduleWithHU candidate : currentCandidates)
-			{
-				candidate.setM_InOut(currentShipment);
-			}
-
-			//
-			// Iterate all candidates and update shipment schedule's HU related Qtys
-			final Set<Integer> seenM_ShipmentSchedule_IDs = new HashSet<>();
-			for (final ShipmentScheduleWithHU candidate : currentCandidates)
-			{
-				final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
-				final int shipmentScheduleId = shipmentSchedule.getM_ShipmentSchedule_ID();
-				if (!seenM_ShipmentSchedule_IDs.add(shipmentScheduleId))
-				{
-					// already seen this shipment schedule
-					continue;
-				}
-
-				// save the shipment schedule using current transaction
-				InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
-			}
-			Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
+			processCurrentShipment();
 		}
+		//
+		// Process shipment (if is not empty)
 		else
 		{
-			Loggables.addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
+			Loggables.addLog("Deleting invalid shipment {0} because: {1}", currentShipment, valid.getReason());
 			InterfaceWrapperHelper.delete(currentShipment);
 		}
 
 		resetCurrentShipment();
 	}
 
-	/**
-	 * @return true if current shipment is empty (i.e. there were no candidates considered for it)
-	 */
-	private final boolean isCurrentShipmentEmpty()
+	private void processCurrentShipment()
 	{
-		return currentCandidates == null || currentCandidates.isEmpty();
+		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
+
+		// because this is the time when we are actually generating the shipment lines,
+		// we want to initialize overrides values too
+		packingMaterialLinesBuilder.setUpdateOverrideValues(true);
+
+		// task 08138
+		if (createPackingLines)
+		{
+			packingMaterialLinesBuilder.setOverrideExistingPackingMaterialLines(true); // delete existing packing material lines, if any
+			packingMaterialLinesBuilder.build();
+		}
+		else
+		{
+			packingMaterialLinesBuilder.collectPackingMaterialsAndUpdateShipmentLines();
+		}
+
+		//
+		// Process current shipment
+		// 07113: if the CompleteShipment is false, we will have them only drafted (as default)
+		if (processShipments)
+		{
+			docActionBL.processEx(currentShipment, IDocument.ACTION_Complete, null);
+		}
+		result.addInOut(currentShipment);
+
+		//
+		// Iterate all candidates which were added on this shipment and notify them about the generated shipment
+		for (final ShipmentScheduleWithHU candidate : currentCandidates)
+		{
+			candidate.setM_InOut(currentShipment);
+		}
+
+		//
+		// Iterate all candidates and update shipment schedule's HU related Qtys
+		final Set<Integer> seenM_ShipmentSchedule_IDs = new HashSet<>();
+		for (final ShipmentScheduleWithHU candidate : currentCandidates)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
+			final int shipmentScheduleId = shipmentSchedule.getM_ShipmentSchedule_ID();
+			if (!seenM_ShipmentSchedule_IDs.add(shipmentScheduleId))
+			{
+				// already seen this shipment schedule
+				continue;
+			}
+
+			// save the shipment schedule using current transaction
+			InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
+		}
+		Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
+	}
+
+	private BooleanWithReason checkValidCurrentShipment()
+	{
+		//
+		if (currentCandidates == null || currentCandidates.isEmpty())
+		{
+			return BooleanWithReason.falseBecause("got no candidates so shipment would be empty");
+		}
+
+		//
+		// check complete order
+		final BooleanWithReason completeOrderDelivery = CompleteOrderDeliveryRuleChecker.builder()
+				.shipmentScheduleEffectiveValuesBL(shipmentScheduleEffectiveValuesBL)
+				.shipmentSchedulesRepo(shipmentSchedulesRepo)
+				.candidates(currentCandidates)
+				.build()
+				.check();
+		if (completeOrderDelivery.isFalse())
+		{
+			return completeOrderDelivery;
+		}
+
+		//
+		return BooleanWithReason.TRUE;
 	}
 
 	private void resetCurrentShipment()

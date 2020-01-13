@@ -41,7 +41,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -486,10 +485,10 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		workPackage.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
 		// task 09700
-		final I_AD_User userInCharge = workPackageBL.getUserInChargeOrNull(workPackage);
-		if (userInCharge != null)
+		final UserId userIdInCharge = workPackageBL.getUserIdInCharge(workPackage).orElse(null);
+		if (userIdInCharge != null)
 		{
-			workPackage.setAD_User_InCharge(userInCharge);
+			workPackage.setAD_User_InCharge_ID(userIdInCharge.getRepoId());
 		}
 
 		saveWorkPackage(workPackage);
