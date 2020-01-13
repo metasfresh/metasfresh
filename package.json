@@ -93,7 +93,7 @@
     "nyc": "14.1.0",
     "postcss-color-function": "2.0.1",
     "postcss-import": "11.1.0",
-    "postcss-loader": "2.1.4",
+    "postcss-loader": "3.0.0",
     "postcss-simple-vars": "4.1.0",
     "postcss-url": "8.0.0",
     "precss": "4.0.0",
