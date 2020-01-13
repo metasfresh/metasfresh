@@ -124,6 +124,7 @@ public class CampaignPricingRule implements IPricingRule
 		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
 		result.setPriceStd(campaignPrice.getPriceStd().toBigDecimal());
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
+		result.setPriceUomId(campaignPrice.getPriceUomId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
 		result.setInvoicableQtyBasedOn(campaignPrice.getInvoicableQtyBasedOn());
