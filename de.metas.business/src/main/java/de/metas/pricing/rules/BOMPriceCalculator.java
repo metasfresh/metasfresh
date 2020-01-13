@@ -89,7 +89,6 @@ public class BOMPriceCalculator
 		if (productPrice == null)
 		{
 			throw ProductNotOnPriceListException.builder()
-					// .pricingCtx(pricingCtx)
 					.productId(bomLineProductId)
 					.build();
 		}

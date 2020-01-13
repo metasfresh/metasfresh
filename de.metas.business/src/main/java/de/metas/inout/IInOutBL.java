@@ -62,8 +62,6 @@ public interface IInOutBL extends ISingletonService
 	 */
 	IPricingContext createPricingCtx(org.compiere.model.I_M_InOutLine inOutLine);
 
-	IPricingResult getProductPrice(IPricingContext pricingCtx);
-
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
 
 	/**
