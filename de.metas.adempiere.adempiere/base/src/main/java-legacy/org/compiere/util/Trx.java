@@ -123,10 +123,8 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		setConnection(con);
 	}	// Trx
 
-	/** Static Log */
-	// private static final Logger s_log = CLogMgt.getLogger(Trx.class);
 	/** Logger */
-	private Logger log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(Trx.class);
 
 	private Connection m_connection = null;
 
@@ -353,6 +351,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	{
 		if (m_connection == null)
 		{
+			log.debug("closeNative - m_connection is already null; just return true");
 			return true; // nothing to do
 		}
 
@@ -366,13 +365,13 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			// Note: c3p0 makes sure that uncommitted changes are rolled by (=>default) or committed
 			// See https://www.mchange.com/projects/c3p0/index.html#autoCommitOnClose
 			m_connection.close();
+			log.debug("closeNative - closed m_connection={}", m_connection);
 		}
 		catch (SQLException e)
 		{
 			log.error(getTrxName(), e);
 		}
 		m_connection = null;
-		// m_active = false;
 		return true;
 	}	// close
 

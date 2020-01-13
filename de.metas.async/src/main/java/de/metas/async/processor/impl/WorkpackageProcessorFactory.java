@@ -27,16 +27,18 @@ import java.util.Properties;
 
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.IMBeanAwareService;
-import de.metas.util.Services;
+
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.ConfigurationException;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.IMBeanAwareService;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBeanAwareService
 {
@@ -146,10 +148,8 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	}
 
 	@Override
-	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(IWorkpackageProcessor workpackageProcessor)
+	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull IWorkpackageProcessor workpackageProcessor)
 	{
-		Check.assumeNotNull(workpackageProcessor, "workpackageProcessor not null");
-
 		// NOTE: keep in sync with getWorkpackageProcessorStatistics(I_C_Queue_PackageProcessor workpackage). Both methods shall build the name in the same way
 		final String workpackageProcessorName = workpackageProcessor.getClass().getName();
 		
@@ -157,10 +157,8 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	}
 
 	@Override
-	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(final I_C_Queue_PackageProcessor workpackageProcessorDef)
+	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull final I_C_Queue_PackageProcessor workpackageProcessorDef)
 	{
-		Check.assumeNotNull(workpackageProcessorDef, "workpackageProcessorDef not null");
-
 		// NOTE: keep in sync with getWorkpackageProcessorStatistics(IWorkpackageProcessor workpackageProcessor). Both methods shall build the name in the same way
 		final String workpackageProcessorName = workpackageProcessorDef.getClassname();
 		

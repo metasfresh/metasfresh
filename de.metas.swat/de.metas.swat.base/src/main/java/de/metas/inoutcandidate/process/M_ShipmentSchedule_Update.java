@@ -7,7 +7,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.Services;
 
-public final class UpdateShipmentScheds extends JavaProcess
+public final class M_ShipmentSchedule_Update extends JavaProcess
 {
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 

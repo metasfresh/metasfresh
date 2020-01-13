@@ -1,10 +1,16 @@
-package de.metas.util;
+package de.metas.async.api;
+
+import java.util.List;
+
+import org.compiere.SpringContextHolder;
+
+import de.metas.async.QueueWorkPackageId;
 
 /*
  * #%L
- * de.metas.util
+ * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,29 +28,27 @@ package de.metas.util;
  * #L%
  */
 
-import java.io.PrintStream;
-
-final class ConsoleLoggable implements ILoggable
+public class NOPWorkpackageLogsRepository implements IWorkpackageLogsRepository
 {
-	public static final transient ConsoleLoggable instance = new ConsoleLoggable();
-
-	private final PrintStream out;
-
-	private ConsoleLoggable()
+	public static void registerToSpringContext()
 	{
-		out = System.out;
+		SpringContextHolder.registerJUnitBean(IWorkpackageLogsRepository.class, NOPWorkpackageLogsRepository.instance);
+	}
+
+	public static final transient NOPWorkpackageLogsRepository instance = new NOPWorkpackageLogsRepository();
+
+	private NOPWorkpackageLogsRepository()
+	{
 	}
 
 	@Override
-	public ILoggable addLog(final String msg, final Object... msgParameter)
+	public void saveLogs(final List<WorkpackageLogEntry> logEntries)
 	{
-		out.println(StringUtils.formatMessage(msg, msgParameter));
-		return this;
 	}
 
 	@Override
-	public void flush()
+	public void deleteLogsInTrx(final QueueWorkPackageId workpackageId)
 	{
-		out.flush();
 	}
+
 }
