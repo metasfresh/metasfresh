@@ -1,10 +1,6 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
-class FiltersStatic extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+export default class FiltersStatic extends PureComponent {
   render() {
     const { data, clearFilters } = this.props;
     return (
@@ -26,5 +22,3 @@ class FiltersStatic extends Component {
     );
   }
 }
-
-export default FiltersStatic;

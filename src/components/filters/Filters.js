@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Map } from 'immutable';
 import _ from 'lodash';
 
@@ -19,7 +19,7 @@ import FiltersNotFrequent from './FiltersNotFrequent';
  * @module Filters
  * @extends Component
  */
-class Filters extends Component {
+export default class Filters extends PureComponent {
   state = {
     activeFilter: null,
     activeFiltersCaptions: null,
@@ -452,7 +452,7 @@ class Filters extends Component {
 
   /**
    * @method annotateFilters
-   * @summary ToDo: Describe the method
+   * @summary I think it creates caption for active filters to show when the widget is closed - Kuba
    * @param {*} unannotatedFilters
    */
   annotateFilters = unannotatedFilters => {
@@ -461,13 +461,20 @@ class Filters extends Component {
     return unannotatedFilters.map(unannotatedFilter => {
       const parameter =
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
-      const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
       const currentFilter = activeFilter
         ? activeFilter.find(f => f.filterId === unannotatedFilter.filterId)
         : null;
       const activeParameter =
         parameter && isActive && currentFilter && currentFilter.parameters[0];
+
+      const filterType =
+        unannotatedFilter.parameters && activeParameter
+          ? unannotatedFilter.parameters.find(
+              filter => filter.parameterName === activeParameter.parameterName
+            )
+          : parameter && parameter.widgetType;
+
       const captionValue = activeParameter
         ? TableCell.fieldValueToString(
             activeParameter.valueTo
@@ -575,5 +582,3 @@ Filters.propTypes = {
   filterData: PropTypes.any,
   initialValuesNulled: PropTypes.any,
 };
-
-export default Filters;

@@ -3,8 +3,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { forEach } from 'lodash';
 
 import { addNotification } from '../actions/AppActions';
+import { getData } from '../actions/GenericActions';
 import {
   addRowData,
   attachFileAction,
@@ -16,6 +18,7 @@ import {
   fireUpdateData,
   getTab,
   sortTab,
+  updateTabRowsData,
 } from '../actions/WindowActions';
 import BlankPage from '../components/BlankPage';
 import Container from '../components/Container';
@@ -115,22 +118,66 @@ class MasterWindow extends Component {
     }
 
     if (prevProps.master.websocket !== master.websocket && master.websocket) {
-      connectWS.call(this, master.websocket, msg => {
+      connectWS.call(this, master.websocket, async msg => {
         const { includedTabsInfo, stale } = msg;
         const { master } = this.props;
 
         if (stale) {
-          dispatch(
-            fireUpdateData(
-              'window',
-              params.windowType,
-              params.docId,
-              null,
-              null,
-              null,
-              null
-            )
-          );
+          // some tabs data got updated/row was added
+          if (includedTabsInfo) {
+            const requests = [];
+
+            forEach(includedTabsInfo, (tab, tabId) => {
+              const { staleRowIds } = tab;
+
+              staleRowIds.forEach(rowId => {
+                requests.push(
+                  getData(
+                    'window',
+                    params.windowType,
+                    params.docId,
+                    tabId,
+                    rowId
+                  )
+                );
+              });
+            });
+
+            // wait for all the rows requests to finish
+            return await Promise.all(requests).then(res => {
+              const changedTabs = {};
+
+              res.forEach(({ data }) => {
+                const rowZero = data[0];
+                const tabId = rowZero.tabId;
+                const rowsById = {};
+
+                data.forEach(row => {
+                  rowsById[row.rowId] = row;
+                });
+
+                changedTabs[tabId] = rowsById;
+              });
+
+              forEach(changedTabs, (changedRows, tabId) => {
+                dispatch(updateTabRowsData('master', tabId, changedRows));
+              });
+            });
+
+            // Check my comment in https://github.com/metasfresh/me03/issues/3628 - Kuba
+          } else {
+            dispatch(
+              fireUpdateData(
+                'window',
+                params.windowType,
+                params.docId,
+                null,
+                null,
+                null,
+                null
+              )
+            );
+          }
         }
 
         if (includedTabsInfo) {

@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { merge } from 'lodash';
 
@@ -142,7 +141,7 @@ class TableItem extends PureComponent {
         break;
       default: {
         const inp = String.fromCharCode(e.keyCode);
-        if (/[a-zA-Z0-9]/.test(inp)) {
+        if (/[a-zA-Z0-9]/.test(inp) && !e.ctrlKey && !e.altKey) {
           this.listenOnKeysTrue();
 
           this.handleEditProperty(e, property, true, widgetData, true);
@@ -360,6 +359,8 @@ class TableItem extends PureComponent {
       colspan,
       viewId,
       keyProperty,
+      modalVisible,
+      isGerman,
       isSelected,
       focusOnFieldName,
     } = this.props;
@@ -425,6 +426,8 @@ class TableItem extends PureComponent {
                   supportFieldEdit,
                   handleRightClick,
                   keyProperty,
+                  modalVisible,
+                  isGerman,
                 }}
                 ref={c => {
                   if (c && isSelected) {
@@ -502,6 +505,12 @@ class TableItem extends PureComponent {
     handleSelect(this.nestedSelect(elem).concat([id]));
   };
 
+  onRowCollapse = () => {
+    const { item, collapsed, handleRowCollapse } = this.props;
+
+    handleRowCollapse(item, collapsed);
+  };
+
   getIconClassName = huType => {
     switch (huType) {
       case 'LU':
@@ -527,7 +536,7 @@ class TableItem extends PureComponent {
       includedDocuments,
       rowId,
       collapsed,
-      handleRowCollapse,
+      // onRowCollapse,
       collapsible,
     } = this.props;
 
@@ -565,12 +574,12 @@ class TableItem extends PureComponent {
         {includedDocuments && collapsible ? (
           collapsed ? (
             <i
-              onClick={handleRowCollapse}
+              onClick={this.onRowCollapse}
               className="meta-icon-plus indent-collapse-icon"
             />
           ) : (
             <i
-              onClick={handleRowCollapse}
+              onClick={this.onRowCollapse}
               className="meta-icon-minus indent-collapse-icon"
             />
           )
@@ -589,7 +598,6 @@ class TableItem extends PureComponent {
 
   render() {
     const {
-      key,
       isSelected,
       odd,
       indentSupported,
@@ -605,7 +613,6 @@ class TableItem extends PureComponent {
     return (
       <WithMobileDoubleTap>
         <tr
-          key={key}
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
           className={classnames({
@@ -630,8 +637,8 @@ class TableItem extends PureComponent {
 
 TableItem.propTypes = {
   cols: PropTypes.array.isRequired,
-  dispatch: PropTypes.func.isRequired,
   onClick: PropTypes.func.isRequired,
+  item: PropTypes.object.isRequired,
   handleSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
   indentSupported: PropTypes.bool,
@@ -643,7 +650,6 @@ TableItem.propTypes = {
   odd: PropTypes.number,
   caption: PropTypes.string,
   dataHash: PropTypes.string.isRequired,
-  key: PropTypes.string,
   changeListenOnTrue: PropTypes.func,
   handleRowCollapse: PropTypes.func,
   handleRightClick: PropTypes.func,
@@ -667,11 +673,9 @@ TableItem.propTypes = {
   includedDocuments: PropTypes.array,
   contextType: PropTypes.any,
   focusOnFieldName: PropTypes.string,
+  modalVisible: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  keyProperty: PropTypes.string,
 };
 
-export default connect(
-  false,
-  false,
-  false,
-  { forwardRef: true }
-)(TableItem);
+export default TableItem;

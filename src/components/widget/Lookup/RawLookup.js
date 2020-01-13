@@ -446,15 +446,7 @@ export class RawLookup extends Component {
   };
 
   render() {
-    const {
-      align,
-      placeholder,
-      readonly,
-      disabled,
-      tabIndex,
-      isOpen,
-      idValue,
-    } = this.props;
+    const { align, readonly, disabled, tabIndex, isOpen, idValue } = this.props;
     const {
       isInputEmpty,
       list,
@@ -515,7 +507,7 @@ export class RawLookup extends Component {
                   readOnly={readonly}
                   disabled={readonly && !disabled}
                   tabIndex={tabIndex}
-                  placeholder={placeholder}
+                  placeholder={this.props.item.emptyText}
                   onChange={this.handleChange}
                   onClick={this.handleFocus}
                 />
@@ -561,6 +553,7 @@ RawLookup.propTypes = {
   forceHeight: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onDropdownListToggle: PropTypes.func,
+  isComposed: PropTypes.bool,
 };
 
 export default connect(mapStateToProps)(RawLookup);

@@ -52,7 +52,7 @@ class MasterWidget extends Component {
       JSON.stringify(next) !== data &&
       JSON.stringify(widgetData[0].value) !== JSON.stringify(next)
     ) {
-      if (dateParse.includes(widgetType) && !Moment.isMoment(next)) {
+      if (next && dateParse.includes(widgetType) && !Moment.isMoment(next)) {
         next = convertTimeStringToMoment(next);
         next = Moment(next);
       }
