@@ -113,9 +113,17 @@ public class ProcessInfoInternalParametersTest
 		return ProcessId.ofAD_Process_ID(processPO.getAD_Process_ID());
 	}
 
+	
+	/**
+	 * <ul>Tests the parameter name and the fact that the string of selected records is constructed using comma</ul>
+	 * <ul>if fails, do not fix it according to the new logic and beware that are sql processes that count on this</ul>
+	 * 
+	 */
 	@Test
 	public void test_getCommaSeparatedViewRowInternalParameters()
 	{
+		assertThat(ViewBasedProcessTemplate.PARAM_ViewSelectedIds).isEqualTo("$WEBUI_ViewSelectedIds");
+		
 		// prepare data
 		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
 		final ViewRowIdsSelection viewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("1", "2", "3", "4", "5"));
@@ -136,9 +144,16 @@ public class ProcessInfoInternalParametersTest
 		assertThat(actual).isEqualTo(expected);
 	}
 
+	/**
+	 * <ul>Tests the parameter name and the fact that the string of selected records is constructed using comma</ul>
+	 * <ul>if fails, do not fix it according to the new logic and beware that are sql processes that count on this</ul>
+	 * 
+	 */
 	@Test
 	public void test_getCommaSeparatedParentViewRowIdsSelection()
 	{
+		assertThat(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds).isEqualTo("$WEBUI_ParentViewSelectedIds");
+		
 		// prepare data
 		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
 		final ViewRowIdsSelection parentViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("100", "200", "300"));
@@ -157,9 +172,16 @@ public class ProcessInfoInternalParametersTest
 		assertThat(actual).isEqualTo(expected);
 	}
 
+	/**
+	 * <ul>Tests the parameter name and the fact that the string of selected records is constructed using comma</ul>
+	 * <ul>if fails, do not fix it according to the new logic and beware that are sql processes that count on this</ul>
+	 * 
+	 */
 	@Test
 	public void test_getCommaSeparatedChildViewRowIdsSelection()
 	{
+		assertThat(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds).isEqualTo("$WEBUI_ChildViewSelectedIds");
+		
 		// prepare data
 		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
 		final ViewRowIdsSelection childViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("10", "20"));
