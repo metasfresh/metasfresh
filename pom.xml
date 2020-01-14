@@ -121,7 +121,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 				<exclusion>
-					<!-- exclude it here; explicitly add it fuzrther down; workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
+					<!-- exclude it here; explicitly add it further down; workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
 					<groupId>org.junit.platform</groupId>
 					<artifactId>junit-platform-launcher</artifactId>
 				</exclusion>
@@ -186,7 +186,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 	</dependencies>
 
 	<dependencyManagement>
-
 		<dependencies>
 
 			<dependency>
@@ -225,6 +224,12 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<groupId>jp.osdn.ocrb</groupId>
 				<artifactId>jp.osdn.ocrb</artifactId>
 				<version>0.2.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>net.logstash.logback</groupId>
+				<artifactId>logstash-logback-encoder</artifactId>
+				<version>6.3</version>
 			</dependency>
 
 		</dependencies>
