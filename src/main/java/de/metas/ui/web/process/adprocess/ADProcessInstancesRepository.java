@@ -18,6 +18,7 @@ import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -312,6 +313,15 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 		//
 		// View related internal parameters
+		addViewInternalParameters(request, processInfoBuilder);
+		
+		return processInfoBuilder.build();
+	}
+
+	@VisibleForTesting
+	protected void addViewInternalParameters(final CreateProcessInstanceRequest request,
+			final ProcessInfoBuilder processInfoBuilder)
+	{
 		if (request.getViewRowIdsSelection() != null)
 		{
 			final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
@@ -337,10 +347,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewId, childViewRowIdsSelection.getViewId().toJson())
 					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds, childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
-
-		return processInfoBuilder.build();
 	}
-
+	
 	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceDocumentId)
 	{
 		Check.assumeNotNull(adPInstanceDocumentId, "Parameter adPInstanceDocumentId is not null");
