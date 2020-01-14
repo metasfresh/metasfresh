@@ -1,7 +1,5 @@
 package de.metas.edi.sscc18;
 
-
-
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -267,10 +265,9 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 			TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
 
-
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
-					shipmentSchedule.getQtyOrdered(),
-					Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID()),
+					Quantity.of(shipmentSchedule.getQtyOrdered(),
+							Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID())),
 					lutuConfiguration);
 
 			builder.setQtyCUsTotal(qtyCUsTotal.getQty());

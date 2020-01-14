@@ -25,8 +25,6 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -37,7 +35,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -65,14 +63,14 @@ import lombok.NonNull;
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrderBOMLine);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
-		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrderBOMLine.getC_UOM_ID());
+		final UomId cuUOMId = UomId.ofRepoId(ppOrderBOMLine.getC_UOM_ID());
 
 		// LU/TU COnfiguration
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				cuUOMId,
 				bpartnerId,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrderBOMLine);

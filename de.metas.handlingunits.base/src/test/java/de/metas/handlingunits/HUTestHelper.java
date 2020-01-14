@@ -1434,7 +1434,7 @@ public class HUTestHelper
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				UomId.ofRepoId(cuUOM.getC_UOM_ID()),
 				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));

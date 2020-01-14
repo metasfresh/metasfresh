@@ -8,7 +8,8 @@ RETURNS TABLE
 	printname character varying(60),
 	C_Currency_ID numeric,
 	poreference varchar(60),
-	displayhu text
+	displayhu text,
+	isoffer character(1)
 	)
 AS
 $$	
@@ -31,7 +32,11 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhu
+	END as displayhu,
+		CASE WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
+		THEN 'Y'
+		ELSE 'N'
+	END AS isoffer
 FROM
 	C_Order o
 	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
