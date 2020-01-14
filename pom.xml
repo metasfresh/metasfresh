@@ -52,6 +52,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		
 		<!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
 		<junit-jupiter.version>5.4.1</junit-jupiter.version>
+
+		<logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
+
 	</properties>
 
 	<modules>
@@ -229,9 +232,8 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			<dependency>
 				<groupId>net.logstash.logback</groupId>
 				<artifactId>logstash-logback-encoder</artifactId>
-				<version>6.3</version>
+				<version>${logstash-logback-encoder.version}</version>
 			</dependency>
-
 		</dependencies>
 
 	</dependencyManagement>
