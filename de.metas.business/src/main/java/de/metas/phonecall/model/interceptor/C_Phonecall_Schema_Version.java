@@ -86,4 +86,10 @@ public class C_Phonecall_Schema_Version
 			throw new AdempiereException(noPermissionMessage);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Phonecall_Schema_Version.COLUMNNAME_C_Phonecall_Schema_ID })
+	public void updateLinesOnSchemaChanged(final I_C_Phonecall_Schema_Version phonecallSchemaVersion)
+	{
+		phonecallSchemaRepo.updateLinesOnSchemaChanged(PhonecallSchemaVersionId.ofRepoId(phonecallSchemaVersion.getC_Phonecall_Schema_ID(), phonecallSchemaVersion.getC_Phonecall_Schema_Version_ID()));
+	}
 }
