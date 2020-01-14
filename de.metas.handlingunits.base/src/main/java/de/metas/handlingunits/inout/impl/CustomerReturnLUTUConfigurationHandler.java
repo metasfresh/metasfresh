@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.bpartner.BPartnerId;
@@ -16,7 +15,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -82,13 +81,13 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(documentLine.getM_Product_ID());
-		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(documentLine.getC_UOM_ID());
+		final UomId cuUOMId = UomId.ofRepoId(documentLine.getC_UOM_ID());
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(documentLine.getM_InOut().getC_BPartner_ID());
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				cuUOMId,
 				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 

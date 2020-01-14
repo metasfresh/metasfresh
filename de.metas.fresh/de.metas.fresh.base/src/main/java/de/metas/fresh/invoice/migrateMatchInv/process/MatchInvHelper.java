@@ -250,10 +250,19 @@ import lombok.NonNull;
 
 	public StockQtyAndUOMQty retrieveQtyNotMatched(@NonNull final I_M_InOutLine iol)
 	{
+		UomId catchUOMId;
+		if (iol.getQtyDeliveredCatch().signum() != 0)
+		{
+			catchUOMId = UomId.ofRepoIdOrNull(iol.getCatch_UOM_ID());
+		}
+		else
+		{
+			catchUOMId = null;
+		}
 		StockQtyAndUOMQty qtyReceived = StockQtyAndUOMQtys
 				.create(
 						iol.getMovementQty(), ProductId.ofRepoId(iol.getM_Product_ID()),
-						iol.getQtyDeliveredCatch(), UomId.ofRepoId(iol.getCatch_UOM_ID()));
+						iol.getQtyDeliveredCatch(), catchUOMId);
 
 		// Negate the qtyReceived if this is an material return,
 		// because we want to have the qtyReceived as an absolute value.
@@ -267,7 +276,7 @@ import lombok.NonNull;
 
 		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtysInvoiced(
 				iol,
-				qtyReceived.toZero()/*initialValue*/);
+				qtyReceived.toZero()/* initialValue */);
 		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 		return qtyNotMatched;
 	}

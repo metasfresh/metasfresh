@@ -21,6 +21,8 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -81,16 +83,27 @@ public class HURepository
 				.setListener(listener)
 				.iterate(huRecord);
 
-		return listener.getResult();
+		final HU result = listener.getResult();
+		return result;
 	}
 
 	private static class HUIteratorListener extends HUIteratorListenerAdapter
 	{
-		private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		private final IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
-		private final HUStack huStack = new HUStack();
+		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
+		private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
+
+		private final transient HUStack huStack = new HUStack();
 
 		private IPair<HuId, HUBuilder> currentIdAndBuilder;
+
+		@Override
+		public Result beforeHU(final IMutable<I_M_HU> huMutable)
+		{
+			final I_M_HU huRecord = huMutable.getValue();
+			huStack.push(extractIdAndBuilder(huRecord));
+			return getDefaultResult();
+		}
 
 		private ImmutablePair<HuId, HUBuilder> extractIdAndBuilder(@NonNull final I_M_HU rootHuRecord)
 		{
@@ -108,20 +121,27 @@ public class HURepository
 		private HUBuilder createHUBuilder(@NonNull final I_M_HU huRecord)
 		{
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
+
+			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			final BigDecimal weightNetOrNull = weightable.getWeightNetOrNull();
+			final Quantity weightNet;
+
+			if (weightNetOrNull != null && weightNetOrNull.signum() > 0)
+			{
+				weightNet = Quantity.of(weightNetOrNull, weightable.getWeightNetUOM());
+			}
+			else
+			{
+				weightNet = null;
+			}
+
 			return HU.builder()
 					.id(HuId.ofRepoId(huRecord.getM_HU_ID()))
 					.orgId(OrgId.ofRepoIdOrAny(huRecord.getAD_Org_ID()))
 					.type(HUType.ofCode(handlingUnitsBL.getHU_UnitType(huRecord)))
 					.packagingCode(extractPackagingCodeId(huRecord))
-					.attributes(attributeStorage);
-		}
-
-		@Override
-		public Result beforeHU(final IMutable<I_M_HU> huMutable)
-		{
-			final I_M_HU huRecord = huMutable.getValue();
-			huStack.push(extractIdAndBuilder(huRecord));
-			return getDefaultResult();
+					.attributes(attributeStorage)
+					.weightNet(Optional.ofNullable(weightNet));
 		}
 
 		@Override
@@ -144,7 +164,7 @@ public class HURepository
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
 
 				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = divideQuantities(productsAndQuantities, logicalNumberOfTUs);
-				childBuilder.productQuantities(productsAndQuantitiesPerHU);
+				childBuilder.productQtysInStockUOM(productsAndQuantitiesPerHU);
 				for (int i = 0; i < logicalNumberOfTUs; i++)
 				{
 					final HU currentChild = childBuilder.build();
@@ -154,7 +174,7 @@ public class HURepository
 			else
 			{
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
-				childBuilder.productQuantities(productsAndQuantities);
+				childBuilder.productQtysInStockUOM(productsAndQuantities);
 
 				if (parentBuilderOrNull != null)
 				{
