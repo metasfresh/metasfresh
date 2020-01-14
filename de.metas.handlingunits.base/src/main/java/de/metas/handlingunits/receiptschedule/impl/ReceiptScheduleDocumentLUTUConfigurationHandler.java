@@ -1,6 +1,6 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 
 /*
  * #%L
@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -40,6 +38,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -80,14 +79,13 @@ import de.metas.util.Services;
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoId(documentLine.getM_Product_ID());
-
-		final I_C_UOM cuUOM = loadOutOfTrx(documentLine.getC_UOM_ID(), I_C_UOM.class);
-
+		final UomId cuUOMId = UomId.ofRepoId(documentLine.getC_UOM_ID());
 		final BPartnerId bpartnerId = receiptScheduleBL.getBPartnerEffectiveId(documentLine);
+
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				cuUOMId,
 				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 

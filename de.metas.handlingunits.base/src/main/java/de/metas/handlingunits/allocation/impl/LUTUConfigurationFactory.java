@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -55,7 +57,9 @@ import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -152,7 +156,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public I_M_HU_LUTU_Configuration createLUTUConfiguration(
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			@NonNull final ProductId cuProductId,
-			@NonNull final I_C_UOM cuUOM,
+			@NonNull final UomId cuUomId,
 			final BPartnerId bpartnerId,
 			final boolean noLUForVirtualTU)
 	{
@@ -160,6 +164,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		//
 		// Context
@@ -183,6 +188,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// TU Configuration
+		final I_C_UOM cuUOM = uomDAO.getById(cuUomId);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProductId, cuUOM);
 		//
@@ -449,10 +455,10 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
-	public int calculateQtyLUForTotalQtyCUs(final I_M_HU_LUTU_Configuration lutuConfiguration, final BigDecimal qtyCUsTotal, final I_C_UOM qtyCUsTotalUOM)
+	public int calculateQtyLUForTotalQtyCUs(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
+			@Nullable final Quantity qtyCUsTotal)
 	{
-		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
-
 		if (qtyCUsTotal == null || qtyCUsTotal.signum() <= 0)
 		{
 			return 0;
@@ -473,7 +479,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Convert the total QtyCU to our internal capacity UOM, to be able to compute using same UOM.
-		final Quantity qtyCUsTotal_Converted = convertQtyToLUTUConfigurationUOM(qtyCUsTotal, qtyCUsTotalUOM, lutuConfiguration);
+		final Quantity qtyCUsTotal_Converted = convertQtyToLUTUConfigurationUOM(qtyCUsTotal, lutuConfiguration);
 
 		//
 		// Calculate how many LUs we need for given total QtyCU (converted to our capacity UOM)
@@ -537,15 +543,14 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
-	public Quantity convertQtyToLUTUConfigurationUOM(final BigDecimal qtyValue, final I_C_UOM qtyUOM, final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public Quantity convertQtyToLUTUConfigurationUOM(final Quantity qty, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(lutuConfiguration.getM_Product_ID());
 
-		final Quantity qty = new Quantity(qtyValue, qtyUOM);
 		final I_C_UOM uomTo = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
-		return uomConversionBL.convertQuantityTo(qty, uomConversionCtx, uomTo);
+		return uomConversionBL.convertQuantityTo(qty, uomConversionCtx, UomId.ofRepoIdOrNull(uomTo == null ? null : uomTo.getC_UOM_ID()));
 	}
 
 	@Override
