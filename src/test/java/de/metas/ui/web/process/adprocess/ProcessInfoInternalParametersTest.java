@@ -2,8 +2,7 @@ package de.metas.ui.web.process.adprocess;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,8 +14,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -61,8 +60,8 @@ public class ProcessInfoInternalParametersTest
 
 	private static UserId loggedUserId = UserId.ofRepoId(1234567);
 
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		final AdempiereTestHelper adempiereTestHelper = AdempiereTestHelper.get();
 		adempiereTestHelper.init();
@@ -132,12 +131,9 @@ public class ProcessInfoInternalParametersTest
 				.filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ViewSelectedIds))
 				.findAny();
 
-		assertNotNull(para);
-
 		final String actual = para.get().getParameterAsString();
-		final String expected = new String("1,2,3,4,5");
-		assertEquals(expected, actual);
-
+		final String expected = "1,2,3,4,5";
+		assertThat(actual).isEqualTo(expected);
 	}
 
 	@Test
@@ -145,30 +141,7 @@ public class ProcessInfoInternalParametersTest
 	{
 		// prepare data
 		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
-		final ViewRowIdsSelection childViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("100", "200", "300"));
-		final CreateProcessInstanceRequest request = createProcessInstanceRequestrequest(null, null, childViewRowIdsSelection);
-
-		// run
-		instancesRepository.addViewInternalParameters(request, processInfoBuilder);
-
-		// expectations
-		final List<ProcessInfoParameter> parameters = processInfoBuilder.build().getParameter();
-		final Optional<ProcessInfoParameter> para = parameters.stream().filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds))
-				.findAny();
-
-		assertNotNull(para);
-
-		final String actual = para.get().getParameterAsString();
-		final String expected = new String("100,200,300");
-		assertEquals(expected, actual);
-	}
-
-	@Test
-	public void test_getCommaSeparatedChildViewRowIdsSelection()
-	{
-		// prepare data
-		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
-		final ViewRowIdsSelection parentViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("10", "20"));
+		final ViewRowIdsSelection parentViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("100", "200", "300"));
 		final CreateProcessInstanceRequest request = createProcessInstanceRequestrequest(null, parentViewRowIdsSelection, null);
 
 		// run
@@ -179,11 +152,30 @@ public class ProcessInfoInternalParametersTest
 		final Optional<ProcessInfoParameter> para = parameters.stream().filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds))
 				.findAny();
 
-		assertNotNull(para);
+		final String actual = para.get().getParameterAsString();
+		final String expected = "100,200,300";
+		assertThat(actual).isEqualTo(expected);
+	}
+
+	@Test
+	public void test_getCommaSeparatedChildViewRowIdsSelection()
+	{
+		// prepare data
+		final ADProcessInstancesRepository instancesRepository = new ADProcessInstancesRepository();
+		final ViewRowIdsSelection childViewRowIdsSelection = createViewRowIdSelection(ImmutableSet.of("10", "20"));
+		final CreateProcessInstanceRequest request = createProcessInstanceRequestrequest(null, null, childViewRowIdsSelection);
+
+		// run
+		instancesRepository.addViewInternalParameters(request, processInfoBuilder);
+
+		// expectations
+		final List<ProcessInfoParameter> parameters = processInfoBuilder.build().getParameter();
+		final Optional<ProcessInfoParameter> para = parameters.stream().filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds))
+				.findAny();
 
 		final String actual = para.get().getParameterAsString();
-		final String expected = new String("10,20");
-		assertEquals(expected, actual);
+		final String expected = "10,20";
+		assertThat(actual).isEqualTo(expected);
 	}
 
 }
