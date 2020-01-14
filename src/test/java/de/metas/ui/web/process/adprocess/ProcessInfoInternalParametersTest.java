@@ -134,7 +134,7 @@ public class ProcessInfoInternalParametersTest
 				.findAny();
 
 		assertNotNull(para);
-		
+
 		final String actual = para.get().getParameterAsString();
 		final String expected = new String("1,2,3,4,5");
 		assertEquals(expected, actual);
@@ -158,7 +158,7 @@ public class ProcessInfoInternalParametersTest
 				.findAny();
 
 		assertNotNull(para);
-		
+
 		final String actual = para.get().getParameterAsString();
 		final String expected = new String("100,200,300");
 		assertEquals(expected, actual);
@@ -181,7 +181,7 @@ public class ProcessInfoInternalParametersTest
 				.findAny();
 
 		assertNotNull(para);
-		
+
 		final String actual = para.get().getParameterAsString();
 		final String expected = new String("10,20");
 		assertEquals(expected, actual);
