@@ -3,6 +3,8 @@ package de.metas.ui.web.process.adprocess;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Optional;
@@ -131,9 +133,11 @@ public class ProcessInfoInternalParametersTest
 				.filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ViewSelectedIds))
 				.findAny();
 
-		assertThat(para).isNotNull();
-
-		assertThat(para.get().getParameterAsString()).isEqualTo("1,2,3,4,5");
+		assertNotNull(para);
+		
+		final String actual = para.get().getParameterAsString();
+		final String expected = new String("1,2,3,4,5");
+		assertEquals(expected, actual);
 
 	}
 
@@ -153,8 +157,11 @@ public class ProcessInfoInternalParametersTest
 		final Optional<ProcessInfoParameter> para = parameters.stream().filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds))
 				.findAny();
 
-		assertThat(para).isNotNull();
-		assertThat(para.get().getParameterAsString()).isEqualTo("100,200,300");
+		assertNotNull(para);
+		
+		final String actual = para.get().getParameterAsString();
+		final String expected = new String("100,200,300");
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -173,8 +180,11 @@ public class ProcessInfoInternalParametersTest
 		final Optional<ProcessInfoParameter> para = parameters.stream().filter(param -> param.getParameterName().equals(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds))
 				.findAny();
 
-		assertThat(para).isNotNull();
-		assertThat(para.get().getParameterAsString()).isEqualTo("10,20");
+		assertNotNull(para);
+		
+		final String actual = para.get().getParameterAsString();
+		final String expected = new String("10,20");
+		assertEquals(expected, actual);
 	}
 
 }
