@@ -76,8 +76,9 @@ class AttributesDropdown extends Component {
 
   /**
    * @method renderFields
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @todo This should be rewritten ASAP. We can't have those nested widgets rendering widgets and
+   * an infinite number of events, callbacks, flags used to control this. Maybe this is a good place
+   * to start using Formik/some other forms library ? - Kuba
    */
   renderFields = () => {
     const {
@@ -95,6 +96,7 @@ class AttributesDropdown extends Component {
     if (layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map(elem => data[elem.field] || -1);
+
         return (
           <RawWidget
             entity={attributeType}
@@ -119,11 +121,6 @@ class AttributesDropdown extends Component {
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     return (
       <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">

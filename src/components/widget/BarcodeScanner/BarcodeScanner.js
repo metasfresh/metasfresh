@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserBarcodeReader } from '@zxing/library';
 import { BrowserDatamatrixCodeReader } from '@zxing/library';
@@ -6,7 +6,7 @@ import classnames from 'classnames';
 
 import BrowserQRCodeReader from '../../../services/CustomBrowserQRCodeReader';
 
-export default class BarcodeScanner extends Component {
+export default class BarcodeScanner extends PureComponent {
   constructor(props) {
     super(props);
 

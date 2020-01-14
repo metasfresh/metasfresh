@@ -1,6 +1,6 @@
 import Moment from 'moment';
-import React, { Component } from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import React, { PureComponent } from 'react';
+import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
@@ -32,11 +32,14 @@ import Lookup from './Lookup/Lookup';
  * @module RawWidget
  * @extends Component
  */
-export class RawWidget extends Component {
+export class RawWidget extends PureComponent {
   constructor(props) {
     super(props);
 
-    const { widgetData } = props;
+    const { getWidgetData } = props;
+    let { widgetData } = props;
+    widgetData = widgetData || getWidgetData();
+
     let cachedValue = undefined;
 
     if (widgetData && widgetData[0]) {
@@ -197,7 +200,10 @@ export class RawWidget extends Component {
    * @param {*} valueTo
    */
   willPatch = (property, value, valueTo) => {
-    const { widgetData } = this.props;
+    const { getWidgetData } = this.props;
+    let { widgetData } = this.props;
+    widgetData = widgetData || getWidgetData();
+
     const { cachedValue } = this.state;
 
     // if there's no widget value, then nothing could've changed. Unless
@@ -231,7 +237,7 @@ export class RawWidget extends Component {
    *          calls the parent method (usually from MasterWidget) if the requirements are met
    *          (value changed and patching is not in progress). `isForce` will be used for Datepicker
    *          Datepicker is checking the cached value in datepicker component itself
-   *          and send a patch request only if date is changed
+   *          and send a patch request only if date has changed
    * @param {*} property
    * @param {*} value
    * @param {*} id
@@ -319,11 +325,9 @@ export class RawWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} reason
    */
-  renderErrorPopup = reason => {
-    return (
-      <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
-    );
-  };
+  renderErrorPopup = reason => (
+    <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
+  );
 
   /**
    * @method renderWidget
@@ -351,7 +355,6 @@ export class RawWidget extends Component {
       windowType,
       dataId,
       type,
-      widgetData,
       rowId,
       tabId,
       docId,
@@ -375,7 +378,11 @@ export class RawWidget extends Component {
       dateFormat,
       initialFocus,
       timeZone,
+      filter,
     } = this.props;
+    const { getWidgetData } = this.props;
+    let { widgetData } = this.props;
+    widgetData = widgetData || getWidgetData();
 
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
@@ -597,36 +604,37 @@ export class RawWidget extends Component {
           <Lookup
             {...{
               attribute,
+              filter,
+              entity,
+              windowType,
+              widgetData,
+              readonly,
+              isModal,
+              updated,
+              filterWidget,
+              subentity,
+              subentityId,
+              dataId,
+              filterId,
+              tabId,
+              rowId,
+              viewId,
+              autoFocus,
+              initialFocus,
+              tabIndex,
             }}
-            entity={entity}
-            subentity={subentity}
-            subentityId={subentityId}
-            recent={[]}
-            dataId={dataId}
+            dispatch={this.props.dispatch}
             properties={fields}
-            windowType={windowType}
-            widgetData={widgetData}
             placeholder={
               this.props.emptyText
                 ? this.props.emptyText
                 : this.props.fields[0].emptyText
             }
-            readonly={readonly}
             mandatory={widgetData[0].mandatory}
             rank={type}
             align={gridAlign}
-            isModal={isModal}
-            updated={updated}
-            filterWidget={filterWidget}
-            filterId={filterId}
             parameterName={fields[0].parameterName}
             selected={widgetValue}
-            tabId={tabId}
-            rowId={rowId}
-            tabIndex={tabIndex}
-            viewId={viewId}
-            autoFocus={autoFocus}
-            initialFocus={initialFocus}
             forceFullWidth={this.props.forceFullWidth}
             forceHeight={this.props.forceHeight}
             validStatus={widgetData[0].validStatus}
@@ -648,6 +656,7 @@ export class RawWidget extends Component {
             {...{
               attribute,
             }}
+            filter={filter}
             widgetField={widgetField}
             dataId={dataId}
             entity={entity}
@@ -1000,7 +1009,6 @@ export class RawWidget extends Component {
       fields,
       type,
       noLabel,
-      widgetData,
       rowId,
       isModal,
       handlePatch,
@@ -1018,6 +1026,10 @@ export class RawWidget extends Component {
       tooltipToggled,
       isEdited,
     } = this.state;
+    const { getWidgetData } = this.props;
+    let { widgetData } = this.props;
+    widgetData = widgetData || getWidgetData();
+
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
     const quickInput = subentity === 'quickInput';
@@ -1144,17 +1156,17 @@ export class RawWidget extends Component {
               })}
               title={valueDescription}
             >
-              <ReactCSSTransitionGroup
-                transitionName="fade"
-                transitionEnterTimeout={200}
-                transitionLeaveTimeout={200}
-              >
-                {errorPopup &&
-                  validStatus &&
-                  !validStatus.valid &&
-                  !validStatus.initialValue &&
-                  this.renderErrorPopup(validStatus.reason)}
-              </ReactCSSTransitionGroup>
+              {errorPopup &&
+              validStatus &&
+              !validStatus.valid &&
+              !validStatus.initialValue ? (
+                <CSSTransition
+                  classNames="fade"
+                  timeout={{ exit: 200, enter: 200 }}
+                >
+                  {this.renderErrorPopup(validStatus.reason)}
+                </CSSTransition>
+              ) : null}
               {widgetBody}
             </div>
             {fields[0].devices && !widgetData[0].readonly && (
@@ -1179,4 +1191,5 @@ RawWidget.defaultProps = RawWidgetDefaultProps;
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
   timeZone: state.appHandler.me.timeZone,
+  filter: state.windowHandler.filter,
 }))(RawWidget);

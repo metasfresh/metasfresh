@@ -104,7 +104,7 @@ export const initialState = {
     layout: {
       activeTab: null,
     },
-    data: [],
+    data: {},
 
     // rowData is an immutable Map with tabId's as keys, and Lists as values.
     // List's elements are plain objects for now
@@ -160,6 +160,19 @@ export const getSelectionData = (
 export const getSelectionInstant = createSelector(
   [getSelectionData],
   items => items
+);
+
+const masterDataSelector = windowHandler => windowHandler.master.data;
+
+export const docStatusSelector = createSelector(
+  masterDataSelector,
+  masterData => {
+    return {
+      status: masterData.DocStatus || -1,
+      action: masterData.DocAction || -1,
+      displayed: true,
+    };
+  }
 );
 
 export const getSelection = ({ state, windowId, viewId }) => {

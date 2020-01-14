@@ -520,6 +520,17 @@ class Window extends PureComponent {
     });
   };
 
+  getWidgetData = item => {
+    const { data } = this.props;
+    const widgetData = item.fields.map(result => data[result.field] || -1);
+
+    if (widgetData.length) {
+      return widgetData;
+    }
+
+    return [{}];
+  };
+
   /**
    * @method renderElements
    * @summary ToDo: Describe the method.
@@ -534,10 +545,8 @@ class Window extends PureComponent {
 
     return elements.map((elem, id) => {
       const autoFocus = isFocused && id === 0;
-      const widgetData = elem.fields.map(item => data[item.field] || -1);
       const fieldName = elem.fields ? elem.fields[0].field : '';
       const relativeDocId = data.ID && data.ID.value;
-
       return (
         <MasterWidget
           ref={c => {
@@ -549,7 +558,7 @@ class Window extends PureComponent {
           key={'element' + id}
           windowType={windowId}
           dataId={dataId}
-          widgetData={widgetData}
+          getWidgetData={this.getWidgetData}
           isModal={!!modal}
           tabId={tabId}
           rowId={rowId}
@@ -561,6 +570,7 @@ class Window extends PureComponent {
           fieldName={fieldName}
           onBlurWidget={this.handleBlurWidget}
           {...elem}
+          item={elem}
         />
       );
     });

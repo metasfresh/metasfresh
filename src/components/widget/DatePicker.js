@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
 import onClickOutside from 'react-onclickoutside';
@@ -14,9 +14,9 @@ import {
 /**
  * @file Class based component.
  * @module DatePicker
- * @extends Component
+ * @extends PureComponent
  */
-class DatePicker extends Component {
+class DatePicker extends PureComponent {
   static timeZoneRegex = new RegExp(/[+-]{1}\d+:\d+/);
 
   constructor(props) {

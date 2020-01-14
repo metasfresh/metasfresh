@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { Set } from 'immutable';
@@ -11,7 +11,7 @@ const TabSingleEntry = props => (
   <div className="tab-sections">{props.children}</div>
 );
 
-class Tabs extends Component {
+class Tabs extends PureComponent {
   constructor(props) {
     super(props);
 

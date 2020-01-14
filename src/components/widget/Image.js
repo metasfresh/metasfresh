@@ -1,5 +1,5 @@
 import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 import { getImageAction, postImageAction } from '../../actions/AppActions';
@@ -21,7 +21,7 @@ const Placeholder = props => (
  * @module Image
  * @extends Component
  */
-class Image extends Component {
+class Image extends PureComponent {
   constructor(props) {
     super(props);
 

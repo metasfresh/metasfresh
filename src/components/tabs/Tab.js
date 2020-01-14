@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import {
@@ -8,7 +8,7 @@ import {
   getTab,
 } from '../../actions/WindowActions';
 
-class Tab extends Component {
+class Tab extends PureComponent {
   constructor(props) {
     super(props);
 

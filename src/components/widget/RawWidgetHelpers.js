@@ -39,7 +39,17 @@ export function generateMomentObj(value, FORMAT) {
 }
 
 export function getClassNames({ icon, forcedPrimary } = {}) {
-  const { widgetData, gridAlign, type, updated, rowId, isModal } = this.props;
+  const {
+    getWidgetData,
+    gridAlign,
+    type,
+    updated,
+    rowId,
+    isModal,
+  } = this.props;
+  let { widgetData } = this.props;
+  widgetData = widgetData || getWidgetData();
+
   const { isEdited } = this.state;
   const { readonly, value, mandatory, validStatus } = widgetData[0];
 
