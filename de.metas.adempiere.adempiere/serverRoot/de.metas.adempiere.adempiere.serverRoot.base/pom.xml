@@ -173,7 +173,7 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>4.9</version>
+			<version>6.3</version>
 			<!-- <exclusions> <exclusion> <groupId>ch.qos.logback</groupId> <artifactId>logback-core</artifactId> 
 				</exclusion> <exclusion> <groupId>com.fasterxml.jackson.core</groupId> <artifactId>jackson-databind</artifactId> 
 				</exclusion> </exclusions> -->

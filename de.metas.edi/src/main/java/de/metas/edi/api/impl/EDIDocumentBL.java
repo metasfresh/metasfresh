@@ -23,7 +23,6 @@ package de.metas.edi.api.impl;
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -38,11 +37,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -57,6 +58,7 @@ import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderDAO;
@@ -99,7 +101,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final String EDIStatus = invoice.getEDI_ExportStatus();
 		if (!invoice.isEdiEnabled() && !I_EDI_Document.EDI_EXPORTSTATUS_Invalid.equals(EDIStatus))
 		{
-			loggable.addLog("isValidInvoice - C_Invoice_ID={} has IsEdiEnabled={}, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(),invoice.isEdiEnabled(),EDIStatus );
+			loggable.addLog("isValidInvoice - C_Invoice_ID={} has IsEdiEnabled={}, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(), invoice.isEdiEnabled(), EDIStatus);
 			return feedback;
 		}
 
@@ -185,10 +187,17 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	}
 
 	@Override
-	public List<Exception> isValidDesAdv(final I_EDI_Desadv desadv)
+	public List<Exception> isValidDesAdv(@NonNull final I_EDI_Desadv desadvRecord)
 	{
-		// TODO implement, use a lot of code from isValidInOut
-		return Collections.emptyList();
+		final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+		final List<Exception> feedback = new ArrayList<>();
+
+		final ImmutableList<ITranslatableString> errorMsgs = desadvBL.createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList.of(desadvRecord));
+		for (final ITranslatableString msg : errorMsgs)
+		{
+			feedback.add(new AdempiereException(msg));
+		}
+		return feedback;
 	}
 
 	@Override

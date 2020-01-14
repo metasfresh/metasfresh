@@ -1,5 +1,7 @@
 package de.metas.edi.async.spi.impl;
 
+
+
 /*
  * #%L
  * de.metas.edi
@@ -42,22 +44,17 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-/**
- * Send EDI documents asynchronously.
- *
- * @author al
- */
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {
 	/**
-	 * TODO enqueue edi documents ordered by thei POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
+	 * TODO enqueue edi documents ordered by their POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
 	 * aggregation in the synchronous enqueuing process and have the code here much cleaner.
 	 */
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		//
 		// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
@@ -71,7 +68,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		final List<I_EDI_Document> ediDocuments = queueDAO.retrieveItems(workpackage, I_EDI_Document.class, localTrxName);
 		for (final I_EDI_Document ediDocument : ediDocuments)
 		{
-			//
 			// Create export processor
 			final TableRecordIdPair documentTableRecordIdPair = getDocumentTableRecordId(ediDocument);
 			if (!seenDocumentRecordIds.add(documentTableRecordIdPair))
@@ -93,12 +89,12 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			final List<Exception> exportFeedback = export.doExport();
 			if (exportFeedback.isEmpty())
 			{
-				Loggables.get().addLog("Successfully exported ediDocumentNo={}", ediDocument.getDocumentNo());
+				Loggables.addLog("Successfully exported ediDocumentNo={}", ediDocument.getDocumentNo());
 			}
 			else
 			{
 				final String errorMessage = ediDocumentBL.buildFeedback(exportFeedback);
-				Loggables.get().addLog("Did not export ediDocument because of validation error(s); ediDocumentNo={}; errorMsg={}",
+				Loggables.addLog("Did not export ediDocument because of validation error(s); ediDocumentNo={}; errorMsg={}",
 						ediDocument.getDocumentNo(), errorMessage);
 				feedback.addAll(exportFeedback);
 			}
