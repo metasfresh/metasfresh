@@ -10,6 +10,7 @@ import { setBreadcrumb } from './actions/MenuActions';
 import Translation from './components/Translation';
 import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
+import Calendar from './containers/Calendar';
 import DocList from './containers/DocList.js';
 import InboxAll from './containers/InboxAll.js';
 import Login from './containers/Login.js';
@@ -202,6 +203,7 @@ export const getRoutes = (store, auth, plugins) => {
           />
         )}
       />
+      <Route path="/calendar" component={Calendar} />
       <Route path="*" component={NoMatch} />
     </Route>
   );

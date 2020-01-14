@@ -111,6 +111,11 @@
     "why-did-you-update": "1.0.6"
   },
   "dependencies": {
+    "@fullcalendar/core": "^4.3.1",
+    "@fullcalendar/daygrid": "^4.3.0",
+    "@fullcalendar/interaction": "^4.3.0",
+    "@fullcalendar/react": "^4.3.0",
+    "@fullcalendar/timegrid": "^4.3.0",
     "@zxing/library": "0.12.3",
     "axios": "0.19.0",
     "bootstrap": "4.3.1",
