@@ -18,6 +18,7 @@ import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -312,33 +313,48 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 		//
 		// View related internal parameters
+		addViewInternalParameters(request, processInfoBuilder);
+
+		return processInfoBuilder.build();
+	}
+
+	@VisibleForTesting
+	protected void addViewInternalParameters(final CreateProcessInstanceRequest request,
+			final ProcessInfoBuilder processInfoBuilder)
+	{
 		if (request.getViewRowIdsSelection() != null)
 		{
 			final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
-			processInfoBuilder
-					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+			processInfoBuilder.setLoadParametersFromDB(true) // important: we need to load the existing parameters from
+															 // database, besides the internal ones we are adding
+															 // here
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewRowIdsSelection.getViewId().toJson())
-					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewRowIdsSelection.getRowIds().toCommaSeparatedString());
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds,
+							viewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
 		if (request.getParentViewRowIdsSelection() != null)
 		{
 			final ViewRowIdsSelection parentViewRowIdsSelection = request.getParentViewRowIdsSelection();
-			processInfoBuilder
-					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewId, parentViewRowIdsSelection.getViewId().toJson())
-					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds, parentViewRowIdsSelection.getRowIds().toCommaSeparatedString());
+			processInfoBuilder.setLoadParametersFromDB(true) // important: we need to load the existing parameters from
+															 // database, besides the internal ones we are adding
+															 // here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewId,
+							parentViewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds,
+							parentViewRowIdsSelection.getRowIds().toCommaSeparatedString());
 
 		}
 		if (request.getChildViewRowIdsSelection() != null)
 		{
 			final ViewRowIdsSelection childViewRowIdsSelection = request.getChildViewRowIdsSelection();
-			processInfoBuilder
-					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewId, childViewRowIdsSelection.getViewId().toJson())
-					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds, childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
+			processInfoBuilder.setLoadParametersFromDB(true) // important: we need to load the existing parameters from
+															 // database, besides the internal ones we are adding
+															 // here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewId,
+							childViewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds,
+							childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
-
-		return processInfoBuilder.build();
 	}
 
 	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceDocumentId)
