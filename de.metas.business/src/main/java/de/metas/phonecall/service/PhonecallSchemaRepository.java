@@ -1,6 +1,8 @@
 package de.metas.phonecall.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.DayOfWeek;
 import java.util.Collection;
@@ -13,6 +15,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Phonecall_Schedule;
 import org.compiere.model.I_C_Phonecall_Schema;
 import org.compiere.model.I_C_Phonecall_Schema_Version;
@@ -289,5 +292,39 @@ public class PhonecallSchemaRepository
 		{
 			return null;
 		}
+	}
+
+	public void updateLinesOnSchemaChanged(final PhonecallSchemaVersionId phonecallSchemaVersionId)
+	{
+		final int phonecallSchemaTableId = getTableId(I_C_Phonecall_Schema.class);
+
+		final PhonecallSchemaId phonecallSchemaId = phonecallSchemaVersionId.getPhonecallSchemaId();
+		final List<I_C_Phonecall_Schema_Version_Line> linesWithDifferentSchema = retrieveLinesWithDifferentSchemas(phonecallSchemaVersionId);
+
+		final ImmutableSet<Integer> schemasToInvalidate = linesWithDifferentSchema.stream()
+				.map(line -> line.getC_Phonecall_Schema_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final I_C_Phonecall_Schema_Version_Line line : linesWithDifferentSchema)
+		{
+			line.setC_Phonecall_Schema_ID(phonecallSchemaId.getRepoId());
+			saveRecord(line);
+		}
+
+		schemasToInvalidate.stream()
+				.forEach(schemaId -> schemas.resetForRecordId(TableRecordReference.of(phonecallSchemaTableId, schemaId)));
+
+		schemas.resetForRecordId(TableRecordReference.of(phonecallSchemaTableId, phonecallSchemaId.getRepoId()));
+
+	}
+
+	private List<I_C_Phonecall_Schema_Version_Line> retrieveLinesWithDifferentSchemas(PhonecallSchemaVersionId phonecallSchemaVersionId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Phonecall_Schema_Version_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Phonecall_Schema_Version_Line.COLUMN_C_Phonecall_Schema_Version_ID, phonecallSchemaVersionId)
+				.create()
+				.list();
 	}
 }
