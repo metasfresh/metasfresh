@@ -363,8 +363,9 @@ public class DesadvBL implements IDesadvBL
 		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
-		StockQtyAndUOMQty remainingQtyToAdd = extractInitialQuantityToAdd(inOutLineRecord, invoicableQtyBasedOn);
+		final StockQtyAndUOMQty inOutLineQty = extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
+		StockQtyAndUOMQty remainingQtyToAdd = inOutLineQty;
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
 		for (final I_M_HU topLevelHU : topLevelHUs)
@@ -378,14 +379,14 @@ public class DesadvBL implements IDesadvBL
 			addPackToLineUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd);
 		}
 
-		addOrSubtractInOutLineQtys(desadvLineRecord, inOutLineRecord, true/* add */);
+		addOrSubtractInOutLineQtys(desadvLineRecord, inOutLineQty, true/* add */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
 	}
 
-	private StockQtyAndUOMQty extractInitialQuantityToAdd(
+	private StockQtyAndUOMQty extractInOutLineQty(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
@@ -684,7 +685,11 @@ public class DesadvBL implements IDesadvBL
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 
-		addOrSubtractInOutLineQtys(desadvLine, inOutLineRecord, false/* add=false, i.e. subtract */);
+		final StockQtyAndUOMQty inOutLineQty = extractInOutLineQty(
+				inOutLineRecord,
+				InvoicableQtyBasedOn.fromRecordString(desadvLine.getInvoicableQtyBasedOn()));
+
+		addOrSubtractInOutLineQtys(desadvLine, inOutLineQty, false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLine);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(0);
@@ -693,36 +698,28 @@ public class DesadvBL implements IDesadvBL
 
 	private void addOrSubtractInOutLineQtys(
 			final I_EDI_DesadvLine desadvLineRecord,
-			final I_M_InOutLine inOutLineRecord,
+			final StockQtyAndUOMQty inOutLineQty,
 			final boolean add)
 	{
-		final BigDecimal movementQtyEff;
-		final BigDecimal qtyEnteredEff;
-		if (add)
-		{
-			movementQtyEff = inOutLineRecord.getMovementQty();
-			qtyEnteredEff = inOutLineRecord.getQtyEntered();
-		}
-		else
-		{
-			movementQtyEff = inOutLineRecord.getMovementQty().negate();
-			qtyEnteredEff = inOutLineRecord.getQtyEntered().negate();
-		}
+		final StockQtyAndUOMQty inOutLineQtyEff = inOutLineQty.negateIfNot(add);
 
-		final BigDecimal newMovementQty = desadvLineRecord.getQtyDeliveredInStockingUOM().add(movementQtyEff);
+		final BigDecimal newMovementQty = desadvLineRecord.getQtyDeliveredInStockingUOM().add(inOutLineQtyEff.getStockQty().toBigDecimal());
 		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
 
 		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
-		final Quantity inoutLineQtyDelivered = Quantitys.create(qtyEnteredEff, UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 
 		final BigDecimal newQtyDeliveredInUOM = Quantitys
-				.add(UOMConversionContext.of(desadvLineRecord.getM_Product_ID()), desadvLineQtyDelivered, inoutLineQtyDelivered)
+				.add(UOMConversionContext.of(desadvLineRecord.getM_Product_ID()),
+						desadvLineQtyDelivered,
+						inOutLineQtyEff.getUOMQtyNotNull())
 				.toBigDecimal();
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM);
 
 		final I_EDI_Desadv desadvRecord = desadvLineRecord.getEDI_Desadv();
-		final BigDecimal sumDeliveredInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(movementQtyEff);
+		final BigDecimal sumDeliveredInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(inOutLineQtyEff.getStockQty().toBigDecimal());
 		desadvRecord.setSumDeliveredInStockingUOM(sumDeliveredInStockingUOM);
+		updateFullfilmentPercent(desadvRecord);
+
 		saveRecord(desadvRecord);
 	}
 
