@@ -67,18 +67,14 @@ import lombok.Value;
 @Service
 public class CommissionConfigFactory
 {
-	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private CommissionConfigStagingDataService commissionConfigStagingDataService;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public CommissionConfigFactory(
-			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
-			@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService)
+	public CommissionConfigFactory(@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService)
 	{
-		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionConfigStagingDataService = commissionConfigStagingDataService;
 	}
 

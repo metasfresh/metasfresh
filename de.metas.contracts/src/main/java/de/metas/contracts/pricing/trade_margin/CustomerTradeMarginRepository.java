@@ -23,12 +23,12 @@
 package de.metas.contracts.pricing.trade_margin;
 
 import com.google.common.collect.ImmutableList;
-import com.sun.istack.internal.NotNull;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.model.I_C_Customer_Trade_Margin;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
@@ -90,10 +90,10 @@ public class CustomerTradeMarginRepository
 	@Value
 	private static class CacheKey
 	{
-		@NotNull
+		@NonNull
 		BPartnerId salesRepId;
 
-		@NotNull
+		@NonNull
 		LocalDate requestedDate;
 
 		public static CacheKey of(final CustomerTradeMarginSearchCriteria customerTradeMarginSearchCriteria)
