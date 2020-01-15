@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -86,22 +87,17 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private final Convert m_convertInternal;
 
 	/** Database driver */
-	private static final Supplier<org.postgresql.Driver> driverSupplier = Suppliers.memoize(new Supplier<org.postgresql.Driver>()
-	{
-		@Override
-		public org.postgresql.Driver get()
+	private static final Supplier<org.postgresql.Driver> driverSupplier = Suppliers.memoize(() -> {
+		try
 		{
-			try
-			{
-				final org.postgresql.Driver driver = new org.postgresql.Driver();
-				DriverManager.registerDriver(driver);
-				DriverManager.setLoginTimeout(Database.CONNECTION_TIMEOUT);
-				return driver;
-			}
-			catch (SQLException e)
-			{
-				throw new DBException("Failed registering postgresql database driver", e);
-			}
+			final org.postgresql.Driver driver = new org.postgresql.Driver();
+			DriverManager.registerDriver(driver);
+			DriverManager.setLoginTimeout(Database.CONNECTION_TIMEOUT);
+			return driver;
+		}
+		catch (SQLException e)
+		{
+			throw new DBException("Failed registering postgresql database driver", e);
 		}
 	});
 
@@ -279,7 +275,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	public String getCatalog()
 	{
 		if (m_dbName != null)
+		{
 			return m_dbName;
+		}
 		// log.error("Database Name not set (yet) - call getConnectionURL first");
 		return null;
 	}	// getCatalog
@@ -603,10 +601,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			//
 			// Timeout unreturned connections
 			// i.e. kill them and get them back to the pool.
-			final int unreturnedConnectionTimeoutMillis = SystemUtils.getSystemProperty(CONFIG_UnreturnedConnectionTimeoutMillis, CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue);
-			if (unreturnedConnectionTimeoutMillis > 0)
+			final Duration unreturnedConnectionTimeout = Duration.ofMillis(SystemUtils.getSystemProperty(CONFIG_UnreturnedConnectionTimeoutMillis, CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue));
+			if (unreturnedConnectionTimeout.getSeconds() > 0)
 			{
-				cpds.setUnreturnedConnectionTimeout(unreturnedConnectionTimeoutMillis);
+				// IMPORTANT: unreturnedConnectionTimeout is in seconds, see https://www.mchange.com/projects/c3p0/#unreturnedConnectionTimeout 
+				cpds.setUnreturnedConnectionTimeout((int)unreturnedConnectionTimeout.getSeconds());
 				cpds.setDebugUnreturnedConnectionStackTraces(true);
 			}
 
@@ -699,12 +698,17 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	public String getConstraintType(Connection conn, String tableName, String IXName)
 	{
 		if (IXName == null || IXName.length() == 0)
+		{
 			return "0";
+		}
 		if (IXName.toUpperCase().endsWith("_KEY"))
+		{
 			return "1" + IXName;
-		else
+		}
+		else {
 			return "0";
 		// jz temp, modify later from user.constraints
+		}
 	}
 
 	/**
@@ -741,7 +745,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				{
 					Object value = rs.getObject(i + 1);
 					if (i > 0)
+					{
 						System.out.print(", ");
+					}
 					System.out.print(value != null ? value.toString() : "");
 				}
 				System.out.println();
@@ -757,7 +763,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			try
 			{
 				if (stmt != null)
+				{
 					stmt.close();
+				}
 			}
 			catch (Exception e)
 			{
@@ -817,9 +825,13 @@ public class DB_PostgreSQL implements AdempiereDatabase
 					+ " RESTART " + start, trxName);
 		}
 		if (no == -1)
+		{
 			return false;
+		}
 		else
+		{
 			return true;
+		}
 	}
 
 	@Override
@@ -876,66 +888,103 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	{
 		if (columnName.equals("EntityType")
 				|| columnName.equals("AD_Language"))
+		{
 			return "VARCHAR(" + fieldLength + ")";
+		}
 		// ID
 		if (DisplayType.isID(displayType))
 		{
 			if (displayType == DisplayType.Image 	// FIXTHIS
 					&& columnName.equals("BinaryData"))
+			{
 				return "BYTEA";
-			// ID, CreatedBy/UpdatedBy, Acct
+			}
 			else if (columnName.endsWith("_ID")
 					|| columnName.endsWith("tedBy")
 					|| columnName.endsWith("_Acct")
 					|| "AD_Key".equals(columnName) // HARDCODED for AD_Ref_Table.AD_Key
 					|| "AD_Display".equals(columnName) // HARDCODED for AD_Ref_Table.AD_Display
 			)
+			{
 				return "NUMERIC(10)";
+			}
 			else if (fieldLength < 4)
+			{
 				return "CHAR(" + fieldLength + ")";
+			}
 			else
+			{
 				// EntityType, AD_Language fallback
 				return "VARCHAR(" + fieldLength + ")";
+			}
 		}
 		//
 		if (displayType == DisplayType.Integer)
+		{
 			return "NUMERIC(10)";
+		}
 		if (displayType == DisplayType.DateTime)
+		{
 			return "TIMESTAMP WITH TIME ZONE";
+		}
 		if (DisplayType.isDate(displayType))
+		{
 			return "TIMESTAMP WITHOUT TIME ZONE";
+		}
 		if (DisplayType.isNumeric(displayType))
+		{
 			return "NUMERIC";
+		}
 		if (displayType == DisplayType.Binary)
+		{
 			return "BYTEA";
+		}
 		if (displayType == DisplayType.TextLong
 				|| (displayType == DisplayType.Text && fieldLength >= 4000))
+		{
 			return "TEXT";
+		}
 		if (displayType == DisplayType.YesNo)
+		{
 			return "CHAR(1)";
+		}
 		if (displayType == DisplayType.List)
 		{
 			if (fieldLength == 1)
+			{
 				return "CHAR(" + fieldLength + ")";
+			}
 			else
+			{
 				return "VARCHAR(" + fieldLength + ")";
+			}
 		}
 		if (displayType == DisplayType.Color)   // this condition is never reached - filtered above in isID
 		{
 			if (columnName.endsWith("_ID"))
+			{
 				return "NUMERIC(10)";
+			}
 			else
+			{
 				return "CHAR(" + fieldLength + ")";
+			}
 		}
 		if (displayType == DisplayType.Button)
 		{
 			if (columnName.endsWith("_ID"))
+			{
 				return "NUMERIC(10)";
+			}
 			else
+			{
 				return "CHAR(" + fieldLength + ")";
+			}
 		}
 		if (!DisplayType.isText(displayType))
+		{
 			log.error("Unhandled Data Type = " + displayType);
+		}
 
 		return "VARCHAR(" + fieldLength + ")";
 	}	// getSQLDataType
