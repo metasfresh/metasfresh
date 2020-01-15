@@ -1,19 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import java.math.BigDecimal;
-
-import org.springframework.stereotype.Service;
-
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -47,27 +47,70 @@ public class InvoiceCandidateRecordHelper
 		this.moneyService = moneyService;
 	}
 
-	Money extractForecastNetAmt(@NonNull final I_C_Invoice_Candidate icRecord)
+	CommissionPoints extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
+		final CommissionPoints forecastCommissionPoints;
+
 		final ProductPrice priceActual = Services.get(IInvoiceCandBL.class).getPriceActual(icRecord);
+		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Ponits_Per_Price_UOM();
 
-		final BigDecimal forecastQtyInUOM = icRecord.getQtyEntered()
-				.subtract(icRecord.getQtyToInvoiceInUOM())
-				.subtract(icRecord.getQtyInvoicedInUOM());
+		final BigDecimal forecastQtyInPriceUOM = icRecord.getQtyEntered()
+				.subtract( icRecord.getQtyToInvoiceInUOM() )
+				.subtract( icRecord.getQtyInvoicedInUOM() );
 
-		final Money forecastNetAmt = moneyService.multiply(
-				Quantitys.create(forecastQtyInUOM, UomId.ofRepoId(icRecord.getC_UOM_ID())),
-				priceActual);
-		return forecastNetAmt;
+		if (baseCommissionPointsPerPriceUOM.signum() > 0)
+		{
+			final BigDecimal forecastCommissionPointsAmount = baseCommissionPointsPerPriceUOM.multiply(forecastQtyInPriceUOM);
+			forecastCommissionPoints = CommissionPoints.of(forecastCommissionPointsAmount);
+		}
+		else
+		{
+			final Money forecastNetAmt = moneyService.multiply(
+					Quantitys.create(forecastQtyInPriceUOM, UomId.ofRepoId(icRecord.getC_UOM_ID())),
+					priceActual);
+
+			forecastCommissionPoints = CommissionPoints.of( forecastNetAmt.toBigDecimal() );
+		}
+
+		return forecastCommissionPoints;
 	}
 
-	Money extractNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
+	CommissionPoints extractCommissionPointsToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		return Money.of(icRecord.getNetAmtToInvoice(), CurrencyId.ofRepoId(icRecord.getC_Currency_ID()));
+		final CommissionPoints commissionPointsToInvoice;
+		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Ponits_Per_Price_UOM();
+
+		if (baseCommissionPointsPerPriceUOM.signum() > 0)
+		{
+			commissionPointsToInvoice = CommissionPoints.of( baseCommissionPointsPerPriceUOM.multiply( icRecord.getQtyToInvoiceInUOM() ) );
+		}
+		else
+		{
+			commissionPointsToInvoice = CommissionPoints.of( icRecord.getNetAmtToInvoice() );
+		}
+
+		return commissionPointsToInvoice;
 	}
 
-	Money extractInvoicedNetAmt(@NonNull final I_C_Invoice_Candidate icRecord)
+	CommissionPoints extractInvoicedCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		return Money.of(icRecord.getNetAmtInvoiced(), CurrencyId.ofRepoId(icRecord.getC_Currency_ID()));
+		final CommissionPoints commissionPointsToInvoice;
+		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Ponits_Per_Price_UOM();
+
+		if (baseCommissionPointsPerPriceUOM.signum() > 0)
+		{
+			commissionPointsToInvoice = CommissionPoints.of( baseCommissionPointsPerPriceUOM.multiply( icRecord.getQtyInvoicedInUOM() ) );
+		}
+		else
+		{
+			commissionPointsToInvoice = CommissionPoints.of( icRecord.getNetAmtInvoiced() );
+		}
+
+		return commissionPointsToInvoice;
+	}
+
+	Percent extractTradedCommissionPercent(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		return Percent.of( icRecord.getTraded_Commission_Percent() );
 	}
 }

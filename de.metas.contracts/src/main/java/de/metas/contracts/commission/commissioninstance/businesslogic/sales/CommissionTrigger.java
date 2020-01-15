@@ -47,7 +47,6 @@ public class CommissionTrigger
 
 	@Builder
 	private CommissionTrigger(
-			@NonNull final Instant timestamp,
 			@NonNull final Customer customer,
 			@NonNull final Beneficiary beneficiary,
 			@Nullable final CommissionTriggerData commissionTriggerData)

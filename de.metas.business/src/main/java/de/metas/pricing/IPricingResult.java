@@ -167,4 +167,12 @@ public interface IPricingResult
 	void setCampaignPrice(boolean isCampaignPrice);
 
 	boolean isCampaignPrice();
+
+	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
+
+	BigDecimal getBaseCommissionPointsPerPriceUOM();
+
+	void setTradedCommissionPercent(BigDecimal tradedCommissionPercent);
+
+	BigDecimal getTradedCommissionPercent();
 }

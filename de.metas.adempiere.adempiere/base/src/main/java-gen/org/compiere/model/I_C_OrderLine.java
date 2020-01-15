@@ -105,6 +105,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Base Commission Points Per Price UOM.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBase_Commission_Ponits_Per_Price_UOM (java.math.BigDecimal Base_Commission_Ponits_Per_Price_UOM);
+
+	/**
+	 * Get Base Commission Points Per Price UOM.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getBase_Commission_Ponits_Per_Price_UOM();
+
+    /** Column definition for Base_Commission_Ponits_Per_Price_UOM */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_Base_Commission_Ponits_Per_Price_UOM = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "Base_Commission_Ponits_Per_Price_UOM", null);
+    /** Column name Base_Commission_Ponits_Per_Price_UOM */
+    public static final String COLUMNNAME_Base_Commission_Ponits_Per_Price_UOM = "Base_Commission_Ponits_Per_Price_UOM";
+
+	/**
 	 * Set Preissystem.
 	 *
 	 * <br>Type: Search
@@ -2499,6 +2522,29 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_TaxAmtInfo = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "TaxAmtInfo", null);
     /** Column name TaxAmtInfo */
     public static final String COLUMNNAME_TaxAmtInfo = "TaxAmtInfo";
+
+	/**
+	 * Set Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTraded_Commission_Percent (java.math.BigDecimal Traded_Commission_Percent);
+
+	/**
+	 * Get Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getTraded_Commission_Percent();
+
+    /** Column definition for Traded_Commission_Percent */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_Traded_Commission_Percent = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "Traded_Commission_Percent", null);
+    /** Column name Traded_Commission_Percent */
+    public static final String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
 
 	/**
 	 * Get Aktualisiert.

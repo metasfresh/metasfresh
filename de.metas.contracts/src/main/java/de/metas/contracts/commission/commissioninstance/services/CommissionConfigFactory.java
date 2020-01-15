@@ -84,7 +84,7 @@ public class CommissionConfigFactory
 
 	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
 	{
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(contractRequest.getSalesRepBPartnerId());
+		final Hierarchy hierarchy = contractRequest.getCommissionHierarchy();
 		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(Beneficiary.of(contractRequest.getSalesRepBPartnerId()));
 
 		final ImmutableList<BPartnerId> allBPartnerIds = StreamSupport
@@ -207,6 +207,9 @@ public class CommissionConfigFactory
 
 		@NonNull
 		LocalDate date;
+
+		@NonNull
+		Hierarchy commissionHierarchy;
 	}
 
 	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)

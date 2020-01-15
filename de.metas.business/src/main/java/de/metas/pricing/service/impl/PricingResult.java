@@ -115,6 +115,10 @@ final class PricingResult implements IPricingResult
 	@Getter(AccessLevel.NONE)
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
 
+	private BigDecimal baseCommissionPointsPerPriceUOM;
+
+	private BigDecimal tradedCommissionPercent;
+
 	@Builder
 	private PricingResult(
 			@NonNull final LocalDate priceDate,
