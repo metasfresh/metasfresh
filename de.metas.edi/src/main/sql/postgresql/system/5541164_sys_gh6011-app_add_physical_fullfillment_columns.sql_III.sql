@@ -1,4 +1,4 @@
-here we need another commit which i'm putting into a dedicated file
+
 -- 2020-01-10T19:21:15.631Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('edi_desadv','FulFillmentPercent',null,'NOT NULL',null)
