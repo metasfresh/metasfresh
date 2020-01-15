@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import java.time.Instant;
-
 import javax.annotation.Nullable;
 
 import de.metas.contracts.commission.Beneficiary;
