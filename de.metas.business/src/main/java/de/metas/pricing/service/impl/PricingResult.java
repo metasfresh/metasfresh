@@ -119,6 +119,10 @@ final class PricingResult implements IPricingResult
 	@Getter
 	private ImmutableList<String> loggableMessages;
 
+	private BigDecimal baseCommissionPointsPerPriceUOM;
+
+	private BigDecimal tradedCommissionPercent;
+
 	@Builder
 	private PricingResult(
 			@NonNull final LocalDate priceDate,

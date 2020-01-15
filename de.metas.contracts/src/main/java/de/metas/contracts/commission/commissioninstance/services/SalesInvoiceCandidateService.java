@@ -83,7 +83,7 @@ public class SalesInvoiceCandidateService
 		// update existing commission data
 		for (final CommissionInstance instance : instances)
 		{
-			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId, candidateDeleted);
+			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandidateId(invoiceCandidateId, candidateDeleted);
 			final CommissionTriggerChange change = CommissionTriggerChange.builder()
 					.instanceToUpdate(instance)
 					.newCommissionTriggerData(newTriggerData)
