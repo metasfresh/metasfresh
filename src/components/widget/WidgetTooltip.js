@@ -18,9 +18,9 @@ class WidgetTooltip extends PureComponent {
    * on focus.
    */
   handleClick = () => {
-    const { onToggle, widget } = this.props;
+    const { onToggle, fieldName } = this.props;
 
-    onToggle(widget.field);
+    onToggle(fieldName);
   };
 
   /**
@@ -29,10 +29,10 @@ class WidgetTooltip extends PureComponent {
    * @todo Write the documentation
    */
   handleClickOutside() {
-    const { widget, onToggle, isToggled } = this.props;
+    const { fieldName, onToggle, isToggled } = this.props;
 
     if (isToggled) {
-      onToggle(widget.field, false);
+      onToggle(fieldName, false);
     }
   }
 
@@ -95,6 +95,7 @@ class WidgetTooltip extends PureComponent {
  * @typedef {object} Props Component props
  * @prop {*} widget
  * @prop {*} data
+ * @prop {string} [fieldName]
  * @prop {bool} isToggled
  * @prop {func} [onToggle]
  * @todo Check props. Which proptype? Required or optional?
@@ -102,6 +103,7 @@ class WidgetTooltip extends PureComponent {
 WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,
+  fieldName: PropTypes.string,
   isToggled: PropTypes.bool.isRequired,
   onToggle: PropTypes.func,
 };

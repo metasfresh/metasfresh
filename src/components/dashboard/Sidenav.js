@@ -1,11 +1,11 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 
 import { getRequest } from '../../actions/GenericActions';
 import Indicator from '../charts/Indicator';
 import ChartWidget from './ChartWidget';
 import DndWidget from './DndWidget';
 
-export default class Sidenav extends PureComponent {
+class Sidenav extends Component {
   constructor(props) {
     super(props);
 
@@ -74,3 +74,5 @@ export default class Sidenav extends PureComponent {
     );
   }
 }
+
+export default Sidenav;

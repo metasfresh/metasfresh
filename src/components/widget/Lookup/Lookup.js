@@ -1,7 +1,8 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
 import * as _ from 'lodash';
 
@@ -11,7 +12,7 @@ import List from '../List/List';
 import RawLookup from './RawLookup';
 import WidgetTooltip from '../WidgetTooltip';
 
-class Lookup extends PureComponent {
+class Lookup extends Component {
   rawLookupsState = {};
 
   constructor(props) {
@@ -77,11 +78,11 @@ class Lookup extends PureComponent {
   _changeWidgetProperty = (field, property, value, callback) => {
     const { lookupWidgets } = this.state;
 
-    if (lookupWidgets[field][property] !== property) {
+    if (lookupWidgets[`${field}`][`${property}`] !== property) {
       const newLookupWidgets = {
         ...lookupWidgets,
         [`${field}`]: {
-          ...lookupWidgets[field],
+          ...lookupWidgets[`${field}`],
           [`${property}`]: value,
         },
       };
@@ -119,6 +120,37 @@ class Lookup extends PureComponent {
         if (nextIndex < widgetData.length && widgetData[index].field === prop) {
           let nextProp = properties[nextIndex];
 
+          // TODO: Looks like this code was never used
+          // if (nextProp.source === 'list') {
+          //   this.linkedList.map(listComponent => {
+          //     if (listComponent && listComponent.props) {
+          //       let listProp = listComponent.props.mainProperty;
+
+          //       if (
+          //         listProp &&
+          //         Array.isArray(listProp) &&
+          //         listProp.length > 0
+          //       ) {
+          //         const listPropField = listProp[0].field;
+
+          //         if (
+          //           listComponent.activate &&
+          //           listPropField === nextProp.field
+          //         ) {
+          //           listComponent.requestListData(true, true);
+          //           listComponent.activate();
+          //         }
+          //       }
+          //     }
+          //   });
+
+          //   this.setState({
+          //     property: nextProp.field,
+          //   });
+          // } else {
+          // this.setState({
+          //   property: nextProp.field,
+          // });
           this.setState(
             {
               property: nextProp.field,
@@ -145,7 +177,7 @@ class Lookup extends PureComponent {
   // mouse param is to tell us if we should enable listening to keys
   // in Table or not. If user selected option with mouse, we still
   // wait for more keyboard action (until the field is blurred with keyboard)
-  dropdownListToggle = (value, mouse, field) => {
+  dropdownListToggle = (value, field, mouse) => {
     const { onFocus, onBlur } = this.props;
 
     this._changeWidgetProperty(field, 'dropdownOpen', value, () => {
@@ -289,7 +321,6 @@ class Lookup extends PureComponent {
   render() {
     const {
       rank,
-      filter,
       readonly,
       widgetData,
       placeholder,
@@ -301,6 +332,7 @@ class Lookup extends PureComponent {
       rowId,
       tabIndex,
       validStatus,
+      recent,
       onChange,
       newRecordCaption,
       properties,
@@ -369,18 +401,17 @@ class Lookup extends PureComponent {
             // if (index < 2 && this.props.properties[0].field === "C_BPartner_ID") {
             // TODO: This is really not how we should be doing this. Backend should send
             // us info which fields are usable with barcode scanner
-            const field = item.field;
-            showBarcodeScannerBtn = field === 'M_LocatorTo_ID';
+            showBarcodeScannerBtn = item.field === 'M_LocatorTo_ID';
 
-            const lookupWidget = this.getLookupWidget(field);
+            const lookupWidget = this.getLookupWidget(item.field);
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
               widgetData,
               'field',
-              field
+              item.field
             )[0];
             const widgetTooltipToggled = lookupWidget.tooltipOpen;
-            const idValue = `lookup_${field}`;
+            const idValue = `lookup_${item.field}`;
 
             if (item.type === 'Tooltip') {
               if (!itemByProperty.value) {
@@ -389,7 +420,7 @@ class Lookup extends PureComponent {
 
               return (
                 <div
-                  key={field}
+                  key={item.field}
                   id={idValue}
                   className="lookup-widget-wrapper lookup-tooltip"
                 >
@@ -397,7 +428,7 @@ class Lookup extends PureComponent {
                     widget={item}
                     data={itemByProperty}
                     isToggled={widgetTooltipToggled}
-                    onToggle={this.widgetTooltipToggle}
+                    onToggle={val => this.widgetTooltipToggle(item.field, val)}
                   />
                 </div>
               );
@@ -421,32 +452,31 @@ class Lookup extends PureComponent {
 
               return (
                 <RawLookup
-                  dispatch={this.props.dispatch}
                   key={index}
+                  idValue={idValue}
+                  defaultValue={defaultValue}
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
-                  mainProperty={item}
+                  mainProperty={[item]}
                   readonly={widgetData[index].readonly}
                   mandatory={widgetData[index].mandatory}
                   resetLocalClearing={this.resetLocalClearing}
                   setNextProperty={this.setNextProperty}
                   lookupEmpty={isInputEmpty}
+                  fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={
                     index === 0 && this.handleInputEmptyStatus
                   }
                   enableAutofocus={this.enableAutofocus}
                   isOpen={lookupWidget.dropdownOpen}
-                  onDropdownListToggle={this.dropdownListToggle}
+                  onDropdownListToggle={(val, mouse) => {
+                    this.dropdownListToggle(val, item.field, mouse);
+                  }}
                   forcedWidth={width}
+                  forceHeight={forceHeight}
                   parentElement={forceFullWidth && this.dropdown}
                   isComposed={this.props.properties.length > 1 ? true : false}
                   {...{
-                    field,
-                    filter,
-                    idValue,
-                    defaultValue,
-                    fireDropdownList,
-                    forceHeight,
                     placeholder,
                     tabIndex,
                     windowType,
@@ -454,6 +484,7 @@ class Lookup extends PureComponent {
                     entity,
                     dataId,
                     isModal,
+                    recent,
                     rank,
                     updated,
                     filterWidget,
@@ -480,17 +511,17 @@ class Lookup extends PureComponent {
             ) {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
-                field === property && !autofocusDisabled;
+                item.field === property && !autofocusDisabled;
               let defaultValue = localClearing ? null : itemByProperty.value;
               return (
                 <div
-                  key={field}
+                  key={item.field}
                   id={idValue}
                   className={classnames(
                     'lookup-widget-wrapper lookup-widget-wrapper-bcg',
                     {
                       'raw-lookup-disabled': disabled || readonly,
-                      focused: this.getFocused(field),
+                      focused: this.getFocused(item.field),
                     }
                   )}
                 >
@@ -500,7 +531,7 @@ class Lookup extends PureComponent {
                         this.linkedList.push(c);
                       }
                     }}
-                    field={field}
+                    field={item.field}
                     clearable={false}
                     readonly={disabled || widgetData[index].readonly}
                     lookupList={true}
@@ -549,7 +580,6 @@ class Lookup extends PureComponent {
 }
 
 Lookup.propTypes = {
-  filter: PropTypes.object,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
   onBlurWidget: PropTypes.func,
@@ -559,7 +589,6 @@ Lookup.propTypes = {
   defaultValue: PropTypes.any,
   selected: PropTypes.any,
   mandatory: PropTypes.bool,
-  dispatch: PropTypes.func.isRequired,
 };
 
-export default BarcodeScanner(onClickOutside(Lookup));
+export default connect()(BarcodeScanner(onClickOutside(Lookup)));
