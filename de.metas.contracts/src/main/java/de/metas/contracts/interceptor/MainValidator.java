@@ -83,7 +83,8 @@ public class MainValidator extends AbstractModuleInterceptor
 			newDest.setEntityType(Contracts_Constants.ENTITY_TYPE);
 			newDest.setInternalName(Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME);
 			newDest.setIsDestination(true);
-			newDest.setName(Services.get(IMsgBL.class).translate(Env.getCtx(), "@C_Flatrate_Term_ID@"));
+			newDest.setValue(Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME);
+			newDest.setName(Services.get(IMsgBL.class).translate(Env.getCtx(), "C_Flatrate_Term_ID"));
 			InterfaceWrapperHelper.save(newDest);
 		}
 	}

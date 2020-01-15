@@ -3,12 +3,15 @@ package de.metas.dao.selection;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
@@ -53,8 +56,57 @@ public class QuerySelectionHelper
 	 */
 	public UUISelection createUUIDSelection(@NonNull final TypedSqlQuery<?> query)
 	{
+		final String querySelectionUUID = UIDStringUtil.createRandomUUID();
+		final String sql = buildUUIDSelectionSqlSelectFrom(
+				querySelectionUUID,
+				query,
+				query.getKeyColumnName());
+		final List<Object> params = query.getParametersEffective();
+		final String trxName = query.getTrxName();
+
+		final Instant now = retrieveDatabaseCurrentTime();
+		final int rowsCount = DB.executeUpdateEx(
+				sql,
+				params == null ? null : params.toArray(),
+				trxName);
+
+		logger.trace("createUUIDSelection: sql={}, params={}, trxName={}, rowsCount={}", sql, params, trxName, rowsCount);
+
+		return new UUISelection(
+				rowsCount,
+				querySelectionUUID,
+				now);
+	}
+
+	private Instant retrieveDatabaseCurrentTime()
+	{
+		final Timestamp now = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, "select now()");
+		return now.toInstant();
+	}
+
+	@VisibleForTesting
+	static String buildUUIDSelectionSqlSelectFrom(
+			@NonNull final String querySelectionUUID,
+			@NonNull final TypedSqlQuery<?> query,
+			@NonNull final String keyColumnName)
+	{
+		if (query.hasUnions())
+		{
+			return buildUUIDSelectionSqlSelectFrom_queryWithUnions(querySelectionUUID, query, keyColumnName);
+		}
+		else
+		{
+			return buildUUIDSelectionSqlSelectFrom_simpleQuery(querySelectionUUID, query, keyColumnName);
+		}
+	}
+
+	private String buildUUIDSelectionSqlSelectFrom_simpleQuery(
+			@NonNull final String querySelectionUUID,
+			@NonNull final TypedSqlQuery<?> query,
+			@NonNull final String keyColumnName)
+	{
 		final String tableName = query.getTableName();
-		final String keyColumnNameFQ = tableName + "." + query.getKeyColumnName();
+		final String keyColumnNameFQ = tableName + "." + keyColumnName;
 
 		final String orderBy = query.getOrderBy();
 
@@ -74,8 +126,6 @@ public class QuerySelectionHelper
 				.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
 				.append(")");
 
-		final String querySelectionUUID = UIDStringUtil.createRandomUUID();
-
 		final StringBuilder sqlSelectBuilder = new StringBuilder()
 				.append(" SELECT ")
 				.append(DB.TO_STRING(querySelectionUUID))
@@ -86,26 +136,38 @@ public class QuerySelectionHelper
 
 		// be sure to only pass the "SELECT", not the "INSERT" sql to avoid invalid SQL when ORs are exploded to unions
 		final String sqlSelect = query.buildSQL(sqlSelectBuilder, sqlFromBuilder, true/* useOrderByClause */);
-		final List<Object> params = query.getParametersEffective();
 
-		final String sql = sqlInsertIntoBuilder.append(sqlSelect).toString();
+		return sqlInsertIntoBuilder.append(sqlSelect).toString();
+	}
 
-		final String trxName = query.getTrxName();
+	private String buildUUIDSelectionSqlSelectFrom_queryWithUnions(
+			@NonNull final String querySelectionUUID,
+			@NonNull final TypedSqlQuery<?> query,
+			@NonNull final String keyColumnName)
+	{
+		final String sqlInnerSelect = query.buildSQL(
+				"SELECT " + keyColumnName,
+				/* fromClause */ null,
+				/* useOrderByClause */true);
 
-		final Timestamp now = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, "select now()");
-		final int rowsCount = DB.executeUpdateEx(sql,
-				params == null ? null : params.toArray(),
-				trxName);
-
-		if (logger.isTraceEnabled())
-		{
-			logger.info("sql=" + sql + ", params=" + params + ", trxName=" + trxName + ", rowsCount=" + rowsCount);
-		}
-
-		return new UUISelection(
-				rowsCount,
-				querySelectionUUID,
-				Instant.ofEpochMilli(now.getTime()));
+		return new StringBuilder()
+				.append("INSERT INTO ")
+				.append(I_T_Query_Selection.Table_Name)
+				.append(" (")
+				.append(I_T_Query_Selection.COLUMNNAME_UUID)
+				.append(", ").append(I_T_Query_Selection.COLUMNNAME_Line)
+				.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
+				.append(")")
+				//
+				.append("\nSELECT ")
+				.append(DB.TO_STRING(querySelectionUUID))
+				.append(", row_number() over ()")
+				.append(", ").append(keyColumnName)
+				.append("\nFROM (\n")
+				.append(sqlInnerSelect)
+				.append("\n) t")
+				//
+				.toString();
 	}
 
 	@Value
@@ -115,24 +177,6 @@ public class QuerySelectionHelper
 		String uuid;
 		Instant time;
 	}
-
-	// private void insertSelectionMetadata(final TypedSqlQuery<?> query, final String querySelectionUUID)
-	// {
-	// final String sqlInsertIntoMetadata = new StringBuilder()
-	// .append("INSERT INTO ")
-	// .append(I_T_Query_Selection_Metadata.Table_Name)
-	// .append(" (")
-	// .append(I_T_Query_Selection_Metadata.COLUMNNAME_UUID)
-	// .append(", ").append(I_T_Query_Selection_Metadata.COLUMNNAME_Table)
-	// .append(", ").append(I_T_Query_Selection_Metadata.COLUMNNAME_Column)
-	// .append(") VALUE (")
-	// .append(DB.TO_STRING(querySelectionUUID))
-	// .append(", ").append(query.getTableName())
-	// .append(", ").append(query.getKeyColumnName())
-	// .append(")")
-	// .toString();
-	// DB.executeUpdateEx(sqlInsertIntoMetadata, query.getTrxName());
-	// }
 
 	public <T, ET extends T> TypedSqlQuery<ET> createUUIDSelectionQuery(
 			@NonNull final IContextAware ctx,
@@ -160,7 +204,7 @@ public class QuerySelectionHelper
 		final String selectionWhereClause = "s.ZZ_UUID=?";
 		final String selectionOrderBy = "s." + SELECTION_LINE_ALIAS;
 
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<ET>(
+		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<>(
 				ctx.getCtx(),
 				clazz,
 				selectionWhereClause,
