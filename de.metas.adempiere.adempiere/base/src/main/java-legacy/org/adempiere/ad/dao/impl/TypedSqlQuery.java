@@ -55,6 +55,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 
 import de.metas.dao.selection.pagination.PaginationService;
@@ -1306,16 +1307,82 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlParams = getParametersEffective();
 		if (!sqlParams.isEmpty())
 		{
-			final String sqlParamsAsString = sqlParams.stream()
-					.map(DB::TO_SQL)
-					.collect(Collectors.joining(", "));
-			sql += "\n -- " + sqlParamsAsString;
+			sql = inlineSqlParams(sql, sqlParams);
 		}
 
 		return MoreObjects.toStringHelper(this)
 				.addValue(sql)
 				.toString();
 	}
+
+	@VisibleForTesting
+	static String inlineSqlParams(final String sql, final List<Object> params)
+	{
+		final int paramsCount = params != null ? params.size() : 0;
+
+		final int sqlLength = sql.length();
+		final StringBuilder sqlFinal = new StringBuilder(sqlLength);
+
+		boolean insideQuotes = false;
+		int nextParamIndex = 0;
+		for (int i = 0; i < sqlLength; i++)
+		{
+			final char ch = sql.charAt(i);
+
+			if (ch == '?')
+			{
+				if (insideQuotes)
+				{
+					sqlFinal.append(ch);
+				}
+				else
+				{
+					if (nextParamIndex < paramsCount)
+					{
+						sqlFinal.append(DB.TO_SQL(params.get(nextParamIndex)));
+					}
+					else
+					{
+						// error: parameter index is invalid
+						sqlFinal.append("?missing?");
+					}
+
+					nextParamIndex++;
+				}
+			}
+			else if (ch == '\'')
+			{
+				sqlFinal.append(ch);
+				insideQuotes = !insideQuotes;
+			}
+			else
+			{
+				sqlFinal.append(ch);
+			}
+		}
+
+		if (nextParamIndex < paramsCount)
+		{
+			sqlFinal.append(" -- Exceeding params: ");
+			boolean firstExceedingParam = true;
+			for (int i = nextParamIndex; i < paramsCount; i++)
+			{
+				if (firstExceedingParam)
+				{
+					firstExceedingParam = false;
+				}
+				else
+				{
+					sqlFinal.append(", ");
+				}
+
+				sqlFinal.append(DB.TO_SQL(params.get(i)));
+			}
+		}
+
+		return sqlFinal.toString();
+	}
+
 
 	// metas
 	@Override
