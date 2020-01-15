@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices(date, date, character);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices(IN p_datefrom date, IN p_dateto date, IN p_issotrx character)
@@ -141,7 +163,7 @@ FROM C_Invoice_Candidate ic
 
          LEFT OUTER JOIN C_UOM_Conversion uconv
                          ON
-                                 uconv.C_UOM_ID = iol.C_UOM_ID
+                                     uconv.C_UOM_ID = iol.C_UOM_ID
                                  AND uconv.C_UOM_To_ID = price_uom.C_UOM_ID
                                  AND p.M_Product_ID = uconv.M_Product_ID
 
