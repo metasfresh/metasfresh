@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import java.awt.Color;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -270,7 +271,7 @@ public final class DocumentFieldValueLoaders
 			{
 				final Clob lob = (Clob)valueObj;
 				final long length = lob.length();
-				valueBytes = lob.getSubString(1, (int)length).getBytes();
+				valueBytes = lob.getSubString(1, (int)length).getBytes(StandardCharsets.UTF_8);
 			}
 			else if (valueObj instanceof Blob)
 			{
@@ -280,7 +281,7 @@ public final class DocumentFieldValueLoaders
 			}
 			else if (valueObj instanceof String)
 			{
-				valueBytes = ((String)valueObj).getBytes();
+				valueBytes = ((String)valueObj).getBytes(StandardCharsets.UTF_8);
 			}
 			else if (valueObj instanceof byte[])
 			{
