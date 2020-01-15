@@ -63,15 +63,25 @@ public abstract class AdempiereServer extends Thread
 		Check.assumeNotNull(model, "model not null");
 
 		if (model instanceof MRequestProcessor)
+		{
 			return new RequestProcessor((MRequestProcessor)model);
+		}
 		if (model instanceof MWorkflowProcessor)
+		{
 			return new WorkflowProcessor((MWorkflowProcessor)model);
+		}
 		if (model instanceof MAlertProcessor)
+		{
 			return new AlertProcessor((MAlertProcessor)model);
+		}
 		if (model instanceof MScheduler)
+		{
 			return new Scheduler((MScheduler)model);
-		if (I_IMP_Processor.Table_Name.equals(model.get_TableName())) // @Trifon
+		}
+		if (I_IMP_Processor.Table_Name.equals(model.get_TableName()))
+		{
 			return new ReplicationProcessor(model);
+		}
 		//
 		throw new IllegalArgumentException("Unknown Processor");
 	}	// create
@@ -199,20 +209,28 @@ public abstract class AdempiereServer extends Thread
 
 	private final void runNow0()
 	{
-		log.info(getName());
+		final String name = getName();
+		log.debug("Starting {}", name);
+		
 		workStartTimeMillis = System.currentTimeMillis();
+		
 		doWork();
-		long now = System.currentTimeMillis();
+		
 		// ---------------
 
+		final long now = System.currentTimeMillis();
 		p_runCount++;
 		m_runLastMS = now - workStartTimeMillis;
 		m_runTotalMS += m_runLastMS;
 		//
 		p_model.setDateLastRun(new Timestamp(now));
 		save(p_model, ITrx.TRXNAME_None);
+
 		//
-		log.debug(getName() + ": " + getStatistics());
+		if (log.isDebugEnabled())
+		{
+			log.debug("Finished {}: {}", name, getStatistics());
+		}
 	}	// runNow
 
 	/**************************************************************************
@@ -289,14 +307,18 @@ public abstract class AdempiereServer extends Thread
 		{
 			Timestamp dateNextRun = getDateNextRun(true);
 			if (dateNextRun != null)
+			{
 				m_nextWork = dateNextRun.getTime();
+			}
 		}
 		long now = System.currentTimeMillis();
 		if (m_nextWork > now)
 		{
 			m_sleepMS = m_nextWork - now;
 			if (!sleep())
+			{
 				return true;
+			}
 		}
 		if (isInterrupted())
 		{
@@ -323,7 +345,9 @@ public abstract class AdempiereServer extends Thread
 			{
 				lastRun = new Timestamp(workStartTimeMillis);
 				if (m_nextWork <= 0)
+				{
 					m_nextWork = workStartTimeMillis;
+				}
 				m_nextWork = m_nextWork + m_sleepMS;
 				while (m_nextWork < now)
 				{
@@ -448,17 +472,27 @@ public abstract class AdempiereServer extends Thread
 		String frequencyType = p_model.getFrequencyType();
 		int frequency = p_model.getFrequency();
 		if (frequency < 1)
+		{
 			frequency = 1;
+		}
 		//
 		final long typeSec;
 		if (frequencyType == null)
+		{
 			typeSec = 300;			// 5 minutes (default)
+		}
 		else if (X_R_RequestProcessor.FREQUENCYTYPE_Minute.equals(frequencyType))
+		{
 			typeSec = 60;
+		}
 		else if (X_R_RequestProcessor.FREQUENCYTYPE_Hour.equals(frequencyType))
+		{
 			typeSec = 3600;
+		}
 		else if (X_R_RequestProcessor.FREQUENCYTYPE_Day.equals(frequencyType))
+		{
 			typeSec = 86400;
+		}
 		else // Unknown Frequency
 		{
 			typeSec = 600; // 10 min
