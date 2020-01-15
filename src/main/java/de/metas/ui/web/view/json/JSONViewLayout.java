@@ -159,7 +159,9 @@ public final class JSONViewLayout
 		// Elements
 		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(layout.getElements(), options);
 		final String idFieldName = layout.getIdFieldName();
-		if (options.isDebugShowColumnNamesForCaption() && idFieldName != null)
+		if (options.isDebugShowColumnNamesForCaption()
+				&& idFieldName != null
+				&& !JSONDocumentLayoutElement.hasField(elements, idFieldName))
 		{
 			elements = ImmutableList.<JSONDocumentLayoutElement> builder()
 					.add(JSONDocumentLayoutElement.debuggingField(idFieldName, DocumentFieldWidgetType.Text))
@@ -221,7 +223,7 @@ public final class JSONViewLayout
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("AD_Window_ID", type)
+				.add("AD_Window_ID", windowId)
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.add("filters", filters.isEmpty() ? null : filters)

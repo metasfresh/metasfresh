@@ -107,7 +107,7 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
-	
+
 	@JsonProperty("barcodeScannerType")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	final BarcodeScannerType barcodeScannerType;
@@ -183,7 +183,7 @@ public final class JSONDocumentLayoutElement
 		{
 			buttonProcessId = null;
 		}
-		
+
 		this.barcodeScannerType = element.getBarcodeScannerType();
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
@@ -230,5 +230,15 @@ public final class JSONDocumentLayoutElement
 	private boolean hasFields()
 	{
 		return !fields.isEmpty();
+	}
+
+	public boolean hasField(@NonNull final String fieldName)
+	{
+		return fields.stream().anyMatch(field -> fieldName.equals(field.getField()));
+	}
+
+	public static boolean hasField(@NonNull final List<JSONDocumentLayoutElement> elements, @NonNull final String fieldName)
+	{
+		return elements.stream().anyMatch(element -> element.hasField(fieldName));
 	}
 }

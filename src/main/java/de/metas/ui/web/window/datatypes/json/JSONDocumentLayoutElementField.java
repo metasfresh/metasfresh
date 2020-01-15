@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -51,9 +51,8 @@ import lombok.NonNull;
  */
 
 @ApiModel("field")
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONDocumentLayoutElementField implements Serializable
+public final class JSONDocumentLayoutElementField
 {
 	public static Set<JSONDocumentLayoutElementField> ofSet(
 			final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors,
@@ -150,6 +149,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	}
 
 	@JsonProperty(value = "field", required = true)
+	@Getter
 	private final String field;
 	
 	@JsonProperty(value = "caption", required = true)
