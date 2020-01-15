@@ -147,8 +147,8 @@ public class DesadvBL implements IDesadvBL
 	{
 		Check.assumeNotEmpty(order.getPOReference(), "C_Order {} has a not-empty POReference", order);
 
-		final I_EDI_Desadv desadv = retrieveOrCreateDesadv(order);
-		order.setEDI_Desadv(desadv);
+		final I_EDI_Desadv desadvRecord = retrieveOrCreateDesadv(order);
+		order.setEDI_Desadv_ID(desadvRecord.getEDI_Desadv_ID());
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
@@ -162,18 +162,22 @@ public class DesadvBL implements IDesadvBL
 				continue; // packing materials from the OL don't belong into the desadv
 			}
 
-			final I_EDI_DesadvLine desadvLine = retrieveOrCreateDesadvLine(order, desadv, orderLine);
+			final I_EDI_DesadvLine desadvLine = retrieveOrCreateDesadvLine(order, desadvRecord, orderLine);
 			Check.errorIf(
 					desadvLine.getM_Product_ID() != orderLine.getM_Product_ID(),
 					"EDI_DesadvLine {} of EDI_Desadv {} has M_Product_ID {} and C_OrderLine {} of C_Order {} has M_Product_ID {}, but both have POReference {} and Line {} ",
-					desadvLine, desadv, desadvLine.getM_Product_ID(),
+					desadvLine, desadvRecord, desadvLine.getM_Product_ID(),
 					orderLine, order, orderLine.getM_Product_ID(),
 					order.getPOReference(), orderLine.getLine());
 
 			orderLine.setEDI_DesadvLine(desadvLine);
 			InterfaceWrapperHelper.save(orderLine);
 		}
-		return desadv;
+
+		updateFullfilmentPercent(desadvRecord);
+		saveRecord(desadvRecord);
+
+		return desadvRecord;
 	}
 
 	private I_EDI_DesadvLine retrieveOrCreateDesadvLine(
@@ -195,10 +199,8 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setEDI_Desadv(desadvRecord);
 		newDesadvLine.setLine(orderLine.getLine());
 
-		final BigDecimal sumOrderedInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(orderLine.getQtyOrdered());
+		final BigDecimal sumOrderedInStockingUOM = desadvRecord.getSumOrderedInStockingUOM().add(orderLine.getQtyOrdered());
 		desadvRecord.setSumOrderedInStockingUOM(sumOrderedInStockingUOM);
-		updateFullfilmentPercent(desadvRecord);
-		saveRecord(desadvRecord);
 
 		// we'll need this when inoutLines are added, because then we need to add either hte nominal quantity or the catch-quantity
 		newDesadvLine.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
