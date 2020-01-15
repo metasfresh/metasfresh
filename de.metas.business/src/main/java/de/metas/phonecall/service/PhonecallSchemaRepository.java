@@ -294,7 +294,7 @@ public class PhonecallSchemaRepository
 		}
 	}
 
-	public void updateLinesOnSchemaChanged(final PhonecallSchemaVersionId phonecallSchemaVersionId)
+	public void updateLinesOnSchemaChanged(@NonNull final PhonecallSchemaVersionId phonecallSchemaVersionId)
 	{
 		final int phonecallSchemaTableId = getTableId(I_C_Phonecall_Schema.class);
 
@@ -318,12 +318,13 @@ public class PhonecallSchemaRepository
 
 	}
 
-	private List<I_C_Phonecall_Schema_Version_Line> retrieveLinesWithDifferentSchemas(PhonecallSchemaVersionId phonecallSchemaVersionId)
+	private List<I_C_Phonecall_Schema_Version_Line> retrieveLinesWithDifferentSchemas(@NonNull final PhonecallSchemaVersionId phonecallSchemaVersionId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Phonecall_Schema_Version_Line.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Phonecall_Schema_Version_Line.COLUMN_C_Phonecall_Schema_Version_ID, phonecallSchemaVersionId)
+				.addEqualsFilter(I_C_Phonecall_Schema_Version_Line.COLUMNNAME_C_Phonecall_Schema_Version_ID, phonecallSchemaVersionId)
+				.addNotEqualsFilter(I_C_Phonecall_Schema_Version_Line.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersionId.getPhonecallSchemaId())
 				.create()
 				.list();
 	}
