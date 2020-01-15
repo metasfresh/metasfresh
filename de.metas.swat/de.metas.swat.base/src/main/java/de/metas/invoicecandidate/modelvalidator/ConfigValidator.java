@@ -167,6 +167,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 			newDest.setEntityType(InvoiceCandidate_Constants.ENTITY_TYPE);
 			newDest.setInternalName(InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 			newDest.setIsDestination(true);
+			newDest.setValue(InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 			newDest.setName(Services.get(IMsgBL.class).translate(ctx, "C_Invoice_ID"));
 			InterfaceWrapperHelper.save(newDest);
 		}
