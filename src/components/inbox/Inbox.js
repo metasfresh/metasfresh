@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
@@ -19,7 +19,11 @@ import InboxItem from './InboxItem';
  * @module Inbox
  * @extends Component
  */
-class Inbox extends PureComponent {
+class Inbox extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   /**
    * @method handleClick
    * @summary ToDo: Describe the method
@@ -218,7 +222,7 @@ const routerInbox = withRouter(
  * @todo Write the documentation
  */
 const addClickOutsideHandler = Child => {
-  return class WithClickOutsideHandler extends PureComponent {
+  return class WithClickOutsideHandler extends Component {
     static propTypes = {
       close: PropTypes.func,
     };

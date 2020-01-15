@@ -1,11 +1,12 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
+import { arePropTypesIdentical } from '../../utils';
 
 const noOp = () => {};
 
-export default class GlobalContextShortcuts extends PureComponent {
+export default class GlobalContextShortcuts extends Component {
   static propTypes = {
     closeOverlays: PropTypes.func,
     handleClone: PropTypes.func,
@@ -169,6 +170,9 @@ export default class GlobalContextShortcuts extends PureComponent {
     ctrl.focus();
     ctrl.setSelectionRange(pos, pos);
   };
+
+  shouldComponentUpdate = nextProps =>
+    !arePropTypesIdentical(nextProps, this.props);
 
   render() {
     return [

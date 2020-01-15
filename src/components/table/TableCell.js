@@ -345,15 +345,13 @@ class TableCell extends PureComponent {
               getWidgetData,
               viewId,
               rowId,
+              widgetData,
               closeTableField,
               isOpenDatePicker,
               listenOnKeys,
               listenOnKeysFalse,
               listenOnKeysTrue,
               onClickOutside,
-              item,
-              isEditable,
-              supportFieldEdit,
             }}
             clearValue={this.clearWidgetValue}
             entity={entityEffective}
@@ -385,7 +383,7 @@ class TableCell extends PureComponent {
                 widget={tooltipWidget}
                 data={tooltipData}
                 isToggled={tooltipToggled}
-                onToggle={this.widgetTooltipToggle}
+                onToggle={val => this.widgetTooltipToggle(item.field, val)}
               />
             )}
           </div>

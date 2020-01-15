@@ -1,4 +1,4 @@
-import { PureComponent } from 'react';
+import { Component } from 'react';
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import deepForceUpdate from 'react-deep-force-update';
@@ -9,7 +9,7 @@ import { getMessages } from '../actions/AppActions';
 // Fake singleton
 let INSTANCE = null;
 
-class Translation extends PureComponent {
+class Translation extends Component {
   static getMessages = () => {
     return getMessages().then(response => {
       if (window.Cypress) {

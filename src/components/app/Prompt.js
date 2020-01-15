@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
@@ -9,7 +9,11 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
  * @module Prompt
  * @extends Component
  */
-class Prompt extends PureComponent {
+class Prompt extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   /**
    * @method renderCancelButton
    * @summary ToDo: Describe the method

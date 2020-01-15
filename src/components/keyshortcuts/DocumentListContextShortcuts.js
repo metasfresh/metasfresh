@@ -1,15 +1,15 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 import { Shortcut } from '../keyshortcuts';
+import { arePropTypesIdentical } from '../../utils';
 
-export default class DocumentListContextShortcuts extends PureComponent {
+export default class DocumentListContextShortcuts extends Component {
   handlers = {
     OPEN_SELECTED: event => {
       event.preventDefault();
 
       if (this.props.handleOpenNewTab) {
-        this.onOpenNewTab();
+        this.props.handleOpenNewTab();
       }
     },
     REMOVE_SELECTED: event => {
@@ -23,7 +23,7 @@ export default class DocumentListContextShortcuts extends PureComponent {
       event.preventDefault();
 
       if (this.props.handleAdvancedEdit) {
-        this.onAdvancedEdit();
+        this.props.handleAdvancedEdit();
 
         return true;
       }
@@ -53,17 +53,8 @@ export default class DocumentListContextShortcuts extends PureComponent {
     },
   };
 
-  onAdvancedEdit = () => {
-    const { handleAdvancedEdit, windowId, tabId, selected } = this.props;
-
-    handleAdvancedEdit(windowId, tabId, selected);
-  };
-
-  onOpenNewTab = () => {
-    const { handleOpenNewTab, selected, windowId } = this.props;
-
-    handleOpenNewTab(selected, windowId);
-  };
+  shouldComponentUpdate = nextProps =>
+    !arePropTypesIdentical(nextProps, this.props);
 
   render() {
     return [
@@ -100,15 +91,3 @@ export default class DocumentListContextShortcuts extends PureComponent {
     ];
   }
 }
-
-// @TODO: Wee need to fix typing as tabId is sometimes number, other times a string
-DocumentListContextShortcuts.propTypes = {
-  handleIndent: PropTypes.func,
-  getAllLeafs: PropTypes.func,
-  handleDelete: PropTypes.func,
-  handleOpenNewTab: PropTypes.func,
-  handleAdvancedEdit: PropTypes.func,
-  selected: PropTypes.any,
-  windowId: PropTypes.string,
-  tabId: PropTypes.any,
-};
