@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -1135,17 +1134,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @return final SQL
 	 */
 	public final String buildSQL(
-			@Nullable final StringBuilder selectClause, // TODO change to String
-			@Nullable final StringBuilder fromClause,
+			@Nullable final CharSequence selectClause, // TODO change to String
+			@Nullable final CharSequence fromClause,
 			final boolean useOrderByClause)
 	{
-		StringBuilder selectClauseToUse = selectClause;
+		CharSequence selectClauseToUse = selectClause;
 		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
 			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
 		}
-		StringBuilder fromClauseToUse = fromClause;
+		CharSequence fromClauseToUse = fromClause;
 		if (fromClauseToUse == null)
 		{
 			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());
@@ -1785,7 +1784,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public IQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
+	public TypedSqlQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
 	{
 		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
@@ -1795,6 +1794,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		unions.add(sqlQueryUnion);
 
 		return this;
+	}
+	
+	public boolean hasUnions()
+	{
+		final List<SqlQueryUnion<T>> unions = this.unions;
+		return unions != null && !unions.isEmpty();
 	}
 
 	@Override
