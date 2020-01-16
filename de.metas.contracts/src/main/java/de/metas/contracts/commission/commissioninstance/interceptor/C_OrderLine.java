@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 public class C_OrderLine
 {
 	/**
-	 *  Reset {@link I_C_OrderLine.COLUMNNAME_Base_Commission_Ponits_Per_Price_UOM} and {@link I_C_OrderLine.COLUMNNAME_Traded_Commission_Percent}
+	 *  Reset {@link I_C_OrderLine.COLUMNNAME_Base_Commission_Points_Per_Price_UOM} and {@link I_C_OrderLine.COLUMNNAME_Traded_Commission_Percent}
 	 *  in case the price computed by the price engine was overridden by the user in UI, so the commission points will be calculated based on the
 	 *  {@link I_C_OrderLine.COLUMNNAME_PriceActual}.
 	 *
@@ -46,7 +46,7 @@ public class C_OrderLine
 	{
 		if ( !icRecord.getPriceStd().equals( icRecord.getPriceEntered() ) )
 		{
-			icRecord.setBase_Commission_Ponits_Per_Price_UOM(null);
+			icRecord.setBase_Commission_Points_Per_Price_UOM(null);
 			icRecord.setTraded_Commission_Percent(null);
 		}
 	}

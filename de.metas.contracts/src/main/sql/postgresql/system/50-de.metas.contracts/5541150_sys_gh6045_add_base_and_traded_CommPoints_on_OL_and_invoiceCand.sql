@@ -1,6 +1,6 @@
 -- 2020-01-10T17:21:14.183Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,577454,0,'Base_Commission_Ponits_Per_Price_UOM',TO_TIMESTAMP('2020-01-10 19:21:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Base Commission Points Per Price UOM','Base Commission Points Per Price UOM',TO_TIMESTAMP('2020-01-10 19:21:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,577454,0,'Base_Commission_Points_Per_Price_UOM',TO_TIMESTAMP('2020-01-10 19:21:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Base Commission Points Per Price UOM','Base Commission Points Per Price UOM',TO_TIMESTAMP('2020-01-10 19:21:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2020-01-10T17:21:14.186Z
@@ -20,7 +20,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2020-01-10T17:27:12.492Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,569825,577454,0,22,260,'Base_Commission_Ponits_Per_Price_UOM',TO_TIMESTAMP('2020-01-10 19:27:12','YYYY-MM-DD HH24:MI:SS'),100,'N','D',16,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Base Commission Points Per Price UOM',0,0,TO_TIMESTAMP('2020-01-10 19:27:12','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,569825,577454,0,22,260,'Base_Commission_Points_Per_Price_UOM',TO_TIMESTAMP('2020-01-10 19:27:12','YYYY-MM-DD HH24:MI:SS'),100,'N','D',16,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Base Commission Points Per Price UOM',0,0,TO_TIMESTAMP('2020-01-10 19:27:12','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2020-01-10T17:27:12.494Z
@@ -35,7 +35,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-01-10T17:27:12.958Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_OrderLine','ALTER TABLE public.C_OrderLine ADD COLUMN Base_Commission_Ponits_Per_Price_UOM NUMERIC')
+/* DDL */ SELECT public.db_alter_table('C_OrderLine','ALTER TABLE public.C_OrderLine ADD COLUMN Base_Commission_Points_Per_Price_UOM NUMERIC')
 ;
 
 -- 2020-01-10T17:27:33.410Z
@@ -80,7 +80,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-01-10T17:28:49.453Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,569828,577454,0,22,540270,'Base_Commission_Ponits_Per_Price_UOM',TO_TIMESTAMP('2020-01-10 19:28:49','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.invoicecandidate',16,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Base Commission Points Per Price UOM',0,0,TO_TIMESTAMP('2020-01-10 19:28:49','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,569828,577454,0,22,540270,'Base_Commission_Points_Per_Price_UOM',TO_TIMESTAMP('2020-01-10 19:28:49','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.invoicecandidate',16,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Base Commission Points Per Price UOM',0,0,TO_TIMESTAMP('2020-01-10 19:28:49','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2020-01-10T17:28:49.459Z
@@ -95,6 +95,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-01-10T17:28:51.651Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Base_Commission_Ponits_Per_Price_UOM NUMERIC')
+/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Base_Commission_Points_Per_Price_UOM NUMERIC')
 ;
 
