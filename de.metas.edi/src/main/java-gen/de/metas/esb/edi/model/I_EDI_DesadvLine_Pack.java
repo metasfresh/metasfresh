@@ -508,7 +508,7 @@ public interface I_EDI_DesadvLine_Pack
     public static final String COLUMNNAME_MovementQty = "MovementQty";
 
 	/**
-	 * Set Menge CU.
+	 * Set Menge CU/TU.
 	 * Menge der CUs pro Einzelgebinde (normalerweise TU)
 	 *
 	 * <br>Type: Quantity
@@ -518,7 +518,7 @@ public interface I_EDI_DesadvLine_Pack
 	public void setQtyCU (java.math.BigDecimal QtyCU);
 
 	/**
-	 * Get Menge CU.
+	 * Get Menge CU/TU.
 	 * Menge der CUs pro Einzelgebinde (normalerweise TU)
 	 *
 	 * <br>Type: Quantity

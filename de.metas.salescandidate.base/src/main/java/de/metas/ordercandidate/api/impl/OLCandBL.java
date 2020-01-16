@@ -73,7 +73,6 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.shipping.ShipperId;
@@ -282,7 +281,6 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
-
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -359,16 +357,7 @@ public class OLCandBL implements IOLCandBL
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
 
-		pricingResult = pricingBL.calculatePrice(pricingCtx);
-
-		// Just for safety: in case the product price was not found, the code below shall not be reached.
-		// The exception shall be already thrown
-		// ts 2015-07-03: i think it is not, at least i don't see from where
-		if (pricingResult == null || !pricingResult.isCalculated())
-		{
-			final int documentLineNo = -1; // not needed, the msg will be shown in the line itself
-			throw new ProductNotOnPriceListException(pricingCtx, documentLineNo);
-		}
+		pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
 
 		final BigDecimal priceEntered;
 		final Percent discount;

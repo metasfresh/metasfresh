@@ -69,10 +69,8 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(final I_EDI_Desadv desadv, final int line)
+	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(@NonNull final I_EDI_Desadv desadv, final int line)
 	{
-		Check.assumeNotNull(desadv, "Param 'desadv'");
-
 		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine.class, desadv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())

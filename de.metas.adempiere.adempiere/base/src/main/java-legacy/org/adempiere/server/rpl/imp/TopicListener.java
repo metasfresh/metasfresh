@@ -30,11 +30,8 @@
 
 package org.adempiere.server.rpl.imp;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -59,7 +56,12 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.activemq.ActiveMQConnectionFactory;
 //import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Listen for JMS Messages
@@ -160,18 +162,18 @@ public class TopicListener implements MessageListener, ExceptionListener
 
 	private boolean isStopping = false;
 
-	public TopicListener(final Properties ctx, 
-			final IReplicationProcessor replicationProcessor, 
-			final String protocol, 
-			final String host, 
+	public TopicListener(final Properties ctx,
+			final IReplicationProcessor replicationProcessor,
+			final String protocol,
+			final String host,
 			final int port,
-			final boolean isDurableSubscription, 
-			final String subscriptionName, 
+			final boolean isDurableSubscription,
+			final String subscriptionName,
 			final String topicName,
-			final String clientID, 
-			final String userName, 
+			final String clientID,
+			final String userName,
 			final String password,
-			final String options, 
+			final String options,
 			final String trxName)
 	{
 		if (host != null && !host.equals(""))
@@ -305,7 +307,6 @@ public class TopicListener implements MessageListener, ExceptionListener
 	{
 		String text = null;
 		String responseStr = null;
-		// TextMessage txtMessage = null;
 		try
 		{
 			text = getText(message);
@@ -354,10 +355,8 @@ public class TopicListener implements MessageListener, ExceptionListener
 		}
 	}
 
-	public String getText(final Message message) throws JMSException
+	public String getText(@NonNull final Message message) throws JMSException
 	{
-		Check.assumeNotNull(message, "message not null");
-
 		if (message instanceof TextMessage)
 		{
 			final TextMessage txtMessage = (TextMessage)message;
@@ -371,7 +370,7 @@ public class TopicListener implements MessageListener, ExceptionListener
 			final byte[] bytes = new byte[bytes_len];
 			bytesMessage.readBytes(bytes);
 
-			final String text = new String(bytes);
+			final String text = new String(bytes, StandardCharsets.UTF_8);
 			return text;
 		}
 		else

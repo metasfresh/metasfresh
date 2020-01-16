@@ -25,7 +25,7 @@ SELECT COALESCE(sps.preparationdate_override, sps.preparationdate) as preparatio
        col.line::int,
        pt.name,
        pt.value,
-       sps.qtyordered_tu,
+       sps.qtyordered,
        sps.qtydelivered
 
 FROM M_ShipmentSchedule sps

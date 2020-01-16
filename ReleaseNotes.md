@@ -10,6 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.134
+## Features
+* metasfresh
+  * [#5940](https://github.com/metasfresh/metasfresh/issues/5940) Packing Instruction in Batch Entry
+  * [#5987](https://github.com/metasfresh/metasfresh/issues/5987) Multiple Customs Invoices for the same Shipment
+  * [#5992](https://github.com/metasfresh/metasfresh/issues/5992) Improve DESADV Packs window
+  * [#6007](https://github.com/metasfresh/metasfresh/issues/6007) UOM Conversion check in Product Prices
+  * [#6024](https://github.com/metasfresh/metasfresh/issues/6024) Make sure shipto companyname is transferred to c_bpartner_location.bpartnername
+
+* edi
+  * [#6](https://github.com/metasfresh/metasfresh-edi/issues/6) STEPcom EDI - Convert between input charset and UTF-8
+  * [#7](https://github.com/metasfresh/metasfresh-edi/issues/7) STEPcom EDI - Support customizable output filename prefices
+
+## Fixes
+* metasfresh
+  * [#5931](https://github.com/metasfresh/metasfresh/issues/5931) ESR Import Hashvalue after double upload
+  * [#6006](https://github.com/metasfresh/metasfresh/issues/6006) Picklist cannot be printed
+  * [#6014](https://github.com/metasfresh/metasfresh/issues/6014) Compute properly sum catch weight in customs invoice document
+  * [#6017](https://github.com/metasfresh/metasfresh/issues/6017) Drop the wrong duplicate PayPal payment rule
+
 # metasfresh 5.133
 ## Features
 * metasfresh

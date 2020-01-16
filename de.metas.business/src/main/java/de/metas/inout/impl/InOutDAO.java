@@ -2,6 +2,7 @@ package de.metas.inout.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,8 +36,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipping.model.ShipperTransportationId;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -46,6 +47,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -56,13 +58,12 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public class InOutDAO implements IInOutDAO
 {
@@ -285,7 +286,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
 				.addOnlyActiveRecordsFilter()
@@ -327,5 +328,18 @@ public class InOutDAO implements IInOutDAO
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
 	{
 		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
+	}
+
+	@Override
+	public void setExportedInCustomsInvoice(final InOutId shipmentId)
+	{
+		final I_M_InOut shipment = getById(shipmentId, I_M_InOut.class);
+
+		if (!shipment.isExportedToCustomsInvoice())
+		{
+			shipment.setIsExportedToCustomsInvoice(true);
+
+			saveRecord(shipment);
+		}
 	}
 }

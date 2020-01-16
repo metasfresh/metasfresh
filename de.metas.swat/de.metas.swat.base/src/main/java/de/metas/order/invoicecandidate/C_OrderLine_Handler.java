@@ -143,62 +143,62 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		Check.assume(Env.getAD_Client_ID(ctx) == orderLine.getAD_Client_ID(), "AD_Client_ID of " + orderLine + " and of its Ctx are the same");
 
-		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
+		final I_C_Invoice_Candidate icRecord = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
-		ic.setAD_Org_ID(orderLine.getAD_Org_ID());
-		ic.setC_ILCandHandler(getHandlerRecord());
+		icRecord.setAD_Org_ID(orderLine.getAD_Org_ID());
+		icRecord.setC_ILCandHandler(getHandlerRecord());
 
-		ic.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
-		ic.setRecord_ID(orderLine.getC_OrderLine_ID());
+		icRecord.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
+		icRecord.setRecord_ID(orderLine.getC_OrderLine_ID());
 
-		ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		icRecord.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 
 		final int productRecordId = orderLine.getM_Product_ID();
-		ic.setM_Product_ID(productRecordId);
+		icRecord.setM_Product_ID(productRecordId);
 
 		boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(productRecordId));
 
-		ic.setIsFreightCost(isFreightCostProduct);
-		ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
-		ic.setC_Charge_ID(orderLine.getC_Charge_ID());
+		icRecord.setIsFreightCost(isFreightCostProduct);
+		icRecord.setIsPackagingMaterial(orderLine.isPackagingMaterial());
+		icRecord.setC_Charge_ID(orderLine.getC_Charge_ID());
 
-		setOrderedData(ic, orderLine);
+		setOrderedData(icRecord, orderLine);
 
-		ic.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
-		ic.setPriceActual(orderLine.getPriceActual());
-		ic.setPrice_UOM_ID(orderLine.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
-		ic.setPriceEntered(orderLine.getPriceEntered()); // cg : task 04917
-		ic.setDiscount(orderLine.getDiscount()); // cg: 04868
-		ic.setC_Currency_ID(orderLine.getC_Currency_ID());
+		icRecord.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
+		icRecord.setPriceActual(orderLine.getPriceActual());
+		icRecord.setPrice_UOM_ID(orderLine.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
+		icRecord.setPriceEntered(orderLine.getPriceEntered()); // cg : task 04917
+		icRecord.setDiscount(orderLine.getDiscount()); // cg: 04868
+		icRecord.setC_Currency_ID(orderLine.getC_Currency_ID());
 
-		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
+		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
-		ic.setDescription(orderLine.getDescription()); // 03439
+		icRecord.setDescription(orderLine.getDescription()); // 03439
 
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
-		setBPartnerData(ic, orderLine);
-		setGroupCompensationData(ic, orderLine);
+		setBPartnerData(icRecord, orderLine);
+		setGroupCompensationData(icRecord, orderLine);
 
 		//
 		// Invoice Rule(s)
 		{
-			ic.setInvoiceRule(order.getInvoiceRule());
+			icRecord.setInvoiceRule(order.getInvoiceRule());
 
 			// If we are dealing with a non-receivable service set the InvoiceRule_Override to Immediate
 			// because we want to invoice those right away (08408)
-			if (isNotReceivebleService(ic))
+			if (isNotReceivebleService(icRecord))
 			{
-				ic.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
+				icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 			}
 		}
 
-		ic.setM_PricingSystem_ID(order.getM_PricingSystem_ID());
+		icRecord.setM_PricingSystem_ID(order.getM_PricingSystem_ID());
 
 		// 05265
-		ic.setIsSOTrx(orderLine.getC_Order().isSOTrx());
+		icRecord.setIsSOTrx(orderLine.getC_Order().isSOTrx());
 
-		ic.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
+		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
 		// 07442 activity and tax
 
@@ -215,11 +215,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 					ProductId.ofRepoId(orderLine.getM_Product_ID()));
 		}
-		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
-				ic,
+				icRecord,
 				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
 				orderLine.getM_Product_ID(),
 				order.getDatePromised(), // shipDate
@@ -227,21 +227,21 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
 				order.isSOTrx());
-		ic.setC_Tax_ID(taxId);
+		icRecord.setC_Tax_ID(taxId);
 
 		// set Quality Issue Percentage Override
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, attributes);
+		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
 
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
 		// Because it's a performance nightmare for orders with a lot of lines
 		// InterfaceWrapperHelper.save(ic);
 
-		return ic;
+		return icRecord;
 	}
 
 	@Override
@@ -420,7 +420,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setBPartnerData(ic, orderLine);
 	}
 
-	private void setBPartnerData(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
+	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		ic.setBill_BPartner_ID(order.getBill_BPartner_ID());

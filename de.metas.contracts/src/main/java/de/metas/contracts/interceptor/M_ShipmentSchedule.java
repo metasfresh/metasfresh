@@ -48,7 +48,6 @@ public class M_ShipmentSchedule
 	{
 	}
 
-
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {

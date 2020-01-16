@@ -417,7 +417,6 @@ public interface IQuery<T>
 	 * <p>
 	 * In the {@link IQueryUpdater} implementation, there is no need to save the record, because the API will save it after {@link IQueryUpdater#update(Object)} call.
 	 *
-	 * @param queryUpdater
 	 * @return how many records were updated
 	 */
 	int update(IQueryUpdater<T> queryUpdater);

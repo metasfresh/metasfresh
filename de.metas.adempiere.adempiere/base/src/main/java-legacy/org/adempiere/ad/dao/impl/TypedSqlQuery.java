@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -55,6 +54,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 
 import de.metas.dao.selection.pagination.PaginationService;
@@ -1134,17 +1134,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @return final SQL
 	 */
 	public final String buildSQL(
-			@Nullable final StringBuilder selectClause, // TODO change to String
-			@Nullable final StringBuilder fromClause,
+			@Nullable final CharSequence selectClause, // TODO change to String
+			@Nullable final CharSequence fromClause,
 			final boolean useOrderByClause)
 	{
-		StringBuilder selectClauseToUse = selectClause;
+		CharSequence selectClauseToUse = selectClause;
 		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
 			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
 		}
-		StringBuilder fromClauseToUse = fromClause;
+		CharSequence fromClauseToUse = fromClause;
 		if (fromClauseToUse == null)
 		{
 			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());
@@ -1306,16 +1306,82 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlParams = getParametersEffective();
 		if (!sqlParams.isEmpty())
 		{
-			final String sqlParamsAsString = sqlParams.stream()
-					.map(DB::TO_SQL)
-					.collect(Collectors.joining(", "));
-			sql += "\n -- " + sqlParamsAsString;
+			sql = inlineSqlParams(sql, sqlParams);
 		}
 
 		return MoreObjects.toStringHelper(this)
 				.addValue(sql)
 				.toString();
 	}
+
+	@VisibleForTesting
+	static String inlineSqlParams(final String sql, final List<Object> params)
+	{
+		final int paramsCount = params != null ? params.size() : 0;
+
+		final int sqlLength = sql.length();
+		final StringBuilder sqlFinal = new StringBuilder(sqlLength);
+
+		boolean insideQuotes = false;
+		int nextParamIndex = 0;
+		for (int i = 0; i < sqlLength; i++)
+		{
+			final char ch = sql.charAt(i);
+
+			if (ch == '?')
+			{
+				if (insideQuotes)
+				{
+					sqlFinal.append(ch);
+				}
+				else
+				{
+					if (nextParamIndex < paramsCount)
+					{
+						sqlFinal.append(DB.TO_SQL(params.get(nextParamIndex)));
+					}
+					else
+					{
+						// error: parameter index is invalid
+						sqlFinal.append("?missing?");
+					}
+
+					nextParamIndex++;
+				}
+			}
+			else if (ch == '\'')
+			{
+				sqlFinal.append(ch);
+				insideQuotes = !insideQuotes;
+			}
+			else
+			{
+				sqlFinal.append(ch);
+			}
+		}
+
+		if (nextParamIndex < paramsCount)
+		{
+			sqlFinal.append(" -- Exceeding params: ");
+			boolean firstExceedingParam = true;
+			for (int i = nextParamIndex; i < paramsCount; i++)
+			{
+				if (firstExceedingParam)
+				{
+					firstExceedingParam = false;
+				}
+				else
+				{
+					sqlFinal.append(", ");
+				}
+
+				sqlFinal.append(DB.TO_SQL(params.get(i)));
+			}
+		}
+
+		return sqlFinal.toString();
+	}
+
 
 	// metas
 	@Override
@@ -1718,7 +1784,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public IQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
+	public TypedSqlQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
 	{
 		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
@@ -1728,6 +1794,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		unions.add(sqlQueryUnion);
 
 		return this;
+	}
+	
+	public boolean hasUnions()
+	{
+		final List<SqlQueryUnion<T>> unions = this.unions;
+		return unions != null && !unions.isEmpty();
 	}
 
 	@Override

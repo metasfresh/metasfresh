@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -184,7 +185,7 @@ public class RemoteServletInvoker implements IReportServer
 				out.write(buf, 0, len);
 			}
 
-			final String result = new String(out.toByteArray());
+			final String result = new String(out.toByteArray(), StandardCharsets.UTF_8);
 			logger.debug("result: {}", result);
 		}
 		finally

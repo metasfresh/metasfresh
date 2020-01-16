@@ -115,6 +115,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_GLN, BPartnerLocation.GLN)
 			.put(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, BPartnerLocation.ID)
 			.put(I_C_BPartner_Location.COLUMNNAME_Name, BPartnerLocation.NAME)
+			.put(I_C_BPartner_Location.COLUMNNAME_BPartnerName, BPartnerLocation.BPARTNERNAME)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, BPartnerLocationType.BILL_TO_DEFAULT)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsBillTo, BPartnerLocationType.BILL_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, BPartnerLocationType.SHIP_TO_DEFAULT)
