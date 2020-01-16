@@ -257,10 +257,12 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<configuration>
 					<generateGitPropertiesFile>true</generateGitPropertiesFile>
 					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-					<includeOnlyProperties>
+					<!--includeOnlyProperties>
+						For starts, we naively include everything.
+						Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md
 						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
 						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
-					</includeOnlyProperties>
+					</includeOnlyProperties-->
 					<commitIdGenerationMode>full</commitIdGenerationMode>
 				</configuration>
 			</plugin>
