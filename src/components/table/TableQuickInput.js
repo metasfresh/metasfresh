@@ -10,7 +10,6 @@ import {
   patchRequest,
 } from '../../actions/GenericActions';
 import { initLayout } from '../../api';
-import { addNewRow } from '../../actions/WindowActions';
 import { parseToDisplay } from '../../utils/documentListHelper';
 import RawWidget from '../widget/RawWidget';
 
@@ -268,11 +267,8 @@ class TableQuickInput extends Component {
           id
         );
       })
-      .then(response => {
+      .then(() => {
         this.initQuickInput();
-        dispatch(
-          addNewRow(response.data, tabId, response.data.rowId, 'master')
-        );
       });
   };
 
