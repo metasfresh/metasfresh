@@ -718,8 +718,8 @@ public class DesadvBL implements IDesadvBL
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM);
 
 		final I_EDI_Desadv desadvRecord = desadvLineRecord.getEDI_Desadv();
-		final BigDecimal sumDeliveredInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(inOutLineQtyEff.getStockQty().toBigDecimal());
-		desadvRecord.setSumDeliveredInStockingUOM(sumDeliveredInStockingUOM);
+		final BigDecimal newSumDeliveredInStockingUOM = desadvRecord.getSumDeliveredInStockingUOM().add(inOutLineQtyEff.getStockQty().toBigDecimal());
+		desadvRecord.setSumDeliveredInStockingUOM(newSumDeliveredInStockingUOM);
 		updateFullfilmentPercent(desadvRecord);
 
 		saveRecord(desadvRecord);
@@ -831,10 +831,14 @@ public class DesadvBL implements IDesadvBL
 
 	private void updateFullfilmentPercent(@NonNull final I_EDI_Desadv desadvRecord)
 	{
+		// If we have 99.9, then the result which the user sees shall be 99, not 100. That way it's much more clear to the user.
+		final RoundingMode roundTofloor = RoundingMode.FLOOR;
+
 		final Percent fullfilment = Percent.of(
 				desadvRecord.getSumDeliveredInStockingUOM(),
 				desadvRecord.getSumOrderedInStockingUOM(),
-				0/* precision */);
+				0/* precision */,
+				roundTofloor);
 		desadvRecord.setFulfillmentPercent(fullfilment.toBigDecimal());
 	}
 
