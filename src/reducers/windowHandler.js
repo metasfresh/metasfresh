@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { Map, List, Set } from 'immutable';
-import { get, reduce, difference } from 'lodash';
+import { get, forEach, difference } from 'lodash';
 import { createSelector } from 'reselect';
 import uuid from 'uuid/v4';
 
@@ -422,24 +422,41 @@ export default function windowHandler(state = initialState, action) {
           rowData: deletedRowData,
         },
       };
+
+    // websocket event
     case UPDATE_TAB_ROWS_DATA: {
-      const { data, tabId, scope } = action.payload;
+      const {
+        data: { changed, removed },
+        tabId,
+        scope,
+      } = action.payload;
       const rowData = state[scope].rowData.toJS();
       let rows = get(rowData, `${tabId}`, []);
 
-      // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
       if (rows.length) {
-        rows.map(row => {
-          if (data[row.rowId]) {
-            return data[row.rowId];
-          }
-          return row;
-        });
+        if (removed) {
+          rows = rows.filter(row => !removed[row.rowId]);
+        }
 
-        // added row
+        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
+        if (changed) {
+          rows = rows.map(row => {
+            if (changed[row.rowId]) {
+              row = { ...changed[row.rowId] };
+
+              delete changed[row.rowId];
+
+              return row;
+            }
+            return row;
+          });
+        }
       } else {
-        rows = reduce(data, (acc, value) => value, []);
+        rows = [];
       }
+      // added rows
+      forEach(changed, (value, key) => rows.push(value));
+
       let addRowData = Map();
       addRowData = addRowData.set(tabId, List(rows));
 
