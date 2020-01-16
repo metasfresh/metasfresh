@@ -107,7 +107,7 @@ export class RawList extends PureComponent {
       dropdownList = list;
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
-          caption: emptyText,
+          caption: this.props.properties.emptyText,
           key: null,
         });
       }
@@ -518,6 +518,7 @@ RawList.propTypes = {
   lastProperty: PropTypes.any,
   updated: PropTypes.bool,
   loading: PropTypes.bool,
+  properties: PropTypes.object,
   rowId: PropTypes.any,
   isModal: PropTypes.bool,
   tabIndex: PropTypes.number,
