@@ -164,7 +164,7 @@ public class C_OLCand
 		final String productName = product.getName().trim();
 		final String productDescription = firstNotEmptyTrimmed(bpp.getProductDescription(), bpp.getProductName(), productName);
 
-		final boolean descriptionHasAddedValue = productName.contentEquals(productDescription.trim());
+		final boolean descriptionHasAddedValue = !productName.contentEquals(productDescription.trim());
 		if (descriptionHasAddedValue)
 		{
 			olCand.setProductDescription(productDescription);
