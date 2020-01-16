@@ -167,19 +167,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Base Commission Points Per Price UOM.
-		@param Base_Commission_Ponits_Per_Price_UOM Base Commission Points Per Price UOM	  */
+		@param Base_Commission_Points_Per_Price_UOM Base Commission Points Per Price UOM	  */
 	@Override
-	public void setBase_Commission_Ponits_Per_Price_UOM (java.math.BigDecimal Base_Commission_Ponits_Per_Price_UOM)
+	public void setBase_Commission_Points_Per_Price_UOM(java.math.BigDecimal Base_Commission_Points_Per_Price_UOM)
 	{
-		set_Value (COLUMNNAME_Base_Commission_Ponits_Per_Price_UOM, Base_Commission_Ponits_Per_Price_UOM);
+		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
 	}
 
 	/** Get Base Commission Points Per Price UOM.
 		@return Base Commission Points Per Price UOM	  */
 	@Override
-	public java.math.BigDecimal getBase_Commission_Ponits_Per_Price_UOM () 
+	public java.math.BigDecimal getBase_Commission_Points_Per_Price_UOM()
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Base_Commission_Ponits_Per_Price_UOM);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

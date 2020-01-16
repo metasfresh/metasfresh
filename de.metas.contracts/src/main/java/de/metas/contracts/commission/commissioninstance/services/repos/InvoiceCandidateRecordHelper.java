@@ -52,7 +52,7 @@ public class InvoiceCandidateRecordHelper
 		final CommissionPoints forecastCommissionPoints;
 
 		final ProductPrice priceActual = Services.get(IInvoiceCandBL.class).getPriceActual(icRecord);
-		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Ponits_Per_Price_UOM();
+		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
 
 		final BigDecimal forecastQtyInPriceUOM = icRecord.getQtyEntered()
 				.subtract( icRecord.getQtyToInvoiceInUOM() )
@@ -78,7 +78,7 @@ public class InvoiceCandidateRecordHelper
 	CommissionPoints extractCommissionPointsToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final CommissionPoints commissionPointsToInvoice;
-		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Ponits_Per_Price_UOM();
+		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
 
 		if (baseCommissionPointsPerPriceUOM.signum() > 0)
 		{
@@ -95,7 +95,7 @@ public class InvoiceCandidateRecordHelper
 	CommissionPoints extractInvoicedCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final CommissionPoints commissionPointsToInvoice;
-		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Ponits_Per_Price_UOM();
+		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
 
 		if (baseCommissionPointsPerPriceUOM.signum() > 0)
 		{

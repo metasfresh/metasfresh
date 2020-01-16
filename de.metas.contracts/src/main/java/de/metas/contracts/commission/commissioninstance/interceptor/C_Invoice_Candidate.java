@@ -91,7 +91,7 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 *  Reset {@link I_C_Invoice_Candidate.COLUMNNAME_Base_Commission_Ponits_Per_Price_UOM} and {@link I_C_Invoice_Candidate.COLUMNNAME_Traded_Commission_Percent}
+	 *  Reset {@link I_C_Invoice_Candidate.COLUMNNAME_Base_Commission_Points_Per_Price_UOM} and {@link I_C_Invoice_Candidate.COLUMNNAME_Traded_Commission_Percent}
 	 *  in case the price entered was overridden so the commission points will be calculated based on the {@link I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override}.
 	 *
 	 * @param icRecord Invoice Candidate record
@@ -101,7 +101,7 @@ public class C_Invoice_Candidate
 	{
 		if ( !icRecord.getPriceEntered().equals( icRecord.getPriceEntered_Override() ) )
 		{
-			icRecord.setBase_Commission_Ponits_Per_Price_UOM(null);
+			icRecord.setBase_Commission_Points_Per_Price_UOM(null);
 			icRecord.setTraded_Commission_Percent(null);
 		}
 	}

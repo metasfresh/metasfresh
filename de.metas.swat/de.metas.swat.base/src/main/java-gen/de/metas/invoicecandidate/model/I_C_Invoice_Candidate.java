@@ -157,7 +157,7 @@ public interface I_C_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBase_Commission_Ponits_Per_Price_UOM (java.math.BigDecimal Base_Commission_Ponits_Per_Price_UOM);
+	public void setBase_Commission_Points_Per_Price_UOM(java.math.BigDecimal Base_Commission_Points_Per_Price_UOM);
 
 	/**
 	 * Get Base Commission Points Per Price UOM.
@@ -166,12 +166,12 @@ public interface I_C_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getBase_Commission_Ponits_Per_Price_UOM();
+	public java.math.BigDecimal getBase_Commission_Points_Per_Price_UOM();
 
-    /** Column definition for Base_Commission_Ponits_Per_Price_UOM */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Base_Commission_Ponits_Per_Price_UOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "Base_Commission_Ponits_Per_Price_UOM", null);
-    /** Column name Base_Commission_Ponits_Per_Price_UOM */
-    public static final String COLUMNNAME_Base_Commission_Ponits_Per_Price_UOM = "Base_Commission_Ponits_Per_Price_UOM";
+    /** Column definition for Base_Commission_Points_Per_Price_UOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "Base_Commission_Points_Per_Price_UOM", null);
+    /** Column name Base_Commission_Points_Per_Price_UOM */
+    public static final String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
 
 	/**
 	 * Set Rechnungspartner.
