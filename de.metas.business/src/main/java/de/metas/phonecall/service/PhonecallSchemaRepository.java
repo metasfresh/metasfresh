@@ -328,4 +328,29 @@ public class PhonecallSchemaRepository
 				.create()
 				.list();
 	}
+
+	public void updateSchedulesOnSchemaChanged(@NonNull final PhonecallSchemaVersionId phonecallSchemaVersionId)
+	{
+
+		final PhonecallSchemaId phonecallSchemaId = phonecallSchemaVersionId.getPhonecallSchemaId();
+		final List<I_C_Phonecall_Schedule> schedulesWithDifferentSchema = retrieveSchedulesWithDifferentSchemas(phonecallSchemaVersionId);
+
+		for (final I_C_Phonecall_Schedule schedule : schedulesWithDifferentSchema)
+		{
+			schedule.setC_Phonecall_Schema_ID(phonecallSchemaId.getRepoId());
+			saveRecord(schedule);
+		}
+
+	}
+
+	private List<I_C_Phonecall_Schedule> retrieveSchedulesWithDifferentSchemas(@NonNull final PhonecallSchemaVersionId phonecallSchemaVersionId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Phonecall_Schedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_Version_ID, phonecallSchemaVersionId)
+				.addNotEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersionId.getPhonecallSchemaId())
+				.create()
+				.list();
+	}
 }
