@@ -464,23 +464,27 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
 				final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
+				logger.debug("DeliveryRule={}", deliveryRule);
 
-				//
 				// QtyRequired
 				final BigDecimal qtyRequired;
 				if (olAndSched.getQtyOverride() != null)
 				{
-					qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched));
+					final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched);
+					qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
+					logger.debug("QtyOverride={} is set; QtyToDeliverOverrideFulFilled={}; => QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
 				}
 				else if (deliveryRule.isManual())
 				{
 					// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
 					qtyRequired = BigDecimal.ZERO;
+					logger.debug("DeliveryRule={}; => qtyRequired={}", deliveryRule, qtyRequired);
 				}
 				else
 				{
 					final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 					qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
+					logger.debug("QtyOrdered={}; QtyDelivered={}; => qtyRequired={}", olAndSched.getQtyOrdered(), qtyDelivered, qtyRequired);
 				}
 
 				//
@@ -490,8 +494,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BigDecimal qtyPickedOrOnDraftShipment;
 				{
 					// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-					final Quantity stockingQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
-					qtyPickedOrOnDraftShipment = stockingQty.toBigDecimal();
+					final Quantity qtyPickedAndUnconfirmed = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
+					logger.debug("QtyPickedAndUnconfirmed={}", qtyPickedAndUnconfirmed);
+					qtyPickedOrOnDraftShipment = qtyPickedAndUnconfirmed.toBigDecimal();
 
 					// Update shipment schedule's fields
 					sched.setQtyPickList(qtyPickedOrOnDraftShipment);
@@ -500,7 +505,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				//
 				// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
 				final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickedOrOnDraftShipment);
-
+				logger.debug("QtyToDeliver={}", qtyToDeliver);
 				final ProductId productId = olAndSched.getProductId();
 				if (!productsService.isStocked(productId))
 				{
