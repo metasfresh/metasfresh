@@ -195,7 +195,7 @@ public final class JSONDocumentLayout implements Serializable
 				.add("windowId", windowId)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("tabGroups", tabs.isEmpty() ? null : tabs)
-				.add("filters", filters.isEmpty() ? null : filters)
+				.add("filters", (filters == null || filters.isEmpty()) ? null : filters)
 				.toString();
 	}
 
