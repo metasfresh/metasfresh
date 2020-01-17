@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="intercheeseuat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -28,12 +28,16 @@
 	<queryString>
 		<![CDATA[select
  SUM(il.InvoicedQty) as catchweight,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOM
+       COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOM,
+       CASE
+           WHEN uom.StdPrecision = 0
+               THEN '#,##0'
+           ELSE Substring('#,##0.000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern
 from C_Customs_Invoice_Line il
   LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
   LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
 where il.C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id}
-group by uomt.UOMSymbol, uom.UOMSymbol]]>
+group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 	</queryString>
 	<field name="catchweight" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
@@ -41,14 +45,18 @@ group by uomt.UOMSymbol, uom.UOMSymbol]]>
 	<field name="uom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
 	<title>
 		<band height="37">
-			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="136" y="7" width="34" height="12" uuid="361f1953-65b9-44cd-a4ca-f88639ed3d52"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField>
 				<reportElement x="170" y="7" width="100" height="12" uuid="bd767a0b-27b4-41df-a7d9-247757819856"/>
