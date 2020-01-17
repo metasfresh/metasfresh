@@ -16,6 +16,6 @@ You can then run metasfresh-app and/or metasfresh-webui-api with `-Dlogstash.ena
 
 (note that i'm a total noob here)
 
-You can then got to Kibana on http://localhost:5601/ and there you can "discover the "index" %{[@metadata][tcp]}-* .
+You can then go to Kibana on http://localhost:5601/ and there you can "discover the "index" %{[@metadata][tcp]}-* .
 There you can then do sortof olap on the log data that were send so far.
 ...that's how far i got until now..
