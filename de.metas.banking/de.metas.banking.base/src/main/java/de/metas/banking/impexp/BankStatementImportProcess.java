@@ -161,16 +161,15 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		return isNewBankStatement ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private int retrieveExistingBankStatementId(I_I_BankStatement importRecord)
+	private int retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
-		final int existingBankStatementId = Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, importRecord.getC_BP_BankAccount_ID())
 				.create()
 				.firstId();
-
-		return existingBankStatementId;
 
 	}
 
@@ -200,6 +199,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		final int bankStatementId = importRecord.getC_BankStatement_ID();
 
 		bankStatementLine.setC_BankStatement_ID(bankStatementId);
+		bankStatementLine.setImportedBillPartnerName(importRecord.getBill_BPartner_Name());
 		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
 		bankStatementLine.setReferenceNo(importRecord.getReferenceNo());
 		bankStatementLine.setDescription(importRecord.getLineDescription());
