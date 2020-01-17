@@ -102,6 +102,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
 		final int doctypeID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
 		queueItem.setC_DocType_ID(doctypeID);
+		queueItem.setAD_Table_ID(archive.getAD_Table_ID());
 
 		// Handles operations specific for invoices.
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
