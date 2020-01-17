@@ -87,7 +87,7 @@ public class Percent
 	 **/
 	public static Percent ofDelta(@NonNull final BigDecimal baseValue, @NonNull final BigDecimal compareValue)
 	{
-		return of(compareValue.subtract(baseValue), baseValue, 2);
+		return of(compareValue.subtract(baseValue), baseValue, 2, RoundingMode.HALF_UP);
 	}
 
 	/**
@@ -99,6 +99,8 @@ public class Percent
 	}
 
 	/**
+	 * Like {@link #of(BigDecimal, BigDecimal, int, RoundingMode)} with a scale of 2 and "half-up".
+	 *
 	 * Examples:
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"), 2)} returns an instance of "25%".
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
@@ -111,6 +113,15 @@ public class Percent
 			@NonNull final BigDecimal denominator,
 			final int precision)
 	{
+		return of(numerator, denominator, 2, RoundingMode.HALF_UP);
+	}
+
+	public static Percent of(
+			@NonNull final BigDecimal numerator,
+			@NonNull final BigDecimal denominator,
+			final int precision,
+			@NonNull final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (denominator.signum() == 0)
@@ -118,11 +129,11 @@ public class Percent
 			return ZERO;
 		}
 
-		final int scale = precision + 2; // +2 because i guess if we multiply by 100 in the end, everything shifts by two digits
+		final int scale = precision + 2; // +2 because if we multiply by 100 in the end, everything shifts by two digits
 
 		final BigDecimal percentValue = numerator
 				.setScale(scale, RoundingMode.HALF_UP)
-				.divide(denominator, RoundingMode.HALF_UP)
+				.divide(denominator, roundingMode)
 				.multiply(ONE_HUNDRED_VALUE);
 
 		return Percent.of(percentValue);
