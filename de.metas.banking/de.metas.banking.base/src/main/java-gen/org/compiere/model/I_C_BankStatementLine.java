@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,13 +12,13 @@ public interface I_C_BankStatementLine
     public static final String Table_Name = "C_BankStatementLine";
 
     /** AD_Table_ID=393 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -48,10 +32,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_Client>(I_C_BankStatementLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -59,7 +39,7 @@ public interface I_C_BankStatementLine
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -69,18 +49,12 @@ public interface I_C_BankStatementLine
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_Org>(I_C_BankStatementLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -158,12 +132,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BPartner>(I_C_BankStatementLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -216,12 +184,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge();
-
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
-
-    /** Column definition for C_Charge_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Charge>(I_C_BankStatementLine.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
@@ -245,12 +207,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Currency>(I_C_BankStatementLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -389,8 +345,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_User>(I_C_BankStatementLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -491,7 +445,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Discount Amount.
+	 * Set Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -501,7 +455,7 @@ public interface I_C_BankStatementLine
 	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount Amount.
+	 * Get Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -789,6 +743,31 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_EftValutaDate = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "EftValutaDate", null);
     /** Column name EftValutaDate */
     public static final String COLUMNNAME_EftValutaDate = "EftValutaDate";
+
+	/**
+	 * Set Importierter Rechnungspartner Name.
+	 * Name of the Bill Partner as appears in the import file
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setImportedBillPartnerName (java.lang.String ImportedBillPartnerName);
+
+	/**
+	 * Get Importierter Rechnungspartner Name.
+	 * Name of the Bill Partner as appears in the import file
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getImportedBillPartnerName();
+
+    /** Column definition for ImportedBillPartnerName */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ImportedBillPartnerName = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ImportedBillPartnerName", null);
+    /** Column name ImportedBillPartnerName */
+    public static final String COLUMNNAME_ImportedBillPartnerName = "ImportedBillPartnerName";
 
 	/**
 	 * Set Interest Amount.
@@ -1092,7 +1071,7 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1102,7 +1081,7 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1141,8 +1120,8 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_ReferenceNo = "ReferenceNo";
 
 	/**
-	 * Set Datum Auszugs-Position.
-	 * Date of the Statement Line
+	 * Set Valuta Datum.
+	 * Valuta Datum
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -1151,8 +1130,8 @@ public interface I_C_BankStatementLine
 	public void setStatementLineDate (java.sql.Timestamp StatementLineDate);
 
 	/**
-	 * Get Datum Auszugs-Position.
-	 * Date of the Statement Line
+	 * Get Valuta Datum.
+	 * Valuta Datum
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -1240,8 +1219,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_AD_User>(I_C_BankStatementLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

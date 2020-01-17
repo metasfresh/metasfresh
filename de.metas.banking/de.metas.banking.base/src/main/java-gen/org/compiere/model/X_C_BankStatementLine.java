@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for C_BankStatementLine
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 582253830L;
+	private static final long serialVersionUID = 969838600L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -44,26 +26,19 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 			setC_BankStatement_ID (0);
 			setC_BankStatementLine_ID (0);
 			setC_Charge_ID (0);
-			setC_Currency_ID (0);
-// @SQL=SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=@C_BP_BankAccount_ID@
-			setChargeAmt (Env.ZERO);
-			setDateAcct (new Timestamp( System.currentTimeMillis() ));
-// @StatementDate@
-			setInterestAmt (Env.ZERO);
-			setIsManual (true);
-// Y
-			setIsOverUnderPayment (false);
-// N
+			setC_Currency_ID (0); // @SQL=SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=@C_BP_BankAccount_ID@
+			setChargeAmt (BigDecimal.ZERO);
+			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @StatementDate@
+			setInterestAmt (BigDecimal.ZERO);
+			setIsManual (true); // Y
+			setIsOverUnderPayment (false); // N
 			setIsReversal (false);
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine WHERE C_BankStatement_ID=@C_BankStatement_ID@
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine WHERE C_BankStatement_ID=@C_BankStatement_ID@
 			setProcessed (false);
-			setStatementLineDate (new Timestamp( System.currentTimeMillis() ));
-// @StatementLineDate@
-			setStmtAmt (Env.ZERO);
-			setTrxAmt (Env.ZERO);
-			setValutaDate (new Timestamp( System.currentTimeMillis() ));
-// @StatementDate@
+			setStatementLineDate (new Timestamp( System.currentTimeMillis() )); // @StatementLineDate@
+			setStmtAmt (BigDecimal.ZERO);
+			setTrxAmt (BigDecimal.ZERO);
+			setValutaDate (new Timestamp( System.currentTimeMillis() )); // @StatementDate@
         } */
     }
 
@@ -73,33 +48,17 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_BankStatementLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	@Override
-	public org.compiere.model.I_C_BankStatement getC_BankStatement() throws RuntimeException
+	public org.compiere.model.I_C_BankStatement getC_BankStatement()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class);
 	}
@@ -160,18 +119,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
@@ -198,7 +145,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccountTo_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -234,18 +181,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
-	}
-
-	@Override
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
-	}
-
 	/** Set Kosten.
 		@param C_Charge_ID 
 		Additional document charges
@@ -269,18 +204,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -323,12 +246,12 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -365,7 +288,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -402,7 +325,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
+	public org.compiere.model.I_C_Payment getC_Payment()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
 	}
@@ -472,7 +395,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -511,7 +434,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Discount Amount.
+	/** Set Skonto.
 		@param DiscountAmt 
 		Calculated amount of discount
 	  */
@@ -521,7 +444,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
 	}
 
-	/** Get Discount Amount.
+	/** Get Skonto.
 		@return Calculated amount of discount
 	  */
 	@Override
@@ -529,7 +452,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -551,7 +474,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EftAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -745,6 +668,25 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EftValutaDate);
 	}
 
+	/** Set Importierter Rechnungspartner Name.
+		@param ImportedBillPartnerName 
+		Name of the Bill Partner as appears in the import file
+	  */
+	@Override
+	public void setImportedBillPartnerName (java.lang.String ImportedBillPartnerName)
+	{
+		set_Value (COLUMNNAME_ImportedBillPartnerName, ImportedBillPartnerName);
+	}
+
+	/** Get Importierter Rechnungspartner Name.
+		@return Name of the Bill Partner as appears in the import file
+	  */
+	@Override
+	public java.lang.String getImportedBillPartnerName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ImportedBillPartnerName);
+	}
+
 	/** Set Interest Amount.
 		@param InterestAmt 
 		Interest Amount
@@ -763,7 +705,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InterestAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -919,16 +861,8 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), String.valueOf(getLine()));
-    }
-
 	@Override
-	public org.compiere.model.I_C_BankStatementLine getLink_BankStatementLine() throws RuntimeException
+	public org.compiere.model.I_C_BankStatementLine getLink_BankStatementLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_Link_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
 	}
@@ -1014,13 +948,13 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1029,7 +963,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
@@ -1063,9 +997,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_ReferenceNo);
 	}
 
-	/** Set Datum Auszugs-Position.
+	/** Set Valuta Datum.
 		@param StatementLineDate 
-		Date of the Statement Line
+		Valuta Datum
 	  */
 	@Override
 	public void setStatementLineDate (java.sql.Timestamp StatementLineDate)
@@ -1073,8 +1007,8 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_StatementLineDate, StatementLineDate);
 	}
 
-	/** Get Datum Auszugs-Position.
-		@return Date of the Statement Line
+	/** Get Valuta Datum.
+		@return Valuta Datum
 	  */
 	@Override
 	public java.sql.Timestamp getStatementLineDate () 
@@ -1100,7 +1034,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_StmtAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1122,7 +1056,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TrxAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1163,7 +1097,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }
