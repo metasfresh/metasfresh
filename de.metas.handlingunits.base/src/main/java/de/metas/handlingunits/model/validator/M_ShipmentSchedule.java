@@ -24,18 +24,17 @@ package de.metas.handlingunits.model.validator;
 
 import java.math.BigDecimal;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.gui.search.IHUPackingAwareBL;
-import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -43,64 +42,31 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_M_ShipmentSchedule.class)
+@Component
 public class M_ShipmentSchedule
 {
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_IsClosed)
+	public void updateHURelatedValuesFromOrderLineBeforeOpened(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentScheduleBL.isJustOpened(shipmentSchedule))
+		{
+			huShipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
+			huShipmentScheduleBL.updateEffectiveValues(shipmentSchedule);
+		}
+		}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void updateFromOrderline(final I_M_ShipmentSchedule shipmentSchedule)
+	public void updateHURelatedValuesFromOrderLineBeforeNew(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final ModelChangeType type)
 	{
-		final int itemProductId;
-		final String packDescription;
-
-		if (shipmentSchedule.getC_OrderLine_ID() > 0)
-		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-			itemProductId = orderLine.getM_HU_PI_Item_Product_ID();
-			packDescription = orderLine.getPackDescription();
-		}
-		else
-		{
-			itemProductId = -1;
-			packDescription = null;
-		}
-
-		shipmentSchedule.setM_HU_PI_Item_Product_ID(itemProductId);
-		shipmentSchedule.setPackDescription(packDescription);
-
-		updateLUTUQtys(shipmentSchedule);
-	}
-
-	private void updateLUTUQtys(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
-		{
-			return;
-		}
-
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-
-		final BigDecimal qtyOrderedTU = orderLine.getQtyEnteredTU();
-		shipmentSchedule.setQtyOrdered_TU(qtyOrderedTU);
-
-		// guard: if there is no PI Item Product => do nothing
-		if (shipmentSchedule.getM_HU_PI_Item_Product_ID() <= 0)
-		{
-			return;
-		}
-
-		final I_M_HU_LUTU_Configuration lutuConfiguration = //
-				Services.get(IHUShipmentScheduleBL.class).deriveM_HU_LUTU_Configuration(shipmentSchedule);
-
-		final int qtyOrderedLU = //
-				Services.get(ILUTUConfigurationFactory.class).calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyOrderedTU);
-		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void createEffectiveValues(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		// create the effective values (calculated, override)
-		Services.get(IHUShipmentScheduleBL.class).updateHURelatedValuesFromOrderLine(shipmentSchedule);
+		huShipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
+		huShipmentScheduleBL.updateEffectiveValues(shipmentSchedule);
 	}
 
 	@ModelChange(timings = {
@@ -115,47 +81,24 @@ public class M_ShipmentSchedule
 	})
 	public void updateEffectiveValues(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		// update the effective values (override)
-		Services.get(IHUShipmentScheduleBL.class).updateEffectiveValues(shipmentSchedule);
-
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-
-		if (orderLine == null)
+		if (shipmentSchedule.getC_OrderLine_ID() > 0)
 		{
-			// nothing to do
-			return;
+			huShipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
 		}
 
-		final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-		final ShipmentScheduleHUPackingAware packingAware = new ShipmentScheduleHUPackingAware(shipmentSchedule);
+		huShipmentScheduleBL.updateEffectiveValues(shipmentSchedule);
 
-		final BigDecimal qtyTUCalculated = shipmentSchedule.getQtyTU_Calculated();
-
-		if (!qtyTUCalculated.equals(shipmentSchedule.getQtyOrdered_TU()))
+		if (shipmentSchedule.getC_OrderLine_ID() > 0)
 		{
-			// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
-			final int qtyTU = packingAware.getQtyTU().intValueExact();
-			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
-		}
-
-		final int hupipCalculatedID = shipmentSchedule.getM_HU_PI_Item_Product_Calculated_ID();
-		final int currentHUPIPID = shipmentSchedule.getM_HU_PI_Item_Product_ID();
-
-		if (hupipCalculatedID != currentHUPIPID)
-		{
-			final BigDecimal qtyTU = packingAware.getQtyTU();
-			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU.intValueExact());
-
-			shipmentSchedule.setQtyOrdered_Override(packingAware.getQty());
-		}
-
 		// update orderLine
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrderedEffective = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
+			final BigDecimal qtyOrderedEffective = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 		orderLine.setQtyOrdered(qtyOrderedEffective);
 
 		InterfaceWrapperHelper.save(orderLine);
+		}
 
 	}
 

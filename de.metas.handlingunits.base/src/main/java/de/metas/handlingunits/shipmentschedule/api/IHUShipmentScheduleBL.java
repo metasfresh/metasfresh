@@ -81,10 +81,10 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 *
 	 * @return PI item product or null.
 	 */
-	HUPIItemProductId getPackingMaterialId(I_M_ShipmentSchedule shipmentSchedule);
+	HUPIItemProductId getEffectivePackingMaterialId(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
-	 * @see #getPackingMaterialId(I_M_ShipmentSchedule)
+	 * @see #getEffectivePackingMaterialId(I_M_ShipmentSchedule)
 	 */
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(I_M_ShipmentSchedule shipmentSchedule);
 
