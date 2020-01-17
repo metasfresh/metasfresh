@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
@@ -8,6 +8,12 @@ import classnames from 'classnames';
  */
 const Checkbox = props => {
   const rawWidget = useRef(null);
+  const [checkedState, setCheckedState] = useState(0);
+
+  useEffect(() => {
+    setCheckedState(props.widgetData[0].value);
+  }, [props]);
+
   const {
     widgetData,
     disabled,
@@ -22,6 +28,11 @@ const Checkbox = props => {
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
     handlePatch(widgetField, '', id);
+  };
+
+  const updateCheckedState = e => {
+    setCheckedState(!checkedState);
+    handlePatch(widgetField, e.target.checked, id);
   };
 
   return (
@@ -42,9 +53,9 @@ const Checkbox = props => {
         <input
           ref={rawWidget}
           type="checkbox"
-          checked={widgetData[0].value}
+          checked={checkedState}
           disabled={widgetData[0].readonly || disabled}
-          onChange={e => handlePatch(widgetField, e.target.checked, id)}
+          onChange={updateCheckedState}
           tabIndex="-1"
         />
         <div

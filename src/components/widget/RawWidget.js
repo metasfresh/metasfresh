@@ -76,6 +76,20 @@ export class RawWidget extends Component {
   }
 
   /**
+   *  Re-rendering conditions by widgetType this to prevent unnecessary re-renders
+   *  Performance boost
+   */
+  shouldComponentUpdate(nextProps) {
+    switch (this.props.widgetType) {
+      case 'YesNo':
+        return nextProps.widgetData[0].value !== this.props.widgetData[0].value;
+
+      default:
+        return true;
+    }
+  }
+
+  /**
    * @method focus
    * @summary Function used specifically for list widgets. It blocks outside clicks, which are
    * then enabled again in handleBlur. This is to avoid closing the list as it's a separate
