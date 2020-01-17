@@ -90,6 +90,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 		if (!DeliveryRule.WITH_NEXT_SUBSCRIPTION_DELIVERY.equals(lineCandidate.getDeliveryRule()))
 		{
 			// this line doesn't need to be delivered together with a subscription delivery -> nothing to do
+			return;
 		}
 
 		// find out there are subscription delivery lines
