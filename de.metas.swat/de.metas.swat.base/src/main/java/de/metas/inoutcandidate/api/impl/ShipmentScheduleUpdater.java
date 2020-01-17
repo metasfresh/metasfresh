@@ -292,8 +292,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentSchedulesDuringUpdate firstRun = generate_FirstRun(ctx, olsAndScheds);
 		firstRun.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
-		final int removeCnt = applyCandidateProcessors(ctx, firstRun);
-		logger.info("{} records were discarded by candidate processors", removeCnt);
+		applyCandidateProcessors(ctx, firstRun);
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
@@ -839,9 +838,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	private int applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
+	private void applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
 	{
-		return candidateProcessors.doUpdateAfterFirstPass(ctx, candidates, ITrx.TRXNAME_ThreadInherited);
+		candidateProcessors.doUpdateAfterFirstPass(ctx, candidates, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**

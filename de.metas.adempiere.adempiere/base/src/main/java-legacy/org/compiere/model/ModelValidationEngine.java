@@ -60,6 +60,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Stopwatch;
@@ -700,6 +702,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public void fireModelChange(final PO po, final int changeType)
 	{
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType))
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		if (po == null || m_modelChangeListeners.isEmpty())
 		{
 			return;
@@ -764,6 +770,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		// Execute interceptors
 		final String trxName = po.get_TrxName();
 		executeInTrx(trxName, changeType, () -> fireModelChange0(po, changeType, interceptorsSystem, interceptorsClient, scriptValidators));
+		}
 	}	// fireModelChange
 
 	private final void executeInTrx(final String trxName, final int changeTypeOrDocTiming, @NonNull final Runnable runnable)
@@ -945,7 +952,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 				handleTypeSubsequent(po, validator);
 				return;
 			}
-
+		else
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator))
+			{
 			// the default cause
 			final String error = validator.modelChange(po, changeType);
 			if (!Check.isEmpty(error))
@@ -1054,6 +1065,16 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public String fireDocValidate(final Object model, final int docTiming)
 	{
+		final DocTimingType docTiming = DocTimingType.valueOf(docTimingInt);
+		return fireDocValidate(model, docTiming);
+	}
+
+	public String fireDocValidate(final Object model, final DocTimingType docTiming)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming))
+		{
+
 		if (model == null)
 		{
 			return null; // avoid InterfaceWrapperHelper from throwing an exception under any circumstances
@@ -1120,6 +1141,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		executeInTrx(trxName, docTiming, () -> fireDocValidate0(po, docTiming, interceptorsSystem, interceptorsClient, scriptValidators));
 
 		return null;
+		}
 	}	// fireDocValidate
 
 	private void fireDocValidate0(final PO po,
@@ -1161,8 +1183,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 				validator = list.get(i);
 				if (appliesFor(validator, po.getAD_Client_ID()))
 				{
-					final String error = validator.docValidate(po, docTiming);
-					if (error != null && error.length() > 0)
+			log.trace("Skip {} ({}) for {}", interceptor, docTiming, po);
+			return;
+		}
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", interceptor))
 					{
 						throw new AdempiereException(error);
 					}
