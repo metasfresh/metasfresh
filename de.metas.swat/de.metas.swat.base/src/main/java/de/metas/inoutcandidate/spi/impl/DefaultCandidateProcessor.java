@@ -78,7 +78,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 
 					if (!CompleteStatus.OK.equals(completeStatus))
 					{
-						logger.debug("Discard lineCandidate because completeStatus={}" + completeStatus);
+						logger.debug("Discard lineCandidate because completeStatus={}", completeStatus);
 						lineCandidate.setDiscarded();
 					}
 
@@ -116,7 +116,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 
 							if (qtyToDeliverOverride == null || qtyToDeliverOverride.signum() <= 0)
 							{
-								logger.debug("Discard lineCandidate because the groupd contains no 'item' products and qtyToDeliverOverride is not set");
+								logger.debug("Discard lineCandidate because its groupCandidate contains no 'item' products and qtyToDeliverOverride is not set");
 								lineCandidate.setDiscarded();
 								candidates.addStatusInfo(lineCandidate, Services.get(IMsgBL.class).getMsg(ctx, MSG_NO_ITEM_TO_SHIP));
 							}
