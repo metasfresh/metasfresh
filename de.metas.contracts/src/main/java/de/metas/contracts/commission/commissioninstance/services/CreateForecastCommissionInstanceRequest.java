@@ -27,12 +27,12 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import java.time.LocalDate;
 
-@Data
+@Value
 @Builder
 public class CreateForecastCommissionInstanceRequest
 {

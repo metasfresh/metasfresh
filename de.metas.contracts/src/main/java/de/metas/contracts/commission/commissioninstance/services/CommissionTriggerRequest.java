@@ -26,12 +26,12 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import java.time.Instant;
 
-@Data
+@Value
 @Builder
 public class CommissionTriggerRequest
 {

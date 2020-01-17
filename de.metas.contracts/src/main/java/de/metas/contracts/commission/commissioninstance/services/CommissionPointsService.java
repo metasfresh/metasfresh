@@ -70,7 +70,7 @@ public class CommissionPointsService
 		return Optional.of(customerTradeMarginAmount);
 	}
 
-	public IPricingResult calculateCommissionPointPriceFor(final FlatrateTermId flatrateTermId, final LocalDate requestedDate)
+	private IPricingResult calculateCommissionPointPriceFor(final FlatrateTermId flatrateTermId, final LocalDate requestedDate)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);

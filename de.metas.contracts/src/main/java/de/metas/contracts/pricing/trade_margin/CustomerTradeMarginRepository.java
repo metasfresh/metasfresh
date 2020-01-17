@@ -47,7 +47,7 @@ public class CustomerTradeMarginRepository
 			.cacheName("customerTradeMarginBySalesRepAndDate")
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(100)
-			.additionalTableNameToResetFor(I_C_Customer_Trade_Margin.Table_Name)
+			.tableName(I_C_Customer_Trade_Margin.Table_Name)
 			.build();
 
 	public Optional<CustomerTradeMarginSettings> getBestMatchForCriteria(final CustomerTradeMarginSearchCriteria customerTradeMarginSearchCriteria)

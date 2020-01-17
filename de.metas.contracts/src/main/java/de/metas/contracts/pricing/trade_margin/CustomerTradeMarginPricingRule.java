@@ -22,6 +22,7 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.contracts.commission.Beneficiary;
@@ -39,7 +40,9 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
@@ -59,7 +62,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	{
 		if ( !result.isCalculated() )
 		{
-			logger.debug("Not applying due to missing calculated price!");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing calculated price!");
 			return false;
 		}
 		final BPartnerId customerId = pricingCtx.getBPartnerId();
@@ -67,7 +70,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		final BPartnerId salesRepId = Services.get(IBPartnerBL.class).getBPartnerSalesRepId(customerId);
 
 		if (salesRepId == null) {
-			logger.debug("Not applying due to missing sales rep!");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing sales rep!");
 			return false;
 		}
 
@@ -80,7 +83,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if ( !customerTradeMarginService.getCustomerTradeMarginForCriteria(customerTradeMarginSearchCriteria).isPresent() )
 		{
-			logger.debug("Not applying due to missing customer trade margin settings!");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing customer trade margin settings!");
 			return false;
 		}
 
@@ -104,6 +107,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				customerTradeMarginService.getCustomerTradeMarginForCriteria(customerTradeMarginSearchCriteria);
 
 		if ( !customerTradeMarginSettings.isPresent() ) {
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing customer trade margin settings!");
 			return;
 		}
 
@@ -119,6 +123,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if ( !forecastCommissionInstance.isPresent() )
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! Forecast commission instance couldn't be created!");
 			return;
 		}
 		final CommissionContract salesRepCommissionContract = forecastCommissionInstance.get().getConfig().getContractFor( Beneficiary.of(salesRepId) );
@@ -130,6 +135,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if ( !tradedCommissionPointsPerPriceUOM.isPresent() )
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPointsPerPriceUOM couldn't be calculated");
 			return;
 		}
 
@@ -139,17 +145,25 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 					salesRepCommissionContract.getId(),
 					pricingCtx.getPriceDate() );
 
-		if ( tradedCommissionPointsValue.isPresent() )
+		if ( !tradedCommissionPointsValue.isPresent() )
 		{
-			final Money customerTradeMarginPerPriceUOM = SpringContextHolder.instance.getBean(MoneyService.class)
-					.convertMoneyToCurrency( tradedCommissionPointsValue.get(), result.getCurrencyId() );
-
-			result.setBaseCommissionPointsPerPriceUOM( forecastCommissionInstance.get().getCurrentTriggerData().getForecastedPoints().toBigDecimal() );
-			result.setTradedCommissionPercent( customerTradeMarginSettings.get().getMarginPercent() );
-
-			result.setPriceStd( priceBeforeApplyingRule.toBigDecimal().subtract( customerTradeMarginPerPriceUOM.toBigDecimal() ) );
-			result.setCalculated(true);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPointsValue couldn't be calculated");
+			return;
 		}
+
+		final Money customerTradeMarginPerPriceUOM = SpringContextHolder.instance.getBean(MoneyService.class)
+				.convertMoneyToCurrency( tradedCommissionPointsValue.get(), result.getCurrencyId() );
+
+		result.setBaseCommissionPointsPerPriceUOM( forecastCommissionInstance.get().getCurrentTriggerData().getForecastedPoints().toBigDecimal() );
+		result.setTradedCommissionPercent( Percent.of( customerTradeMarginSettings.get().getMarginPercent() ) );
+
+		result.setPriceStd( priceBeforeApplyingRule.toBigDecimal().subtract( customerTradeMarginPerPriceUOM.toBigDecimal() ) );
+		result.setCalculated(true);
+
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("Price before applying rule: {} currencyID: {}, Price after applying rule: {} currencyID :{}",
+						priceBeforeApplyingRule.toBigDecimal() , priceBeforeApplyingRule.getCurrencyId().getRepoId(),
+						result.getPriceStd(), result.getCurrencyId().getRepoId() );
 	}
 
 	private Optional<CommissionInstance> createForecastCommissionInstanceForOneQtyInPriceUOM( final IPricingContext pricingCtx,

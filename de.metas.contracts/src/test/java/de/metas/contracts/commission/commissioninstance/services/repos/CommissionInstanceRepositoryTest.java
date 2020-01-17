@@ -37,9 +37,6 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Sale
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;

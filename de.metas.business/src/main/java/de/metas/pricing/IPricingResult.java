@@ -172,7 +172,7 @@ public interface IPricingResult
 
 	BigDecimal getBaseCommissionPointsPerPriceUOM();
 
-	void setTradedCommissionPercent(BigDecimal tradedCommissionPercent);
+	void setTradedCommissionPercent(Percent tradedCommissionPercent);
 
-	BigDecimal getTradedCommissionPercent();
+	Percent getTradedCommissionPercent();
 }
