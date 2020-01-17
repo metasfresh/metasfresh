@@ -702,7 +702,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public void fireModelChange(final PO po, final int changeType)
 	{
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType))
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType.toString()))
 		{
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -955,7 +955,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		else
 		{
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator))
+			try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator.toString()))
 			{
 			// the default cause
 			final String error = validator.modelChange(po, changeType);
@@ -1072,7 +1072,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public String fireDocValidate(final Object model, final DocTimingType docTiming)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming))
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
 		{
 
 		if (model == null)
@@ -1188,7 +1188,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", interceptor))
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", interceptor.toString()))
 					{
 						throw new AdempiereException(error);
 					}
