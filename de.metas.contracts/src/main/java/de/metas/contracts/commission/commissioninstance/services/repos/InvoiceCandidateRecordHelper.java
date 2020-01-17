@@ -52,24 +52,26 @@ public class InvoiceCandidateRecordHelper
 		final CommissionPoints forecastCommissionPoints;
 
 		final ProductPrice priceActual = Services.get(IInvoiceCandBL.class).getPriceActual(icRecord);
-		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
 
 		final BigDecimal forecastQtyInPriceUOM = icRecord.getQtyEntered()
 				.subtract( icRecord.getQtyToInvoiceInUOM() )
 				.subtract( icRecord.getQtyInvoicedInUOM() );
 
-		if (baseCommissionPointsPerPriceUOM.signum() > 0)
-		{
-			final BigDecimal forecastCommissionPointsAmount = baseCommissionPointsPerPriceUOM.multiply(forecastQtyInPriceUOM);
-			forecastCommissionPoints = CommissionPoints.of(forecastCommissionPointsAmount);
-		}
-		else
+		if ( useActualPriceForComputingCommissionPoints(icRecord) )
 		{
 			final Money forecastNetAmt = moneyService.multiply(
 					Quantitys.create(forecastQtyInPriceUOM, UomId.ofRepoId(icRecord.getC_UOM_ID())),
 					priceActual);
 
 			forecastCommissionPoints = CommissionPoints.of( forecastNetAmt.toBigDecimal() );
+		}
+		else
+		{
+			final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
+
+			final BigDecimal forecastCommissionPointsAmount = baseCommissionPointsPerPriceUOM.multiply(forecastQtyInPriceUOM);
+
+			forecastCommissionPoints = CommissionPoints.of(forecastCommissionPointsAmount);
 		}
 
 		return forecastCommissionPoints;
@@ -78,15 +80,15 @@ public class InvoiceCandidateRecordHelper
 	CommissionPoints extractCommissionPointsToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final CommissionPoints commissionPointsToInvoice;
-		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
 
-		if (baseCommissionPointsPerPriceUOM.signum() > 0)
+		if ( useActualPriceForComputingCommissionPoints(icRecord) )
 		{
-			commissionPointsToInvoice = CommissionPoints.of( baseCommissionPointsPerPriceUOM.multiply( icRecord.getQtyToInvoiceInUOM() ) );
+			commissionPointsToInvoice = CommissionPoints.of( icRecord.getNetAmtToInvoice() );
 		}
 		else
 		{
-			commissionPointsToInvoice = CommissionPoints.of( icRecord.getNetAmtToInvoice() );
+			final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
+			commissionPointsToInvoice = CommissionPoints.of( baseCommissionPointsPerPriceUOM.multiply( icRecord.getQtyToInvoiceInUOM() ) );
 		}
 
 		return commissionPointsToInvoice;
@@ -95,15 +97,15 @@ public class InvoiceCandidateRecordHelper
 	CommissionPoints extractInvoicedCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final CommissionPoints commissionPointsToInvoice;
-		final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
 
-		if (baseCommissionPointsPerPriceUOM.signum() > 0)
+		if ( useActualPriceForComputingCommissionPoints(icRecord) )
 		{
-			commissionPointsToInvoice = CommissionPoints.of( baseCommissionPointsPerPriceUOM.multiply( icRecord.getQtyInvoicedInUOM() ) );
+			commissionPointsToInvoice = CommissionPoints.of( icRecord.getNetAmtInvoiced() );
 		}
 		else
 		{
-			commissionPointsToInvoice = CommissionPoints.of( icRecord.getNetAmtInvoiced() );
+			final BigDecimal baseCommissionPointsPerPriceUOM = icRecord.getBase_Commission_Points_Per_Price_UOM();
+			commissionPointsToInvoice = CommissionPoints.of( baseCommissionPointsPerPriceUOM.multiply( icRecord.getQtyInvoicedInUOM() ) );
 		}
 
 		return commissionPointsToInvoice;
@@ -111,6 +113,20 @@ public class InvoiceCandidateRecordHelper
 
 	Percent extractTradedCommissionPercent(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		return Percent.of( icRecord.getTraded_Commission_Percent() );
+		return useActualPriceForComputingCommissionPoints(icRecord) ? Percent.ZERO : Percent.of( icRecord.getTraded_Commission_Percent() );
+	}
+
+	/**
+	 *  Use actual price when computing the base commission points sum if {@link I_C_Invoice_Candidate#COLUMN_Base_Commission_Points_Per_Price_UOM}
+	 *  was not calculated or the price was overwritten.
+	 *
+	 * @param icRecord	Invoice Candidate record
+	 * @return	true, if the actual price should be used for computing commission points, false otherwise
+	 */
+	private boolean useActualPriceForComputingCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		return  ( icRecord.getBase_Commission_Points_Per_Price_UOM().signum() == 0 )
+				|| ( icRecord.getPriceEntered_Override().signum() > 0
+						&& !icRecord.getPriceEntered_Override().equals( icRecord.getPriceEntered() ) );
 	}
 }

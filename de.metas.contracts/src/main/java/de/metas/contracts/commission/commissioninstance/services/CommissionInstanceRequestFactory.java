@@ -5,7 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Optional;
 
 import de.metas.contracts.commission.Beneficiary;
-import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -136,7 +136,15 @@ public class CommissionInstanceRequestFactory
 				    .filter(config -> config.getContractFor( Beneficiary.of( contractRequest.getSalesRepBPartnerId() ) ) != null)
 				    .collect( ImmutableList.toImmutableList() );
 
-		Check.assume(configs.size() <= 1, "There is only one active commission contract for a sales rep at a certain time!");
+		if (configs.size() > 1)
+		{
+			throw new AdempiereException("Expecting only one active commissionConfig for a sales rep at a certain time!")
+					.appendParametersToMessage()
+					.setParameter("salesRepBPartnerId", contractRequest.getSalesRepBPartnerId())
+					.setParameter("contractRequest", contractRequest)
+					.setParameter("hierarchy", hierarchy)
+					.setParameter("commissionConfigs", configs);
+		}
 
 		if ( configs.isEmpty() )
 		{

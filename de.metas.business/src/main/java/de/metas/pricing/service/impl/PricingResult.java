@@ -121,7 +121,7 @@ final class PricingResult implements IPricingResult
 
 	private BigDecimal baseCommissionPointsPerPriceUOM;
 
-	private BigDecimal tradedCommissionPercent;
+	private Percent tradedCommissionPercent = Percent.ZERO;
 
 	@Builder
 	private PricingResult(
