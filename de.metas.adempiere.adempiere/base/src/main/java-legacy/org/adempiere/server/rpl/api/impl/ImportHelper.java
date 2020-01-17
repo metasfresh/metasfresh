@@ -31,6 +31,7 @@ package org.adempiere.server.rpl.api.impl;
 import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplicationCtx;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1236,7 +1237,7 @@ public class ImportHelper implements IImportHelper
 					try
 					{
 						decoded = new String(Util.decodeBase64(value.toString()));
-						paramSQL = decoded.getBytes();
+						paramSQL = decoded.getBytes(StandardCharsets.UTF_8);
 					}
 					catch (final Exception e)
 					{

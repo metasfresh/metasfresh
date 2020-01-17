@@ -18,6 +18,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /*
@@ -59,7 +62,7 @@ public class C_Campaign_Price
 	{
 		if (record == null)
 		{
-			return ;
+			return;
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
@@ -104,8 +107,20 @@ public class C_Campaign_Price
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID})
+	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_M_Product_ID, skipIfCopying = true)
+	public void onProductChanged(final I_C_Campaign_Price record)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+		if (productId == null)
+		{
+			return;
+		}
+
+		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		record.setC_UOM_ID(stockUomId.getRepoId());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID })
 	public void beforeSave(final I_C_Campaign_Price record)
 	{
 		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0 && record.getM_PricingSystem_ID() <= 0)

@@ -13,15 +13,14 @@ package de.metas.payment.sepa.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.Iterator;
@@ -30,7 +29,6 @@ import java.util.Properties;
 
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.util.ILoggable;
 import de.metas.util.ISingletonService;
 
 public interface ISEPADocumentBL extends ISingletonService
@@ -49,7 +47,7 @@ public interface ISEPADocumentBL extends ISingletonService
 	Date getDueDate(I_SEPA_Export_Line line);
 
 	/**
-	 * Method used to update data in a BP after a SEPA operation 
+	 * Method used to update data in a BP after a SEPA operation
 	 * NOTE: Currently only a placeholder, as we're not using the functionality yet.
 	 * 
 	 * @param line
@@ -58,13 +56,7 @@ public interface ISEPADocumentBL extends ISingletonService
 
 	/**
 	 * Generates the SEPA Credit Transfer xml from the given export header.
-	 * 
-	 * @param fileName
-	 * @param sepaExport
-	 * @param loggable if not <code>null</code>, then the method logs to this loggable
 	 */
-	void marshalXMLCreditFile(String fileName, I_SEPA_Export sepaExport, ILoggable loggable);
-
-	String createDefaultSepaExportFileName(Properties ctx, String fileNamePrefix, ILoggable loggable);
+	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport);
 
 }

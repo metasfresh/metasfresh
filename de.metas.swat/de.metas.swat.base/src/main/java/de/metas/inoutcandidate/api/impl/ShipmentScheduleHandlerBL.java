@@ -83,13 +83,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
 	@Override
-	public void registerHandler(@NonNull final Class<? extends ShipmentScheduleHandler> handlerClass)
+	public <T extends ShipmentScheduleHandler> void registerHandler(@NonNull final T handler)
 	{
-		final ShipmentScheduleHandler handler = ShipmentScheduleHandler.createNewInstance(handlerClass);
-
 		Check.errorIf(tableName2Handler.containsKey(handler.getSourceTable()),
 				"A handler was already registered for tableName={}; handlerClass={};",
-				handler.getSourceTable(), handlerClass);
+				handler.getSourceTable(), handler.getClass());
 
 		// do the actual registering
 		final ShipmentScheduleHandler oldImpl = tableName2Handler.put(handler.getSourceTable(), handler);
@@ -120,6 +118,8 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		}
 
 		handler.setM_IolCandHandler_IDOneTimeOnly(existingRecordId);
+
+		logger.info("Registered handler: {}", handler);
 	}
 
 	private final CCache<String, I_M_IolCandHandler> className2HandlerRecord = //

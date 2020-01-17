@@ -24,8 +24,11 @@ import de.metas.cache.CCache.CacheMapType;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -57,6 +60,8 @@ import lombok.Value;
 @Repository
 public class CampaignPriceRepository
 {
+	private final IProductBL productsService = Services.get(IProductBL.class);
+
 	private final CCache<CampaignPricePageKey, CampaignPricePage> cache = CCache.<CampaignPricePageKey, CampaignPricePage> builder()
 			.cacheName("campaignPricePages")
 			.cacheMapType(CacheMapType.LRU)
@@ -120,9 +125,23 @@ public class CampaignPriceRepository
 				.validRange(Range.closed(validFrom, validTo))
 				//
 				.priceStd(Money.of(record.getPriceStd(), currencyId))
+				.priceUomId(extractProductPriceUomId(record))
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(record.getInvoicableQtyBasedOn()))
 				//
 				.build();
+	}
+
+	private UomId extractProductPriceUomId(final I_C_Campaign_Price record)
+	{
+		final UomId productPriceUomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
+		if (productPriceUomId != null)
+		{
+			return productPriceUomId;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		return productsService.getStockUOMId(productId);
 	}
 
 	@Value

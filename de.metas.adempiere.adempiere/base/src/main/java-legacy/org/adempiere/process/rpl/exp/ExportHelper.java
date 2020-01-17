@@ -29,6 +29,7 @@
  *********************************************************************/
 package org.adempiere.process.rpl.exp;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -748,7 +749,7 @@ public class ExportHelper
 			final byte[] data;
 			if (value instanceof String)
 			{
-				data = ((String)value).getBytes();
+				data = ((String)value).getBytes(StandardCharsets.UTF_8);
 			}
 			else
 			{

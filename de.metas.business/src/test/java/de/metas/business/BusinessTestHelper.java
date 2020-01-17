@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -110,6 +111,7 @@ public final class BusinessTestHelper
 	public static I_C_UOM createUOM(final String name, final String x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		POJOWrapper.setInstanceName(uom, name);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
 		uom.setX12DE355(x12de355);
