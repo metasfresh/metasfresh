@@ -32,6 +32,7 @@ public class Fresh_All_RepoId_Classes_Test
 		new ClasspathRepoIdAwaresTester()
 				.skip(de.metas.bpartner.BPartnerLocationId.class)
 				.skip(de.metas.bpartner.BPartnerContactId.class)
+				.skip(de.metas.bpartner.BPartnerBankAccountId.class)
 				//
 				.skip(de.metas.phonecall.PhonecallSchemaVersionId.class)
 				.skip(de.metas.phonecall.PhonecallSchemaVersionLineId.class)

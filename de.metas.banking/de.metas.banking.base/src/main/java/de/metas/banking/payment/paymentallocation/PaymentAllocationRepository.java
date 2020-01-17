@@ -282,7 +282,7 @@ public class PaymentAllocationRepository
 				: Amount.zero(currencyCode);
 	}
 
-	public List<PaymentToAllocate> retrievePaymentsToAllocate(final PaymentToAllocateQuery query)
+	public List<PaymentToAllocate> retrievePaymentsToAllocate(@NonNull final PaymentToAllocateQuery query)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSelectPaymentsToAllocateSql(query, sqlParams);
@@ -354,7 +354,7 @@ public class PaymentAllocationRepository
 		return sql.toString();
 	}
 
-	private final PaymentToAllocate retrievePaymentToAllocateOrNull(final ResultSet rs) throws SQLException
+	private PaymentToAllocate retrievePaymentToAllocateOrNull(@NonNull final ResultSet rs) throws SQLException
 	{
 		// final CurrencyCode documentCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("iso_code"));
 		final CurrencyCode convertedToCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("ConvertTo_Currency_ISO_Code"));

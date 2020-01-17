@@ -320,7 +320,7 @@ public abstract class AbstractTrx implements ITrx
 		}
 		catch (Exception e)
 		{
-			throw new DBException("Cannot release savepoint " + savepoint + " on " + this, e);
+			throw new DBException("Cannot release savepoint " + savepoint + " on AbstractTrx=" + this, e);
 		}
 
 		if (released)
@@ -333,7 +333,7 @@ public abstract class AbstractTrx implements ITrx
 	 * Release native savepoint
 	 *
 	 * @param savepointNative
-	 * @return true if released or if it was already realeased
+	 * @return true if released or if it was already released
 	 */
 	protected abstract boolean releaseSavepointNative(ITrxSavepoint savepoint) throws Exception;
 

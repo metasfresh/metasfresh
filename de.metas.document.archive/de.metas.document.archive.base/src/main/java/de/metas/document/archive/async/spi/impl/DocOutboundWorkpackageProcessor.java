@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -39,6 +38,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,14 +69,14 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, workpackage.getC_Async_Batch());
 			}
-			generateOutboundDocument(record, workpackage.getAD_User());
+			generateOutboundDocument(record, UserId.ofRepoIdOrNull(workpackage.getAD_User_ID()));
 		}
 		return Result.SUCCESS;
 	}
 
 	private void generateOutboundDocument(
 			@NonNull final Object record,
-			@Nullable final I_AD_User userRecord)
+			@Nullable final UserId userId)
 	{
 		final I_AD_Archive archive = createModelArchiver(record).archive();
 		if (archive == null)
@@ -87,7 +87,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		Loggables.addLog("Created AD_Archive_ID={} for record={}", archive.getAD_Archive_ID(), record);
 
 		final String action = X_C_Doc_Outbound_Log_Line.ACTION_PdfExport; // this action is ported here. i'm not 100% sure it makes sense
-		archiveEventManager.firePdfUpdate(archive, userRecord, action);
+		archiveEventManager.firePdfUpdate(archive, userId, action);
 	}
 
 	@VisibleForTesting

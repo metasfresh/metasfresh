@@ -30,6 +30,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
@@ -42,6 +43,8 @@ public interface IBPartnerOrgBL extends ISingletonService
 	I_C_BPartner retrieveLinkedBPartner(I_AD_Org org);
 
 	I_C_BPartner retrieveLinkedBPartner(int adOrgId);
+
+	Optional<BPartnerId> retrieveLinkedBPartnerId(OrgId orgId);
 
 	I_C_Location retrieveOrgLocation(final OrgId orgId);
 

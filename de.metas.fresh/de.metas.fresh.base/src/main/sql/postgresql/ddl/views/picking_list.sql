@@ -10,11 +10,16 @@ SELECT
 	p.value as productvalue,
 	v.productname,
 	v.qtyordered,
+	pc.qtyPicked,
 	v.c_uom_id,
 	v.ad_org_id,
 	v.c_orderso_id,
 	u.uomsymbol,
-	l.value as locator
+	l.value as locator,
+	l.x,
+	l.y,
+	l.z,
+	l.x1
 FROM m_packageable_v v
 	JOIN m_product p on p.m_product_id = v.m_product_id
 	JOIN m_picking_candidate pc on pc.m_shipmentschedule_id = v.m_shipmentschedule_id

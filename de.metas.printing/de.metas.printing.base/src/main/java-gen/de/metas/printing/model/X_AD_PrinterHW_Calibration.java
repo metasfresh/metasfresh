@@ -15,7 +15,7 @@ public class X_AD_PrinterHW_Calibration extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1935363164L;
+	private static final long serialVersionUID = 1678907474L;
 
     /** Standard Constructor */
     public X_AD_PrinterHW_Calibration (Properties ctx, int AD_PrinterHW_Calibration_ID, String trxName)
@@ -69,7 +69,7 @@ public class X_AD_PrinterHW_Calibration extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
 	}
@@ -103,7 +103,7 @@ public class X_AD_PrinterHW_Calibration extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW_MediaSize getAD_PrinterHW_MediaSize() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW_MediaSize getAD_PrinterHW_MediaSize()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaSize_ID, de.metas.printing.model.I_AD_PrinterHW_MediaSize.class);
 	}
@@ -137,7 +137,7 @@ public class X_AD_PrinterHW_Calibration extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
 	}

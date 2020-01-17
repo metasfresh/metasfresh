@@ -28,6 +28,10 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -46,8 +50,12 @@ import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -59,6 +67,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.product.IProductBL;
@@ -114,10 +123,10 @@ public class PPOrderBL implements IPPOrderBL
 		{
 			order.setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}    // addDescription
 
 	@Override
-	public void updateQtyBatchs(I_PP_Order order, boolean override)
+	public void updateQtyBatchs(final I_PP_Order order, final boolean override)
 	{
 		BigDecimal qtyBatchSize = order.getQtyBatchSize();
 		if (qtyBatchSize.signum() == 0 || override)
@@ -341,6 +350,43 @@ public class PPOrderBL implements IPPOrderBL
 
 		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 		orderRoutingsRepo.save(orderRouting);
+
+		copyAttachmentsFromTemplates(orderRouting);
+	}
+
+	private void copyAttachmentsFromTemplates(final PPOrderRouting orderRouting)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// atm copying attachments in unit test is not possible
+			return;
+		}
+
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+
+		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
+		{
+			copyAttachmentsFromTemplate(activity, attachmentEntryService);
+		}
+	}
+
+	private static void copyAttachmentsFromTemplate(
+			final PPOrderRoutingActivity activity,
+			final AttachmentEntryService attachmentEntryService)
+	{
+		final PPRoutingActivityTemplateId activityTemplateId = activity.getActivityTemplateId();
+		if (activityTemplateId == null)
+		{
+			return;
+		}
+
+		final TableRecordReference activityTemplateRef = TableRecordReference.of(I_AD_WF_Node_Template.Table_Name, activityTemplateId);
+		final TableRecordReference activityRef = TableRecordReference.of(I_PP_Order_Node.Table_Name, activity.getId());
+		final TableRecordReference orderRef = TableRecordReference.of(I_PP_Order.Table_Name, activity.getOrderId());
+
+		attachmentEntryService.shareAttachmentLinks(
+				ImmutableList.of(activityTemplateRef),
+				ImmutableList.of(orderRef, activityRef));
 	}
 
 	@Override

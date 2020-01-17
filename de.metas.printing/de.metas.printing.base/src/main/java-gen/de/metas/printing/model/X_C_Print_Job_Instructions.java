@@ -14,7 +14,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 854993614L;
+	private static final long serialVersionUID = -231054438L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Instructions (Properties ctx, int C_Print_Job_Instructions_ID, String trxName)
@@ -48,7 +48,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
     }
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
 	}
@@ -79,18 +79,6 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_ToPrint() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ToPrint_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_ToPrint(org.compiere.model.I_AD_User AD_User_ToPrint)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ToPrint_ID, org.compiere.model.I_AD_User.class, AD_User_ToPrint);
 	}
 
 	/** Set Ausdruck für.
@@ -138,7 +126,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job getC_Print_Job() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job getC_Print_Job()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Job_ID, de.metas.printing.model.I_C_Print_Job.class);
 	}
@@ -194,7 +182,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job_Line getC_PrintJob_Line_From() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job_Line getC_PrintJob_Line_From()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PrintJob_Line_From_ID, de.metas.printing.model.I_C_Print_Job_Line.class);
 	}
@@ -228,7 +216,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job_Line getC_PrintJob_Line_To() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job_Line getC_PrintJob_Line_To()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PrintJob_Line_To_ID, de.metas.printing.model.I_C_Print_Job_Line.class);
 	}

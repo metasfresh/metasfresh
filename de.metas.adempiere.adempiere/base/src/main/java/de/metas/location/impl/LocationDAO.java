@@ -1,9 +1,8 @@
 package de.metas.location.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +12,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
 import org.slf4j.Logger;
 
@@ -27,6 +28,7 @@ import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,7 +63,10 @@ public class LocationDAO implements ILocationDAO
 	@Override
 	public I_C_Location getById(@NonNull final LocationId id)
 	{
-		return loadOutOfTrx(id, I_C_Location.class);
+		// Don't load records out-of-trx unless you really know what's going on and also know the possible contexts in which a method might be called.
+		// * this method is (also) called as part of a full bpartner-creation workflow and we need to be able to roll it back, without leaving back this dangling C_Location.
+		// * since the c_location is created in-trx, we also need to (re-)load it in-trx later when we try to create its product-price
+		return load(id, I_C_Location.class);
 	}
 
 	@Override
@@ -87,21 +92,57 @@ public class LocationDAO implements ILocationDAO
 	public LocationId createLocation(@NonNull final LocationCreateRequest request)
 	{
 		// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
-		final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
+		// NOTE2: Don't create records OOT unless you really know what's going on and also know the possible contexts in which a method might be called.
+		// * this method is (also) called as part of a full bpartner-creation workflow we need to be able to roll it back, without leaving back this dangling C_Location.
+		// * more, as of writing this the getPostalId(..) method which is called below doesn't care about trx, so (by default) it's running within the thread-inherited trx
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
 		locationRecord.setAddress1(request.getAddress1());
 		locationRecord.setAddress2(request.getAddress2());
 		locationRecord.setAddress3(request.getAddress3());
 		locationRecord.setAddress4(request.getAddress4());
-		locationRecord.setPostal(request.getPostal());
+
+		final String postalValue = request.getPostal();
+		locationRecord.setPostal(postalValue);
+
 		locationRecord.setPostal_Add(request.getPostalAdd());
 		locationRecord.setCity(request.getCity());
 		locationRecord.setC_Region_ID(request.getRegionId());
 		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
 		locationRecord.setPOBox(request.getPoBox());
 
+		int postalId = getPostalId(request);
+
+		locationRecord.setC_Postal_ID(postalId);
+
 		save(locationRecord);
 
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
+	}
+
+	private int getPostalId(final LocationCreateRequest request)
+	{
+		final String postalValue = request.getPostal();
+
+		if (Check.isEmpty(postalValue))
+		{
+			return -1;
+		}
+
+		final IQueryBuilder<I_C_Postal> postalQuery = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Postal.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Country_ID, request.getCountryId());
+
+		if (request.getRegionId() > 0)
+		{
+			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, request.getRegionId());
+		}
+
+		final int postalId = postalQuery.filter(PostalQueryFilter.of(postalValue))
+				.create()
+				.firstIdOnly();
+
+		return postalId;
 	}
 
 	@Override

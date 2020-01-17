@@ -369,6 +369,8 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			// it will be performed in a separate thread so here we don't have to wait.
 			// m_connection.setClientInfo("ApplicationName", "adempiere/CLOSED"); // task 08353
 
+			// Note: c3p0 makes sure that uncommitted changes are rolled by (=>default) or committed
+			// See https://www.mchange.com/projects/c3p0/index.html#autoCommitOnClose
 			m_connection.close();
 			log.debug("closeNative - closed m_connection={}", m_connection);
 		}

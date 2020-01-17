@@ -34,6 +34,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -157,9 +158,13 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	// addDescription
 
 	/**
@@ -172,7 +177,9 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 	{
 		super.setProcessed(processed);
 		if (get_ID() == 0)
+		{
 			return;
+		}
 		String sql = "UPDATE C_BankStatementLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
@@ -181,16 +188,25 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		log.debug("setProcessed - {} - Lines={}", processed, noLine);
 	}	// setProcessed
 
-	/**
-	 * Get Document Info
-	 *
-	 * @return document info (untranslated)
-	 */
 	@Override
 	public String getDocumentInfo()
 	{
-		return getC_BP_BankAccount().getA_Name() + " " + getDocumentNo();
-	}	// getDocumentInfo
+		final StringBuilder documentInfo = new StringBuilder();
+
+		final String bankAccountName = getC_BP_BankAccount().getA_Name();
+		if (!Check.isBlank(bankAccountName))
+		{
+			documentInfo.append(bankAccountName.trim());
+		}
+
+		if (documentInfo.length() > 0)
+		{
+			documentInfo.append(" ");
+		}
+		documentInfo.append(getDocumentNo());
+
+		return documentInfo.toString();
+	}
 
 	/**
 	 * Create PDF
@@ -275,7 +291,9 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		log.debug("Prepare: {}", this);
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		// Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
@@ -293,9 +311,13 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		{
 			total = total.add(line.getStmtAmt());
 			if (line.getDateAcct().before(minDate))
+			{
 				minDate = line.getDateAcct();
+			}
 			if (line.getDateAcct().after(maxDate))
+			{
 				maxDate = line.getDateAcct();
+			}
 		}
 		setStatementDifference(total);
 		setEndingBalance(getBeginningBalance().add(total));
@@ -304,11 +326,15 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
+		{
 			setDocAction(DOCACTION_Complete);
+		}
 		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
@@ -351,16 +377,22 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		{
 			String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		// Implicit Approval
 		if (!isApproved())
+		{
 			approveIt();
+		}
 		log.debug("Completed: {}", this);
 
 		// Set Payment reconciled
@@ -429,7 +461,9 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		if (DOCSTATUS_Closed.equals(getDocStatus())
 				|| DOCSTATUS_Reversed.equals(getDocStatus())
@@ -446,8 +480,10 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 				|| DOCSTATUS_InProgress.equals(getDocStatus())
 				|| DOCSTATUS_Approved.equals(getDocStatus())
 				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
-			;
+		{
+			
 		// Std Period open?
+		}
 		else
 		{
 			MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
@@ -463,11 +499,17 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 				String description = Msg.getMsg(getCtx(), "Voided") + " ("
 						+ Msg.translate(getCtx(), "StmtAmt") + "=" + line.getStmtAmt();
 				if (line.getTrxAmt().compareTo(Env.ZERO) != 0)
+				{
 					description += ", " + Msg.translate(getCtx(), "TrxAmt") + "=" + line.getTrxAmt();
+				}
 				if (line.getChargeAmt().compareTo(Env.ZERO) != 0)
+				{
 					description += ", " + Msg.translate(getCtx(), "ChargeAmt") + "=" + line.getChargeAmt();
+				}
 				if (line.getInterestAmt().compareTo(Env.ZERO) != 0)
+				{
 					description += ", " + Msg.translate(getCtx(), "InterestAmt") + "=" + line.getInterestAmt();
+				}
 				description += ")";
 				line.addDescription(description);
 				//
@@ -508,7 +550,9 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
@@ -527,12 +571,16 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setDocAction(DOCACTION_None);
 		return true;
@@ -550,12 +598,16 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		throw new UnsupportedOperationException();
 	}	// reverseCorrectionIt
@@ -572,12 +624,16 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		throw new UnsupportedOperationException();
 	}	// reverseAccrualIt
@@ -594,12 +650,16 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		throw new UnsupportedOperationException();
 	}	// reActivateIt
@@ -620,7 +680,9 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 				.append(" (#").append(getLines(false).length).append(")");
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
+		{
 			sb.append(" - ").append(getDescription());
+		}
 		return sb.toString();
 	}	// getSummary
 

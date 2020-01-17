@@ -24,10 +24,9 @@ package org.adempiere.archive.spi;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_User;
-
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.user.UserId;
 
 /**
  * Implementors can be registered to {@link IArchiveEventManager#registerArchiveEventListener(IArchiveEventListener)} and can then be fired using that manager.
@@ -37,7 +36,7 @@ import de.metas.email.mailboxes.UserEMailConfig;
  */
 public interface IArchiveEventListener
 {
-	default void onPdfUpdate(I_AD_Archive archive, I_AD_User user, String action)
+	default void onPdfUpdate(I_AD_Archive archive, UserId userId, String action)
 	{
 		// nothing
 	}
@@ -47,7 +46,7 @@ public interface IArchiveEventListener
 		// nothing
 	}
 
-	default void onPrintOut(I_AD_Archive archive, I_AD_User user, String printerName, int copies, String status)
+	default void onPrintOut(I_AD_Archive archive, UserId userId, String printerName, int copies, String status)
 	{
 		// nothing
 	}

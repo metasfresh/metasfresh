@@ -119,7 +119,7 @@ public class CacheInvalidateMultiRequest
 
 	public static CacheInvalidateMultiRequest fromTableNameAndRecordIds(
 			@NonNull final String tableName,
-			@NonNull final Set<Integer> recordIds)
+			@NonNull final Collection<Integer> recordIds)
 	{
 		final ImmutableSet<CacheInvalidateRequest> requests = recordIds.stream()
 				.distinct()

@@ -25,6 +25,7 @@ package de.metas.banking.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Bank;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -78,10 +79,17 @@ public class BankingException extends AdempiereException
 
 		if (executiveAcct != null)
 		{
+			final I_C_Bank bank = executiveAcct.getC_Bank();
+			
 			sb.append("Quellkonto:\n");
 			sb.append("\tKonto-Nr: ").append(executiveAcct.getAccountNo());
-			sb.append("\n");
-			sb.append("\tBLZ: ").append(executiveAcct.getC_Bank().getRoutingNo());
+			
+			if(bank != null)
+			{
+				sb.append("\n");
+				sb.append("\tBLZ: ").append(bank.getRoutingNo());
+			}
+			
 			sb.append("\n");
 		}
 		if (targetAcct != null)
