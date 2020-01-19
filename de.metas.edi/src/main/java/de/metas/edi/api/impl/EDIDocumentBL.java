@@ -111,7 +111,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	}
 
 	@Override
-	public List<Exception> isValidInvoice(final I_C_Invoice invoice)
+	public List<Exception> isValidInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		final List<Exception> feedback = new ArrayList<>();
