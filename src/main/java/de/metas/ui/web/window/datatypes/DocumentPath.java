@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.element.api.AdWindowId;
@@ -138,6 +139,17 @@ public final class DocumentPath
 				.setRowId(rowId)
 				.build();
 	}
+	
+	public static DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId, @NonNull final DocumentIdsSelection rowIds)
+	{
+		return builder()
+				.setDocumentType(windowId)
+				.setDocumentId(documentId)
+				.setDetailId(detailId)
+				.setRowIds(rowIds)
+				.build();
+	}
+
 
 	public static DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId)
 	{
@@ -233,7 +245,7 @@ public final class DocumentPath
 			}
 			else if (!rowIds.isEmpty())
 			{
-				sb.append("/R").append(rowIds);
+				sb.append("/R").append(rowIds.toCommaSeparatedString());
 			}
 
 			_toString = sb.toString();
@@ -597,7 +609,7 @@ public final class DocumentPath
 			return this;
 		}
 
-		public Builder setRowId(final DocumentId rowId)
+		public Builder setRowId(@Nullable final DocumentId rowId)
 		{
 			rowIds.clear();
 			if (rowId != null)
@@ -610,11 +622,17 @@ public final class DocumentPath
 
 		public Builder setRowIdsList(final String rowIdsListStr)
 		{
-			rowIds.clear();
-			rowIds.addAll(DocumentIdsSelection.ofCommaSeparatedString(rowIdsListStr).toSet());
+			return setRowIds(DocumentIdsSelection.ofCommaSeparatedString(rowIdsListStr));
+		}
+		
+		public Builder setRowIds(final DocumentIdsSelection rowIds)
+		{
+			this.rowIds.clear();
+			this.rowIds.addAll(rowIds.toSet());
 
 			return this;
 		}
+
 
 		public Builder allowNullRowId()
 		{

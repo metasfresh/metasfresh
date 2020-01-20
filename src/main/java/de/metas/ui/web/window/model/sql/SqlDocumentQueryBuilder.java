@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -13,6 +14,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -20,6 +22,7 @@ import org.compiere.util.Evaluatees;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.impl.AccessSqlStringExpression;
@@ -78,7 +81,7 @@ public class SqlDocumentQueryBuilder
 		return new SqlDocumentQueryBuilder(query.getEntityDescriptor())
 				.setDocumentFilters(query.getFilters())
 				.setParentDocument(query.getParentDocument())
-				.setRecordId(query.getRecordId())
+				.setRecordIds(query.getRecordIds())
 				//
 				.noSorting(query.isNoSorting())
 				.setOrderBys(query.getOrderBys())
@@ -94,7 +97,7 @@ public class SqlDocumentQueryBuilder
 	private transient Evaluatee _evaluationContext = null; // lazy
 	private final List<DocumentFilter> documentFilters = new ArrayList<>();
 	private Document parentDocument;
-	private DocumentId recordId = null;
+	private Set<DocumentId> recordIds = ImmutableSet.of();
 
 	private boolean noSorting = false;
 	private List<DocumentQueryOrderBy> orderBys;
@@ -389,29 +392,58 @@ public class SqlDocumentQueryBuilder
 		// FIXME: handle AD_Reference/AD_Ref_List(s). In that case the recordId will be AD_Ref_List.Value,
 		// so the SQL where clause which is currently build is AD_Ref_List_ID=<the AD_Ref_List.Value>.
 		// The build SQL where clause shall be something like AD_Reference_ID=<the reference, i think we shall fetch it somehow from Lookup> AND Value=<the value, which currently is the recordId>
-		final DocumentId recordId = getRecordId();
-		if (recordId != null)
+		final Set<DocumentId> recordIds = getRecordIds();
+		if (!recordIds.isEmpty())
 		{
 			final List<SqlDocumentFieldDataBindingDescriptor> keyFields = entityBinding.getKeyFields();
 			if (keyFields.isEmpty())
 			{
 				throw new AdempiereException("Failed building where clause because there is no Key Column defined in " + entityBinding);
 			}
+
 			// Single primary key
-			else if (keyFields.size() == 1)
+			if (keyFields.size() == 1)
 			{
-				final String keyColumnName = keyFields.get(0).getColumnName();
-				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-				sqlWhereClauseBuilder.append(" /* key */ ").append(keyColumnName).append("=").append(sqlParams.placeholder(recordId.toInt()));
+				final String singleKeyColumnName = keyFields.get(0).getColumnName();
+				final ImmutableSet<Integer> recordIdsIntSet = recordIds.stream()
+						.map(DocumentId::toInt)
+						.collect(ImmutableSet.toImmutableSet());
+				sqlWhereClauseBuilder.appendIfNotEmpty("\n /* key */ AND ");
+				sqlWhereClauseBuilder.append(DB.buildSqlList(singleKeyColumnName, recordIdsIntSet, sqlParams.toLiveList()));
 			}
 			// Composed primary key
 			else
 			{
-				final Map<String, Object> keyColumnName2value = extractComposedKey(recordId, keyFields);
-				keyColumnName2value.forEach((keyColumnName, value) -> {
-					sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-					sqlWhereClauseBuilder.append(" /* key */ ").append(keyColumnName).append("=").append(sqlParams.placeholder(value));
-				});
+				sqlWhereClauseBuilder.appendIfNotEmpty("\n /* key */ AND ");
+				sqlWhereClauseBuilder.append("(");
+
+				boolean firstRecord = true;
+				final boolean appendParentheses = recordIds.size() > 1;
+				for (final DocumentId recordId : recordIds)
+				{
+					if (!firstRecord)
+					{
+						sqlWhereClauseBuilder.append(" OR ");
+					}
+
+					if (appendParentheses)
+					{
+						sqlWhereClauseBuilder.append("(");
+					}
+
+					final Map<String, Object> keyColumnName2value = extractComposedKey(recordId, keyFields);
+					keyColumnName2value.forEach((keyColumnName, value) -> {
+						sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
+						sqlWhereClauseBuilder.append(" ").append(keyColumnName).append("=").append(sqlParams.placeholder(value));
+					});
+
+					if (appendParentheses)
+					{
+						sqlWhereClauseBuilder.append(")");
+					}
+
+					firstRecord = false;
+				}
 			}
 		}
 
@@ -506,15 +538,18 @@ public class SqlDocumentQueryBuilder
 		return this;
 	}
 
-	public SqlDocumentQueryBuilder setRecordId(final DocumentId recordId)
+	public SqlDocumentQueryBuilder setRecordIds(final Set<DocumentId> recordIds)
 	{
-		this.recordId = recordId;
+		this.recordIds = recordIds != null
+				? ImmutableSet.copyOf(recordIds)
+				: ImmutableSet.of();
+
 		return this;
 	}
 
-	private DocumentId getRecordId()
+	private Set<DocumentId> getRecordIds()
 	{
-		return recordId;
+		return recordIds;
 	}
 
 	public SqlDocumentQueryBuilder noSorting()

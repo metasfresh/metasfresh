@@ -160,4 +160,11 @@ public final class SqlParamsCollector
 	{
 		return paramsRO;
 	}
+
+	/** @return read/write live list */
+	public List<Object> toLiveList()
+	{
+		return params;
+	}
+
 }

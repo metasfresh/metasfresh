@@ -13,7 +13,11 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -185,7 +189,64 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	}
 
 	@Override
-	public Document getDocumentById(final DocumentId documentId)
+	public OrderedDocumentsList getDocumentsByIds(@NonNull final DocumentIdsSelection documentIds)
+	{
+		if (documentIds.isAll())
+		{
+			final ImmutableList<DocumentQueryOrderBy> orderBys = ImmutableList.of();
+			return getDocuments(orderBys);
+		}
+		else if (documentIds.isEmpty())
+		{
+			return OrderedDocumentsList.newEmpty();
+		}
+		else
+		{
+			final Map<DocumentId, Document> documentsWithChanges = new LinkedHashMap<>(getInnerDocumentsWithChanges());
+			final SetView<DocumentId> documentIdsToLoad = Sets.difference(documentIds.toSet(), documentsWithChanges.keySet());
+
+			final ImmutableMap<DocumentId, Document> loadedDocuments;
+			if (!documentIdsToLoad.isEmpty())
+			{
+				loadedDocuments = DocumentQuery.builder(entityDescriptor)
+						.setParentDocument(parentDocument)
+						.setRecordIds(documentIdsToLoad)
+						.setChangesCollector(NullDocumentChangesCollector.instance)
+						.setOrderBys(ImmutableList.of())
+						.retriveDocuments()
+						.toImmutableMap();
+			}
+			else
+			{
+				loadedDocuments = ImmutableMap.of();
+			}
+
+			final OrderedDocumentsList result = OrderedDocumentsList.newEmpty();
+			for (final DocumentId documentId : documentIds.toSet())
+			{
+				final Document documentWithChanges = documentsWithChanges.get(documentId);
+				if (documentWithChanges != null)
+				{
+					result.addDocument(documentWithChanges);
+					continue;
+				}
+
+				final Document loadedDocument = loadedDocuments.get(documentId);
+				if (loadedDocument != null)
+				{
+					result.addDocument(loadedDocument);
+					continue;
+				}
+
+				// No document found for documentId. Ignore it.
+			}
+
+			return result;
+		}
+	}
+
+	@Override
+	public Document getDocumentById(@NonNull final DocumentId documentId)
 	{
 		// Try documents which are new and/or have changes in progress, but are not yet saved
 		final Document documentWithChanges = getChangedDocumentOrNull(documentId);

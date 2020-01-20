@@ -1527,6 +1527,17 @@ public final class Document
 		return includedDocuments.getDocuments(orderBys);
 	}
 
+	public OrderedDocumentsList getIncludedDocuments(final DetailId detailId, final DocumentIdsSelection documentIds)
+	{
+		if (documentIds.isEmpty())
+		{
+			return OrderedDocumentsList.newEmpty();
+		}
+
+		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
+		return includedDocuments.getDocumentsByIds(documentIds);
+	}
+
 	public void assertNewDocumentAllowed(final DetailId detailId)
 	{
 		getIncludedDocumentsCollection(detailId).assertNewDocumentAllowed();
