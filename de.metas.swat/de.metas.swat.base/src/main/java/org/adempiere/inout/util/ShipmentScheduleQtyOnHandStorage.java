@@ -59,11 +59,11 @@ public class ShipmentScheduleQtyOnHandStorage
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
 			@NonNull final StockRepository stockRepository)
 	{
-		stockDetails = toStockDetails(shipmentSchedules, stockRepository);
+		this.stockDetails = toStockDetails(shipmentSchedules, stockRepository);
 	}
 
 	@VisibleForTesting
-	public ShipmentScheduleQtyOnHandStorage(@NonNull final List<ShipmentScheduleAvailableStockDetail> stockDetails)
+	ShipmentScheduleQtyOnHandStorage(@NonNull final List<ShipmentScheduleAvailableStockDetail> stockDetails)
 	{
 		this.stockDetails = ImmutableList.copyOf(stockDetails);
 	}

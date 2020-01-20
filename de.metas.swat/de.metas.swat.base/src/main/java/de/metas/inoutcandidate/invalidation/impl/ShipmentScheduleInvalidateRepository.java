@@ -403,11 +403,13 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final String attributeSegmentsWhereClause = buildAttributeInstanceWhereClause(attributeSegments, sqlParams);
 		if (!Check.isEmpty(attributeSegmentsWhereClause, true))
 		{
-			whereClause.append("\n\t AND ");
-			whereClause.append("EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
+			whereClause.append("\n\t AND (");
+			whereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID + " IS NULL");
+			whereClause.append(" OR EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
 					+ " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
 					+ " AND (" + attributeSegmentsWhereClause + ")"
 					+ ")");
+			whereClause.append(")");
 		}
 
 		if (whereClause.length() <= 0)

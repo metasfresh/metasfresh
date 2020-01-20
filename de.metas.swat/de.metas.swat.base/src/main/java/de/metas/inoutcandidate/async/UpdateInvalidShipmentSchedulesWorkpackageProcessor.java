@@ -27,16 +27,24 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Workpackage used to update all invalid {@link I_M_ShipmentSchedule}s.
@@ -46,6 +54,8 @@ import de.metas.util.Services;
  */
 public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
+	private static final Logger logger = LogManager.getLogger(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
+
 	/**
 	 * Schedule a new "update invalid shipment schedules" run.
 	 *
@@ -69,18 +79,27 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
-		final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
-				.ctx(InterfaceWrapperHelper.getCtx(workpackage))
-				.selectionId(Services.get(IADPInstanceDAO.class).createSelectionId())
-				.createMissingShipmentSchedules(false) // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
-				.build();
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
-		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedules(request);
+		final PInstanceId selectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
+		loggable.addLog("Using revalidation ID: {}", selectionId);
 
-		Loggables.addLog("Updated {} shipment schedule entries for {}", updatedCount, request);
+		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.withRevalidationId(selectionId))
+		{
+			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
+					.ctx(InterfaceWrapperHelper.getCtx(workpackage))
+					.selectionId(selectionId)
+					.createMissingShipmentSchedules(false) // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
+					.build();
+			loggable.addLog("Starting revalidation for {}", request);
 
-		return Result.SUCCESS;
+			final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedules(request);
+
+			loggable.addLog("Updated {} shipment schedule entries for {}", updatedCount, request);
+
+			return Result.SUCCESS;
+		}
 	}
 }

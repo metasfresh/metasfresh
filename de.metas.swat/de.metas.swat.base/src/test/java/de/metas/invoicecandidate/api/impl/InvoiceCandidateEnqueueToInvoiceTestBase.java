@@ -1,5 +1,10 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -38,10 +43,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_User;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IQueueDAO;
@@ -94,7 +97,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 	protected IInvoiceCandidateEnqueueResult enqueueResult;
 	protected AbstractICTestSupport icTestSupport;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		icTestSupport = new AbstractICTestSupport();
@@ -149,12 +152,12 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		// * invoice candidates which were added to workpackages, they have a lock per workpackage
 		// * invoice candidates which were skipped, they shall be released
 		final ILock enqueuerLock = enqueueResult.getLock();
-		assertEquals("Invalid enqueuerLock count: " + enqueuerLock, 0, enqueuerLock.getCountLocked());
+		assertEquals(0, enqueuerLock.getCountLocked(), "Invalid enqueuerLock count: " + enqueuerLock);
 
 		// Test: all invoice candidates were locked on enqueue
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			assertTrue("IC is locked: " + ic, lockManager.isLocked(ic));
+			assertTrue(lockManager.isLocked(ic), "IC is locked: " + ic);
 		}
 
 		return enqueueResult;
@@ -192,12 +195,12 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		//
 		// Make sure all of them are processed
 		final List<I_C_Queue_WorkPackage> workpackages = retrieveWorkpackages(workpackageProcessorClass);
-		assertFalse("Some workpackages were created", workpackages.isEmpty());
+		assertFalse(workpackages.isEmpty(), "Some workpackages were created");
 
 		for (I_C_Queue_WorkPackage workpackage : workpackages)
 		{
-			assertTrue("Workpackage processed: " + workpackage, workpackage.isProcessed());
-			assertFalse("Workpackage no error: " + workpackage, workpackage.isError());
+			assertTrue(workpackage.isProcessed(), "Workpackage processed: " + workpackage);
+			assertFalse(workpackage.isError(), "Workpackage no error: " + workpackage);
 		}
 
 		//
@@ -205,8 +208,8 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		InterfaceWrapperHelper.refreshAll(invoiceCandidates);
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			assertFalse("IC shall have no error: " + ic, ic.isError());
-			assertFalse("IC is not locked: " + ic, lockManager.isLocked(ic));
+			assertFalse(ic.isError(), "IC shall have no error: " + ic);
+			assertFalse(lockManager.isLocked(ic), "IC is not locked: " + ic);
 		}
 
 		//
@@ -245,14 +248,14 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 					+ "\n " + icLock
 					+ "\n" + ic
 					+ "\n" + workpackage;
-			assertTrue(message, icLock.get().isLocked(ic));
+			assertTrue(icLock.get().isLocked(ic), message);
 		}
 
 		//
 		// Test: NetAmtToInvoice set per workpackage shall be the sum of NetAmtToInvoice of enqueued invoice candidates
 		final BigDecimal netAmtToInvoiceCalc = calculateTotalNetAmtToInvoice(ics);
 		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(ICNetAmtToInvoiceChecker.PARAMETER_NAME);
-		Assert.assertThat("NetAmtToInvoice shall match: " + workpackage, netAmtToInvoiceCalc, Matchers.comparesEqualTo(netAmtToInvoice));
+		assertThat(netAmtToInvoiceCalc).as("NetAmtToInvoice shall match: " + workpackage).isEqualByComparingTo(netAmtToInvoice);
 	}
 
 	protected final List<I_C_Queue_WorkPackage> retrieveWorkpackages(final Class<?> workpackageProcessorClass)

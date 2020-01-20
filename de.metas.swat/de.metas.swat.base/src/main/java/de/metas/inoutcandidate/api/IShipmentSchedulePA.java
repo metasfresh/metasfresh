@@ -73,13 +73,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void setIsDiplayedForProduct(ProductId productId, boolean displayed);
 
 	/**
-	 * Deletes all {@link I_M_ShipmentSchedule} records whose {@link I_C_OrderLine} is not there anymore.
-	 *
-	 * It can occur that an order line for a given shipment schedule record is gone.
-	 */
-	void deleteSchedulesWithoutOrderLines();
-
-	/**
 	 * Mass update DeliveryDate_Override
 	 * No invalidation.
 	 */

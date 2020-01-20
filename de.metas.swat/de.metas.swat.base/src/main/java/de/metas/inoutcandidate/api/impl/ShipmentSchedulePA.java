@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -29,7 +28,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.MOrderLine;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -236,21 +234,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			result.add(olAndSched);
 		}
 		return result;
-	}
-
-	@Override
-	public void deleteSchedulesWithoutOrderLines()
-	{
-		final String sql = "DELETE FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-				+ "WHERE s.AD_Table_ID=" + getTableId(I_C_OrderLine.class) + " "
-				+ "AND NOT EXISTS ("
-				+ "   select 1 from " + org.compiere.model.I_C_OrderLine.Table_Name + " ol "
-				+ "   where ol." + org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "=s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID
-				+ ")";
-
-		final int delCnt = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-
-		logger.debug("Deleted {} shipment schedules whose C_OrderLine is already gone", delCnt);
 	}
 
 	@Override

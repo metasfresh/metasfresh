@@ -11,7 +11,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
+import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -28,7 +33,9 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -48,6 +55,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	// Services
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
+	private static final Logger logger = LogManager.getLogger(GenerateInOutFromShipmentSchedules.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
@@ -59,7 +67,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			Loggables.addLog("No unprocessed candidates were found");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
 
 		final IParams parameters = getParameters();
@@ -101,13 +109,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Creates the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
 	 *
-	 * Note that required and missing handling units are created on the fly.
+	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
 	private final List<ShipmentScheduleWithHU> retrieveCandidates(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
-
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
 		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
@@ -121,24 +127,34 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			if (shipmentSchedule.isProcessed())
-			{
-				continue;
-			}
-
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-
-			final CreateCandidatesRequest request = requestBuilder
-					.shipmentScheduleId(shipmentScheduleId)
-					.build();
-
-			final List<ShipmentScheduleWithHU> scheduleCandidates = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
+			final ImmutableList<ShipmentScheduleWithHU> scheduleCandidates = createCandidatesForSched(requestBuilder, shipmentSchedule);
 			candidates.addAll(scheduleCandidates);
 		}
 
 		// Sort our candidates
 		Collections.sort(candidates, new ShipmentScheduleWithHUComparator());
 		return candidates;
+	}
+
+	private ImmutableList<ShipmentScheduleWithHU> createCandidatesForSched(
+			@NonNull final CreateCandidatesRequestBuilder requestBuilder,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.isProcessed())
+		{
+			return ImmutableList.of();
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.withShipmentScheduleId(shipmentScheduleId))
+		{
+			final CreateCandidatesRequest request = requestBuilder
+					.shipmentScheduleId(shipmentScheduleId)
+					.build();
+
+			final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
+			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
+		}
 	}
 
 	private List<I_M_ShipmentSchedule> retriveShipmentSchedules()

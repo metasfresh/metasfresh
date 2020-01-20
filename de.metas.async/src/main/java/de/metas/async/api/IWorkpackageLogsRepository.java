@@ -1,10 +1,14 @@
-package de.metas.util;
+package de.metas.async.api;
+
+import java.util.List;
+
+import de.metas.async.QueueWorkPackageId;
 
 /*
  * #%L
- * de.metas.util
+ * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +26,11 @@ package de.metas.util;
  * #L%
  */
 
-/**
- * Interface implementations can be passed to business logic to perform high-level logging. Use {@link Loggables} to get an instance.
- *
- * NOTE: The signature of this interface {@link #addLog(String, Object...)} method is chosen so that all classes like de.metas.process.JavaProcess subclasses can implement it without further code changes.
- *
- * @author metas-dev <dev@metasfresh.com>
- */
-public interface ILoggable
+public interface IWorkpackageLogsRepository
 {
-	/**
-	 * Add a log message and return the loggable.
-	 */
-	ILoggable addLog(String msg, Object... msgParameters);
 
-	/** Flush any buffered logs */
-	default void flush()
-	{
-	}
+	void saveLogs(List<WorkpackageLogEntry> logEntries);
+
+	void deleteLogsInTrx(QueueWorkPackageId workpackageId);
+
 }

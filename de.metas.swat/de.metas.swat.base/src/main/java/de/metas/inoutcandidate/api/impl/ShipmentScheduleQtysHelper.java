@@ -6,6 +6,7 @@ import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -13,6 +14,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -48,6 +50,8 @@ import lombok.experimental.UtilityClass;
 
 	@VisibleForTesting
 	static final String MSG_ClosedStatus = "ShipmentSchedule_Closed_Status";
+
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
 
 	public static void updateQtyToDeliver(
 			@NonNull final OlAndSched olAndSched,
@@ -144,7 +148,6 @@ import lombok.experimental.UtilityClass;
 	 *
 	 * @param deliveryLineCandidate
 	 * @param shipmentCandidates
-	 * @return
 	 */
 	private static String computeShipmentScheduleStatus(
 			@NonNull final DeliveryLineCandidate deliveryLineCandidate,
@@ -162,10 +165,14 @@ import lombok.experimental.UtilityClass;
 
 	public static BigDecimal computeQtyToDeliver(
 			@NonNull final BigDecimal qtyRequired,
-			@NonNull final BigDecimal unconfirmedShippedQty)
+			@NonNull final BigDecimal qtyPickedOrOnDraftShipment)
 	{
-		BigDecimal qtyToDeliver = qtyRequired.subtract(unconfirmedShippedQty);
-		return qtyToDeliver.signum() > 0 ? qtyToDeliver : BigDecimal.ZERO;
+
+		BigDecimal qtyToDeliver = qtyRequired.subtract(qtyPickedOrOnDraftShipment);
+		final BigDecimal result = qtyToDeliver.signum() > 0 ? qtyToDeliver : BigDecimal.ZERO;
+
+		logger.debug("qtyRequired={}; qtyOnDraftShipment={}; => qtyToDeliver={}", qtyRequired, qtyPickedOrOnDraftShipment, result);
+		return result;
 	}
 
 	public static BigDecimal computeQtyToDeliverOverrideFulFilled(final OlAndSched olAndSched)
