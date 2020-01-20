@@ -1,29 +1,6 @@
 package de.metas.payment.sepa.api.impl;
 
-/*
- * #%L
- * de.metas.payment.sepa
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,42 +9,33 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Util;
+import org.compiere.util.MimeType;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.api.ISEPADocument;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
+import de.metas.util.FileUtils;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {
-
-	private static final String MSG_CANT_ACCESS_DEFAULT_PATH = "de.metas.payment.sepa.api.impl.SEPADocumentBL.CantAccessDefaultPath";
-	private static final String MSG_FILE_NOT_SAVED = "de.metas.payment.sepa.api.impl.SEPADocumentBL.FileNotSaved";
-	private static final String MSG_GOING_TO_CREATE_FILE = "de.metas.payment.sepa.api.impl.SEPADocumentBL.GoingToCreateFile";
-
-	private static final String CFG_DEFAULT_PATH = "de.metas.payment.sepa.api.impl.SEPADocumentBL.marshalXMLCreditFile.defaultPath";
-
 	@Override
 	public List<I_SEPA_Export> createSEPAExports(final Properties ctx, final Iterator<ISEPADocument> iterator, final String trxName, final boolean ignorePaymentRule)
 	{
@@ -206,61 +174,18 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	}
 
 	@Override
-	public void marshalXMLCreditFile(final String fileName, final I_SEPA_Export sepaExport, final ILoggable log)
+	public SEPACreditTransferXML exportCreditTransferXML(@NonNull final I_SEPA_Export sepaExport)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(sepaExport);
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		try
-		{
-			final FileOutputStream out = new FileOutputStream(fileName, false);
-			try
-			{
-				// marshaler based on xsd from the https://validation.iso-payments.ch download section
-				final SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 marshaler = new SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02();
-				marshaler.marshal(sepaExport, out);
+		final SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 marshaler = new SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02();
+		marshaler.marshal(sepaExport, out);
 
-				out.flush();
-			}
-			finally
-			{
-				Util.close(out);
-			}
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException(ExceptionUtils.getRootCauseMessage(e), e);
-		}
+		return SEPACreditTransferXML.builder()
+				.filename(FileUtils.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
+				.contentType(MimeType.TYPE_XML)
+				.content(out.toByteArray())
+				.build();
 
-		// task 08267: verify that the file actually exists!
-		final File f = new File(fileName);
-		if (!f.exists() || f.isDirectory())
-		{
-			final String msg = msgBL.getMsg(ctx, MSG_FILE_NOT_SAVED, new Object[] { fileName });
-			/* @formatter:off */ if (log != null) { log.addLog(msg); } /* @formatter:on */
-			throw new AdempiereException(msg);
-		}
-		// task 08267: be a bit more transparent about wtf we do
-		/* @formatter:off */ if (log != null) {	log.addLog(msgBL.getMsg(ctx, MSG_GOING_TO_CREATE_FILE, new Object[] { fileName })); } /* @formatter:on */
-
-	}
-
-	@Override
-	public String createDefaultSepaExportFileName(final Properties ctx, final String fileNamePrefix, final ILoggable log)
-	{
-		final String defaultPath = Services.get(ISysConfigBL.class).getValue(CFG_DEFAULT_PATH);
-		Check.errorIf(Check.isEmpty(defaultPath, true), "Missing AD_Sysconfig record for {}" + CFG_DEFAULT_PATH);
-
-		// make sure the directory exists and show a nice user-friendly message if not, so that the user can turn to the local admin (e.g. if a windows share is unavailable)
-		final File f = new File(defaultPath);
-		if (!f.exists() || !f.isDirectory())
-		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final String msg = msgBL.getMsg(ctx, MSG_CANT_ACCESS_DEFAULT_PATH, new Object[] { CFG_DEFAULT_PATH, defaultPath });
-			/* @formatter:off */ if (log != null) { log.addLog(msg); } /* @formatter:on */
-			throw new AdempiereException(msg);
-		}
-
-		return defaultPath + File.separator + fileNamePrefix.replaceAll("\\W+", "") + ".xml"; // note: using File.separator because we also want to show the filename in user messages etc
 	}
 }
