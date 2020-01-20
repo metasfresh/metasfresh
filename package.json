@@ -65,7 +65,7 @@
     "better-docs": "^1.1.6",
     "common-tags": "1.4.0",
     "css-loader": "1.0.1",
-    "enzyme": "3.10.0",
+    "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-redux": "0.2.1",
     "enzyme-wait": "1.0.9",
