@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 
 import * as types from '../constants/ActionTypes';
 
-const initialState = {
+export const initialState = {
   notifications: {},
   me: {},
   isLogged: false,

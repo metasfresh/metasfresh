@@ -1,0 +1,143 @@
+{
+  "visible": true,
+  "type": "ADP_540763",
+  "dataId": null,
+  "tabId": null,
+  "rowId": null,
+  "viewId": "540189-D8",
+  "layout": {
+    "layoutType": "panel",
+    "caption": "Transform",
+    "description": "",
+    "elements": [
+      {
+        "caption": "Action",
+        "description": "Zeigt die durchzuführende Aktion an",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "Action",
+            "caption": "",
+            "emptyText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500
+          }
+        ]
+      },
+      {
+        "caption": "Packing Instruction",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "M_HU_PI_Item_Product_ID",
+            "caption": "",
+            "emptyText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Packvorschrift Position",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "M_HU_PI_Item_ID",
+            "caption": "",
+            "emptyText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "LU",
+        "description": "Loading Unit",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_LU_HU_ID",
+            "caption": "",
+            "emptyText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "TU",
+        "description": "Trading Unit",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_TU_HU_ID",
+            "caption": "",
+            "emptyText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Qty CU per TU",
+        "description": "Number of CUs per package (usually TU)",
+        "widgetType": "Quantity",
+        "fields": [
+          {
+            "field": "QtyCU",
+            "caption": "",
+            "emptyText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Number of TUs",
+        "description": "",
+        "widgetType": "Integer",
+        "fields": [
+          {
+            "field": "QtyTU",
+            "caption": "",
+            "emptyText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "eigene Gebinde",
+        "description": "If true, then the packing material's owner is \"us\" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.",
+        "widgetType": "YesNo",
+        "fields": [
+          {
+            "field": "HUPlanningReceiptOwnerPM_LU",
+            "caption": "",
+            "emptyText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Eigene TU",
+        "description": "If true, then the packing material's owner is \"us\" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.",
+        "widgetType": "YesNo",
+        "fields": [
+          {
+            "field": "HUPlanningReceiptOwnerPM_TU",
+            "caption": "",
+            "emptyText": "none"
+          }
+        ]
+      }
+    ],
+    "pinstanceId": "3396778"
+  }
+}
