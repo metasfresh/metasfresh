@@ -473,3 +473,9 @@ export const FETCH_TOP_ACTIONS_FAILURE = 'FETCH_TOP_ACTIONS_FAILURE';
  * @type {string} removes tab's quick actions on unmount.
  */
 export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';
+
+/**
+ * @constant
+ * @type {string} removes tab's quick actions on unmount.
+ */
+export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';

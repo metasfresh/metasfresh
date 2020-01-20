@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { Map, List, Set } from 'immutable';
-import _ from 'lodash';
+import { get, forEach, difference } from 'lodash';
 import { createSelector } from 'reselect';
 import uuid from 'uuid/v4';
 
@@ -20,6 +20,7 @@ import {
   DELETE_ROW,
   DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
+  DESELECT_TABLE_ITEMS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   FETCHED_QUICK_ACTIONS,
@@ -39,7 +40,6 @@ import {
   PATCH_SUCCESS,
   REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
-  DESELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
   TOGGLE_OVERLAY,
@@ -55,6 +55,7 @@ import {
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
+  UPDATE_TAB_ROWS_DATA,
   SHOW_SPINNER,
   HIDE_SPINNER,
 } from '../constants/ActionTypes';
@@ -421,6 +422,52 @@ export default function windowHandler(state = initialState, action) {
           rowData: deletedRowData,
         },
       };
+
+    // websocket event
+    case UPDATE_TAB_ROWS_DATA: {
+      const {
+        data: { changed, removed },
+        tabId,
+        scope,
+      } = action.payload;
+      const rowData = state[scope].rowData.toJS();
+      let rows = get(rowData, `${tabId}`, []);
+
+      if (rows.length) {
+        if (removed) {
+          rows = rows.filter(row => !removed[row.rowId]);
+        }
+
+        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
+        if (changed) {
+          rows = rows.map(row => {
+            if (changed[row.rowId]) {
+              row = { ...changed[row.rowId] };
+
+              delete changed[row.rowId];
+
+              return row;
+            }
+            return row;
+          });
+        }
+      } else {
+        rows = [];
+      }
+      // added rows
+      forEach(changed, (value, key) => rows.push(value));
+
+      let addRowData = Map();
+      addRowData = addRowData.set(tabId, List(rows));
+
+      return {
+        ...state,
+        [scope]: {
+          ...state[scope],
+          rowData: state[scope].rowData.merge(addRowData),
+        },
+      };
+    }
     case UPDATE_DATA_FIELD_PROPERTY:
       return update(state, {
         [action.scope]: {
@@ -606,7 +653,7 @@ export default function windowHandler(state = initialState, action) {
           ...state.selections,
           [windowType]: {
             ...windowTypeSelections,
-            [viewId]: _.difference(windowTypeSelections[viewId], ids),
+            [viewId]: difference(windowTypeSelections[viewId], ids),
           },
         },
       };
