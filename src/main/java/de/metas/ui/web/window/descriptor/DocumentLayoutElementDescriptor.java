@@ -71,6 +71,7 @@ public final class DocumentLayoutElementDescriptor
 		for (final DocumentFieldDescriptor field : fields)
 		{
 			elementBuilder.addField(DocumentLayoutElementFieldDescriptor.builder(field.getFieldName())
+					.setCaption(field.getCaption())
 					.setPublicField(true)
 					.setLookupInfos(field.getLookupDescriptor().orElse(null))
 					.setSupportZoomInto(field.isSupportZoomInto()));

@@ -218,7 +218,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 					.omitNullValues()
 					.add("fieldName", fieldName)
 					.add("publicField", publicField)
-					.add("fieldActions", _devices.isEmpty() ? null : _devices)
+					.add("fieldActions", (_devices == null || _devices.isEmpty()) ? null : _devices)
 					.add("consumed", consumed)
 					.toString();
 		}
