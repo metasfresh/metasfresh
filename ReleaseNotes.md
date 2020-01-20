@@ -10,6 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.135
+## Features
+* metasfresh
+  * [#5949](https://github.com/metasfresh/metasfresh/issues/5949) Automatic Shipping Label Printing (DPD)
+  * [#5965](https://github.com/metasfresh/metasfresh/pull/5965) Improve logging in pricing rules
+  * [#6001](https://github.com/metasfresh/metasfresh/issues/6001) measure and log how much each model interceptor took
+  * [#6028](https://github.com/metasfresh/metasfresh/issues/6028) Extract quotation logic in jasper-DB-functions
+  * [#6032](https://github.com/metasfresh/metasfresh/issues/6032) Excel SQL Process with qty of invoices per daterange
+  * [#6035](https://github.com/metasfresh/metasfresh/issues/6035) Make C_UOM editable in C_InvoiceLine
+  * [#6048][https://github.com/metasfresh/metasfresh/issues/6048) Improve Price Schema Excel Export
+  * [#6057](https://github.com/metasfresh/metasfresh/issues/6057) Show BOM in window Stücklistenbestandteile
+
+* metasfresh-parent
+  * [#33](https://github.com/metasfresh/metasfresh-parent/pull/33) Add git infos to each build artefact
+
+## Fixes
+* metasfresh 
+  * [#6030](https://github.com/metasfresh/metasfresh/issues/6030) Report Average Product Prices: Negate in case of Credit Memo
+  * [#6031](https://github.com/metasfresh/metasfresh/issues/6031) Update line-schema-id if updated in parent record
+
+* metasfresh-webui-api
+  * [#1343](https://github.com/metasfresh/metasfresh-webui-api/issues/1343) Add an unit test for how the selected rows ids are sent as parameters
+
 # metasfresh 5.134
 ## Features
 * metasfresh
