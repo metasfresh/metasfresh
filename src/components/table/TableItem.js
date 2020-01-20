@@ -10,7 +10,7 @@ import {
 } from '../../constants/Constants';
 import TableCell from './TableCell';
 import { shouldRenderColumn } from '../../utils/tableHelpers';
-import { WithMobileDoubleTap } from '../WithMobileDoubleTap';
+import WithMobileDoubleTap from '../WithMobileDoubleTap';
 
 class TableItem extends PureComponent {
   constructor(props) {
