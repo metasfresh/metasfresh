@@ -81,10 +81,10 @@ class HierachyAlgorithmTest
 				// it's uncommon to have a trigger with points beyond "forecasted"..but still should work
 				.invoiceablePoints(CommissionPoints.of("100.00"))
 				.invoicedPoints(CommissionPoints.of("10.00"))
+				.tradedCommissionPercent(Percent.ZERO)
 				.build();
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
-				.timestamp(Instant.now())
 				.customer(Customer.of(BPartnerId.ofRepoId(10)))
 				.beneficiary(salesRep)
 				.commissionTriggerData(triggerData)
@@ -177,6 +177,7 @@ class HierachyAlgorithmTest
 						.forecastedPoints(CommissionPoints.ZERO)
 						.invoiceablePoints(CommissionPoints.ZERO)
 						.invoicedPoints(CommissionPoints.of("1110.00"))
+						.tradedCommissionPercent(Percent.ZERO)
 						.build())
 				.build();
 
