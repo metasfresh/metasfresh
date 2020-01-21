@@ -38,5 +38,5 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
  */
 public interface IShipmentSchedulesAfterFirstPassUpdater
 {
-	void doUpdateAfterFirstPass(Properties ctx, IShipmentSchedulesDuringUpdate candidates, String trxName);
+	void doUpdateAfterFirstPass(Properties ctx, IShipmentSchedulesDuringUpdate candidates);
 }
