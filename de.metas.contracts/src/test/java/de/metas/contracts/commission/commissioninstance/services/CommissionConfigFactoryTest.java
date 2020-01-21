@@ -56,6 +56,7 @@ import lombok.NonNull;
 
 class CommissionConfigFactoryTest
 {
+	private CommissionHierarchyFactory commissionHierarchyFactory;
 	private CommissionConfigFactory commissionConfigFactory;
 	private I_C_BPartner bpartnerRecord_EndCustomer;
 
@@ -70,9 +71,9 @@ class CommissionConfigFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
+		commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		commissionConfigFactory = new CommissionConfigFactory(commissionHierarchyFactory, commissionConfigStagingDataService);
+		commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
 
 		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
 		saveRecord(customerBPGroupRecord);
@@ -116,6 +117,7 @@ class CommissionConfigFactoryTest
 
 		// invoke method under test
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
@@ -185,6 +187,7 @@ class CommissionConfigFactoryTest
 		final BPartnerId salesRepLvl0Id = configData.getName2BPartnerId().get("salesRep");
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)

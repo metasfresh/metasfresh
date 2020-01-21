@@ -4,6 +4,7 @@ import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -33,17 +34,17 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ShipmentSchedulesMDC
 {
-	public static MDCCloseable withShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public MDCCloseable withShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return MDC.putCloseable(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, Integer.toString(shipmentScheduleId.getRepoId()));
+		return TableRecordMDC.withTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
 	}
 
-	public static MDCCloseable withShipmentScheduleUpdateRunNo(final int runNo)
+	public MDCCloseable withShipmentScheduleUpdateRunNo(final int runNo)
 	{
 		return MDC.putCloseable("ShipmentScheduleUpdater-Run#", Integer.toString(runNo));
 	}
 
-	public static MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
+	public MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
 	{
 		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
 	}

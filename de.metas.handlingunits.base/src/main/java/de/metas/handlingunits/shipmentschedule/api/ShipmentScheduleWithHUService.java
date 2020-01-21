@@ -160,8 +160,17 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(scheduleRecord);
+		if (qtyToDeliver.signum() <= 0)
+		{
+			throw new AdempiereException("M_ShipmentSchedule_ID=" + scheduleRecord.getM_ShipmentSchedule_ID() + " was enqueued, but now it doesn not have any quantity to deliver anymore.")
+					.appendParametersToMessage()
+					.setParameter("qtyToDeliver", qtyToDeliver)
+					.setParameter("M_ShipmentSchedule", scheduleRecord)
+					.markAsUserValidationError();
+		}
 
-		if (retrievePickAvailableHUsOntheFly(huContext))
+		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
+		if (pickAvailableHUsOnTheFly)
 		{
 			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
