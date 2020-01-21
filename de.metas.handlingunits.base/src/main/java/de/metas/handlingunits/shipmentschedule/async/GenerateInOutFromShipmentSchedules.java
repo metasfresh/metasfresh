@@ -60,8 +60,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
-	private static final Logger logger = LogManager.getLogger(GenerateInOutFromShipmentSchedules.class);
-
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
@@ -115,6 +113,12 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private final List<ShipmentScheduleWithHU> retrieveCandidates()
 	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = retriveShipmentSchedules();
+		if (shipmentSchedules.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = getParameters()
@@ -154,7 +158,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 					.shipmentScheduleId(shipmentScheduleId)
 					.build();
 
-			final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
 		}
 	}
