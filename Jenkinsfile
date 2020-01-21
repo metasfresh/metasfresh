@@ -325,8 +325,8 @@ This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href
 			currentBuild.description="""${currentBuild.description}<p/>
 This build triggered the <b>metasfresh-dist</b> jenkins job <a href="${metasFreshDistBuildResult.absoluteUrl}">${metasFreshDistBuildResult.displayName}</a>
 				"""
-		},
-    zapier: {
+		}
+	/*, zapier: {
       invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
         MF_UPSTREAM_BRANCH, // upstreamBranch
         MF_ARTIFACT_VERSIONS['metasfresh'], // metasfreshVersion
@@ -334,7 +334,7 @@ This build triggered the <b>metasfresh-dist</b> jenkins job <a href="${metasFres
         MF_ARTIFACT_VERSIONS['metasfresh-webui'], // metasfreshWebuiApiVersion
         MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] // metasfreshWebuiFrontendVersion
       )
-    }
+    }*/
 	)
 } // stage
 } // timestamps
@@ -388,6 +388,7 @@ Map invokeDownStreamJobs(
 	return buildResult;
 }
 
+/*
 void invokeZapier(
   final String upstreamBuildNo,
   final String upstreamBranch,
@@ -420,7 +421,7 @@ void invokeZapier(
   	{
   			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
   	}
-		waitForWebhookCall(hook);
+	waitForWebhookCall(hook);
 }
 
 String createZapierUrl()
@@ -449,3 +450,4 @@ void waitForWebhookCall(final def hook)
 				}
 	    }
 }
+*/
