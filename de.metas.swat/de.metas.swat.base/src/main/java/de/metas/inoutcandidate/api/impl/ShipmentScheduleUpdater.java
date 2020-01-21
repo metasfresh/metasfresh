@@ -33,7 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -845,7 +844,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
 	{
-		candidateProcessors.doUpdateAfterFirstPass(ctx, candidates, ITrx.TRXNAME_ThreadInherited);
+		candidateProcessors.doUpdateAfterFirstPass(ctx, candidates);
 	}
 
 	/**

@@ -49,12 +49,12 @@ public final class CompositeCandidateProcessor implements IShipmentSchedulesAfte
 	}
 
 	@Override
-	public void doUpdateAfterFirstPass(Properties ctx, @NonNull final IShipmentSchedulesDuringUpdate candidates, String trxName)
+	public void doUpdateAfterFirstPass(Properties ctx, @NonNull final IShipmentSchedulesDuringUpdate candidates)
 	{
 		for (final IShipmentSchedulesAfterFirstPassUpdater processor : processors)
 		{
 			logger.info("Invoking {}", processor);
-			processor.doUpdateAfterFirstPass(ctx, candidates, trxName);
+			processor.doUpdateAfterFirstPass(ctx, candidates);
 		}
 	}
 }

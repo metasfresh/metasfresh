@@ -54,17 +54,16 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 	@Override
 	public final void doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentSchedulesDuringUpdate candidates,
-			final String trxName)
+			final IShipmentSchedulesDuringUpdate candidates)
 	{
-		purgeLinesOK(ctx, candidates, trxName);
+		purgeLinesOK(ctx, candidates);
 	}
 
 	/**
 	 * Removes all inOutLines (and afterwards also empty inOuts) that have {@link CompleteStatus#OK} <b>and</b>
 	 * {@link PostageFreeStatus#OK}
 	 */
-	private void purgeLinesOK(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates, final String trxName)
+	private void purgeLinesOK(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
 	{
 
 		for (final DeliveryGroupCandidate groupCandidate : candidates.getCandidates())

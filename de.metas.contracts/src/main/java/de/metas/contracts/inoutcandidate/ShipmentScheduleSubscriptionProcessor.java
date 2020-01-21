@@ -61,8 +61,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 	@Override
 	public void doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentSchedulesDuringUpdate candidates,
-			final String trxName)
+			final IShipmentSchedulesDuringUpdate candidates)
 	{
 		for (final DeliveryGroupCandidate groupCandidate : candidates.getCandidates())
 		{
@@ -75,7 +74,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 				}
 				try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
 				{
-					handleWithNextSubscription(ctx, candidates, lineCandidate, trxName);
+					handleWithNextSubscription(ctx, candidates, lineCandidate);
 				}
 			}
 		}
@@ -84,8 +83,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 	private void handleWithNextSubscription(
 			final Properties ctx,
 			final IShipmentSchedulesDuringUpdate candidates,
-			final DeliveryLineCandidate lineCandidate,
-			final String trxName)
+			final DeliveryLineCandidate lineCandidate)
 	{
 		if (!DeliveryRule.WITH_NEXT_SUBSCRIPTION_DELIVERY.equals(lineCandidate.getDeliveryRule()))
 		{
@@ -94,7 +92,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 		}
 
 		// find out there are subscription delivery lines
-		final boolean atLeastOneSubscription = hasSubscriptionDelivery(ctx, candidates, lineCandidate, trxName);
+		final boolean atLeastOneSubscription = hasSubscriptionDelivery(ctx, candidates, lineCandidate);
 		if (!atLeastOneSubscription)
 		{
 			logger.debug("Discard lineCandidate because there is no subscription delivery to piggyback on");
@@ -106,8 +104,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 	private boolean hasSubscriptionDelivery(
 			final Properties ctx,
 			final IShipmentSchedulesDuringUpdate candidates,
-			final DeliveryLineCandidate inOutLine,
-			final String trxName)
+			final DeliveryLineCandidate inOutLine)
 	{
 		final DeliveryGroupCandidate inOut = inOutLine.getGroup();
 
@@ -131,7 +128,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 
 			if (I_C_SubscriptionProgress.Table_Name.equals(scheduleReference.getTableName()))
 			{
-				final I_C_SubscriptionProgress sp = scheduleReference.getModel(PlainContextAware.newWithTrxName(ctx, trxName), I_C_SubscriptionProgress.class);
+				final I_C_SubscriptionProgress sp = scheduleReference.getModel(PlainContextAware.newWithThreadInheritedTrx(ctx), I_C_SubscriptionProgress.class);
 				final String status = sp.getStatus();
 				Check.assume(X_C_SubscriptionProgress.STATUS_Open.equals(status),
 						"{} referenced by {} doesn't have status {}", sp, inOutLine, status);

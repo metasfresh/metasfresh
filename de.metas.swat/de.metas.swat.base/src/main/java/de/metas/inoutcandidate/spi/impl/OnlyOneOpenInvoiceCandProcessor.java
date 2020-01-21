@@ -60,8 +60,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 	@Override
 	public void doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentSchedulesDuringUpdate candidates,
-			final String trxName)
+			final IShipmentSchedulesDuringUpdate candidates)
 	{
 		for (final DeliveryGroupCandidate groupCandidate : candidates.getCandidates())
 		{
@@ -72,15 +71,14 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 					// this line won't be delivered anyways. Nothing to do
 					continue;
 				}
-				handleOnlyOneOpenInv(ctx, candidates, lineCandidate, trxName);
+				handleOnlyOneOpenInv(ctx, candidates, lineCandidate);
 			}
 		}
 	}
 
 	private void handleOnlyOneOpenInv(final Properties ctx,
 			final IShipmentSchedulesDuringUpdate candidates,
-			final DeliveryLineCandidate lineCandidate,
-			final String trxName)
+			final DeliveryLineCandidate lineCandidate)
 	{
 		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
 		{
