@@ -3,12 +3,15 @@ package de.metas.invoicecandidate.modelvalidator;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
 
 /*
@@ -44,15 +47,19 @@ public class C_InvoiceCandidate_InOutLine
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
 	}
 
-	@ModelChange(//
+	@ModelChange(
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override)
-	public void updateInvoiceCandidate(I_C_InvoiceCandidate_InOutLine icIlaRecord)
+	public void updateInvoiceCandidate(@NonNull final I_C_InvoiceCandidate_InOutLine icIlaRecord)
 	{
-		// load the invoice candidate with all relevant data
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(icIlaRecord.getC_Invoice_Candidate_ID()));
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icIlaRecord.getC_Invoice_Candidate_ID());
+		try (final MDCCloseable icMDC = TableRecordMDC.withTableRecordReference(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId);)
+		{
+			// load the invoice candidate with all relevant data
+			final InvoiceCandidate invoiceCandidate = invoiceCandidateRepository.getById(invoiceCandidateId);
 
-		// store the invoice candidate with its computed results.
-		invoiceCandidateRepository.save(invoiceCandidate);
+			// store the invoice candidate with its computed results.
+			invoiceCandidateRepository.save(invoiceCandidate);
+		}
 	}
 }

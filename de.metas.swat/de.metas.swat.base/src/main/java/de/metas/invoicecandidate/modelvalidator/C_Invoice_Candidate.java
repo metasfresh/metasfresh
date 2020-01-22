@@ -41,6 +41,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -63,6 +64,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.logging.TableRecordMDC;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -102,12 +104,15 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
-		if (isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
+		try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
 		{
-			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			if (isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
+			{
+				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			}
+			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 		}
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
-		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 	}
 
 	/**

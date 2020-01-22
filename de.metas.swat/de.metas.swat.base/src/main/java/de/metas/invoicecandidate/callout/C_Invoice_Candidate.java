@@ -144,9 +144,9 @@ public class C_Invoice_Candidate
 	}
 
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override )
-	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate ic, final ICalloutField field)
+	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate icRecord, final ICalloutField field)
 	{
-		ic.setIsInDispute(false);
+		icRecord.setIsInDispute(false);
 	}
 
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)
