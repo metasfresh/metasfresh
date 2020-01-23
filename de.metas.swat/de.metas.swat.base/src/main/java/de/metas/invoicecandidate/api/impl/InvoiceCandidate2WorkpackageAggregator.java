@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.IdentityHashMap;
 import java.util.Properties;
@@ -33,12 +32,14 @@ import org.compiere.util.Env;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageParamsBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.invoicecandidate.api.IAggregationBL;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
@@ -70,6 +71,7 @@ import lombok.NonNull;
 	private final IWorkPackageBlockBuilder _queueBlockBuilder;
 	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
+	private IInvoicingParams invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 
 	// status
@@ -77,9 +79,8 @@ import lombok.NonNull;
 
 	public InvoiceCandidate2WorkpackageAggregator(@NonNull final Properties ctx, @Nullable final String trxName)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		_ctx = ctx;
-		_trxName = trxName; // null/none it's accepted
+		_trxName = trxName; // null/none is accepted
 
 		_workpackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, InvoiceCandWorkpackageProcessor.class);
 		_queueBlockBuilder = _workpackageQueue.newBlock()
@@ -178,13 +179,17 @@ import lombok.NonNull;
 	 * Close group: i.e. make workpackage as ready for processing.
 	 */
 	@Override
-	protected void closeGroup(final IWorkPackageBuilder group)
+	protected void closeGroup(@NonNull final IWorkPackageBuilder group)
 	{
 		//
 		// Create workpackage parameters (08610)
 		final ICNetAmtToInvoiceChecker netAmtToInvoiceChecker = getICNetAmtToInvoiceChecker(group);
-		group.parameters()
-				.setParameter(ICNetAmtToInvoiceChecker.PARAMETER_NAME, netAmtToInvoiceChecker.getValue());
+		final IWorkPackageParamsBuilder parameters = group.parameters();
+		if (invoicingParams != null)
+		{
+			parameters.setParameters(invoicingParams.asMap());
+		}
+		parameters.setParameter(IInvoicingParams.PARA_Check_NetAmtToInvoice, netAmtToInvoiceChecker.getValue());
 
 		if (_asyncBatch != null)
 		{
@@ -196,7 +201,7 @@ import lombok.NonNull;
 		group.build();
 	}
 
-	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId)
+	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(@NonNull final PInstanceId adPInstanceId)
 	{
 		_queueBlockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		return this;
@@ -211,6 +216,12 @@ import lombok.NonNull;
 	public InvoiceCandidate2WorkpackageAggregator setPriority(final IWorkpackagePrioStrategy priority)
 	{
 		workpackagePriority = priority;
+		return this;
+	}
+
+	public InvoiceCandidate2WorkpackageAggregator setInvoicingParams(@NonNull final IInvoicingParams invoicingParams)
+	{
+		this.invoicingParams = invoicingParams;
 		return this;
 	}
 

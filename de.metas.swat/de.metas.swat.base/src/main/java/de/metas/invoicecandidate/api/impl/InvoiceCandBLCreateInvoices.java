@@ -59,6 +59,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -88,6 +89,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -156,7 +158,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	/**
 	 * Default {@link IInvoiceGeneratorRunnable} implementation
 	 */
-	// NOTE: not static becase we share the services
+	// NOTE: not static because we share the services
 	private class DefaultInvoiceGeneratorRunnable implements IInvoiceGeneratorRunnable, TrxRunnable2
 	{
 		// Input parameters
@@ -173,7 +175,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public void init(final Properties ctx, final IInvoiceHeader header)
+		public void init(final Properties ctx, @NonNull final IInvoiceHeader header)
 		{
 			this.header = header;
 			this.ctx = ctx;
@@ -253,10 +255,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Update invoice candidates
-			for (final I_C_Invoice_Candidate ic : allCandidates)
+			for (final I_C_Invoice_Candidate icRecord : allCandidates)
 			{
-				ic.setDateInvoiced(TimeUtil.asTimestamp(header.getDateInvoiced()));
-				ic.setDateAcct(TimeUtil.asTimestamp(header.getDateAcct()));
+				try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
+				{
+					logger.debug("Set both DateInvoiced={} and DateAcct={} from IInvoiceHeader", header.getDateInvoiced(), header.getDateAcct());
+					icRecord.setDateInvoiced(TimeUtil.asTimestamp(header.getDateInvoiced()));
+					icRecord.setDateAcct(TimeUtil.asTimestamp(header.getDateAcct()));
+				}
 			}
 
 			//
@@ -792,24 +798,27 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		while (invoiceCandidates.hasNext())
 		{
 			final I_C_Invoice_Candidate ic = invoiceCandidates.next();
-			icToUnlock.add(ic);
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(ic))
+			{
+				icToUnlock.add(ic);
 
-			// Skip invoice candidate if we are adviced to do so
-			// TODO: i think this checking is no longer needed because we are doing it when enqueueing
-			if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
-			{
-				continue;
-			}
+				// Skip invoice candidate if we are adviced to do so
+				// TODO: i think this checking is no longer needed because we are doing it when enqueueing
+				if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
+				{
+					continue;
+				}
 
-			// add 'ic' to our aggregation
-			try
-			{
-				aggregationEngine.addInvoiceCandidate(ic);
-				netAmtToInvoiceChecker.add(ic); // collect the IC's NetAmtToInvoice; later we will make sure the amount is the same as the one user expects
-			}
-			catch (final AdempiereException e)
-			{
-				createNoticesAndMarkICs(ImmutableList.of(ic), e);
+				// add 'ic' to our aggregation
+				try
+				{
+					aggregationEngine.addInvoiceCandidate(ic);
+					netAmtToInvoiceChecker.add(ic); // collect the IC's NetAmtToInvoice; later we will make sure the amount is the same as the one user expects
+				}
+				catch (final AdempiereException e)
+				{
+					createNoticesAndMarkICs(ImmutableList.of(ic), e);
+				}
 			}
 		}
 
