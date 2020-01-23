@@ -4,6 +4,7 @@ import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,6 +17,8 @@ import org.compiere.util.TimeUtil;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
@@ -122,24 +125,22 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				: getAD_User_Effective_ID(olCand);
 	}
 
-	private int getDropShip_BPartner_Effective_ID(final I_C_OLCand olCand)
+	private int getDropShip_BPartner_Effective_ID(@NonNull final I_C_OLCand olCand)
 	{
-		final Integer dropShipBPartnerOverride = InterfaceWrapperHelper.getValueOverrideOrValue(olCand, I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID);
-		final int dropShipBPartnerID = dropShipBPartnerOverride == null ? 0 : dropShipBPartnerOverride;
-
-		final int bpartnerID = getC_BPartner_Effective_ID(olCand);
-
-		if (dropShipBPartnerID > 0)
+		if (olCand.getDropShip_BPartner_Override_ID() > 0)
 		{
-			// the dropship partner was set
-			return dropShipBPartnerID;
+			return olCand.getDropShip_BPartner_Override_ID();
+		}
+		if (olCand.getDropShip_BPartner_ID() > 0)
+		{
+			return olCand.getDropShip_BPartner_ID();
 		}
 
 		// fall-back to bpartner
-		return bpartnerID;
+		return getC_BPartner_Effective_ID(olCand);
 	}
 
-	private int getDropShip_Location_Effective_ID(final I_C_OLCand olCand)
+	private int getDropShip_Location_Effective_ID(@NonNull final I_C_OLCand olCand)
 	{
 		if (olCand.getDropShip_Location_Override_ID() > 0)
 		{
@@ -152,8 +153,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		}
 
 		// fallback to the bp location
-		final int bpLocationId = getC_BP_Location_Effective_ID(olCand, Type.SHIP_TO);
-		return bpLocationId;
+		return getC_BP_Location_Effective_ID(olCand, Type.SHIP_TO);
 	}
 
 	@Override
@@ -166,7 +166,8 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}
 
-	private int getDropShip_User_Effective_ID(final I_C_OLCand olCand)
+	private int getDropShip_User_Effective_ID(
+			@NonNull final I_C_OLCand olCand)
 	{
 		return getAD_User_Effective_ID(olCand);
 	}
@@ -287,6 +288,11 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}
 
+	private int getHandOver_User_Effective_ID(@NonNull final I_C_OLCand olCandRecord)
+	{
+		return getAD_User_Effective_ID(olCandRecord);
+	}
+
 	@Override
 	public BPartnerId getBPartnerEffectiveId(@NonNull final I_C_OLCand olCand)
 	{
@@ -360,26 +366,103 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				getBill_User_Effective_ID(olCand));
 	}
 
+
 	@Override
-	public BPartnerId getDropShipBPartnerEffectiveId(@NonNull final I_C_OLCand olCand)
+	public BPartnerInfo getBuyerPartnerInfo(@NonNull final I_C_OLCand olCandRecord)
 	{
-		return BPartnerId.ofRepoIdOrNull(getDropShip_BPartner_Effective_ID(olCand));
+		final int bPartnerId = getC_BPartner_Effective_ID(olCandRecord);
+		final int locationId = getC_BP_Location_Effective_ID(olCandRecord, Type.SHIP_TO);
+		final int contactId = getAD_User_Effective_ID(olCandRecord);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerId);
+
+		return BPartnerInfo.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, locationId))
+				.contactId(BPartnerContactId.ofRepoId(bpartnerId, contactId))
+				.build();
 	}
 
 	@Override
-	public BPartnerLocationId getDropShipLocationEffectiveId(@NonNull final I_C_OLCand olCand)
+	public Optional<BPartnerInfo> getDropShipPartnerInfo(@NonNull final I_C_OLCand olCandRecord)
 	{
-		return BPartnerLocationId.ofRepoIdOrNull(
-				getDropShip_BPartner_Effective_ID(olCand),
-				getDropShip_Location_Effective_ID(olCand));
+		final int dropShipBPartnerId = getDropShip_BPartner_Effective_ID(olCandRecord);
+		final int dropShipLocationId = getDropShip_Location_Effective_ID(olCandRecord);
+		final int dropShipContactId = getDropShip_User_Effective_ID(olCandRecord); // TODO add the column & stuff
+
+		return extractDifferentShipToBPartnerInfo(olCandRecord, dropShipBPartnerId, dropShipLocationId, dropShipContactId);
 	}
 
 	@Override
-	public BPartnerContactId getDropShipContactEffectiveId(@NonNull final I_C_OLCand olCand)
+	public Optional<BPartnerInfo> getHandOverPartnerInfo(@NonNull final I_C_OLCand olCandRecord)
 	{
-		return BPartnerContactId.ofRepoIdOrNull(
-				getDropShip_BPartner_Effective_ID(olCand),
-				getDropShip_User_Effective_ID(olCand));
+		final int dropShipBPartnerId = getHandOver_Partner_Effective_ID(olCandRecord);
+		final int dropShipLocationId = getHandOver_Location_Effective_ID(olCandRecord);
+		final int dropShipContactId = getHandOver_User_Effective_ID(olCandRecord); // TODO add the column & stuff
+
+		return extractDifferentShipToBPartnerInfo(olCandRecord, dropShipBPartnerId, dropShipLocationId, dropShipContactId);
+	}
+
+	private Optional<BPartnerInfo> extractDifferentShipToBPartnerInfo(
+			@NonNull final I_C_OLCand olCandRecord,
+			final int differentShipToBPartnerId,
+			final int differentShipToLocationId,
+			final int differentShipToContactId)
+	{
+		final int bPartnerId = getC_BPartner_Effective_ID(olCandRecord);
+		final int locationId = getC_BP_Location_Effective_ID(olCandRecord, Type.SHIP_TO);
+		final int contactId = getAD_User_Effective_ID(olCandRecord);
+
+		if (differentShipToBPartnerId == bPartnerId && differentShipToLocationId == locationId && differentShipToContactId == contactId)
+		{
+			return Optional.empty();
+		}
+
+		final BPartnerInfoBuilder result = BPartnerInfo.builder();
+		if (differentShipToBPartnerId != bPartnerId)
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(differentShipToBPartnerId);
+			result.bpartnerId(bpartnerId);
+			if (differentShipToLocationId != locationId)
+			{
+				result.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, differentShipToLocationId));
+			}
+			else // no dropShipLocationId was specified; select one of the dropship-partner's locations from the master data
+			{
+				final BPartnerLocationQuery query = BPartnerLocationQuery.builder()
+						.bpartnerId(bpartnerId)
+						.type(Type.SHIP_TO)
+						.applyTypeStrictly(false)
+						.build();
+				final BPartnerLocationId bpartnerLocationId = Services.get(IBPartnerDAO.class).retrieveBPartnerLocationId(query);
+				if (bpartnerLocationId == null)
+				{
+					throw new AdempiereException("DropShip-BPartner needs to have a bpartner-location")
+							.appendParametersToMessage()
+							.setParameter("DropShipBPartnerId", bpartnerId)
+							.setParameter("C_OLCand", olCandRecord);
+				}
+				result.bpartnerLocationId(bpartnerLocationId);
+			}
+			if (differentShipToContactId != contactId)
+			{
+				result.contactId(BPartnerContactId.ofRepoId(bpartnerId, differentShipToContactId));
+			} // note: if no dropship contact was specified, then we leave it like that
+
+		}
+		else // dropShipBPartnerId == bPartnerId
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(getC_BPartner_Effective_ID(olCandRecord));
+			if (differentShipToLocationId != locationId)
+			{
+				result.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, differentShipToLocationId));
+			}
+			if (differentShipToContactId != contactId)
+			{
+				result.contactId(BPartnerContactId.ofRepoId(bpartnerId, differentShipToContactId));
+			}
+		}
+		return Optional.of(result.build());
 	}
 
 	@Override

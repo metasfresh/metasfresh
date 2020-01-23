@@ -184,6 +184,7 @@ class OLCandOrderFactory
 		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
 		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
 		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
+		order.setDropShip_User_ID(BPartnerContactId.toRepoId(dropShipBPartner.getContactId()));
 		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() != null;
 		order.setIsDropShip(isDropShip);
 
@@ -209,16 +210,15 @@ class OLCandOrderFactory
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
 
-
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
 		{
 			order.setC_DocTypeTarget_ID(candidateOfGroup.getOrderDocTypeId().getRepoId());
 		}
 
-		final BPartnerId salesRepId  = candidateOfGroup.getSalesRepId();
+		final BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
 
-		if(salesRepId != null)
+		if (salesRepId != null)
 		{
 			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 
@@ -230,7 +230,6 @@ class OLCandOrderFactory
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
-
 
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);

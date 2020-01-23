@@ -44,7 +44,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
@@ -325,7 +325,11 @@ public class OLCandBL implements IOLCandBL
 		// note that even with manual price and/or discount, we need to invoke the pricing engine, in order to get the tax category
 
 		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
-		final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
+
+		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
+				.getDropShipPartnerInfo(olCand)
+				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCand));
+		// final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQtyEntered();
 
@@ -350,11 +354,11 @@ public class OLCandBL implements IOLCandBL
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
-				dropShipLocationId,
+				shipToPartnerInfo.getBpartnerLocationId(),
 				SOTrx.SALES);
 		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + dropShipLocationId);
+			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + shipToPartnerInfo.getBpartnerLocationId());
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
@@ -416,11 +420,14 @@ public class OLCandBL implements IOLCandBL
 	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
 	{
 		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
-		final BPartnerId shipBPartnerId = effectiveValuesBL.getDropShipBPartnerEffectiveId(olCandRecord);
+
+		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
+				.getDropShipPartnerInfo(olCandRecord)
+				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
 		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(BPartnerOrderParamsQuery.builder()
 				.soTrx(SOTrx.SALES)
-				.shipBPartnerId(shipBPartnerId)
+				.shipBPartnerId(shipToPartnerInfo.getBpartnerId())
 				.billBPartnerId(billBPartnerId)
 				.build());
 		return params;

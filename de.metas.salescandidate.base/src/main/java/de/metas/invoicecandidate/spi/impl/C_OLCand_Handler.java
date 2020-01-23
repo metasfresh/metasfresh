@@ -44,6 +44,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -213,6 +214,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				productId);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
+		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
+				.getDropShipPartnerInfo(olcRecord)
+				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
+
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final int taxId = taxBL.getTax(
 				ctx,
@@ -222,7 +227,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				CoalesceUtil.coalesce(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
-				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olcRecord)),
+				BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()),
 				true /* isSOTrx */);
 		ic.setC_Tax_ID(taxId);
 
