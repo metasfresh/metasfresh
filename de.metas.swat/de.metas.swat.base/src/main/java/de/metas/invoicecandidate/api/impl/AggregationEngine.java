@@ -451,8 +451,8 @@ public final class AggregationEngine
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> dateInvoicedParam,
-				() -> TimeUtil.asLocalDate(ic.getDateInvoiced()),
 				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
+				() -> TimeUtil.asLocalDate(ic.getDateInvoiced()),
 				() -> today);
 	}
 
@@ -460,8 +460,8 @@ public final class AggregationEngine
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> dateAcctParam,
-				() -> TimeUtil.asLocalDate(ic.getDateAcct()),
 				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
+				() -> TimeUtil.asLocalDate(ic.getDateAcct()),
 				() -> computeDateInvoiced(ic));
 	}
 
