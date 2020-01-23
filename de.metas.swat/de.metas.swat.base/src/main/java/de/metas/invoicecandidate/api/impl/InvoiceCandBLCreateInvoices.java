@@ -844,8 +844,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		return AggregationEngine.builder()
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
-				.defaultDateInvoiced(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
-				.defaultDateAcct(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
+				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.updateLocationAndContactForInvoice(invoicingParams != null ? invoicingParams.isUpdateLocationAndContactForInvoice() : false)
 				.build();
 	}
