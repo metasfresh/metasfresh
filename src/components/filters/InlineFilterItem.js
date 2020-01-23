@@ -4,8 +4,8 @@
 import React, { Component } from 'react';
 
 import RawWidget from '../widget/RawWidget';
-import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
-import { DATE_FIELDS } from '../../constants/Constants';
+
+import { parseDateToReadable } from './Filters';
 
 class InlineFilterItem extends Component {
   constructor(props) {
@@ -73,21 +73,14 @@ class InlineFilterItem extends Component {
     }
   };
 
-  parseDateToReadable = (widgetType, value) => {
-    if (DATE_FIELDS.indexOf(widgetType) > -1) {
-      return parseDateWithCurrentTimezone(value);
-    }
-    return value;
-  };
-
   mergeData = (property, value, valueTo) => {
     this.setState(prevState => ({
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value: this.parseDateToReadable(param.widgetType, value),
-              valueTo: this.parseDateToReadable(param.widgetType, valueTo),
+              value: parseDateToReadable(param.widgetType, value),
+              valueTo: parseDateToReadable(param.widgetType, valueTo),
             });
           } else {
             return param;

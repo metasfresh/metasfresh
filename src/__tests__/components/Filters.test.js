@@ -5,8 +5,10 @@ import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
 
+import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../reducers/windowHandler';
+import { filtersToMap } from '../../utils/documentListHelper';
 
 import Filters from "../../components/filters/Filters";
 import filtersFixtures from "../../../test_setup/fixtures/filters.json";
@@ -17,7 +19,7 @@ const createStore = function(state = {}) {
   const res = merge.recursive(
     true,
     {
-      appHandler: { ...appHandlerState },
+      appHandler: { ...appHandlerState, me: { timeZone: 'America/Los_Angeles'} },
       windowHandler: { ...windowHandlerState }
     },
     state
@@ -26,24 +28,24 @@ const createStore = function(state = {}) {
   return res;
 }
 
-const createInitialProps = function(basicFixtures = filtersFixtures.data1, additionalProps) {
-    const filterData = additionalProps && additionalProps.filterData
-      ? additionalProps.filterData
-      : basicFixtures.filterData;
-    const filtersActive = additionalProps && additionalProps.filterData
-      ? additionalProps.filtersActive
-      : basicFixtures.filtersActive;
-    const initialValuesNulled = additionalProps && additionalProps.filterData
-      ? additionalProps.initialValuesNulled
-      : basicFixtures.initialValuesNulled;
+const createInitialProps = function(basicFixtures = filtersFixtures.data1, additionalProps = {}) {
+  const filterData = additionalProps.filterData
+    ? additionalProps.filterData
+    : basicFixtures.filterData;
+  const filtersActive = additionalProps.filtersActive
+    ? additionalProps.filtersActive
+    : basicFixtures.filtersActive;
+  const initialValuesNulled = additionalProps.initialValuesNulled
+    ? additionalProps.initialValuesNulled
+    : basicFixtures.initialValuesNulled;
 
   return {
     ...basicFixtures,
     ...additionalProps,
     resetInitialValues: jest.fn(),
     updateDocList: jest.fn(),
-    filterData: Immutable.Map(filterData),
-    filtersActive: Immutable.Map(filtersActive),
+    filterData: filtersToMap(filterData),
+    filtersActive: filtersToMap(filtersActive),
     initialValuesNulled: Immutable.Map(initialValuesNulled),
   };
 };
@@ -60,10 +62,112 @@ describe("Filters tests", () => {
       }
     });
     const store = mockStore(initialState)
-    const wrapper = render(
+    const wrapper = shallow(
         <Provider store={store}>
           <Filters {...dummyProps} />
         </Provider>
     );
+    const html = wrapper.html();
+
+    expect(html).toContain('filter-wrapper');
+    expect(html).toContain('filters-frequent');
+    expect(html).toContain('btn-filter');
+    expect(html).toContain(': Date');
+  });
+
+  it("renders active filters caption", () => {
+    const dummyProps = createInitialProps(undefined, { filtersActive: filtersFixtures.filtersActive1 });
+    const initialState = createStore({ 
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      }
+    });
+    const store = mockStore(initialState)
+    const wrapper = mount(
+        <Provider store={store}>
+          <Filters {...dummyProps} />
+        </Provider>
+    );
+    const html = wrapper.html();
+
+    expect(html).toContain('filter-wrapper');
+    expect(html).toContain('filters-not-frequent');
+    expect(html).toContain('btn-filter');
+    expect(html).toContain('Akontozahlung, Completed');
+  });
+
+  it("opens dropdown and filter details", () => {
+    const dummyProps = createInitialProps();
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      }
+    });
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}} >
+        <Provider store={store}>
+          <div className="document-lists-wrapper">
+            <Filters {...dummyProps} />
+          </div>
+        </Provider>
+      </ShortcutProvider>
+    );
+    wrapper.find('.filters-not-frequent .btn-filter').simulate('click')
+    expect(wrapper.find('.filters-overlay').length).toBe(1);
+
+    wrapper.find('.filter-option-default').simulate('click');
+    expect(wrapper.find('.filter-widget .filter-default').length).toBe(1);
+  });
+
+  //@TODO: I expect this to be replaced by a combination of small unit and e2e tests, but
+  // for now it doesn't make sense to write targeted unit tests for Filter descendant components
+  // as the widgets need an architecture overhaul, and filters should be moved to redux state
+  describe('Temporary bloated filter tests', () => {
+    // https://github.com/metasfresh/me03/issues/3649
+    it("clears list filters and applies without error", () => {
+      const dummyProps = createInitialProps(undefined, { filtersActive: filtersFixtures.filtersActive1 });
+      const initialState = createStore({
+        windowHandler: {
+          allowShortcut: true,
+          modal: {
+            visible: false,
+          },
+        }
+      });
+      const store = mockStore(initialState)
+      const wrapper = mount(
+        <ShortcutProvider hotkeys={{}} keymap={{}} >
+          <Provider store={store}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
+
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      expect(wrapper.find('.filters-overlay').length).toBe(1);
+      expect(wrapper.find('.filter-option-default').length).toBe(0);
+
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+
+      wrapper.find('.form-field-C_DocType_ID .meta-icon-close-alt').simulate('click');
+      wrapper.update();
+      wrapper.find('.form-field-DocStatus .meta-icon-close-alt').simulate('click');
+      wrapper.update();
+
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
+      wrapper.find('.filter-widget .filter-btn-wrapper .applyBtn').simulate('click');
+
+      wrapper.update();
+      expect(wrapper.find('.filters-overlay').length).toBe(0);
+    });
   });
 });

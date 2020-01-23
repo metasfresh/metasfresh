@@ -361,6 +361,7 @@ export class RawWidget extends Component {
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
+      //@TODO Looks like `fields` and `widgetData` are the very same thing 99.9% of the time.
       fields,
       windowType,
       dataId,

@@ -12,6 +12,36 @@ const jsdom = new JSDOM('<!doctype html><html><body></body></html>', {
 });
 const { window } = jsdom;
 
+/* can be overriden per element if needed
+  function createMockDiv (width, height) {
+    const div = document.createElement("div");
+    Object.assign(div.style, {
+      width: width+"px",
+      height: height+"px",
+    });
+    // we have to mock this for jsdom.
+    div.getBoundingClientRect = () => ({
+      width,
+      height,
+      top: 0,
+      left: 0,
+      right: width,
+      bottom: height,
+    });
+    return div;
+  }
+*/
+window.HTMLDivElement.prototype.getBoundingClientRect = function() {
+  return {
+    width: 0,
+    height: 0,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  };
+}
+
 global.window = window;
 global.document = window.document;
 

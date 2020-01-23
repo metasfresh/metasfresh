@@ -1,9 +1,8 @@
 import counterpart from 'counterpart';
-import React, { Component, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
-import { connect } from 'react-redux';
 
 import { getItemsByProperty } from '../../utils';
 import FiltersItem from './FiltersItem';
@@ -13,7 +12,7 @@ import FiltersItem from './FiltersItem';
  * @module FiltersNotFrequent
  * @extends Component
  */
-class FiltersNotFrequent extends Component {
+class FiltersNotFrequent extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -67,6 +66,10 @@ class FiltersNotFrequent extends Component {
     });
   };
 
+  // wrappers around props.handleShow to skip creating anonymous functions on render
+  handleShowTrue = () => this.props.handleShow(true);
+  handleShowFalse = () => this.props.handleShow(false);
+
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -78,7 +81,6 @@ class FiltersNotFrequent extends Component {
       windowType,
       notValidFields,
       viewId,
-      handleShow,
       applyFilters,
       clearFilters,
       active,
@@ -167,8 +169,8 @@ class FiltersNotFrequent extends Component {
                 returnBackToDropdown={() => this.toggleFilter(null)}
                 notValidFields={notValidFields}
                 isActive={activeFilter.isActive}
-                onShow={() => handleShow(true)}
-                onHide={() => handleShow(false)}
+                onShow={this.handleShowTrue}
+                onHide={this.handleShowFalse}
                 openedFilter={true}
                 filtersWrapper={this.props.filtersWrapper}
               />
@@ -217,19 +219,4 @@ FiltersNotFrequent.propTypes = {
   dropdownToggled: PropTypes.any,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {*} windowHandler
- * @todo Write the documentation
- */
-const mapStateToProps = ({ windowHandler }) => {
-  const { allowOutsideClick, modal } = windowHandler;
-
-  return {
-    allowOutsideClick,
-    modalVisible: modal.visible,
-  };
-};
-
-export default connect(mapStateToProps)(onClickOutside(FiltersNotFrequent));
+export default onClickOutside(FiltersNotFrequent);
