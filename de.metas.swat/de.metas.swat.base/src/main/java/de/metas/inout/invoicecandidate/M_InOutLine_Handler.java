@@ -81,7 +81,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
@@ -831,8 +830,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private static IPricingResult calculatePricingResult(final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final IPricingContext pricingCtx = inOutBL.createPricingCtx(fromInOutLine);
-		return inOutBL.getProductPrice(pricingCtx);
+		return inOutBL.getProductPrice(fromInOutLine);
 	}
 
 	public static PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine fromInOutLine)

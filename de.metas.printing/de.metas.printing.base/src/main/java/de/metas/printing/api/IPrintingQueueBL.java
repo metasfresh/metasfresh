@@ -10,12 +10,12 @@ package de.metas.printing.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Archive;
 
@@ -37,16 +36,8 @@ import de.metas.util.ISingletonService;
 public interface IPrintingQueueBL extends ISingletonService
 {
 	/**
-	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
-	 * The value that is set here will be used in the respective printing queue item
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh/issues/1240
-	 */
-	public static ModelDynAttributeAccessor<I_AD_Archive, Integer> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(Integer.class);
-
-	/**
 	 * Adds the given print-out to the queue
-	 * 
+	 *
 	 * @param printOut
 	 * @return the generated record or <code>null</code> if no printing queue item was generated (i.e. was not needed or an {@link IPrintingQueueHandler} prevented that)
 	 */
@@ -56,18 +47,18 @@ public interface IPrintingQueueBL extends ISingletonService
 
 	/**
 	 * Cancel given printing queue if is not already printed.
-	 * 
+	 *
 	 * If the item is already printed, this method does nothing
-	 * 
+	 *
 	 * @param item
 	 */
 	void cancel(I_C_Printing_Queue item);
 
 	/**
 	 * Re-enqueue for printing underlying archive of given printing queue item.
-	 * 
+	 *
 	 * This method is expected to run asynchronously so it's possible to not have the result immediate.
-	 * 
+	 *
 	 * @param item
 	 * @param recreateArchive
 	 *            <ul>
@@ -82,7 +73,7 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * Create a printing queue processing info by loading the first item what matches the given <code>printingQueueQuery</code> and using its data.
 	 * <p>
 	 * <b>Important:</b> assume that the given query has {@link IPrintingQueueQuery#getAggregationKey()} set.
-	 * 
+	 *
 	 * @param ctx
 	 * @param printingQueueQuery
 	 * @return
@@ -93,14 +84,14 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * Compute and set the aggregation key for the given item. Items with different aggregation keys can't be aggregated into the same print job.
 	 * <p>
 	 * <b>Important:</b> don't save the given item, because the method might be called from a model validator.
-	 * 
+	 *
 	 * @param item
 	 */
 	void setItemAggregationKey(I_C_Printing_Queue item);
 
 	/**
 	 * Creates an initial (not configured) {@link IPrintingQueueQuery}.
-	 * 
+	 *
 	 * @return
 	 */
 	IPrintingQueueQuery createPrintingQueueQuery();
@@ -108,7 +99,7 @@ public interface IPrintingQueueBL extends ISingletonService
 	/**
 	 * Retrieve the distinct aggregation keys of the items matched by the given <code>printingQueueQuery</code>. Then create one source per aggregation key. Each source has a copy of the given query,
 	 * with the query-copy's {@link IPrintingQueueQuery#getAggregationKey()} being set to the source's respective aggregation key.
-	 * 
+	 *
 	 * @param ctx
 	 * @param printingQueueQuery
 	 * @return a list of queue sources; note that the size of this list is expected to be moderate, while the number of items in each source instance might be very large.
@@ -123,7 +114,7 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * {@link IPrintJobBL#createPrintJobInstructions(de.metas.printing.model.I_C_Print_Job, int, boolean, de.metas.printing.model.I_C_Print_Job_Line, de.metas.printing.model.I_C_Print_Job_Line, int)}.
 	 * <p>
 	 * Note 2: this method does <b>not</b> save the given {@code item}.
-	 * 
+	 *
 	 * @param item
 	 * @param userToPrintIds
 	 */

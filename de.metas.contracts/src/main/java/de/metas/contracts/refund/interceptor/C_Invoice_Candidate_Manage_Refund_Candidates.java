@@ -1,7 +1,6 @@
 package de.metas.contracts.refund.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -88,11 +87,12 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 			return; // only the update process shall manage refund invoice candidates, to avoid locking problems and other race conditions
 		}
 
-		final Timestamp invoicableFromDate = getValueOverrideOrValue(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
-		if (invoicableFromDate == null || invoiceCandidateRecord.getC_Currency_ID() <= 0)
+		final boolean readyForAnyProcessing = extractReadyForAnyProcessing(invoiceCandidateRecord);
+		if (!readyForAnyProcessing)
 		{
-			return; // it's not yet ready
+			return;
 		}
+
 		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
 		{
 			return; // it's already associated
@@ -129,10 +129,10 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		}
 		else
 		{
-			final Timestamp invoicableFromDate = getValueOverrideOrValue(icRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
-			if (invoicableFromDate == null)
+			final boolean readyForAnyProcessing = extractReadyForAnyProcessing(icRecord);
+			if (!readyForAnyProcessing)
 			{
-				return; // this IC was not yet once validated; it's certainly not assigned, and we can't create an AssignableInvoiceCandidate from it, because invoicableFromDate may not be null
+				return;	// this IC was not yet once validated, or has no currency; it's certainly not assigned, and we can't create an AssignableInvoiceCandidate from it
 			}
 
 			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(icRecord);
@@ -141,5 +141,23 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 				invoiceCandidateAssignmentService.unassignCandidate(assignableCandidate);
 			}
 		}
+	}
+
+	private boolean extractReadyForAnyProcessing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_Currency_ID() <= 0)
+		{
+			return false;
+		}
+
+		final Timestamp invoicableFromDate = coalesceSuppliers(
+				() -> icRecord.getDateToInvoice_Override(),
+				() -> icRecord.getDateToInvoice());
+		if (invoicableFromDate == null)
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

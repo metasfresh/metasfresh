@@ -30,8 +30,9 @@ SELECT ct.Name,
 FROM C_Customs_Invoice_Line il
          INNER JOIN C_Customs_Invoice i ON il.C_Customs_Invoice_ID = i.C_Customs_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-
-         INNER JOIN M_Inoutline iol on iol.c_customs_invoice_line_id = il.c_customs_invoice_line_id
+		 
+		 INNER JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc on il.C_Customs_Invoice_Line_ID = alloc.C_Customs_Invoice_Line_ID
+              JOIN M_InOutLine iol ON iol.M_InOutLine_id = alloc.M_InOutLine_id
 
     -- Get Product and its M_CustomsTariff
          LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID

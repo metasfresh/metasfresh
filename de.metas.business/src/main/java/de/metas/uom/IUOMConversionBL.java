@@ -70,7 +70,7 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, UomId uomFrom, UomId uomTo);
 
 	/**
-	 * @deprecated please consider using {@link #convertQtyToProductUOM(UOMConversionContext, BigDecimal, I_C_UOM)}
+	 * @deprecated please consider using {@link #convertQuantityTo(Quantity, UOMConversionContext, UomId)}
 	 */
 	@Deprecated
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);

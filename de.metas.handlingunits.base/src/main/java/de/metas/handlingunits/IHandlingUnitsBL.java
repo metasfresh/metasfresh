@@ -6,8 +6,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.inout.InOutLineId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -314,7 +312,17 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isTopLevel(I_M_HU hu);
 
-	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu, final ImmutableList<InOutLineId> lineIds);
+	/**
+	 * If an HU is picked "on-the-fly" or "anonymous" then it is added to a Shipment even though the user did not actually pick that particular HU. This is done to keep the metasfresh stock quantity near the real quantity and avoid some inventory effort for users that don't want to use metasfresh's picking.
+	 *
+	 * @param hu hu to check if it is picked on the fly
+	 * @return true if it is picked on the fly; false otherwise
+	 * @see the following 2 methods:
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
+	 */
+	@SuppressWarnings("JavadocReference")
+	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu);
 
 	/**
 	 * Gets top level LU of given HU.

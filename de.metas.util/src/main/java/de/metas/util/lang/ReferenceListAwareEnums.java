@@ -71,6 +71,24 @@ public class ReferenceListAwareEnums
 		return enumObj;
 	}
 
+	public static <T extends Enum<T>> T ofEnumCode(@NonNull final String code, @NonNull final Class<T> enumType)
+	{
+		if (ReferenceListAwareEnum.class.isAssignableFrom(enumType))
+		{
+			@SuppressWarnings("unchecked")
+			final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
+
+			@SuppressWarnings("unchecked")
+			final T result = (T)ofCode(code, referenceListAwareEnumType);
+
+			return result;
+		}
+		else
+		{
+			return Enum.valueOf(enumType, code);
+		}
+	}
+
 	public static <T extends ReferenceListAwareEnum> Set<T> values(final Class<T> clazz)
 	{
 		final ReferenceListAwareDescriptor descriptor = getDescriptor(clazz);

@@ -122,11 +122,6 @@ public class ShortTermContactIndex
 		return id2Contact.values();
 	}
 
-	public void remove(@NonNull final BPartnerContactId bpartnerContactId)
-	{
-		id2Contact.remove(bpartnerContactId);
-	}
-
 	public void resetDefaultContactFlags()
 	{
 		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())

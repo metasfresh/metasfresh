@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.print.IPrintService;
-import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
@@ -98,7 +97,7 @@ public final class MassPrintServiceAdapter extends AbstractPrintService
 		// https://github.com/metasfresh/metasfresh/issues/1240
 		// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
 		// but it needs to be available in case the system has to create a printing queue item for this archive
-		IPrintingQueueBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
+		IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
 
 		//
 		// Save archive. This will trigger the printing...

@@ -1,5 +1,38 @@
 de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[
   {
+    "bankAccounts": [
+      {
+        "active": true,
+        "changeLog": {
+          "tableName": "C_BP_BankAccount",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BP_BankAccount_ID"
+            ],
+            "keysByColumnName": {
+              "C_BP_BankAccount_ID": 50
+            }
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        },
+        "currencyId": 100009,
+        "iban": "INITIAL-IBAN-1",
+        "id": {
+          "repoId": 50,
+          "bpartnerId": 20
+        }
+      }
+    ],
     "bpartner": {
       "active": true,
       "changeLog": {
@@ -91,17 +124,17 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
             "present": true
           }
         },
-        "email": "bpartnerRecord.email",
-        "externalId": "abcde",
-        "firstName": "bpartnerRecord.firstName",
+        "email": "contactRecord.email",
+        "externalId": "contactRecord.externalId",
+        "firstName": "contactRecord.firstName",
         "id": {
           "bpartnerId": 20,
           "userId": 30
         },
-        "lastName": "bpartnerRecord.lastName",
-        "name": "bpartnerRecord.name",
+        "lastName": "contactRecord.lastName",
+        "name": "contactRecord.name",
         "newsletter": true,
-        "phone": "bpartnerRecord.phone"
+        "phone": "contactRecord.phone"
       }
     ],
     "locations": [

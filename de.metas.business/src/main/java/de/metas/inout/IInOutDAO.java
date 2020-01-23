@@ -30,20 +30,21 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipping.model.ShipperTransportationId;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
 
 public interface IInOutDAO extends ISingletonService
 {
@@ -108,4 +109,6 @@ public interface IInOutDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
+
+	void setExportedInCustomsInvoice(InOutId shipmentId);
 }

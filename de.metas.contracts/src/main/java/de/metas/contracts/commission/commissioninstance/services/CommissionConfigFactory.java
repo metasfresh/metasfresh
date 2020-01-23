@@ -67,24 +67,20 @@ import lombok.Value;
 @Service
 public class CommissionConfigFactory
 {
-	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private CommissionConfigStagingDataService commissionConfigStagingDataService;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public CommissionConfigFactory(
-			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
-			@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService)
+	public CommissionConfigFactory(@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService)
 	{
-		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionConfigStagingDataService = commissionConfigStagingDataService;
 	}
 
 	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
 	{
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(contractRequest.getSalesRepBPartnerId());
+		final Hierarchy hierarchy = contractRequest.getCommissionHierarchy();
 		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(Beneficiary.of(contractRequest.getSalesRepBPartnerId()));
 
 		final ImmutableList<BPartnerId> allBPartnerIds = StreamSupport
@@ -207,6 +203,9 @@ public class CommissionConfigFactory
 
 		@NonNull
 		LocalDate date;
+
+		@NonNull
+		Hierarchy commissionHierarchy;
 	}
 
 	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)

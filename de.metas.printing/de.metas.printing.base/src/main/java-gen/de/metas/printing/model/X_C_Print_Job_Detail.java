@@ -14,7 +14,7 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -459329085L;
+	private static final long serialVersionUID = -1220123143L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Detail (Properties ctx, int C_Print_Job_Detail_ID, String trxName)
@@ -87,7 +87,7 @@ public class X_C_Print_Job_Detail extends org.compiere.model.PO implements I_C_P
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job_Line getC_Print_Job_Line() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job_Line getC_Print_Job_Line()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Job_Line_ID, de.metas.printing.model.I_C_Print_Job_Line.class);
 	}

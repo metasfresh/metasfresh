@@ -5,6 +5,7 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Sh
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -17,7 +18,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.util.DB;
@@ -25,6 +28,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -54,12 +58,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -402,11 +406,13 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final String attributeSegmentsWhereClause = buildAttributeInstanceWhereClause(attributeSegments, sqlParams);
 		if (!Check.isEmpty(attributeSegmentsWhereClause, true))
 		{
-			whereClause.append("\n\t AND ");
-			whereClause.append("EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
+			whereClause.append("\n\t AND (");
+			whereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID + " IS NULL");
+			whereClause.append(" OR EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
 					+ " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
 					+ " AND (" + attributeSegmentsWhereClause + ")"
 					+ ")");
+			whereClause.append(")");
 		}
 
 		if (whereClause.length() <= 0)
@@ -432,17 +438,21 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildAttributeInstanceWhereClause(final Set<ShipmentScheduleAttributeSegment> attributeSegments, final List<Object> sqlParams)
+	private String buildAttributeInstanceWhereClause(
+			@Nullable final Set<ShipmentScheduleAttributeSegment> attributeSegments,
+			@NonNull final List<Object> sqlParams)
 	{
 		if (Check.isEmpty(attributeSegments))
 		{
 			return null;
 		}
 
+		final Set<ShipmentScheduleAttributeSegment> attributeSegmentsEff = explodeToAttributeOnlySegments(attributeSegments);
+
 		final StringBuilder attributeSegmentsWhereClause = new StringBuilder();
-		for (final ShipmentScheduleAttributeSegment attributeSegment : attributeSegments)
+		for (final ShipmentScheduleAttributeSegment attributeSegment : attributeSegmentsEff)
 		{
-			final String attributeSegmentWhereClause = buildAttributeInstanceWhereClause(attributeSegment, sqlParams);
+			final String attributeSegmentWhereClause = buildSingleAttributeInstanceWhereClause(attributeSegment.getAttributeId(), sqlParams);
 			if (Check.isEmpty(attributeSegmentWhereClause, true))
 			{
 				continue;
@@ -463,6 +473,38 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return attributeSegmentsWhereClause.toString();
 	}
 
+	/** convert the given {@code attributeSegments} to a set of segments that are attributeId-only and where the attributeIds are all storage-relevant. */
+	private final Set<ShipmentScheduleAttributeSegment> explodeToAttributeOnlySegments(
+			@NonNull final Set<ShipmentScheduleAttributeSegment> attributeSegments)
+	{
+		final ImmutableSet.Builder<ShipmentScheduleAttributeSegment> result = ImmutableSet.builder();
+		for (final ShipmentScheduleAttributeSegment segment : attributeSegments)
+		{
+			final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+			if (segment.getAttributeId() != null)
+			{
+				if (attributesBL.isStorageRelevant(segment.getAttributeId()))
+				{
+					result.add(segment);
+				}
+				continue;
+			}
+			if (!segment.getAttributeSetInstanceId().isRegular())
+			{
+				continue;
+			}
+			attributeDAO
+					.getAttributeIdsByAttributeSetInstanceId(segment.getAttributeSetInstanceId())
+					.stream()
+					.filter(attributesBL::isStorageRelevant)
+					.map(ShipmentScheduleAttributeSegment::ofAttributeId)
+					.forEach(result::add);
+		}
+		return result.build();
+	}
+
 	/**
 	 * Build SQL where clause for given storage attribute segment.
 	 *
@@ -475,45 +517,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildAttributeInstanceWhereClause(final ShipmentScheduleAttributeSegment attributeSegment, final List<Object> sqlParams)
+	private String buildSingleAttributeInstanceWhereClause(@Nullable final AttributeId attributeId, @NonNull final List<Object> sqlParams)
 	{
-		if (attributeSegment == null)
+		if (attributeId == null)
 		{
 			return null;
 		}
-
 		final StringBuilder whereClause = new StringBuilder();
 
-		//
-		// Filter by M_AttributeSetInstance_ID
-		final AttributeSetInstanceId attributeSetInstanceId = attributeSegment.getAttributeSetInstanceId();
-		if (attributeSetInstanceId.isRegular())
-		{
-			if (whereClause.length() > 0)
-			{
-				whereClause.append(" AND ");
-			}
-			whereClause.append("ai.").append(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID).append("=?");
-			sqlParams.add(attributeSetInstanceId);
-		}
-
-		//
 		// Filter by M_Attribute_ID
-		final AttributeId attributeId = attributeSegment.getAttributeId();
-		if (attributeId != null)
-		{
-			if (whereClause.length() > 0)
-			{
-				whereClause.append(" AND ");
-			}
-			whereClause.append("ai.").append(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID).append("=?");
-			sqlParams.add(attributeId);
-		}
-
-		if (whereClause.length() <= 0)
-		{
-			return null;
-		}
+		whereClause.append("ai.").append(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID).append("=?");
+		sqlParams.add(attributeId);
 
 		return whereClause.toString();
 	}
@@ -541,26 +555,36 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public void deleteRecomputeMarkersOutOfTrx(final PInstanceId pinstanceId)
+	public void deleteRecomputeMarkersOutOfTrx(@NonNull final PInstanceId pinstanceId)
 	{
-		final Object[] sqlParams = new Object[] { pinstanceId };
-		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=?";
+		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=? RETURNING M_ShipmentSchedule_ID";
 
-		final int result = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
-		logger.debug("Deleted {} {} entries for AD_Pinstance_ID={}", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
-
+		final Object[] param = { pinstanceId };
+		final Mutable<HashSet<Integer>> shipmentScheduleIds = new Mutable<>(new HashSet<>());
+		DB.executeUpdateEx(
+				sql,
+				param,
+				ITrx.TRXNAME_None,
+				-1 /* timeout */,
+				rs -> shipmentScheduleIds.getValue().add(rs.getInt("M_ShipmentSchedule_ID")) /* updateReturnProcessor */
+		);
+		logger.debug("Deleted {} {} entries for AD_Pinstance_ID={}", shipmentScheduleIds.getValue().size(), M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
+		if (shipmentScheduleIds.getValue().isEmpty())
+		{
+			return;
+		}
 		// invalidate the shipment schedule cache after current transaction commit
 		Services.get(ITrxManager.class)
 				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> invalidateShipmentScheduleCache());
+				.registerHandlingMethod(trx -> invalidateShipmentScheduleCache(shipmentScheduleIds.getValue()));
 	}
 
-	private void invalidateShipmentScheduleCache()
+	private void invalidateShipmentScheduleCache(@NonNull final Set<Integer> shipmentScheduleIds)
 	{
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
-		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 
@@ -578,7 +602,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	public IQueryFilter<I_M_ShipmentSchedule> createInvalidShipmentSchedulesQueryFilter(@NonNull final PInstanceId pinstanceId)
 	{
 		final String sql = "EXISTS ( "
-				+ " select 1 from " + ShipmentScheduleInvalidateRepository.M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "
+				+ " select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "
 				+ " where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=M_ShipmentSchedule." + COLUMNNAME_M_ShipmentSchedule_ID + " AND sr.AD_PInstance_ID=? "
 				+ " )";
 

@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -23,11 +24,14 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
@@ -55,12 +59,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -92,6 +96,8 @@ final class BPartnerCompositeSaver
 		saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations());
 
 		saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts());
+
+		saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts());
 	}
 
 	private void saveBPartner(@NonNull final BPartner bpartner)
@@ -125,7 +131,7 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setURL(bpartner.getUrl());
 		bpartnerRecord.setURL2(bpartner.getUrl2());
 		bpartnerRecord.setURL3(bpartner.getUrl3());
-		
+
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
 
@@ -171,6 +177,7 @@ final class BPartnerCompositeSaver
 		bpartnerLocationRecord.setIsActive(bpartnerLocation.isActive());
 		bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpartnerLocationRecord.setName(bpartnerLocation.getName());
+		bpartnerLocationRecord.setBPartnerName(bpartnerLocation.getBpartnerName());
 
 		final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
 		if (locationType != null)
@@ -361,4 +368,38 @@ final class BPartnerCompositeSaver
 
 		bpartnerContact.setId(bpartnerContactId);
 	}
+
+	private void saveBPartnerBankAccounts(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final List<BPartnerBankAccount> bankAccounts)
+	{
+		final ArrayList<BPartnerBankAccountId> savedBPBankAccountIds = new ArrayList<>();
+		for (final BPartnerBankAccount bankAccount : bankAccounts)
+		{
+			saveBPartnerBankAccount(bpartnerId, bankAccount);
+			savedBPBankAccountIds.add(bankAccount.getId());
+		}
+
+		final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
+		bpBankAccountsDAO.deactivateByBPartnerExcept(bpartnerId, savedBPBankAccountIds);
+	}
+
+	private void saveBPartnerBankAccount(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final BPartnerBankAccount bankAccount)
+	{
+		final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);
+		record.setC_BPartner_ID(bpartnerId.getRepoId());
+
+		record.setIBAN(bankAccount.getIban());
+		record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
+		record.setIsActive(bankAccount.isActive());
+
+		saveRecord(record);
+
+		final BPartnerBankAccountId id = BPartnerBankAccountId.ofRepoId(bpartnerId, record.getC_BP_BankAccount_ID());
+
+		bankAccount.setId(id);
+	}
+
 }

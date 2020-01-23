@@ -1,6 +1,7 @@
 package de.metas.rest_api.ordercandidates.impl;
 
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -44,10 +45,10 @@ import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -148,67 +149,170 @@ final class BPartnerMasterDataProvider
 			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
-		final SyncAdvise.IfNotExists ifNotExists = jsonBPartnerInfo.getSyncAdvise().getIfNotExists();
-
-		final BPartnerInfo bPartnerInfo = lookupBPartnerInfoOrNull(jsonBPartnerInfo, context);
-		if (bPartnerInfo == null)
+		try
 		{
-			switch (ifNotExists)
+			final BPartnerId bpartnerId = handleBPartner(
+					jsonBPartnerInfo,
+					context.withSyncAdviseIfNotNull(jsonBPartnerInfo.getSyncAdvise()));
+
+			final BPartnerLocationId locationId = handleLocation(
+					jsonBPartnerInfo,
+					context
+							.withSyncAdviseIfNotNull(jsonBPartnerInfo.getSyncAdvise())
+							.withBPartnerIdIfNotNull(bpartnerId));
+
+			final BPartnerContactId contactId = handleContact(
+					jsonBPartnerInfo.getContact(),
+					context
+							.withSyncAdviseIfNotNull(jsonBPartnerInfo.getSyncAdvise())
+							.withBPartnerIdIfNotNull(bpartnerId));
+
+			return BPartnerInfo.builder()
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(locationId)
+					.contactId(contactId)
+					.build();
+		}
+		catch (final MissingResourceException e)
+		{
+			throw e.setParameter("parentResource", jsonBPartnerInfo); // augment and rethrow
+		}
+	}
+
+	private BPartnerId handleBPartner(
+			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo, // both bpartner and location might be needed for lookup
+			@NonNull final BPartnerMasterDataContext context)
+	{
+		final JsonRequestBPartner jsonBPartner = jsonBPartnerInfo.getBpartner();
+		final SyncAdvise syncAdviseEff = coalesce(jsonBPartner.getSyncAdvise(), context.getSyncAdvise());
+
+		final BPartnerId bpartnerId = lookupBPartnerIdOrNull(jsonBPartnerInfo, context);
+		if (bpartnerId == null)
+		{
+			switch (syncAdviseEff.getIfNotExists())
 			{
 				case FAIL:
-					Check.fail("An exception should have been thrown alread in lookupBPartnerInfoOrNull");
+					throw MissingResourceException.builder().resourceName("bpartner").build();
 				case CREATE:
-					return getCreateBPartnerInfo(jsonBPartnerInfo, context);
+					return getCreateBPartnerId(jsonBPartner, context);
 				default:
-					Check.fail("Unexpected IfNotExists={}", ifNotExists);
+					Check.fail("Unexpected IfNotExists={}", syncAdviseEff.getIfNotExists());
 					return null;
 			}
 		}
 		else
 		{
-			final IfExists ifExists = jsonBPartnerInfo.getSyncAdvise().getIfExists();
-			switch (ifExists)
+			switch (syncAdviseEff.getIfExists())
 			{
-				case UPDATE_MERGE:
-					final BPartnerMasterDataContext childContext = context
-							.setIfNotNull(bPartnerInfo.getBpartnerId())
-							.setIfNotNull(bPartnerInfo.getBpartnerLocationId())
-							.setIfNotNull(bPartnerInfo.getContactId());
-					return getCreateBPartnerInfo(jsonBPartnerInfo, childContext);
 				case DONT_UPDATE:
-					return bPartnerInfo;
+					return bpartnerId;
+				case UPDATE_MERGE:
+				case UPDATE_REMOVE:
+					return getCreateBPartnerId(jsonBPartner,
+							context
+									.withBPartnerIdIfNotNull(bpartnerId)
+									.withSyncAdviseIfNotNull(syncAdviseEff));
 				default:
-					Check.fail("Unepected IfExists={}", ifExists);
+					Check.fail("Unexpected IfNotExists={}", syncAdviseEff.getIfNotExists());
 					return null;
 			}
 		}
 	}
 
-	private BPartnerInfo lookupBPartnerInfoOrNull(
-			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+	/**
+	 * @param jsonLocation if it is {@code null}, metasfresh will try to supplement an existing location from masterdata
+	 */
+	private BPartnerLocationId handleLocation(
+			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@NonNull final BPartnerMasterDataContext context)
 	{
-		final BPartnerId bpartnerId = lookupBPartnerIdOrNull(
-				jsonBPartnerInfo,
-				context);
-		if (bpartnerId == null)
+		final JsonRequestLocation jsonLocation = jsonBPartnerInfo.getLocation();
+
+		final SyncAdvise syncAdviseEff = coalesce(
+				jsonLocation == null ? null : jsonLocation.getSyncAdvise(),
+				context.getSyncAdvise());
+
+		final BPartnerLocationId locationId = lookupBPartnerLocationIdOrNull(jsonLocation, context);
+		if (locationId == null)
+		{
+			switch (syncAdviseEff.getIfNotExists())
+			{
+				case FAIL:
+					throw MissingResourceException.builder().resourceName("location").build();
+				case CREATE:
+					if (jsonLocation == null)
+					{
+						throw new MissingPropertyException("location", jsonBPartnerInfo);
+					}
+					return getCreateBPartnerLocationId(jsonLocation, context);
+				default:
+					Check.fail("Unexpected IfNotExists={}", syncAdviseEff.getIfNotExists());
+					return null;
+			}
+		}
+		else
+		{
+			switch (syncAdviseEff.getIfExists())
+			{
+				case DONT_UPDATE:
+					return locationId;
+				case UPDATE_MERGE:
+				case UPDATE_REMOVE:
+					return getCreateBPartnerLocationId(
+							jsonLocation,
+							context
+									.withSyncAdviseIfNotNull(syncAdviseEff)
+									.withLocationIdIfNotNull(locationId));
+				default:
+					Check.fail("Unexpected IfNotExists={}", syncAdviseEff.getIfNotExists());
+					return null;
+			}
+		}
+	}
+
+	private BPartnerContactId handleContact(
+			@Nullable final JsonRequestContact jsonContact,
+			@NonNull final BPartnerMasterDataContext context)
+	{
+		if (jsonContact == null)
 		{
 			return null;
 		}
 
-		final BPartnerLocationId bpartnerLocationId = lookupBPartnerLocationIdOrNull(
-				jsonBPartnerInfo.getLocation(),
-				context.setIfNotNull(bpartnerId));
+		final SyncAdvise syncAdviseEff = coalesce(jsonContact.getSyncAdvise(), context.getSyncAdvise());
 
-		final BPartnerContactId contactId = lookupContactIdOrNull(
-				jsonBPartnerInfo.getContact(),
-				context.setIfNotNull(bpartnerId));
-
-		return BPartnerInfo.builder()
-				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(contactId)
-				.build();
+		final BPartnerContactId contactId = lookupContactIdOrNull(jsonContact, context);
+		if (contactId == null)
+		{
+			switch (syncAdviseEff.getIfNotExists())
+			{
+				case FAIL:
+					throw MissingResourceException.builder().resourceName("contact").build();
+				case CREATE:
+					return getCreateBPartnerContactId(jsonContact, context);
+				default:
+					Check.fail("Unexpected IfNotExists={}", syncAdviseEff.getIfNotExists());
+					return null;
+			}
+		}
+		else
+		{
+			switch (syncAdviseEff.getIfExists())
+			{
+				case DONT_UPDATE:
+					return contactId;
+				case UPDATE_MERGE:
+				case UPDATE_REMOVE:
+					return getCreateBPartnerContactId(
+							jsonContact,
+							context
+									.withSyncAdviseIfNotNull(syncAdviseEff)
+									.withContactIdIfNotNull(contactId));
+				default:
+					Check.fail("Unexpected IfNotExists={}", syncAdviseEff.getIfNotExists());
+					return null;
+			}
+		}
 	}
 
 	private BPartnerId lookupBPartnerIdOrNull(
@@ -216,7 +320,6 @@ final class BPartnerMasterDataProvider
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerQuery query = createBPartnerQuery(jsonBPartnerInfo, context.getOrgId());
-
 		{
 			final BPartnerId bpartnerId = bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null);
 			if (bpartnerId != null)
@@ -298,8 +401,7 @@ final class BPartnerMasterDataProvider
 
 		BPartnerLocationId existingBPLocationId = null;
 
-		if (existingBPLocationId == null
-				&& jsonBPartnerLocation != null
+		if (jsonBPartnerLocation != null
 				&& jsonBPartnerLocation.getExternalId() != null)
 		{
 			existingBPLocationId = bpartnerDAO
@@ -348,23 +450,6 @@ final class BPartnerMasterDataProvider
 		return existingContactId;
 	}
 
-	private BPartnerInfo getCreateBPartnerInfo(
-			@NonNull final JsonRequestBPartnerLocationAndContact json,
-			@NonNull final BPartnerMasterDataContext context)
-	{
-		final BPartnerId bpartnerId = getCreateBPartnerId(json.getBpartner(), context);
-
-		final BPartnerMasterDataContext childContext = context.setIfNotNull(bpartnerId);
-		final BPartnerLocationId bpartnerLocationId = getCreateBPartnerLocationId(json.getLocation(), childContext);
-		final BPartnerContactId bpartnerContactId = getCreateBPartnerContactId(json.getContact(), childContext);
-
-		return BPartnerInfo.builder()
-				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(bpartnerContactId)
-				.build();
-	}
-
 	private BPartnerId getCreateBPartnerId(
 			@NonNull final JsonRequestBPartner json,
 			@NonNull final BPartnerMasterDataContext context)
@@ -401,8 +486,6 @@ final class BPartnerMasterDataProvider
 			@NonNull final I_C_BPartner bpartnerRecord,
 			@NonNull final JsonRequestBPartner from)
 	{
-		final boolean isNew = isNew(bpartnerRecord);
-
 		final JsonExternalId externalId = from.getExternalId();
 		if (externalId != null)
 		{
@@ -410,6 +493,8 @@ final class BPartnerMasterDataProvider
 		}
 
 		final String code = from.getCode();
+		final boolean isNew = isNew(bpartnerRecord);
+
 		if (!Check.isEmpty(code, true))
 		{
 			bpartnerRecord.setValue(code);
@@ -449,7 +534,9 @@ final class BPartnerMasterDataProvider
 				.build();
 	}
 
-	private BPartnerLocationId getCreateBPartnerLocationId(@Nullable final JsonRequestLocation json, @NonNull final BPartnerMasterDataContext context)
+	private BPartnerLocationId getCreateBPartnerLocationId(
+			@Nullable final JsonRequestLocation json,
+			@NonNull final BPartnerMasterDataContext context)
 	{
 		if (json == null)
 		{
@@ -459,7 +546,7 @@ final class BPartnerMasterDataProvider
 		return bpartnerLocationIdsByExternalId
 				.compute(
 						json.getExternalId(),
-						(externalId, existingBPLocationId) -> createOrUpdateBPartnerLocationId(json, context.setIfNotNull(existingBPLocationId)));
+						(externalId, existingBPLocationId) -> createOrUpdateBPartnerLocationId(json, context.withLocationIdIfNotNull(existingBPLocationId)));
 	}
 
 	private BPartnerLocationId createOrUpdateBPartnerLocationId(
@@ -476,7 +563,7 @@ final class BPartnerMasterDataProvider
 		final I_C_BPartner_Location bpLocationRecord;
 		if (existingBPLocationId != null)
 		{
-			bpLocationRecord = bpartnerDAO.getBPartnerLocationById(existingBPLocationId);
+			bpLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(existingBPLocationId);
 		}
 		else
 		{
@@ -484,7 +571,7 @@ final class BPartnerMasterDataProvider
 			bpLocationRecord.setAD_Org_ID(orgId.getRepoId());
 		}
 
-		updateBPartnerLocationRecord(bpLocationRecord, bpartnerId, jsonBPartnerLocation);
+		updateBPartnerLocationRecord(bpLocationRecord, context, jsonBPartnerLocation);
 		permissionService.assertCanCreateOrUpdate(bpLocationRecord);
 		bpartnerDAO.save(bpLocationRecord);
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
@@ -502,33 +589,55 @@ final class BPartnerMasterDataProvider
 
 	private void updateBPartnerLocationRecord(
 			@NonNull final I_C_BPartner_Location bpLocationRecord,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final JsonRequestLocation from)
+			@NonNull final BPartnerMasterDataContext context,
+			@NonNull final JsonRequestLocation jsonBPartnerLocation)
 	{
-		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpLocationRecord.setC_BPartner_ID(context.getBpartnerId().getRepoId());
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
 
-		bpLocationRecord.setGLN(from.getGln());
-		if (from.getExternalId() != null)
+		final boolean isUpdateRemove = context.getSyncAdvise().getIfExists().isUpdateRemove();
+
+		// name
+		if (!isEmpty(jsonBPartnerLocation.getName(), true))
 		{
-			bpLocationRecord.setExternalId(from.getExternalId().getValue());
+			bpLocationRecord.setName(jsonBPartnerLocation.getName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpLocationRecord.setName(null);
 		}
 
-		final String countryCode = from.getCountryCode();
+		// bpartnerName
+		if (!isEmpty(jsonBPartnerLocation.getBpartnerName(), true))
+		{
+			bpLocationRecord.setBPartnerName(jsonBPartnerLocation.getBpartnerName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpLocationRecord.setBPartnerName(null);
+		}
+
+		bpLocationRecord.setGLN(jsonBPartnerLocation.getGln());
+		if (jsonBPartnerLocation.getExternalId() != null)
+		{
+			bpLocationRecord.setExternalId(jsonBPartnerLocation.getExternalId().getValue());
+		}
+
+		final String countryCode = jsonBPartnerLocation.getCountryCode();
 		if (Check.isEmpty(countryCode))
 		{
-			throw new MissingPropertyException("JsonBPartnerLocation.countryCode", from);
+			throw new MissingPropertyException("JsonBPartnerLocation.countryCode", jsonBPartnerLocation);
 		}
 		final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 		final LocationId locationId = locationsRepo.createLocation(LocationCreateRequest.builder()
-				.address1(from.getAddress1())
-				.address2(from.getAddress2())
-				.address3(from.getAddress3())
-				.address4(from.getAddress4())
-				.postal(from.getPostal())
-				.city(from.getCity())
+				.address1(jsonBPartnerLocation.getAddress1())
+				.address2(jsonBPartnerLocation.getAddress2())
+				.address3(jsonBPartnerLocation.getAddress3())
+				.address4(jsonBPartnerLocation.getAddress4())
+				.postal(jsonBPartnerLocation.getPostal())
+				.city(jsonBPartnerLocation.getCity())
 				.countryId(countryId)
 				.build());
 
@@ -570,13 +679,16 @@ final class BPartnerMasterDataProvider
 				.city(location.getCity())
 				.region(location.getRegionName())
 				.countryCode(countryCode)
+				.bpartnerName(record.getBPartnerName())
 				//
 				.active(record.isActive())
 				//
 				.build();
 	}
 
-	private BPartnerContactId getCreateBPartnerContactId(final JsonRequestContact json, final BPartnerMasterDataContext context)
+	private BPartnerContactId getCreateBPartnerContactId(
+			@Nullable final JsonRequestContact json,
+			@NonNull final BPartnerMasterDataContext context)
 	{
 		if (json == null)
 		{
@@ -586,7 +698,7 @@ final class BPartnerMasterDataProvider
 		return bpartnerContactIdsByExternalId
 				.compute(
 						json.getExternalId(),
-						(externalId, existingContactId) -> createOrUpdateBPartnerContactId(json, context.setIfNotNull(existingContactId)));
+						(externalId, existingContactId) -> createOrUpdateBPartnerContactId(json, context.withContactIdIfNotNull(existingContactId)));
 	}
 
 	private BPartnerContactId createOrUpdateBPartnerContactId(
@@ -602,7 +714,7 @@ final class BPartnerMasterDataProvider
 		I_AD_User contactRecord;
 		if (existingContactId != null)
 		{
-			contactRecord = bpartnerDAO.getContactById(existingContactId);
+			contactRecord = bpartnerDAO.getContactByIdInTrx(existingContactId);
 		}
 		else
 		{

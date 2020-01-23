@@ -111,7 +111,7 @@ public interface I_C_Campaign_Price
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Campaign Price.
+	 * Set Aktionspreise.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -120,7 +120,7 @@ public interface I_C_Campaign_Price
 	public void setC_Campaign_Price_ID (int C_Campaign_Price_ID);
 
 	/**
-	 * Get Campaign Price.
+	 * Get Aktionspreise.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -209,6 +209,29 @@ public interface I_C_Campaign_Price
     public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -258,6 +281,31 @@ public interface I_C_Campaign_Price
     public static final org.adempiere.model.ModelColumn<I_C_Campaign_Price, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Campaign_Price, Object>(I_C_Campaign_Price.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
+
+	/**
+	 * Get Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInvoicableQtyBasedOn();
+
+    /** Column definition for InvoicableQtyBasedOn */
+    public static final org.adempiere.model.ModelColumn<I_C_Campaign_Price, Object> COLUMN_InvoicableQtyBasedOn = new org.adempiere.model.ModelColumn<I_C_Campaign_Price, Object>(I_C_Campaign_Price.class, "InvoicableQtyBasedOn", null);
+    /** Column name InvoicableQtyBasedOn */
+    public static final String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
 	 * Set Aktiv.

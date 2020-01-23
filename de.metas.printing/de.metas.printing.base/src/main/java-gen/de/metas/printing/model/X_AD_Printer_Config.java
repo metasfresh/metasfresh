@@ -14,7 +14,7 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 914569646L;
+	private static final long serialVersionUID = 1615086715L;
 
     /** Standard Constructor */
     public X_AD_Printer_Config (Properties ctx, int AD_Printer_Config_ID, String trxName)
@@ -23,7 +23,8 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
       /** if (AD_Printer_Config_ID == 0)
         {
 			setAD_Printer_Config_ID (0);
-			setConfigHostKey (null); // @#AD_Session.HostKey@
+			setAD_User_PrinterMatchingConfig_ID (0); // @#AD_User_ID/0@
+			setConfigHostKey (null); // @ConfigHostKey@
 			setIsSharedPrinterConfig (false); // N
         } */
     }
@@ -66,7 +67,7 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_Printer_Config getAD_Printer_Config_Shared() throws RuntimeException
+	public de.metas.printing.model.I_AD_Printer_Config getAD_Printer_Config_Shared()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Printer_Config_Shared_ID, de.metas.printing.model.I_AD_Printer_Config.class);
 	}
@@ -94,6 +95,31 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 	public int getAD_Printer_Config_Shared_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Config_Shared_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Nutzer.
+		@param AD_User_PrinterMatchingConfig_ID 
+		Nutzer, für den die betreffende Zuordnung gilt. Druckanweisugen werden für den betreffenden Nutzer erstellt.
+	  */
+	@Override
+	public void setAD_User_PrinterMatchingConfig_ID (int AD_User_PrinterMatchingConfig_ID)
+	{
+		if (AD_User_PrinterMatchingConfig_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_PrinterMatchingConfig_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_PrinterMatchingConfig_ID, Integer.valueOf(AD_User_PrinterMatchingConfig_ID));
+	}
+
+	/** Get Nutzer.
+		@return Nutzer, für den die betreffende Zuordnung gilt. Druckanweisugen werden für den betreffenden Nutzer erstellt.
+	  */
+	@Override
+	public int getAD_User_PrinterMatchingConfig_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_PrinterMatchingConfig_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

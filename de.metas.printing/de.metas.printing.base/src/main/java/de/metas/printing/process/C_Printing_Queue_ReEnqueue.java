@@ -182,7 +182,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 
 	private int createWindowSelectionId(final PInstanceId selectionId)
 	{
-		final IQueryFilter<I_C_Printing_Queue> processQueryFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_Printing_Queue> processQueryFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQuery<I_C_Printing_Queue> query = queryBL
 				.createQueryBuilder(I_C_Printing_Queue.class, getCtx(), ITrx.TRXNAME_None)

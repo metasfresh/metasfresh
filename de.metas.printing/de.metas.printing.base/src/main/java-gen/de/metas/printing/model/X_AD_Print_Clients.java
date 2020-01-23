@@ -14,7 +14,7 @@ public class X_AD_Print_Clients extends org.compiere.model.PO implements I_AD_Pr
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -14795883L;
+	private static final long serialVersionUID = -1437953845L;
 
     /** Standard Constructor */
     public X_AD_Print_Clients (Properties ctx, int AD_Print_Clients_ID, String trxName)
@@ -64,7 +64,7 @@ public class X_AD_Print_Clients extends org.compiere.model.PO implements I_AD_Pr
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Session getAD_Session() throws RuntimeException
+	public org.compiere.model.I_AD_Session getAD_Session()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Session_ID, org.compiere.model.I_AD_Session.class);
 	}

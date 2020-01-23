@@ -85,7 +85,7 @@ public class ShipmentLineBuilderTest
 		saveRecord(catchUOMConversionRecord);
 
 		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 	}
 
@@ -139,7 +139,7 @@ public class ShipmentLineBuilderTest
 	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_noCatchQty()
 	{
-		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
+		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId);
 
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
 				.qtyCUsPerTU(8)
@@ -171,7 +171,7 @@ public class ShipmentLineBuilderTest
 	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_QtyTypeBoth_noCatchQty()
 	{
-		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
+		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId);
 
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
 				.qtyCUsPerTU(8)

@@ -135,7 +135,7 @@ class JsonConverters
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
 
-		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request);
+		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request, orgId);
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 

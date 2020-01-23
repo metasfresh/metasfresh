@@ -38,6 +38,7 @@ import org.junit.Test;
 import de.metas.async.Helper;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
@@ -70,6 +71,8 @@ public class TestQueue_InheritPriority
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		NOPWorkpackageLogsRepository.registerToSpringContext();
+		
 		//
 		// Setup test data
 		ctx = Env.getCtx();

@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 
 import de.metas.bpartner.BPartnerId;
@@ -41,7 +40,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -66,7 +65,7 @@ import lombok.NonNull;
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrder.getC_UOM_ID());
+		final UomId cuUOMId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
 
 		//
 		// LU/TU COnfiguration
@@ -74,7 +73,7 @@ import lombok.NonNull;
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				cuUOMId,
 				bpartnerId,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 

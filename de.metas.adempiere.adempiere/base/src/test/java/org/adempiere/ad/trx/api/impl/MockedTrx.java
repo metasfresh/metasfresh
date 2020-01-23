@@ -32,6 +32,9 @@ import org.compiere.util.Util;
 import org.junit.Assert;
 import org.junit.Ignore;
 
+import lombok.Getter;
+import lombok.NonNull;
+
 @Ignore
 public class MockedTrx extends PlainTrx
 {
@@ -46,6 +49,10 @@ public class MockedTrx extends PlainTrx
 
 	private boolean closeCalled = false;
 
+	@Getter
+	private final List<ITrxSavepoint> createdSavepoints = new ArrayList<ITrxSavepoint>();
+
+	@Getter
 	private final List<ITrxSavepoint> releasedSavepoints = new ArrayList<ITrxSavepoint>();
 
 	public MockedTrx(final ITrxManager trxManager, final String trxName, final boolean autoCommit)
@@ -54,7 +61,7 @@ public class MockedTrx extends PlainTrx
 	}
 
 	@Override
-	protected boolean releaseSavepointNative(final ITrxSavepoint savepoint)
+	protected boolean releaseSavepointNative(@NonNull final ITrxSavepoint savepoint)
 	{
 		super.releaseSavepointNative(savepoint);
 
@@ -169,11 +176,6 @@ public class MockedTrx extends PlainTrx
 		return closeCalled;
 	}
 
-	public List<ITrxSavepoint> getReleasedSavepoints()
-	{
-		return releasedSavepoints;
-	}
-
 	/**
 	 *
 	 *
@@ -206,5 +208,13 @@ public class MockedTrx extends PlainTrx
 	public List<ITrxSavepoint> getRollbacksToSavePoint()
 	{
 		return rollbacksToSavePoint;
+	}
+
+	@Override
+	protected ITrxSavepoint createTrxSavepointNative(String name) throws Exception
+	{
+		final ITrxSavepoint savepoint = super.createTrxSavepointNative(name);
+		createdSavepoints.add(savepoint);
+		return savepoint;
 	}
 }

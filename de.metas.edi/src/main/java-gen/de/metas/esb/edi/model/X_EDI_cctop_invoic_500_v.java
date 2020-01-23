@@ -15,7 +15,7 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1153852981L;
+	private static final long serialVersionUID = -1276739754L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_500_v (Properties ctx, int EDI_cctop_invoic_500_v_ID, String trxName)
@@ -78,23 +78,26 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
+	/** 
+	 * EanCom_Ordered_UOM AD_Reference_ID=114
+	 * Reference name: C_UOM_Default_First
+	 */
+	public static final int EANCOM_ORDERED_UOM_AD_Reference_ID=114;
 	/** Set Auftrags-Maßeinheit.
 		@param EanCom_Ordered_UOM Auftrags-Maßeinheit	  */
 	@Override
-	public void setEanCom_Ordered_UOM (int EanCom_Ordered_UOM)
+	public void setEanCom_Ordered_UOM (java.lang.String EanCom_Ordered_UOM)
 	{
-		set_ValueNoCheck (COLUMNNAME_EanCom_Ordered_UOM, Integer.valueOf(EanCom_Ordered_UOM));
+
+		set_ValueNoCheck (COLUMNNAME_EanCom_Ordered_UOM, EanCom_Ordered_UOM);
 	}
 
 	/** Get Auftrags-Maßeinheit.
 		@return Auftrags-Maßeinheit	  */
 	@Override
-	public int getEanCom_Ordered_UOM () 
+	public java.lang.String getEanCom_Ordered_UOM () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_EanCom_Ordered_UOM);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_EanCom_Ordered_UOM);
 	}
 
 	/** Set EanCom_Price_UOM.
@@ -347,16 +350,16 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
-	/** Set Order Line.
-		@param OrderLine Order Line	  */
+	/** Set Auftragszeile.
+		@param OrderLine Auftragszeile	  */
 	@Override
 	public void setOrderLine (int OrderLine)
 	{
 		set_Value (COLUMNNAME_OrderLine, Integer.valueOf(OrderLine));
 	}
 
-	/** Get Order Line.
-		@return Order Line	  */
+	/** Get Auftragszeile.
+		@return Auftragszeile	  */
 	@Override
 	public int getOrderLine () 
 	{

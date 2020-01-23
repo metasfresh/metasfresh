@@ -17,6 +17,7 @@
 package org.compiere.util;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,7 +39,7 @@ import de.metas.logging.LogManager;
  * <ul>
  * <li>2007-01-27 - teo_sarca - [ 1598095 ] class Secure is not working with UTF8
  * </ul>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Secure.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
  */
@@ -46,7 +47,7 @@ public class Secure implements SecureInterface
 {
 	/**************************************************************************
 	 * Hash checksum number
-	 * 
+	 *
 	 * @param key key
 	 * @return checksum number
 	 */
@@ -68,7 +69,7 @@ public class Secure implements SecureInterface
 
 	/**************************************************************************
 	 * Convert Byte Array to Hex String
-	 * 
+	 *
 	 * @param bytes bytes
 	 * @return HexString
 	 */
@@ -95,7 +96,7 @@ public class Secure implements SecureInterface
 
 	/**
 	 * Convert Hex String to Byte Array
-	 * 
+	 *
 	 * @param hexString hex string
 	 * @return byte array
 	 */
@@ -164,7 +165,7 @@ public class Secure implements SecureInterface
 
 	/**
 	 * Encryption.
-	 * 
+	 *
 	 * @param value clear value
 	 * @return encrypted String
 	 */
@@ -202,7 +203,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Decryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value encrypted value
 	 * @return decrypted String
 	 */
@@ -256,7 +257,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Encryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value clear value
 	 * @return encrypted String
 	 */
@@ -269,7 +270,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Decryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value encrypted value
 	 * @return decrypted String
 	 */
@@ -282,7 +283,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Encryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value clear value
 	 * @return encrypted String
 	 */
@@ -295,7 +296,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Decryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value encrypted value
 	 * @return decrypted String
 	 */
@@ -308,7 +309,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Encryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value clear value
 	 * @return encrypted String
 	 */
@@ -321,7 +322,7 @@ public class Secure implements SecureInterface
 	/**
 	 * Decryption.
 	 * The methods must recognize clear text values
-	 * 
+	 *
 	 * @param value encrypted value
 	 * @return decrypted String
 	 */
@@ -356,7 +357,7 @@ public class Secure implements SecureInterface
 		// Reset MessageDigest object
 		m_md.reset();
 		// Convert String to array of bytes
-		byte[] input = value.getBytes();
+		byte[] input = value.getBytes(StandardCharsets.UTF_8);
 		// feed this array of bytes to the MessageDigest object
 		m_md.update(input);
 		// Get the resulting bytes after the encryption process
@@ -368,7 +369,7 @@ public class Secure implements SecureInterface
 
 	/**
 	 * Checks, if value is a valid digest
-	 * 
+	 *
 	 * @param value digest string
 	 * @return true if valid digest
 	 */
@@ -383,7 +384,7 @@ public class Secure implements SecureInterface
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override

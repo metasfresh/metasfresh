@@ -165,7 +165,10 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
 	{
-		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
+		// NOTE: generally, don't load out of trx unless knowing the context that therefore knowing that it's OK.
+		// You *don not* know that the C_BPartner wasn't just created and the DB was not yet committed.
+		// Therefore, you can't assume that loading out of trx will be OK.
+		final T bpartner = load(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
 	}
 
@@ -195,7 +198,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(@NonNull final String salesPartnerCode)
+	public Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(
+			@NonNull final String salesPartnerCode,
+			@NonNull final Set<OrgId> onlyOrgIds)
 	{
 		if (isEmpty(salesPartnerCode, true))
 		{
@@ -203,8 +208,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesPartnerCode, salesPartnerCode.trim())
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesPartnerCode, salesPartnerCode.trim())
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsSalesRep, true)
+				.addInArrayOrAllFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, onlyOrgIds)
 				.create()
 				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
 		return Optional.ofNullable(bpartnerId);
@@ -249,9 +256,19 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
-	
+
 	@Override
-	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass) 
+	public I_AD_User getContactByIdInTrx(@NonNull final BPartnerContactId contactId)
+	{
+		return retrieveContactsInTrx(contactId.getBpartnerId())
+				.stream()
+				.filter(contact -> contact.getAD_User_ID() == contactId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Override
+	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass)
 	{
 		return getContactById(contactId, modelClass);
 	}
@@ -337,6 +354,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orElse(null);
 	}
 
+	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocationsInTrx(bpartnerLocationId.getBpartnerId())
@@ -513,6 +531,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	public List<I_AD_User> retrieveContacts(@NonNull final BPartnerId bpartnerId)
 	{
 		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+	}
+
+	public List<I_AD_User> retrieveContactsInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -1202,7 +1225,11 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing BPartner; Searched via the following properties (one-by-one, may be empty): {}", searchedByInfo.toString());
+			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
+					+ " Searched via the following properties one-after-one (list may be empty): {};"
+					+ " The search was restricted to the following orgIds (empty means no restriction): {}",
+					searchedByInfo.toString(),
+					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 

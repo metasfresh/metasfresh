@@ -21,7 +21,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
@@ -65,7 +64,6 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -192,9 +190,8 @@ public class HUTransformService
 	{
 		//
 		// Create allocation request for the quantity user entered
-		final I_M_Product cuProduct = Services.get(IProductDAO.class).getById(cuProductId);
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
-				cuProduct,
+				cuProductId,
 				qtyCU,
 				SystemTime.asZonedDateTime(),
 				null, // referenced model
@@ -237,6 +234,7 @@ public class HUTransformService
 			@NonNull final I_M_HU cuHU,
 			@NonNull final Quantity qtyCU)
 	{
+		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuHU={}", qtyCU, cuHU);
 		return cuToNewCU0(cuHU, qtyCU, false);
 	}
 
@@ -248,7 +246,7 @@ public class HUTransformService
 			@NonNull final Quantity qtyCU,
 			final boolean keepCUsUnderSameParent)
 	{
-		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0", qtyCU);
+		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuOrAggregateHU={}", qtyCU, cuOrAggregateHU);
 
 		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuOrAggregateHU, qtyCU.getUOM())) >= 0;
 		final boolean huIsCU = !handlingUnitsBL.isAggregateHU(cuOrAggregateHU);
@@ -1084,6 +1082,8 @@ public class HUTransformService
 			this.productId = productId;
 			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesce(keepNewCUsUnderSameParent, false);
 			this.onlyFromUnreservedHUs = CoalesceUtil.coalesce(onlyFromUnreservedHUs, false);
+
+			Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyCU, this);
 		}
 	}
 

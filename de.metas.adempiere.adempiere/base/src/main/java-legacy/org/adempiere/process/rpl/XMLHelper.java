@@ -170,11 +170,6 @@ public class XMLHelper
 	{
 		// Construct Transformer Factory and Transformer
 		final TransformerFactory tranFactory = TransformerFactory.newInstance();
-		final String jVersion = System.getProperty("java.version");
-		if (jVersion.startsWith("1.5.0"))
-		{
-			tranFactory.setAttribute("indent-number", Integer.valueOf(1));
-		}
 
 		Transformer aTransformer;
 		try

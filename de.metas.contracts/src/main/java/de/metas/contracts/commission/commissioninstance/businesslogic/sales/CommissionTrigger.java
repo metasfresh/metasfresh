@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import java.time.Instant;
-
 import javax.annotation.Nullable;
 
 import de.metas.contracts.commission.Beneficiary;
@@ -47,7 +45,6 @@ public class CommissionTrigger
 
 	@Builder
 	private CommissionTrigger(
-			@NonNull final Instant timestamp,
 			@NonNull final Customer customer,
 			@NonNull final Beneficiary beneficiary,
 			@Nullable final CommissionTriggerData commissionTriggerData)

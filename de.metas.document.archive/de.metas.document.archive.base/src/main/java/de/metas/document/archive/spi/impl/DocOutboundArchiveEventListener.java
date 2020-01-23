@@ -17,7 +17,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
@@ -58,7 +57,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final I_AD_User user, final String action)
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, final String action)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -67,9 +66,9 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 		docExchangeLine.setAction(action);
-		if (user != null)
+		if (userId != null)
 		{
-			docExchangeLine.setAD_User_ID(user.getAD_User_ID());
+			docExchangeLine.setAD_User_ID(userId.getRepoId());
 		}
 		save(docExchangeLine);
 	}
@@ -110,7 +109,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-			@Nullable final I_AD_User user,
+			@Nullable final UserId userId,
 			final String printerName,
 			final int copies,
 			final String status)
@@ -130,9 +129,9 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
 
 		// create stuff
-		if (user != null)
+		if (userId != null)
 		{
-			docExchangeLine.setAD_User_ID(user.getAD_User_ID());
+			docExchangeLine.setAD_User_ID(userId.getRepoId());
 		}
 		docExchangeLine.setStatus(status);
 

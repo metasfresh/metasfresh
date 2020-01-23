@@ -2,6 +2,7 @@ package de.metas.inout;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
@@ -42,6 +43,16 @@ import java.util.List;
 public interface IInOutBL extends ISingletonService
 {
 	/**
+	 * @return the quantity, with {@link StockQtyAndUOMQty#getUOMQtyOpt()} being present <b>only</b> if the given line effectively has a catch quantity.
+	 */
+	StockQtyAndUOMQty getStockQtyAndCatchQty(I_M_InOutLine inoutLine);
+
+	/**
+	 * @return return movementQty and qtyEntered.
+	 */
+	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
+
+	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 * <p>
 	 * When picking the pricing system, first check if the given <code>inOutLine</code>'s <code>M_InOut</code>'s bpartner has an pricingsystem set directly in its <code>C_BPartner</code> record that matches the <code>M_InOut.IsSOTrx</code>.
@@ -62,13 +73,11 @@ public interface IInOutBL extends ISingletonService
 	 */
 	IPricingContext createPricingCtx(org.compiere.model.I_M_InOutLine inOutLine);
 
-	IPricingResult getProductPrice(IPricingContext pricingCtx);
-
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
 
 	/**
 	 * @return the pricing system fir for the inout,
-	 * Otherwise, throws exception when throwEx = true and return null if it is false
+	 *         Otherwise, throws exception when throwEx = true and return null if it is false
 	 */
 	I_M_PricingSystem getPricingSystem(I_M_InOut inOut, boolean throwEx);
 
@@ -106,7 +115,8 @@ public interface IInOutBL extends ISingletonService
 	<T extends I_M_InOutLine> T newInOutLine(I_M_InOut inout, Class<T> modelClass);
 
 	/**
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>true if Customer Shipment or Returns
 	 *         <li>false if Vendor Receipts or Returns
 	 *         </ul>
@@ -149,5 +159,4 @@ public interface IInOutBL extends ISingletonService
 	 * Refresh the line for the given shipment line in the Shipment Statistics view window
 	 */
 	void invalidateStatistics(I_M_InOutLine inoutLine);
-
 }

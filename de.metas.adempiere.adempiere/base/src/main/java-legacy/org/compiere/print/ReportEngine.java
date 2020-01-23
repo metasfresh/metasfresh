@@ -132,7 +132,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param query Optional Query
 	 * @param info print info
 	 */
-	public ReportEngine(Properties ctx, MPrintFormat pf, MQuery query, PrintInfo info)
+	public ReportEngine(Properties ctx, @NonNull final MPrintFormat pf, MQuery query, PrintInfo info)
 	{
 		this(ctx, pf, query, info, null);
 	}	// ReportEngine
@@ -146,9 +146,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param info print info
 	 * @param trxName
 	 */
-	public ReportEngine(Properties ctx, MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
+	public ReportEngine(Properties ctx, @NonNull final MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
 	{
-		Check.errorIf(pf == null, "ReportEngine - no PrintFormat"); // emulating old code, throwing same error msg as before.
 		Check.assumeNotNull(pf.getLanguage(), "Param {} has a language set", pf);
 
 		m_printerName = Services.get(IPrinterRoutingBL.class).getDefaultPrinterName(); // metas: us319

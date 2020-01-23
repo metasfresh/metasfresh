@@ -29,6 +29,7 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
@@ -36,8 +37,8 @@ import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
@@ -269,7 +270,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@PutMapping("{bpartnerIdentifier}/contact")
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
-
 			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
@@ -286,6 +286,35 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		return createdOrNotFound(response);
 	}
+	
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
+	@ApiOperation("Create or update a bank account for a particular bpartner. If a bank account exists, then its properties that are *not* specified are left untouched.")
+	@PutMapping("{bpartnerIdentifier}/bankAccount")
+	@Override
+	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifierStr,
+
+			@RequestBody @NonNull final JsonRequestBankAccountsUpsert bankAccounts)
+	{
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+
+		final JsonPersisterService persister = jsonServiceFactory.createPersister();
+		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
+				bpartnerIdentifier,
+				bankAccounts,
+				SyncAdvise.CREATE_OR_MERGE);
+
+		return createdOrNotFound(response);
+	}
+
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)
 	{

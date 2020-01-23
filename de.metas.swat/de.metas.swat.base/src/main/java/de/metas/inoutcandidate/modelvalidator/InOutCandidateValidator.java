@@ -1,15 +1,14 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MClient;
-import org.compiere.model.MProduct;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -37,34 +36,21 @@ import de.metas.util.Services;
  * @author ts
  *
  */
-public final class InOutCandidateValidator implements ModelValidator
+public final class InOutCandidateValidator extends AbstractModelInterceptor
 {
-	private int ad_Client_ID = -1;
-
 	@Override
-	public int getAD_Client_ID()
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		return ad_Client_ID;
-	}
-
-	@Override
-	public void initialize(final ModelValidationEngine engine, final MClient client)
-	{
-		if (client != null)
-		{
-			ad_Client_ID = client.getAD_Client_ID();
-		}
-
 		//
 		// 07344: Register RS AggregationKey Dependencies
 		registerSSAggregationKeyDependencies();
 
 		engine.addModelValidator(new C_Order(), client);
-		//engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initilized by spring
+		// engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initialized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_Shipment_Constraint(), client);
-		engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client);
+		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		engine.addModelValidator(new M_InOut_Shipment(), client);
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
@@ -88,7 +74,8 @@ public final class InOutCandidateValidator implements ModelValidator
 		shipmentScheduleUpdater.registerCandidateProcessor(new DefaultCandidateProcessor());
 		shipmentScheduleUpdater.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
+		final OrderLineShipmentScheduleHandler orderLineShipmentScheduleHandler = SpringContextHolder.instance.getBean(OrderLineShipmentScheduleHandler.class);
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(orderLineShipmentScheduleHandler);
 
 		setupCaching();
 	}
@@ -127,24 +114,18 @@ public final class InOutCandidateValidator implements ModelValidator
 	}
 
 	@Override
-	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
+	public void onModelChange(Object model, ModelChangeType changeType) throws Exception
 	{
-		return null;
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type)
-	{
-		if (po instanceof MProduct)
+		if (InterfaceWrapperHelper.isInstanceOf(model, I_M_Product.class))
 		{
-			productChange((MProduct)po, ModelChangeType.valueOf(type));
+			final I_M_Product product = InterfaceWrapperHelper.create(model, I_M_Product.class);
+			productChange(product, changeType);
 		}
-		return null;
 	}
 
 	private void productChange(final I_M_Product productPO, final ModelChangeType type)
 	{
-		if(type.isNewOrChange() && type.isAfter())
+		if (type.isNewOrChange() && type.isAfter())
 		{
 			final boolean isDiverseChanged = InterfaceWrapperHelper.isValueChanged(productPO, de.metas.adempiere.model.I_M_Product.COLUMNNAME_IsDiverse);
 			final boolean isProductTypeChanged = InterfaceWrapperHelper.isValueChanged(productPO, I_M_Product.COLUMNNAME_ProductType);
@@ -161,11 +142,5 @@ public final class InOutCandidateValidator implements ModelValidator
 				shipmentScheduleInvalidator.invalidateForProduct(productId);
 			}
 		}
-	}
-
-	@Override
-	public String docValidate(final PO po, final int timing)
-	{
-		return null; // nothing to do
 	}
 }

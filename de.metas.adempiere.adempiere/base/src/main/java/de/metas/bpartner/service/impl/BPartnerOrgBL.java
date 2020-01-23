@@ -1,5 +1,7 @@
 package de.metas.bpartner.service.impl;
 
+import static de.metas.util.Check.assume;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,18 +12,17 @@ package de.metas.bpartner.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Optional;
 import java.util.Properties;
@@ -39,6 +40,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -68,6 +70,18 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		return retrieveLinkedBPartner(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
 	}
 
+	@Override
+	public Optional<BPartnerId> retrieveLinkedBPartnerId(@NonNull final OrgId orgId)
+	{
+		assume(orgId.isRegular(), "Given orgId={} needs to be a regular >0 (i.e. not 'any') Org-ID", orgId);
+
+		final I_C_BPartner resultRecord = retrieveLinkedBPartner(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		if (resultRecord == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(BPartnerId.ofRepoId(resultRecord.getC_BPartner_ID()));
+	}
 
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#By#AD_OrgBP_ID")
 	/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
@@ -87,11 +101,11 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	public I_C_Location retrieveOrgLocation(@NonNull final OrgId orgId)
 	{
 		final BPartnerLocationId orgBPLocationId = retrieveOrgBPLocationId(orgId);
-		if(orgBPLocationId == null)
+		if (orgBPLocationId == null)
 		{
 			return null;
 		}
-		
+
 		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgBPLocationId);
 		if (bpLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
 		{
@@ -107,7 +121,6 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		return orgsRepo.getOrgInfoById(orgId).getOrgBPartnerLocationId();
 	}
 
-	
 	@Override
 	public Optional<UserId> retrieveUserInChargeOrNull(@NonNull final OrgId orgId)
 	{
@@ -136,5 +149,4 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		}
 		return defaultContact;
 	}
-
 }

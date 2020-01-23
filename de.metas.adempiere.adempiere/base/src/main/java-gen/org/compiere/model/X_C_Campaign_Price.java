@@ -15,7 +15,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 240390431L;
+	private static final long serialVersionUID = 132176614L;
 
     /** Standard Constructor */
     public X_C_Campaign_Price (Properties ctx, int C_Campaign_Price_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 			setC_Country_ID (0);
 			setC_Currency_ID (0);
 			setC_TaxCategory_ID (0);
+			setInvoicableQtyBasedOn (null); // Nominal
 			setM_Product_ID (0);
 			setPriceStd (BigDecimal.ZERO);
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
@@ -111,8 +112,8 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		return ii.intValue();
 	}
 
-	/** Set Campaign Price.
-		@param C_Campaign_Price_ID Campaign Price	  */
+	/** Set Aktionspreise.
+		@param C_Campaign_Price_ID Aktionspreise	  */
 	@Override
 	public void setC_Campaign_Price_ID (int C_Campaign_Price_ID)
 	{
@@ -122,8 +123,8 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 			set_ValueNoCheck (COLUMNNAME_C_Campaign_Price_ID, Integer.valueOf(C_Campaign_Price_ID));
 	}
 
-	/** Get Campaign Price.
-		@return Campaign Price	  */
+	/** Get Aktionspreise.
+		@return Aktionspreise	  */
 	@Override
 	public int getC_Campaign_Price_ID () 
 	{
@@ -220,6 +221,31 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		return ii.intValue();
 	}
 
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -234,6 +260,35 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	{
+
+		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public java.lang.String getInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	/** Set Preissystem.

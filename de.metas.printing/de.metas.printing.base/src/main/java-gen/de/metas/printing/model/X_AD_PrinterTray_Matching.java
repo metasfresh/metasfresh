@@ -14,7 +14,7 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -378696838L;
+	private static final long serialVersionUID = 1532076228L;
 
     /** Standard Constructor */
     public X_AD_PrinterTray_Matching (Properties ctx, int AD_PrinterTray_Matching_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
     }
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
 	}
@@ -78,7 +78,7 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_Printer_Matching getAD_Printer_Matching() throws RuntimeException
+	public de.metas.printing.model.I_AD_Printer_Matching getAD_Printer_Matching()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Printer_Matching_ID, de.metas.printing.model.I_AD_Printer_Matching.class);
 	}
@@ -112,7 +112,7 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_Printer_Tray getAD_Printer_Tray() throws RuntimeException
+	public de.metas.printing.model.I_AD_Printer_Tray getAD_Printer_Tray()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Printer_Tray_ID, de.metas.printing.model.I_AD_Printer_Tray.class);
 	}

@@ -118,21 +118,23 @@ public interface I_EDI_cctop_invoic_500_v
 	/**
 	 * Set Auftrags-Maßeinheit.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEanCom_Ordered_UOM (int EanCom_Ordered_UOM);
+	public void setEanCom_Ordered_UOM (java.lang.String EanCom_Ordered_UOM);
 
 	/**
 	 * Get Auftrags-Maßeinheit.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getEanCom_Ordered_UOM();
+	public java.lang.String getEanCom_Ordered_UOM();
 
+    /** Column definition for EanCom_Ordered_UOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_EanCom_Ordered_UOM = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "EanCom_Ordered_UOM", null);
     /** Column name EanCom_Ordered_UOM */
     public static final String COLUMNNAME_EanCom_Ordered_UOM = "EanCom_Ordered_UOM";
 
@@ -473,7 +475,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Order Line.
+	 * Set Auftragszeile.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -482,7 +484,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setOrderLine (int OrderLine);
 
 	/**
-	 * Get Order Line.
+	 * Get Auftragszeile.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false

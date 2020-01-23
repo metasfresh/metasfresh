@@ -35,7 +35,6 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
@@ -406,11 +405,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return;
 		}
 
-		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
-		if (!pricingResult.isCalculated())
-		{
-			throw new ProductNotOnPriceListException(pricingCtx, invoiceLine.getLine());
-		}
+		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx.setFailIfNotCalculated());
 
 		//
 		// PriceList

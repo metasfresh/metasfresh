@@ -142,6 +142,12 @@ public class IdentifierString
 		}
 	}
 
+	public static IdentifierString ofRepoId(final int repoId)
+	{
+		Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId));
+	}
+
 	private IdentifierString(
 			@NonNull final Type type,
 			@NonNull final String value)
@@ -181,7 +187,7 @@ public class IdentifierString
 		{
 			prefix = PREFIX_GLN;
 		}
-		else if(Type.INTERNALNAME.equals(type))
+		else if (Type.INTERNALNAME.equals(type))
 		{
 			prefix = PREFIX_INTERNALNAME;
 		}

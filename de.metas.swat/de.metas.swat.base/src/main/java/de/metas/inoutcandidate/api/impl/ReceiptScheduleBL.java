@@ -49,6 +49,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -61,10 +62,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -349,7 +347,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			return existingRsa;// nothing to do
 		}
 
-		final StockQtyAndUOMQty qtyToAllocate = extractReceiptQty(receiptLine);
+		final StockQtyAndUOMQty qtyToAllocate = Services.get(IInOutBL.class).getStockQtyAndCatchQty(receiptLine);
 
 		return createReceiptScheduleAlloc(receiptSchedule, receiptLine, qtyToAllocate);
 	}
@@ -380,51 +378,16 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.setQtyToAllocate(qtyToAllocate)
 				.setQtyWithIssues(qtyWithIssues)
 				.buildAndSave();
-		// //
-		// // Make sure receipt schedule and receipt line have same products
-		// if (receiptSchedule.getM_Product_ID() != receiptLine.getM_Product_ID())
-		// {
-		// throw new AdempiereException("Receipt schedule and receipt line have different products."
-		// + "\nReceipt Line: " + receiptLine
-		// + "\nReceipt Line Product: " + receiptLine.getM_Product()
-		// + "\nReceipt Schedule: " + receiptSchedule
-		// + "\nReceipt Schedule Product: " + receiptSchedule.getM_Product());
-		// }
-		//
-		// //
-		// // Make sure receipt schedule and receipt line have same UOMs
-		// if (receiptSchedule.getC_UOM_ID() != receiptLine.getC_UOM_ID())
-		// {
-		// throw new AdempiereException("Different UOMs on receipt schedule and receipt line is not supported."
-		// + "\nReceipt Schedule: " + receiptSchedule
-		// + "\nReceipt Schedule UOM: " + receiptSchedule.getC_UOM()
-		// + "\nReceipt Line: " + receiptLine
-		// + "\nReceipt Line UOM: " + receiptLine.getC_UOM());
-		// }
-		//
-		// final BigDecimal qtyWithIssues = receiptLine.isInDispute() ? qtyToAllocate : BigDecimal.ZERO;
-		//
-		// final I_M_ReceiptSchedule_Alloc rsa = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class, receiptLine);
-		// rsa.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
-		// rsa.setM_ReceiptSchedule(receiptSchedule);
-		// // newRsa.setM_InOut_ID(receiptLine.getM_InOut_ID()); // virtual column
-		// rsa.setM_InOutLine(receiptLine);
-		// rsa.setQtyAllocated(qtyToAllocate);
-		// rsa.setQtyWithIssues(qtyWithIssues);
-		//
-		// InterfaceWrapperHelper.save(rsa);
-		// return rsa;
 	}
 
 	@Override
 	public List<I_M_ReceiptSchedule_Alloc> createReceiptScheduleAllocations(
 			final List<? extends I_M_ReceiptSchedule> receiptSchedules,
 			@NonNull final I_M_InOutLine receiptLine)
-
 	{
 		Check.assumeNotEmpty(receiptSchedules, "receipt schedules not empty");
 
-		StockQtyAndUOMQty qtyToAllocateRemaining = extractReceiptQty(receiptLine);
+		StockQtyAndUOMQty qtyToAllocateRemaining = Services.get(IInOutBL.class).getStockQtyAndCatchQty(receiptLine);
 		if (qtyToAllocateRemaining.signum() == 0)
 		{
 			// Receipt Line with ZERO qty???
@@ -503,19 +466,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		//
 		// Return created allocations
 		return allocs;
-	}
-
-	private StockQtyAndUOMQty extractReceiptQty(@NonNull final I_M_InOutLine receiptLine)
-	{
-		final ProductId productId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
-		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(receiptLine.getCatch_UOM_ID());
-
-		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
-				receiptLine.getMovementQty(),
-				productId,
-				receiptLine.getQtyDeliveredCatch(),
-				catchUomIdOrNull);
-		return qtyToAllocate;
 	}
 
 	@Override

@@ -11,10 +11,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -65,7 +68,14 @@ public class CampaignPrice
 	Money priceStd;
 
 	@NonNull
+	UomId priceUomId;
+
+	@NonNull
 	TaxCategoryId taxCategoryId;
+
+	@NonNull
+	@Default
+	InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
 	public LocalDate getValidFrom()
 	{
