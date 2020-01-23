@@ -19,7 +19,7 @@ Here come the actual release notes:
   * [#6028](https://github.com/metasfresh/metasfresh/issues/6028) Extract quotation logic in jasper-DB-functions
   * [#6032](https://github.com/metasfresh/metasfresh/issues/6032) Excel SQL Process with qty of invoices per daterange
   * [#6035](https://github.com/metasfresh/metasfresh/issues/6035) Make C_UOM editable in C_InvoiceLine
-  * [#6048][https://github.com/metasfresh/metasfresh/issues/6048) Improve Price Schema Excel Export
+  * [#6048](https://github.com/metasfresh/metasfresh/issues/6048) Improve Price Schema Excel Export
   * [#6057](https://github.com/metasfresh/metasfresh/issues/6057) Show BOM in window Stücklistenbestandteile
 
 * metasfresh-parent
