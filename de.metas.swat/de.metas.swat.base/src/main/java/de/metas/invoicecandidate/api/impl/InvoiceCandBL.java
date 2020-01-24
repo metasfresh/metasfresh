@@ -1966,7 +1966,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final List<I_C_Invoice_Candidate> icRecords = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine);
 		for (final I_C_Invoice_Candidate icRecord : icRecords)
 		{
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				logger.debug("Set IsInDispute=true because ic bleongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
 				icRecord.setIsInDispute(true);

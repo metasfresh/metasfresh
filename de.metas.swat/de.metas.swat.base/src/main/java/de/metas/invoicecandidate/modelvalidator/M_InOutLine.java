@@ -113,7 +113,7 @@ public class M_InOutLine
 		// * create link between invoice candidate and our inout line
 		for (final I_C_Invoice_Candidate icRecord : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId))
 		{
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, inOutLine);
 				iciol.setC_Invoice_Candidate(icRecord);

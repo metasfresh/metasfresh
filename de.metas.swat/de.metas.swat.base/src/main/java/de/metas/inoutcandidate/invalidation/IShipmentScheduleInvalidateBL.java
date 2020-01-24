@@ -17,7 +17,7 @@ import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
 {
-	boolean isInvalid(ShipmentScheduleId shipmentScheduleId);
+	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	void invalidateShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
 

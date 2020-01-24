@@ -31,16 +31,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
@@ -109,12 +111,12 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	@Override
 	public void addLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
-		final DeliveryGroupCandidate inOut = deliveryLineCandidate.getGroup();
+		final DeliveryGroupCandidate group = deliveryLineCandidate.getGroup();
 
-		if (!orderedCandidates.contains(inOut))
+		if (!orderedCandidates.contains(group))
 		{
-			throw new IllegalStateException("inOut needs to be added using 'addInOut' first"
-					+ "\n InOut: " + inOut
+			throw new IllegalStateException("group needs to be added using 'addGroup' first"
+					+ "\n DeliveryGroupCandidate: " + group
 					+ "\n orderedCandidates: " + orderedCandidates);
 		}
 
@@ -159,8 +161,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	/**
-	 *
-	 * @return a copy of the list of {@link I_M_InOut}s stored in this instance.
+	 * @return a copy of the list of {@link DeliveryGroupCandidate}s stored in this instance.
 	 */
 	@Override
 	public List<DeliveryGroupCandidate> getCandidates()
@@ -169,8 +170,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	/**
-	 *
-	 * @return the number of {@link I_M_InOut}s this instance contains.
+	 * @return the number of {@link DeliveryGroupCandidate}s this instance contains.
 	 */
 	@Override
 	public int size()
@@ -179,13 +179,11 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	/**
-	 * @param shipperId
-	 * @param bPartNerLocationId
 	 * @return the inOut with the given parameters
-	 * @throws IllegalStateException if no inOut with the given bPartnerLocationId and shipperId has been added
+	 * @throws IllegalStateException if no {@link DeliveryGroupCandidate} with the given bPartnerLocationId and shipperId has been added
 	 */
 	@Override
-	public DeliveryGroupCandidate getInOutForShipper(
+	public DeliveryGroupCandidate getGroupForShipper(
 			@NonNull final Optional<ShipperId> shipperId,
 			final WarehouseId warehouseId,
 			final String bPartnerAddress)
@@ -225,35 +223,35 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	public void removeEmptyLineandGroupCandidates()
 	{
 		// removing empty DeliveryLineCandidate
-		int rmInOutLines = 0;
-		for (final DeliveryGroupCandidate inOut : getCandidates())
+		int rmLineCandidates = 0;
+		for (final DeliveryGroupCandidate groupCandidate : getCandidates())
 		{
-			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
+			for (final DeliveryLineCandidate lineCandidate : groupCandidate.getLines())
 			{
-				if (inOutLine.getQtyToDeliver().signum() <= 0)
+				if (lineCandidate.getQtyToDeliver().signum() <= 0)
 				{
-					removeLine(inOutLine);
-					rmInOutLines++;
+					removeLine(lineCandidate);
+					rmLineCandidates++;
 				}
 			}
 		}
 
 		// removing empty DeliveryGroupCandidate
-		int rmInOuts = 0;
-		for (final DeliveryGroupCandidate inOut : getCandidates())
+		int rmGroupCandidates = 0;
+		for (final DeliveryGroupCandidate groupCandidate : getCandidates())
 		{
-			if (!inOut.hasLines())
+			if (!groupCandidate.hasLines())
 			{
 				final ArrayKey key = createShipperKey(
-						inOut.getShipperId(),
-						inOut.getWarehouseId(),
-						inOut.getBPartnerAddress());
+						groupCandidate.getShipperId(),
+						groupCandidate.getWarehouseId(),
+						groupCandidate.getBPartnerAddress());
 				shipperKey2Candidate.remove(key);
-				orderedCandidates.remove(inOut);
-				rmInOuts++;
+				orderedCandidates.remove(groupCandidate);
+				rmGroupCandidates++;
 			}
 		}
-		logger.info("Removed " + rmInOuts + " MInOut instances and " + rmInOutLines + " MInOutLine instances");
+		logger.info("Removed {} groupCandidates and {} lineCandidates", rmGroupCandidates, rmLineCandidates);
 	}
 
 	/**
@@ -263,7 +261,10 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	{
 		for (final DeliveryLineCandidate deliveryLineCandidate : deliveryLineCandidates)
 		{
-			updateCompleteStatusAndSetQtyToZeroIfNeeded(deliveryLineCandidate);
+			try (final MDCCloseable shipmentScheduleMDC = ShipmentSchedulesMDC.putShipmentScheduleId(deliveryLineCandidate.getShipmentScheduleId()))
+			{
+				updateCompleteStatusAndSetQtyToZeroIfNeeded(deliveryLineCandidate);
+			}
 		}
 	}
 
@@ -275,6 +276,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		}
 
 		final DeliveryRule deliveryRule = deliveryLineCandidate.getDeliveryRule();
+		logger.debug("lineCandidate has deliveryRule={}", deliveryRule);
 
 		if (DeliveryRule.COMPLETE_LINE.equals(deliveryRule))
 		{
@@ -291,10 +293,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	/**
-	 * We only deliver if the line qty is same as the qty
-	 * ordered by the customer
-	 *
-	 * @param deliveryLineCandidate
+	 * We only deliver if the line qty is same as the qty ordered by the customer
 	 */
 	private static void discardLineCandidateIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
@@ -302,6 +301,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 		if (lineIsIncompletelyDelivered)
 		{
+			logger.debug("Discard this lineCandidate because it has completeStatus={}", deliveryLineCandidate.getCompleteStatus());
 			deliveryLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
 			deliveryLineCandidate.setDiscarded();
 		}
@@ -320,13 +320,22 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			return;
 		}
 
-		for (final DeliveryLineCandidate inOutLine : deliveryLineCandidate.getGroup().getLines())
+		try (final IAutoCloseable shipmentScheduleMDCRestorer = ShipmentSchedulesMDC.removeCurrentShipmentScheduleId())
 		{
-			inOutLine.setQtyToDeliver(BigDecimal.ZERO);
-			inOutLine.setDiscarded();
+			for (final DeliveryLineCandidate candidateOfGroup : deliveryLineCandidate.getGroup().getLines())
+			{
+				try (final MDCCloseable shipmentScheduleOfGroupMDC = ShipmentSchedulesMDC.putShipmentScheduleId(candidateOfGroup.getShipmentScheduleId()))
+				{
+					logger.debug("Discard this lineCandidate because candidate with ShipmentScheduleId={} is in same group and has completeStatus={}",
+							deliveryLineCandidate.getShipmentScheduleId().getRepoId(), deliveryLineCandidate.getCompleteStatus());
 
-			// update the status to show why we set the quantity to zero
-			inOutLine.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
+					candidateOfGroup.setQtyToDeliver(BigDecimal.ZERO);
+					candidateOfGroup.setDiscarded();
+
+					// update the status to show why we set the quantity to zero
+					candidateOfGroup.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
+				}
+			}
 		}
 	}
 

@@ -65,7 +65,7 @@ public class C_Invoice
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateEdiStatus(final I_C_Invoice document)
 	{
-		try (final MDCCloseable mdcCloseable = TableRecordMDC.withTableRecordReference(document))
+		try (final MDCCloseable mdcCloseable = TableRecordMDC.putTableRecordReference(document))
 		{
 			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 			if (!ediDocumentBL.updateEdiEnabled(document))

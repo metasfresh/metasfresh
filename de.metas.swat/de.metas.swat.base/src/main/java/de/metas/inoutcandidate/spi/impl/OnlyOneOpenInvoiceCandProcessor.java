@@ -80,7 +80,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 			final IShipmentSchedulesDuringUpdate candidates,
 			final DeliveryLineCandidate lineCandidate)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
 		{
 			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(lineCandidate.getBillBPartnerId());
 

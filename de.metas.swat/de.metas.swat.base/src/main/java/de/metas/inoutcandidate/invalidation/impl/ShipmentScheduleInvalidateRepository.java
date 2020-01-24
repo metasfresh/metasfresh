@@ -95,7 +95,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 					+ "   AND " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
 
 	@Override
-	public boolean isInvalid(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public boolean isFlaggedForRecompute(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final String sql = " SELECT 1 "
 				+ " FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "

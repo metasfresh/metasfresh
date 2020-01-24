@@ -72,7 +72,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 					// this line won't be delivered anyways. Nothing to do
 					continue;
 				}
-				try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
+				try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
 				{
 					handleWithNextSubscription(ctx, candidates, lineCandidate);
 				}

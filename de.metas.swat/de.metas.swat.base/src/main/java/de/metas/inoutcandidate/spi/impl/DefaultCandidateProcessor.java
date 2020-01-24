@@ -65,12 +65,11 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 	 */
 	private void purgeLinesOK(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
 	{
-
 		for (final DeliveryGroupCandidate groupCandidate : candidates.getCandidates())
 		{
 			for (final DeliveryLineCandidate lineCandidate : groupCandidate.getLines())
 			{
-				try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
+				try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
 				{
 					// check the complete and postage free status
 					final CompleteStatus completeStatus = lineCandidate.getCompleteStatus();

@@ -86,9 +86,9 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public boolean isInvalid(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public boolean isFlaggedForRecompute(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return invalidSchedulesRepo.isInvalid(shipmentScheduleId);
+		return invalidSchedulesRepo.isFlaggedForRecompute(shipmentScheduleId);
 	}
 
 	@Override

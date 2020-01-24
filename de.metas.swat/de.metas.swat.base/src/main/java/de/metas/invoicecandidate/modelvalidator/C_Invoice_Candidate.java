@@ -104,7 +104,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
-		try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
+		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 		{
 			if (isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
 			{
