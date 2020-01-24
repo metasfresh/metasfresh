@@ -53,6 +53,8 @@ import lombok.NonNull;
 @Component
 public class C_Invoice
 {
+	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
+
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -80,6 +82,7 @@ public class C_Invoice
 
 			if (ValidationState.INVALID == validationState)
 			{
+				logger.debug("validationState={}; persisting error-message in C_Invoice", validationState);
 				// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
 				// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
 				final String errorMessage = ediDocumentBL.buildFeedback(feedback);

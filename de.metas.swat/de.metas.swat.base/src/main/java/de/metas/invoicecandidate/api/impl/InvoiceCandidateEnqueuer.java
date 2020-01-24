@@ -35,6 +35,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.Joiner;
 
@@ -54,6 +55,7 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -160,6 +162,7 @@ import lombok.NonNull;
 		// NOTE: loading them again after we made sure that they are fairly up to date.
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setInvoiceCandidatesLock(icLock)
+				.setInvoicingParams(getInvoicingParams())
 				.setC_Async_Batch(_asyncBatch);
 
 		if (setWorkpackageADPInstanceCreatorId)
@@ -171,57 +174,60 @@ import lombok.NonNull;
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
-		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
+		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
 		{
-			// Fail if the invoice candidate has issues
-			if (isFailOnInvoiceCandidateError() && ic.isError())
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
 			{
-				throw new AdempiereException(ic.getErrorMsg())
-						.setParameter("invoiceCandidate", ic);
-			}
-
-			// Check if invoice candidate is eligible for enqueueing
-			if (!isEligibleForEnqueueing(ic))
-			{
-				continue;
-			}
-
-			//
-			// Add invoice candidate to workpackage
-			workpackageAggregator.add(ic);
-
-			//
-			// 06283 : use the priority from the first invoice candidate of each group
-			// NTH: use the max prio of all candidates of the group
-			final IWorkpackagePrioStrategy priorityToUse;
-			if (_priority == null)
-			{
-				if (!Check.isEmpty(ic.getPriority()))
+				// Fail if the invoice candidate has issues
+				if (isFailOnInvoiceCandidateError() && icRecord.isError())
 				{
-					priorityToUse = ConstantWorkpackagePrio.fromString(ic.getPriority());
+					throw new AdempiereException(icRecord.getErrorMsg())
+							.setParameter("invoiceCandidate", icRecord);
+				}
+
+				// Check if invoice candidate is eligible for enqueueing
+				if (!isEligibleForEnqueueing(icRecord))
+				{
+					continue;
+				}
+
+				//
+				// Add invoice candidate to workpackage
+				workpackageAggregator.add(icRecord);
+
+				//
+				// 06283 : use the priority from the first invoice candidate of each group
+				// NTH: use the max prio of all candidates of the group
+				final IWorkpackagePrioStrategy priorityToUse;
+				if (_priority == null)
+				{
+					if (!Check.isEmpty(icRecord.getPriority()))
+					{
+						priorityToUse = ConstantWorkpackagePrio.fromString(icRecord.getPriority());
+					}
+					else
+					{
+						priorityToUse = SizeBasedWorkpackagePrio.INSTANCE;// fallback to default
+					}
 				}
 				else
 				{
-					priorityToUse = SizeBasedWorkpackagePrio.INSTANCE;// fallback to default
+					priorityToUse = _priority;
 				}
-			}
-			else
-			{
-				priorityToUse = _priority;
-			}
 
-			workpackageAggregator.setPriority(priorityToUse);
+				workpackageAggregator.setPriority(priorityToUse);
 
-			//
-			// 07666: Set approval back to false after enqueuing and save within transaction
-			try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
-			{
-				ic.setApprovalForInvoicing(false);
-				save(ic);
+				//
+				// 07666: Set approval back to false after enqueuing and save within transaction
+				try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+				{
+					icRecord.setApprovalForInvoicing(false);
+					save(icRecord);
+				}
+
+				invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
+				totalNetAmtToInvoiceChecksum.add(icRecord);
 			}
-
-			invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
-			totalNetAmtToInvoiceChecksum.add(ic);
 		}
 
 		//
