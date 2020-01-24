@@ -1,17 +1,16 @@
-package de.metas.inoutcandidate.api;
+package de.metas.logging;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.TableRecordMDC;
-import de.metas.process.PInstanceId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -32,20 +31,20 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class ShipmentSchedulesMDC
+public class TableRecordMDC
 {
-	public MDCCloseable withShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public MDCCloseable withTableRecordReference(@NonNull final String tableName, @NonNull final RepoIdAware id)
 	{
-		return TableRecordMDC.withTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		return withTableRecordReference(TableRecordReference.of(tableName, id));
 	}
 
-	public MDCCloseable withShipmentScheduleUpdateRunNo(final int runNo)
+	public MDCCloseable withTableRecordReference(@NonNull final Object recordModel)
 	{
-		return MDC.putCloseable("ShipmentScheduleUpdater-Run#", Integer.toString(runNo));
+		return withTableRecordReference(TableRecordReference.of(recordModel));
 	}
 
-	public MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
+	public MDCCloseable withTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
+		return MDC.putCloseable(tableRecordReference.getTableName() + "_ID", Integer.toString(tableRecordReference.getRecord_ID()));
 	}
 }

@@ -43,14 +43,6 @@ public class CalloutEngine implements Callout
 	/** No error return value. Use this when you are returning from a callout without error */
 	public static final String NO_ERROR = new String("");
 
-	/**
-	 * Constructor
-	 */
-	public CalloutEngine()
-	{
-		super();
-	}
-
 	private static final CCache<String, CalloutMethodExecutor> _calloutMethodExecutorsCache = new CCache<>("CalloutEngine.MethodExecutors", 100);
 
 	/** Logger */
@@ -163,7 +155,7 @@ public class CalloutEngine implements Callout
 	}
 
 	@FunctionalInterface
-	private static interface CalloutMethodExecutor
+	private interface CalloutMethodExecutor
 	{
 		String execute(final CalloutEngine instance, final ICalloutField calloutField) throws Exception;
 	}
