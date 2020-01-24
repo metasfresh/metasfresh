@@ -84,6 +84,7 @@ public class C_Invoice
 
 			if (ValidationState.INVALID == validationState)
 			{
+				logger.debug("validationState={}; persisting error-message in C_Invoice", validationState);
 				// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
 				// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
 				final String errorMessage = ediDocumentBL.buildFeedback(feedback);
