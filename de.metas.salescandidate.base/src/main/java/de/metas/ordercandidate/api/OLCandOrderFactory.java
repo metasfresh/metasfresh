@@ -161,16 +161,16 @@ class OLCandOrderFactory
 
 		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
 		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
-		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOrNull(bpartner.getBpartnerLocationId()));
-		order.setAD_User_ID(BPartnerContactId.toRepoIdOrNull(bpartner.getContactId()));
+		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if(billBPartner != null)
 		{
-			order.setBill_BPartner_ID(BPartnerId.toRepoIdOrNull(billBPartner.getBpartnerId()));
-			order.setBill_Location_ID(BPartnerLocationId.toRepoIdOrNullepoIdOrNullepoId(billBPartner.getBpartnerLocationId()));
-			order.setBill_User_ID(BPartnerContactId.toRepoIdOrNull(billBPartner.getContactId()));
+			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
+			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
+			order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
 		}
 
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
@@ -188,8 +188,8 @@ class OLCandOrderFactory
 		if (dropShipBPartner != null)
 		{
 			order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
-			order.setDropShip_Location_ID(BPartnerLocationId.toRepoIdOrNull(dropShipBPartner.getBpartnerLocationId()));
-			order.setDropShip_User_ID(BPartnerContactId.toRepoIdOrNull(dropShipBPartner.getContactId()));
+			order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
+			order.setDropShip_User_ID(BPartnerContactId.toRepoId(dropShipBPartner.getContactId()));
 			final boolean isDropShip = dropShipBPartner.getBpartnerId() != null || dropShipBPartner.getBpartnerLocationId() != null;
 			order.setIsDropShip(isDropShip);
 		}
@@ -202,8 +202,8 @@ class OLCandOrderFactory
 		if (handOverBPartner != null)
 		{
 			order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
-			order.setHandOver_Location_ID(BPartnerLocationId.toRepoIdOrNull(handOverBPartner.getBpartnerLocationId()));
-			order.setHandOver_User_ID(BPartnerContactId.toRepoIdOrNull(handOverBPartner.getContactId()));
+			order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
+			order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
 		}
 		order.setIsUseHandOver_Location(handOverBPartner != null && handOverBPartner.getBpartnerLocationId() != null);
 
