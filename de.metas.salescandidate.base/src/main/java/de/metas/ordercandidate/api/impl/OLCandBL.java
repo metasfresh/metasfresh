@@ -282,7 +282,6 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
-
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -312,36 +311,38 @@ public class OLCandBL implements IOLCandBL
 
 	@Override
 	public IPricingResult computePriceActual(
-			final I_C_OLCand olCand,
+			@NonNull final I_C_OLCand olCandRecord,
 			final BigDecimal qtyOverride,
-			final PricingSystemId pricingSystemIdOverride,
+			@Nullable final PricingSystemId pricingSystemIdOverride,
 			final LocalDate date)
 	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setReferencedObject(olCand);
+		pricingCtx.setReferencedObject(olCandRecord);
 
 		final IPricingResult pricingResult;
 
 		// note that even with manual price and/or discount, we need to invoke the pricing engine, in order to get the tax category
 
-		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
+		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
 
 		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
-				.getDropShipPartnerInfo(olCand)
-				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCand));
+				.getDropShipPartnerInfo(olCandRecord)
+				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 		// final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
 
-		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQtyEntered();
+		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCandRecord.getQtyEntered();
 
-		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCand);
+		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCandRecord);
 
 		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
 				() -> pricingSystemIdOverride,
-				() -> getPricingSystemId(olCand, bPartnerOrderParams, null/* orderDefaults */));
+				() -> getPricingSystemId(olCandRecord, bPartnerOrderParams, null/* orderDefaults */));
 
 		if (pricingSystemId == null)
 		{
-			throw new AdempiereException("@M_PricingSystem@ @NotFound@");
+			throw new AdempiereException("@M_PricingSystem@ @NotFound@")
+					.appendParametersToMessage()
+					.setParameter("effectiveBillPartnerId", effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord));
 		}
 		pricingCtx.setPricingSystemId(pricingSystemId); // set it to the context that way it will also be in the result, even if the pricing rules won't need it
 
@@ -350,7 +351,7 @@ public class OLCandBL implements IOLCandBL
 		pricingCtx.setPriceDate(date);
 		pricingCtx.setSOTrx(SOTrx.SALES);
 
-		pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
+		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
@@ -361,7 +362,7 @@ public class OLCandBL implements IOLCandBL
 			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + shipToPartnerInfo.getBpartnerLocationId());
 		}
 		pricingCtx.setPriceListId(plId);
-		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
+		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx);
 
@@ -378,11 +379,11 @@ public class OLCandBL implements IOLCandBL
 		final Percent discount;
 		final CurrencyId currencyId;
 
-		if (olCand.isManualPrice())
+		if (olCandRecord.isManualPrice())
 		{
 			// both price and currency need to be already set in the olCand (only a price amount doesn't make sense with an unspecified currency)
-			priceEntered = olCand.getPriceEntered();
-			currencyId = CurrencyId.ofRepoId(olCand.getC_Currency_ID());
+			priceEntered = olCandRecord.getPriceEntered();
+			currencyId = CurrencyId.ofRepoId(olCandRecord.getC_Currency_ID());
 		}
 		else
 		{
@@ -390,9 +391,9 @@ public class OLCandBL implements IOLCandBL
 			currencyId = pricingResult.getCurrencyId();
 		}
 
-		if (olCand.isManualDiscount())
+		if (olCandRecord.isManualDiscount())
 		{
-			discount = Percent.of(olCand.getDiscount());
+			discount = Percent.of(olCandRecord.getDiscount());
 		}
 		else
 		{
@@ -411,7 +412,7 @@ public class OLCandBL implements IOLCandBL
 
 		pricingResult.setDisallowDiscount(false); // avoid exception
 		pricingResult.setDiscount(discount);
-		pricingResult.setDisallowDiscount(olCand.isManualDiscount());
+		pricingResult.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		return pricingResult;
 	}
@@ -425,11 +426,12 @@ public class OLCandBL implements IOLCandBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
-		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(BPartnerOrderParamsQuery.builder()
+		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
 				.soTrx(SOTrx.SALES)
 				.shipBPartnerId(shipToPartnerInfo.getBpartnerId())
 				.billBPartnerId(billBPartnerId)
-				.build());
+				.build();
+		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(query);
 		return params;
 	}
 

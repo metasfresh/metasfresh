@@ -417,7 +417,7 @@ public class DefaultModelArchiver
 		return printInfo;
 	}
 
-	private void createCCFile(final I_AD_Archive archive)
+	private void createCCFile(@NonNull final I_AD_Archive archive)
 	{
 		DocOutboundCCWorkpackageProcessor.scheduleOnTrxCommit(archive);
 	}
