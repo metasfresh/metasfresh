@@ -135,7 +135,8 @@ UPDATE AD_Val_Rule SET Code='AD_User.C_BPartner_ID=COALESCE(NULLIF(@HandOver_Par
 
 -- 2020-01-24T08:47:07.913Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Val_Rule SET Code='M_HU_PI_Item_Product.M_Product_ID=COALESCE(NULLIF(@M_Product_ID/0@), @M_Product_Override_ID/0@)
+UPDATE AD_Val_Rule SET Code='M_HU_PI_Item_Product.M_Product_ID=COALESCE(NULLIF(@M_Product_ID/0@), @M_Product_Override_ID/0@
+)
 AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
 AND M_HU_PI_Item_Product.ValidFrom <= ''@DateCandidate@'' AND ( ''@DateCandidate@'' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
 AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
@@ -1193,4 +1194,31 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=545322
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ select AD_Element_Link_Create_Missing_Field(545322)
 ;
+
+-- 2020-01-24T15:30:36.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='N',Updated=TO_TIMESTAMP('2020-01-24 16:30:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554407
+;
+
+-- 2020-01-24T15:31:15.406Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET TechnicalNote='Used to be always updatable until 2020-01-24, but IDK why..',Updated=TO_TIMESTAMP('2020-01-24 16:31:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554407
+;
+
+-- 2020-01-24T15:31:53.862Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='N', TechnicalNote='Used to be always updatable until 2020-01-24, but IDK why..',Updated=TO_TIMESTAMP('2020-01-24 16:31:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554406
+;
+
+-- 2020-01-24T15:32:47.182Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='N',Updated=TO_TIMESTAMP('2020-01-24 16:32:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554411
+;
+
+-- 2020-01-24T15:32:54.482Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='N',Updated=TO_TIMESTAMP('2020-01-24 16:32:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=554413
+;
+
+
 
