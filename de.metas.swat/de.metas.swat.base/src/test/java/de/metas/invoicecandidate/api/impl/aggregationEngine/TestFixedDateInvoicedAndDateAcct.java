@@ -69,10 +69,13 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 				.setSOTrx(true);
 	}
 
+	/** Verifies that the "param" dateInvoiced takes precedence over the IC's "preset" dateInvoiced. */
 	@Test
-	public void test_using_defaultDateInvoiced()
+	public void test_using_dateInvoicedParam()
 	{
-		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.build();
 
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
@@ -88,7 +91,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 
 		final IInvoiceHeader invoice = invoices.get(0);
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
-		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}
 
 	@Test
@@ -114,18 +117,20 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 	}
 
+	/** Verifies that the IC's "preset" dateInvoiced takes precedence over the IC's dateInvoiced. */
 	@Test
 	public void test_using_presetDateInvoiced()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
 				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.setDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 14))
+				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 1)) // dateInvoiced shall take precedence!
 				.build();
 
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);

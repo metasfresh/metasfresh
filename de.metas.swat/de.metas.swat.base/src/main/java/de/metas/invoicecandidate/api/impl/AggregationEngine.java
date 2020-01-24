@@ -393,8 +393,13 @@ public final class AggregationEngine
 		// why not using DateToInvoice[_Override] if available?
 		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this ic may be invoiced
 		// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
-		invoiceHeader.setDateInvoiced(computeDateInvoiced(icRecord));
-		invoiceHeader.setDateAcct(computeDateAcct(icRecord));
+		final LocalDate dateInvoiced = computeDateInvoiced(icRecord);
+		logger.debug("Setting invoiceHeader's dateInvoiced={}",dateInvoiced);
+		invoiceHeader.setDateInvoiced(dateInvoiced);
+
+		final LocalDate dateAcct = computeDateAcct(icRecord);
+		logger.debug("Setting invoiceHeader's dateAcct={}",dateAcct);
+		invoiceHeader.setDateAcct(dateAcct);
 
 		// #367 Invoice candidates invoicing Pricelist not found
 		// https://github.com/metasfresh/metasfresh/issues/367
@@ -404,7 +409,6 @@ public final class AggregationEngine
 		final int M_PriceList_ID;
 		if (icRecord.getM_PriceList_Version_ID() > 0)
 		{
-
 			M_PriceList_ID = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(icRecord.getM_PriceList_Version_ID())).getM_PriceList_ID();
 		}
 		else
@@ -450,19 +454,48 @@ public final class AggregationEngine
 	private LocalDate computeDateInvoiced(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(
-				() -> dateInvoicedParam,
-				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
-				() -> TimeUtil.asLocalDate(ic.getDateInvoiced()),
-				() -> today);
+				() -> {
+					logger.debug("Returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
+					return dateInvoicedParam;
+				},
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
+					logger.debug("Returning ic's presetDateInvoiced={} as dateInvoiced", result);
+					return result;
+				},
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDateInvoiced());
+					logger.debug("Returning ic's dateInvoiced={} as dateInvoiced", result);
+					return result;
+				},
+				() -> {
+					logger.debug("Returning aggregator's today={} as dateInvoiced", today);
+					return today;
+				});
 	}
 
 	private LocalDate computeDateAcct(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(
-				() -> dateAcctParam,
-				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
-				() -> TimeUtil.asLocalDate(ic.getDateAcct()),
-				() -> computeDateInvoiced(ic));
+				() -> {
+					logger.debug("Returning aggregator's dateAcctParam={} as dateAcct", dateAcctParam);
+					return dateAcctParam;
+				},
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
+					logger.debug("Returning ic's presetDateInvoiced={} as dateAcct", result);
+					return result;
+				},
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDateAcct());
+					logger.debug("Returning ic's dateAcct={} as dateAcct", result);
+					return result;
+				},
+				() -> {
+					final LocalDate result = computeDateInvoiced(ic);
+					logger.debug("Falling back to aggregator's computeDateInvoiced result={} as dateAcct ", result);
+					return today;
+				});
 	}
 
 	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic, final boolean isUpdateLocationAndContactForInvoice)
