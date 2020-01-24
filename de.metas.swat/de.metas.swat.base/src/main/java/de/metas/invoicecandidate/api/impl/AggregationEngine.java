@@ -394,11 +394,11 @@ public final class AggregationEngine
 		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this ic may be invoiced
 		// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
 		final LocalDate dateInvoiced = computeDateInvoiced(icRecord);
-		logger.debug("Setting invoiceHeader's dateInvoiced={}",dateInvoiced);
+		logger.debug("Setting invoiceHeader's dateInvoiced={}", dateInvoiced);
 		invoiceHeader.setDateInvoiced(dateInvoiced);
 
 		final LocalDate dateAcct = computeDateAcct(icRecord);
-		logger.debug("Setting invoiceHeader's dateAcct={}",dateAcct);
+		logger.debug("Setting invoiceHeader's dateAcct={}", dateAcct);
 		invoiceHeader.setDateAcct(dateAcct);
 
 		// #367 Invoice candidates invoicing Pricelist not found
@@ -455,21 +455,24 @@ public final class AggregationEngine
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
-					logger.debug("Returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
+					if (dateInvoicedParam != null)
+						logger.debug("computeDateInvoiced - returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
 					return dateInvoicedParam;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
-					logger.debug("Returning ic's presetDateInvoiced={} as dateInvoiced", result);
+					if (result != null)
+						logger.debug("computeDateInvoiced - returning ic's presetDateInvoiced={} as dateInvoiced", result);
 					return result;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getDateInvoiced());
-					logger.debug("Returning ic's dateInvoiced={} as dateInvoiced", result);
+					if (result != null)
+						logger.debug("computeDateInvoiced - returning ic's dateInvoiced={} as dateInvoiced", result);
 					return result;
 				},
 				() -> {
-					logger.debug("Returning aggregator's today={} as dateInvoiced", today);
+					logger.debug("computeDateInvoiced - returning aggregator's today={} as dateInvoiced", today);
 					return today;
 				});
 	}
@@ -478,23 +481,25 @@ public final class AggregationEngine
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
-					logger.debug("Returning aggregator's dateAcctParam={} as dateAcct", dateAcctParam);
+					if (dateAcctParam != null)
+						logger.debug("computeDateAcct - returning aggregator's dateAcctParam={} as dateAcct", dateAcctParam);
 					return dateAcctParam;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
-					logger.debug("Returning ic's presetDateInvoiced={} as dateAcct", result);
+					if (result != null)
+						logger.debug("computeDateAcct - returning ic's presetDateInvoiced={} as dateAcct", result);
 					return result;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getDateAcct());
-					logger.debug("Returning ic's dateAcct={} as dateAcct", result);
+					if (result != null)
+						logger.debug("computeDateAcct - returning ic's dateAcct={} as dateAcct", result);
 					return result;
 				},
 				() -> {
-					final LocalDate result = computeDateInvoiced(ic);
-					logger.debug("Falling back to aggregator's computeDateInvoiced result={} as dateAcct ", result);
-					return today;
+					logger.debug("computeDateAcct - falling back to aggregator's computeDateInvoiced as dateAcct");
+					return computeDateInvoiced(ic);
 				});
 	}
 
