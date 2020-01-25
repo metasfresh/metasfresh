@@ -44,6 +44,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -91,7 +92,7 @@ import lombok.NonNull;
 		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
 		{
 			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
-			if (targetAD_Window_ID !=null && !AdWindowId.equals(targetAD_Window_ID, AD_Window_ID))
+			if (targetAD_Window_ID != null && !AdWindowId.equals(targetAD_Window_ID, AD_Window_ID))
 			{
 				continue;
 			}
@@ -346,7 +347,7 @@ import lombok.NonNull;
 		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 		query.setRecordCount(count, countDuration);
 
-		Loggables.addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
 	}
 
 	private static final class GenericZoomInfoDescriptor
