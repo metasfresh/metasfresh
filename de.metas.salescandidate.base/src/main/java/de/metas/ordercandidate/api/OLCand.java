@@ -120,8 +120,6 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final DocTypeId orderDocTypeId;
 
-
-
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -154,16 +152,9 @@ public final class OLCand implements IProductPriceAware
 				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord))
 				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
 				.build();
-		this.dropShipBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getDropShipContactEffectiveId(olCandRecord))
-				.build();
-		this.handOverBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getHandOverPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOverLocationEffectiveId(olCandRecord))
-				// .contactId(this.xolCandEffectiveValuesBL.getHandOver_User_Effective_ID(candidate))
-				.build();
+
+		this.dropShipBPartnerInfo = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCandRecord).orElse(null);
+		this.handOverBPartnerInfo = olCandEffectiveValuesBL.getHandOverPartnerInfo(olCandRecord).orElse(null);
 
 		this.externalLineId = olCandRecord.getExternalLineId();
 		this.externalHeaderId = olCandRecord.getExternalHeaderId();
