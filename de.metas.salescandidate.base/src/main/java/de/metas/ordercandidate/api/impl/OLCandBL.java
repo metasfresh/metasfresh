@@ -328,7 +328,6 @@ public class OLCandBL implements IOLCandBL
 		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
-		// final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCandRecord.getQtyEntered();
 

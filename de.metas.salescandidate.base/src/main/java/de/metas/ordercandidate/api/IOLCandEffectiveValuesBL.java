@@ -119,48 +119,19 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 	BPartnerContactId getBillContactEffectiveId(I_C_OLCand olCand);
 
-//	/**
-//	 * Returns, falling back to the next if not set:
-//	 * <ul>
-//	 * <li><code>DropShip_BPartner_Override_ID</code></li>
-//	 * <li><code>DropShip_BPartner_ID</code></li>
-//	 * <li><code>C_BPartner_Override_ID</code></li>
-//	 * <li><code>C_BPartner_ID</code></li>
-//	 * <li>the effective BPartner's ShipTo-location</li>
-//	 * </ul>
-//	 *
-//	 * #100 FRESH-435: even if the (effective) DropShip_BPartner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0
-//	 *
-//	 * @return id of {@code null}.
-//	 */
-//	BPartnerId getDropShipBPartnerEffectiveId(I_C_OLCand olCand);
-//
-//	/**
-//	 * Returns, falling back to the next if not set:
-//	 * <ul>
-//	 * <li><code>DropShip_Location_Override_ID</code></li>
-//	 * <li><code>DropShip_Location_ID</code></li>
-//	 * <li><code>C_BP_Location_Override_ID</code></li>
-//	 * <li><code>C_BPartner_Location_ID</code></li>
-//	 * <li>the effective BPartner's ShipTo-location</li>
-//	 * </ul>
-//	 *
-//	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
-//	 */
-//	BPartnerLocationId getDropShipLocationEffectiveId(I_C_OLCand olCand);
-//
-//	/**
-//	 * See {@link #getDropShipLocationEffectiveId(I_C_OLCand)}.
-//	 */
+	/**
+	 * Returns, falling back to the next if not set:
+	 * <ul>
+	 * <li><code>DropShip_Location_Override_ID</code></li>
+	 * <li><code>DropShip_Location_ID</code></li>
+	 * <li><code>C_BP_Location_Override_ID</code></li>
+	 * <li><code>C_BPartner_Location_ID</code></li>
+	 * <li>the effective BPartner's ShipTo-location</li>
+	 * </ul>
+	 *
+	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
+	 */
 	I_C_BPartner_Location getDropShip_Location_Effective(I_C_OLCand olCand);
-//
-//	/**
-//	 * Returns, falling back to the next if not set:
-//	 * <ul>
-//	 * <li><code>AD_User_ID</code></li>
-//	 * </ul>
-//	 */
-//	BPartnerContactId getDropShipContactEffectiveId(I_C_OLCand olCand);
 
 	BPartnerInfo getBuyerPartnerInfo(I_C_OLCand olCandRecord);
 
@@ -240,6 +211,5 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	/**
 	 * Like {@link #getHandOverLocationEffectiveId(I_C_OLCand)}, but returns the actual location.
 	 */
-
 	I_C_BPartner_Location getHandOver_Location_Effective(I_C_OLCand olCand);
 }
