@@ -16,7 +16,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -90,7 +89,16 @@ final class BPartnerMasterDataProvider
 
 	//
 	// Caches
-	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
+	private final Map<ExternalIdAndGLN, BPartnerLocationId> bpartnerLocationIdsByExternalIdAndGLN = new HashMap<>();
+
+	/** Caching key for bpartnerLocationIdsByExternalIdAndGLN */
+	@Value
+	private static class ExternalIdAndGLN
+	{
+		JsonExternalId externalId;
+		GLN gln;
+	}
+
 	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
 
 	BPartnerMasterDataProvider(@NonNull final PermissionService permissionService)
@@ -113,7 +121,7 @@ final class BPartnerMasterDataProvider
 
 	public BPartnerInfo getCreateBPartnerInfo(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
-			final OrgId orgId)
+			@Nullable final OrgId orgId)
 	{
 		if (jsonBPartnerInfo == null)
 		{
@@ -542,11 +550,12 @@ final class BPartnerMasterDataProvider
 		{
 			return null;
 		}
-
-		return bpartnerLocationIdsByExternalId
+		final ExternalIdAndGLN cachingKey = new ExternalIdAndGLN(json.getExternalId(), GLN.ofNullableString(json.getGln()));
+		return bpartnerLocationIdsByExternalIdAndGLN
 				.compute(
-						json.getExternalId(),
-						(externalId, existingBPLocationId) -> createOrUpdateBPartnerLocationId(json, context.withLocationIdIfNotNull(existingBPLocationId)));
+						cachingKey,
+						(key, existingBPLocationId) -> createOrUpdateBPartnerLocationId(json, context.withLocationIdIfNotNull(existingBPLocationId)));
+
 	}
 
 	private BPartnerLocationId createOrUpdateBPartnerLocationId(

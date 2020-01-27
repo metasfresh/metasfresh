@@ -10,6 +10,18 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.136
+## Features
+* metasfresh
+  * [#6045](https://github.com/metasfresh/metasfresh/issues/6045) Price Calculation as % of margin
+
+* metasfresh-webui-api
+  * [#1340](https://github.com/metasfresh/metasfresh-webui-api/issues/1340) Implement GET /rest/api/window/{windowId}/{documentId}/{tabId}?ids=comma separated rowIds
+
+## Fixes
+* metasfresh
+  * [#6064](https://github.com/metasfresh/metasfresh/issues/6064) Printing a Customs Invoice returns wrong number of decimals for kg quantity
+
 # metasfresh 5.135
 ## Features
 * metasfresh
@@ -19,7 +31,7 @@ Here come the actual release notes:
   * [#6028](https://github.com/metasfresh/metasfresh/issues/6028) Extract quotation logic in jasper-DB-functions
   * [#6032](https://github.com/metasfresh/metasfresh/issues/6032) Excel SQL Process with qty of invoices per daterange
   * [#6035](https://github.com/metasfresh/metasfresh/issues/6035) Make C_UOM editable in C_InvoiceLine
-  * [#6048][https://github.com/metasfresh/metasfresh/issues/6048) Improve Price Schema Excel Export
+  * [#6048](https://github.com/metasfresh/metasfresh/issues/6048) Improve Price Schema Excel Export
   * [#6057](https://github.com/metasfresh/metasfresh/issues/6057) Show BOM in window Stücklistenbestandteile
 
 * metasfresh-parent

@@ -2,12 +2,15 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.detailrecord.DetailDataRequestHandler;
@@ -55,6 +58,7 @@ import lombok.NonNull;
 public class ReceiptScheduleEventHandler
 		implements MaterialEventHandler<AbstractReceiptScheduleEvent>
 {
+	private static final Logger logger = LogManager.getLogger(ReceiptScheduleEventHandler.class);
 
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final DetailDataRequestHandler detailRequestHandler;
@@ -100,7 +104,7 @@ public class ReceiptScheduleEventHandler
 		if (event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
 		{
-			Loggables.addLog(
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
 					"Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
@@ -140,7 +144,7 @@ public class ReceiptScheduleEventHandler
 					.detailDataRecordIdentifier(detailIdentifier);
 
 			final int deletedCount = detailRequestHandler.handleRemoveDetailRequest(removeDetailRequest.build());
-			Loggables.addLog("Deleted {} detail records", deletedCount);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Deleted {} detail records", deletedCount);
 		}
 	}
 

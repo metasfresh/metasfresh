@@ -13,12 +13,15 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -61,8 +64,9 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
 public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
-	private final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator;
+	private static final Logger logger = LogManager.getLogger(PurchaseSupplyRequiredHandler.class);
 
+	private final PurchaseCandidateAdvisedEventCreator purchaseOrderAdvisedEventCreator;
 	private final PostMaterialEventService postMaterialEventService;
 
 	public PurchaseSupplyRequiredHandler(
@@ -125,7 +129,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
 		if (productPlanning == null)
 		{
-			Loggables.addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
 			return null;
 		}
 

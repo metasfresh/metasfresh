@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Optional;
 
+import de.metas.contracts.commission.Beneficiary;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -74,7 +76,10 @@ public class CommissionInstanceRequestFactory
 			return ImmutableList.of();
 		}
 
+		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
+
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(hierarchy)
 				.customerBPartnerId(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()))
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.date(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
@@ -91,8 +96,6 @@ public class CommissionInstanceRequestFactory
 		{
 			return ImmutableList.of();
 		}
-
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
 
 		final ImmutableList.Builder<CreateInstanceRequest> result = ImmutableList.builder();
 		for (final CommissionConfig config : configs)
@@ -113,5 +116,47 @@ public class CommissionInstanceRequestFactory
 				.trigger(trigger)
 				.build();
 		return request;
+	}
+
+	public Optional<CreateInstanceRequest> createRequestFor(final CreateForecastCommissionInstanceRequest retrieveForecastCommissionPointsRequest)
+	{
+		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(retrieveForecastCommissionPointsRequest.getSalesRepId());
+
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.customerBPartnerId( retrieveForecastCommissionPointsRequest.getCustomerId() )
+				.salesRepBPartnerId( retrieveForecastCommissionPointsRequest.getSalesRepId() )
+				.date( retrieveForecastCommissionPointsRequest.getDateOrdered() )
+				.salesProductId( retrieveForecastCommissionPointsRequest.getProductId() )
+				.commissionHierarchy(hierarchy)
+				.build();
+
+		final ImmutableList<CommissionConfig> configs =
+				commissionContractFactory.createForNewCommissionInstances(contractRequest)
+					.stream()
+				    .filter(config -> config.getContractFor( Beneficiary.of( contractRequest.getSalesRepBPartnerId() ) ) != null)
+				    .collect( ImmutableList.toImmutableList() );
+
+		if (configs.size() > 1)
+		{
+			throw new AdempiereException("Expecting only one active commissionConfig for a sales rep at a certain time!")
+					.appendParametersToMessage()
+					.setParameter("salesRepBPartnerId", contractRequest.getSalesRepBPartnerId())
+					.setParameter("contractRequest", contractRequest)
+					.setParameter("hierarchy", hierarchy)
+					.setParameter("commissionConfigs", configs);
+		}
+
+		if ( configs.isEmpty() )
+		{
+			return Optional.empty();
+		}
+
+		final CommissionTrigger commissionTrigger = commissionTriggerFactory
+				.createForForecastQtyAndPrice( retrieveForecastCommissionPointsRequest.getProductPrice(),
+											   retrieveForecastCommissionPointsRequest.getForecastQty(),
+											   retrieveForecastCommissionPointsRequest.getSalesRepId(),
+											   retrieveForecastCommissionPointsRequest.getCustomerId() );
+
+		return Optional.of( createRequest(hierarchy, configs.get(0), commissionTrigger) );
 	}
 }

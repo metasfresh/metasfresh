@@ -44,7 +44,10 @@ public class BPartnerContactId implements RepoIdAware
 		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
 		if (userId == null)
 		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@");
+			throw new AdempiereException("@Invalid@ @Contact_ID@")
+					.appendParametersToMessage()
+					.setParameter("bpartnerId", bpartnerId)
+					.setParameter("contactRepoId", contactRepoId);
 		}
 
 		return of(bpartnerId, userId);
@@ -62,7 +65,10 @@ public class BPartnerContactId implements RepoIdAware
 		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
 		if (userId == null)
 		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@");
+			throw new AdempiereException("@Invalid@ @Contact_ID@")
+					.appendParametersToMessage()
+					.setParameter("bpartnerId", bpartnerId)
+					.setParameter("contactRepoId", contactRepoId);
 		}
 
 		return of(bpartnerId, userId);

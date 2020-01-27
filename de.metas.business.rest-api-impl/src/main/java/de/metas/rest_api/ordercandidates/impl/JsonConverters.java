@@ -34,6 +34,7 @@ import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAn
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -104,28 +105,11 @@ class JsonConverters
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
-		final String dataSourceIdentifier = request.getDataSource();
+		final InputDataSourceId dataSourceId = retrieveDataSourceId(request, orgId, masterdataProvider);
 
-		if (Check.isEmpty(dataSourceIdentifier))
-		{
-			throw new MissingPropertyException("dataSource", request);
-		}
-
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
-
-		final String dataDestIdentifier = request.getDataDest();
-
-		if (Check.isEmpty(dataDestIdentifier))
-		{
-			throw new MissingPropertyException("dataDest", request);
-		}
-
-		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
-
+		final InputDataSourceId dataDestId = retrieveDataDestId(request, orgId, masterdataProvider);
 		final I_AD_InputDataSource dataDestRecord = inputDataSourceDAO.getById(dataDestId);
-
 		final String dataDestInternalName = dataDestRecord.getInternalName();
-
 		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
 		{
 			Check.assumeNotNull(request.getDateRequired(),
@@ -196,6 +180,48 @@ class JsonConverters
 				.salesRepId(salesRepId)
 		//
 		;
+	}
+
+	private InputDataSourceId retrieveDataDestId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final String dataDestIdentifier = request.getDataDest();
+		if (Check.isEmpty(dataDestIdentifier))
+		{
+			throw new MissingPropertyException("dataDest", request);
+		}
+		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
+		if (dataDestId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataDest")
+					.resourceIdentifier(dataDestIdentifier)
+					.parentResource(request).build();
+		}
+		return dataDestId;
+	}
+
+	private InputDataSourceId retrieveDataSourceId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final String dataSourceIdentifier = request.getDataSource();
+		if (Check.isEmpty(dataSourceIdentifier))
+		{
+			throw new MissingPropertyException("dataSource", request);
+		}
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceIdentifier)
+					.parentResource(request).build();
+		}
+		return dataSourceId;
 	}
 
 	private final JsonResponseBPartnerLocationAndContact toJson(
