@@ -89,6 +89,9 @@ public class HUStatusBL implements IHUStatusBL
 			// shipped => active is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
 			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Active)
 
+			// shipped => picked is used if a shipment with picked HUs is reversed
+			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Picked)
+
 			.build();
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(
@@ -166,7 +169,7 @@ public class HUStatusBL implements IHUStatusBL
 		}
 
 		final String huStatus = huRecord.getHUStatus();
-		if (Check.isEmpty(huStatus,true))
+		if (Check.isEmpty(huStatus, true))
 		{
 			return false; // can be the case with a new/unsaved HU
 		}
@@ -191,7 +194,6 @@ public class HUStatusBL implements IHUStatusBL
 		return true;
 	}
 
-
 	@Override
 	public boolean isStatusPlanned(@Nullable final I_M_HU huRecord)
 	{
@@ -200,6 +202,19 @@ public class HUStatusBL implements IHUStatusBL
 			return false;
 		}
 		return X_M_HU.HUSTATUS_Planning.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusActiveOrIssued(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+
+		final String huStatus = huRecord.getHUStatus();
+		return X_M_HU.HUSTATUS_Active.equals(huStatus)
+				|| X_M_HU.HUSTATUS_Issued.equals(huStatus);
 	}
 
 	@Override

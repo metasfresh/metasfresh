@@ -29,16 +29,16 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.storage.IStorageListeners;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.spi.hu.impl.StorageSegmentFromHUAttribute;
+import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHUAttribute;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.util.Services;
 
 @Validator(I_M_HU_Attribute.class)
 public class M_HU_Attribute
 {
 	/**
-	 * Fire {@link IStorageSegment} changed when an {@link I_M_HU_Attribute} is changed.
+	 * Fire {@link IShipmentScheduleSegment} changed when an {@link I_M_HU_Attribute} is changed.
 	 *
 	 * NOTE: there is no point to trigger this on AFTER_NEW because then an segment change will be fired on {@link I_M_HU} level (remember: we are creating attributes once, when the HU is created).
 	 *
@@ -54,8 +54,8 @@ public class M_HU_Attribute
 	public void fireAttributeSegmentChanged(final I_M_HU_Attribute huAttribute)
 	{
 		// NOTE: Fire just notifying about the segment change and later on it will be determined if this attribute change really affects the storage.
-		final IStorageSegment storageSegment = new StorageSegmentFromHUAttribute(huAttribute);
-		Services.get(IStorageListeners.class).notifyStorageSegmentChanged(storageSegment);
+		final IShipmentScheduleSegment storageSegment = new ShipmentScheduleSegmentFromHUAttribute(huAttribute);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 
 }

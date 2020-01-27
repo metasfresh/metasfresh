@@ -354,7 +354,7 @@ public class RoleDAO implements IRoleDAO
 				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 }

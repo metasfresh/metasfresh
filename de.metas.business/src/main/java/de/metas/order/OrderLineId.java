@@ -53,9 +53,9 @@ public class OrderLineId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int getRepoIdOr(final OrderLineId orderLineId, final int defaultValue)
+	public static int toRepoId(final OrderLineId orderLineId)
 	{
-		return orderLineId != null ? orderLineId.getRepoId() : defaultValue;
+		return orderLineId != null ? orderLineId.getRepoId() : -1;
 	}
 
 	public static Set<Integer> toIntSet(final Collection<OrderLineId> orderLineIds)

@@ -18,7 +18,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PrintInfo;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -42,7 +41,8 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.report.jasper.client.JRClient;
+import de.metas.report.client.ReportsClient;
+import de.metas.report.server.OutputType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -105,7 +105,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		// Extract print packages
 		int countLines = 0;
 		final Iterator<I_C_Print_Job_Line> jobLines = dao.retrievePrintJobLines(jobInstructions);
-		final Map<Integer, I_C_Print_Package> printPackages = new LinkedHashMap<Integer, I_C_Print_Package>();
+		final Map<Integer, I_C_Print_Package> printPackages = new LinkedHashMap<>();
 
 		// needs to be on true in order to have summary which currently in not working 
 		// FIXME in a next working increment see gh2128
@@ -201,8 +201,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
 		
-		final JRClient jrClient = JRClient.get();
-		final byte[] pdf = jrClient.report(jasperProcessInfo);
+		final ReportsClient reportsClient = ReportsClient.get();
+		final byte[] pdf = reportsClient.report(jasperProcessInfo);
 		
 		return pdf;
 

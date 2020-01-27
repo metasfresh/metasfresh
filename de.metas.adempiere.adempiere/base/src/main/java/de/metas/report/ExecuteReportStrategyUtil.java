@@ -1,10 +1,13 @@
 package de.metas.report;
 
+import com.google.common.collect.ImmutableList;
+import com.lowagie.text.pdf.BadPdfFormatException;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -16,11 +19,11 @@ import com.lowagie.text.Document;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.print.IPrintService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.ReportConstants;
+import de.metas.report.server.OutputType;
 
 /*
  * #%L
@@ -56,78 +59,92 @@ public class ExecuteReportStrategyUtil
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
-				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
 				.addParameter(IPrintService.PARAM_PrintCopies, 1)
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data
-				.setPrintPreview(false) 
-				
+				.setPrintPreview(false)
+
 				// important; event though printPreview(false), we might want JasperPrint, because the result shall be shown in the jasper-viewer
 				.setJRDesiredOutputType(outputType)
-				
+
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
 				.executeSync();
 
-		final byte[] processPdfData = processExecutor.getResult().getReportData();
-		return processPdfData;
+		return processExecutor.getResult().getReportData();
 	}
 
+	/**
+	 * @deprecated Please use {@link #concatenatePDFs(ImmutableList)}.
+	 */
+	@Deprecated
 	public byte[] concatenatePDF(
 			@NonNull final byte[] documentPdfData,
-			@NonNull final List<PdfDataProvider> additionalDataItemsToAttach)
+			@NonNull final List<PdfDataProvider> pdfDataToConcatenate)
 	{
-		if(additionalDataItemsToAttach.isEmpty())
+		if (pdfDataToConcatenate.isEmpty())
 		{
 			return documentPdfData;
 		}
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		print(out, documentPdfData, additionalDataItemsToAttach);
+		final PdfDataProvider pdfData = PdfDataProvider.forData(documentPdfData);
 
-		return out.toByteArray();
+		final ImmutableList<PdfDataProvider> allPdfDataToConcatenate = ImmutableList.<PdfDataProvider>builder()
+				.add(pdfData)
+				.addAll(pdfDataToConcatenate)
+				.build();
+
+		return concatenatePDFs(allPdfDataToConcatenate);
 	}
 
-	private void print(
-			@NonNull final OutputStream bos,
-			@NonNull final byte[] documentPdfData,
-			@NonNull final List<PdfDataProvider> additionalDataItemsToAttach)
+	/**
+	 * The more sane version of {@link #concatenatePDF(byte[], List)}.
+	 */
+	@NonNull
+	public byte[] concatenatePDFs(@NonNull final ImmutableList<PdfDataProvider> pdfDataToConcatenate)
+	{
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		concatenatePDFsToOutputStream(out, pdfDataToConcatenate);
+
+		return out.toByteArray();
+
+	}
+
+	private void concatenatePDFsToOutputStream(
+			@NonNull final OutputStream outputStream,
+			@NonNull final ImmutableList<PdfDataProvider> pdfDataToConcatenate)
 	{
 		final Document document = new Document();
 
 		try
 		{
-			final PdfCopy copy = new PdfCopy(document, bos);
+			final PdfCopy copyDestination = new PdfCopy(document, outputStream);
 			document.open();
 
-			final PdfReader dunningDocDataReader = new PdfReader(documentPdfData);
-
-			for (int page = 0; page < dunningDocDataReader.getNumberOfPages();)
+			for (final PdfDataProvider pdfData : pdfDataToConcatenate)
 			{
-				copy.addPage(copy.getImportedPage(dunningDocDataReader, ++page));
-			}
-			copy.freeReader(dunningDocDataReader);
-			dunningDocDataReader.close();
-
-			for (final PdfDataProvider additionalDataItemToAttach : additionalDataItemsToAttach)
-			{
-				final byte[] data = additionalDataItemToAttach.getPdfData();
-
-				final PdfReader invoiceDocDataReader = new PdfReader(data);
-
-				for (int page = 0; page < invoiceDocDataReader.getNumberOfPages();)
-				{
-					copy.addPage(copy.getImportedPage(invoiceDocDataReader, ++page));
-				}
-				copy.freeReader(invoiceDocDataReader);
-				invoiceDocDataReader.close();
+				appendPdfPages(copyDestination, pdfData);
 			}
 			document.close();
-
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
+	}
+
+	private static void appendPdfPages(@NonNull final PdfCopy copyDestination, @NonNull final PdfDataProvider pdfData) throws IOException, BadPdfFormatException
+	{
+		final byte[] data = pdfData.getPdfData();
+
+		final PdfReader pdfReader = new PdfReader(data);
+
+		for (int page = 0; page < pdfReader.getNumberOfPages(); )
+		{
+			copyDestination.addPage(copyDestination.getImportedPage(pdfReader, ++page));
+		}
+		copyDestination.freeReader(pdfReader);
+		pdfReader.close();
 	}
 
 	@Value

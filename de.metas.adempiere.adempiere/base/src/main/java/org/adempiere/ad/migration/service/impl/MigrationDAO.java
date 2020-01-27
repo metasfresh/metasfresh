@@ -57,7 +57,7 @@ public class MigrationDAO implements IMigrationDAO
 		final Object[] params = new Object[] { name, seqNo, entityType };
 		final boolean match = new TypedSqlQuery<I_AD_Migration>(ctx, I_AD_Migration.class, where, trxName)
 				.setParameters(params)
-				.match();
+				.anyMatch();
 		return match;
 	}
 

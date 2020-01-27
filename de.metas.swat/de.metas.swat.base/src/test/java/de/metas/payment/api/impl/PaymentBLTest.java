@@ -1,5 +1,7 @@
 package de.metas.payment.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -37,9 +39,9 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_Payment;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.currency.CurrencyCode;
@@ -50,11 +52,9 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class PaymentBLTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private POJOLookupMap db;
 	private Properties ctx;
 	private I_C_Payment payment;
@@ -67,7 +67,7 @@ public class PaymentBLTest
 
 	protected IInvoiceDAO dao;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -253,7 +253,7 @@ public class PaymentBLTest
 
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void exceptionTest()
 	{
 		final PaymentBL paymentBL = new PaymentBL(); // the class under test
@@ -275,7 +275,8 @@ public class PaymentBLTest
 		currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
 		currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
 
-		paymentBL.updateAmounts(payment, null, false);
-
+		assertThatThrownBy(() -> paymentBL.updateAmounts(payment, null, false))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage("NoCurrencyConversion");
 	}
 }

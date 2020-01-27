@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -29,9 +30,10 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMCreateRequest;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.X_PP_Product_BOM;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -177,7 +179,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 		return SalesOrderCandidate.builder()
 				.priceListId(PriceListId.ofRepoId(fromQuotation.getM_PriceList_ID()))
-				.datePromised(TimeUtil.asLocalDate(fromQuotation.getDatePromised()))
+				.datePromised(TimeUtil.asZonedDateTime(fromQuotation.getDatePromised()))
 				.fromQuotation(fromQuotation)
 				//
 				.lines(lines)
@@ -295,7 +297,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		if (line.isAddProductToPriceList())
 		{
 			final PriceListId priceListId = candidate.getPriceListId();
-			final LocalDate priceDate = candidate.getDatePromised();
+			final ZonedDateTime priceDate = candidate.getDatePromised();
 			final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(priceListId, priceDate);
 
 			priceListsRepo.addProductPrice(AddProductPriceRequest.builder()
@@ -354,8 +356,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.productValue(bomProduct.getValue())
 				.productName(bomProduct.getName())
 				.uomId(bomProductUomId)
-				.bomUse(X_PP_Product_BOM.BOMUSE_Manufacturing)
-				.bomType(X_PP_Product_BOM.BOMTYPE_Make_To_Order)
+				.bomUse(BOMUse.Manufacturing)
+				.bomType(BOMType.MakeToOrder)
 				.lines(additionalQuotationLines
 						.stream()
 						.map(quotationLine -> toBOMLineCreateRequest(quotationLine, candidate.getQty()))
@@ -497,7 +499,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		private final PriceListId priceListId;
 
 		@NonNull
-		private final LocalDate datePromised;
+		private final ZonedDateTime datePromised;
 
 		@NonNull
 		private final I_C_Order fromQuotation;

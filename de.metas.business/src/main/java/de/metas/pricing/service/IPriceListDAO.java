@@ -2,6 +2,7 @@ package de.metas.pricing.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -34,7 +35,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -42,6 +42,7 @@ import org.compiere.model.I_M_ProductPrice;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -89,7 +90,7 @@ public interface IPriceListDAO extends ISingletonService
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
-	I_M_PriceList retrievePriceListByPricingSyst(PricingSystemId pricingSystemId, I_C_BPartner_Location bpartnerLocation, SOTrx soTrx);
+	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationId bpartnerLocationId, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
@@ -98,7 +99,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param date
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
-	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, @Nullable Boolean processed);
+	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, ZonedDateTime date, @Nullable Boolean processed);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
@@ -107,17 +108,17 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param date
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
-	I_M_PriceList_Version retrievePriceListVersionOrNull(PriceListId priceListId, LocalDate date, Boolean processed);
+	I_M_PriceList_Version retrievePriceListVersionOrNull(PriceListId priceListId, ZonedDateTime date, Boolean processed);
 
-	PriceListVersionId retrievePriceListVersionIdOrNull(PriceListId priceListId, LocalDate date, Boolean processed);
+	PriceListVersionId retrievePriceListVersionIdOrNull(PriceListId priceListId, ZonedDateTime date, Boolean processed);
 
-	default PriceListVersionId retrievePriceListVersionIdOrNull(final PriceListId priceListId, final LocalDate date)
+	default PriceListVersionId retrievePriceListVersionIdOrNull(final PriceListId priceListId, final ZonedDateTime date)
 	{
 		final Boolean processed = null;
 		return retrievePriceListVersionIdOrNull(priceListId, date, processed);
 	}
 
-	default PriceListVersionId retrievePriceListVersionId(final PriceListId priceListId, final LocalDate date)
+	default PriceListVersionId retrievePriceListVersionId(final PriceListId priceListId, final ZonedDateTime date)
 	{
 		final PriceListVersionId priceListVersionId = retrievePriceListVersionIdOrNull(priceListId, date);
 		if (priceListVersionId == null)
@@ -158,19 +159,19 @@ public interface IPriceListDAO extends ISingletonService
 	 */
 	Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(PriceListVersionId priceListVersionId);
 
-	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
+	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId, final ZonedDateTime date);
 
 	I_M_PriceList_Version getCreatePriceListVersion(ProductPriceCreateRequest request);
 
 	I_M_PriceList getPriceListByPriceListVersionId(PriceListVersionId priceListVersionId);
 
-	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
+	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(PriceListVersionId priceListVersionId, ZonedDateTime date);
 
-	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion);
+	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion, ZonedDateTime date);
 
-	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion);
+	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion, ZonedDateTime date);
 
-	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
+	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId, ZonedDateTime date);
 
 	ProductPriceId addProductPrice(AddProductPriceRequest request);
 
@@ -187,4 +188,8 @@ public interface IPriceListDAO extends ISingletonService
 	void mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
 
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
+
+	PricingSystemId getPricingSystemId(PriceListId priceListId);
+
+	String createPLVName(PriceListId pricelistId, LocalDate date);
 }

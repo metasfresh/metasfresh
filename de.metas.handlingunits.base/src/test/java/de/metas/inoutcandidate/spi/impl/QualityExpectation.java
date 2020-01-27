@@ -10,20 +10,17 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -35,6 +32,11 @@ import org.junit.Assert;
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 public class QualityExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -128,7 +130,9 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		return this;
 	}
 
-	public HUReceiptLinePartCandidate createPart()
+	public HUReceiptLinePartCandidate createPart(
+			@NonNull final ProductId productId,
+			@NonNull final UomId uomId)
 	{
 		final I_M_ReceiptSchedule_Alloc rsa = createRSA();
 
@@ -137,8 +141,8 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		{
 			attributes.setId(attributesId);
 		}
-		attributes.setQualityDiscountPercent(qtyAndQuality().getQualityDiscountPercent());
-		final HUReceiptLinePartCandidate part = new HUReceiptLinePartCandidate(attributes);
+		attributes.setQualityDiscountPercent(qtyAndQuality().getQualityDiscountPercent().toBigDecimal());
+		final HUReceiptLinePartCandidate part = new HUReceiptLinePartCandidate(attributes, productId, uomId);
 		part.add(rsa);
 
 		//
@@ -147,8 +151,7 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 
 		System.out.println("--------------------------------------------------------------"
 				+ "\n Expectation: " + this
-				+ "\n Created Part: " + part
-				);
+				+ "\n Created Part: " + part);
 
 		return part;
 	}
@@ -159,7 +162,7 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(receiptSchedule);
 		final I_M_ReceiptSchedule_Alloc rsa = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class, context);
 		rsa.setM_ReceiptSchedule(receiptSchedule);
-		rsa.setHU_QtyAllocated(qtyAndQuality().getQty());
+		rsa.setHU_QtyAllocated(qtyAndQuality().getQty().getStockQty().toBigDecimal());
 		InterfaceWrapperHelper.save(rsa);
 		return rsa;
 	}
@@ -179,60 +182,31 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 		return qtyAndQualityExpectation;
 	}
 
-	public QualityExpectation<ParentExpectationType> qty(final BigDecimal qty)
+	public QualityExpectation<ParentExpectationType> qty(@NonNull final StockQtyAndUOMQty qty)
 	{
 		qtyAndQuality().qty(qty);
 		return this;
 	}
 
-	public QualityExpectation<ParentExpectationType> qty(final String qty)
-	{
-		return qty(new BigDecimal(qty));
-	}
-
-	public QualityExpectation<ParentExpectationType> qty(final int qty)
-	{
-		return qty(new BigDecimal(qty));
-	}
-
-	public BigDecimal getQty()
+	public StockQtyAndUOMQty getQty()
 	{
 		return qtyAndQuality().getQty();
 	}
 
-	public QualityExpectation<ParentExpectationType> qtyWithIssues(final BigDecimal qtyWithIssues)
+	public QualityExpectation<ParentExpectationType> qtyWithIssues(@NonNull final StockQtyAndUOMQty qtyWithIssues)
 	{
 		qtyAndQuality().qtyWithIssues(qtyWithIssues);
 		return this;
 	}
 
-	public QualityExpectation<ParentExpectationType> qtyWithIssues(final String qtyWithIssues)
-	{
-		return qtyWithIssues(new BigDecimal(qtyWithIssues));
-	}
 
-	public QualityExpectation<ParentExpectationType> qtyWithIssues(final int qtyWithIssues)
-	{
-		return qtyWithIssues(new BigDecimal(qtyWithIssues));
-	}
-
-	public QualityExpectation<ParentExpectationType> qtyWithoutIssues(final BigDecimal qtyWithoutIssues)
+	public QualityExpectation<ParentExpectationType> qtyWithoutIssues(@NonNull final StockQtyAndUOMQty qtyWithoutIssues)
 	{
 		qtyAndQuality().qtyWithoutIssues(qtyWithoutIssues);
 		return this;
 	}
 
-	public QualityExpectation<ParentExpectationType> qtyWithoutIssues(final String qtyWithoutIssues)
-	{
-		return qtyWithoutIssues(new BigDecimal(qtyWithoutIssues));
-	}
-
-	public QualityExpectation<ParentExpectationType> qtyWithoutIssues(final int qtyWithoutIssues)
-	{
-		return qtyWithoutIssues(new BigDecimal(qtyWithoutIssues));
-	}
-
-	public QualityExpectation<ParentExpectationType> qualityDiscountPercent(final BigDecimal qualityDiscountPercent)
+	public QualityExpectation<ParentExpectationType> qualityDiscountPercent(final Percent qualityDiscountPercent)
 	{
 		qtyAndQuality().qualityDiscountPercent(qualityDiscountPercent);
 		return this;
@@ -240,15 +214,15 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 
 	public QualityExpectation<ParentExpectationType> qualityDiscountPercent(final String qualityDiscountPercent)
 	{
-		return qualityDiscountPercent(new BigDecimal(qualityDiscountPercent));
+		return qualityDiscountPercent(Percent.of(qualityDiscountPercent));
 	}
 
 	public QualityExpectation<ParentExpectationType> qualityDiscountPercent(final int qualityDiscountPercent)
 	{
-		return qualityDiscountPercent(new BigDecimal(qualityDiscountPercent));
+		return qualityDiscountPercent(Percent.of(qualityDiscountPercent));
 	}
 
-	public BigDecimal getQualityDiscountPercent()
+	public Percent getQualityDiscountPercent()
 	{
 		return qtyAndQuality().getQualityDiscountPercent();
 	}
@@ -256,7 +230,6 @@ public class QualityExpectation<ParentExpectationType> extends AbstractHUExpecta
 	public QualityExpectation<ParentExpectationType> uom(final I_C_UOM uom)
 	{
 		this.uom = uom;
-		qtyAndQuality().qtyPrecision(uom == null ? 0 : uom.getStdPrecision());
 		return this;
 	}
 

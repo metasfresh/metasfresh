@@ -4,8 +4,8 @@ import de.metas.async.Async_Constants;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Workpackage Processor statistics which are directly bound to monitor {@link IMeter}s.
@@ -23,10 +23,8 @@ public class MonitorableQueueProcessorStatistics implements IMutableQueueProcess
 
 	private final String workpackageProcessorName;
 
-	public MonitorableQueueProcessorStatistics(final String workpackageProcessorName)
+	public MonitorableQueueProcessorStatistics(@NonNull final String workpackageProcessorName)
 	{
-		super();
-		Check.assumeNotNull(workpackageProcessorName, "workpackageProcessorName not null");
 		this.workpackageProcessorName = workpackageProcessorName;
 	}
 

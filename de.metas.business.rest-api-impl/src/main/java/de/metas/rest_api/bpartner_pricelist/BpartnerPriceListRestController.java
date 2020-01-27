@@ -1,12 +1,13 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +65,7 @@ public class BpartnerPriceListRestController
 
 	@GetMapping("/{bpartnerIdentifier}/sales/prices/{countryCode}")
 	public ResponseEntity<JsonResponsePriceList> getSalesPriceList(
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			//
@@ -82,7 +83,7 @@ public class BpartnerPriceListRestController
 
 	@GetMapping("/{bpartnerIdentifier}/purchase/prices/{countryCode}")
 	public ResponseEntity<JsonResponsePriceList> getPurchasePriceList(
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			//
@@ -106,7 +107,7 @@ public class BpartnerPriceListRestController
 	{
 		try
 		{
-			final LocalDate date = !Check.isEmpty(dateStr) ? LocalDate.parse(dateStr) : SystemTime.asLocalDate();
+			final LocalDate date = !Check.isEmpty(dateStr) ? TimeUtil.asLocalDate(dateStr) : SystemTime.asLocalDate();
 
 			final JsonResponsePriceList result = GetPriceListCommand.builder()
 					.servicesFacade(servicesFacade)

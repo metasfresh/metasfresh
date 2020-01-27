@@ -16,9 +16,9 @@ public interface I_EDI_DesadvLine
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org
+    /** AccessLevel = 1 - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
@@ -32,8 +32,6 @@ public interface I_EDI_DesadvLine
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_Client>(I_EDI_DesadvLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_EDI_DesadvLine
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_Org>(I_EDI_DesadvLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -87,8 +83,6 @@ public interface I_EDI_DesadvLine
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_User>(I_EDI_DesadvLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -112,8 +106,6 @@ public interface I_EDI_DesadvLine
 	 */
 	public int getC_UOM_ID();
 
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_C_UOM>(I_EDI_DesadvLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
@@ -191,7 +183,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set EDI_DesadvLine.
+	 * Set DESADV-Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -200,7 +192,7 @@ public interface I_EDI_DesadvLine
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID);
 
 	/**
-	 * Get EDI_DesadvLine.
+	 * Get DESADV-Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -237,27 +229,29 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_GTIN = "GTIN";
 
 	/**
-	 * Set SSCC18.
+	 * Set Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIPA_SSCC18 (java.lang.String IPA_SSCC18);
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
 
 	/**
-	 * Get SSCC18.
+	 * Get Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIPA_SSCC18();
+	public java.lang.String getInvoicableQtyBasedOn();
 
-    /** Column definition for IPA_SSCC18 */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "IPA_SSCC18", null);
-    /** Column name IPA_SSCC18 */
-    public static final String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
+    /** Column definition for InvoicableQtyBasedOn */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_InvoicableQtyBasedOn = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "InvoicableQtyBasedOn", null);
+    /** Column name InvoicableQtyBasedOn */
+    public static final String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
 	 * Set Aktiv.
@@ -283,31 +277,6 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set manuelle SSCC18.
-	 * Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsManual_IPA_SSCC18 (boolean IsManual_IPA_SSCC18);
-
-	/**
-	 * Get manuelle SSCC18.
-	 * Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isManual_IPA_SSCC18();
-
-    /** Column definition for IsManual_IPA_SSCC18 */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IsManual_IPA_SSCC18 = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "IsManual_IPA_SSCC18", null);
-    /** Column name IsManual_IPA_SSCC18 */
-    public static final String COLUMNNAME_IsManual_IPA_SSCC18 = "IsManual_IPA_SSCC18";
 
 	/**
 	 * Set Spätere Nachlieferung.
@@ -360,54 +329,6 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Handling Unit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_HU_ID (int M_HU_ID);
-
-	/**
-	 * Get Handling Unit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_HU_ID();
-
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "M_HU_ID", null);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
-
-	/**
-	 * Set Bewegungs-Menge.
-	 * Menge eines bewegten Produktes.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementQty (java.math.BigDecimal MovementQty);
-
-	/**
-	 * Get Bewegungs-Menge.
-	 * Menge eines bewegten Produktes.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getMovementQty();
-
-    /** Column definition for MovementQty */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "MovementQty", null);
-    /** Column name MovementQty */
-    public static final String COLUMNNAME_MovementQty = "MovementQty";
-
-	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -427,10 +348,33 @@ public interface I_EDI_DesadvLine
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_M_Product>(I_EDI_DesadvLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Einzelpreis.
+	 * Effektiver Preis
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceActual (java.math.BigDecimal PriceActual);
+
+	/**
+	 * Get Einzelpreis.
+	 * Effektiver Preis
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPriceActual();
+
+    /** Column definition for PriceActual */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_PriceActual = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "PriceActual", null);
+    /** Column name PriceActual */
+    public static final String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
 	 * Set Produktbeschreibung.
@@ -479,6 +423,29 @@ public interface I_EDI_DesadvLine
     public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_ProductNo = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "ProductNo", null);
     /** Column name ProductNo */
     public static final String COLUMNNAME_ProductNo = "ProductNo";
+
+	/**
+	 * Set Geliefert (Lagereinheit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInStockingUOM (java.math.BigDecimal QtyDeliveredInStockingUOM);
+
+	/**
+	 * Get Geliefert (Lagereinheit).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInStockingUOM();
+
+    /** Column definition for QtyDeliveredInStockingUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyDeliveredInStockingUOM = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyDeliveredInStockingUOM", null);
+    /** Column name QtyDeliveredInStockingUOM */
+    public static final String COLUMNNAME_QtyDeliveredInStockingUOM = "QtyDeliveredInStockingUOM";
 
 	/**
 	 * Set Liefermenge.
@@ -531,27 +498,29 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
-	 * Set Verpackungskapazität.
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity);
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Verpackungskapazität.
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyItemCapacity();
+	public java.math.BigDecimal getQtyOrdered();
 
-    /** Column definition for QtyItemCapacity */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyItemCapacity = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyItemCapacity", null);
-    /** Column name QtyItemCapacity */
-    public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
+    /** Column definition for QtyOrdered */
+    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, Object>(I_EDI_DesadvLine.class, "QtyOrdered", null);
+    /** Column name QtyOrdered */
+    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
 	 * Set CU-UPC.
@@ -624,8 +593,6 @@ public interface I_EDI_DesadvLine
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_DesadvLine, org.compiere.model.I_AD_User>(I_EDI_DesadvLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -5,12 +5,12 @@ import java.time.ZonedDateTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -107,7 +107,7 @@ public class SalesOrderLine
 		return orderLine.getOrderedQty();
 	}
 
-	public Money getPriceActual()
+	public ProductPrice getPriceActual()
 	{
 		return orderLine.getPriceActual();
 	}

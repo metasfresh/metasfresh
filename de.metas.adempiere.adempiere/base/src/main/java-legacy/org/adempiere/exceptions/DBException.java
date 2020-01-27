@@ -141,7 +141,7 @@ public class DBException extends AdempiereException
 	 * @param e exception
 	 * @param sql sql query
 	 */
-	public DBException(final Exception e, final String sql)
+	public DBException(final Exception e, final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
 	}
@@ -158,10 +158,10 @@ public class DBException extends AdempiereException
 	 * @param sql sql query
 	 * @param sqlParams sql parameters
 	 */
-	public DBException(final Exception e, final String sql, final Object[] sqlParams)
+	public DBException(final Exception e, final CharSequence sql, final Object[] sqlParams)
 	{
 		this(e);
-		m_sql = sql;
+		m_sql = sql != null ? sql.toString() : null;
 		if (sqlParams != null)
 		{
 			m_params = Arrays.copyOf(sqlParams, sqlParams.length);
@@ -175,10 +175,10 @@ public class DBException extends AdempiereException
 	 * @param sql sql query
 	 * @param sqlParams sql parameters
 	 */
-	public DBException(final Exception e, final String sql, final List<Object> sqlParams)
+	public DBException(final Exception e, final CharSequence sql, final List<Object> sqlParams)
 	{
 		this(e);
-		m_sql = sql;
+		m_sql = sql != null ? sql.toString() : null;
 		if (sqlParams != null)
 		{
 			m_params = sqlParams.toArray();

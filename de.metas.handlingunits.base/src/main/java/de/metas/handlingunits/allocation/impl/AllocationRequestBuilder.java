@@ -1,34 +1,10 @@
 package de.metas.handlingunits.allocation.impl;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 
@@ -37,39 +13,25 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.storage.EmptyHUListener;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 /* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
 {
 	private IAllocationRequest baseAllocationRequest = null;
 	private IHUContext huContext = null;
-	private I_M_Product product = null;
+	private ProductId productId = null;
 	private Quantity quantity = null;
-	private Date date = null;
+	private ZonedDateTime date = null;
 	private Boolean forceQtyAllocation = null;
-	private ITableRecordReference fromReferencedTableRecord;
+	private TableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
 	private List<EmptyHUListener> emptyHUListeners = null;
-
-	@Override
-	public String toString()
-	{
-		return "AllocationRequestBuilder ["
-				+ "baseAllocationRequest=" + baseAllocationRequest
-				+ ", product=" + product
-				+ ", quantity=" + quantity
-				+ ", date=" + date
-				+ ", fromReferencedTableRecord=" + fromReferencedTableRecord
-				+ ", forceQtyAllocation=" + forceQtyAllocation
-				+ ", huContext=" + huContext
-				+ "]";
-	}
 
 	@Override
 	public IAllocationRequestBuilder setBaseAllocationRequest(final IAllocationRequest baseAllocationRequest)
@@ -111,25 +73,25 @@ import lombok.NonNull;
 	@Override
 	public IAllocationRequestBuilder setProduct(final I_M_Product product)
 	{
-		this.product = product;
-		return this;
+		return setProduct(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null);
 	}
 
 	@Override
 	public IAllocationRequestBuilder setProduct(final ProductId productId)
 	{
-		return setProduct(productId != null ? Services.get(IProductDAO.class).getById(productId) : null);
+		this.productId = productId;
+		return this;
 	}
 
-	public I_M_Product getProductToUse()
+	public ProductId getProductIdToUse()
 	{
-		if (product != null)
+		if (productId != null)
 		{
-			return product;
+			return productId;
 		}
 		else if (baseAllocationRequest != null)
 		{
-			return baseAllocationRequest.getProduct();
+			return baseAllocationRequest.getProductId();
 		}
 
 		throw new AdempiereException("Product not set in " + this);
@@ -163,7 +125,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IAllocationRequestBuilder setDate(final Date date)
+	public IAllocationRequestBuilder setDate(final ZonedDateTime date)
 	{
 		this.date = date;
 		return this;
@@ -172,11 +134,10 @@ import lombok.NonNull;
 	@Override
 	public IAllocationRequestBuilder setDateAsToday()
 	{
-		date = SystemTime.asDate();
-		return this;
+		return setDate(SystemTime.asZonedDateTime());
 	}
 
-	public Date getDateToUse()
+	public ZonedDateTime getDateToUse()
 	{
 		if (date != null)
 		{
@@ -187,7 +148,7 @@ import lombok.NonNull;
 			return baseAllocationRequest.getDate();
 		}
 
-		final Date contextDate = getHUContextToUse().getDate();
+		final ZonedDateTime contextDate = getHUContextToUse().getDate();
 		if (contextDate != null)
 		{
 			return contextDate;
@@ -196,7 +157,7 @@ import lombok.NonNull;
 		throw new AdempiereException("Date not set in " + this);
 	}
 
-	private ITableRecordReference getFromReferencedTableRecordToUse()
+	private TableRecordReference getFromReferencedTableRecordToUse()
 	{
 		if (fromReferencedTableRecordSet)
 		{
@@ -211,7 +172,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IAllocationRequestBuilder setFromReferencedTableRecord(final ITableRecordReference fromReferencedTableRecord)
+	public IAllocationRequestBuilder setFromReferencedTableRecord(final TableRecordReference fromReferencedTableRecord)
 	{
 		this.fromReferencedTableRecord = fromReferencedTableRecord;
 		fromReferencedTableRecordSet = true;
@@ -222,7 +183,7 @@ import lombok.NonNull;
 	@Override
 	public IAllocationRequestBuilder setFromReferencedModel(final Object referenceModel)
 	{
-		final ITableRecordReference fromReferencedTableRecord = TableRecordReference.ofOrNull(referenceModel);
+		final TableRecordReference fromReferencedTableRecord = TableRecordReference.ofOrNull(referenceModel);
 		return setFromReferencedTableRecord(fromReferencedTableRecord);
 	}
 
@@ -262,15 +223,15 @@ import lombok.NonNull;
 	public IAllocationRequest create()
 	{
 		final IHUContext huContext = getHUContextToUse();
-		final I_M_Product product = getProductToUse();
+		final ProductId productId = getProductIdToUse();
 		final Quantity quantity = getQuantityToUse();
-		final Date date = getDateToUse();
-		final ITableRecordReference fromTableRecord = getFromReferencedTableRecordToUse();
+		final ZonedDateTime date = getDateToUse();
+		final TableRecordReference fromTableRecord = getFromReferencedTableRecordToUse();
 		final boolean forceQtyAllocation = isForceQtyAllocationToUse();
 
 		final AllocationRequest request = new AllocationRequest(
 				huContext,
-				product,
+				productId,
 				quantity,
 				date,
 				fromTableRecord,

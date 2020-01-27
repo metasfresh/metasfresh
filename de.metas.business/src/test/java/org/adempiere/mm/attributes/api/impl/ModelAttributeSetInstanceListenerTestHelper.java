@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,22 +15,23 @@ package org.adempiere.mm.attributes.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -48,6 +51,7 @@ import org.junit.Ignore;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
@@ -84,7 +88,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 
 	public void setAttributeAction(AttributeAction attributeAction)
 	{
-		sysConfigBL.setValue(AttributesBL.SYSCONFIG_AttributeAction, attributeAction.getCode(), 0);
+		sysConfigBL.setValue(AttributesBL.SYSCONFIG_AttributeAction, attributeAction.getCode(), ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	public void setIsAttrDocumentRelevantForInvoice(final I_M_Attribute attribute, final boolean isAttrDocumentRelevant)
@@ -170,9 +174,13 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		return inoutLine;
 	}
 
-	public void assertAttributeValue(final String expectedAttributeValue, final I_M_AttributeSetInstance asi, final I_M_Attribute attribute)
+	public void assertAttributeValue(
+			final String expectedAttributeValue,
+			@Nullable final I_M_AttributeSetInstance asi,
+			final I_M_Attribute attribute)
 	{
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi == null ? -1 : asi.getM_AttributeSetInstance_ID());
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (expectedAttributeValue == null)
 		{
 			Assert.assertNull("No AI expected", ai);

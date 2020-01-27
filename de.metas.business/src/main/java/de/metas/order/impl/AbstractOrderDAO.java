@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -64,7 +65,12 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
-		return InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
+		final I_C_Order order = InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
+		if (order == null)
+		{
+			throw new AdempiereException("@NotFound@: " + orderId);
+		}
+		return order;
 	}
 
 	@Override
@@ -118,7 +124,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			@NonNull final Class<T> clazz)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
-		if(orderId == null)
+		if (orderId == null)
 		{
 			return ImmutableList.of();
 		}
@@ -133,7 +139,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final OrderId orderId)
 	{
-		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
+		return retrieveOrderLines(orderId, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
+			@NonNull final OrderId orderId,
+			@NonNull final Class<T> modelClass)
+	{
+		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, modelClass);
 	}
 
 	// tsa: commented out because it's not safe to cache the list of order lines and return it without even cloning.
@@ -158,13 +172,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public final List<Integer> retrieveAllOrderLineIds(final I_C_Order order)
+	public final ImmutableList<OrderLineId> retrieveAllOrderLineIds(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
-				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds();
+				.listIds()
+				.stream()
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -186,7 +203,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addInArrayOrAllFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -202,7 +219,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return retrieveInOutsQuery(order)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private IQueryBuilder<I_M_InOut> retrieveInOutsQuery(final I_C_Order order)
@@ -249,7 +266,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(OrderId::ofRepoId)
 				.stream();

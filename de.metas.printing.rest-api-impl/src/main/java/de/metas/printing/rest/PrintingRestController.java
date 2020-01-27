@@ -40,6 +40,7 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
 /*
@@ -77,12 +78,15 @@ public class PrintingRestController
 	 *
 	 * @param sessionIdIGNORED
 	 * @param loginRequest the request's user and password are ignored.
-	 *            They are required for another (legacy) endpoint.
+	 *            They are required for another (legacy) client.
 	 * @return
 	 */
 	@PostMapping("/login/{sessionId}")
 	public LoginResponse login(
-			@PathVariable("sessionId") int sessionIdIGNORED,
+			@ApiParam("Ignored/deprecated; you can savely provide e.g. 0") //
+			@PathVariable("sessionId") final int sessionIdIGNORED,
+
+			@ApiParam(required = true, value = "The request body's user and password are ignored.\nThey are required for another (legacy) client.") //
 			@RequestBody final LoginRequest loginRequest)
 	{
 		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(Env.getCtx());
@@ -101,7 +105,7 @@ public class PrintingRestController
 			@PathVariable("sessionId") final int sessionId,
 			@RequestBody final PrinterHWList printerHWList)
 	{
-		final String hostKey = updateCtxAndRetrieveHostKey(sessionId);
+		final String hostKey = updateSessionAndRetrieveHostKey(sessionId);
 
 		assertCanAddPrinters();
 		printerHwRepo.createOrUpdatePrinters(hostKey, printerHWList);
@@ -109,20 +113,12 @@ public class PrintingRestController
 		return ResponseEntity.ok().build();
 	}
 
-	private String updateCtxAndRetrieveHostKey(final int sessionId)
-	{
-		final MFSession sessionById = Services.get(ISessionBL.class).getSessionById(Env.getCtx(), sessionId);
-		sessionById.updateContext(Env.getCtx());
-
-		return sessionById.getOrCreateHostKey(Env.getCtx());
-	}
-
 	@PostMapping("/getNextPrintPackage/{sessionId}/{transactionId}")
 	public PrintPackage getNextPrintPackage(
 			@PathVariable("sessionId") int sessionId,
 			@PathVariable("transactionId") final String transactionId)
 	{
-		updateCtxAndRetrieveHostKey(sessionId);
+		updateSessionAndRetrieveHostKey(sessionId);
 
 		final I_C_Print_Package requestPrintPackage = newInstance(I_C_Print_Package.class);
 		requestPrintPackage.setTransactionID(transactionId);
@@ -143,6 +139,14 @@ public class PrintingRestController
 		}
 
 		return response;
+	}
+
+	private String updateSessionAndRetrieveHostKey(final int sessionId)
+	{
+		final MFSession sessionById = Services.get(ISessionBL.class).getSessionById(Env.getCtx(), sessionId);
+		sessionById.updateContext(Env.getCtx());
+	
+		return sessionById.getOrCreateHostKey(Env.getCtx());
 	}
 
 	private PrintPackage createResponseFromPrintPackage(
@@ -196,7 +200,7 @@ public class PrintingRestController
 			@PathVariable("sessionId") int sessionId,
 			@PathVariable("transactionId") String transactionId)
 	{
-		updateCtxAndRetrieveHostKey(sessionId);
+		updateSessionAndRetrieveHostKey(sessionId);
 
 		final I_C_Print_Package printPackage = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Print_Package.class)
@@ -224,7 +228,7 @@ public class PrintingRestController
 			@PathVariable("transactionId") String transactionId,
 			@RequestBody final PrintJobInstructionsConfirm input)
 	{
-		updateCtxAndRetrieveHostKey(sessionId);
+		updateSessionAndRetrieveHostKey(sessionId);
 
 		final I_C_Print_Job_Instructions printJobInstructions = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Print_Job_Instructions.class)

@@ -1,7 +1,27 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -25,28 +45,6 @@ import java.math.RoundingMode;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBL;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /**
  * This class has the job of managing a {@link I_M_HU_LUTU_Configuration} for a particular {@link I_PP_Order}..it might retrieve that ppOrder's lutuConfig or create a new default one.
  *
@@ -66,13 +64,9 @@ import lombok.NonNull;
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
-		final I_C_BPartner bpartner = bpartnerId != null
-				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
-				: null;
-				
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrder.getC_UOM_ID());
+		final UomId cuUOMId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
 
 		//
 		// LU/TU COnfiguration
@@ -80,8 +74,8 @@ import lombok.NonNull;
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
-				bpartner,
+				cuUOMId,
+				bpartnerId,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 
 		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
@@ -129,6 +123,18 @@ import lombok.NonNull;
 			}
 		}
 
+		//try to get the default M_HU_Item_Product from the product CU-TU allocation
+		final ZonedDateTime date = TimeUtil.asZonedDateTime( ppOrder.getDatePromised() );
+
+		final Optional<I_M_HU_PI_Item_Product> defaultPip = hupiItemProductDAO.retrieveDefaultForProduct(
+				ProductId.ofRepoId( ppOrder.getM_Product_ID() ),
+				BPartnerId.ofRepoIdOrNull( ppOrder.getC_BPartner_ID() ),
+				date );
+
+		if ( defaultPip.isPresent() )
+		{
+			return defaultPip.get();
+		}
 		//
 		// Fallback: return the virtual PI Item Product
 		final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);

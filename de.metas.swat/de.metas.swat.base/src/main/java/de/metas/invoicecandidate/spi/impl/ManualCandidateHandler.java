@@ -3,8 +3,6 @@
  */
 package de.metas.invoicecandidate.spi.impl;
 
-
-
 /*
  * #%L
  * de.metas.swat.base
@@ -18,15 +16,14 @@ package de.metas.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -36,8 +33,9 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -51,10 +49,6 @@ import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 {
 	/**
@@ -64,39 +58,35 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 
 	private final static transient Logger logger = InvoiceCandidate_Constants.getLogger(ManualCandidateHandler.class);
 
+	/** @return {@code false}. */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
 	{
 		return false;
 	}
 
+	/** @return {@code false}. */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return false;
 	}
 
-	/**
-	 * @return empty iterator
-	 */
+	/** @return empty iterator */
 	@Override
 	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}
 
-	/**
-	 * @return empty result
-	 */
+	/** @return empty result */
 	@Override
 	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
 		return InvoiceCandidateGenerateResult.of(this);
 	}
 
-	/**
-	 * Implementation invalidates the credit memo's C_Invoice_Candidate
-	 */
+	/** Does nothing */
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
@@ -104,7 +94,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Returns CreditMemo, which is not a real table; the source doesn't exist actually
+	 * @return {@link #MANUAL} (i.e. not a real table name).
 	 */
 	@Override
 	public String getSourceTable()
@@ -112,9 +102,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		return ManualCandidateHandler.MANUAL;
 	}
 
-	/**
-	 * Returns <code>true</code>.
-	 */
+	/** @return {@code true}. */
 	@Override
 	public boolean isUserInChargeUserEditable()
 	{
@@ -122,9 +110,9 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Sets NetAmtToInvoice by using super{@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
+	 * Sets NetAmtToInvoice by using super {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
 	 *
-	 * If the amount is negative than we calculate the over all amount of the invoice and we adjust the NetAmtToInvoice in order to get a positive GrandTotal for the invoice
+	 * If the amount is negative then we calculate the over all amount of the invoice and we adjust the NetAmtToInvoice in order to get a positive GrandTotal for the invoice
 	 */
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -136,17 +124,19 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		{
 			return; // the superclass already did the job
 		}
-		ManualCandidateHandler.logger.debug("NetAmtToInvoice: {}", netAmtToInvoice);
+		logger.debug("NetAmtToInvoice: {}", netAmtToInvoice);
 
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 		final String trxName = InterfaceWrapperHelper.getTrxName(icRecord);
 
-		final IInvoiceCandidateQuery query = invoiceCandDAO.newInvoiceCandidateQuery();
-		query.setHeaderAggregationKey(icRecord.getHeaderAggregationKey());
-		query.setMaxManualC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID() - 1); // For manual candidates, fetch only those which were created before this one
-		query.setProcessed(false); // only those which are not processed
+		final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
+				.headerAggregationKey(icRecord.getHeaderAggregationKey())
+				.maxManualC_Invoice_Candidate_ID(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID() - 1)) // For manual candidates, fetch only those which were created before this one
+				.processed(false) // only those which are not processed
+				.error(false)
+				.build();
 		final int adClientId = icRecord.getAD_Client_ID();
 		final int adOrgId = icRecord.getAD_Org_ID();
 		final CurrencyId targetCurrencyId = CurrencyId.ofRepoId(icRecord.getC_Currency_ID());
@@ -154,10 +144,10 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		// TODO: handle the case when everything is negative
 
 		final BigDecimal amtOthers = invoiceCandDAO.retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, adOrgId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
-		ManualCandidateHandler.logger.debug("Amt on other lines: {}", amtOthers);
+		logger.debug("Amt on other lines: {}", amtOthers);
 
 		final BigDecimal amtTotal = netAmtToInvoice.add(amtOthers);
-		ManualCandidateHandler.logger.debug("Amt on all lines: {}", amtTotal);
+		logger.debug("Amt on all lines: {}", amtTotal);
 
 		final BigDecimal netAmtToInvoiceNew;
 		final BigDecimal splitAmt;
@@ -171,8 +161,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 			netAmtToInvoiceNew = amtOthers.negate();
 			splitAmt = netAmtToInvoice.subtract(netAmtToInvoiceNew);
 		}
-		ManualCandidateHandler.logger.debug("NetAmtToInvoiceNew: {}", netAmtToInvoiceNew);
-		ManualCandidateHandler.logger.debug("SplitAmt: {}", splitAmt);
+		logger.debug("NetAmtToInvoiceNew: {}", netAmtToInvoiceNew);
+		logger.debug("SplitAmt: {}", splitAmt);
 
 		//
 		// Validation: In case we need to change the NetAmtToInvoice then we need to enforce that QtyToInvoice=1

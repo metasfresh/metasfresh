@@ -148,7 +148,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 							trxName)
 					.addInArrayOrAllFilter(I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, distinctAggregationKeys)
 					.create()
-					.match();
+					.anyMatch();
 
 			if (lockedWpHasElementWithSameKey)
 			{

@@ -24,6 +24,13 @@ package de.metas.invoicecandidate.api;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+
+import de.metas.invoicecandidate.api.impl.InvoicingParams;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Invoicing Enqueueing & generating parameters.
@@ -33,6 +40,16 @@ import java.time.LocalDate;
  */
 public interface IInvoicingParams
 {
+	String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
+	String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
+	String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
+	String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
+	String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
+	String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
+	String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
+	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
+	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
+
 	/** @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued. */
 	boolean isOnlyApprovedForInvoicing();
 
@@ -82,4 +99,34 @@ public interface IInvoicingParams
 	 * invoice candidates.
 	 */
 	boolean isUpdateLocationAndContactForInvoice();
+
+	default Map<String, ? extends Object> asMap()
+	{
+		final Builder<String, Object> result = ImmutableMap.<String, Object> builder();
+
+		if (getCheck_NetAmtToInvoice() != null)
+		{
+			result.put(InvoicingParams.PARA_Check_NetAmtToInvoice, getCheck_NetAmtToInvoice()); // during enqueuing this result might be overwritten by a specific value
+		}
+		if (getDateAcct() != null)
+		{
+			result.put(InvoicingParams.PARA_DateAcct, getDateAcct());
+		}
+		if (getDateInvoiced() != null)
+		{
+			result.put(InvoicingParams.PARA_DateInvoiced, getDateInvoiced());
+		}
+		if (getPOReference() != null)
+		{
+			result.put(InvoicingParams.PARA_POReference, getPOReference());
+		}
+
+		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
+		result.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
+		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
+		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
+		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+
+		return result.build();
+	}
 }

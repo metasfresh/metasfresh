@@ -1,5 +1,6 @@
 package de.metas.handlingunits;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import org.compiere.model.I_C_UOM;
@@ -41,10 +42,10 @@ public interface IHUCapacityBL extends ISingletonService
 	 * @return
 	 * @see IHUPIItemProductDAO#retrievePIMaterialItemProduct(I_M_HU_Item, I_M_Product, Date) to learn which I_M_HU_PI_Item_Product's capacitiy is returned if there is more than one.
 	 */
-	CapacityInterface getCapacity(I_M_HU_Item huItem, ProductId productId, I_C_UOM uom, Date date);
+	CapacityInterface getCapacity(I_M_HU_Item huItem, ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	@Deprecated
-	CapacityInterface getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final Date date);
+	CapacityInterface getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final ZonedDateTime date);
 
 	boolean isInfiniteCapacity(I_M_HU_PI_Item_Product itemDefProduct);
 

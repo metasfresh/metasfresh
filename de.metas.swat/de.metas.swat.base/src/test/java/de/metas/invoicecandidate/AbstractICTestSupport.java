@@ -291,27 +291,27 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			.setName("Default")
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_Location_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_C_Currency_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_AD_Org_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsSOTrx)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsTaxIncluded)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded)
 				.end()
 			.build();
 		//@formatter:on
@@ -340,7 +340,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_C_Order_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 				.end()
 //			.newItem()
 //				.setType(X_C_AggregationItem.TYPE_Attribute)
@@ -654,7 +654,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			final boolean existingInvalidCandidates = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
-					.match();
+					.anyMatch();
 			Assert.assertEquals("Existing invalid invoice candidates", false, existingInvalidCandidates);
 		}
 	}

@@ -1,5 +1,7 @@
 package de.metas.tourplanning.integrationtest;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,18 +15,17 @@ package de.metas.tourplanning.integrationtest;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -91,18 +92,20 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 		assertProcessed(false, tourInstance);
 	}
 
-	@Test(expected = DocumentProcessingException.class)
+	@Test
 	public void test_void_ShipperTransportation_ShallFail()
 	{
 		// Void it => shall throw exception
-		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Void, null);
+		assertThatThrownBy(() -> docActionBL.processEx(shipperTransportation, IDocument.ACTION_Void, null))
+				.isInstanceOf(DocumentProcessingException.class);
 	}
 
-	@Test(expected = DocumentProcessingException.class)
+	@Test
 	public void test_reverse_ShipperTransportation_ShallFail()
 	{
 		// Reverse it => shall throw exception
-		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Reverse_Correct, null);
+		assertThatThrownBy(() -> docActionBL.processEx(shipperTransportation, IDocument.ACTION_Reverse_Correct, null))
+				.isInstanceOf(DocumentProcessingException.class);
 	}
 
 	private I_M_ShipperTransportation createShipperTransporation()

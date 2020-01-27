@@ -12,6 +12,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -22,8 +23,9 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -32,6 +34,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /*
@@ -218,7 +221,8 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 			final BigDecimal qty,
 			final boolean isInDispute)
 	{
-		final I_M_Product product = createProduct(productName, locator);
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM");
+		final I_M_Product product = createProduct(productName, UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()), locator);
 
 		final I_M_InOutLine line = newInstance(I_M_InOutLine.class);
 

@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -169,10 +169,10 @@ public class EmptiesKey extends TerminalKey
 		return name.toString();
 	}
 
-	public List<I_M_HU_PackingMaterial> getM_HU_PackingMaterials(final I_C_BPartner bpartner)
+	public List<I_M_HU_PackingMaterial> getM_HU_PackingMaterials(final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI huPI = getM_HU_PI();
-		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterial(huPI, bpartner);
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterial(huPI, bpartnerId);
 		if (packingMaterial == null)
 		{
 			return Collections.emptyList();

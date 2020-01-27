@@ -103,7 +103,7 @@ public class MoneyService
 		final Currency currency = currencyRepository.getById(input.getCurrencyId());
 
 		final BigDecimal newValue = percent
-				.multiply(input.toBigDecimal(), currency.getPrecision().toInt());
+				.computePercentageOf(input.toBigDecimal(), currency.getPrecision().toInt());
 
 		return Money.of(newValue, input.getCurrencyId());
 	}
@@ -140,6 +140,12 @@ public class MoneyService
 	public Amount toAmount(@NonNull final Money money)
 	{
 		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getCurrencyCode());
+	}
+
+	public Money toMoney(@NonNull final Amount amount)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(amount.getCurrencyCode());
+		return Money.of(amount.getAsBigDecimal(), currencyId);
 	}
 
 	public Money multiply(

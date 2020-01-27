@@ -217,7 +217,7 @@ public class HUReservationService
 		final Mutable<Quantity> result = new Mutable<>();
 		final HashSet<HuId> alreadySeenHuIds = new HashSet<>();
 		new HUIterator()
-				.setDate(SystemTime.asDate())
+				.setDate(SystemTime.asZonedDateTime())
 				.setListener(new HUIteratorListenerAdapter()
 				{
 					@Override

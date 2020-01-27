@@ -7,7 +7,6 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -36,10 +35,12 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -83,6 +84,7 @@ import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -144,6 +146,7 @@ import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -158,13 +161,24 @@ import lombok.Data;
 import lombok.NonNull;
 
 /**
- * This class sets up basic master data like attributes and HU-items that can be used in testing.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * This class sets up basic master data like attributes and HU-items.
+ * It also has methods like {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal)} that can be called from your tests, to set up complex packing instructions.
  */
 public class HUTestHelper
 {
+	/** Creates a new instance <b>and also calls {@link AdempiereTestHelper#init()}</b> */
+	public static HUTestHelper newInstanceOutOfTrx()
+	{
+		return new HUTestHelper()
+		{
+			@Override
+			protected String createAndStartTransaction()
+			{
+				return ITrx.TRXNAME_None; // no transaction by default
+			}
+		};
+	}
+
 	//
 	// Initialization flags
 	private boolean initialized = false;
@@ -331,7 +345,7 @@ public class HUTestHelper
 
 	public Properties ctx;
 	public String trxName;
-	private Timestamp today;
+	private ZonedDateTime today;
 
 	public final IContextAware contextProvider = new IContextAware()
 	{
@@ -369,20 +383,22 @@ public class HUTestHelper
 		}
 	}
 
-	public void setInitAdempiere(final boolean initAdempiere)
+	public HUTestHelper setInitAdempiere(final boolean initAdempiere)
 	{
 		Check.assume(!initialized, "helper not initialized");
 		this.initAdempiere = initAdempiere;
+		return this;
 	}
 
 	/**
-	 * Final, because its called by a constructor.
+	 * Returns this instance, initialized.
+	 * Note: final, because its called by a constructor.
 	 */
-	public final void init()
+	public final HUTestHelper init()
 	{
 		if (initialized)
 		{
-			return;
+			return this;
 		}
 
 		if (initAdempiere)
@@ -412,8 +428,8 @@ public class HUTestHelper
 
 		//
 		// Setup context: #Date
-		today = TimeUtil.getDay(2013, 11, 1);
-		Env.setContext(ctx, Env.CTXNAME_Date, today);
+		today = LocalDate.of(2013, Month.NOVEMBER, 1).atStartOfDay(SystemTime.zoneId());
+		Env.setContext(ctx, Env.CTXNAME_Date, TimeUtil.asDate(today));
 
 		//
 		// Setup module interceptors
@@ -431,6 +447,8 @@ public class HUTestHelper
 		initialized = true;
 
 		afterInitialized();
+
+		return this;
 	}
 
 	protected void afterInitialized()
@@ -458,7 +476,7 @@ public class HUTestHelper
 	{
 		//
 		// Handling units model validator
-		new de.metas.handlingunits.model.validator.Main().registerFactories();
+		newHandlingUnitsModelInterceptor().registerFactories();
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
@@ -482,7 +500,12 @@ public class HUTestHelper
 	protected final void setupModuleInterceptors_HU_Full()
 	{
 		Services.get(IModelInterceptorRegistry.class)
-				.addModelInterceptor(new de.metas.handlingunits.model.validator.Main());
+				.addModelInterceptor(newHandlingUnitsModelInterceptor());
+	}
+
+	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
+	{
+		return new de.metas.handlingunits.model.validator.Main(new PickingBOMService());
 	}
 
 	/**
@@ -508,7 +531,7 @@ public class HUTestHelper
 		return createAndStartTransaction(trxNamePrefix);
 	}
 
-	protected String createAndStartTransaction(final String trxNamePrefix)
+	protected final String createAndStartTransaction(final String trxNamePrefix)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.createTrxName(trxNamePrefix);
@@ -955,19 +978,19 @@ public class HUTestHelper
 		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, trxName);
 	}
 
-	public Date getTodayDate()
+	public ZonedDateTime getTodayZonedDateTime()
 	{
 		return today;
 	}
 
 	public Timestamp getTodayTimestamp()
 	{
-		return today;
+		return TimeUtil.asTimestamp(getTodayZonedDateTime());
 	}
 
 	public I_M_HU_PackingMaterial createPackingMaterial(final String name, final I_M_Product product)
 	{
-		final I_M_HU_PackingMaterial packingMaterial = newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
+		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName(name);
 		packingMaterial.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		InterfaceWrapperHelper.save(packingMaterial);
@@ -1049,11 +1072,6 @@ public class HUTestHelper
 
 	/**
 	 * Invokes {@link #createHU_PI_Item_IncludedHU(I_M_HU_PI, I_M_HU_PI, BigDecimal, I_C_BPartner)} with bPartner being {@code null}.
-	 *
-	 * @param huDefinition
-	 * @param includedHuDefinition
-	 * @param qty
-	 * @return
 	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
@@ -1073,10 +1091,21 @@ public class HUTestHelper
 	 * @param bpartner
 	 * @return
 	 */
-	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
+	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(
+			final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty,
 			final I_C_BPartner bpartner)
+	{
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		return createHU_PI_Item_IncludedHU(huDefinition, includedHuDefinition, qty, bpartnerId);
+	}
+
+	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(
+			final I_M_HU_PI huDefinition,
+			final I_M_HU_PI includedHuDefinition,
+			final BigDecimal qty,
+			final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
@@ -1084,7 +1113,7 @@ public class HUTestHelper
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
-		itemDefinition.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		itemDefinition.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		if (!Objects.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);
@@ -1094,16 +1123,10 @@ public class HUTestHelper
 		return itemDefinition;
 	}
 
-	/**
-	 *
-	 * @param huDefinition
-	 * @param huPackingMaterial
-	 * @return
-	 */
-	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(final I_M_HU_PI huDefinition, final I_M_HU_PackingMaterial huPackingMaterial)
+	public I_M_HU_PI_Item createHU_PI_Item_PackingMaterial(
+			@NonNull final I_M_HU_PI huDefinition,
+			@NonNull final I_M_HU_PackingMaterial huPackingMaterial)
 	{
-		Check.assumeNotNull(huDefinition, "Parameter huDefinition is not null");
-		Check.assumeNotNull(huPackingMaterial, "Parameter pmProduct is not null");
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
@@ -1117,6 +1140,7 @@ public class HUTestHelper
 		return piItem;
 	}
 
+	/** @deprecated please use {@link #assignProduct(I_M_HU_PI_Item, ProductId, BigDecimal, I_C_UOM)} instead. */
 	@Deprecated
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom)
 	{
@@ -1329,7 +1353,7 @@ public class HUTestHelper
 				huContext,
 				productIdToLoad,
 				Quantity.of(qtyToLoad, qtyToLoadUOM),
-				getTodayDate(),  // date
+				getTodayZonedDateTime(),  // date
 				referenceModel,
 				false);
 
@@ -1365,7 +1389,7 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
 				cuProductId,
 				Quantity.of(cuQty, cuUOM),
-				getTodayDate(),
+				getTodayZonedDateTime(),
 				referencedModel,
 				false);
 
@@ -1401,7 +1425,7 @@ public class HUTestHelper
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			@NonNull final BigDecimal totalQtyCU)
 	{
-		final I_C_BPartner bpartner = null;
+		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = -1;
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM cuUOM = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
@@ -1410,10 +1434,10 @@ public class HUTestHelper
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
-				bpartner,
+				UomId.ofRepoId(cuUOM.getC_UOM_ID()),
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
@@ -1528,7 +1552,7 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
 				r.getCuProductId(), // product
 				Quantity.of(r.getLoadCuQty(), r.getLoadCuUOM()), // qty
-				SystemTime.asTimestamp());
+				SystemTime.asZonedDateTime());
 
 		huLoader.load(request);
 	}
@@ -1593,7 +1617,8 @@ public class HUTestHelper
 				huContext,
 				mtrx.getM_Product(),
 				mtrx.getMovementQty(),
-				uom, mtrx.getMovementDate(),
+				uom,
+				TimeUtil.asZonedDateTime(mtrx.getMovementDate()),
 				mtrx);
 
 		loader.load(request);
@@ -1625,7 +1650,7 @@ public class HUTestHelper
 		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
 
 		final IMutableHUContext huContext = getHUContext();
-		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
+		final ZonedDateTime date = TimeUtil.asZonedDateTime(Env.getContextAsDate(Env.getCtx(), "#Date")); // FIXME use context date for now
 
 		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 
@@ -1660,7 +1685,7 @@ public class HUTestHelper
 		Check.assume(Adempiere.isUnitTestMode(), "This method shall be executed only in JUnit test mode");
 
 		final IMutableHUContext huContext = getHUContext();
-		final Date date = Env.getContextAsDate(Env.getCtx(), "#Date"); // FIXME use context date for now
+		final ZonedDateTime date = TimeUtil.asZonedDateTime(Env.getContextAsDate(Env.getCtx(), "#Date")); // FIXME use context date for now
 
 		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 		final HUProducerDestination destination = HUProducerDestination.of(destinationHuPI);
@@ -1690,7 +1715,7 @@ public class HUTestHelper
 	public void transferHUsToOutgoing(final I_M_Transaction outgoingTrx, final List<I_M_HU> sourceHUs)
 	{
 		final IMutableHUContext huContext = getHUContext();
-		final Date date = getTodayDate();
+		final ZonedDateTime date = getTodayZonedDateTime();
 
 		final IAllocationSource source = HUListAllocationSourceDestination.of(sourceHUs);
 		final IAllocationDestination destination = new MTransactionAllocationSourceDestination(outgoingTrx);
@@ -1734,7 +1759,8 @@ public class HUTestHelper
 				huContext,
 				mtrx.getM_Product(),
 				mtrx.getMovementQty(),
-				uom, mtrx.getMovementDate(),
+				uom,
+				TimeUtil.asZonedDateTime(mtrx.getMovementDate()),
 				mtrx);
 
 		//
@@ -1763,7 +1789,7 @@ public class HUTestHelper
 		//
 		// Create allocation request
 		final IMutableHUContext huContext = getHUContext();
-		final Date date = getTodayDate();
+		final ZonedDateTime date = getTodayZonedDateTime();
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, product, qty, uom, date);
 
 		//

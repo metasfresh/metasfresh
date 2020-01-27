@@ -16,9 +16,9 @@ public interface I_M_HU_PI_Item_Product
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -32,8 +32,6 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Client>(I_M_HU_PI_Item_Product.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Org>(I_M_HU_PI_Item_Product.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -82,10 +78,31 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getC_BPartner_ID();
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_BPartner>(I_M_HU_PI_Item_Product.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -112,35 +129,8 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_User>(I_M_HU_PI_Item_Product.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM>(I_M_HU_PI_Item_Product.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -260,6 +250,29 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_IsAllowAnyProduct = "IsAllowAnyProduct";
 
 	/**
+	 * Set Standard-Produkt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDefaultForProduct (boolean IsDefaultForProduct);
+
+	/**
+	 * Get Standard-Produkt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDefaultForProduct();
+
+    /** Column definition for IsDefaultForProduct */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsDefaultForProduct = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsDefaultForProduct", null);
+    /** Column name IsDefaultForProduct */
+    public static final String COLUMNNAME_IsDefaultForProduct = "IsDefaultForProduct";
+
+	/**
 	 * Set Unbestimmte Kapazität.
 	 *
 	 * <br>Type: YesNo
@@ -281,6 +294,35 @@ public interface I_M_HU_PI_Item_Product
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsInfiniteCapacity = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsInfiniteCapacity", null);
     /** Column name IsInfiniteCapacity */
     public static final String COLUMNNAME_IsInfiniteCapacity = "IsInfiniteCapacity";
+
+	/**
+	 * Set LU Fallback-Verpackungscode.
+	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID);
+
+	/**
+	 * Get LU Fallback-Verpackungscode.
+	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_LU_Fallback_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback();
+
+	public void setM_HU_PackagingCode_LU_Fallback(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback);
+
+    /** Column definition for M_HU_PackagingCode_LU_Fallback_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_LU_Fallback_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode>(I_M_HU_PI_Item_Product.class, "M_HU_PackagingCode_LU_Fallback_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+    /** Column name M_HU_PackagingCode_LU_Fallback_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID = "M_HU_PackagingCode_LU_Fallback_ID";
 
 	/**
 	 * Set Packvorschrift Position.
@@ -352,8 +394,6 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_M_Product>(I_M_HU_PI_Item_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -406,27 +446,29 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set TU-UPC.
+	 * Set UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUPC_TU (java.lang.String UPC_TU);
+	public void setUPC (java.lang.String UPC);
 
 	/**
-	 * Get TU-UPC.
+	 * Get UPC.
+	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUPC_TU();
+	public java.lang.String getUPC();
 
-    /** Column definition for UPC_TU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC_TU = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC_TU", null);
-    /** Column name UPC_TU */
-    public static final String COLUMNNAME_UPC_TU = "UPC_TU";
+    /** Column definition for UPC */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC", null);
+    /** Column name UPC */
+    public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
 	 * Get Aktualisiert.
@@ -453,8 +495,6 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_User>(I_M_HU_PI_Item_Product.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

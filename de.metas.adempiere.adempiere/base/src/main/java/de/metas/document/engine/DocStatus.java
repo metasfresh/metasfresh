@@ -186,4 +186,11 @@ public enum DocStatus implements ReferenceListAwareEnum
 				|| this == Approved
 				|| this == NotApproved;
 	}
+
+	public boolean isAccountable()
+	{
+		return this == Completed
+				|| this == Reversed
+				|| this == Voided;
+	}
 }

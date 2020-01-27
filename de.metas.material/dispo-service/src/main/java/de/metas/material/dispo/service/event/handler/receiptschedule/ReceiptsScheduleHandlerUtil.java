@@ -3,9 +3,11 @@ package de.metas.material.dispo.service.event.handler.receiptschedule;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery.CandidatesQueryBuilder;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
-import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -22,30 +24,51 @@ import lombok.experimental.UtilityClass;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @UtilityClass
-public class ReceiptsScheduleHandlerUtil
+class ReceiptsScheduleHandlerUtil
 {
-	public CandidatesQuery createExistingCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event)
+	public CandidatesQuery queryByPurchaseCandidateId(@NonNull final ReceiptScheduleCreatedEvent createdEvent)
 	{
-		final ReceiptScheduleUpdatedEvent updatedEvent = ReceiptScheduleUpdatedEvent.cast(event);
+		final int purchaseCandidateRepoId = createdEvent.getPurchaseCandidateRepoId();
+		if (purchaseCandidateRepoId > 0)
+		{
+			return prepareQuery(createdEvent)
+					.purchaseDetailsQuery(PurchaseDetailsQuery.builder()
+							.purchaseCandidateRepoId(purchaseCandidateRepoId)
+							.orderLineRepoIdMustBeNull(true)
+							.build())
+					.build();
+		}
+		else
+		{
+			return CandidatesQuery.FALSE;
+		}
+	}
 
-		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery.builder()
-				.receiptScheduleRepoId(updatedEvent.getReceiptScheduleId())
+	public CandidatesQuery queryByReceiptScheduleId(@NonNull final AbstractReceiptScheduleEvent event)
+	{
+		return prepareQuery(event)
+				.purchaseDetailsQuery(PurchaseDetailsQuery.builder()
+						.receiptScheduleRepoId(event.getReceiptScheduleId())
+						.build())
 				.build();
+	}
 
+	private CandidatesQueryBuilder prepareQuery(@NonNull final AbstractReceiptScheduleEvent event)
+	{
 		return CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.purchaseDetailsQuery(purchaseDetailsQuery)
-				.build();
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()));
+
 	}
 }

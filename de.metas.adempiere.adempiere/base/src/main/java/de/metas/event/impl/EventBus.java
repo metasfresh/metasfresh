@@ -29,7 +29,10 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
@@ -208,7 +211,7 @@ final class EventBus implements IEventBus
 		{
 			eventToPost = event.withStatusWasLogged();
 
-			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+			final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 			eventLogService.saveEvent(eventToPost, this);
 		}
 		else
@@ -255,7 +258,10 @@ final class EventBus implements IEventBus
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
 		{
-			invokeEventListener(this.eventListener, event);
+			try (final MDCCloseable eventMDC = MDC.putCloseable("Event-UUID", event.getUuid().toString()))
+			{
+				invokeEventListener(this.eventListener, event);
+			}
 		}
 	}
 
@@ -315,7 +321,7 @@ final class EventBus implements IEventBus
 		{
 			if (!Adempiere.isUnitTestMode())
 			{
-				final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
+				final EventLogUserService eventLogUserService = SpringContextHolder.instance.getBean(EventLogUserService.class);
 				eventLogUserService
 						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();

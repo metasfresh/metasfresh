@@ -11,23 +11,29 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
@@ -37,10 +43,14 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -54,12 +64,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,6 +78,7 @@ import lombok.NonNull;
 
 final class BPartnerCompositesLoader
 {
+	private static final Logger logger = LogManager.getLogger(BPartnerCompositesLoader.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -114,6 +125,7 @@ final class BPartnerCompositesLoader
 					.bpartner(bpartner)
 					.contacts(ofContactRecords(id, relatedRecords))
 					.locations(ofLocationRecords(id, relatedRecords))
+					.bankAccounts(ofBankAccountRecords(id, relatedRecords))
 					.build();
 
 			result.put(id, bpartnerComposite);
@@ -177,6 +189,8 @@ final class BPartnerCompositesLoader
 		final ImmutableMap<Integer, I_C_Country> countryId2Country = Maps.uniqueIndex(countryRecords, I_C_Country::getC_Country_ID);
 		countryRecords.forEach(countryRecord -> allTableRecordRefs.add(TableRecordReference.of(countryRecord)));
 
+		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = Services.get(IBPBankAccountDAO.class).getByBPartnerIds(bPartnerIds);
+
 		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
 				.tableRecordReferences(allTableRecordRefs)
 				.followLocationIdChanges(true)
@@ -190,6 +204,7 @@ final class BPartnerCompositesLoader
 				locationId2Location,
 				postalId2Postal,
 				countryId2Country,
+				bpBankAccounts,
 				recordRef2LogEntries);
 	}
 
@@ -215,6 +230,7 @@ final class BPartnerCompositesLoader
 				.url(bpartnerRecord.getURL())
 				.url2(bpartnerRecord.getURL2())
 				.url3(bpartnerRecord.getURL3())
+				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
 				//
@@ -304,7 +320,7 @@ final class BPartnerCompositesLoader
 			@NonNull final I_AD_User contactRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		final RecordChangeLog changeLog = ChangeLogUtil.createcontactChangeLog(contactRecord, relatedRecords);
+		final RecordChangeLog changeLog = ChangeLogUtil.createContactChangeLog(contactRecord, relatedRecords);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
@@ -335,4 +351,39 @@ final class BPartnerCompositesLoader
 				.build();
 	}
 
+	private Collection<? extends BPartnerBankAccount> ofBankAccountRecords(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		return relatedRecords
+				.getBpartnerId2BankAccounts()
+				.get(bpartnerId)
+				.stream()
+				.map(record -> ofBankAccountRecordOrNull(record, relatedRecords))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static BPartnerBankAccount ofBankAccountRecordOrNull(
+			@NonNull final I_C_BP_BankAccount bankAccountRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final String iban = bankAccountRecord.getIBAN();
+		if (Check.isBlank(iban))
+		{
+			logger.warn("ofBankAccountRecordOrNull: Return null for {} because IBAN is not set", bankAccountRecord);
+			return null;
+		}
+
+		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bankAccountRecord.getC_BPartner_ID());
+
+		return BPartnerBankAccount.builder()
+				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
+				.active(bankAccountRecord.isActive())
+				.iban(iban)
+				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
+				.changeLog(changeLog)
+				.build();
+	}
 }

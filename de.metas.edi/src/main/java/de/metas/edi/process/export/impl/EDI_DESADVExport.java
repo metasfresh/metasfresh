@@ -28,12 +28,15 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 
 public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
@@ -42,6 +45,8 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	 * EXP_Format.Value for exporting InOut EDI documents
 	 */
 	private static final String CST_DESADV_EXP_FORMAT = "EDI_Exp_Desadv";
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public EDI_DESADVExport(final I_EDI_Desadv desadv, final String tableIdentifier, final ClientId clientId)
 	{
@@ -67,9 +72,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 			return feedback;
 		}
 
-		// assertEligible(document); no need; we are eligible by nature
-
-		// Mark the InOut as: EDI starting
+		// Mark the document as: EDI starting
 		document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
 		InterfaceWrapperHelper.save(document);
 
@@ -81,8 +84,8 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		{
 			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
 
-			final String errmsg = e.getLocalizedMessage();
-			document.setEDIErrorMsg(errmsg);
+			final ITranslatableString errorMsgTrl = msgBL.parseTranslatableString(e.getLocalizedMessage());
+			document.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
 			InterfaceWrapperHelper.save(document);
 
 			throw AdempiereException

@@ -58,7 +58,7 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -84,6 +84,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -328,6 +329,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
@@ -355,7 +357,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsBL.getHUPackingMaterial(huItem);
+			final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrieveHUPackingMaterialOrNull(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
@@ -363,16 +365,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final I_C_BPartner partner)
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
-		return retrievePIItems(version, partner);
+		return retrievePIItems(version, bpartnerId);
 	}
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
-			@Nullable final I_C_BPartner partner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
@@ -380,7 +382,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		final List<I_M_HU_PI_Item> piItemsAll = retrieveAllPIItems(ctx, huPIVersionId, trxName);
 
-		final int bpartnerId = partner == null ? -1 : partner.getC_BPartner_ID();
 		final List<I_M_HU_PI_Item> piItems = new ArrayList<>();
 		for (final I_M_HU_PI_Item piItem : piItemsAll)
 		{
@@ -397,17 +398,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// NOTE: we do this checking only in case of HU itemType to preserve the old logic (maybe it would be good to do it in case of any PI Item, not sure)
 			if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
-				final int itemBPartnerId = piItem.getC_BPartner_ID();
+				final BPartnerId itemBPartnerId = BPartnerId.ofRepoIdOrNull(piItem.getC_BPartner_ID());
 
 				//
 				// Item is for a specific BPartner
-				if (itemBPartnerId > 0)
+				if (itemBPartnerId != null)
 				{
 					// ... we were asked for a specific partner
-					if (bpartnerId > 0)
+					if (bpartnerId != null)
 					{
 						// ... skip item if BPartners does not match
-						if (itemBPartnerId != bpartnerId)
+						if (!BPartnerId.equals(itemBPartnerId, bpartnerId))
 						{
 							continue;
 						}
@@ -616,7 +617,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getCompositeFilter();
-		filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_Locator_ID, locatorIds);
+		filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_M_Locator_ID, locatorIds);
 
 		// Top Level filter
 		filters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null);
@@ -646,12 +647,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
 			@Nullable final String huUnitType,
-			@Nullable final I_C_BPartner bpartner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final HuPackingInstructionsId packingInstructionsId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
-		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
 
 		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, trxName);
 	}
@@ -680,9 +680,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have set our BPartner or who don't have set a BPartner at all
 		// ... and put first those with specific partner
-		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, bpartnerId);
+		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
 		piItemsQueryBuilder.orderBy()
-				.addColumn(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
 				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
 
@@ -741,13 +741,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyActiveRecordsFilter()
 
 				// it's an PI-item of the the parent's PI
-				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
 
 				// it includes the childs's HU PI as one of its "child" PI
-				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
 
 				// it either has no C_BPartner_ID or a matching one
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
 
 				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
 				.orderByDescending(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID)
@@ -759,17 +759,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final I_C_BPartner bpartner)
+	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersion(pi);
-		return retrievePackingMaterial(piVersion, bpartner);
+		return retrievePackingMaterial(piVersion, bpartnerId);
 	}
 
 	@Override
-	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion, final I_C_BPartner bpartner)
+	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion, final BPartnerId bpartnerId)
 	{
 		I_M_HU_PI_Item itemPM = null;
-		for (final I_M_HU_PI_Item item : retrievePIItems(piVersion, bpartner))
+		for (final I_M_HU_PI_Item item : retrievePIItems(piVersion, bpartnerId))
 		{
 			final String itemType = item.getItemType();
 			if (X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
@@ -796,8 +796,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
-		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(hu);
-		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
+		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(hu);
+		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartnerId);
 		return pm;
 	}
 
@@ -860,7 +860,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
 			return new HUReservationRepository();
 		}
-		final HUReservationRepository huReservationRepository = Adempiere.getBean(HUReservationRepository.class);
+		final HUReservationRepository huReservationRepository = SpringContextHolder.instance.getBean(HUReservationRepository.class);
 		return huReservationRepository;
 	}
 
@@ -868,11 +868,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
 			@NonNull final I_M_HU_PI huPI,
 			@Nullable final String huUnitType,
-			@Nullable final I_C_BPartner bpartner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		//
 		// Fetch all eligible parent PI Items
-		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartner);
+		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 
 		//
 		// Case: no parent PI items found
@@ -912,7 +912,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 					+ "\n bpartner={}"
 					+ "\n HU PI Items with DefaultLU={}"
 					+ "\n => parent HU PI Items={}",
-					new Object[] { huPI, huUnitType, bpartner, defaultLUPIItems, parentPIItems });
+					new Object[] { huPI, huUnitType, bpartnerId, defaultLUPIItems, parentPIItems });
 
 			return parentPIItems.get(0);
 		}
@@ -926,10 +926,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.addEqualsFilter(I_M_HU_PI.COLUMN_IsDefaultLU, true)
-				.addInArrayOrAllFilter(I_M_HU_PI.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, adOrgId)
+				.addInArrayOrAllFilter(I_M_HU_PI.COLUMNNAME_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, adOrgId)
 				.orderBy()
-				.addColumn(I_M_HU_PI.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_PI.COLUMN_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
 				.firstOnly(I_M_HU_PI.class);

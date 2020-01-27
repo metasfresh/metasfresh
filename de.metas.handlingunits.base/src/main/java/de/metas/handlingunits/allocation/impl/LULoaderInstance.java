@@ -29,8 +29,8 @@ import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -61,7 +61,7 @@ import de.metas.util.Services;
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final IHUContext huContext;
-	private final I_C_BPartner bpartner;
+	private final BPartnerId bpartnerId;
 	private final int bpartnerLocationId;
 	private final LocatorId locatorId;
 	private final String huStatus;
@@ -81,15 +81,16 @@ import de.metas.util.Services;
 	 */
 	private final IHUBuilder huBuilder;
 
-	public LULoaderInstance(final IHUContext huContext,
-			final I_C_BPartner bpartner,
+	public LULoaderInstance(
+			final IHUContext huContext,
+			final BPartnerId bpartnerId,
 			final int bpartnerLocationId,
 			final LocatorId locatorId,
 			final String huStatus,
 			final I_M_HU_PI_Version tuPIVersion)
 	{
 		this.huContext = huContext;
-		this.bpartner = bpartner;
+		this.bpartnerId = bpartnerId;
 		this.bpartnerLocationId = bpartnerLocationId;
 		this.locatorId = locatorId;
 		this.huStatus = huStatus;
@@ -99,7 +100,7 @@ import de.metas.util.Services;
 		//
 		// Retrieve LU PI to be used
 		final I_M_HU_PI tuPI = tuPIVersion.getM_HU_PI();
-		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner);
+		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
 		if (luPIItem == null)
 		{
 			throw new AdempiereException("No LU found for TU: " + tuPI.getName());
@@ -109,7 +110,7 @@ import de.metas.util.Services;
 		//
 		// Create LU
 		huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
-		huBuilder.setC_BPartner(bpartner);
+		huBuilder.setBPartnerId(bpartnerId);
 		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
 		huBuilder.setLocatorId(locatorId);
 		huBuilder.setHUStatus(huStatus);
@@ -132,7 +133,7 @@ import de.metas.util.Services;
 	public String toString()
 	{
 		return "LULoaderInstance ["
-				+ "bpartner=" + bpartner
+				+ "bpartner=" + bpartnerId
 				+ ", bpartnerLocationId=" + bpartnerLocationId
 				+ ", locator=" + locatorId
 				+ ", huStatus=" + huStatus
@@ -283,13 +284,7 @@ import de.metas.util.Services;
 
 	private int getC_BPartner_ID()
 	{
-		if (bpartner == null)
-		{
-			return 0;
-		}
-
-		final int bpartnerId = bpartner.getC_BPartner_ID();
-		return bpartnerId;
+		return BPartnerId.toRepoId(bpartnerId);
 	}
 
 	private int getLocatorRepoId()

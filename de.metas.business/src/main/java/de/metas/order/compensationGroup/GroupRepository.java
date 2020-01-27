@@ -1,7 +1,8 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Collection;
+import java.util.Set;
 
+import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,7 +43,7 @@ public interface GroupRepository
 	@Builder
 	class RetrieveOrCreateGroupRequest
 	{
-		@NonNull Collection<Integer> orderLineIds;
+		@NonNull Set<OrderLineId> orderLineIds;
 		@NonNull GroupTemplate newGroupTemplate;
 	}
 }

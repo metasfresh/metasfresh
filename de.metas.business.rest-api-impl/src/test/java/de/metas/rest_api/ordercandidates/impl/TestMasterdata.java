@@ -21,6 +21,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
 
@@ -32,11 +33,13 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.rules.PriceListVersion;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -110,6 +113,8 @@ final class TestMasterdata
 		bpRecord.setName(bpValue + "-name");
 		bpRecord.setIsCustomer(true);
 		bpRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(salesPricingSystemId));
+		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
+		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()
@@ -152,9 +157,10 @@ final class TestMasterdata
 		saveRecord(record);
 	}
 
-	public PricingSystemId createPricingSystem()
+	public PricingSystemId createPricingSystem(@NonNull final String pricinSystemCode)
 	{
 		final I_M_PricingSystem record = newInstance(I_M_PricingSystem.class);
+		record.setValue(pricinSystemCode);
 		saveRecord(record);
 		return PricingSystemId.ofRepoId(record.getM_PricingSystem_ID());
 	}
@@ -221,4 +227,24 @@ final class TestMasterdata
 		return WarehouseId.ofRepoId(record.getM_Warehouse_ID());
 	}
 
+	public ShipperId createShipper(final String shipperName)
+	{
+		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);
+		shipper.setName(shipperName);
+		shipper.setValue(shipperName);
+		saveRecord(shipper);
+
+		return ShipperId.ofRepoId(shipper.getM_Shipper_ID());
+
+	}
+
+	public BPartnerId createSalesRep(final String salesRepCode)
+	{
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setSalesPartnerCode(salesRepCode);
+		partner.setIsSalesRep(true);
+		saveRecord(partner);
+
+		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+	}
 }

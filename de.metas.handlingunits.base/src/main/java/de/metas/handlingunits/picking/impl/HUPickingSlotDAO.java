@@ -84,7 +84,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		final IQuery<I_M_HU> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, bPartner)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU.COLUMN_C_BPartner_ID, bPartner.getC_BPartner_ID())
+				.addEqualsFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 				.create();
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, bPartner)
@@ -263,7 +263,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		//
 		// PickingSlot-HU assignments are empty if there's no entry found (d'uh)
-		final boolean isEmpty = !queryPickingSlotHU.match();
+		final boolean isEmpty = !queryPickingSlotHU.anyMatch();
 		return isEmpty;
 	}
 

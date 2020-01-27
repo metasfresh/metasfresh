@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 40671130L;
+	private static final long serialVersionUID = 305196723L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -37,6 +37,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setFreightAmt (BigDecimal.ZERO);
 			setFrequencyType (null); // M
 			setInvoicableQtyBasedOn (null); // Nominal
+			setIsCampaignPrice (false); // N
 			setIsDescription (false); // N
 			setIsDiscountEditable (true); // Y
 			setIsGroupCompensationLine (false); // N
@@ -127,6 +128,25 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Base Commission Points Per Price UOM.
+		@param Base_Commission_Points_Per_Price_UOM Base Commission Points Per Price UOM	  */
+	@Override
+	public void setBase_Commission_Points_Per_Price_UOM(java.math.BigDecimal Base_Commission_Points_Per_Price_UOM)
+	{
+		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
+	}
+
+	/** Get Base Commission Points Per Price UOM.
+		@return Base Commission Points Per Price UOM	  */
+	@Override
+	public java.math.BigDecimal getBase_Commission_Points_Per_Price_UOM()
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Preissystem.
@@ -583,31 +603,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
-	/** Set Steuer.
-		@param C_Tax_ID 
-		Tax identifier
-	  */
-	@Override
-	public void setC_Tax_ID (int C_Tax_ID)
-	{
-		if (C_Tax_ID < 1) 
-			set_Value (COLUMNNAME_C_Tax_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Tax_ID, Integer.valueOf(C_Tax_ID));
-	}
-
-	/** Get Steuer.
-		@return Tax identifier
-	  */
-	@Override
-	public int getC_Tax_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Steuerkategorie.
 		@param C_TaxCategory_ID 
 		Steuerkategorie
@@ -628,6 +623,31 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_TaxCategory_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Steuer.
+		@param C_Tax_ID
+		Tax identifier
+	  */
+	@Override
+	public void setC_Tax_ID (int C_Tax_ID)
+	{
+		if (C_Tax_ID < 1)
+			set_Value (COLUMNNAME_C_Tax_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Tax_ID, Integer.valueOf(C_Tax_ID));
+	}
+
+	/** Get Steuer.
+		@return Tax identifier
+	  */
+	@Override
+	public int getC_Tax_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -796,6 +816,40 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Product_BOMLine getExplodedFrom_BOMLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_ExplodedFrom_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class);
+	}
+
+	@Override
+	public void setExplodedFrom_BOMLine(org.eevolution.model.I_PP_Product_BOMLine ExplodedFrom_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_ExplodedFrom_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class, ExplodedFrom_BOMLine);
+	}
+
+	/** Set Exploded From BOM Line.
+		@param ExplodedFrom_BOMLine_ID Exploded From BOM Line	  */
+	@Override
+	public void setExplodedFrom_BOMLine_ID (int ExplodedFrom_BOMLine_ID)
+	{
+		if (ExplodedFrom_BOMLine_ID < 1) 
+			set_Value (COLUMNNAME_ExplodedFrom_BOMLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExplodedFrom_BOMLine_ID, Integer.valueOf(ExplodedFrom_BOMLine_ID));
+	}
+
+	/** Get Exploded From BOM Line.
+		@return Exploded From BOM Line	  */
+	@Override
+	public int getExplodedFrom_BOMLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ExplodedFrom_BOMLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Frachtbetrag.
@@ -973,6 +1027,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getInvoicableQtyBasedOn () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	/** Set AP.
+		@param IsCampaignPrice 
+		Aktionspreise
+	  */
+	@Override
+	public void setIsCampaignPrice (boolean IsCampaignPrice)
+	{
+		set_Value (COLUMNNAME_IsCampaignPrice, Boolean.valueOf(IsCampaignPrice));
+	}
+
+	/** Get AP.
+		@return Aktionspreise
+	  */
+	@Override
+	public boolean isCampaignPrice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCampaignPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Description Only.
@@ -1385,6 +1465,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class);
+	}
+
+	@Override
+	public void setM_DiscountSchemaBreak(org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class, M_DiscountSchemaBreak);
+	}
+
+	/** Set Discount Schema Break.
+		@param M_DiscountSchemaBreak_ID
+		Trade Discount Break
+	  */
+	@Override
+	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID)
+	{
+		if (M_DiscountSchemaBreak_ID < 1)
+			set_Value (COLUMNNAME_M_DiscountSchemaBreak_ID, null);
+		else
+			set_Value (COLUMNNAME_M_DiscountSchemaBreak_ID, Integer.valueOf(M_DiscountSchemaBreak_ID));
+	}
+
+	/** Get Discount Schema Break.
+		@return Trade Discount Break
+	  */
+	@Override
+	public int getM_DiscountSchemaBreak_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchemaBreak_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
@@ -1416,43 +1533,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getM_DiscountSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class);
-	}
-
-	@Override
-	public void setM_DiscountSchemaBreak(org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak)
-	{
-		set_ValueFromPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class, M_DiscountSchemaBreak);
-	}
-
-	/** Set Discount Schema Break.
-		@param M_DiscountSchemaBreak_ID 
-		Trade Discount Break
-	  */
-	@Override
-	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID)
-	{
-		if (M_DiscountSchemaBreak_ID < 1) 
-			set_Value (COLUMNNAME_M_DiscountSchemaBreak_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_DiscountSchemaBreak_ID, Integer.valueOf(M_DiscountSchemaBreak_ID));
-	}
-
-	/** Get Discount Schema Break.
-		@return Trade Discount Break
-	  */
-	@Override
-	public int getM_DiscountSchemaBreak_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchemaBreak_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1787,28 +1867,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateShipped);
 	}
 
-	/** Set Preiseinheit.
-		@param Price_UOM_ID Preiseinheit	  */
-	@Override
-	public void setPrice_UOM_ID (int Price_UOM_ID)
-	{
-		if (Price_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
-	}
-
-	/** Get Preiseinheit.
-		@return Preiseinheit	  */
-	@Override
-	public int getPrice_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Einzelpreis.
 		@param PriceActual 
 		Actual Price 
@@ -1976,9 +2034,31 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
+	/** Set Preiseinheit.
+		@param Price_UOM_ID Preiseinheit	  */
+	@Override
+	public void setPrice_UOM_ID (int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1)
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else
+			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
+	}
+
+	/** Get Preiseinheit.
+		@return Preiseinheit	  */
+	@Override
+	public int getPrice_UOM_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1987,7 +2067,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public boolean isProcessed () 
@@ -2126,6 +2206,25 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.math.BigDecimal getQtyInvoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Verpackungskapazität.
+		@param QtyItemCapacity Verpackungskapazität	  */
+	@Override
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
+	}
+
+	/** Get Verpackungskapazität.
+		@return Verpackungskapazität	  */
+	@Override
+	public java.math.BigDecimal getQtyItemCapacity () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyItemCapacity);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -2316,31 +2415,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
-	/** Set Ressourcenzuordnung.
-		@param S_ResourceAssignment_ID 
-		Resource Assignment
-	  */
-	@Override
-	public void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID)
-	{
-		if (S_ResourceAssignment_ID < 1) 
-			set_Value (COLUMNNAME_S_ResourceAssignment_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_ResourceAssignment_ID, Integer.valueOf(S_ResourceAssignment_ID));
-	}
-
-	/** Get Ressourcenzuordnung.
-		@return Resource Assignment
-	  */
-	@Override
-	public int getS_ResourceAssignment_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_ResourceAssignment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** 
 	 * ShipmentAllocation_BestBefore_Policy AD_Reference_ID=541043
 	 * Reference name: ShipmentAllocation_BestBefore_Policy
@@ -2367,6 +2441,31 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return (java.lang.String)get_Value(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
 	}
 
+	/** Set Ressourcenzuordnung.
+		@param S_ResourceAssignment_ID
+		Resource Assignment
+	  */
+	@Override
+	public void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID)
+	{
+		if (S_ResourceAssignment_ID < 1)
+			set_Value (COLUMNNAME_S_ResourceAssignment_ID, null);
+		else
+			set_Value (COLUMNNAME_S_ResourceAssignment_ID, Integer.valueOf(S_ResourceAssignment_ID));
+	}
+
+	/** Get Ressourcenzuordnung.
+		@return Resource Assignment
+	  */
+	@Override
+	public int getS_ResourceAssignment_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_ResourceAssignment_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Positions-Steuer.
 		@param TaxAmtInfo 
 		Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
@@ -2384,6 +2483,25 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.math.BigDecimal getTaxAmtInfo () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TaxAmtInfo);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Traded Commission Percent.
+		@param Traded_Commission_Percent Traded Commission Percent	  */
+	@Override
+	public void setTraded_Commission_Percent (java.math.BigDecimal Traded_Commission_Percent)
+	{
+		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
+	}
+
+	/** Get Traded Commission Percent.
+		@return Traded Commission Percent	  */
+	@Override
+	public java.math.BigDecimal getTraded_Commission_Percent () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Traded_Commission_Percent);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

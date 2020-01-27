@@ -132,12 +132,12 @@ public class OrderCheckupTestHelper
 		final I_AD_Workflow workflow = createManufacturingRouting(responsibleUser);
 
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(ctx, I_PP_Product_Planning.class, ITrx.TRXNAME_None);
-		productPlanning.setM_Product(product);
-		productPlanning.setM_Warehouse(warehouse);
+		productPlanning.setM_Product_ID(product.getM_Product_ID());
+		productPlanning.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		productPlanning.setAD_Org_ID(warehouse.getAD_Org_ID());
-		productPlanning.setS_Resource(warehouse.getPP_Plant());
+		productPlanning.setS_Resource_ID(warehouse.getPP_Plant_ID());
 		productPlanning.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
-		productPlanning.setAD_Workflow(workflow);
+		productPlanning.setAD_Workflow_ID(workflow.getAD_Workflow_ID());
 		InterfaceWrapperHelper.save(productPlanning);
 	}
 

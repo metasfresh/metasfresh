@@ -29,7 +29,7 @@ import java.util.Date;
 import org.compiere.swing.table.ColumnInfo;
 import org.compiere.swing.table.TableInfo;
 
-import de.metas.banking.payment.paymentallocation.service.IPayableDocument;
+import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.currency.CurrencyCode;
 
 /**
@@ -170,5 +170,5 @@ public interface IInvoiceRow extends IAllocableDocRow
 	 */
 	void distributeNotAppliedAmtToWriteOffs(InvoiceWriteOffAmountType type);
 	
-	IPayableDocument copyAsPayableDocument();
+	PayableDocument copyAsPayableDocument();
 }

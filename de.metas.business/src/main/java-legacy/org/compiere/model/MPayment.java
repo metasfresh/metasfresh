@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -253,11 +255,11 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				
+
 			}
 			else if (getC_Order_ID() != 0)
 			{
-				
+
 			}
 			else
 			{
@@ -441,7 +443,7 @@ public final class MPayment extends X_C_Payment
 	{
 		if (CreditCardExpMM < 1 || CreditCardExpMM > 12)
 		{
-			
+
 		}
 		else
 		{
@@ -573,7 +575,7 @@ public final class MPayment extends X_C_Payment
 		{
 			return;
 		}
-		
+
 		// Current Document No
 		String documentNo = getDocumentNo();
 		// Existing reversal
@@ -701,7 +703,7 @@ public final class MPayment extends X_C_Payment
 		{
 			currencyIdEffective = Services.get(ICurrencyBL.class).getBaseCurrencyId(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
 		}
-		
+
 		setC_Currency_ID(currencyIdEffective.getRepoId());
 		setPayAmt(payAmt);
 	}   // setAmount
@@ -762,7 +764,7 @@ public final class MPayment extends X_C_Payment
 	public void setIsReceiptAndUpdateDocType(final boolean isReceipt)
 	{
 		setIsReceipt(isReceipt);
-		
+
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(isReceipt ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment)
@@ -1151,7 +1153,7 @@ public final class MPayment extends X_C_Payment
 		if (orderId != null && getC_Invoice_ID() <= 0)
 		{
 			final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-			
+
 			final I_C_Order order = ordersRepo.getById(orderId);
 			final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
 			if(orderDocStatus.isWaitingForPayment())
@@ -1159,10 +1161,10 @@ public final class MPayment extends X_C_Payment
 				order.setC_Payment_ID(getC_Payment_ID());
 				order.setDocAction(IDocument.ACTION_WaitComplete);
 				order.setDateAcct(getDateAcct()); // Prepayment Order shall receive their DateAcct from Payment, because the Order Dateacct could be far back
-				
+
 				Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_WaitComplete);
 				ordersRepo.save(order);
-				
+
 				// Set Invoice
 				final MInvoice[] invoices = MOrder.getInvoices(orderId);
 				final int length = invoices.length;
@@ -1911,7 +1913,6 @@ public final class MPayment extends X_C_Payment
 		reversal.setR_AuthCode(null);
 		reversal.setR_Info(null);
 		reversal.setProcessing(false);
-		reversal.setOProcessing("N");
 		reversal.setProcessed(false);
 		reversal.setPosted(false);
 		reversal.setDescription(getDescription());
@@ -2210,7 +2211,10 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(
+				firstGreaterThanZero( // if the order and payment are linked from the order's model interceptor, we might need to fall back to the order's target-doctype
+						order.getC_DocType_ID(),
+						order.getC_DocTypeTarget_ID()));
 		if (orderDocTypeId == null)
 		{
 			return; // shall not happen

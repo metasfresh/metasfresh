@@ -467,7 +467,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public boolean match() throws DBException
+	public boolean anyMatch() throws DBException
 	{
 		return count() > 0;
 	}
@@ -1009,10 +1009,14 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 
-	/** Used for unit testing */
+	/**
+	 * Used for unit testing
+	 */
 	private static final Map<String, QueryResultPage<?>> UUID_TO_PAGE = new ConcurrentHashMap<String, QueryResultPage<?>>();
 
-	/** Invoked by the test helper after each individual test. */
+	/**
+	 * Invoked by the test helper after each individual test.
+	 */
 	public static void clear_UUID_TO_PAGE()
 	{
 		UUID_TO_PAGE.clear();

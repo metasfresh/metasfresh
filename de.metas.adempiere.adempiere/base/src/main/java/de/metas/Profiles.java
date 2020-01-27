@@ -51,7 +51,7 @@ public class Profiles
 
 	public static final String PROFILE_MaterialDispo = "material-dispo";
 
-	public static final String PROFILE_JasperService = "metasfresh-jasper-service";
+	public static final String PROFILE_ReportService = "metasfresh-jasper-service";
 
 	public static final String PROFILE_PrintService = "metasfresh-printing-service";
 	

@@ -23,7 +23,7 @@ package org.eevolution.api.impl;
  */
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalUnit;
 
 import javax.annotation.Nullable;
@@ -170,6 +170,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 						.qty(qtyIssueConv)
 						.qtyScrap(qtyScrapConv)
 						.qtyReject(qtyRejectConv)
+						.pickingCandidateId(request.getPickingCandidateId())
 						.build());
 
 		return cc;
@@ -227,7 +228,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final Quantity qtyToDeliver = candidate.getQtyToReceive();
 		final Quantity qtyScrap = candidate.getQtyScrap();
 		final Quantity qtyReject = candidate.getQtyReject();
-		final LocalDateTime movementDate = candidate.getMovementDate();
+		final ZonedDateTime movementDate = candidate.getMovementDate();
 
 		if (qtyToDeliver.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 		{
@@ -254,6 +255,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 							.qty(qtyToDeliver)
 							.qtyScrap(qtyScrap)
 							.qtyReject(qtyReject)
+							.pickingCandidateId(candidate.getPickingCandidateId())
 							.build());
 		}
 
@@ -315,7 +317,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -476,12 +478,14 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		private final PPOrderBOMLineId ppOrderBOMLineId;
 		private final PPOrderRoutingActivity orderActivity;
 		private final CostCollectorType costCollectorType;
-		private final LocalDateTime movementDate;
+		private final ZonedDateTime movementDate;
 		private final Quantity qty;
 		private final Quantity qtyScrap;
 		private final Quantity qtyReject;
 		private final Duration durationSetup;
 		private final Duration duration;
+		
+		private final int pickingCandidateId;
 
 		@Builder
 		private CostCollectorCreateRequest(
@@ -493,14 +497,16 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				final PPOrderBOMLineId ppOrderBOMLineId,
 				@Nullable final PPOrderRoutingActivity orderActivity,
 				@NonNull final CostCollectorType costCollectorType,
-				@Nullable final LocalDateTime movementDate,
+				@Nullable final ZonedDateTime movementDate,
 				//
 				@NonNull final Quantity qty,
 				@Nullable final Quantity qtyScrap,
 				@Nullable final Quantity qtyReject,
 				//
 				@Nullable final Duration durationSetup,
-				@Nullable final Duration duration)
+				@Nullable final Duration duration,
+				//
+				final int pickingCandidateId)
 		{
 			this.order = order;
 			this.productId = productId;
@@ -510,7 +516,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			this.ppOrderBOMLineId = ppOrderBOMLineId;
 			this.orderActivity = orderActivity;
 			this.costCollectorType = costCollectorType;
-			this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+			this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 
 			this.qty = qty;
 			this.qtyScrap = qtyScrap != null ? qtyScrap : qty.toZero();
@@ -518,6 +524,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 			this.durationSetup = durationSetup != null ? durationSetup : Duration.ZERO;
 			this.duration = duration != null ? duration : Duration.ZERO;
+			
+			this.pickingCandidateId = pickingCandidateId > 0 ? pickingCandidateId : -1;
 		}
 	}
 
@@ -574,7 +582,12 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		if (request.getPpOrderBOMLineId() != null)
 		{
 			cc.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId().getRepoId());
-			cc.setC_UOM(null); // we set the BOM Line UOM on beforeSave
+			cc.setC_UOM_ID(-1); // we set the BOM Line UOM on beforeSave
+		}
+		
+		if(request.getPickingCandidateId() > 0)
+		{
+			cc.setM_Picking_Candidate_ID(request.getPickingCandidateId());
 		}
 
 		Services.get(IPPCostCollectorDAO.class).save(cc);

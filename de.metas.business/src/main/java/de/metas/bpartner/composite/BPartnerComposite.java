@@ -6,14 +6,15 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +29,7 @@ import de.metas.bpartner.GLN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -67,13 +69,16 @@ public final class BPartnerComposite
 
 	private final List<BPartnerContact> contacts;
 
+	private final List<BPartnerBankAccount> bankAccounts;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private BPartnerComposite(
 			@JsonProperty("org") @Nullable final OrgId orgId,
 			@JsonProperty("bpartner") @Nullable final BPartner bpartner,
 			@JsonProperty("locations") @Singular final List<BPartnerLocation> locations,
-			@JsonProperty("contacts") @Singular final List<BPartnerContact> contacts)
+			@JsonProperty("contacts") @Singular final List<BPartnerContact> contacts,
+			@JsonProperty("bankAccounts") @Singular final List<BPartnerBankAccount> bankAccounts)
 	{
 		this.orgId = orgId;
 
@@ -83,6 +88,7 @@ public final class BPartnerComposite
 
 		this.locations = new ArrayList<>(coalesce(locations, ImmutableList.of()));
 		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
+		this.bankAccounts = new ArrayList<>(coalesce(bankAccounts, ImmutableList.of()));
 	}
 
 	public ImmutableSet<GLN> extractLocationGlns()
@@ -92,16 +98,6 @@ public final class BPartnerComposite
 				.map(BPartnerLocation::getGln)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	public BPartnerContact extractContact(@NonNull final BPartnerContactId contactId)
-	{
-		assume(contactId.getBpartnerId().equals(bpartner.getId()), "The given contactId's bpartnerId needs to be equal to {}; contactId={}", bpartner.getId(), contactId);
-		return contacts
-				.stream()
-				.filter(c -> Objects.equals(c.getId(), contactId))
-				.findAny()
-				.orElseThrow(() -> new AdempiereException("Missing contact with contactId=" + contactId));
 	}
 
 	public BPartnerComposite deepCopy()
@@ -242,25 +238,85 @@ public final class BPartnerComposite
 		return result.build();
 	}
 
-	public Optional<BPartnerContact> getContact(@NonNull final BPartnerContactId contactId)
+	public Optional<BPartnerContact> extractContactOpt(@NonNull final BPartnerContactId contactId)
 	{
+		assume(contactId.getBpartnerId().equals(bpartner.getId()), "The given contactId's bpartnerId needs to be equal to {}; contactId={}", bpartner.getId(), contactId);
 		return getContacts()
 				.stream()
 				.filter(c -> contactId.equals(c.getId()))
 				.findAny();
 	}
 
-	public Optional<BPartnerLocation> extractLocation(@NonNull final BPartnerLocationId bPartnerLocationId)
+	public Optional<BPartnerContact> extractContact(@NonNull final BPartnerContactId contactId)
 	{
-		return getLocations()
-				.stream()
-				.filter(l -> bPartnerLocationId.equals(l.getId()))
+		assume(contactId.getBpartnerId().equals(bpartner.getId()), "The given contactId's bpartnerId needs to be equal to {}; contactId={}", bpartner.getId(), contactId);
+		return createFilteredContactStream(c -> Objects.equals(c.getId(), contactId))
 				.findAny();
+	}
+
+	public Optional<BPartnerContact> extractContact(@NonNull final Predicate<BPartnerContact> filter)
+	{
+		return createFilteredContactStream(filter)
+				.findAny();
+	}
+
+	private Stream<BPartnerContact> createFilteredContactStream(@NonNull final Predicate<BPartnerContact> filter)
+	{
+		return getContacts()
+				.stream()
+				.filter(filter);
 	}
 
 	/** Changes this instance by removing all contacts whose IDs are not in the given set */
 	public void retainContacts(@NonNull final Set<BPartnerContactId> contactIdsToRetain)
 	{
 		contacts.removeIf(contact -> !contactIdsToRetain.contains(contact.getId()));
+	}
+
+	public Optional<BPartnerLocation> extractLocation(@NonNull final BPartnerLocationId bPartnerLocationId)
+	{
+		final Predicate<BPartnerLocation> predicate = l -> bPartnerLocationId.equals(l.getId());
+
+		return createFilteredLocationStream(predicate).findAny();
+	}
+
+	public Optional<BPartnerLocation> extractBillToLocation()
+	{
+		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getBillTo().orElse(false);
+
+		return createFilteredLocationStream(predicate)
+				.sorted(Comparator.comparing(l -> !l.getLocationType().getBillToDefault().orElse(false)))
+				.findFirst();
+	}
+
+	public Optional<BPartnerLocation> extractLocation(@NonNull final Predicate<BPartnerLocation> filter)
+	{
+		return createFilteredLocationStream(filter).findAny();
+	}
+
+	private Stream<BPartnerLocation> createFilteredLocationStream(@NonNull final Predicate<BPartnerLocation> filter)
+	{
+		return getLocations()
+				.stream()
+				.filter(filter);
+	}
+
+	public List<BPartnerBankAccount> getBankAccounts()
+	{
+		return bankAccounts;
+	}
+
+	public void addBankAccount(@NonNull final BPartnerBankAccount bankAccount)
+	{
+		bankAccounts.add(bankAccount);
+	}
+
+	public Optional<BPartnerBankAccount> getBankAccountByIBAN(@NonNull final String iban)
+	{
+		Check.assumeNotEmpty(iban, "iban is not empty");
+
+		return bankAccounts.stream()
+				.filter(bankAccount -> iban.equals(bankAccount.getIban()))
+				.findFirst();
 	}
 }

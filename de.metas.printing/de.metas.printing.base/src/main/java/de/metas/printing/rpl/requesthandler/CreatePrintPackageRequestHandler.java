@@ -33,6 +33,8 @@ import org.adempiere.process.rpl.requesthandler.spi.impl.LoadPORequestHandler;
 import org.compiere.model.PO;
 import org.compiere.util.Util;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintPackageBL;
@@ -83,10 +85,9 @@ public class CreatePrintPackageRequestHandler extends LoadPORequestHandler
 	 *
 	 * If there is no data to be encapsulated in print package, null is returned.
 	 *
-	 * @param printPackage
 	 * @return {@link I_C_Print_Package} response or null
 	 */
-	// public for testing
+	@VisibleForTesting
 	public I_C_Print_Package createResponse(final I_C_Print_Package printPackage)
 	{
 		final Properties envCtxToUse = InterfaceWrapperHelper.getCtx(printPackage);

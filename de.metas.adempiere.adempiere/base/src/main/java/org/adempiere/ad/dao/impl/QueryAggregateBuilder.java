@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -29,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,8 +50,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements IQueryAggregateBuilder<SourceModelType, TargetModelType>
 {
@@ -64,32 +64,27 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 	private final IQueryBuilder<SourceModelType> _sourceQueryBuilder;
 	private final Properties ctx;
 	private final String trxName;
-	private final ModelColumn<SourceModelType, TargetModelType> _sourceColumn;
-	// private final Class<SourceModelType> _sourceModelType;
-	// private final String _sourceTableName;
+	private final String _sourceColumnName;
 	private final Class<TargetModelType> _targetModelType;
 	private final String _targetTableName;
 	private final String _targetJoinColumnName;
 	//
 	private final List<IQueryAggregateColumnBuilder<SourceModelType, TargetModelType, ?>> aggregateBuilders = new ArrayList<>();
 
-	public QueryAggregateBuilder(final IQueryBuilder<SourceModelType> sourceQueryBuilder, final ModelColumn<SourceModelType, TargetModelType> sourceColumn)
+	public QueryAggregateBuilder(
+			@NonNull final IQueryBuilder<SourceModelType> sourceQueryBuilder,
+			@NonNull final String sourceColumnName,
+			@NonNull final Class<TargetModelType> targetModelType)
 	{
-		super();
-
-		Check.assumeNotNull(sourceQueryBuilder, "sourceQueryBuilder not null");
 		this._sourceQueryBuilder = sourceQueryBuilder.copy();
 		this.ctx = sourceQueryBuilder.getCtx();
 		this.trxName = sourceQueryBuilder.getTrxName();
-		// this._sourceModelType = sourceQueryBuilder.getModelClass();
-		// this._sourceTableName = InterfaceWrapperHelper.getTableName(_sourceModelType);
 
-		this._targetModelType = sourceColumn.getColumnModelType();
+		this._targetModelType = targetModelType;
 		this._targetTableName = InterfaceWrapperHelper.getTableName(_targetModelType);
 		this._targetJoinColumnName = InterfaceWrapperHelper.getKeyColumnName(_targetTableName);
 
-		Check.assumeNotNull(sourceColumn, "sourceColumn not null");
-		this._sourceColumn = sourceColumn;
+		this._sourceColumnName = sourceColumnName;
 	}
 
 	@Override
@@ -194,7 +189,7 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 
 		//
 		// SOURCE: Add GROUP BY column
-		final String sourceColumnName = _sourceColumn.getColumnName();
+		final String sourceColumnName = _sourceColumnName;
 		final String sourceColumnAlias = createSourceColumnAlias(sourceColumnName, true); // useQuotes=true
 		sourceSqlColumns.add(sourceColumnName + " AS " + sourceColumnAlias);
 		sourceSqlGroupBys.add(sourceColumnName);
@@ -308,7 +303,7 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 
 	private final List<TargetModelType> aggregate_NonSql()
 	{
-		final String sourceColumnName = _sourceColumn.getColumnName();
+		final String sourceColumnName = _sourceColumnName;
 		final Class<TargetModelType> targetModelType = _targetModelType;
 
 		//
@@ -317,7 +312,7 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 		// Make sure we are sorting by the column on which we a grouping
 		sourceQueryBuilder.orderBy()
 				.clear()
-				.addColumn(_sourceColumn, Direction.Ascending, Nulls.Last);
+				.addColumn(sourceColumnName, Direction.Ascending, Nulls.Last);
 		final List<SourceModelType> sourceModels = sourceQueryBuilder.create().list();
 
 		//
@@ -348,7 +343,7 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 			// If target model changed,
 			// * retrieve the new target model
 			// * initialize the aggregators
-			if (lastTargetModelId == null || !Check.equals(lastTargetModelId, targetModelId))
+			if (lastTargetModelId == null || !Objects.equals(lastTargetModelId, targetModelId))
 			{
 				currentTargetModel = InterfaceWrapperHelper.getModelValue(sourceModel, sourceColumnName, targetModelType);
 				if (currentTargetModel == null)

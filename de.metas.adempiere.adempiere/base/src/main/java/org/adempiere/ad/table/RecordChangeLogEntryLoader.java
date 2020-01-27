@@ -1,6 +1,5 @@
 package org.adempiere.ad.table;
 
-import static de.metas.util.Check.assume;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 
 import java.sql.ResultSet;
@@ -15,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -183,12 +183,15 @@ public class RecordChangeLogEntryLoader
 		{
 			final Comparator<RecordRefWithLogEntry> comparator = Comparator
 					.comparing(e -> e.getRecordChangeLogEntry().getChangedTimestamp());
-			final RecordRefWithLogEntry firstRecordRefWithLogEntry = values.stream()
-					.min(comparator)
-					.get() /* the collection is not empty, so there must be a minimum */;
-
-			final LocationId locationId = extractValueOldAsLocationId(firstRecordRefWithLogEntry);
-			recordRef2LocationIds.put(firstRecordRefWithLogEntry.getRecordRef(), locationId);
+			final Optional<RecordRefWithLogEntry> firstRecordRefWithLogEntry = values.stream()
+					.filter(value -> value.getRecordChangeLogEntry().getValueOld() != null) /* it shouldn't be the case; just for safety */
+					.min(comparator);
+			if (!firstRecordRefWithLogEntry.isPresent())
+			{
+				continue;
+			}
+			final LocationId locationId = extractValueOldAsLocationId(firstRecordRefWithLogEntry.get());
+			recordRef2LocationIds.put(firstRecordRefWithLogEntry.get().getRecordRef(), locationId);
 		}
 
 		// for all change logs including the first ones, we extract their new values
@@ -235,9 +238,6 @@ public class RecordChangeLogEntryLoader
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final ImmutableList<I_C_Location> unOrderedLocationRecords)
 	{
-		// Also if there was only only one C_Location_ID changelog, we have already 2 I_C_Locations, because we also got the first changelog's oldValue.
-		assume(unOrderedLocationRecords.size() >= 2, "Parameter 'unOrderedLocationRecords' needs to contain at least 2 items; unOrderedLocationRecords={}", unOrderedLocationRecords);
-
 		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
 		final ImmutableList.Builder<RecordRefWithLogEntry> result = ImmutableList.builder();
 
@@ -322,7 +322,7 @@ public class RecordChangeLogEntryLoader
 		final RecordChangeLogEntry logEntry = recordRefWithLogEntry.getRecordChangeLogEntry();
 
 		final Object valueOld = logEntry.getValueOld();
-		if (valueOld == null || !(valueOld instanceof KeyNamePair))
+		if (valueOld == null || !(valueOld instanceof KeyNamePair)) // might be a bug
 		{
 			throw new AdempiereException("The RecordChangeLogEntry's column references C_Location, so its valueOld needs to be KeyNamePair and not-null")
 					.appendParametersToMessage()
@@ -439,7 +439,9 @@ public class RecordChangeLogEntryLoader
 				+ ", cl.NewValue "
 				+ " FROM " + I_AD_ChangeLog.Table_Name + " cl"
 				+ " INNER JOIN AD_Column c ON (c.AD_Column_ID=cl.AD_Column_ID)"
-				+ " WHERE cl.AD_Table_ID=? AND cl." + DB.buildSqlList("Record_ID", recordIds, sqlParams);
+				+ " WHERE cl.IsActive='Y' "
+				+ "   AND cl.AD_Table_ID=? "
+				+ "   AND cl." + DB.buildSqlList("Record_ID", recordIds, sqlParams);
 
 		final SqlWithParams sqlWithParams = new SqlWithParams(sql, ImmutableList.copyOf(sqlParams));
 		return sqlWithParams;

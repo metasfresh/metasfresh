@@ -35,6 +35,7 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
@@ -247,7 +248,7 @@ public class PPOrderPojoSupplier
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
+			final Quantity qtyRequired = ppOrderBOMBL.computeQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
 
 			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.toBigDecimal());
 
@@ -262,7 +263,8 @@ public class PPOrderPojoSupplier
 		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
 
 		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrder.getProductPlanningId());
+		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ppOrder.getProductPlanningId());
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(productPlanning.getPP_Product_BOM_ID());

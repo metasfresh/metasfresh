@@ -67,7 +67,7 @@ public class PaymentRequestDAO implements IPaymentRequestDAO
 	{
 		return retrieveRequestForInvoiceQuery(invoice)
 				.create()
-				.match();
+				.anyMatch();
 	}
 	
 	@Override

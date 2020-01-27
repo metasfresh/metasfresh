@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -58,7 +60,7 @@ import lombok.NonNull;
  */
 public final class CacheMgt
 {
-	public static final CacheMgt get()
+	public static CacheMgt get()
 	{
 		return instance;
 	}
@@ -86,7 +88,7 @@ public final class CacheMgt
 	 * Enable caches for the given table to be invalidated by remote events.<br>
 	 * Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate all the local caches to avoid it becoming stale.
 	 */
-	public final void enableRemoteCacheInvalidationForTableName(final String tableName)
+	public void enableRemoteCacheInvalidationForTableName(final String tableName)
 	{
 		CacheInvalidationRemoteHandler.instance.enableForTableName(tableName);
 	}
@@ -283,7 +285,7 @@ public final class CacheMgt
 		}
 	}
 
-	static enum ResetMode
+	enum ResetMode
 	{
 		LOCAL, LOCAL_AND_BROADCAST, JUST_BROADCAST;
 
@@ -306,7 +308,7 @@ public final class CacheMgt
 	 * @param broadcast true if we shall also broadcast this remotely.
 	 * @return how many cache entries were invalidated (estimated!)
 	 */
-	final long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
+	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
 		final long resetCount;
 		if (mode.isResetLocal())
@@ -330,7 +332,7 @@ public final class CacheMgt
 		return resetCount;
 	}	// reset
 
-	private final long invalidateForMultiRequest(final CacheInvalidateMultiRequest multiRequest)
+	private long invalidateForMultiRequest(final CacheInvalidateMultiRequest multiRequest)
 	{
 		if (multiRequest.isResetAll())
 		{
@@ -347,7 +349,7 @@ public final class CacheMgt
 		return total;
 	}
 
-	private final long invalidateForRequest(@NonNull final CacheInvalidateRequest request)
+	private long invalidateForRequest(@NonNull final CacheInvalidateRequest request)
 	{
 		if (request.isAllRecords())
 		{
@@ -379,7 +381,7 @@ public final class CacheMgt
 		}
 	}
 
-	private final long invalidateForRecord(final TableRecordReference recordRef)
+	private long invalidateForRecord(final TableRecordReference recordRef)
 	{
 		final CacheLabel label = CacheLabel.ofTableName(recordRef.getTableName());
 		final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
@@ -434,7 +436,15 @@ public final class CacheMgt
 
 	public void addCacheResetListener(@NonNull final ICacheResetListener cacheResetListener)
 	{
-		globalCacheResetListeners.addIfAbsent(cacheResetListener);
+		final boolean added = globalCacheResetListeners.addIfAbsent(cacheResetListener);
+		if (added)
+		{
+			logger.info("Registered global cache reset listener: {}", cacheResetListener);
+		}
+		else
+		{
+			logger.warn("Skip registering global cache reset listener because it was already registered: {}", cacheResetListener);
+		}
 	}
 
 	/**
@@ -462,7 +472,7 @@ public final class CacheMgt
 	private static final class RecordsToResetOnTrxCommitCollector
 	{
 		/** Gets/creates the records collector which needs to be reset when transaction is committed */
-		public static final RecordsToResetOnTrxCommitCollector getCreate(final ITrx trx)
+		public static RecordsToResetOnTrxCommitCollector getCreate(final ITrx trx)
 		{
 			return trx.getProperty(TRX_PROPERTY, () -> {
 
@@ -491,7 +501,7 @@ public final class CacheMgt
 		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 
 		/** Enqueues a record */
-		public final void addRecord(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode resetMode)
+		public void addRecord(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode resetMode)
 		{
 			multiRequest.getRequests()
 					.forEach(request -> request2resetMode.put(request, resetMode));
@@ -610,7 +620,7 @@ public final class CacheMgt
 			}
 		}
 
-		private static final long invalidateNoFail(final CacheInterface cacheInstance)
+		private static final long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
 			if (cacheInstance == null)
 			{

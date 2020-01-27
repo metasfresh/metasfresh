@@ -10,12 +10,12 @@ package de.metas.ordercandidate.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,12 +58,12 @@ public class OLCandSetOverrideValues extends JavaProcess
 
 	private Iterator<I_C_OLCand> createIterator()
 	{
-		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilter();
-		
+		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilterOrElseFalse();
+
 		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
 				.filter(queryFilter)
 				.filter(ActiveRecordQueryFilter.getInstance(I_C_OLCand.class));
-		
+
 		queryBuilder.orderBy()
 				.addColumn(I_C_OLCand.COLUMNNAME_C_OLCand_ID);
 

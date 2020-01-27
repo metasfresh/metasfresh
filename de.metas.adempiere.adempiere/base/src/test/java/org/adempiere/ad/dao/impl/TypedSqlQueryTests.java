@@ -2,10 +2,14 @@ package org.adempiere.ad.dao.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+
 import org.adempiere.ad.trx.api.ITrx;
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.Env;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -58,7 +62,36 @@ public class TypedSqlQueryTests
 						"UNION DISTINCT\n" +
 						"(\n" +
 						"   customSelectClause FROM AD_Table WHERE (whereClause_2)\n" +
-						")"
-		);
+						")");
+	}
+
+	@Nested
+	public class inlineSqlParameters
+	{
+		private AbstractCharSequenceAssert<?, String> assertThatInliningSqlParams(final String sql, final Object... params)
+		{
+			return assertThat(TypedSqlQuery.inlineSqlParams(sql, Arrays.asList(params)));
+		}
+
+		@Test
+		public void standardCase()
+		{
+			assertThatInliningSqlParams("SELECT * FROM MD_Stock WHERE ((M_Product_ID = ?) AND (M_Warehouse_ID=?) AND (1=1))", 1000111, 540008)
+					.isEqualTo("SELECT * FROM MD_Stock WHERE ((M_Product_ID = 1000111) AND (M_Warehouse_ID=540008) AND (1=1))");
+		}
+
+		@Test
+		public void missingParams()
+		{
+			assertThatInliningSqlParams("SELECT * FROM Table where a=? and b=? and c=?", 1, "str")
+					.isEqualTo("SELECT * FROM Table where a=1 and b='str' and c=?missing?");
+		}
+
+		@Test
+		public void exceeedingParams()
+		{
+			assertThatInliningSqlParams("SELECT * FROM Table where c=?", 1, "str", 3)
+					.isEqualTo("SELECT * FROM Table where c=1 -- Exceeding params: 'str', 3");
+		}
 	}
 }

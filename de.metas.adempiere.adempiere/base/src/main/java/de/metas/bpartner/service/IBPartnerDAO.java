@@ -50,11 +50,12 @@ import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -76,17 +77,28 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
-	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+	/**
+	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.
+	 */
+	@Deprecated
+	Optional<BPartnerId> getBPartnerIdByValue(String bpartnerValue);
+
+	/**
+	 * Get the ID of the BPArtner with the given {@code salesPartnerCode} and {@code IsSalesRep='Y'}.
+	 *
+	 * @param onlyOrgIds restrict to any of the given orgIds. If empty, then don't filter for orgIds
+	 * @return empty if the given {@code salesPartnerCode} is empty.
+	 * @throws exception if the given parameters match more than one bPartner.
+	 */
+	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode, Set<OrgId> onlyOrgIds);
+
+	Optional<BPartnerId> getBPartnerIdByExternalId(@NonNull ExternalId externalId);
 
 	I_C_BPartner getByIdInTrx(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
-	 * @param ctx
-	 * @param orgId
-	 * @param clazz
-	 * @param trxName
 	 * @return {@link I_C_BPartner}; never return null
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
@@ -99,6 +111,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+
+	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
 	boolean exists(BPartnerLocationId bpartnerLocationId);
 
@@ -128,11 +142,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	I_AD_User getContactById(BPartnerContactId contactId);
 
+	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
+
+	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
+
 	EMailAddress getContactEMail(BPartnerContactId contactId);
 
-	PricingSystemId retrievePricingSystemIdInTrx(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemIdOrNullInTrx(BPartnerId bPartnerId, SOTrx soTrx);
 
-	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemIdOrNull(BPartnerId bPartnerId, SOTrx soTrx);
 
 	ShipperId getShipperId(BPartnerId bpartnerId);
 
@@ -158,19 +176,18 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param value
 	 * @return C_BPartner_Location object or null
 	 */
+	@Nullable
 	I_C_BPartner retrieveBPartnerByValue(Properties ctx, String value);
 
 	/**
 	 * Retrieve partner by exact value or by the ending string.
-	 *
+	 * <p>
 	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
 	 *
 	 * @param ctx
 	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
-	 *
 	 * @return a single bPartner or <code>null</code>
-	 *
 	 * @throws org.adempiere.exceptions.DBMoreThenOneRecordsFoundException if there is more than one matching partner.
 	 */
 	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
@@ -209,7 +226,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	/**
 	 * Retrieve all (active) ship to locations.
-	 *
+	 * <p>
 	 * NOTE: the default ship to location will be the first.
 	 *
 	 * @param bpartner
@@ -225,6 +242,8 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
+
+	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
 
 	/**
 	 * Retrieve default/first bill to location.
@@ -310,7 +329,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
 
-	boolean isActionPriceAllowed(BPartnerId bpartnerId);
+	boolean isCampaignPriceAllowed(BPartnerId bpartnerId);
 
 	boolean pricingSystemBelongsToCustomerForPriceMutation(PricingSystemId pricingSystemId);
 

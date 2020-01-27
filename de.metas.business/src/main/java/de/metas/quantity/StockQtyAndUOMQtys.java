@@ -68,6 +68,15 @@ public class StockQtyAndUOMQtys
 		return validate(result.build());
 	}
 
+	public StockQtyAndUOMQty ofQtyInStockUOM(
+			@NonNull final BigDecimal qtyInStockUOM,
+			@NonNull final ProductId productId)
+	{
+		final BigDecimal qtyInUOM = null;
+		final UomId uomId = null;
+		return create(qtyInStockUOM, productId, qtyInUOM, uomId);
+	}
+
 	/**
 	 * @param qtyInUOM may be {@code null} only if {@code uomId} is {@code null}.
 	 * @param uomId may be {@code null} in which case the result will contain no {@code uomQty}.
@@ -76,12 +85,9 @@ public class StockQtyAndUOMQtys
 			@NonNull final BigDecimal qtyInStockUOM,
 			@NonNull final ProductId productId,
 			@Nullable final BigDecimal qtyInUOM,
-			@Nullable final UomId uomId
-			)
+			@Nullable final UomId uomId)
 	{
 		final Quantity stockQty = Quantitys.create(qtyInStockUOM, productId);
-
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -89,6 +95,7 @@ public class StockQtyAndUOMQtys
 
 		if (uomId != null)
 		{
+			final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 			final I_C_UOM uomRecord = uomDao.getById(uomId);
 			Check.assumeNotNull(qtyInUOM, "If parameter 'uomId' is not null, then qtyInUOM needs to be not-null too; uomId={}", uomId);
 
@@ -99,7 +106,7 @@ public class StockQtyAndUOMQtys
 		{
 			Check.assume(qtyInUOM == null || qtyInUOM.signum() == 0, "qtyInUOM={} shall be ZERO when uomId is null", qtyInUOM);
 		}
-		
+
 		return validate(result.build());
 	}
 
@@ -165,7 +172,7 @@ public class StockQtyAndUOMQtys
 
 	/**
 	 * @param stockQtyInAnyUom converted to the product's stock UOM is needed
-	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is-
+	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
 	 */
 	public StockQtyAndUOMQty createConvert(
 			@NonNull final Quantity stockQtyInAnyUom,

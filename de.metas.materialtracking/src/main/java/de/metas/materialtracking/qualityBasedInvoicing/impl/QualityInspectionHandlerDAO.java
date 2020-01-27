@@ -28,6 +28,8 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
@@ -151,10 +153,12 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
+		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(inOut.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+		final I_C_Location location = InterfaceWrapperHelper.load(bPartnerLocation.getC_Location_ID(), I_C_Location.class);
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
 				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-				CountryId.ofRepoId(inOut.getC_BPartner_Location().getC_Location().getC_Country_ID()),
-				TimeUtil.asLocalDate(inOut.getMovementDate()),
+				CountryId.ofRepoId(location.getC_Country_ID()),
+				TimeUtil.asZonedDateTime(inOut.getMovementDate()),
 				SOTrx.ofBoolean(inOut.isSOTrx()),
 				processedPLVFiltering);
 		ic.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());

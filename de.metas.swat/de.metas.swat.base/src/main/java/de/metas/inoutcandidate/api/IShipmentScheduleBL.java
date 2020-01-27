@@ -31,16 +31,19 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
@@ -70,45 +73,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	IAutoCloseable postponeMissingSchedsCreationUntilClose();
 
 	/**
-	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns:
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
-	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
-	 *
-	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
-	 *
-	 *
-	 * @param olsAndScheds
-	 *
-	 * @param trxName
-	 */
-	void updateSchedules(
-			Properties ctx,
-			List<OlAndSched> olsAndScheds,
-			String trxName);
-
-	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
-
-	/**
 	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
 	 *
 	 * @param sched
 	 */
 	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
-
-	/**
-	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
-	 *
-	 * @param sched
-	 */
-	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
@@ -138,7 +107,9 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * Creates a new aggregation key builder which can be used to decide if two given shipment schedules can go into the same shipment.
 	 */
-	IAggregationKeyBuilder<I_M_ShipmentSchedule> mkShipmentHeaderAggregationKeyBuilder();
+	ShipmentScheduleHeaderAggregationKeyBuilder mkShipmentHeaderAggregationKeyBuilder();
+
+	void updateHeaderAggregationKey(I_M_ShipmentSchedule sched);
 
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
@@ -184,6 +155,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
+	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
+
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
@@ -192,5 +165,13 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 
-	void applyUserChanges(ShipmentScheduleUserChangeRequestsList userChanges);
+	void applyUserChangesInTrx(ShipmentScheduleUserChangeRequestsList userChanges);
+
+	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
+
+	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
+
+	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 }

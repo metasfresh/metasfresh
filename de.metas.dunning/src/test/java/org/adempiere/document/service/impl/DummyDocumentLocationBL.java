@@ -26,6 +26,7 @@ package org.adempiere.document.service.impl;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 import de.metas.document.model.IDocumentLocation;
 
 /**
@@ -52,7 +53,13 @@ public class DummyDocumentLocationBL implements IDocumentLocationBL
 	@Override
 	public void setDeliveryToAddress(IDocumentDeliveryLocation doc)
 	{
-		doc.setDeliveryToAddress("Dummy BillTo Address: " + doc.toString());
+		doc.setDeliveryToAddress("Dummy DeliveryTo Address: " + doc.toString());
+	}
+
+	@Override
+	public void setHandOverAddress(IDocumentHandOverLocation doc) 
+	{
+		doc.setHandOverAddress("Dummy Handover Address: " + doc.toString());	
 	}
 
 }

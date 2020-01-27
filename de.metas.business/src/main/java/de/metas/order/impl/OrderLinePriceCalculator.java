@@ -1,17 +1,19 @@
 package de.metas.order.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.BooleanWithReason;
@@ -23,9 +25,11 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -42,11 +46,14 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -78,14 +85,14 @@ final class OrderLinePriceCalculator
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
+	private final IOrderLineBL orderLineBL;
 
-	private final OrderLineBL orderLineBL;
 	private final OrderLinePriceUpdateRequest request;
 
 	@Builder
 	private OrderLinePriceCalculator(
 			@NonNull final OrderLinePriceUpdateRequest request,
-			@NonNull final OrderLineBL orderLineBL)
+			@NonNull final IOrderLineBL orderLineBL)
 	{
 		this.orderLineBL = orderLineBL;
 		this.request = request;
@@ -109,6 +116,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}
 
@@ -143,12 +151,15 @@ final class OrderLinePriceCalculator
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
+		orderLine.setBase_Commission_Points_Per_Price_UOM( pricingResult.getBaseCommissionPointsPerPriceUOM() );
+		orderLine.setTraded_Commission_Percent( Percent.toBigDecimalOrNull( pricingResult.getTradedCommissionPercent() ) );
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
 		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
 		orderLine.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 
+		orderLine.setIsCampaignPrice(pricingResult.isCampaignPrice());
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.getEnforcePriceLimit().isTrue());
@@ -162,11 +173,11 @@ final class OrderLinePriceCalculator
 		{
 			if (request.getQtyOverride() != null)
 			{
-				orderLineBL.updateLineNetAmt(orderLine, request.getQtyOverride());
+				orderLineBL.updateLineNetAmtFromQty(request.getQtyOverride(), orderLine);
 			}
 			else
 			{
-				orderLineBL.updateLineNetAmt(orderLine, orderLineBL.getQtyEntered(orderLine));
+				orderLineBL.updateLineNetAmtFromQty(orderLineBL.getQtyEntered(orderLine), orderLine);
 			}
 		}
 	}
@@ -291,19 +302,16 @@ final class OrderLinePriceCalculator
 
 		final boolean isSOTrx = order.isSOTrx();
 		final int productId = orderLine.getM_Product_ID();
-		int bpartnerId = orderLine.getC_BPartner_ID();
-		if (bpartnerId <= 0)
-		{
-			bpartnerId = order.getC_BPartner_ID();
-		}
 
-		final LocalDate date = OrderLineBL.getPriceDate(orderLine, order);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(firstGreaterThanZero(orderLine.getC_BPartner_ID(), order.getC_BPartner_ID()));
 
-		final BigDecimal qtyInPriceUOM;
+		final ZonedDateTime date = OrderLineBL.getPriceDate(orderLine, order);
+
+		final Quantity qtyInPriceUOM;
 		if (request.getQtyOverride() != null)
 		{
 			final Quantity qtyOverride = request.getQtyOverride();
-			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).toBigDecimal();
+			qtyInPriceUOM = orderLineBL.convertQtyToPriceUOM(qtyOverride, orderLine);
 		}
 		else
 		{
@@ -311,12 +319,12 @@ final class OrderLinePriceCalculator
 		}
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
-				productId,
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+				ProductId.ofRepoId(productId),
 				bpartnerId,
-				orderLine.getPrice_UOM_ID(),  // task 06942
 				qtyInPriceUOM,
-				isSOTrx);
-		pricingCtx.setPriceDate(date);
+				SOTrx.ofBoolean(isSOTrx));
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(date));
 
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(orderLine);
@@ -326,8 +334,12 @@ final class OrderLinePriceCalculator
 		//
 		// Pricing System / List / Country / Currency
 		{
-			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
-			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+			PricingSystemId pricingSystemId = CoalesceUtil.coalesce(request.getPricingSystemIdOverride(), pricingCtx.getPricingSystemId());
+			final PriceListId priceListId = CoalesceUtil.coalesce(request.getPriceListIdOverride(), orderBL.retrievePriceListId(order, pricingSystemId));
+			if (pricingSystemId == null && priceListId != null)
+			{
+				pricingSystemId = Services.get(IPriceListDAO.class).getPricingSystemId(priceListId);
+			}
 			final CountryId countryId = getCountryIdOrNull(orderLine);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
@@ -359,8 +371,7 @@ final class OrderLinePriceCalculator
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
-		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
+		return Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpLocationId);
 	}
 
 	private PricingConditionsBreak getPricingConditionsBreakFromRequest()
@@ -506,7 +517,8 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			final I_C_OrderLine orderLine = request.getOrderLine();
-			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
+			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.setParameter("log", pricingResult.getLoggableMessages());
 		}
 
 		return pricingResult.getTaxCategoryId();

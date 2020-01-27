@@ -103,6 +103,11 @@ public class GoogleMapsGeocodingProviderImpl implements GeocodingProvider
 		//noinspection ConfusingArgumentToVarargsMethod
 		logger.trace("Geocoding response from google: {}", results);
 
+		if (results == null)
+		{
+			return ImmutableList.of();
+		}
+
 		return Arrays.stream(results)
 				.map(GoogleMapsGeocodingProviderImpl::toGeographicalCoordinates)
 				.collect(GuavaCollectors.toImmutableList());

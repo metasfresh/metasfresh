@@ -29,7 +29,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +39,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -52,6 +51,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.jgoodies.common.base.Objects;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -74,10 +74,12 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -89,6 +91,7 @@ import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 
+/** Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}. */
 public class ShipmentScheduleWithHU
 {
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
@@ -315,12 +318,21 @@ public class ShipmentScheduleWithHU
 		return result;
 	}
 
-	/**
-	 * Might return a value less or equal to zero!
-	 */
+	@Nullable
+	public OrderId getOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
+	}
+
+	@Nullable
 	public OrderAndLineId getOrderLineId()
 	{
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
+	}
+
+	public ShipmentScheduleId getShipmentScheduleId()
+	{
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	public I_M_ShipmentSchedule getM_ShipmentSchedule()
@@ -354,7 +366,7 @@ public class ShipmentScheduleWithHU
 	}
 
 	/**
-	 * Gets the underlying LU or TU or VHU, depends on which is the first not null
+	 * Gets the underlying LU or TU or VHU, depending on which is the first not null
 	 *
 	 * @return LU/TU/VHU
 	 */
@@ -492,6 +504,12 @@ public class ShipmentScheduleWithHU
 	 */
 	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
+		if (getQtyTypeToUse().isOnlyUseToDeliver()
+				&& (shipmentScheduleQtyPicked == null || shipmentScheduleQtyPicked.isAnonymousHuPickedOnTheFly()))
+		{
+			return retrievePiipForReferencedRecord();
+		}
+
 		final I_M_HU topLevelHU = getTopLevelHU();
 		if (topLevelHU == null)
 		{
@@ -516,8 +534,8 @@ public class ShipmentScheduleWithHU
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
-		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+		final ZonedDateTime preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
@@ -529,7 +547,7 @@ public class ShipmentScheduleWithHU
 
 		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
 				huPIItem,
-				bPartner,
+				bpartnerId,
 				getProductId(),
 				preparationDate);
 		if (matchingPiip != null)

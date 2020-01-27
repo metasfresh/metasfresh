@@ -1,8 +1,11 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
 import java.util.function.IntFunction;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -10,11 +13,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.rest.ExternalId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -52,7 +55,13 @@ public class IdentifierString
 		/** Every metasfresh ressource can be identifies via its metasfresh-ID (i.e. the PK of its data base record) */
 		METASFRESH_ID,
 
-		EXTERNAL_ID, VALUE, GLN
+		EXTERNAL_ID,
+
+		VALUE,
+
+		GLN,
+
+		INTERNALNAME
 	}
 
 	Type type;
@@ -62,7 +71,17 @@ public class IdentifierString
 
 	public static final String PREFIX_EXTERNAL_ID = "ext-";
 	public static final String PREFIX_VALUE = "val-";
+	public static final String PREFIX_INTERNALNAME = "int-";
 	public static final String PREFIX_GLN = "gln-";
+
+	public static final IdentifierString ofOrNull(@Nullable final String value)
+	{
+		if (isEmpty(value, true))
+		{
+			return null;
+		}
+		return of(value);
+	}
 
 	@JsonCreator
 	public static final IdentifierString of(@NonNull final String value)
@@ -85,6 +104,15 @@ public class IdentifierString
 				throw new AdempiereException("Invalid value: `" + value + "`");
 			}
 			return new IdentifierString(Type.VALUE, valueString);
+		}
+		else if (value.toLowerCase().startsWith(PREFIX_INTERNALNAME))
+		{
+			final String valueString = value.substring(4).trim();
+			if (valueString.isEmpty())
+			{
+				throw new AdempiereException("Invalid inernal name: `" + value + "`");
+			}
+			return new IdentifierString(Type.INTERNALNAME, valueString);
 		}
 		else if (value.toLowerCase().startsWith(PREFIX_GLN))
 		{
@@ -114,6 +142,12 @@ public class IdentifierString
 		}
 	}
 
+	public static IdentifierString ofRepoId(final int repoId)
+	{
+		Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId));
+	}
+
 	private IdentifierString(
 			@NonNull final Type type,
 			@NonNull final String value)
@@ -122,6 +156,9 @@ public class IdentifierString
 		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
 	}
 
+	/**
+	 * @deprecated please use {@link #toJson()} instead
+	 */
 	@Override
 	@Deprecated
 	public String toString()
@@ -149,6 +186,10 @@ public class IdentifierString
 		else if (Type.GLN.equals(type))
 		{
 			prefix = PREFIX_GLN;
+		}
+		else if (Type.INTERNALNAME.equals(type))
+		{
+			prefix = PREFIX_INTERNALNAME;
 		}
 		else
 		{
@@ -198,6 +239,13 @@ public class IdentifierString
 	public String asValue()
 	{
 		Check.assume(Type.VALUE.equals(type), "The type of this instace needs to be {}; this={}", Type.VALUE, this);
+
+		return value;
+	}
+
+	public String asInternalName()
+	{
+		Check.assume(Type.INTERNALNAME.equals(type), "The type of this instace needs to be {}; this={}", Type.INTERNALNAME, this);
 
 		return value;
 	}

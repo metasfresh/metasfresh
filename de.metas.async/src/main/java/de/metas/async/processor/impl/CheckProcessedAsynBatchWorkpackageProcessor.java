@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.async.processor.impl;
 
@@ -13,24 +13,24 @@ package de.metas.async.processor.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -46,8 +46,6 @@ import de.metas.util.Services;
  * <ul>
  * * Also tries to update the process flag is some specific conditions are met
  * </ul>
- * 
- * @author cg
  *
  */
 public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackageProcessor
@@ -55,12 +53,16 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	private static final String SYSCONFIG_WorkpackageSkipTimeoutMillis = "de.metas.async.housekeeping.spi.impl.CheckProcessedAsynBatchWorkpackageProcessor.WorkpackageSkipTimeoutMillis";
 	private static final int DEFAULT_WorkpackageSkipTimeoutMillis = 1000 * 60 * 1; // 1min
 
-	@Override
-	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-	{
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+	@Override
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	{
 		boolean hasError = false;
-		final List<I_C_Async_Batch> batches = Services.get(IQueueDAO.class).retrieveItems(workpackage, I_C_Async_Batch.class, localTrxName);
+
+		final List<I_C_Async_Batch> batches = queueDAO.retrieveItems(workpackage, I_C_Async_Batch.class, localTrxName);
 		for (final I_C_Async_Batch asyncBatch : batches)
 		{
 			if (asyncBatch.isProcessed() || !asyncBatch.isActive())
@@ -70,8 +72,8 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 			}
 
 			// check if keep alive time expired and if it has; set wp to error
-
-			final boolean keepAliveTimeExpired = Services.get(IAsyncBatchBL.class).keepAliveTimeExpired(asyncBatch);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+			final boolean keepAliveTimeExpired = asyncBatchBL.keepAliveTimeExpired(asyncBatchId);
 			if (keepAliveTimeExpired)
 			{
 				hasError = true;
@@ -80,9 +82,8 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 			//
 			// Try to mark it as processed now
-			updateProcessed(asyncBatch);
-
-			if (!asyncBatch.isProcessed())
+			final boolean batchIsProcessed = asyncBatchBL.updateProcessed(asyncBatchId);
+			if (!batchIsProcessed)
 			{
 				final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
 				throw skipExcep;
@@ -95,25 +96,9 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 			throw new AdempiereException("@IAsyncBatchBL.keepAliveTimeExpired@");
 		}
 
-
 		return Result.SUCCESS;
 	}
 
-	/**
-	 * Flag batch as processed if possible
-	 * 
-	 * @param batch
-	 */
-	private void updateProcessed(final I_C_Async_Batch batch)
-	{
-		Services.get(IAsyncBatchBL.class).updateProcessed(batch);
-	}
-
-	/**
-	 * get skip timeout
-	 * 
-	 * @return
-	 */
 	private final int getWorkpackageSkipTimeoutMillis(final I_C_Async_Batch asyncBatch)
 	{
 		final int skipTimeoutMillis = asyncBatch.getC_Async_Batch_Type().getSkipTimeoutMillis();
@@ -121,7 +106,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 		{
 			return skipTimeoutMillis;
 		}
-		
-		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_WorkpackageSkipTimeoutMillis, DEFAULT_WorkpackageSkipTimeoutMillis);
+
+		return sysConfigBL.getIntValue(SYSCONFIG_WorkpackageSkipTimeoutMillis, DEFAULT_WorkpackageSkipTimeoutMillis);
 	}
 }

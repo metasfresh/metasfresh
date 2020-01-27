@@ -1,12 +1,9 @@
 package de.metas.handlingunits.picking;
 
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -42,7 +39,7 @@ public enum PickingCandidatePickStatus implements ReferenceListAwareEnum
 
 	public static final int AD_REFERENCE_ID = X_M_Picking_Candidate.PICKSTATUS_AD_Reference_ID;
 
-	private static final ImmutableMap<String, PickingCandidatePickStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	private static final ValuesIndex<PickingCandidatePickStatus> typesByCode = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private String code;
@@ -54,20 +51,15 @@ public enum PickingCandidatePickStatus implements ReferenceListAwareEnum
 
 	public static PickingCandidatePickStatus ofCode(@NonNull final String code)
 	{
-		final PickingCandidatePickStatus type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + PickingCandidatePickStatus.class + " found for: " + code);
-		}
-		return type;
+		return typesByCode.ofCode(code);
 	}
 
-	public boolean isPicked()
+	private boolean isPicked()
 	{
 		return PICKED.equals(this);
 	}
 
-	public boolean isToBePicked()
+	private boolean isToBePicked()
 	{
 		return TO_BE_PICKED.equals(this);
 	}
@@ -77,13 +69,34 @@ public enum PickingCandidatePickStatus implements ReferenceListAwareEnum
 		return WILL_NOT_BE_PICKED.equals(this);
 	}
 
-	public boolean isPacked()
+	private boolean isPacked()
 	{
 		return PACKED.equals(this);
 	}
 
-	public boolean isPickedOrPacked()
+	public boolean isEligibleForPicking()
 	{
-		return isPicked() || isPacked();
+		return isToBePicked() || isPickRejected();
 	}
+
+	public boolean isEligibleForRejectPicking()
+	{
+		return !isPickRejected();
+	}
+
+	public boolean isEligibleForPacking()
+	{
+		return !isPickRejected();
+	}
+
+	public boolean isEligibleForReview()
+	{
+		return isPicked() || isPacked() || isPickRejected();
+	}
+
+	public boolean isEligibleForProcessing()
+	{
+		return isPacked() || isPickRejected();
+	}
+
 }

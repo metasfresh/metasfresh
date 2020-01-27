@@ -133,7 +133,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 	private Iterator<I_M_ReceiptSchedule> createIterator()
 	{
 		// in case we were called from the window, then only process the current selection
-		final IQueryFilter<I_M_ReceiptSchedule> processInfoFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_M_ReceiptSchedule> processInfoFilter = getProcessInfo().getQueryFilterOrElseTrue();
 
 		// only process records with an effective qty > 0
 		final ICompositeQueryFilter<I_M_ReceiptSchedule> overrideQtyFilter = queryBL

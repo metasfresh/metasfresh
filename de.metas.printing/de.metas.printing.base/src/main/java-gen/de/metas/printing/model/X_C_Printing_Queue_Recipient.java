@@ -14,7 +14,7 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1435794584L;
+	private static final long serialVersionUID = 1249941206L;
 
     /** Standard Constructor */
     public X_C_Printing_Queue_Recipient (Properties ctx, int C_Printing_Queue_Recipient_ID, String trxName)
@@ -42,18 +42,6 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_ToPrint() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ToPrint_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_ToPrint(org.compiere.model.I_AD_User AD_User_ToPrint)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ToPrint_ID, org.compiere.model.I_AD_User.class, AD_User_ToPrint);
-	}
-
 	/** Set Ausdruck für.
 		@param AD_User_ToPrint_ID Ausdruck für	  */
 	@Override
@@ -77,7 +65,7 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
 	}

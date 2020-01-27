@@ -1,33 +1,12 @@
 package de.metas.handlingunits.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
+import java.time.ZonedDateTime;
 
 import de.metas.handlingunits.IHUPIItemProductQuery;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  *
@@ -36,12 +15,14 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
  * @author tsa
  *
  */
+@EqualsAndHashCode
+@ToString
 /* package */final class HUPIItemProductQuery implements IHUPIItemProductQuery
 {
 	private int huPIItemId = -1;
 	private int productId = -1;
 	private int bpartnerId = -1;
-	private Date date = null;
+	private ZonedDateTime date = null;
 	private boolean allowAnyProduct = true;
 	private boolean allowInifiniteCapacity = true;
 	private String huUnitType = null;
@@ -53,71 +34,11 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	// 08393 possibility to allow any partner
 	private boolean allowAnyPartner = false;
 
-	private int packagingProductId; // FRESH-386
+	private int packagingProductId = -1; // FRESH-386
 
-	@Override
-	public String toString()
-	{
-		return "HUPIItemProductQuery [huPIItemId=" + huPIItemId
-				+ ", productId=" + productId
-				+ ", bpartnerId=" + bpartnerId
-				+ ", date=" + date
-				+ ", allowAnyProduct=" + allowAnyProduct
-				+ ", allowInifiniteCapacity=" + allowInifiniteCapacity
-				+ ", huUnitType=" + huUnitType
-				+ ", allowVirtualPI=" + allowVirtualPI
-				+ ", oneConfigurationPerPI=" + oneConfigurationPerPI
-				+ ", allowDifferentCapacities=" + allowDifferentCapacities
-				+ ", allowAnyPartner=" + allowAnyPartner
-				+ ", packagingProductId=" + packagingProductId + "]";
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(huPIItemId)
-				.append(productId)
-				.append(bpartnerId)
-				.append(date)
-				.append(allowAnyProduct)
-				.append(allowInifiniteCapacity)
-				.append(huUnitType)
-				.append(allowVirtualPI)
-				.append(oneConfigurationPerPI)
-				.append(allowDifferentCapacities)
-				.append(packagingProductId)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final HUPIItemProductQuery other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(huPIItemId, other.huPIItemId)
-				.append(productId, other.productId)
-				.append(bpartnerId, other.bpartnerId)
-				.append(date, other.date)
-				.append(allowAnyProduct, other.allowAnyProduct)
-				.append(allowInifiniteCapacity, other.allowInifiniteCapacity)
-				.append(huUnitType, other.huUnitType)
-				.append(allowVirtualPI, other.allowVirtualPI)
-				.append(oneConfigurationPerPI, other.oneConfigurationPerPI)
-				.append(allowDifferentCapacities, other.allowDifferentCapacities)
-				.append(packagingProductId, other.packagingProductId)
-				.isEqual();
-	}
+	@Getter
+	@Setter
+	private boolean defaultForProduct;
 
 	@Override
 	public int getM_HU_PI_Item_ID()
@@ -156,13 +77,13 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	}
 
 	@Override
-	public void setDate(final Date date)
+	public void setDate(final ZonedDateTime date)
 	{
 		this.date = date;
 	}
 
 	@Override
-	public Date getDate()
+	public ZonedDateTime getDate()
 	{
 		return date;
 	}
@@ -262,6 +183,6 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	@Override
 	public void setM_Product_Packaging_ID(int packagingProductId)
 	{
-		this.packagingProductId = packagingProductId;
+		this.packagingProductId = packagingProductId > 0 ? packagingProductId : -1;
 	}
 }

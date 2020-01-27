@@ -18,7 +18,6 @@ import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -97,7 +96,7 @@ public final class PPOrderAdvisedHandler
 
 			final PPOrderRequestedEvent ppOrderRequestEvent = PPOrderRequestedEvent
 					.builder()
-					.eventDescriptor(EventDescriptor.ofClientAndOrg(event.getEventDescriptor().getClientAndOrgId()))
+					.eventDescriptor(event.getEventDescriptor())
 					.dateOrdered(SystemTime.asInstant())
 					.ppOrder(ppOrderWithGroupId)
 					.build();

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.time.LocalDate;
 import java.util.Set;
 
+import de.metas.mpackage.PackageId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -16,7 +17,7 @@ import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
-import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -59,7 +60,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<Integer> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -84,7 +85,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperId(deliveryOrderKey.getShipperId())
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
-				.serviceType(GOServiceType.Overnight)
+				.shipperProduct(GOShipperProduct.Overnight)
 				.customDeliveryData(goDeliveryOrderData)
 				//
 				// Pickup
@@ -102,15 +103,14 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.companyName2(deliverToBPartner.getName2())
 						.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
-						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
 				//
 				// Delivery content
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
-						.content(request.getPackageContentDescription())
+						.grossWeightKg(Math.max(request.getAllPackagesGrossWeightInKg(), 1))
+						.content(request.getAllPackagesContentDescription())
 						.build())
 				// .customerReference(null)
 				//

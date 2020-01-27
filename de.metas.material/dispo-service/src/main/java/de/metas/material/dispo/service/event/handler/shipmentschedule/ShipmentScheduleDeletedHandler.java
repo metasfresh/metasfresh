@@ -4,12 +4,15 @@ import static java.math.BigDecimal.ZERO;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -49,6 +52,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<ShipmentScheduleDeletedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleDeletedHandler.class);
+
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 
@@ -80,7 +85,7 @@ public class ShipmentScheduleDeletedHandler implements MaterialEventHandler<Ship
 		final Candidate candidate = candidateRepository.retrieveLatestMatchOrNull(candidatesQuery);
 		if (candidate == null)
 		{
-			Loggables.addLog("Found no records to change for shipmentScheduleId={}", event.getShipmentScheduleId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Found no records to change for shipmentScheduleId={}", event.getShipmentScheduleId());
 			return;
 		}
 

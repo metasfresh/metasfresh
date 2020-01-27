@@ -2,7 +2,10 @@ package de.metas.rest_api.utils;
 
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +13,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.rest_api.common.JsonError;
 import lombok.NonNull;
 
 /*
@@ -38,62 +43,85 @@ import lombok.NonNull;
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler
 {
-
 	private static final Logger logger = LogManager.getLogger(RestResponseEntityExceptionHandler.class);
 
 	@ExceptionHandler(BPartnerIdNotFoundException.class)
-	public ResponseEntity<String> handleBPartnerInfoNotFoundException(@NonNull final BPartnerIdNotFoundException e)
+	public ResponseEntity<JsonError> handleBPartnerInfoNotFoundException(@NonNull final BPartnerIdNotFoundException e)
 	{
-		logger.error(e.getMessage(), e);
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		return logAndCreateError(e, HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(PermissionNotGrantedException.class)
-	public ResponseEntity<String> handlePermissionNotGrantedException(@NonNull final PermissionNotGrantedException e)
+	public ResponseEntity<JsonError> handlePermissionNotGrantedException(@NonNull final PermissionNotGrantedException e)
 	{
-		logger.error(e.getMessage(), e);
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+		return logAndCreateError(e, HttpStatus.FORBIDDEN);
 	}
 
 	@ExceptionHandler(MissingPropertyException.class)
-	public ResponseEntity<String> handleMissingPropertyException(@NonNull final MissingPropertyException e)
+	public ResponseEntity<JsonError> handleMissingPropertyException(@NonNull final MissingPropertyException e)
 	{
-		logger.error(e.getMessage(), e);
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+		return logAndCreateError(e, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
 	@ExceptionHandler(MissingResourceException.class)
-	public ResponseEntity<String> handleMissingPropertyException(@NonNull final MissingResourceException e)
+	public ResponseEntity<JsonError> handleMissingResourceException(@NonNull final MissingResourceException e)
 	{
-		logger.error(e.getMessage(), e);
-		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+		return logAndCreateError(e, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
 	@ExceptionHandler(InvalidIdentifierException.class)
-	public ResponseEntity<String> InvalidIdentifierException(@NonNull final InvalidIdentifierException e)
+	public ResponseEntity<JsonError> InvalidIdentifierException(@NonNull final InvalidIdentifierException e)
 	{
 		final String msg = "Invalid identifier: " + e.getMessage();
-		logger.error(msg, e);
-		if (e.getMessage().startsWith("tea"))
-		{
-			return new ResponseEntity<>(msg, HttpStatus.I_AM_A_TEAPOT); // whohoo, finally!
-		}
-		return new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
+
+		final HttpStatus status = e.getMessage().startsWith("tea")
+				? HttpStatus.I_AM_A_TEAPOT // whohoo, finally found a reason!
+				: HttpStatus.NOT_FOUND;
+
+		return logAndCreateError(
+				e,
+				msg,
+				status);
 	}
 
 	@ExceptionHandler(DBUniqueConstraintException.class)
-	public ResponseEntity<String> handleDBUniqueConstraintException(@NonNull final DBUniqueConstraintException e)
+	public ResponseEntity<JsonError> handleDBUniqueConstraintException(@NonNull final DBUniqueConstraintException e)
 	{
-		final String msg = "At least one record already existed in the system:" + e.getMessage();
-		logger.error(msg, e);
-		return new ResponseEntity<>(msg, HttpStatus.UNPROCESSABLE_ENTITY);
+		return logAndCreateError(
+				e,
+				"At least one record already existed in the system:" + e.getMessage(),
+				HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handleException(@NonNull final Exception e)
+	public ResponseEntity<JsonError> handleException(@NonNull final Exception e)
 	{
-		final String msg = coalesceSuppliers(() -> e.getMessage(), () -> e.getClass().getSimpleName());
-		logger.error(msg, e);
-		return new ResponseEntity<>(msg, HttpStatus.INTERNAL_SERVER_ERROR);
+		return logAndCreateError(e, HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
+	private ResponseEntity<JsonError> logAndCreateError(
+			@NonNull final Exception e,
+			@NonNull final HttpStatus status)
+	{
+		return logAndCreateError(e, null, status);
+	}
+
+	private ResponseEntity<JsonError> logAndCreateError(
+			@NonNull final Exception e,
+			@Nullable final String detail,
+			@NonNull final HttpStatus status)
+	{
+		final String logMessage = coalesceSuppliers(
+				() -> detail,
+				() -> e.getMessage(),
+				() -> e.getClass().getSimpleName());
+		logger.error(logMessage, e);
+
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		final JsonError error = JsonError.builder()
+				.error(JsonErrors.ofThrowable(e, adLanguage, TranslatableStrings.constant(detail)))
+				.build();
+		return new ResponseEntity<>(error, status);
 	}
 }

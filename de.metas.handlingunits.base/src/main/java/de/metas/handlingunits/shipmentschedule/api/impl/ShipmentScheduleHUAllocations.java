@@ -9,7 +9,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 
 public class ShipmentScheduleHUAllocations extends AbstractHUAllocations
@@ -35,7 +35,7 @@ public class ShipmentScheduleHUAllocations extends AbstractHUAllocations
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU vhu,
-			final Quantity qtyToAllocate,
+			final StockQtyAndUOMQty qtyToAllocate,
 			final boolean deleteOldTUAllocations)
 	{
 		// nothing for now

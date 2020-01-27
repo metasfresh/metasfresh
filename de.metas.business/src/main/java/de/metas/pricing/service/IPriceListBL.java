@@ -1,19 +1,19 @@
 package de.metas.pricing.service;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
-import de.metas.location.CountryId;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
 
 /**
  * @author RC
@@ -32,7 +32,7 @@ public interface IPriceListBL extends ISingletonService
 	I_M_PriceList getCurrentPricelistOrNull(
 			PricingSystemId pricingSystemId,
 			CountryId countryId,
-			LocalDate date,
+			ZonedDateTime date,
 			SOTrx soTrx);
 
 	/**
@@ -43,9 +43,9 @@ public interface IPriceListBL extends ISingletonService
 	 *                              task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
 	 */
 	@Nullable I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			PricingSystemId pricingSystemId,
+			@Nullable PricingSystemId pricingSystemId,
 			CountryId countryId,
-			LocalDate date,
+			ZonedDateTime date,
 			@Nullable SOTrx soTrx,
 			Boolean processedPLVFiltering);
 }

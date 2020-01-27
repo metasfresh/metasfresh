@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -31,12 +33,10 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -44,11 +44,18 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.BPartnerOrderParams;
+import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
@@ -60,13 +67,15 @@ import de.metas.ordercandidate.api.OLCandSource;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -75,16 +84,28 @@ import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
+@Service
 public class OLCandBL implements IOLCandBL
 {
 	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
+
+	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
+
+	public OLCandBL(@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
+	{
+		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
+	}
 
 	@Override
 	public void process(@NonNull final OLCandProcessorDescriptor processor)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
-		final OLCandRegistry olCandRegistry =  springContextHolder.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo =  springContextHolder.getBean(OLCandRepository.class);
+		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
+		final OLCandRepository olCandRepo = springContextHolder.getBean(OLCandRepository.class);
 
 		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
@@ -100,27 +121,164 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PricingSystemId getPricingSystemId(
 			@NonNull final I_C_OLCand olCand,
+			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
 		if (olCand.getM_PricingSystem_ID() > 0)
 		{
 			return PricingSystemId.ofRepoId(olCand.getM_PricingSystem_ID());
 		}
-		else if (orderDefaults != null && orderDefaults.getPricingSystemId() != null)
+
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId().isPresent())
+		{
+			return bPartnerOrderParams.getPricingSystemId().get();
+		}
+
+		if (orderDefaults != null && orderDefaults.getPricingSystemId() != null)
 		{
 			return orderDefaults.getPricingSystemId();
 		}
-		else
+
+		return null;
+	}
+
+	@Override
+	public DeliveryRule getDeliveryRule(
+			@NonNull final I_C_OLCand olCandRecord,
+			@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		if (!Check.isEmpty(olCandRecord.getDeliveryRule(), true))
 		{
-			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-			final BPartnerId bpartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
-
-			// we don't know if the C_BPartner already exists outside this transaction
-			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, SOTrx.SALES);
-			return pricingSystemId;
+			return DeliveryRule.ofCode(olCandRecord.getDeliveryRule());
 		}
+
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getDeliveryRule().isPresent())
+		{
+			return bPartnerOrderParams.getDeliveryRule().get();
+		}
+
+		if (orderDefaults != null && orderDefaults.getDeliveryRule() != null)
+		{
+			return orderDefaults.getDeliveryRule();
+		}
+
+		return null;
+	}
+
+	@Override
+	public DeliveryViaRule getDeliveryViaRule(
+			@NonNull final I_C_OLCand olCandRecord,
+			@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		if (!Check.isEmpty(olCandRecord.getDeliveryViaRule(), true))
+		{
+			return DeliveryViaRule.ofCode(olCandRecord.getDeliveryViaRule());
+		}
+
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getDeliveryViaRule().isPresent())
+		{
+			return bPartnerOrderParams.getDeliveryViaRule().get();
+		}
+
+		if (orderDefaults != null && orderDefaults.getDeliveryViaRule() != null)
+		{
+			return orderDefaults.getDeliveryViaRule();
+		}
+		return null;
+	}
+
+	@Override
+	public FreightCostRule getFreightCostRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getFreightCostRule().isPresent())
+		{
+			return bPartnerOrderParams.getFreightCostRule().get();
+		}
+		if (orderDefaults != null)
+		{
+			return orderDefaults.getFreightCostRule();
+		}
+		return null;
+	}
+
+	@Override
+	public InvoiceRule getInvoiceRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
+		{
+			return bPartnerOrderParams.getInvoiceRule().get();
+		}
+		if (orderDefaults != null)
+		{
+			return orderDefaults.getInvoiceRule();
+		}
+		return null;
+	}
+
+	@Override
+	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable I_C_OLCand orderCandidateRecord)
+	{
+		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
+				: PaymentRule.ofNullableCode(orderCandidateRecord.getPaymentRule());
+		final PaymentRule bpartnerOrderParamsPaymentRule = bPartnerOrderParams == null ? null
+				: bPartnerOrderParams.getPaymentRule();
+		final PaymentRule orderDefaultsPaymentRule = orderDefaults == null ? null
+				: orderDefaults.getPaymentRule();
+
+		return coalesce(orderCandidatePaymentRule,
+				bpartnerOrderParamsPaymentRule,
+				orderDefaultsPaymentRule);
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	{
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getPaymentTermId().isPresent())
+		{
+			return bPartnerOrderParams.getPaymentTermId().get();
+		}
+		if (orderDefaults != null)
+		{
+			return orderDefaults.getPaymentTermId();
+		}
+		return null;
+	}
+
+	@Override
+	public ShipperId getShipperId(
+			@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable final I_C_OLCand orderCandidateRecord)
+	{
+		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
+
+		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
+				: bPartnerOrderParams.getShipperId().orElse(null);
+
+		final ShipperId orderDefaultsShipperId = orderDefaults == null ? null
+				: orderDefaults.getShipperId();
+
+		return coalesce(orderCandiateShipperId,
+				bpartnerOrderParamsShipperId,
+				orderDefaultsShipperId);
+	}
+
+	@Override
+	public DocTypeId getOrderDocTypeId(
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable final I_C_OLCand orderCandidateRecord)
+	{
+		final DocTypeId orderDocTypeId = orderCandidateRecord == null ? null : DocTypeId.ofRepoIdOrNull(orderCandidateRecord.getC_DocTypeOrder_ID());
+
+		final DocTypeId orderDefaultsDocTypeId = orderDefaults == null ? null
+				: orderDefaults.getDocTypeTargetId();
+
+		return coalesce(orderDocTypeId,
+				orderDefaultsDocTypeId);
 	}
 
 	@Override
@@ -152,36 +310,37 @@ public class OLCandBL implements IOLCandBL
 
 	@Override
 	public IPricingResult computePriceActual(
-			final I_C_OLCand olCand,
+			@NonNull final I_C_OLCand olCandRecord,
 			final BigDecimal qtyOverride,
-			final PricingSystemId pricingSystemIdOverride,
+			@Nullable final PricingSystemId pricingSystemIdOverride,
 			final LocalDate date)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setReferencedObject(olCand);
+		pricingCtx.setReferencedObject(olCandRecord);
 
 		final IPricingResult pricingResult;
 
 		// note that even with manual price and/or discount, we need to invoke the pricing engine, in order to get the tax category
-		final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
+		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
 
-		final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
+		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
+				.getDropShipPartnerInfo(olCandRecord)
+				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
 
-		pricingCtx.setCountryId(CountryId.ofRepoId(dropShipLocation.getC_Location().getC_Country_ID()));
+		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCandRecord.getQtyEntered();
 
-		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
+		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCandRecord);
 
 		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
 				() -> pricingSystemIdOverride,
-				() -> getPricingSystemId(olCand, OLCandOrderDefaults.NULL));
+				() -> getPricingSystemId(olCandRecord, bPartnerOrderParams, null/* orderDefaults */));
 
 		if (pricingSystemId == null)
 		{
-			throw new AdempiereException("@M_PricingSystem@ @NotFound@");
+			throw new AdempiereException("@M_PricingSystem@ @NotFound@")
+					.appendParametersToMessage()
+					.setParameter("effectiveBillPartnerId", effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord));
 		}
 		pricingCtx.setPricingSystemId(pricingSystemId); // set it to the context that way it will also be in the result, even if the pricing rules won't need it
 
@@ -190,36 +349,30 @@ public class OLCandBL implements IOLCandBL
 		pricingCtx.setPriceDate(date);
 		pricingCtx.setSOTrx(SOTrx.SALES);
 
-		pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
+		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, dropShipLocation, SOTrx.SALES);
-		if (pl == null)
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
+				pricingSystemId,
+				shipToPartnerInfo.getBpartnerLocationId(),
+				SOTrx.SALES);
+		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
+			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + shipToPartnerInfo.getBpartnerLocationId());
 		}
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
-		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
+		pricingCtx.setPriceListId(plId);
+		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
 
-		pricingResult = pricingBL.calculatePrice(pricingCtx);
-
-		// Just for safety: in case the product price was not found, the code below shall not be reached.
-		// The exception shall be already thrown
-		// ts 2015-07-03: i think it is not, at least i don't see from where
-		if (pricingResult == null || !pricingResult.isCalculated())
-		{
-			final int documentLineNo = -1; // not needed, the msg will be shown in the line itself
-			throw new ProductNotOnPriceListException(pricingCtx, documentLineNo);
-		}
+		pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
 
 		final BigDecimal priceEntered;
 		final Percent discount;
 		final CurrencyId currencyId;
 
-		if (olCand.isManualPrice())
+		if (olCandRecord.isManualPrice())
 		{
 			// both price and currency need to be already set in the olCand (only a price amount doesn't make sense with an unspecified currency)
-			priceEntered = olCand.getPriceEntered();
-			currencyId = CurrencyId.ofRepoId(olCand.getC_Currency_ID());
+			priceEntered = olCandRecord.getPriceEntered();
+			currencyId = CurrencyId.ofRepoId(olCandRecord.getC_Currency_ID());
 		}
 		else
 		{
@@ -227,9 +380,9 @@ public class OLCandBL implements IOLCandBL
 			currencyId = pricingResult.getCurrencyId();
 		}
 
-		if (olCand.isManualDiscount())
+		if (olCandRecord.isManualDiscount())
 		{
-			discount = Percent.of(olCand.getDiscount());
+			discount = Percent.of(olCandRecord.getDiscount());
 		}
 		else
 		{
@@ -248,9 +401,27 @@ public class OLCandBL implements IOLCandBL
 
 		pricingResult.setDisallowDiscount(false); // avoid exception
 		pricingResult.setDiscount(discount);
-		pricingResult.setDisallowDiscount(olCand.isManualDiscount());
+		pricingResult.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		return pricingResult;
+	}
+
+	@Override
+	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
+	{
+		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
+
+		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
+				.getDropShipPartnerInfo(olCandRecord)
+				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
+
+		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
+				.soTrx(SOTrx.SALES)
+				.shipBPartnerId(shipToPartnerInfo.getBpartnerId())
+				.billBPartnerId(billBPartnerId)
+				.build();
+		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(query);
+		return params;
 	}
 
 	@Override
@@ -258,8 +429,8 @@ public class OLCandBL implements IOLCandBL
 			@NonNull final OLCandQuery olCandQuery,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final OLCandRepository olCandRepo = SpringContextHolder.instance.getBean(OLCandRepository.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 		final List<TableRecordReference> olCandRefs = olCandRepo
 				.getByQuery(olCandQuery)

@@ -1,0 +1,1 @@
+UPDATE c_country SET bankcodechartype = 'n', accountnumberlength = '12', accountnumberchartype = 'n', bankcodelength = '5', accounttypechartype = 'c', bankcodeseqno = '10', accountnumberseqno = '20' WHERE c_country_id = 231;

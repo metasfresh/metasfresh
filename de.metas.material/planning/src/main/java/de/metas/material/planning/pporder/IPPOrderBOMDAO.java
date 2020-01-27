@@ -34,7 +34,7 @@ public interface IPPOrderBOMDAO extends ISingletonService
 
 	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
-	I_PP_Order_BOM getByOrderId(PPOrderId orderId);
+	I_PP_Order_BOM getByOrderIdOrNull(PPOrderId orderId);
 
 	int retrieveNextLineNo(PPOrderId orderId);
 

@@ -24,11 +24,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,12 +40,19 @@ public class PPRoutingId implements RepoIdAware
 	@JsonCreator
 	public static PPRoutingId ofRepoId(final int repoId)
 	{
-		return new PPRoutingId(repoId);
+		if (repoId == NONE.repoId)
+		{
+			return NONE;
+		}
+		else
+		{
+			return new PPRoutingId(repoId);
+		}
 	}
 
 	public static PPRoutingId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new PPRoutingId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static Optional<PPRoutingId> optionalOfRepoId(final int repoId)
@@ -55,13 +62,10 @@ public class PPRoutingId implements RepoIdAware
 
 	public static int toRepoId(final PPRoutingId PPOrderId)
 	{
-		return toRepoIdOr(PPOrderId, -1);
+		return PPOrderId != null ? PPOrderId.getRepoId() : -1;
 	}
 
-	public static int toRepoIdOr(final PPRoutingId PPOrderId, final int defaultValue)
-	{
-		return PPOrderId != null ? PPOrderId.getRepoId() : defaultValue;
-	}
+	public static final PPRoutingId NONE = new PPRoutingId(540109);
 
 	int repoId;
 

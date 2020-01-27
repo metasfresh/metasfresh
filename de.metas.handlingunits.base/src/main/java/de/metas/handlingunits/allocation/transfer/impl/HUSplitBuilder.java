@@ -23,7 +23,7 @@ package de.metas.handlingunits.allocation.transfer.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
@@ -246,7 +246,7 @@ public class HUSplitBuilder implements IHUSplitBuilder
 	 */
 	private IAllocationRequest createSplitAllocationRequest(final IHUContext huContext)
 	{
-		final Timestamp date = SystemTime.asTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		return AllocationUtils.createQtyRequest(
 				huContext,
 				cuProductId, // Product

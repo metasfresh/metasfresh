@@ -372,7 +372,7 @@ public class CostDetailRepository implements ICostDetailRepository
 				.build();
 		return createQueryBuilder(costDetailQuery)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

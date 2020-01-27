@@ -14,7 +14,7 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1025779941L;
+	private static final long serialVersionUID = 567080613L;
 
     /** Standard Constructor */
     public X_C_Print_Package (Properties ctx, int C_Print_Package_ID, String trxName)
@@ -45,7 +45,7 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
     }
 
 	@Override
-	public org.compiere.model.I_AD_Session getAD_Session() throws RuntimeException
+	public org.compiere.model.I_AD_Session getAD_Session()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Session_ID, org.compiere.model.I_AD_Session.class);
 	}
@@ -123,7 +123,7 @@ public class X_C_Print_Package extends org.compiere.model.PO implements I_C_Prin
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job_Instructions getC_Print_Job_Instructions() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job_Instructions getC_Print_Job_Instructions()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Job_Instructions_ID, de.metas.printing.model.I_C_Print_Job_Instructions.class);
 	}

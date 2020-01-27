@@ -13,11 +13,11 @@ package de.metas.acct.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,6 +37,8 @@ public interface IFactAcctDAO extends ISingletonService
 	/** Function used to calculate ending balance for a given {@link I_Fact_Acct} line. */
 	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
 
+	I_Fact_Acct getById(int factAcctId);
+
 	/**
 	 * Deletes all accounting records for given document.
 	 * 
@@ -46,7 +48,7 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @return how many {@link I_Fact_Acct} were deleted
 	 */
 	int deleteForDocument(IDocument document);
-	
+
 	int deleteForDocumentModel(final Object documentObj);
 
 	/**

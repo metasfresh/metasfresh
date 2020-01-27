@@ -24,7 +24,6 @@ package de.metas.handlingunits.document.impl;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.document.IHUAllocations;
@@ -84,12 +83,6 @@ public class PlainHUDocumentLine extends AbstractHUDocumentLine
 	public void setSuggestedPI(final I_M_HU_PI suggestedPI)
 	{
 		this.suggestedPI = suggestedPI;
-	}
-
-	@Override
-	public I_C_BPartner getC_BPartner()
-	{
-		return null;
 	}
 
 	@Override

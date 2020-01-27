@@ -1,0 +1,90 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://dpd.com/common/service/types/Authentication/2.0" xmlns:ns1="http://dpd.com/common/service/types/ShipmentService/3.2">
+    <soapenv:Header>
+        <ns:authentication>
+            <delisId>your DELIS ID</delisId>
+            <authToken>your auth token</authToken>
+            <messageLanguage>de_DE</messageLanguage>
+        </ns:authentication>
+    </soapenv:Header>
+    <soapenv:Body>
+        <ns1:storeOrders>
+            <printOptions>
+                <printerLanguage>PDF</printerLanguage>
+                <paperFormat>A6</paperFormat>
+            </printOptions>
+            <order>
+                <generalShipmentData>
+                    <identificationNumber>100003</identificationNumber>
+                    <sendingDepot>0998</sendingDepot>
+                    <product>CL</product>
+                    <sender>
+                        <name1>TheBestPessimist Inc.</name1>
+                        <street>Eduard-Otto-Straße</street>
+                        <houseNo>10</houseNo>
+                        <country>DE</country>
+                        <zipCode>53129</zipCode>
+                        <city>Bonn</city>
+                    </sender>
+                    <recipient>
+                        <name1>xxx</name1>
+                        <name2>xxx</name2>
+                        <street>xxx</street>
+                        <houseNo>xxx</houseNo>
+                        <country>xxx</country>
+                        <zipCode>xxx</zipCode>
+                        <city>xxx</city>
+                        <phone>xxx</phone>
+                        <email>xxx</email>
+                    </recipient>
+                </generalShipmentData>
+                <parcels>
+                    <volume>10010010</volume>
+                    <weight>100</weight>
+                    <content>the epic package 11 description</content>
+                </parcels>
+                <parcels>
+                    <volume>10010010</volume>
+                    <weight>100</weight>
+                    <content>the epic package 22 description</content>
+                </parcels>
+                <parcels>
+                    <volume>10010010</volume>
+                    <weight>100</weight>
+                    <content>the epic package 33 description</content>
+                </parcels>
+                <parcels>
+                    <volume>10010010</volume>
+                    <weight>100</weight>
+                    <content>the epic package 44 description</content>
+                </parcels>
+                <parcels>
+                    <volume>10010010</volume>
+                    <weight>100</weight>
+                    <content>the epic package 55 description</content>
+                </parcels>
+                <productAndServiceData>
+                    <orderType>consignment</orderType>
+                    <pickup>
+                        <quantity>5</quantity>
+                        <date>20191113</date>
+                        <day>3</day>
+                        <fromTime1>1234</fromTime1>
+                        <toTime1>2109</toTime1>
+                        <collectionRequestAddress>
+                            <name1>TheBestPessimist Inc.</name1>
+                            <name2>The Second Shipper Company Name</name2>
+                            <street>Eduard-Otto-Straße</street>
+                            <houseNo>10</houseNo>
+                            <country>DE</country>
+                            <zipCode>53129</zipCode>
+                            <city>Bonn</city>
+                        </collectionRequestAddress>
+                    </pickup>
+                    <predict>
+                        <channel>1</channel>
+                        <value>cristian.pasat@metasfresh.com</value>
+                        <language>US</language>
+                    </predict>
+                </productAndServiceData>
+            </order>
+        </ns3:storeOrders>

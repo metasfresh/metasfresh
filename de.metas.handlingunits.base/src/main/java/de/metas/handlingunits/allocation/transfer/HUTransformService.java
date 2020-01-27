@@ -21,12 +21,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -43,6 +43,9 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.IWeightableFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -61,10 +64,11 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -121,6 +125,8 @@ public class HUTransformService
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
+
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -184,11 +190,10 @@ public class HUTransformService
 	{
 		//
 		// Create allocation request for the quantity user entered
-		final I_M_Product cuProduct = Services.get(IProductDAO.class).getById(cuProductId);
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
-				cuProduct,
+				cuProductId,
 				qtyCU,
-				SystemTime.asTimestamp(),
+				SystemTime.asZonedDateTime(),
 				null, // referenced model
 				forceAllocation);
 
@@ -229,6 +234,7 @@ public class HUTransformService
 			@NonNull final I_M_HU cuHU,
 			@NonNull final Quantity qtyCU)
 	{
+		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuHU={}", qtyCU, cuHU);
 		return cuToNewCU0(cuHU, qtyCU, false);
 	}
 
@@ -240,7 +246,7 @@ public class HUTransformService
 			@NonNull final Quantity qtyCU,
 			final boolean keepCUsUnderSameParent)
 	{
-		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0", qtyCU);
+		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuOrAggregateHU={}", qtyCU, cuOrAggregateHU);
 
 		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuOrAggregateHU, qtyCU.getUOM())) >= 0;
 		final boolean huIsCU = !handlingUnitsBL.isAggregateHU(cuOrAggregateHU);
@@ -407,18 +413,14 @@ public class HUTransformService
 	/**
 	 * Update {@link IHUAllocations}. Currently know examples are receipt schedule allocations and shipment schedule allocations.
 	 *
-	 * @param luHU
-	 * @param tuHU
 	 * @param cuHU if {@code null}, then all cuHus of the given tuHU are iterated.
 	 * @param qtyCU ignored if cuHU is {@code null} may be null, then it's also ignored. If ignored, then this method uses the respective CU's storage's Qty instead.
-	 * @param negateQtyCU
-	 * @param localHuContext
 	 */
 	private void updateAllocation(
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
-			final I_M_HU cuHU, // may be null
-			final Quantity qtyCU, // may be null
+			@Nullable final I_M_HU cuHU,
+			@Nullable final Quantity qtyCU,
 			final boolean negateQtyCU,
 			final IHUContext localHuContext)
 	{
@@ -447,6 +449,18 @@ public class HUTransformService
 				qtyToUse = qtyCU.multiply(factor);
 			}
 
+			final Quantity catchWeightOrNull;
+			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(currentCuHU);
+			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			if (weightable != null)
+			{
+				catchWeightOrNull = Quantity.of(weightable.getWeightNet().multiply(factor), weightable.getWeightNetUOM());
+			}
+			else
+			{
+				catchWeightOrNull = null;
+			}
+
 			for (final TableRecordReference ref : getReferencedObjects())
 			{
 				final List<IHUDocument> huDocuments = huDocumentFactoryService.createHUDocuments(localHuContext.getCtx(), ref.getTableName(), ref.getRecord_ID());
@@ -458,8 +472,13 @@ public class HUTransformService
 							.findFirst();
 					if (huDocumentLine.isPresent())
 					{
+						final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.createConvert(
+								qtyToUse,
+								huDocumentLine.get().getProductId(),
+								catchWeightOrNull);
+
 						final IHUAllocations huAllocations = huDocumentLine.get().getHUAllocations();
-						huAllocations.allocate(luHU, tuHU, currentCuHU, qtyToUse, false);
+						huAllocations.allocate(luHU, tuHU, currentCuHU, qtyToAllocate, false/* deleteOldTUAllocations */);
 					}
 				}
 			}
@@ -849,7 +868,7 @@ public class HUTransformService
 			// create the new LU
 			final I_M_HU newLuHU = handlingUnitsDAO
 					.createHUBuilder(huContext)
-					.setC_BPartner(IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
+					.setBPartnerId(IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU))
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
 					.setLocatorId(IHandlingUnitsBL.extractLocatorId(sourceTuHU))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
@@ -965,7 +984,7 @@ public class HUTransformService
 			}
 
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(tuPI, IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
+					.retrievePIItems(tuPI, BPartnerId.ofRepoIdOrNull(sourceTuHU.getC_BPartner_ID()))
 					.stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
@@ -1057,12 +1076,14 @@ public class HUTransformService
 				@Nullable final Boolean onlyFromUnreservedHUs)
 		{
 			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
-			
+
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;
 			this.keepNewCUsUnderSameParent = CoalesceUtil.coalesce(keepNewCUsUnderSameParent, false);
 			this.onlyFromUnreservedHUs = CoalesceUtil.coalesce(onlyFromUnreservedHUs, false);
+
+			Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyCU, this);
 		}
 	}
 

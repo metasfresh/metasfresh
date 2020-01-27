@@ -14,7 +14,7 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2120510340L;
+	private static final long serialVersionUID = 1006804630L;
 
     /** Standard Constructor */
     public X_AD_PrinterHW (Properties ctx, int AD_PrinterHW_ID, String trxName)
@@ -101,9 +101,7 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -111,8 +109,7 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

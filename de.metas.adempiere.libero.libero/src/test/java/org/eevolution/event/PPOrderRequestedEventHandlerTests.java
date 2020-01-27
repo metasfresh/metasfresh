@@ -7,8 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +27,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
@@ -38,10 +37,9 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.validator.PP_Order;
-import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
@@ -86,16 +84,14 @@ import de.metas.util.time.SystemTime;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class PPOrderRequestedEventHandlerTests
 {
-	@Rule
-	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
-
 	private static final MaterialDispoGroupId PPORDER_POJO_GROUPID = MaterialDispoGroupId.ofInt(33);
 
 	private I_PP_Product_Planning productPlanning;
 
+	private final ClientId adClientId = ClientId.ofRepoId(123);
 	private OrgId orgId;
 
 	private I_C_UOM uom;
@@ -116,10 +112,11 @@ public class PPOrderRequestedEventHandlerTests
 
 	private PPOrderRequestedEventHandler ppOrderRequestedEventHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, adClientId.getRepoId());
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
@@ -197,7 +194,7 @@ public class PPOrderRequestedEventHandlerTests
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(123), orgId))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
 				.datePromised(SystemTime.asInstant())
 				.dateStartSchedule(SystemTime.asInstant())
@@ -210,7 +207,7 @@ public class PPOrderRequestedEventHandlerTests
 				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
 				.build();
 
-		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler(new PPOrderProducer());
+		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler();
 	}
 
 	private PPRoutingId createRouting()
@@ -302,12 +299,12 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(orderBOMLines.isEmpty()).isFalse();
 		assertThat(orderBOMLines).hasSize(2);
 
-		assertThat(filter(ppOrder, BOMComponentType.Component).size(), is(1));
+		assertThat(filter(ppOrder, BOMComponentType.Component)).hasSize(1);
 		final I_PP_Order_BOMLine componentLine = filter(ppOrder, BOMComponentType.Component).get(0);
 		assertThat(componentLine.getDescription()).isEqualTo("supposed to become the component line");
 		assertThat(componentLine.getM_Product_ID()).isEqualTo(bomComponentProduct.getM_Product_ID());
 
-		assertThat(filter(ppOrder, BOMComponentType.CoProduct).size(), is(1));
+		assertThat(filter(ppOrder, BOMComponentType.CoProduct)).hasSize(1);
 		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, BOMComponentType.CoProduct).get(0);
 		assertThat(coProductLine.getDescription()).isEqualTo("supposed to become the co-product line");
 		assertThat(coProductLine.getM_Product_ID()).isEqualTo(bomCoProduct.getM_Product_ID());

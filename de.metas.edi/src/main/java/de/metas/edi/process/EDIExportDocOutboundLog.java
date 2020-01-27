@@ -113,14 +113,14 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
 				.addOnlyActiveRecordsFilter()
-				.filter(pi.getQueryFilter())
+				.filter(pi.getQueryFilterOrElseFalse())
 				.create()
 				.createSelection(pinstanceId);
 
 		if (selectionCount == 0)
 		{
 			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
-			throw new AdempiereException(msg);
+			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 	}
 

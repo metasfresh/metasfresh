@@ -30,8 +30,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -107,12 +107,12 @@ public class LULoader
 	 */
 	private LULoaderInstance createLULoaderInstanceForTU(final I_M_HU tuHU)
 	{
-		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(tuHU);
+		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU);
 		final int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(tuHU.getM_Locator_ID());
 		final String huStatus = tuHU.getHUStatus();
 		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
-		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartner, bpartnerLocationId, locatorId, huStatus, tuPIVersion);
+		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion);
 
 		luInstances.add(luInstance);
 		return luInstance;

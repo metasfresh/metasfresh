@@ -15,7 +15,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1342328112L;
+	private static final long serialVersionUID = 2125840320L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
@@ -444,16 +444,16 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 		return bd;
 	}
 
-	/** Set Menge LU.
-		@param QtyLU Menge LU	  */
+	/** Set LU Anzahl.
+		@param QtyLU LU Anzahl	  */
 	@Override
 	public void setQtyLU (java.math.BigDecimal QtyLU)
 	{
 		set_Value (COLUMNNAME_QtyLU, QtyLU);
 	}
 
-	/** Get Menge LU.
-		@return Menge LU	  */
+	/** Get LU Anzahl.
+		@return LU Anzahl	  */
 	@Override
 	public java.math.BigDecimal getQtyLU () 
 	{
@@ -463,16 +463,16 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 		return bd;
 	}
 
-	/** Set Menge TU.
-		@param QtyTU Menge TU	  */
+	/** Set TU Anzahl.
+		@param QtyTU TU Anzahl	  */
 	@Override
 	public void setQtyTU (java.math.BigDecimal QtyTU)
 	{
 		set_Value (COLUMNNAME_QtyTU, QtyTU);
 	}
 
-	/** Get Menge TU.
-		@return Menge TU	  */
+	/** Get TU Anzahl.
+		@return TU Anzahl	  */
 	@Override
 	public java.math.BigDecimal getQtyTU () 
 	{

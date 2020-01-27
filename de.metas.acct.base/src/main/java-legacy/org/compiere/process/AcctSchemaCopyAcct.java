@@ -35,6 +35,7 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.process.JavaProcess;
@@ -61,16 +62,16 @@ public class AcctSchemaCopyAcct extends JavaProcess
 	protected void prepare()
 	{
 		final ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			final String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			final String name = element.getParameterName();
+			if (element.getParameter() == null)
 			{
-				;
+
 			}
 			else if (name.equals("C_AcctSchema_ID"))
 			{
-				p_SourceAcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
+				p_SourceAcctSchema_ID = AcctSchemaId.ofRepoId(element.getParameterAsInt());
 			}
 			else
 			{
@@ -117,7 +118,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		{
 			throw new AdempiereException("NotFound Target AC C_AcctSchema_Element");
 		}
-		if (sourceAcctElement.getElementId() != targetAcctElement.getElementId())
+		if (!ChartOfAccountsId.equals(sourceAcctElement.getChartOfAccountsId(), targetAcctElement.getChartOfAccountsId()))
 		{
 			throw new AdempiereException("@C_Element_ID@ different");
 		}

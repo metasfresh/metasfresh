@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -13,14 +12,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonError;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
@@ -141,7 +140,7 @@ public class JsonOLCandModelTest
 
 		final JsonOLCandCreateRequest requestForInvoiceCandidate = requestForOrderLine
 				.toBuilder()
-				.dataDestInternalName("DEST.de.metas.invoicecandidate")
+				.dataDest("int-DEST.de.metas.invoicecandidate")
 				.presetDateInvoiced(LocalDate.of(2019, 03, 13))
 				.build();
 
@@ -168,7 +167,7 @@ public class JsonOLCandModelTest
 	{
 		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
 
-		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonErrorItem.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
 				.throwable(null) // REMEMBER: throwable is not serialized
@@ -181,7 +180,7 @@ public class JsonOLCandModelTest
 	{
 		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
 
-		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonErrorItem.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
 				.throwable(new RuntimeException("whatever"))
@@ -189,7 +188,7 @@ public class JsonOLCandModelTest
 
 		final String json = jsonObjectMapper.writeValueAsString(response);
 		final JsonOLCandCreateBulkResponse responseDeserialized = jsonObjectMapper.readValue(json);
-		assertThat(responseDeserialized).isEqualTo(JsonOLCandCreateBulkResponse.error(JsonError.builder()
+		assertThat(responseDeserialized).isEqualTo(JsonOLCandCreateBulkResponse.error(JsonErrorItem.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
 				.build()));
@@ -217,7 +216,7 @@ public class JsonOLCandModelTest
 								.build())
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
-				.dataSourceInternalName("dataSourceInternalName")
+				.dataSource("int-dataSourceInternalName")
 				.poReference("poReference")
 				.build();
 	}
@@ -226,13 +225,13 @@ public class JsonOLCandModelTest
 			@NonNull final T obj,
 			@NonNull JSONObjectMapper<T> jsonObjectMapper) throws IOException
 	{
-		System.out.println("object: " + obj);
+		//System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		System.out.println("json: " + json);
+		//System.out.println("json: " + json);
 
 		final Object objDeserialized = jsonObjectMapper.readValue(json);
-		System.out.println("object deserialized: " + objDeserialized);
+		//System.out.println("object deserialized: " + objDeserialized);
 
-		Assert.assertEquals(obj, objDeserialized);
+		assertThat(objDeserialized).isEqualTo(obj);
 	}
 }

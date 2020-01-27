@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
@@ -83,7 +84,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 
 		// the orders it's very important: first enque and then set the batch
 		// otherwise, will be counted also the workpackage for the batch
-		asyncBatchBL.enqueueAsyncBatch(asyncBatch);
+		asyncBatchBL.enqueueAsyncBatch(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 
 		return asyncBatch;
 	}
@@ -100,20 +101,20 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		Check.assumeNotNull(_ctx, "ctx not null");
 		return _ctx;
 	}
-	
-	
+
+
 	@Override
 	public IAsyncBatchBuilder setCountExpected(int expected)
 	{
 		_countExpected = expected;
 		return this;
 	}
-	
+
 	private final int getCountExpected()
 	{
 		return _countExpected;
 	}
-	
+
 	@Override
 	public IAsyncBatchBuilder setAD_PInstance_Creator_ID(final PInstanceId adPInstanceId)
 	{
@@ -130,14 +131,14 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	{
 		return parentAsycnBatchId;
 	}
-	
+
 	@Override
 	public IAsyncBatchBuilder setParentAsycnBatchId(int parentAsycnBatchId)
 	{
 		this.parentAsycnBatchId = parentAsycnBatchId;
 		return this;
 	}
-	
+
 	@Override
 	public IAsyncBatchBuilder setName(final String name)
 	{

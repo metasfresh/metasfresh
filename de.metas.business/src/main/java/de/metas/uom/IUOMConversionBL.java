@@ -32,19 +32,31 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IUOMConversionBL extends ISingletonService
 {
+	/** for backward; compatibility */
+	default BigDecimal convertQty(
+			ProductId productId,
+			BigDecimal qty,
+			@NonNull final I_C_UOM uomFrom,
+			@NonNull final I_C_UOM uomTo)
+	{
+		return convertQty(productId, Rounding.TO_TARGET_UOM_PRECISION, qty, uomFrom, uomTo);
+	}
+
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
 	 *
 	 * @return converted quantity; never return NULL.
 	 */
 	BigDecimal convertQty(
-			final ProductId productId,
-			final BigDecimal qty,
+			ProductId productId,
+			Rounding rounding,
+			BigDecimal qty,
 			@NonNull final I_C_UOM uomFrom,
 			@NonNull final I_C_UOM uomTo);
 
@@ -58,14 +70,21 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, UomId uomFrom, UomId uomTo);
 
 	/**
+	 * @deprecated please consider using {@link #convertQuantityTo(Quantity, UOMConversionContext, UomId)}
+	 */
+	@Deprecated
+	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
+
+
+	/**
 	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
-	 *
+	 * <p>
 	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
+	 *
+	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
 	 *
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
-	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
-
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, UomId uomToId);
 
 	/**
@@ -92,7 +111,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Rounds given qty to UOM standard precision.
-	 *
+	 * <p>
 	 * If qty's actual precision is bigger than UOM standard precision then the qty WON'T be rounded.
 	 *
 	 * @param qty
@@ -133,7 +152,23 @@ public interface IUOMConversionBL extends ISingletonService
 	 *
 	 * @return converted qty (std precision)
 	 */
+	@Deprecated
 	Optional<BigDecimal> convert(I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
+
+	/**
+	 * Convert qty to target UOM and round.
+	 *
+	 * @return converted qty (std precision)
+	 */
+	Optional<BigDecimal> convert(@NonNull final UomId fromUomId, @NonNull final UomId toUomId, @NonNull final BigDecimal qty);
+
+	/**
+	 * Convert qty to target UOM and round.
+	 *
+	 * @return converted qty (std precision)
+	 */
+
+	Optional<Quantity> convertQtyTo(Quantity quantity, UomId toUomId);
 
 	/**
 	 * Converts the given qty from the given source UOM to the given product's stocking UOM.
@@ -142,7 +177,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 */
 	BigDecimal convertToProductUOM(ProductId productId, BigDecimal qtyToConvert, UomId fromUomId);
 
-	default BigDecimal convertToProductUOM(final ProductId productId, final I_C_UOM uomSource, final BigDecimal qtyToConvert)
+	default BigDecimal convertToProductUOM(ProductId productId, I_C_UOM uomSource, BigDecimal qtyToConvert)
 	{
 		final UomId fromUomId = uomSource != null ? UomId.ofRepoId(uomSource.getC_UOM_ID()) : null;
 		return convertToProductUOM(productId, qtyToConvert, fromUomId);
@@ -154,4 +189,5 @@ public interface IUOMConversionBL extends ISingletonService
 
 	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId, CurrencyPrecision pricePrecision);
 
+	UOMConversionRate getRate(ProductId productId, UomId fromUomId, UomId toUomId);
 }

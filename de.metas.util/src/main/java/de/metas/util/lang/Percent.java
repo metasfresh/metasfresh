@@ -5,6 +5,9 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import lombok.AccessLevel;
@@ -37,6 +40,7 @@ import lombok.Value;
 @Value
 public class Percent
 {
+	@JsonCreator
 	public static Percent of(@NonNull final String value)
 	{
 		return of(new BigDecimal(value));
@@ -83,7 +87,7 @@ public class Percent
 	 **/
 	public static Percent ofDelta(@NonNull final BigDecimal baseValue, @NonNull final BigDecimal compareValue)
 	{
-		return of(compareValue.subtract(baseValue), baseValue, 2);
+		return of(compareValue.subtract(baseValue), baseValue, 2, RoundingMode.HALF_UP);
 	}
 
 	/**
@@ -95,6 +99,8 @@ public class Percent
 	}
 
 	/**
+	 * Like {@link #of(BigDecimal, BigDecimal, int, RoundingMode)} with a scale of 2 and "half-up".
+	 *
 	 * Examples:
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"), 2)} returns an instance of "25%".
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
@@ -107,6 +113,15 @@ public class Percent
 			@NonNull final BigDecimal denominator,
 			final int precision)
 	{
+		return of(numerator, denominator, 2, RoundingMode.HALF_UP);
+	}
+
+	public static Percent of(
+			@NonNull final BigDecimal numerator,
+			@NonNull final BigDecimal denominator,
+			final int precision,
+			@NonNull final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (denominator.signum() == 0)
@@ -114,11 +129,11 @@ public class Percent
 			return ZERO;
 		}
 
-		final int scale = precision + 2; // +2 because i guess if we multiply by 100 in the end, everything shifts by two digits
+		final int scale = precision + 2; // +2 because if we multiply by 100 in the end, everything shifts by two digits
 
 		final BigDecimal percentValue = numerator
 				.setScale(scale, RoundingMode.HALF_UP)
-				.divide(denominator, RoundingMode.HALF_UP)
+				.divide(denominator, roundingMode)
 				.multiply(ONE_HUNDRED_VALUE);
 
 		return Percent.of(percentValue);
@@ -149,6 +164,7 @@ public class Percent
 		this.value = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
+	@JsonValue
 	public BigDecimal toBigDecimal()
 	{
 		return value;
@@ -217,11 +233,11 @@ public class Percent
 
 	/**
 	 * Example:
-	 * <li>{@code Percent.of(ONE).multiply(new BigDecimal("200"))} returns {@code 2}.
+	 * <li>{@code Percent.of(ONE).computePercentageOf(new BigDecimal("200"))} returns {@code 2}.
 	 *
 	 * @param precision scale of the result; may be less than the scale of the given {@code base}
 	 */
-	public BigDecimal multiply(@NonNull final BigDecimal base, final int precision)
+	public BigDecimal computePercentageOf(@NonNull final BigDecimal base, final int precision)
 	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 

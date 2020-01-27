@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -42,22 +43,21 @@ import org.slf4j.Logger;
 import com.google.common.io.Closeables;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.report.jasper.IJasperServer;
-import de.metas.adempiere.report.jasper.JasperConstants;
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
+import de.metas.report.server.IReportServer;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportConstants;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.exceptions.ServiceConnectionException;
 
-public class RemoteServletInvoker implements IJasperServer
+public class RemoteServletInvoker implements IReportServer
 {
-	public static final String SYSCONFIG_JRServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
-	public static final String SYSCONFIG_JRServerServlet_DEFAULT = "http://localhost:8080/adempiereJasper/ReportServlet";
+	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
 
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final String SYSCONFIG_JRServerRetryMS = "de.metas.report.jasper.client.ServiceConnectionExceptionRetryAdvisedInMillis";
 
-	private final String jrServlet;
+	private final String reportsServlet;
 	private final String mgtServlet;
 
 	/**
@@ -72,29 +72,33 @@ public class RemoteServletInvoker implements IJasperServer
 
 	public RemoteServletInvoker()
 	{
-		jrServlet = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerServlet, SYSCONFIG_JRServerServlet_DEFAULT);
+		final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
+
+		reportsServlet = sysConfigs.getValue(
+				ReportConstants.SYSCONFIG_ReportsServerServlet,
+				ReportConstants.SYSCONFIG_ReportsServerServlet_DEFAULT);
 
 		// Set MgtServlet
 		{
-			int idx = jrServlet.lastIndexOf('/');
-			mgtServlet = jrServlet.substring(0, idx) + JasperConstants.JRSERVERSERVLET_MGTSERVLET_SUFFIX;
+			final int idx = reportsServlet.lastIndexOf('/');
+			mgtServlet = reportsServlet.substring(0, idx) + ReportConstants.JRSERVERSERVLET_MGTSERVLET_SUFFIX;
 		}
 	}
 
 	@Override
 	public byte[] report(
-			int AD_Process_ID,
-			int AD_PInstance_ID,
-			String adLanguage,
-			OutputType outputType)
+			final int AD_Process_ID,
+			final int AD_PInstance_ID,
+			final String adLanguage,
+			final OutputType outputType)
 	{
-		final String urlStr = jrServlet + "?"
+		final String urlStr = reportsServlet + "?"
 				+ "AD_Process_ID=" + assumeGreaterThanZero(AD_Process_ID, "AD_Process_ID")
 				+ "&AD_PInstance_ID=" + assumeGreaterThanZero(AD_PInstance_ID, "AD_PInstance_ID")
 				+ "&AD_Language=" + assumeNotEmpty(adLanguage, "adLanguage")
 				+ "&output=" + assumeNotNull(outputType, "outputType").toString();
 
-		logger.info("Calling URL " + urlStr);
+		logger.debug("Calling URL {}", urlStr);
 
 		InputStream in = null;
 		try
@@ -116,7 +120,7 @@ public class RemoteServletInvoker implements IJasperServer
 		{
 			writeLog(urlStr, e);
 
-			final int retryInMillis = Services.get(ISysConfigBL.class).getIntValue(JRClient.SYSCONFIG_JRServerRetryMS, -1);
+			final int retryInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_JRServerRetryMS, -1);
 			throw new ServiceConnectionException(urlStr, retryInMillis, e);
 		}
 		catch (final IOException e)
@@ -146,7 +150,7 @@ public class RemoteServletInvoker implements IJasperServer
 		{
 			cacheReset0();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -155,8 +159,8 @@ public class RemoteServletInvoker implements IJasperServer
 	private void cacheReset0() throws MalformedURLException, IOException
 	{
 		final String urlStr = mgtServlet + "?"
-				+ JasperConstants.MGTSERVLET_PARAM_Action + "=" + JasperConstants.MGTSERVLET_ACTION_CacheReset;
-		logger.info("Calling URL " + urlStr);
+				+ ReportConstants.MGTSERVLET_PARAM_Action + "=" + ReportConstants.MGTSERVLET_ACTION_CacheReset;
+		logger.debug("Calling URL {}", urlStr);
 
 		InputStream in = null;
 		URLConnection urlConnection = null;
@@ -181,8 +185,8 @@ public class RemoteServletInvoker implements IJasperServer
 				out.write(buf, 0, len);
 			}
 
-			String result = new String(out.toByteArray());
-			logger.info("result: " + result);
+			final String result = new String(out.toByteArray(), StandardCharsets.UTF_8);
+			logger.debug("result: {}", result);
 		}
 		finally
 		{
@@ -194,9 +198,9 @@ public class RemoteServletInvoker implements IJasperServer
 				{
 					((HttpURLConnection)urlConnection).disconnect();
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					logger.warn("Failed to disconnect from " + urlConnection + ". Ignored.", e);
+					logger.warn("Failed to disconnect from {}. Ignored.", urlConnection, e);
 				}
 			}
 		}

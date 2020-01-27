@@ -61,7 +61,7 @@ public class C_OrderLine
 				.bPartnerId(orderLine.getBPartnerId())
 				.productId(orderLine.getProductId())
 				.date(orderLine.getDatePromised().toLocalDate())
-				.baseAmount(orderLine.getPriceActual())
+				.baseAmount(orderLine.getPriceActual().toMoney())
 				.paymentTermId(orderLine.getPaymentTermId())
 				.quantity(orderLine.getOrderedQty())
 				.build();

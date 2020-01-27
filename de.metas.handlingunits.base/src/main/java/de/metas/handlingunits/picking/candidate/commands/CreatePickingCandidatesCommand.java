@@ -1,13 +1,10 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import org.compiere.model.I_C_UOM;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -46,19 +43,21 @@ public class CreatePickingCandidatesCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ShipmentScheduleId shipmentScheduleId;
-	private final HuId pickFromHuId;
+	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
+	private final Quantity quantity;
 
 	@Builder
 	private CreatePickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickHURequest request)
+			@NonNull final PickRequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
-		this.pickFromHuId = request.getPickFromHuId();
+		this.pickFrom = request.getPickFrom();
 		this.pickingSlotId = request.getPickingSlotId();
+		this.quantity = request.getQtyToPick();
 	}
 
 	public PickHUResult perform()
@@ -76,17 +75,12 @@ public class CreatePickingCandidatesCommand
 	public PickingCandidate createPickingCandidate()
 	{
 		return PickingCandidate.builder()
-				.status(PickingCandidateStatus.Draft)
-				.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
+				.processingStatus(PickingCandidateStatus.Draft)
+				.qtyPicked(quantity)
 				.shipmentScheduleId(shipmentScheduleId)
-				.pickFromHuId(pickFromHuId)
+				.pickFrom(pickFrom)
 				.pickingSlotId(pickingSlotId)
 				.build();
 	}
 
-	private I_C_UOM getShipmentScheduleUOM()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		return shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
-	}
 }

@@ -9,8 +9,11 @@ import lombok.experimental.UtilityClass;
 
 import java.util.Properties;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,8 +61,9 @@ public class DocOutboundUtils
 		final String documentNo = documentBL.getDocumentNo(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID());
 		docOutboundLogLineRecord.setDocumentNo(documentNo);
 
-		final String docStatus = documentBL.getDocStatusOrNull(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID());
-		docOutboundLogLineRecord.setDocStatus(docStatus);
+		final TableRecordReference reference = TableRecordReference.ofReferenced(docOutboundLog);
+		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
+		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
 		final int doctypeID = documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID());
 		docOutboundLogLineRecord.setC_DocType_ID(doctypeID);

@@ -26,13 +26,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.KeyNamePair;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -42,6 +39,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -63,8 +61,8 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final List<I_M_HU_PI_Item_Product> result = new ArrayList<>();
 
-		final I_C_BPartner bpartner = null;
-		final List<I_M_HU_PI_Item> versionPIItems = handlingUnitsDAO.retrievePIItems(version, bpartner);
+		final BPartnerId bpartnerId = null;
+		final List<I_M_HU_PI_Item> versionPIItems = handlingUnitsDAO.retrievePIItems(version, bpartnerId);
 
 		final List<I_M_HU_PI_Item> itemDefs = getNestedMaterialPIItems(versionPIItems);
 		for (final I_M_HU_PI_Item itemDef : itemDefs)
@@ -72,7 +70,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			Check.assume(X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemDef.getItemType()), "{} item type is Material", itemDef);
 
 			final I_M_HU_PI_Item_Product itemProduct = Services.get(IHUPIItemProductDAO.class)
-					.retrievePIMaterialItemProduct(itemDef, product, SystemTime.asDate());
+					.retrievePIMaterialItemProduct(itemDef, product, SystemTime.asZonedDateTime());
 			if (itemProduct != null && itemProduct.getM_HU_PI_Item_Product_ID() > 0)
 			{
 				result.add(itemProduct);
@@ -128,6 +126,23 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	}
 
 	@Override
+	public boolean isInfiniteCapacity(@NonNull final HUPIItemProductId id)
+	{
+		if (id.isVirtualHU())
+		{
+			return true;
+		}
+
+		final I_M_HU_PI_Item_Product piip = getById(id);
+		if (piip == null)
+		{
+			return true;
+		}
+
+		return piip.isInfiniteCapacity();
+	}
+
+	@Override
 	public void deleteForItem(final I_M_HU_PI_Item packingInstructionsItem)
 	{
 		final List<I_M_HU_PI_Item_Product> products = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProducts(packingInstructionsItem);
@@ -159,15 +174,12 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	}
 
 	@Override
-	public KeyNamePair getDisplayName(
-			@NonNull final HUPIItemProductId piItemProductId,
-			@Nullable final String adLanguage)
+	public ITranslatableString getDisplayName(@NonNull final HUPIItemProductId piItemProductId)
 	{
-		final I_M_HU_PI_Item_Product piItemProduct = Services
-				.get(IHUPIItemProductDAO.class)
+		final I_M_HU_PI_Item_Product piItemProduct = Services.get(IHUPIItemProductDAO.class)
 				.getById(piItemProductId);
 
-		final I_M_HU_PI_Item_Product trl = InterfaceWrapperHelper.translate(piItemProduct, I_M_HU_PI_Item_Product.class, adLanguage);
-		return KeyNamePair.of(piItemProductId, trl.getName(), trl.getDescription());
+		return InterfaceWrapperHelper.getModelTranslationMap(piItemProduct)
+				.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Name, piItemProduct.getName());
 	}
 }

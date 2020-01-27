@@ -649,7 +649,7 @@ public class Adempiere
 		}
 		else
 		{
-			LogManager.setLevel(Level.WARN);
+			LogManager.setLevel(Level.INFO);
 		}
 
 		// Set UI

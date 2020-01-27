@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -45,6 +45,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class WeightTareAttributeValueCallout
 		extends AbstractWeightAttributeValueCallout
@@ -82,7 +83,7 @@ public class WeightTareAttributeValueCallout
 
 	/**
 	 * Calculates Weight Tare for given HU.
-	 *
+	 * <p>
 	 * NOTE: this method calculates PI's tare weight without considering included HUs because we don't know how many are.
 	 *
 	 * @param piVersion
@@ -92,6 +93,7 @@ public class WeightTareAttributeValueCallout
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 		final BigDecimal weightTare;
 		if (handlingUnitsBL.isAggregateHU(hu))
@@ -103,8 +105,8 @@ public class WeightTareAttributeValueCallout
 					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
-					.map(item -> handlingUnitsBL.getHUPackingMaterial(item))
-					.filter(packingmaterial -> packingmaterial != null)
+					.map(item -> packingMaterialDAO.retrieveHUPackingMaterialOrNull(item))
+					.filter(Objects::nonNull)
 
 					// multiply their M_HU_PackingMaterial's weight
 					.map(packingmaterial -> getWeightTare(packingmaterial).multiply(qty))
@@ -132,9 +134,9 @@ public class WeightTareAttributeValueCallout
 
 		BigDecimal weightTareTotal = BigDecimal.ZERO;
 
-		final I_C_BPartner partner = null; // FIXME: get context C_BPartner
+		final BPartnerId partnerId = null; // FIXME: get context C_BPartner
 
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partner))
+		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partnerId))
 		{
 			final String itemType = piItem.getItemType();
 			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
@@ -156,7 +158,6 @@ public class WeightTareAttributeValueCallout
 	}
 
 	/**
-	 * 
 	 * @param huPackingMaterial
 	 * @return never returns {@code null}.
 	 */
@@ -205,5 +206,11 @@ public class WeightTareAttributeValueCallout
 			final Object valueNew)
 	{
 		return !Objects.equals(valueOld, valueNew);
+	}
+
+	@Override
+	public boolean isDisplayedUI(@NonNull final IAttributeSet attributeSet, @NonNull final I_M_Attribute attribute)
+	{
+		return isLUorTUorTopLevelVHU(attributeSet);
 	}
 }

@@ -33,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -54,7 +55,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -165,7 +165,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 	}
 
 	@Override
-	protected final void onCUPressed(final ITerminalKey key)
+	protected void onCUPressed(final ITerminalKey key)
 	{
 		final CUSplitKey cuKey = (CUSplitKey)key;
 
@@ -183,10 +183,9 @@ public final class HUSplitModel extends AbstractLTCUModel
 		final ProductId cuProductId = cuKey.getProductId();
 
 		final I_M_HU huToSplit = huToSplitKey.getM_HU();
-		final int originalPartnerId = huToSplit.getC_BPartner_ID();
-		final I_C_BPartner originalPartner = originalPartnerId <= 0 ? null : InterfaceWrapperHelper.create(ctx, originalPartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+		final BPartnerId originalPartnerId = BPartnerId.ofRepoIdOrNull(huToSplit.getC_BPartner_ID());
 
-		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, originalPartner);
+		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, originalPartnerId);
 
 		//
 		// Create TU Keys
@@ -220,7 +219,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		return keys;
 	}
 
-	private final boolean isSkipInfiniteCapacity(final I_M_HU huToSplit, final I_M_HU_PI tuPI, final I_M_HU_PI_Item_Product tuPIItemProduct)
+	private boolean isSkipInfiniteCapacity(final I_M_HU huToSplit, final I_M_HU_PI tuPI, final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		//
 		// If not infinite capacity, don't skip
@@ -274,7 +273,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 	}
 
 	@Override
-	protected final void onTUPressed(final ITerminalKey key)
+	protected void onTUPressed(final ITerminalKey key)
 	{
 		final TUSplitKey tuKey = (TUSplitKey)key;
 
@@ -299,8 +298,8 @@ public final class HUSplitModel extends AbstractLTCUModel
 		final Properties ctx = InterfaceWrapperHelper.getCtx(tuPI);
 		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
 
-		final I_C_BPartner bpartner = null; // TODO do we want to filter LUs by BP?
-		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
+		final BPartnerId bpartnerId = null; // TODO do we want to filter LUs by BP?
+		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartnerId);
 
 		// FIXME: Load NO-HU-PI to handle when e.g IFCOs are not in a Palette
 		// FIXME: Load Original LU if that's the case (???)
@@ -327,7 +326,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 	}
 
 	@Override
-	protected final void onLUPressed(final ITerminalKey key)
+	protected void onLUPressed(final ITerminalKey key)
 	{
 		defaultQtyHandler.calculateDefaultQtys(this); // Task 07084
 
@@ -409,7 +408,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 	 * @param key
 	 * @return rebuilt key or <code>null</code> if the underlying HU was destroyed in meantime
 	 */
-	private final ISplittableHUKey rebuild(final ISplittableHUKey key)
+	private ISplittableHUKey rebuild(final ISplittableHUKey key)
 	{
 		final IHUKey parentKey = key.getParent();
 		if (parentKey == null)

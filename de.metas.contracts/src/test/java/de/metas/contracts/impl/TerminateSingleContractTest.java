@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -216,27 +217,27 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 			.setName("Default")
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_Location_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_C_Currency_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_AD_Org_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsSOTrx)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsTaxIncluded)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded)
 				.end()
 			.build();
 		//@formatter:on
@@ -278,7 +279,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		final List<I_C_Invoice_Candidate> candsForTerm = invoiceCandDAO.retrieveReferencing(flatrateTerm);
+		final List<I_C_Invoice_Candidate> candsForTerm = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(flatrateTerm));
 		assertThat(candsForTerm).hasSize(1);
 		final I_C_Invoice_Candidate invoiceCandidate = candsForTerm.get(0);
 		assertThat(invoiceCandidate.getQtyInvoiced()).isEqualByComparingTo(BigDecimal.ZERO);

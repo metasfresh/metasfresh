@@ -10,39 +10,45 @@ package de.metas.shipping.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.shipping.model.ShipperTransportationId;
+import lombok.NonNull;
 import org.compiere.model.I_M_Package;
 
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IShipperTransportationDAO extends ISingletonService
 {
-	List<I_M_ShippingPackage> retrieveShippingPackages(I_M_ShipperTransportation shipperTransportation);
+	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
 	/**
 	 * Retrieve all {@link I_M_ShippingPackage}s which are pointing to givem {@link I_M_Package}.
-	 *
-	 * @param mpackage
-	 * @return
 	 */
 	List<I_M_ShippingPackage> retrieveShippingPackages(I_M_Package mpackage);
 
+	@Nullable
+	I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId);
+
 	<T extends I_M_ShipperTransportation> List<T> retrieveOpenShipperTransportations(Properties ctx, Class<T> clazz);
+
+	ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(ShipperId shipperId);
 }

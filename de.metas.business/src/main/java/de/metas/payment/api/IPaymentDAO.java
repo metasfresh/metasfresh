@@ -25,9 +25,14 @@ package de.metas.payment.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.organization.OrgId;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
@@ -43,11 +48,14 @@ public interface IPaymentDAO extends ISingletonService
 {
 	I_C_Payment getById(PaymentId paymentId);
 
+	Optional<I_C_Payment> getByExternalOrderId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
+
+	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
+
 	/**
-	 * @param payment
-	 * @return payment's available to allocate amount
+	 * @return payment's available to allocate amount (i.e. open amount)
 	 */
-	BigDecimal getAvailableAmount(I_C_Payment payment);
+	BigDecimal getAvailableAmount(PaymentId paymentId);
 
 	/**
 	 * @param payment
@@ -77,7 +85,6 @@ public interface IPaymentDAO extends ISingletonService
 	 * If the payment references a C_Charge, then only return the pay-amount.
 	 * Otherwise, return the amount plus payment-writeOff-amount from C_AllocationLines which reference the payment.
 	 *
-	 * @param payment
 	 * @return never return <code>null</code>, even if there are no allocations
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);

@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 96106947L;
+	private static final long serialVersionUID = -771578003L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (Properties ctx, int M_ShipmentSchedule_QtyPicked_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
       super (ctx, M_ShipmentSchedule_QtyPicked_ID, trxName);
       /** if (M_ShipmentSchedule_QtyPicked_ID == 0)
         {
+			setIsAnonymousHuPickedOnTheFly (false); // N
 			setM_ShipmentSchedule_QtyPicked_ID (0);
 			setProcessed (false); // N
 			setQtyPicked (BigDecimal.ZERO); // 0
@@ -83,6 +84,29 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Anonymous HU Picked On the Fly.
+		@param IsAnonymousHuPickedOnTheFly Anonymous HU Picked On the Fly	  */
+	@Override
+	public void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, Boolean.valueOf(IsAnonymousHuPickedOnTheFly));
+	}
+
+	/** Get Anonymous HU Picked On the Fly.
+		@return Anonymous HU Picked On the Fly	  */
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -180,7 +204,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -189,7 +213,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

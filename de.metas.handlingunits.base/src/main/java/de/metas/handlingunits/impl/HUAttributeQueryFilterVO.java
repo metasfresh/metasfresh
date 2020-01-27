@@ -59,10 +59,10 @@ import lombok.NonNull;
 {
 	public static final String ATTRIBUTEVALUETYPE_Unknown = null;
 
-	public static enum AttributeValueMatchingType
+	public enum AttributeValueMatchingType
 	{
 		NotNull, MissingOrNull, ValuesList,
-	};
+	}
 
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -184,7 +184,7 @@ import lombok.NonNull;
 		return copy();
 	}
 
-	public final String getSummary()
+	public String getSummary()
 	{
 		final String attributeName = getM_Attribute().getName();
 		final Set<Object> values = getValuesAndSubstitutes();
@@ -203,7 +203,7 @@ import lombok.NonNull;
 	 * @param contextProvider
 	 * @param huFilters
 	 */
-	public final void appendQueryFilterTo(final ICompositeQueryFilter<I_M_HU> huFilters)
+	public void appendQueryFilterTo(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
 		switch (matchingType)
 		{
@@ -221,18 +221,18 @@ import lombok.NonNull;
 		}
 	}
 
-	private final void appendQueryFilter_NotNull(final ICompositeQueryFilter<I_M_HU> huFilters)
+	private void appendQueryFilter_NotNull(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
 		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, getAttributeId())
 				.addNotNull(getHUAttributeValueColumn())
 				.create();
 
 		huFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
 	}
 
-	private final void appendQueryFilter_MissingOrNull(final ICompositeQueryFilter<I_M_HU> huFilters)
+	private void appendQueryFilter_MissingOrNull(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
 		final ICompositeQueryFilter<I_M_HU> huFilterToAppend = queryBL.createCompositeQueryFilter(I_M_HU.class)
 				.setJoinOr();
@@ -241,7 +241,7 @@ import lombok.NonNull;
 		{
 			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
+					.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, getAttributeId())
 					.create();
 
 			huFilterToAppend.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
@@ -251,7 +251,7 @@ import lombok.NonNull;
 		{
 			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
+					.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, getAttributeId())
 					.addEqualsFilter(getHUAttributeValueColumn(), null)
 					.create();
 
@@ -261,11 +261,11 @@ import lombok.NonNull;
 		huFilters.addFilter(huFilterToAppend);
 	}
 
-	private final void appendQueryFilter_ValuesList(final ICompositeQueryFilter<I_M_HU> huFilters)
+	private void appendQueryFilter_ValuesList(final ICompositeQueryFilter<I_M_HU> huFilters)
 	{
 		final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getAttributeId())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, getAttributeId())
 				.addInArrayOrAllFilter(getHUAttributeValueColumn(), getValuesAndSubstitutes())
 				.create();
 
@@ -275,7 +275,7 @@ import lombok.NonNull;
 	/**
 	 * NOTE: keep in sync with {@link #appendQueryFilterTo(Object, ICompositeQueryFilter)}
 	 */
-	public final boolean matches(final IAttributeSet attributes)
+	public boolean matches(final IAttributeSet attributes)
 	{
 		switch (matchingType)
 		{
@@ -326,7 +326,7 @@ import lombok.NonNull;
 		return recordAttributeValue == null; // matched if null
 	}
 
-	private final boolean matches_ValuesList(final IAttributeSet attributes)
+	private boolean matches_ValuesList(final IAttributeSet attributes)
 	{
 		//
 		// Check if attribute set has our attribute
@@ -385,7 +385,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final AttributeId getAttributeId()
+	private AttributeId getAttributeId()
 	{
 		return attributeId;
 	}
@@ -393,7 +393,7 @@ import lombok.NonNull;
 	/**
 	 * @return attribute; never return <code>null</code>
 	 */
-	private final I_M_Attribute getM_Attribute()
+	private I_M_Attribute getM_Attribute()
 	{
 		return attribute;
 	}

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCand;
@@ -122,6 +123,7 @@ public class OrderCreateRequestRabbitMQListener
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 		// final OrderResponse order = request.getOrder();
 		final String poReference = request.getOrderId().getValueAsString();
@@ -135,6 +137,7 @@ public class OrderCreateRequestRabbitMQListener
 				final ProductId productId = productDAO.retrieveProductIdByValue(item.getPzn().getValueAsString());
 				final UomId uomId = productBL.getStockUOMId(productId);
 				final int huPIItemProductId = -1; // TODO fetch it from item.getPackingMaterialId()
+
 				olCandRequests.add(OLCandCreateRequest.builder()
 						.externalLineId(item.getId().getValueAsString())
 						//
@@ -148,8 +151,8 @@ public class OrderCreateRequestRabbitMQListener
 						.uomId(uomId)
 						.huPIItemProductId(huPIItemProductId)
 
-						.dataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
-						.dataDestInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME)
+						.dataSourceId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(DATA_SOURCE_INTERNAL_NAME))
+						.dataDestId(inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME))
 
 						.build());
 			}

@@ -2,15 +2,13 @@ package de.metas.inoutcandidate.spi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.compiere.model.I_C_OrderLine;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import java.util.Optional;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import org.compiere.model.I_C_OrderLine;
+import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 
 /*
@@ -35,23 +33,14 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-
-		// needed to register the spring context with the Adempiere main class
-		StartupListener.class, ShutdownListener.class,
-
-		// needed so that the spring context can discover those two components. Note that there are other ways too, but this one is very fast
-		ShipmentScheduleReferencedLineFactory.class, ShipmentScheduleOrderReferenceProvider.class
-})
 public class ShipmentScheduleOrderDocFactoryTest
 {
-	@Autowired
-	private ShipmentScheduleReferencedLineFactory bean;
-
 	@Test
 	public void factoryAndOrderLineImplCanBeDiscoveredAndConfigured()
 	{
+		final ShipmentScheduleReferencedLineFactory bean = new ShipmentScheduleReferencedLineFactory(
+				Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
+
 		final ShipmentScheduleReferencedLineProvider providerForOrderLineScheds = bean.getProviderForTableNameOrNull(I_C_OrderLine.Table_Name);
 		assertThat(providerForOrderLineScheds).isNotNull();
 		assertThat(providerForOrderLineScheds).isInstanceOf(ShipmentScheduleOrderReferenceProvider.class);

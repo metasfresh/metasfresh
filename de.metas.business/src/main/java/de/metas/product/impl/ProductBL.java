@@ -215,10 +215,8 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isStocked(final I_M_Product product)
+	public boolean isStocked(@NonNull final I_M_Product product)
 	{
-		Check.assumeNotNull(product, "product not null");
-
 		if (!product.isStocked())
 		{
 			return false;
@@ -474,7 +472,7 @@ public final class ProductBL implements IProductBL
 				.map(uom -> UomId.ofRepoId(uom.getC_UOM_ID()))
 				.sorted()
 				.collect(ImmutableList.toImmutableList());
-		
+
 		if(catchWeightUomIds.isEmpty())
 		{
 			return Optional.empty();

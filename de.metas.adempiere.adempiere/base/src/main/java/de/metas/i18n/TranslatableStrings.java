@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.DisplayType;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -224,11 +222,7 @@ public class TranslatableStrings
 
 	public static ITranslatableString amount(@NonNull final Amount amount)
 	{
-		return builder()
-				.append(amount.getAsBigDecimal(), DisplayType.Amount)
-				.append(" ")
-				.append(amount.getCurrencyCode().toThreeLetterCode())
-				.build();
+		return builder().append(amount).build();
 	}
 
 	public static NumberTranslatableString number(final BigDecimal valueBD, final int displayType)

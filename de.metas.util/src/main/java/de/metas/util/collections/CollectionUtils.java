@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -43,12 +44,9 @@ import lombok.NonNull;
  * #L%
  */
 
+@UtilityClass
 public final class CollectionUtils
 {
-	private CollectionUtils()
-	{
-	}
-
 	/**
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
 	 *
@@ -271,12 +269,11 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFuntion)
 	{
-		final ImmutableList<R> extractedElements = collection
+		return collection
 				.stream()
 				.map(extractFuntion)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
-		return extractedElements;
 	}
 
 	/**
@@ -372,5 +369,4 @@ public final class CollectionUtils
 						LinkedHashMap::new));
 		return inventoryLineRecords;
 	}
-
 }

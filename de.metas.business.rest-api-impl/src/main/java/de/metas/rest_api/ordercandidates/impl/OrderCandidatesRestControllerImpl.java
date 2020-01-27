@@ -38,6 +38,7 @@ import de.metas.attachments.AttachmentTags;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -55,6 +56,7 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.rest_api.utils.PermissionServiceFactory;
 import de.metas.util.Check;
@@ -85,7 +87,6 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
@@ -275,12 +276,21 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final String dataSourceInternalNameToUse = coalesce(
-				request.getDataSourceInternalName(),
-				DATA_SOURCE_INTERNAL_NAME);
+				request.getDataSource(),
+				"int-" + DATA_SOURCE_INTERNAL_NAME);
+
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg()));
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceInternalNameToUse)
+					.parentResource(request).build();
+		}
 
 		return jsonConverters
 				.fromJson(request, masterdataProvider)
-				.dataSourceInternalName(dataSourceInternalNameToUse)
+				.dataSourceId(dataSourceId)
 				.build();
 	}
 

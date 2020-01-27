@@ -23,7 +23,7 @@ package de.metas.handlingunits.hutransaction.interceptor;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -64,7 +64,7 @@ public final class M_HU
 	
 	private M_HU()
 	{
-	};
+	}
 
 	/**
 	 * Creates hu trx lines if the HU's
@@ -167,7 +167,7 @@ public final class M_HU
 		// Extract the data needed to create the HU Transactions
 		final ProductId productId = productStorage.getProductId();
 		final Quantity quantity = productStorage.getQty();
-		final Date date = huContext.getDate();
+		final ZonedDateTime date = huContext.getDate();
 		final Object referencedModel = vhu; // there's no document model for our HUTransactions
 
 		//

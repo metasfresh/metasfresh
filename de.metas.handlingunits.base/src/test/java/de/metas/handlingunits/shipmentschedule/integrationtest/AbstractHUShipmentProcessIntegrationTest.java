@@ -21,6 +21,7 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
@@ -36,7 +37,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -49,6 +49,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
+
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -75,11 +76,16 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -93,7 +99,6 @@ import lombok.NonNull;
  * <li>generate shipment
  * <li>shipper transportation: make sure M_Packages are updated correctly after shipment
  * </ul>
- *
  */
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest
 {
@@ -135,17 +140,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	protected IAttributeStorageFactory attributeStorageFactory;
 
 	@Override
-	protected HUTestHelper createHUTestHelper()
+	protected final HUTestHelper createHUTestHelper()
 	{
-		return new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				return ITrx.TRXNAME_None;
-			}
-
-		};
+		return HUTestHelper.newInstanceOutOfTrx();
 	}
 
 	@Override
@@ -153,7 +150,10 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	{
 		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
 
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
+		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
+		
+		final OrderLineShipmentScheduleHandler orderLineShipmentScheduleHandler = OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions();
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(orderLineShipmentScheduleHandler);
 
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
@@ -302,9 +302,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Aggregates Picked TUs ({@link #afterAggregation_HUExpectations}) and creates Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 *
+	 * <p>
 	 * NOTE: in most of the cases they are LUs but not necesary.
-	 *
+	 * <p>
 	 * Also allocates the aggregated HUs to original shipment schedules ({@link #afterAggregation_ShipmentScheduleQtyPickedExpectations}).
 	 */
 	protected abstract void step30_aggregateHUs();
@@ -315,7 +315,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Adds Aggregated HUs ({@link #afterAggregation_HUExpectations}) to {@link #shipperTransportation}.
-	 *
+	 * <p>
 	 * Resulting packages will be added to {@link #mpackagesForAggregatedHUs}.
 	 */
 	protected void step40_addAggregatedHUsToShipperTransportation()
@@ -335,7 +335,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
-							shipperTransportation.getM_ShipperTransportation_ID(),
+							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
 							Collections.singletonList(afterAggregation_HU));
 
 			//
@@ -353,7 +353,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Generates {@link #generatedShipments} from Aggregated HUs ({@link #afterAggregation_HUExpectations}).
-	 *
+	 * <p>
 	 * Validates if {@link #mpackagesForAggregatedHUs} were correctly updated.
 	 */
 	protected void step50_GenerateShipment()
@@ -430,7 +430,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
 		save(user);
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, user.getAD_User_ID());
-
 
 		// Generate shipments
 		huShippingFacade.generateShippingDocuments();
@@ -513,6 +512,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered);
 		// Warehouse
 		shipmentSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		
+		shipmentSchedule.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 
 		// Order line link
 		shipmentSchedule.setC_Order(order);

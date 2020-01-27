@@ -23,6 +23,7 @@ package de.metas.quantity;
  */
 import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,8 +35,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.hamcrest.number.BigDecimalCloseTo;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import de.metas.uom.impl.UOMTestHelper;
 import de.metas.util.JSONObjectMapper;
@@ -45,7 +47,7 @@ public class QuantityTest
 {
 	private UOMTestHelper uomHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -236,7 +238,7 @@ public class QuantityTest
 				.assertExpected(qtyNew);
 	}
 
-	@Test(expected = QuantitiesUOMNotMatchingExpection.class)
+	@Test
 	public void test_add_UomNotMatching_SourceUomMatching()
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
@@ -247,13 +249,14 @@ public class QuantityTest
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
 		final Quantity qtyToAdd = new Quantity(new BigDecimal("100"), qtyToAdd_uom, new BigDecimal("200"), qtyToAdd_sourceUom);
 
-		qty.add(qtyToAdd); // expect: QuantitiesUOMNotMatchingExpection
+		assertThatThrownBy(() -> qty.add(qtyToAdd))
+				.isInstanceOf(QuantitiesUOMNotMatchingExpection.class);
 	}
 
 	/**
 	 * Expecting same result as {@link #test_add_UomNotMatching_SourceUomMatching()}.
 	 */
-	@Test(expected = QuantitiesUOMNotMatchingExpection.class)
+	@Test
 	public void test_add_UomNotMatching_SourceUomNotMatching()
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
@@ -264,7 +267,8 @@ public class QuantityTest
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
 		final Quantity qtyToAdd = new Quantity(new BigDecimal("100"), qtyToAdd_uom, new BigDecimal("200"), qtyToAdd_sourceUom);
 
-		qty.add(qtyToAdd); // expect: QuantitiesUOMNotMatchingExpection
+		assertThatThrownBy(() -> qty.add(qtyToAdd))
+				.isInstanceOf(QuantitiesUOMNotMatchingExpection.class);
 	}
 
 	@Test
@@ -390,5 +394,51 @@ public class QuantityTest
 		final Quantity deserializedQuantity = jsonMapper.readValue(quantityAsString);
 
 		assertThat(deserializedQuantity).isEqualTo(quantity);
+	}
+
+	@Test
+	public void roundToUOMPrecision_expect_rounded()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.of(new BigDecimal("12.34567"), uom);
+		final Quantity qtyRounded = qty.roundToUOMPrecision();
+		assertThat(qtyRounded.toBigDecimal()).isEqualByComparingTo("12.35");
+		assertThat(qtyRounded.getUOM()).isSameAs(uom);
+	}
+
+	@Test
+	public void roundToUOMPrecision_expect_same()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.of(new BigDecimal("12.34"), uom);
+		assertThat(qty.roundToUOMPrecision()).isSameAs(qty);
+	}
+
+	@Nested
+	public class withoutSource
+	{
+		private I_C_UOM uom1;
+		private I_C_UOM uom2;
+
+		@BeforeEach
+		public void init()
+		{
+			uom1 = uomHelper.createUOM("UOM1", 2);
+			uom2 = uomHelper.createUOM("UOM2", 2);
+		}
+
+		@Test
+		public void fromWithoutSourceQty()
+		{
+			final Quantity qty = Quantity.of(123, uom1);
+			assertThat(qty.withoutSource()).isSameAs(qty);
+		}
+
+		@Test
+		public void fromWithSourceQty()
+		{
+			final Quantity qty = new Quantity(new BigDecimal("123"), uom1, new BigDecimal("456"), uom2);
+			assertThat(qty.withoutSource()).isEqualTo(Quantity.of(123, uom1));
+		}
 	}
 }

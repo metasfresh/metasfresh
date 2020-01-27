@@ -17,13 +17,15 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.compiere.model.MAccount;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.tax.ITaxAcctBL;
+import de.metas.acct.tax.TaxAcctType;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Document Tax Line
@@ -38,29 +40,16 @@ public final class DocTax
 
 	// private static final transient Logger log = CLogMgt.getLogger(DocTax.class);
 
-	/**
-	 * Create Tax
-	 * 
-	 * @param C_Tax_ID tax
-	 * @param taxName tax name
-	 * @param taxRate rate
-	 * @param taxBaseAmt tax base amount
-	 * @param taxAmt tax amount
-	 * @param salesTax sales tax flag
-	 * @param taxIncluded
-	 */
-	public DocTax(final Properties ctx,
-			final int C_Tax_ID,
+	public DocTax(
+			@NonNull final TaxId taxId,
 			final String taxName,
 			final BigDecimal taxRate,
-			final BigDecimal taxBaseAmt, final BigDecimal taxAmt,
+			final BigDecimal taxBaseAmt,
+			final BigDecimal taxAmt,
 			final boolean salesTax,
 			final boolean taxIncluded)
 	{
-		super();
-
-		m_ctx = ctx;
-		m_C_Tax_ID = C_Tax_ID;
+		this.taxId = taxId;
 		m_taxName = taxName;
 		m_taxRate = taxRate;
 		m_taxBaseAmt = taxBaseAmt;
@@ -69,9 +58,7 @@ public final class DocTax
 		this.m_taxIncluded = taxIncluded;
 	}	// DocTax
 
-	private final Properties m_ctx;
-	/** Tax ID */
-	private final int m_C_Tax_ID;
+	private final TaxId taxId;
 	/** Amount */
 	private final BigDecimal m_taxAmt;
 	/** Tax Rate */
@@ -86,42 +73,14 @@ public final class DocTax
 	private final boolean m_salesTax;
 	private final boolean m_taxIncluded;
 
-	/** Tax Due Acct */
-	public static final int ACCTTYPE_TaxDue = ITaxAcctBL.ACCTTYPE_TaxDue;
-	/** Tax Liability */
-	public static final int ACCTTYPE_TaxLiability = ITaxAcctBL.ACCTTYPE_TaxLiability;
-	/** Tax Credit */
-	public static final int ACCTTYPE_TaxCredit = ITaxAcctBL.ACCTTYPE_TaxCredit;
-	/** Tax Receivables */
-	public static final int ACCTTYPE_TaxReceivables = ITaxAcctBL.ACCTTYPE_TaxReceivables;
-	/** Tax Expense */
-	public static final int ACCTTYPE_TaxExpense = ITaxAcctBL.ACCTTYPE_TaxExpense;
-
-	private final Properties getCtx()
-	{
-		return m_ctx;
-	}
-
-	/**
-	 * Get Account
-	 * 
-	 * @param acctType see ACCTTYPE_*
-	 * @param as account schema
-	 * @return Account
-	 */
-	public MAccount getAccount(final int acctType, final AcctSchema as)
-	{
-		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as.getId(), acctType);
-	}   // getAccount
-
 	public MAccount getAccount(final AcctSchema as)
 	{
-		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as.getId(), getAPTaxType());
+		return taxAcctBL.getAccount(getTaxId(), as.getId(), getAPTaxType());
 	}
 
 	public MAccount getTaxDueAcct(final AcctSchema as)
 	{
-		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as.getId(), ACCTTYPE_TaxDue);
+		return taxAcctBL.getAccount(getTaxId(), as.getId(), TaxAcctType.TaxDue);
 	}
 
 	/**
@@ -162,15 +121,15 @@ public final class DocTax
 		return m_taxName;
 	}
 
-	/**
-	 * Get C_Tax_ID
-	 *
-	 * @return tax id
-	 */
+	public TaxId getTaxId()
+	{
+		return taxId;
+	}
+
 	public int getC_Tax_ID()
 	{
-		return m_C_Tax_ID;
-	}	// getC_Tax_ID
+		return getTaxId().getRepoId();
+	}
 
 	/**
 	 * Get Description (Tax Name and Base Amount)
@@ -213,16 +172,12 @@ public final class DocTax
 	}	// isIncludedTaxDifference
 
 	/**
-	 * Get AP Tax Type
-	 *
 	 * @return AP tax type (Credit or Expense)
 	 */
-	public int getAPTaxType()
+	private TaxAcctType getAPTaxType()
 	{
-		if (isSalesTax())
-			return ACCTTYPE_TaxExpense;
-		return ACCTTYPE_TaxCredit;
-	}	// getAPTaxAcctType
+		return isSalesTax() ? TaxAcctType.TaxExpense : TaxAcctType.TaxCredit;
+	}
 
 	/**
 	 * Is Sales Tax

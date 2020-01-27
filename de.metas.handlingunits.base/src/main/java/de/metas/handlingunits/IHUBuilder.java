@@ -1,33 +1,11 @@
 package de.metas.handlingunits;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -71,7 +49,7 @@ public interface IHUBuilder extends IHUIterator
 	I_M_HU create(I_M_HU_PI_Version piVersion);
 
 	@Override
-	Date getDate();
+	ZonedDateTime getDate();
 
 	@Override
 	void setStorageFactory(IHUStorageFactory storageFactory);
@@ -89,7 +67,7 @@ public interface IHUBuilder extends IHUIterator
 
 	IHUBuilder setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product piip);
 
-	IHUBuilder setC_BPartner(I_C_BPartner bpartner);
+	IHUBuilder setBPartnerId(BPartnerId bpartnerId);
 
 	IHUBuilder setC_BPartner_Location_ID(int bpartnerLocationId);
 

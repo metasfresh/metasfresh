@@ -408,7 +408,7 @@ public class HUIteratorTest extends AbstractHUTest
 
 		final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext);
 		huBuilder.setM_HU_Item_Parent(parentItemToUse);
-		huBuilder.setC_BPartner(null); // no BP available in our test
+		huBuilder.setBPartnerId(null); // no BP available in our test
 		final I_M_HU hu = huBuilder.create(huPI);
 
 		POJOWrapper.setInstanceName(hu, name);

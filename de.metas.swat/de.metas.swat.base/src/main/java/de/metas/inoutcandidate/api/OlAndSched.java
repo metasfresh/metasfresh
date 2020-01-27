@@ -28,6 +28,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.document.engine.DocStatus;
@@ -79,9 +80,9 @@ public final class OlAndSched
 		return shipmentSchedule + "/" + salesOrderLine.orElse(null);
 	}
 
-	public IDeliverRequest getDeliverRequest()
+	public BigDecimal getQtyOrdered()
 	{
-		return deliverRequest;
+		return deliverRequest.getQtyOrdered();
 	}
 
 	public boolean hasSalesOrderLine()
@@ -97,6 +98,11 @@ public final class OlAndSched
 	public ProductId getProductId()
 	{
 		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+	}
+
+	public WarehouseId getWarehouseId()
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(shipmentSchedule);
 	}
 
 	public I_C_UOM getOrderPriceUOM()
@@ -123,6 +129,11 @@ public final class OlAndSched
 	public I_M_ShipmentSchedule getSched()
 	{
 		return shipmentSchedule;
+	}
+
+	public ShipmentScheduleId getShipmentScheduleId()
+	{
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	/**

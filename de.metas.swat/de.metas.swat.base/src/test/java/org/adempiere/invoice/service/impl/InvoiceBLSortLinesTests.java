@@ -13,11 +13,11 @@ package org.adempiere.invoice.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,7 @@ import static org.junit.Assert.assertSame;
 import java.util.Arrays;
 import java.util.List;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_InOutLine;
@@ -35,6 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -81,7 +83,7 @@ public class InvoiceBLSortLinesTests
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
-		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, 0);
+		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, false, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	/**
@@ -214,7 +216,7 @@ public class InvoiceBLSortLinesTests
 	@Test
 	public void sortWith_SYSCONFIG_SortILsByShipmentLineOrders()
 	{
-		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, true, 0); // configure override
+		Services.get(ISysConfigBL.class).setValue(AbstractInvoiceBL.SYSCONFIG_SortILsByShipmentLineOrders, true, ClientId.METASFRESH, OrgId.ANY); // configure override
 
 		hasIDs(il1, iol1, 1, 12, false, 10);
 		hasIDs(il2, iol2, 2, 0, false, 9);

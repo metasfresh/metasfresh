@@ -18,6 +18,7 @@ import de.metas.lock.api.ILock;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,10 +62,8 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 * Schedule a new "update invalid invoice candidates" run.
 	 *
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
-	 *
-	 * @param request
 	 */
-	public static final void schedule(final IInvoiceCandUpdateSchedulerRequest request)
+	public static final void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
 	{
 		SCHEDULER.schedule(request);
 	}

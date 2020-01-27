@@ -23,18 +23,16 @@ package de.metas.material.planning.pporder.impl;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
@@ -45,6 +43,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
@@ -53,6 +52,7 @@ import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
@@ -69,6 +69,14 @@ import lombok.NonNull;
 @Service
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
+	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IProductBL productsService = Services.get(IProductBL.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	final void updateOrderBOMLine(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_PP_Product_BOMLine bomLine)
@@ -102,7 +110,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		if (orderBOMLine.getM_AttributeSetInstance_ID() <= 0 && bomLine.getM_AttributeSetInstance_ID() > 0)
 		{
 			final I_M_AttributeSetInstance asi = bomLine.getM_AttributeSetInstance();
-			final I_M_AttributeSetInstance asiCopy = Services.get(IAttributeDAO.class).copy(asi);
+			final I_M_AttributeSetInstance asiCopy = attributesRepo.copy(asi);
 			orderBOMLine.setM_AttributeSetInstance(asiCopy);
 		}
 
@@ -122,53 +130,21 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	void setQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyFinishedGood)
 	{
-		final Quantity qtyRequired = calculateQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood.toBigDecimal());
+		final I_PP_Order order = orderBOMLine.getPP_Order();
+		final Quantity qtyRequired = toQtyCalculationsBOMLine(order, orderBOMLine).computeQtyRequired(qtyFinishedGood);
 		orderBOMLine.setQtyRequiered(qtyRequired.toBigDecimal());
 	}
 
-	/**
-	 * Calculates how much qty is required (standard) for given BOM Line, considering the given quantity of finished goods.
-	 *
-	 * @param orderBOMLine
-	 * @param qtyFinishedGood
-	 * @param qtyFinishedGoodUOM
-	 * @return standard quantity required to be issued (standard UOM)
-	 */
-	@VisibleForTesting
-	Quantity calculateQtyRequired(
-			@NonNull final PPOrderBomLineAware orderBOMLine,
-			@NonNull final BigDecimal qtyFinishedGood)
-	{
-		final BigDecimal multiplier = getQtyMultiplier(orderBOMLine);
-
-		final BigDecimal qtyRequired;
-		if (orderBOMLine.getComponentType().isTools())
-		{
-			qtyRequired = multiplier;
-		}
-		else
-		{
-			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
-		}
-
-		//
-		// Adjust the qtyRequired by adding the scrap percentage to it.
-		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-		final Percent qtyScrap = orderBOMLine.getScrap();
-		final BigDecimal qtyRequiredPlusScrap = productBOMBL.calculateQtyWithScrap(qtyRequired, qtyScrap);
-		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getUom());
-	}
-
 	@Override
-	public Quantity calculateQtyRequired(
+	public Quantity computeQtyRequired(
 			@NonNull final PPOrderLine ppOrderLinePojo,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
-		return calculateQtyRequired(fromPojo(ppOrderLinePojo), qtyFinishedGood);
+		return toQtyCalculationsBOMLine(ppOrderLinePojo).computeQtyRequired(qtyFinishedGood);
 	}
 
 	@Override
-	public Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(
+	public Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_C_UOM uom)
 	{
@@ -181,7 +157,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Calculate how much we can issue at max, based on how much finish goods we delivered
-		final Quantity qtyToIssueTarget = calculateQtyRequired(fromRecord(orderBOMLine), qtyDelivered_FinishedGood);
+		final I_PP_Order order = orderBOMLine.getPP_Order();
+		final Quantity qtyToIssueTarget = toQtyCalculationsBOMLine(order, orderBOMLine).computeQtyRequired(qtyDelivered_FinishedGood);
 		if (qtyToIssueTarget.signum() <= 0)
 		{
 			return Quantity.zero(uom);
@@ -191,7 +168,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final Quantity qtyIssued = getQtyIssuedOrReceived(orderBOMLine);
 
 		// Effective qtyToIssue: how much we need to issue (max) - how much we already issued
-		final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()));
 		final Quantity qtyToIssueEffective = uomConversionService.convertQuantityTo(qtyToIssueTarget, conversionCtx, qtyIssued.getUOM())
 				.subtract(qtyIssued);
@@ -204,108 +180,55 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return uomConversionService.convertQuantityTo(qtyToIssueEffective, conversionCtx, uom);
 	}
 
-	@lombok.Value
-	@lombok.Builder
-	private static class PPOrderBomLineAware
+	@VisibleForTesting
+	QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final PPOrderLine ppOrderBOMLine)
 	{
-		@NonNull
-		ProductId bomProductId;
-		@NonNull
-		I_C_UOM bomProductUOM;
-
-		@NonNull
-		BOMComponentType componentType;
-
-		boolean qtyPercentage;
-		@NonNull
-		BigDecimal qtyBOM;
-		@NonNull
-		Percent qtyBatch;
-		@NonNull
-		Percent scrap;
-
-		@NonNull
-		I_C_UOM uom;
+		final I_PP_Product_BOMLine bomLine = productBOMsRepo.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
+		return toQtyCalculationsBOMLine(bomLine);
 	}
 
-	@VisibleForTesting
-	PPOrderBomLineAware fromPojo(@NonNull final PPOrderLine ppOrderBOMLine)
+	private QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final I_PP_Product_BOMLine productBOMLine)
 	{
-		final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(productBOMLine.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM bom = productBOMsRepo.getById(bomId);
 
-		final I_PP_Product_BOMLine bomLine = bomsRepo.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
-		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID());
-		final I_PP_Product_BOM bom = bomsRepo.getById(bomId);
-
-		return PPOrderBomLineAware.builder()
+		return QtyCalculationsBOMLine.builder()
 				.bomProductId(ProductId.ofRepoId(bom.getM_Product_ID()))
 				.bomProductUOM(uomsRepo.getById(bom.getC_UOM_ID()))
-				.componentType(BOMComponentType.ofCode(bomLine.getComponentType()))
+				.componentType(BOMComponentType.ofCode(productBOMLine.getComponentType()))
 				//
-				.qtyPercentage(bomLine.isQtyPercentage())
-				.qtyBOM(bomLine.getQtyBOM())
-				.qtyBatch(Percent.of(bomLine.getQtyBatch()))
-				.scrap(Percent.of(bomLine.getScrap()))
+				.productId(ProductId.ofRepoId(productBOMLine.getM_Product_ID()))
+				.qtyPercentage(productBOMLine.isQtyPercentage())
+				.qtyForOneFinishedGood(productBOMLine.getQtyBOM())
+				.percentOfFinishedGood(Percent.of(productBOMLine.getQtyBatch()))
+				.scrap(Percent.of(productBOMLine.getScrap()))
 				//
-				.uom(uomsRepo.getById(bomLine.getC_UOM_ID()))
+				.uom(uomsRepo.getById(productBOMLine.getC_UOM_ID()))
 				//
 				.build();
 	}
 
 	@VisibleForTesting
-	PPOrderBomLineAware fromRecord(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	QtyCalculationsBOMLine toQtyCalculationsBOMLine(
+			@NonNull final I_PP_Order order,
+			@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-		final I_PP_Order order = orderBOMLine.getPP_Order();
-
-		return PPOrderBomLineAware.builder()
+		return QtyCalculationsBOMLine.builder()
 				.bomProductId(ProductId.ofRepoId(order.getM_Product_ID()))
 				.bomProductUOM(uomsRepo.getById(order.getC_UOM_ID()))
 				.componentType(BOMComponentType.ofCode(orderBOMLine.getComponentType()))
 				//
+				.productId(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()))
 				.qtyPercentage(orderBOMLine.isQtyPercentage())
-				.qtyBOM(orderBOMLine.getQtyBOM())
-				.qtyBatch(Percent.of(orderBOMLine.getQtyBatch()))
+				.qtyForOneFinishedGood(orderBOMLine.getQtyBOM())
+				.percentOfFinishedGood(Percent.of(orderBOMLine.getQtyBatch()))
 				.scrap(Percent.of(orderBOMLine.getScrap()))
 				//
 				.uom(uomsRepo.getById(orderBOMLine.getC_UOM_ID()))
 				//
+				.orderBOMLineId(PPOrderBOMLineId.ofRepoIdOrNull(orderBOMLine.getPP_Order_BOMLine_ID()))
+				//
 				.build();
-	}
-
-	/**
-	 * Return Unified BOM Qty Multiplier.
-	 *
-	 * i.e. how much of this component is needed for 1 item of finished good.
-	 *
-	 * @param orderBOMLine
-	 *
-	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
-	 */
-	/* package */BigDecimal getQtyMultiplier(@NonNull final PPOrderBomLineAware orderBOMLine)
-	{
-		if (orderBOMLine.isQtyPercentage())
-		{
-			final Percent percentOfFinishGood = orderBOMLine.getQtyBatch();
-
-			//
-			// We also need to multiply by BOM UOM to BOM Line UOM multiplier
-			// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-			final ProductId bomProductId = orderBOMLine.getBomProductId();
-			final I_C_UOM bomUOM = orderBOMLine.getBomProductUOM();
-
-			final I_C_UOM bomLineUOM = orderBOMLine.getUom();
-
-			final IUOMConversionBL uomConverter = Services.get(IUOMConversionBL.class);
-			final BigDecimal bomToLineUOMMultiplier = uomConverter.convertQty(bomProductId, BigDecimal.ONE, bomUOM, bomLineUOM);
-			return percentOfFinishGood.subtractFromBase(bomToLineUOMMultiplier, 8);
-		}
-		else
-		{
-			return orderBOMLine.getQtyBOM();
-		}
 	}
 
 	/**
@@ -324,16 +247,14 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			throw new MrpException("Only Phantom lines can be exploded");
 		}
 
-		final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
-
-		final I_M_Product product = orderBOMLine.getM_Product();
-		final I_PP_Product_BOM bom = productBOMDAO.retrieveDefaultBOM(product);
+		final ProductId bomProductId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final I_PP_Product_BOM bom = productBOMsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
 		if (bom == null)
 		{
 			return;
 		}
 
-		for (final I_PP_Product_BOMLine productBOMLine : productBOMDAO.retrieveLines(bom))
+		for (final I_PP_Product_BOMLine productBOMLine : productBOMsRepo.retrieveLines(bom))
 		{
 			createOrderBOMLineFromPhantomLine(orderBOMLine, productBOMLine, qtyOrdered);
 		}
@@ -361,8 +282,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Save and return
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		ppOrderBOMsRepo.save(orderBOMLine);
+		orderBOMsRepo.save(orderBOMLine);
 		return orderBOMLine;
 	}
 
@@ -370,7 +290,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public I_C_UOM getStockingUOM(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		return Services.get(IProductBL.class).getStockUOM(productId);
+		return productsService.getStockUOM(productId);
 	}
 
 	@Override
@@ -460,8 +380,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void addQty(@NonNull final OrderBOMLineQtyChangeRequest request)
 	{
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-
 		final I_PP_Order_BOMLine orderBOMLine = orderBOMsRepo.getOrderBOMLineById(request.getOrderBOMLineId());
 
 		//
@@ -522,11 +440,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final BigDecimal qtyRequiredOld = line.getQtyRequiered();
 		if (qtyRequiredOld.signum() != 0)
 		{
-			addDescription(line, Services.get(IMsgBL.class).parseTranslation(Env.getCtx(), "@Voided@ @QtyRequiered@ : (" + qtyRequiredOld + ")"));
+			addDescription(line, msgBL.parseTranslation(Env.getCtx(), "@Voided@ @QtyRequiered@ : (" + qtyRequiredOld + ")"));
 			line.setQtyRequiered(BigDecimal.ZERO);
 			line.setProcessed(true);
 
-			final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 			orderBOMsRepo.save(line);
 		}
 	}
@@ -542,8 +459,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		line.setProcessed(true); // just to make sure (but it should be already set when the PP_Order was completed)
 
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		ppOrderBOMsRepo.save(line);
+		orderBOMsRepo.save(line);
 	}
 
 	@Override
@@ -554,15 +470,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		line.setQtyRequiered(qtyRequiredBeforeClose);
 		line.setQtyBeforeClose(BigDecimal.ZERO);
 
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		ppOrderBOMsRepo.save(line);
+		orderBOMsRepo.save(line);
 	}
 
 	@Override
 	public boolean isSomethingReportedOnBOMLines(final PPOrderId ppOrderId)
 	{
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-
 		return orderBOMsRepo.retrieveOrderBOMLines(ppOrderId)
 				.stream()
 				.anyMatch(this::isSomethingReportedOnBOMLine);
@@ -578,8 +491,25 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public Optional<DocSequenceId> getSerialNoSequenceId(@NonNull final PPOrderId ppOrderId)
 	{
-		final IPPOrderBOMDAO repo = Services.get(IPPOrderBOMDAO.class);
-		final I_PP_Order_BOM orderBOM = repo.getByOrderId(ppOrderId);
+		final I_PP_Order_BOM orderBOM = orderBOMsRepo.getByOrderIdOrNull(ppOrderId);
+		if (orderBOM == null)
+		{
+			throw new AdempiereException("@NotFound@ @PP_Order_BOM_ID@: " + ppOrderId);
+		}
 		return DocSequenceId.optionalOfRepoId(orderBOM.getSerialNo_Sequence_ID());
+	}
+
+	@Override
+	public QtyCalculationsBOM getQtyCalculationsBOM(@NonNull final I_PP_Order order)
+	{
+		final ImmutableList<QtyCalculationsBOMLine> lines = orderBOMsRepo.retrieveOrderBOMLines(order)
+				.stream()
+				.map(orderBOMLineRecord -> toQtyCalculationsBOMLine(order, orderBOMLineRecord))
+				.collect(ImmutableList.toImmutableList());
+
+		return QtyCalculationsBOM.builder()
+				.lines(lines)
+				.orderId(PPOrderId.ofRepoIdOrNull(order.getPP_Order_ID()))
+				.build();
 	}
 }

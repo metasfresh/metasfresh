@@ -1,6 +1,7 @@
 package de.metas.order.model.interceptor;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -9,8 +10,12 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
@@ -19,8 +24,13 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.organization.OrgId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,6 +59,9 @@ import de.metas.util.Services;
 public class C_Order
 {
 	public static final C_Order INSTANCE = new C_Order();
+
+	@VisibleForTesting
+	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 
 	private C_Order()
 	{
@@ -92,59 +105,58 @@ public class C_Order
 			I_C_Order.COLUMNNAME_M_PriceList_ID,
 			I_C_Order.COLUMNNAME_IsSOTrx,
 			I_C_Order.COLUMNNAME_C_Currency_ID })
-	public void updateOrderLineAddresses(final I_C_Order order) throws Exception
+	public void updateOrderLineAddresses(final I_C_Order order)
 	{
 		Services.get(IOrderBL.class).updateAddresses(order);
 	}
 
-//	// 04579 Cannot change order's warehouse (2013071510000103)
-//	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-//	public void unreserveStock(final I_C_Order order) throws Exception
-//	{
-//		for (final I_C_OrderLine orderLine : Services.get(IOrderPA.class).retrieveOrderLines(order, I_C_OrderLine.class))
-//		{
-//			if (orderLine.getQtyReserved().signum() <= 0)
-//			{
-//				continue; // nothing to do
-//			}
-//
-//			final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
-//			final BigDecimal qtyEntered = orderLine.getQtyEntered();
-//			final BigDecimal lineNetAmt = orderLine.getLineNetAmt();
-//
-//			// just setting this one to zero would result in negative reservations in case of (partial) deliveries.
-//			orderLine.setQtyOrdered(orderLine.getQtyDelivered());
-//			orderLine.setQtyEntered(BigDecimal.ZERO);
-//			orderLine.setLineNetAmt(BigDecimal.ZERO);
-//
-//			// task 08002
-//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
-//
-//			InterfaceWrapperHelper.save(orderLine);
-//
-//			Services.get(IOrderPA.class).reserveStock(orderLine.getC_Order(), orderLine);
-//
-//			orderLine.setQtyOrdered(qtyOrdered);
-//			orderLine.setQtyEntered(qtyEntered);
-//			orderLine.setLineNetAmt(lineNetAmt);
-//			InterfaceWrapperHelper.save(orderLine);
-//
-//			// task 08002
-//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.FALSE);
-//		}
-//	}
+	//	// 04579 Cannot change order's warehouse (2013071510000103)
+	//	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	//	public void unreserveStock(final I_C_Order order) throws Exception
+	//	{
+	//		for (final I_C_OrderLine orderLine : Services.get(IOrderPA.class).retrieveOrderLines(order, I_C_OrderLine.class))
+	//		{
+	//			if (orderLine.getQtyReserved().signum() <= 0)
+	//			{
+	//				continue; // nothing to do
+	//			}
+	//
+	//			final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
+	//			final BigDecimal qtyEntered = orderLine.getQtyEntered();
+	//			final BigDecimal lineNetAmt = orderLine.getLineNetAmt();
+	//
+	//			// just setting this one to zero would result in negative reservations in case of (partial) deliveries.
+	//			orderLine.setQtyOrdered(orderLine.getQtyDelivered());
+	//			orderLine.setQtyEntered(BigDecimal.ZERO);
+	//			orderLine.setLineNetAmt(BigDecimal.ZERO);
+	//
+	//			// task 08002
+	//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
+	//
+	//			InterfaceWrapperHelper.save(orderLine);
+	//
+	//			Services.get(IOrderPA.class).reserveStock(orderLine.getC_Order(), orderLine);
+	//
+	//			orderLine.setQtyOrdered(qtyOrdered);
+	//			orderLine.setQtyEntered(qtyEntered);
+	//			orderLine.setLineNetAmt(lineNetAmt);
+	//			InterfaceWrapperHelper.save(orderLine);
+	//
+	//			// task 08002
+	//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.FALSE);
+	//		}
+	//	}
 
 	/**
 	 * Updates <code>C_OrderLine.QtyReserved</code> of the given order's lines when the Doctype or DocStatus changes.
 	 *
-	 * @param orderLine
 	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_DocType_ID,
-					I_C_Order.COLUMNNAME_DocStatus })
+			I_C_Order.COLUMNNAME_C_DocType_ID,
+			I_C_Order.COLUMNNAME_DocStatus })
 	public void updateReserved(final I_C_Order order)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -159,7 +171,7 @@ public class C_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
-	public void setDeliveryViaRule(final I_C_Order order) throws Exception
+	public void setDeliveryViaRule(final I_C_Order order)
 	{
 		final DeliveryViaRule deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
 
@@ -172,7 +184,6 @@ public class C_Order
 	/**
 	 * If a purchase order is deleted, then an< sales orders need to un-reference it to avoid an FK-constraint-error
 	 *
-	 * @param order
 	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -194,6 +205,47 @@ public class C_Order
 	public void checkPricingConditionsInOrderLines(final I_C_Order order)
 	{
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	public void linkWithPaymentByExternalOrderId(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		if (Check.isBlank(order.getExternalId()))
+		{
+			return;
+		}
+
+		if (order.getC_Payment_ID() > 0)
+		{
+			return;
+		}
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false, order.getAD_Client_ID(), order.getAD_Org_ID());
+
+		if (!autoAssignEnabled)
+		{
+			return;
+		}
+
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final Optional<I_C_Payment> paymentOptional = paymentDAO.getByExternalOrderId(ExternalId.of(order.getExternalId()), OrgId.ofRepoId(order.getAD_Org_ID()));
+
+		if (!paymentOptional.isPresent())
+		{
+			return;
+		}
+
+		final I_C_Payment payment = paymentOptional.get();
+		order.setC_Payment_ID(payment.getC_Payment_ID());
+		payment.setC_Order_ID(order.getC_Order_ID());
+
+		InterfaceWrapperHelper.save(payment);
 	}
 
 	@ModelChange(timings = {

@@ -92,7 +92,7 @@ public class FlatrateTermDataFactory
 		final I_C_Location location = createLocation(bpartner, country);
 
 		final I_C_BPartner_Location bpartnerLocation = newInstance(I_C_BPartner_Location.class, bpartner);
-		bpartnerLocation.setC_BPartner(bpartner);
+		bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpartnerLocation.setC_Location(location);
 		bpartnerLocation.setIsBillTo(isBillTo_Default);
 		bpartnerLocation.setIsBillToDefault(isBillTo_Default);

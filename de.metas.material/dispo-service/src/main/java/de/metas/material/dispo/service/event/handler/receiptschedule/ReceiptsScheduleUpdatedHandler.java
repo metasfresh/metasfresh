@@ -65,7 +65,7 @@ public class ReceiptsScheduleUpdatedHandler
 	@Override
 	protected CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		return ReceiptsScheduleHandlerUtil.createExistingCandidatesQuery(event);
+		return ReceiptsScheduleHandlerUtil.queryByReceiptScheduleId(event);
 	}
 
 	/** Does nothing */

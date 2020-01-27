@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -55,6 +54,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 
 import de.metas.dao.selection.pagination.PaginationService;
@@ -70,26 +70,25 @@ import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 
 /**
- *
  * @author Low Heng Sin
  * @author Teo Sarca, www.arhipac.ro
- *         <li>FR [ 1981760 ] Improve Query class
- *         <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue
- *         <li>FR [ 2041894 ] Add Query.match() method
- *         <li>FR [
- *         2107068 ] Query.setOrderBy should be more error tolerant
- *         <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords
- *         <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method
- *         <li>FR [
- *         2546052 ] Introduce Query aggregate methods
- *         <li>FR [ 2726447 ] Query aggregate methods for all return types
- *         <li>FR [ 2818547 ] Implement Query.setOnlySelection
- *         https://sourceforge.net/tracker/?func=detail&aid=2818547&group_id=176962&atid=879335
- *         <li>FR [ 2818646 ] Implement Query.firstId/firstIdOnly
- *         https://sourceforge.net/tracker/?func=detail&aid=2818646&group_id=176962&atid=879335
+ * <li>FR [ 1981760 ] Improve Query class
+ * <li>BF [ 2030280 ] org.compiere.model.Query apply access filter issue
+ * <li>FR [ 2041894 ] Add Query.match() method
+ * <li>FR [
+ * 2107068 ] Query.setOrderBy should be more error tolerant
+ * <li>FR [ 2107109 ] Add method Query.setOnlyActiveRecords
+ * <li>FR [ 2421313 ] Introduce Query.firstOnly convenient method
+ * <li>FR [
+ * 2546052 ] Introduce Query aggregate methods
+ * <li>FR [ 2726447 ] Query aggregate methods for all return types
+ * <li>FR [ 2818547 ] Implement Query.setOnlySelection
+ * https://sourceforge.net/tracker/?func=detail&aid=2818547&group_id=176962&atid=879335
+ * <li>FR [ 2818646 ] Implement Query.firstId/firstIdOnly
+ * https://sourceforge.net/tracker/?func=detail&aid=2818646&group_id=176962&atid=879335
  * @author Redhuan D. Oon
- *         <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info
- *         <li>FR: [ 2214883 ] - to introduce .setClient_ID
+ * <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info
+ * <li>FR: [ 2214883 ] - to introduce .setClient_ID
  */
 public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 {
@@ -333,7 +332,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Move <code>rs</code>'s cursor forward and get next model.
-	 *
+	 * <p>
 	 * If we have a post-filter (see {@link #setPostQueryFilter(IQueryFilter)}), the model will be validated againt it and if not matched next row will be checked.
 	 *
 	 * @param rs
@@ -455,7 +454,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
-	 *
 	 * @param clazz
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
@@ -570,8 +568,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * red1 - returns full SQL string - for caller needs
 	 *
-	 * @return buildSQL(null,true)
-	 *
+	 * @return buildSQL(null, true)
 	 */
 	public String getSQL() throws DBException
 	{
@@ -580,7 +577,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Aggregate given expression on this criteria
-	 *
 	 */
 	public BigDecimal aggregate(
 			final String sqlExpression,
@@ -803,7 +799,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public boolean match() throws DBException
+	public boolean anyMatch() throws DBException
 	{
 		final StringBuilder sqlSelect;
 		final StringBuilder fromClause;
@@ -990,10 +986,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * This method returns a copy of this instance.
-	 *
+	 * <p>
 	 * If the given <code>whereClause</code> is not empty, then it is <code>AND</code>ed or <code>OR</code>ed to the copy's current where clause. appended.
 	 *
-	 * @param joinByAnd if <code>true</code>, then the given <code>whereClause</code> (unless empty) is <code>AND</code>ed, otherwise it's <code>OR</code>ed to the new query's where clause.
+	 * @param joinByAnd   if <code>true</code>, then the given <code>whereClause</code> (unless empty) is <code>AND</code>ed, otherwise it's <code>OR</code>ed to the new query's where clause.
 	 * @param whereClause
 	 * @return a copy of this instance
 	 */
@@ -1132,23 +1128,23 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Build SQL Clause
 	 *
-	 * @param selectClause optional; if null the select clause will be build according to POInfo
-	 * @param fromClause optional; if null the from clause will be build according to {@link #getSqlFrom()}
+	 * @param selectClause     optional; if null the select clause will be build according to POInfo
+	 * @param fromClause       optional; if null the from clause will be build according to {@link #getSqlFrom()}
 	 * @param useOrderByClause true if ORDER BY clause shall be appended
 	 * @return final SQL
 	 */
 	public final String buildSQL(
-			@Nullable final StringBuilder selectClause, // TODO change to String
-			@Nullable final StringBuilder fromClause,
+			@Nullable final CharSequence selectClause, // TODO change to String
+			@Nullable final CharSequence fromClause,
 			final boolean useOrderByClause)
 	{
-		StringBuilder selectClauseToUse = selectClause;
+		CharSequence selectClauseToUse = selectClause;
 		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
 			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
 		}
-		StringBuilder fromClauseToUse = fromClause;
+		CharSequence fromClauseToUse = fromClause;
 		if (fromClauseToUse == null)
 		{
 			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());
@@ -1258,7 +1254,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			retValue[i] = idsList.get(i);
 		}
 		return retValue;
-	}	// get_IDs
+	}    // get_IDs
 
 	@Override
 	public List<Integer> listIds()
@@ -1310,16 +1306,82 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlParams = getParametersEffective();
 		if (!sqlParams.isEmpty())
 		{
-			final String sqlParamsAsString = sqlParams.stream()
-					.map(DB::TO_SQL)
-					.collect(Collectors.joining(", "));
-			sql += "\n -- " + sqlParamsAsString;
+			sql = inlineSqlParams(sql, sqlParams);
 		}
 
 		return MoreObjects.toStringHelper(this)
 				.addValue(sql)
 				.toString();
 	}
+
+	@VisibleForTesting
+	static String inlineSqlParams(final String sql, final List<Object> params)
+	{
+		final int paramsCount = params != null ? params.size() : 0;
+
+		final int sqlLength = sql.length();
+		final StringBuilder sqlFinal = new StringBuilder(sqlLength);
+
+		boolean insideQuotes = false;
+		int nextParamIndex = 0;
+		for (int i = 0; i < sqlLength; i++)
+		{
+			final char ch = sql.charAt(i);
+
+			if (ch == '?')
+			{
+				if (insideQuotes)
+				{
+					sqlFinal.append(ch);
+				}
+				else
+				{
+					if (nextParamIndex < paramsCount)
+					{
+						sqlFinal.append(DB.TO_SQL(params.get(nextParamIndex)));
+					}
+					else
+					{
+						// error: parameter index is invalid
+						sqlFinal.append("?missing?");
+					}
+
+					nextParamIndex++;
+				}
+			}
+			else if (ch == '\'')
+			{
+				sqlFinal.append(ch);
+				insideQuotes = !insideQuotes;
+			}
+			else
+			{
+				sqlFinal.append(ch);
+			}
+		}
+
+		if (nextParamIndex < paramsCount)
+		{
+			sqlFinal.append(" -- Exceeding params: ");
+			boolean firstExceedingParam = true;
+			for (int i = nextParamIndex; i < paramsCount; i++)
+			{
+				if (firstExceedingParam)
+				{
+					firstExceedingParam = false;
+				}
+				else
+				{
+					sqlFinal.append(", ");
+				}
+
+				sqlFinal.append(DB.TO_SQL(params.get(i)));
+			}
+		}
+
+		return sqlFinal.toString();
+	}
+
 
 	// metas
 	@Override
@@ -1468,7 +1530,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
-	 *
 	 * @return a copy of this object
 	 */
 	@Override
@@ -1583,7 +1644,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Casts given {@link IQuery} object to {@link TypedSqlQuery}.
-	 *
+	 * <p>
 	 * We use this method to track where we do "interface casted to native implementation". This information is useful if we decide to refactor this class in future.
 	 *
 	 * @param query
@@ -1666,7 +1727,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Builds the update SQL using a sub query for select.
-	 *
+	 * <p>
 	 * i.e.
 	 *
 	 * <pre>
@@ -1723,7 +1784,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public IQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
+	public TypedSqlQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
 	{
 		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
@@ -1733,6 +1794,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		unions.add(sqlQueryUnion);
 
 		return this;
+	}
+	
+	public boolean hasUnions()
+	{
+		final List<SqlQueryUnion<T>> unions = this.unions;
+		return unions != null && !unions.isEmpty();
 	}
 
 	@Override

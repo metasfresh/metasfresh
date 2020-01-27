@@ -26,7 +26,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,30 +35,28 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -67,14 +66,13 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 
 	@Override
-	public I_PP_Product_Planning getById(final int ppProductPlanningId)
+	public I_PP_Product_Planning getById(@NonNull final ProductPlanningId ppProductPlanningId)
 	{
-		Check.assumeGreaterThanZero(ppProductPlanningId, "ppProductPlanningId");
 		return loadOutOfTrx(ppProductPlanningId, I_PP_Product_Planning.class);
 	}
 
 	@Override
-	public I_PP_Product_Planning find(@NonNull final ProductPlanningQuery productPlanningQuery)
+	public Optional<I_PP_Product_Planning> find(@NonNull final ProductPlanningQuery productPlanningQuery)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
 				productPlanningQuery.getOrgId(),
@@ -86,7 +84,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		//
 		// Fetch first matching product planning data
 		final I_PP_Product_Planning productPlanningData = queryBuilder.create().first();
-		return productPlanningData;
+		return Optional.ofNullable(productPlanningData);
 	}
 
 	@Override
@@ -171,8 +169,9 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
 		}
 
-		// Filter by Product
-		queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
+		// Filter by Product if provided
+
+		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
@@ -181,8 +180,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		return queryBuilder.orderBy()
 				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
-				.addColumn(I_PP_Product_Planning.COLUMN_AD_Org_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_PP_Product_Planning.COLUMN_M_Warehouse_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMN_S_Resource_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy();
 	}
@@ -213,38 +212,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public final List<I_M_Warehouse> retrieveWarehousesForPlant(final Properties ctx,
-			@NonNull final I_AD_Org org,
-			@NonNull final I_S_Resource plant)
-	{
-		final int adOrgId = org.getAD_Org_ID();
-		final int ppPlantId = plant.getS_Resource_ID();
-
-		return retrieveWarehousesForPlant(ctx, adOrgId, ppPlantId);
-	}
-
-	/**
-	 * Retrieve all warehouses which are directly to our Org and Plant.
-	 *
-	 * @param ctx
-	 * @param adOrgId
-	 * @param ppPlantId
-	 * @return M_Warehouse_ID to {@link I_M_Warehouse} map
-	 */
-	@Cached(cacheName = I_M_Warehouse.Table_Name + "#by#AD_Org_ID#PP_Plant_ID")
-	List<I_M_Warehouse> retrieveWarehousesForPlant(@CacheCtx final Properties ctx, final int adOrgId, final int ppPlantId)
-	{
-		// Retrieve warehouses which which are directly assigned to Org and Plant
-		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Warehouse.COLUMN_AD_Org_ID, adOrgId)
-				.addInArrayOrAllFilter(I_M_Warehouse.COLUMN_PP_Plant_ID, null, ppPlantId)
-				.addEqualsFilter(I_M_Warehouse.COLUMN_IsInTransit, false) // skip in transit warehouses
-				.create()
-				.list();
-	}
-
-	@Override
 	public void save(final I_PP_Product_Planning productPlanningRecord)
 	{
 		saveRecord(productPlanningRecord);
@@ -257,8 +224,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final List<I_PP_Product_Planning> productPlanningRecords = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMN_PP_Product_BOM_ID, null)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, null)
 				.create()
 				.list();
 
@@ -267,5 +234,20 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			productPlanningRecord.setPP_Product_BOM_ID(bomId.getRepoId());
 			save(productPlanningRecord);
 		}
+	}
+
+	@Override
+	public Set<ProductBOMId> retrieveAllPickingBOMIds()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsPickingOrder, true)
+				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID)
+				.create()
+				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, Integer.class)
+				.stream()
+				.map(ProductBOMId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -48,12 +48,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -111,7 +111,7 @@ public class PMMPricingBL implements IPMMPricingBL
 
 		// Pricing system
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, soTrx);
+		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNullInTrx(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			// no term and no pricing system means that we can't figure out the price
@@ -133,7 +133,13 @@ public class PMMPricingBL implements IPMMPricingBL
 		// Fetch price from pricing engine
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final BigDecimal qty = pricingAware.getQty();
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId.getRepoId(), uom.getC_UOM_ID(), qty, soTrx.toBoolean());
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				product.getAD_Org_ID(),
+				product.getM_Product_ID(),
+				bpartnerId.getRepoId(),
+				uom.getC_UOM_ID(),
+				qty,
+				soTrx.toBoolean());
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceDate(date);
 		pricingCtx.setCountryId(countryId);

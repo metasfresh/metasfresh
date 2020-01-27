@@ -14,7 +14,7 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1994036458L;
+	private static final long serialVersionUID = 280039243L;
 
     /** Standard Constructor */
     public X_M_Shipper (Properties ctx, int M_Shipper_ID, String trxName)
@@ -42,18 +42,6 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -148,9 +136,7 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -158,8 +144,7 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -173,6 +158,12 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public static final int SHIPPERGATEWAY_AD_Reference_ID=540808;
 	/** GO = go */
 	public static final String SHIPPERGATEWAY_GO = "go";
+	/** Der Kurier = derKurier */
+	public static final String SHIPPERGATEWAY_DerKurier = "derKurier";
+	/** DHL = dhl */
+	public static final String SHIPPERGATEWAY_DHL = "dhl";
+	/** DPD = dpd */
+	public static final String SHIPPERGATEWAY_DPD = "dpd";
 	/** Set Shipper Gateway.
 		@param ShipperGateway Shipper Gateway	  */
 	@Override
@@ -207,5 +198,24 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getTrackingURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TrackingURL);
+	}
+
+	/** Set Suchschlüssel.
+		@param Value 
+		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	  */
+	@Override
+	public void setValue (java.lang.String Value)
+	{
+		set_Value (COLUMNNAME_Value, Value);
+	}
+
+	/** Get Suchschlüssel.
+		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	  */
+	@Override
+	public java.lang.String getValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

@@ -27,21 +27,10 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		ShipperGatewayServicesRegistry.class})
 public class HUReceiptProcess_StandardCase_IntegrationTest extends AbstractHUReceiptProcessIntegrationTest
 {
 	private void prepareMasterData()
@@ -70,6 +59,7 @@ public class HUReceiptProcess_StandardCase_IntegrationTest extends AbstractHURec
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, order);
 		orderLine.setC_Order(order);
+		orderLine.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
 		orderLine.setQtyEntered(qty);

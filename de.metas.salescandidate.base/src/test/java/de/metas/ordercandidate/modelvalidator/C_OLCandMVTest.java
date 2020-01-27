@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Optional;
 
 /*
@@ -173,8 +175,9 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		Assert.assertEquals(olCand.getProductDescription(), bpp2.getProductName());
 	}
 
+	/** verifies that the ProductDescription is *not* set if it would be simply identical to the product's name. */
 	@Test
-	public void testMVSetProductDescriptionFallback_MProduct_Name()
+	public void testMVSetProductDescription_not_additional_value_provided()
 	{
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
@@ -184,7 +187,6 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 
 		InterfaceWrapperHelper.save(olCand);
 
-		// Assert same product description after saving (MV shall ignore)
-		Assert.assertEquals(olCand.getProductDescription(), product3.getName());
+		assertThat(olCand.getProductDescription()).isNull();
 	}
 }

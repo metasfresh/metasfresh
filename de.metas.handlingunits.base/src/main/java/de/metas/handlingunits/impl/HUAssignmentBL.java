@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
@@ -244,15 +245,8 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	@Override
 	public void setAssignedHandlingUnits(final Object model, final Collection<I_M_HU> handlingUnits)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		setAssignedHandlingUnits(model, handlingUnits, trxName);
-	}
-
-	@Override
-	public void setAssignedHandlingUnits(final Object model, final Collection<I_M_HU> handlingUnits, final String trxName)
-	{
 		final boolean deleteOld = true; // delete all which are not present in handlingUnits list
-		setAssignedHandlingUnits(model, handlingUnits, deleteOld, trxName);
+		setAssignedHandlingUnits(model, handlingUnits, deleteOld, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**

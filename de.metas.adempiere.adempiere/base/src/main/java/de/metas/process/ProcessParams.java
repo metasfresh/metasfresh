@@ -25,6 +25,7 @@ package de.metas.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -232,6 +233,13 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameterAsZonedDateTime() : null;
+	}
+
+	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
@@ -243,6 +251,13 @@ public class ProcessParams implements IRangeAwareParams
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsLocalDate() : null;
+	}
+
+	@Override
+	public ZonedDateTime getParameter_ToAsZonedDateTime(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsZonedDateTime() : null;
 	}
 
 	/**

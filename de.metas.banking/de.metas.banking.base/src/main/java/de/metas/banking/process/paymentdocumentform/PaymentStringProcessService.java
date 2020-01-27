@@ -125,7 +125,7 @@ public class PaymentStringProcessService
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, contextBPartner_ID)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, bpBankAccount.getC_BPartner_ID())
 				.create()
-				.match();
+				.anyMatch();
 		if (existsRelation)
 		{
 			return 2;

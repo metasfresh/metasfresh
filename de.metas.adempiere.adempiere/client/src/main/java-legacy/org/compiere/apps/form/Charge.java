@@ -31,6 +31,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
@@ -56,7 +57,7 @@ public class Charge
 
 	private AcctSchema acctSchema = null;
 	/** Account Element     */
-	public int         m_C_Element_ID = 0;
+	public ChartOfAccountsId chartOfAccountsId = null;
 	/** Default Charge Tax Category */
 	private int         m_C_TaxCategory_ID = 0;
 	private int         m_AD_Client_ID = 0;
@@ -73,7 +74,7 @@ public class Charge
 	public Vector<Vector<Object>> getData()
 	{
 		//  Table
-		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		Vector<Vector<Object>> data = new Vector<>();
 		String sql = "SELECT C_ElementValue_ID,Value, Name, AccountType "
 			+ "FROM C_ElementValue "
 			+ "WHERE AccountType IN ('R','E')"
@@ -83,11 +84,11 @@ public class Charge
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_C_Element_ID);
+			pstmt.setInt(1, chartOfAccountsId.getRepoId());
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				Vector<Object> line = new Vector<Object>(4);
+				Vector<Object> line = new Vector<>(4);
 				line.add(new Boolean(false));       //  0-Selection
 				KeyNamePair pp = new KeyNamePair(rs.getInt(1), rs.getString(2));
 				line.add(pp);                       //  1-Value
@@ -122,13 +123,13 @@ public class Charge
     	acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
     	
     	final AcctSchemaElement accountElement = acctSchema.getSchemaElementByType(AcctSchemaElementType.Account);
-    	m_C_Element_ID = accountElement != null ? accountElement.getElementId() : 0;
+    	chartOfAccountsId = accountElement != null ? accountElement.getChartOfAccountsId() : null;
     }
 	
 	public Vector<String> getColumnNames()
 	{
 		//  Header Info
-		Vector<String> columnNames = new Vector<String>(4);
+		Vector<String> columnNames = new Vector<>(4);
 		columnNames.add(Msg.getMsg(Env.getCtx(), "Select"));
 		columnNames.add(Msg.translate(Env.getCtx(), "Value"));
 		columnNames.add(Msg.translate(Env.getCtx(), "Name"));
@@ -167,7 +168,9 @@ public class Charge
 			pstmt.setInt(1, m_AD_Client_ID);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				m_C_TaxCategory_ID = rs.getInt(1);
+			}
 			rs.close();
 			pstmt.close();
 		}
@@ -194,7 +197,9 @@ public class Charge
 				false, false, null);
 		ev.setAD_Org_ID(m_AD_Org_ID);
 		if (!ev.save())
+		{
 			log.warn("C_ElementValue_ID not created");
+		}
 		return ev.getC_ElementValue_ID();
 	}   //  createElementValue
 
@@ -343,13 +348,17 @@ public class Charge
 				if (C_Charge_ID == 0)
 				{
 					if (listRejected.length() > 0)
+					{
 						listRejected.append(", ");
+					}
 					listRejected.append(name);
 				}
 				else
 				{
 					if (listCreated.length() > 0)
+					{
 						listCreated.append(", ");
+					}
 					listCreated.append(name);
 				}
 				//  reset selection

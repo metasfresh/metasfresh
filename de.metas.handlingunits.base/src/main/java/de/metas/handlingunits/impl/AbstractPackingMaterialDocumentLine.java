@@ -34,7 +34,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
-import de.metas.util.Check;
 
 /**
  * Abstract {@link IPackingMaterialDocumentLine} implementation which implements the common methods.
@@ -64,9 +63,8 @@ public abstract class AbstractPackingMaterialDocumentLine implements IPackingMat
 		return sourcesRO;
 	}
 
-	private final void addQty(final BigDecimal qtyToAdd)
+	private final void addQty(@NonNull final BigDecimal qtyToAdd)
 	{
-		Check.assumeNotNull(qtyToAdd, "qtyToAdd not null");
 		final BigDecimal qtyOld = getQty();
 		final BigDecimal qtyNew = qtyOld.add(qtyToAdd);
 

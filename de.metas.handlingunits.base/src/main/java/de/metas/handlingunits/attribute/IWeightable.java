@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,14 +34,10 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
  * Defines something which has weighting capabilities. Use {@link IWeightableFactory#createWeightableOrNull(org.adempiere.mm.attributes.api.IAttributeSet)} to get an instance.
  *
  * Mainly, it wraps an {@link IAttributeStorage} or (something else) and expose a lot of methods around the "Weightable HU" concern.
- *
- * @author tsa
- *
  */
 public interface IWeightable
 {
 	/**
-	 *
 	 * @return true if this weightable was weighted by the user (i.e. {@link #getWeightNet()} is set).
 	 */
 	boolean isWeighted();
@@ -91,7 +87,7 @@ public interface IWeightable
 	BigDecimal getWeightTare();
 
 	/** @return sum of all WeightTare values (i.e. {@link #getWeightTare()}, {@link #getWeightTareAdjust()}) */
-	public BigDecimal getWeightTareTotal();
+	BigDecimal getWeightTareTotal();
 
 	I_M_Attribute getWeightNetAttribute();
 

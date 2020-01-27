@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
@@ -53,6 +54,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.NonNull;
 
 public class AddressBuilder
 {
@@ -434,7 +436,7 @@ public class AddressBuilder
 			return "";
 		}
 
-		final String bPartnerBlock = buildBPartnerBlock(bPartner, user);
+		final String bPartnerBlock = buildBPartnerBlock(bPartner, user, location);
 
 		final Properties ctx = Env.getCtx();
 
@@ -462,19 +464,30 @@ public class AddressBuilder
 	 * @param user
 	 * @return
 	 */
-	private String buildBPartnerBlock(final org.compiere.model.I_C_BPartner bPartner, final I_AD_User user)
+	private String buildBPartnerBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user, @NonNull final I_C_BPartner_Location bplocation)
 	{
 		// Name, Name2
 		String bpName = "";
 		String bpName2 = "";
 
+		
 		if (bPartner.isCompany()
 				|| user == null
 				|| user.getAD_User_ID() == 0
 				|| Check.isEmpty(user.getLastname(), true))
 		{
-			bpName = bPartner.getName();
-			bpName2 = bPartner.getName2();
+			// task https://github.com/metasfresh/metasfresh/issues/5804
+			// prefer BPartner name from location if is set
+			if (!Check.isEmpty(bplocation.getBPartnerName(), true))
+			{
+				bpName = bplocation.getBPartnerName();
+				bpName2 = null;
+			}
+			else
+			{
+				bpName = bPartner.getName();
+				bpName2 = bPartner.getName2();
+			}
 		}
 
 		final StringBuilder sbBPartner = new StringBuilder();

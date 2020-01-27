@@ -192,7 +192,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.create();
 
 		final IQuery<I_M_HU_Assignment> queryHUAssignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class, contextProvider)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, inoutLineTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, inoutLineTableId)
 				.addInSubQueryFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, queryShipmentLines)
 				.create();
 

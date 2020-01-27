@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -36,6 +37,9 @@ import lombok.ToString;
  * #L%
  */
 
+/**
+ * Is a response to a {@link SupplyRequiredEvent} when the material-dispo advises to create a manufacturing order in order to fullfill the requirement.
+ */
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class PPOrderAdvisedEvent extends AbstractPPOrderEvent

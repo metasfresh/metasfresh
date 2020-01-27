@@ -32,12 +32,31 @@ public interface I_C_BPartner_Location
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Client>(I_C_BPartner_Location.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Adresse.
@@ -65,33 +84,27 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_Address = "Address";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set BPartner name.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	public void setBPartnerName (java.lang.String BPartnerName);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get BPartner name.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	public java.lang.String getBPartnerName();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Org>(I_C_BPartner_Location.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column definition for BPartnerName */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "BPartnerName", null);
+    /** Column name BPartnerName */
+    public static final String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
 	 * Set Geschäftspartner.
@@ -113,12 +126,6 @@ public interface I_C_BPartner_Location
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_BPartner>(I_C_BPartner_Location.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -177,36 +184,6 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_User>(I_C_BPartner_Location.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Vertriebsgebiet.
 	 * Sales coverage region
 	 *
@@ -234,6 +211,34 @@ public interface I_C_BPartner_Location
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion>(I_C_BPartner_Location.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
     /** Column name C_SalesRegion_ID */
     public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set eMail.
@@ -745,8 +750,8 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_Phone = "Phone";
 
 	/**
-	 * Set Mobil.
-	 * Alternative Mobile Telefonnummer
+	 * Set Telefon (alternativ).
+	 * Alternative Telefonnummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -755,8 +760,8 @@ public interface I_C_BPartner_Location
 	public void setPhone2 (java.lang.String Phone2);
 
 	/**
-	 * Get Mobil.
-	 * Alternative Mobile Telefonnummer
+	 * Get Telefon (alternativ).
+	 * Alternative Telefonnummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -794,13 +799,11 @@ public interface I_C_BPartner_Location
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_User>(I_C_BPartner_Location.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Visitors Address.
+	 * Set Besuchsadresse.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -809,7 +812,7 @@ public interface I_C_BPartner_Location
 	public void setVisitorsAddress (boolean VisitorsAddress);
 
 	/**
-	 * Get Visitors Address.
+	 * Get Besuchsadresse.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

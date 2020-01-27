@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -504,6 +505,19 @@ public final class Quantity implements Comparable<Quantity>
 		}
 	}
 
+	public Quantity withoutSource()
+	{
+		if (uom.getC_UOM_ID() == sourceUom.getC_UOM_ID()
+				&& qty.compareTo(sourceQty) == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return new Quantity(qty, uom);
+		}
+	}
+
 	/**
 	 * Returns the signum function of current quantity (i.e. {@link #getQty()} ).
 	 *
@@ -698,7 +712,10 @@ public final class Quantity implements Comparable<Quantity>
 				sourceUom);
 	}
 
-	public Quantity divide(final BigDecimal divisor, final int scale, final RoundingMode roundingMode)
+	public Quantity divide(
+			@NonNull final BigDecimal divisor,
+			final int scale,
+			@NonNull final RoundingMode roundingMode)
 	{
 		return new Quantity(
 				qty.divide(divisor, scale, roundingMode),
@@ -720,5 +737,25 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
+	}
+
+	public Quantity roundToUOMPrecision()
+	{
+		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
+		final BigDecimal qtyRounted = precision.roundIfNeeded(qty);
+		return qty.equals(qtyRounted)
+				? this
+				: new Quantity(qtyRounted, uom, sourceQty, sourceUom);
+	}
+
+	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)
+	{
+		final BigDecimal newQty = qty.setScale(newScale.toInt(), roundingMode);
+
+		return new Quantity(
+				newQty,
+				uom,
+				sourceQty != null ? sourceQty.setScale(newScale.toInt(), roundingMode) : newQty,
+				sourceUom != null ? sourceUom : uom);
 	}
 }

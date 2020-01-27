@@ -3,6 +3,7 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -168,4 +169,17 @@ public class RangeAwareParams implements IRangeAwareParams
 	{
 		return valuesTo.getParameterAsLocalDate(parameterName);
 	}
+	
+	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(String parameterName)
+	{
+		return values.getParameterAsZonedDateTime(parameterName);
+	}
+
+	@Override
+	public ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName)
+	{
+		return valuesTo.getParameterAsZonedDateTime(parameterName);
+	}
+
 }

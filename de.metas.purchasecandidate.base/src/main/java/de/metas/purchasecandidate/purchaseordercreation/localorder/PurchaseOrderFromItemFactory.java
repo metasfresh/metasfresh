@@ -26,6 +26,7 @@ import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -100,7 +101,7 @@ import lombok.NonNull;
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
 						pruchaseOrderItem.getProductId(),
-						pruchaseOrderItem.getUomId())
+						UomId.ofRepoId(pruchaseOrderItem.getUomId()))
 				.orElseGet(() -> orderFactory
 						.newOrderLine()
 						.productId(pruchaseOrderItem.getProductId()));

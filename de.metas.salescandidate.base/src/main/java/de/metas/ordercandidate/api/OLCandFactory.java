@@ -1,8 +1,15 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -15,12 +22,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,18 +39,18 @@ final class OLCandFactory
 {
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-	private final PricingSystemId pricingSystemId = null;
-
-	public OLCandFactory()
-	{
-	}
-
-	public OLCand toOLCand(final I_C_OLCand record)
+	public OLCand toOLCand(@NonNull final I_C_OLCand record)
 	{
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
-				.candidate(record)
-				.pricingSystemId(pricingSystemId)
+				.olCandRecord(record)
+				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
+				.deliveryRule(DeliveryRule.ofNullableCode(record.getDeliveryRule()))
+				.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()))
+				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
+				.paymentRule(PaymentRule.ofNullableCode(record.getPaymentRule()))
+				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
+				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.build();
 	}
 }

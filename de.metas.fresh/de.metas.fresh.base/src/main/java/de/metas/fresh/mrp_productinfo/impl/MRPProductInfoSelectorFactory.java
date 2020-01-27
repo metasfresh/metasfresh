@@ -1,6 +1,6 @@
 package de.metas.fresh.mrp_productinfo.impl;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -22,6 +22,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -86,7 +87,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
-			final Timestamp date = getDateForOrderLine(orderLine);
+			final ZonedDateTime date = getDateForOrderLine(orderLine);
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_MovementLine.class))
@@ -94,7 +95,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final I_M_MovementLine movementLine = InterfaceWrapperHelper.create(model, I_M_MovementLine.class);
 			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
-			final Timestamp date = movementLine.getM_Movement().getMovementDate();
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(movementLine.getM_Movement().getMovementDate());
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
@@ -102,7 +103,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
 			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
-			final Timestamp date = inOutLine.getM_InOut().getMovementDate();
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(inOutLine.getM_InOut().getMovementDate());
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_Fresh_QtyOnHand_Line.class))
@@ -119,7 +120,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			}
 			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
-			final Timestamp date = qtyOnHand.getDateDoc();
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(qtyOnHand.getDateDoc());
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_PMM_PurchaseCandidate.class))
@@ -127,48 +128,50 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 			final I_PMM_PurchaseCandidate purchaseCandidate = InterfaceWrapperHelper.create(model, I_PMM_PurchaseCandidate.class);
 			final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactory.createOrNull(model);
 
-			final Timestamp date = purchaseCandidate.getDatePromised();
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(purchaseCandidate.getDatePromised());
 			return new MRPProductInfoSelector(asiAware.getM_Product_ID(), asiAware.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_Transaction.class))
 		{
 			final I_M_Transaction transaction = InterfaceWrapperHelper.create(model, I_M_Transaction.class);
-			final Timestamp date = transaction.getMovementDate();
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(transaction.getMovementDate());
 
 			return new MRPProductInfoSelector(transaction.getM_Product_ID(), transaction.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_X_MRP_ProductInfo_Detail_MV.class))
 		{
-			I_X_MRP_ProductInfo_Detail_MV detail = InterfaceWrapperHelper.create(model, I_X_MRP_ProductInfo_Detail_MV.class);
-			return new MRPProductInfoSelector(detail.getM_Product_ID(), detail.getM_AttributeSetInstance_ID(), detail.getDateGeneral(), model, null);
+			final I_X_MRP_ProductInfo_Detail_MV detail = InterfaceWrapperHelper.create(model, I_X_MRP_ProductInfo_Detail_MV.class);
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(detail.getDateGeneral());
+			
+			return new MRPProductInfoSelector(detail.getM_Product_ID(), detail.getM_AttributeSetInstance_ID(), date, model, null);
 		}
 
 		return null;
 	}
 
-	private Timestamp getDateForOrderLine(final I_C_OrderLine orderLine)
+	private ZonedDateTime getDateForOrderLine(final I_C_OrderLine orderLine)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).getByOrderLineId(orderLineId);
 		if (schedForOrderLine != null)
 		{
-			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(schedForOrderLine);
+			final ZonedDateTime date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(schedForOrderLine);
 			if (date != null)
 			{
 				return date;
 			}
 		}
 
-		final Timestamp date;
+		final ZonedDateTime date;
 		final I_C_Order order = orderLine.getC_Order();
 		if (order.getPreparationDate() != null)
 		{
-			date = order.getPreparationDate();
+			date = TimeUtil.asZonedDateTime(order.getPreparationDate());
 		}
 		else
 		{
-			date = order.getDatePromised();
+			date = TimeUtil.asZonedDateTime(order.getDatePromised());
 		}
 		Check.errorIf(date == null, "Unable to obtain a date for order line {}", orderLine);
 		return date;
@@ -224,7 +227,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		Check.errorIf(asiID < 0, "Params={} has {} < 0", params, paramPrefix + ASI_PARAM_SUFFIX);
 
 		Check.errorUnless(params.hasParameter(paramPrefix + DATE_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + DATE_PARAM_SUFFIX, params);
-		final Timestamp date = params.getParameterAsTimestamp(paramPrefix + DATE_PARAM_SUFFIX);
+		final ZonedDateTime date = params.getParameterAsZonedDateTime(paramPrefix + DATE_PARAM_SUFFIX);
 		Check.errorIf(date == null, "Params={} has {} == null", params, paramPrefix + DATE_PARAM_SUFFIX);
 
 		// if all values are OK, then use them. Otherwise they might not be consistent with each other
@@ -248,7 +251,7 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		private String asiKey;
 
 		@Getter
-		private final Timestamp date;
+		private final ZonedDateTime date;
 
 		private final String paramPrefix;
 
@@ -271,13 +274,12 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		private MRPProductInfoSelector(
 				final int M_Product_ID,
 				final int M_AttributeSetInstance_ID,
-				@NonNull final Timestamp date,
+				@NonNull final ZonedDateTime date,
 				final Object model,
 				final String paramPrefix)
 		{
 			Check.assume(M_Product_ID > 0, "Param 'M_Product_ID' > 0");
 			Check.assume(M_AttributeSetInstance_ID >= 0, "Param 'M_AttributeSetInstance_ID' >= 0");
-			Check.assumeNotNull(date, "Param 'date' not null");
 
 			this.M_Product_ID = M_Product_ID;
 			this.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;

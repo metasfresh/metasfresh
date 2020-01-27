@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1004078185L;
+	private static final long serialVersionUID = 1727449885L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -69,16 +69,20 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Address);
 	}
 
+	/** Set BPartner name.
+		@param BPartnerName BPartner name	  */
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public void setBPartnerName (java.lang.String BPartnerName)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
 	}
 
+	/** Get BPartner name.
+		@return BPartner name	  */
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	public java.lang.String getBPartnerName () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+		return (java.lang.String)get_Value(COLUMNNAME_BPartnerName);
 	}
 
 	/** Set Geschäftspartner.
@@ -132,7 +136,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Location getC_Location() throws RuntimeException
+	public org.compiere.model.I_C_Location getC_Location()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
 	}
@@ -169,7 +173,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_C_SalesRegion getC_SalesRegion() throws RuntimeException
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class);
 	}
@@ -638,9 +642,9 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
-	/** Set Mobil.
+	/** Set Telefon (alternativ).
 		@param Phone2 
-		Alternative Mobile Telefonnummer
+		Alternative Telefonnummer
 	  */
 	@Override
 	public void setPhone2 (java.lang.String Phone2)
@@ -648,8 +652,8 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_Phone2, Phone2);
 	}
 
-	/** Get Mobil.
-		@return Alternative Mobile Telefonnummer
+	/** Get Telefon (alternativ).
+		@return Alternative Telefonnummer
 	  */
 	@Override
 	public java.lang.String getPhone2 () 
@@ -657,16 +661,16 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
 	}
 
-	/** Set Visitors Address.
-		@param VisitorsAddress Visitors Address	  */
+	/** Set Besuchsadresse.
+		@param VisitorsAddress Besuchsadresse	  */
 	@Override
 	public void setVisitorsAddress (boolean VisitorsAddress)
 	{
 		set_Value (COLUMNNAME_VisitorsAddress, Boolean.valueOf(VisitorsAddress));
 	}
 
-	/** Get Visitors Address.
-		@return Visitors Address	  */
+	/** Get Besuchsadresse.
+		@return Besuchsadresse	  */
 	@Override
 	public boolean isVisitorsAddress () 
 	{

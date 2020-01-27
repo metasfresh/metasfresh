@@ -25,8 +25,13 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -37,30 +42,37 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -68,6 +80,16 @@ import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
+
+	@Override
+	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
+	{
+		return CreateOrderCommand.builder()
+				.request(request)
+				.build()
+				.execute();
+	}
+
 	@Override
 	public void setDefaults(final I_PP_Order ppOrder)
 	{
@@ -89,50 +111,6 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
 
-	/**
-	 * Set Qty Entered - enforce entered UOM
-	 *
-	 * @param QtyEntered
-	 */
-	@Override
-	public void setQtyEntered(final I_PP_Order order, final BigDecimal QtyEntered)
-	{
-		final BigDecimal qtyEnteredToUse;
-		final UomId uomId = UomId.ofRepoIdOrNull(order.getC_UOM_ID());
-		if (QtyEntered != null && uomId != null)
-		{
-			final UOMPrecision precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
-			qtyEnteredToUse = precision.round(QtyEntered);
-		}
-		else
-		{
-			qtyEnteredToUse = QtyEntered;
-		}
-		order.setQtyEntered(qtyEnteredToUse);
-	}	// setQtyEntered
-
-	/**
-	 * Set Qty Ordered - enforce Product UOM
-	 *
-	 * @param qtyOrdered
-	 */
-	@Override
-	public void setQtyOrdered(final I_PP_Order order, final BigDecimal qtyOrdered)
-	{
-		final BigDecimal qtyOrderedToUse;
-		if (qtyOrdered != null)
-		{
-			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
-			qtyOrderedToUse = precision.round(qtyOrdered);
-		}
-		else
-		{
-			qtyOrderedToUse = qtyOrdered;
-		}
-		order.setQtyOrdered(qtyOrderedToUse);
-	}	// setQtyOrdered
-
 	@Override
 	public void addDescription(final I_PP_Order order, final String description)
 	{
@@ -145,10 +123,10 @@ public class PPOrderBL implements IPPOrderBL
 		{
 			order.setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}    // addDescription
 
 	@Override
-	public void updateQtyBatchs(I_PP_Order order, boolean override)
+	public void updateQtyBatchs(final I_PP_Order order, final boolean override)
 	{
 		BigDecimal qtyBatchSize = order.getQtyBatchSize();
 		if (qtyBatchSize.signum() == 0 || override)
@@ -239,7 +217,8 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public Quantity getQtyReceived(@NonNull final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 		return getQtyReceived(ppOrder);
 	}
 
@@ -313,13 +292,27 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public void closeOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
+
+		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
+		ppOrdersRepo.save(ppOrder);
+
+		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
 	public void closeQtyOrdered(final I_PP_Order ppOrder)
 	{
 		final BigDecimal qtyOrderedOld = ppOrder.getQtyOrdered();
 		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
 
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
-		setQtyOrdered(ppOrder, qtyDelivered);
+		ppOrder.setQtyOrdered(qtyDelivered);
 
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		ppOrdersRepo.save(ppOrder);
@@ -357,6 +350,43 @@ public class PPOrderBL implements IPPOrderBL
 
 		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 		orderRoutingsRepo.save(orderRouting);
+
+		copyAttachmentsFromTemplates(orderRouting);
+	}
+
+	private void copyAttachmentsFromTemplates(final PPOrderRouting orderRouting)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// atm copying attachments in unit test is not possible
+			return;
+		}
+
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+
+		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
+		{
+			copyAttachmentsFromTemplate(activity, attachmentEntryService);
+		}
+	}
+
+	private static void copyAttachmentsFromTemplate(
+			final PPOrderRoutingActivity activity,
+			final AttachmentEntryService attachmentEntryService)
+	{
+		final PPRoutingActivityTemplateId activityTemplateId = activity.getActivityTemplateId();
+		if (activityTemplateId == null)
+		{
+			return;
+		}
+
+		final TableRecordReference activityTemplateRef = TableRecordReference.of(I_AD_WF_Node_Template.Table_Name, activityTemplateId);
+		final TableRecordReference activityRef = TableRecordReference.of(I_PP_Order_Node.Table_Name, activity.getId());
+		final TableRecordReference orderRef = TableRecordReference.of(I_PP_Order.Table_Name, activity.getOrderId());
+
+		attachmentEntryService.shareAttachmentLinks(
+				ImmutableList.of(activityTemplateRef),
+				ImmutableList.of(orderRef, activityRef));
 	}
 
 	@Override
@@ -395,7 +425,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ordersRepo.getById(orderId);
-		final LocalDateTime reportDate = SystemTime.asLocalDateTime();
+		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
@@ -436,6 +466,22 @@ public class PPOrderBL implements IPPOrderBL
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		orderRouting.voidIt();
 		orderRoutingRepo.save(orderRouting);
+	}
+
+	@Override
+	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(@NonNull final PPOrderId pickingOrderId)
+	{
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final IPPOrderBOMBL ppOrderBOMsService = Services.get(IPPOrderBOMBL.class);
+
+		final I_PP_Order pickingOrder = ppOrdersRepo.getById(pickingOrderId);
+		final DocStatus pickingOrderDocStatus = DocStatus.ofCode(pickingOrder.getDocStatus());
+		if (!pickingOrderDocStatus.isCompleted())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(ppOrderBOMsService.getQtyCalculationsBOM(pickingOrder));
 	}
 
 }

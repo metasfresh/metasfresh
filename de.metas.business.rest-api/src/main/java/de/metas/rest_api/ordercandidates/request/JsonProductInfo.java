@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.util.lang.ExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -56,7 +57,7 @@ public class JsonProductInfo
 			allowEmptyValue = false, //
 			value = "This translates to `M_Product.ExternalId`. At least one of `code` or `externalId` is mandatory")
 	@JsonInclude(Include.NON_NULL)
-	private String externalId;
+	private ExternalId externalId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -93,7 +94,7 @@ public class JsonProductInfo
 	@JsonCreator
 	private JsonProductInfo(
 			@JsonProperty("code") @Nullable final String code,
-			@JsonProperty("externalId") @Nullable final String externalId,
+			@JsonProperty("externalId") @Nullable final ExternalId externalId,
 			@JsonProperty("name") @Nullable final String name,
 			@JsonProperty("type") @Nullable final Type type,
 			@JsonProperty("uomCode") @Nullable final String uomCode,

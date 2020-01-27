@@ -22,16 +22,14 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-
+import de.metas.fresh.model.I_C_BPartner;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.api.IBPartnerAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-
-import de.metas.fresh.model.I_C_BPartner;
-import lombok.NonNull;
 
 public class InOutLineBPartnerAware implements IBPartnerAware
 {
@@ -76,7 +74,8 @@ public class InOutLineBPartnerAware implements IBPartnerAware
 	public I_C_BPartner getC_BPartner()
 	{
 		final I_M_InOut inout = getM_InOut();
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(inout.getC_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner partner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
+
 		if (partner == null)
 		{
 			return null;
@@ -84,7 +83,7 @@ public class InOutLineBPartnerAware implements IBPartnerAware
 		return partner;
 	}
 
-	private final I_M_InOut getM_InOut()
+	private I_M_InOut getM_InOut()
 	{
 		final I_M_InOut inout = inoutLine.getM_InOut();
 		if (inout == null)

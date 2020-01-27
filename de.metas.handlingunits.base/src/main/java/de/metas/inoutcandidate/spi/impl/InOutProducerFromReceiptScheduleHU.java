@@ -25,6 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,17 +33,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -82,8 +86,17 @@ import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Generates material receipt from {@link I_M_ReceiptSchedule_Alloc} (with HUs).
@@ -98,6 +111,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 
 	//
 	// Params
@@ -105,12 +120,14 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * When generating receipt lines pick only those allocation lines which have HUs from this Set.
-	 *
+	 * <p>
 	 * If the set is null, it means no restriction will be applied, so any HU will be considered.
 	 */
 	private final Set<HuId> selectedHUIds;
 
-	/** Collects packing materials in order to generate Packing Material receipt lines */
+	/**
+	 * Collects packing materials in order to generate Packing Material receipt lines
+	 */
 	private final HUPackingMaterialsCollector packingMaterialsCollector;
 
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
@@ -139,7 +156,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	/**
 	 * @return context; never returns null
 	 */
-	private final IHUContext getHUContext()
+	private IHUContext getHUContext()
 	{
 		return _huContext;
 	}
@@ -194,25 +211,22 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLines;
 	}
 
-	private final List<I_M_InOutLine> createReceiptLines(final HUReceiptLineCandidate receiptLineCandidate)
+	private List<I_M_InOutLine> createReceiptLines(@NonNull final HUReceiptLineCandidate receiptLineCandidate)
 	{
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
 		final ReceiptQty qtyAndQuality = receiptLineCandidate.getQtyAndQuality();
-		final I_C_UOM uom = receiptLineCandidate.getC_UOM();
-		final int qtyPrecision = uom.getStdPrecision();
 
-		//
 		// The receipt lines created.
 		// Could be maximum 2: one with QtyWithoutIssues, one with QtyWithIssues
 		final List<I_M_InOutLine> receiptLines = new ArrayList<>(2);
 
 		//
 		// Create receipt line for QtyWithoutIssues
-		final BigDecimal qtyWithoutIssues = qtyAndQuality.getQtyWithoutIssues(qtyPrecision);
+		final StockQtyAndUOMQty qtyWithoutIssues = qtyAndQuality.getQtyWithoutIssues();
 		if (qtyWithoutIssues.signum() > 0)
 		{
-			final BigDecimal qualityDiscountPercent = BigDecimal.ZERO;
+			final Percent qualityDiscountPercent = Percent.ZERO;
 			final String qualityNoticesString = "";
 			final boolean isInDispute = false;
 			final I_M_InOutLine receiptLineWithoutIssues = createReceiptLine(receiptLineCandidate,
@@ -230,10 +244,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// If there is Qty with issues, an extra receipt line is needed (with qtyWithIssues)
-		final BigDecimal qtyWithIssues = qtyAndQuality.getQtyWithIssues(qtyPrecision);
+		final StockQtyAndUOMQty qtyWithIssues = qtyAndQuality.getQtyWithIssuesExact();
 		if (qtyWithIssues.signum() > 0)
 		{
-			final BigDecimal qualityDiscountPercent = qtyAndQuality.getQualityDiscountPercent();
+			final Percent qualityDiscountPercent = qtyAndQuality.getQualityDiscountPercent();
 			final String qualityNoticesString = qtyAndQuality.getQualityNotices().asQualityNoticesString();
 			final boolean isInDispute = true;
 			final I_M_InOutLine receiptLineWithIssues = createReceiptLine(receiptLineCandidate,
@@ -250,14 +264,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		return receiptLines;
-
 	}
 
 	/**
 	 * Add the value of M_QualityNote from the receiptLineCandidate to the M_AttributeSetInstance of the receipt line
-	 *
-	 * @param receiptLineWithIssues
-	 * @param receiptLineCandidate
 	 */
 	private void addQualityToASI(
 			final I_M_InOutLine receiptLineWithIssues,
@@ -280,7 +290,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			return;
 		}
 
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityNoteAttributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, qualityNoteAttributeId);
 
 		if (ai == null)
 		{
@@ -319,7 +330,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLines_PackingMaterials;
 	}
 
-	private final void createHUSnapshots()
+	private void createHUSnapshots()
 	{
 		// Create the snapshots for all enqueued HUs so far.
 		huSnapshotProducer.createSnapshots();
@@ -335,7 +346,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 *
 	 * @return additional packing material receipt lines that were created.
 	 */
-	private final List<I_M_InOutLine> createBottomReceiptLines_PackingMaterials()
+	private List<I_M_InOutLine> createBottomReceiptLines_PackingMaterials()
 	{
 		//
 		// Sets M_Product_ID sort comparator to use
@@ -343,7 +354,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final Comparator<Integer> candidatesSortComparator = Services.get(IDocLineSortDAO.class).findDocLineSort()
 				.setContext(getCtx())
 				.setC_BPartner_ID(receipt.getC_BPartner_ID())
-				.setC_DocType(receipt.getC_DocType())
+				.setC_DocType(loadOutOfTrx(receipt.getC_DocType_ID(), I_C_DocType.class))
 				.findProductIdsComparator();
 		packingMaterialsCollector.setProductIdSortComparator(candidatesSortComparator);
 
@@ -388,10 +399,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Create receipt line for given packing material receipt line candidate.
-	 *
+	 * <p>
 	 * This method will also search for packing material receipt schedules and will try to allocate receipt line to them.
 	 *
-	 * @param candidate
 	 * @return created receipt line
 	 */
 	private I_M_InOutLine createPackingMaterialReceiptLine(final HUPackingMaterialDocumentLineCandidate candidate)
@@ -424,8 +434,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	private I_M_InOutLine createReceiptLine(
 			final HUReceiptLineCandidate receiptLineCandidate,
-			final BigDecimal qtyToReceive,
-			final BigDecimal qualityDiscountPercent,
+			@NonNull final StockQtyAndUOMQty qtyToReceive,
+			@NonNull final Percent qualityDiscountPercent,
 			final String qualityNote,
 			final boolean isInDispute)
 	{
@@ -440,9 +450,25 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			receiptLine.setSubProducer_BPartner_ID(receiptLineCandidate.getSubProducer_BPartner_ID());
 		}
 
-		receiptLine.setQtyEntered(qtyToReceive);
-		receiptLine.setMovementQty(receiptLine.getQtyEntered());
-		receiptLine.setQualityDiscountPercent(qualityDiscountPercent);
+		final Optional<Quantity> catchQty = qtyToReceive.getUOMQtyOpt();
+
+		final boolean hasUsableCatchQty = catchQty.isPresent() && !catchQty.get().isZero() && !catchQty.get().isInfinite();
+		if (hasUsableCatchQty)
+		{
+			final UOMPrecision catchQtyRecision = uomdao.getStandardPrecision(catchQty.get().getUomId());
+			final Quantity roundedCatchQty = catchQty.get().setScale(catchQtyRecision, RoundingMode.HALF_UP);
+
+			receiptLine.setCatch_UOM_ID(roundedCatchQty.getUomId().getRepoId());
+			receiptLine.setQtyDeliveredCatch(roundedCatchQty.toBigDecimal());
+		}
+
+		final UomId uomId = UomId.ofRepoId(receiptLineCandidate.getC_UOM().getC_UOM_ID());
+		final Quantity qtyEntered = uomConversionBL.convertQuantityTo(qtyToReceive.getStockQty(), UOMConversionContext.of(qtyToReceive.getProductId()), uomId);
+		receiptLine.setQtyEntered(qtyEntered.toBigDecimal());
+		receiptLine.setC_UOM_ID(uomId.getRepoId());
+		receiptLine.setMovementQty(qtyToReceive.getStockQty().toBigDecimal());
+
+		receiptLine.setQualityDiscountPercent(qualityDiscountPercent.toBigDecimal());
 		receiptLine.setQualityNote(qualityNote);
 		receiptLine.setIsInDispute(isInDispute);
 
@@ -452,7 +478,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLine;
 	}
 
-	private final boolean isRsaEligible(final I_M_ReceiptSchedule_Alloc rsa)
+	private boolean isRsaEligible(final I_M_ReceiptSchedule_Alloc rsa)
 	{
 		if (!rsa.isActive())
 		{
@@ -473,7 +499,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return true;
 	}
 
-	private final boolean isHUEligible(final I_M_HU hu)
+	private boolean isHUEligible(final I_M_HU hu)
 	{
 		final boolean huExistsAndSaved = hu != null && hu.getM_HU_ID() > 0;
 		if (!huExistsAndSaved)
@@ -528,7 +554,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Transfer handling units from <code>allocs</code> to <code>receiptLine</code>.
-	 *
+	 * <p>
 	 * Also collect the packing materials.
 	 *
 	 * @param rs
@@ -664,9 +690,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Process in an {@link IHUContextProcessorExecutor} retrieval of packing materials from Gebinde Lager. Will process them all at once in a single movement
-	 *
-	 * @param huContext
-	 * @param hu
 	 */
 	private void fetchPackingMaterialsFromGebindeLager(final IHUContext huContext)
 	{
@@ -677,10 +700,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	/**
 	 * Assign <code>hu</code> to receipt line. Also transfer the attributes from HU to receipt line's ASI.
 	 *
-	 * @param huContext
-	 * @param rs
 	 * @param hu top level HU (LU, TU, VHU)
-	 * @param receiptLine
 	 */
 	private void transferHandlingUnit(final IHUContext huContext,
 			final I_M_ReceiptSchedule rs,

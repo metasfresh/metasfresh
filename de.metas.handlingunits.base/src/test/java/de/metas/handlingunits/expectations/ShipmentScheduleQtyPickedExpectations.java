@@ -33,19 +33,26 @@ import org.junit.Assert;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation<Object>
 {
+	public static ShipmentScheduleQtyPickedExpectations newInstance()
+	{
+		return new ShipmentScheduleQtyPickedExpectations();
+	}
+
 	// services
-	public final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
+	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	// expectations
-	final List<ShipmentScheduleQtyPickedExpectation<ShipmentScheduleQtyPickedExpectations>> expectations = new ArrayList<>();
+	private final ArrayList<ShipmentScheduleQtyPickedExpectation<ShipmentScheduleQtyPickedExpectations>> expectations = new ArrayList<>();
 	private I_M_ShipmentSchedule shipmentSchedule;
 	private BigDecimal qtyPicked;
 
@@ -67,26 +74,24 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 			return this;
 		}
 
-		return assertExpected_ShipmentSchedule(message, shipmentSchedule);
-	}
-
-	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentSchedule(final String message, final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
-
 		final String prefix = (message == null ? "" : message)
 				+ "\n Shipment Schedule: " + shipmentSchedule
 				+ "\n\nInvalid ";
 
 		if (qtyPicked != null)
 		{
-			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 			final BigDecimal qtyPickedActual = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
 
 			assertEquals(prefix + "QtyPicked", qtyPicked, qtyPickedActual);
 		}
 
 		return this;
+	}
+
+	public ShipmentScheduleQtyPickedExpectations assertExpected()
+	{
+		final String message = null;
+		return assertExpected(message);
 	}
 
 	public ShipmentScheduleQtyPickedExpectations assertExpected(final String message)
@@ -128,7 +133,7 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		return assertExpected(message, qtyPickedRecords);
 	}
@@ -192,6 +197,11 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	public ShipmentScheduleQtyPickedExpectation<ShipmentScheduleQtyPickedExpectations> shipmentScheduleQtyPickedExpectation(final int index)
 	{
 		return expectations.get(index);
+	}
+
+	public ShipmentScheduleQtyPickedExpectations shipmentSchedule(final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentSchedule(shipmentSchedulesRepo.getById(shipmentScheduleId));
 	}
 
 	public ShipmentScheduleQtyPickedExpectations shipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)

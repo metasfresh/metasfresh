@@ -19,6 +19,7 @@ import org.compiere.model.I_M_ProductPrice;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.IProductDAO;
 import de.metas.user.UserId;
@@ -70,19 +71,16 @@ public class PlainPriceListDAO extends PriceListDAO
 			return;
 		}
 
-		final I_M_PriceList_Version basePLV = getPriceListVersionById(basePLVId);
-
 		final Stream<I_M_ProductPrice> productPrices = retrieveProductPrices(basePLVId, ImmutableSet.of());
 
 		final List<I_M_DiscountSchemaLine> schemaLines = getSchemaLines(discountSchemaId);
 
-		productPrices.forEach(productPrice -> createProductPriceIfNeeded(productPrice, schemaLines, basePLV, newCustomerPLV));
+		productPrices.forEach(productPrice -> createProductPriceIfNeeded(productPrice, schemaLines, newCustomerPLV));
 
 	}
 
 	private void createProductPriceIfNeeded(final I_M_ProductPrice productPrice,
 			final List<I_M_DiscountSchemaLine> schemaLines,
-			final I_M_PriceList_Version basePLV,
 			final I_M_PriceList_Version newCustomerPLV)
 	{
 		final I_M_DiscountSchemaLine schemaLineForProductId = retrieveSchemaLineForProductIdOrNull(productPrice.getM_Product_ID(), schemaLines);
@@ -154,7 +152,7 @@ public class PlainPriceListDAO extends PriceListDAO
 	}
 
 	@Override
-	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final I_M_PriceList_Version basePLV)
+	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final PriceListId basePricelistId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -166,6 +164,7 @@ public class PlainPriceListDAO extends PriceListDAO
 				.create();
 
 		final List<I_M_PriceList_Version> customerVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePricelistId)
 
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
@@ -173,10 +172,7 @@ public class PlainPriceListDAO extends PriceListDAO
 				.end()
 				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
 				.addOnlyActiveRecordsFilter()
-
-				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_Pricelist_Version_Base_ID, basePLV.getM_PriceList_Version_ID())
-				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePLV.getM_PriceList_ID())
-				.addNotNull(I_M_PriceList_Version.COLUMNNAME_M_DiscountSchema_ID)
+				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePricelistId)
 				.create()
 
 				.list(I_M_PriceList_Version.class);

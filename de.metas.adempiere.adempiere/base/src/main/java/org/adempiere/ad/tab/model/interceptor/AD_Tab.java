@@ -84,6 +84,7 @@ public class AD_Tab
 	{
 		updateTabFromElement(tab);
 	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void onAfterTabSave_WhenElementIdChanged(final I_AD_Tab tab)
 	{

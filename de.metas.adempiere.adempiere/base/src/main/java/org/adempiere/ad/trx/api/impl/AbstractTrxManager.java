@@ -66,6 +66,7 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.TrxRunnable2Wrapper;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -92,11 +93,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	private ITrxNameGenerator trxNameGenerator = DefaultTrxNameGenerator.instance;
 
-	/**
-	 * Thread level transaction name
-	 */
-	private final InheritableThreadLocal<String> threadLocalTrx = new InheritableThreadLocal<>();
-	private final InheritableThreadLocal<OnRunnableFail> threadLocalOnRunnableFail = new InheritableThreadLocal<>();
+	/** Name of the trx currently associated with this thread */
+	private final ThreadLocal<String> threadLocalTrx = new ThreadLocal<>();
+	private final ThreadLocal<OnRunnableFail> threadLocalOnRunnableFail = new ThreadLocal<>();
 
 	private boolean debugTrxCreateStacktrace = false;
 	private boolean debugTrxCloseStacktrace = false;
@@ -110,8 +109,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	public AbstractTrxManager()
 	{
-		super();
-
 		final JMXTrxManager jmxBean = new JMXTrxManager(this);
 		JMXRegistry.get().registerJMX(jmxBean, OnJMXAlreadyExistsPolicy.Replace);
 	}
@@ -131,7 +128,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 	 *
 	 * NOTE: this method assumes that {@link #trxName2trxLock} is already locked.
 	 *
-	 * @param trxName
 	 * @return created transaction name
 	 */
 	@VisibleForTesting
@@ -283,10 +279,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 		return get(trxName, onTrxMissingPolicy, autoCommit);
 	}
 
-	private final ITrx get(String trxName, final OnTrxMissingPolicy onTrxMissingPolicy, final boolean autoCommit)
+	private ITrx get(String trxName, @NonNull final OnTrxMissingPolicy onTrxMissingPolicy, final boolean autoCommit)
 	{
-		Check.assumeNotNull(onTrxMissingPolicy, TrxException.class, "onTrxMissingPolicy not null");
-
 		//
 		// Avoid null trxName
 		if (isNull(trxName))
@@ -450,14 +444,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}	// createTrxName
 
 	@Override
-	public <T> T callInNewTrx(final Callable<T> callable)
+	public <T> T callInNewTrx(@NonNull final Callable<T> callable)
 	{
 		final TrxCallable<T> trxCallable = TrxCallableWrappers.wrapIfNeeded(callable);
 		return callInNewTrx(trxCallable);
 	}
 
 	@Override
-	public void runInNewTrx(final Runnable runnable)
+	public void runInNewTrx(@NonNull final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		callInNewTrx(callable);
@@ -488,14 +482,14 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public void run(final String trxName, final Runnable runnable)
+	public void run(final String trxName, @NonNull final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
 		call(trxName, callable);
 	}
 
 	@Override
-	public <T> T call(final String trxName, final TrxCallable<T> callable)
+	public <T> T call(final String trxName, @NonNull final TrxCallable<T> callable)
 	{
 		final boolean manageTrx = false;
 		return call(trxName, manageTrx, callable);
@@ -518,7 +512,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public <T> T call(final String trxName, final boolean manageTrx, final TrxCallable<T> callable)
+	public <T> T call(@Nullable final String trxName, final boolean manageTrx, @NonNull final TrxCallable<T> callable)
 	{
 		final TrxPropagation trxMode;
 		final OnRunnableSuccess onRunnableSuccess;
@@ -578,7 +572,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public <T> T call(final String trxName, final ITrxRunConfig cfg, final TrxCallable<T> callable)
+	public <T> T call(@Nullable final String trxName, @NonNull final ITrxRunConfig cfg, @NonNull final TrxCallable<T> callable)
 	{
 		//
 		// Determine which trxName we shall use based on trx run configuration
@@ -664,7 +658,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 			// Set our transaction as currently active thread local transaction
 			restoreThreadLocalTrxName = true;
-			threadLocalTrx.set(trxNameToUse);
+			setThreadInheritedTrxName(trxNameToUse);
 
 			return call0(callable, cfg, trxNameToUse);
 		}
@@ -673,7 +667,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// Restore the thread local transaction, in case we changed it.
 			if (restoreThreadLocalTrxName)
 			{
-				threadLocalTrx.set(threadLocalTrxNameOld);
+				setThreadInheritedTrxName(threadLocalTrxNameOld);
 				restoreThreadLocalTrxName = false;
 			}
 
@@ -690,7 +684,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		// Validate trxName
 		if (isNull(trxName))
 		{
-			throw new IllegalTrxRunStateException("A concrete transaction name is expected")
+			throw new IllegalTrxRunStateException("A concrete transaction name is expected at this point")
 					.setTrxRunConfig(cfg)
 					.setTrxName(trxName);
 		}
@@ -828,7 +822,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 					// metas-ts: setting 'trx' to null only if we have a non-local trx.
 					// Otherwise we could not close the trx and it would be left dangling
 					trx = null;
-					savepoint = null; // get rid of savepoint, because even if it failed there is not match we can do
+					savepoint = null; // get rid of savepoint, because even if it failed there is not much we can do
 				}
 				else
 				{
@@ -898,9 +892,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public void runOutOfTransaction(final TrxRunnable r)
+	public void runOutOfTransaction(@NonNull final TrxRunnable r)
 	{
-		Check.assumeNotNull(r, "TrxRunnable not null");
 		final TrxRunnable2 runnable = TrxRunnable2Wrapper.wrapIfNeeded(r);
 
 		//
@@ -1188,6 +1181,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
+		
+		MDC.put("TrxName", trxName);
 
 		return trxNameOld;
 	}
@@ -1217,10 +1212,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public ITrx getThreadInheritedTrx(final OnTrxMissingPolicy onTrxMissingPolicy)
+	public ITrx getThreadInheritedTrx(@NonNull final OnTrxMissingPolicy onTrxMissingPolicy)
 	{
-		Check.assumeNotNull(onTrxMissingPolicy, "onTrxMissingPolicy not null");
-
 		final String trxName = threadLocalTrx.get();
 
 		//

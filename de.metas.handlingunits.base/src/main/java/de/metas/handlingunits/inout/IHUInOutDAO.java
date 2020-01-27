@@ -35,9 +35,6 @@ public interface IHUInOutDAO extends ISingletonService
 {
 	/**
 	 * Retrieve the <b>top-level</b> HUs associated with the given {@code inout}'s lines.
-	 * 
-	 * @param inOut
-	 * @return
 	 */
 	List<I_M_HU> retrieveHandlingUnits(I_M_InOut inOut);
 
@@ -48,9 +45,6 @@ public interface IHUInOutDAO extends ISingletonService
 	/**
 	 * Returns the inoutline that is referenced by the given <code>hu</code>'s {@link HUConstants#ATTRIBUTE_VALUE_HU_ReceiptInOutLine_ID} value,<br>
 	 * or <code>null</code> if there is no such (active!) inout line, <b>or</b> if the inOutline dies not belong to an <code>MInOut</code> that is completed or closed.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	I_M_InOutLine retrieveCompletedReceiptLineOrNull(I_M_HU hu);
 	
@@ -58,9 +52,6 @@ public interface IHUInOutDAO extends ISingletonService
 
 	/**
 	 * Retrieve the handling units assigned to the lines of a given inout if and only if they have status shipped.
-	 * 
-	 * @param inOut
-	 * @return
 	 */
 	List<I_M_HU> retrieveShippedHandlingUnits(I_M_InOut inOut);
 

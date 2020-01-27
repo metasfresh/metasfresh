@@ -13,11 +13,11 @@ package de.metas.edi.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,10 +38,11 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class DesadvDAO implements IDesadvDAO
 {
@@ -53,10 +54,9 @@ public class DesadvDAO implements IDesadvDAO
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 
 	@Override
-	public I_EDI_Desadv retrieveMatchingDesadvOrNull(final String poReference, final IContextAware ctxAware)
+	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final String poReference, @NonNull final IContextAware ctxAware)
 	{
-		Check.assumeNotNull(ctxAware, "Param 'ctxAware' is not null");
-		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy");
+		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy; ctxAware={}", ctxAware);
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_Desadv.class, ctxAware)
 				.addOnlyActiveRecordsFilter()
@@ -68,10 +68,8 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(final I_EDI_Desadv desadv, final int line)
+	public I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(@NonNull final I_EDI_Desadv desadv, final int line)
 	{
-		Check.assumeNotNull(desadv, "Param 'desadv'");
-
 		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine.class, desadv)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
@@ -98,7 +96,7 @@ public class DesadvDAO implements IDesadvDAO
 	public boolean hasInOuts(I_EDI_Desadv desadv)
 	{
 		return createAllInOutsQuery(desadv)
-				.match();
+				.anyMatch();
 	}
 
 	private IQuery<I_M_InOut> createAllInOutsQuery(final I_EDI_Desadv desadv)
@@ -120,7 +118,7 @@ public class DesadvDAO implements IDesadvDAO
 	public boolean hasInOutLines(I_EDI_DesadvLine desadvLine)
 	{
 		return createAllInOutLinesQuery(desadvLine)
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -128,7 +126,7 @@ public class DesadvDAO implements IDesadvDAO
 	{
 		return createAllOrderLinesQuery(desadvLine)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -143,14 +141,14 @@ public class DesadvDAO implements IDesadvDAO
 	public boolean hasDesadvLines(I_EDI_Desadv desadv)
 	{
 		return createAllDesadvLinesQuery(desadv)
-				.match();
+				.anyMatch();
 	}
 
 	@Override
 	public boolean hasOrders(I_EDI_Desadv desadv)
 	{
 		return createAllOrdersQuery(desadv)
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -192,34 +190,46 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_SSCC> retrieveDesadvLineSSCCs(final I_EDI_DesadvLine desadvLine)
+	public List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull final I_EDI_DesadvLine desadvLine)
 	{
-		return createDesadvLineSSCCsQuery(desadvLine)
+		return createDesadvLinePackRecordsQuery(desadvLine)
 				.create()
 				.list();
 	}
 
 	@Override
-	public int retrieveDesadvLineSSCCsCount(final I_EDI_DesadvLine desadvLine)
+	public int retrieveDesadvLinePackRecordsCount(@NonNull final I_EDI_DesadvLine desadvLine)
 	{
-		return createDesadvLineSSCCsQuery(desadvLine)
+		return createDesadvLinePackRecordsQuery(desadvLine)
 				.create()
 				.count();
 	}
 
-	private IQueryBuilder<I_EDI_DesadvLine_SSCC> createDesadvLineSSCCsQuery(final I_EDI_DesadvLine desadvLine)
+	private IQueryBuilder<I_EDI_DesadvLine_Pack> createDesadvLinePackRecordsQuery(@NonNull final I_EDI_DesadvLine desadvLine)
 	{
-		final IQueryBuilder<I_EDI_DesadvLine_SSCC> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_EDI_DesadvLine_SSCC.class, desadvLine)
+		final IQueryBuilder<I_EDI_DesadvLine_Pack> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_EDI_DesadvLine_Pack.class, desadvLine)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_DesadvLine_SSCC.COLUMNNAME_EDI_DesadvLine_ID, desadvLine.getEDI_DesadvLine_ID());
+				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_EDI_DesadvLine_ID, desadvLine.getEDI_DesadvLine_ID());
 		queryBuilder.orderBy()
-				.addColumn(I_EDI_DesadvLine_SSCC.COLUMN_EDI_DesadvLine_SSCC_ID);
+				.addColumn(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_Pack_ID);
 
 		return queryBuilder;
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(final I_EDI_DesadvLine desadvLine)
+	public List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_EDI_DesadvLine_Pack.class, inOutLineRecord)
+				// .addOnlyActiveRecordsFilter() we need all
+				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, inOutLineRecord.getM_InOutLine_ID())
+				.create()
+				.list();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(@NonNull final I_EDI_DesadvLine desadvLine)
 	{
 		final IQueryBuilder<I_C_OrderLine> orderLinesQuery = createAllOrderLinesQuery(desadvLine);
 

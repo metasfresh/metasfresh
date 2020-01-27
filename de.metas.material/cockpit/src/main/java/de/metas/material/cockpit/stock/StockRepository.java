@@ -2,7 +2,6 @@ package de.metas.material.cockpit.stock;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -221,17 +220,18 @@ public class StockRepository
 
 	public Stream<StockDataItem> streamStockDataItems(@NonNull final StockDataMultiQuery multiQuery)
 	{
-		final Optional<IQuery<I_MD_Stock>> query = multiQuery
+		final IQuery<I_MD_Stock> query = multiQuery
 				.getStockDataQueries()
 				.stream()
 				.map(this::createStockDataItemQuery)
-				.reduce(IQuery.unionDistict());
+				.reduce(IQuery.unionDistict())
+				.orElse(null);
 
-		if (!query.isPresent())
+		if (query == null)
 		{
 			return Stream.empty();
 		}
-		return query.get()
+		return query
 				.iterateAndStream()
 				.map(this::recordToStockDataItem);
 	}

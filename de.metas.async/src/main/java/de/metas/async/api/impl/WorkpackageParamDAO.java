@@ -25,16 +25,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.IReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
@@ -53,6 +54,8 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessParams;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -67,14 +70,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 	public IParams retrieveWorkpackageParams(final I_C_Queue_WorkPackage workpackage)
 	{
 		// NOTE: the actual parameters are lazy loaded on demand
-		return new ProcessParams(new IReference<List<ProcessInfoParameter>>()
-		{
-			@Override
-			public List<ProcessInfoParameter> getValue()
-			{
-				return retrieveWorkpackageProcessInfoParameters(workpackage);
-			}
-		});
+		return new ProcessParams(() -> retrieveWorkpackageProcessInfoParameters(workpackage));
 	}
 
 	/**
@@ -195,7 +191,9 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 	}
 
 	@Override
-	public void setParameterValue(final I_C_Queue_WorkPackage_Param workpackageParam, final Object parameterValue)
+	public void setParameterValue(
+			@NonNull final I_C_Queue_WorkPackage_Param workpackageParam,
+			@Nullable final Object parameterValue)
 	{
 		// NOTE to developer: when changing this, make sure you are also changing the counterpart method createProcessInfoParameter()
 		if (parameterValue == null)
@@ -209,12 +207,12 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_String(parameterValue.toString());
 		}
-		else if (parameterValue instanceof Date)
+		else if (TimeUtil.isDateOrTimeObject(parameterValue))
 		{
-			final Date date = (Date)parameterValue;
+			final Timestamp date = TimeUtil.asTimestamp(parameterValue);
 			workpackageParam.setAD_Reference_ID(DisplayType.DateTime);
 			resetParameterValue(workpackageParam);
-			workpackageParam.setP_Date(TimeUtil.asTimestamp(date));
+			workpackageParam.setP_Date(date);
 		}
 		else if (parameterValue instanceof BigDecimal)
 		{
@@ -242,11 +240,20 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			final boolean valueBoolean = (boolean)parameterValue;
 			workpackageParam.setAD_Reference_ID(DisplayType.YesNo);
 			resetParameterValue(workpackageParam);
-			workpackageParam.setP_String(DisplayType.toBooleanString(valueBoolean));
+			workpackageParam.setP_String(StringUtils.ofBoolean(valueBoolean));
+		}
+		else if (parameterValue instanceof ReferenceListAwareEnum)
+		{
+			final ReferenceListAwareEnum valueEnum = (ReferenceListAwareEnum)parameterValue;
+			workpackageParam.setAD_Reference_ID(DisplayType.String);
+			resetParameterValue(workpackageParam);
+			workpackageParam.setP_String(valueEnum.getCode());
 		}
 		else
 		{
-			throw new IllegalArgumentException("Unsupported parameter value: " + parameterValue + " (" + parameterValue.getClass() + ")");
+			throw new AdempiereException("Parameter 'parameterValue' has an unsupported class=" + parameterValue.getClass())
+					.appendParametersToMessage()
+					.setParameter("parameterValue", parameterValue);
 		}
 	}
 
@@ -275,4 +282,15 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		final int blockAD_PInstance_ID = queueBlock == null ? -1 : queueBlock.getAD_PInstance_Creator_ID();
 		return blockAD_PInstance_ID > 0 ? PInstanceId.ofRepoId(blockAD_PInstance_ID) : null;
 	}
+
+	@Override
+	public void deleteWorkpackageParams(@NonNull final QueueWorkPackageId workpackageId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
+				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMN_C_Queue_WorkPackage_ID, workpackageId)
+				.create()
+				.delete();
+	}
+
 }

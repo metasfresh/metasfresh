@@ -324,7 +324,7 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Get pricing system (or dispose window if none was found)
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(partnerId, soTrx);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemIdOrNull(partnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
@@ -408,7 +408,7 @@ public class CreateInvoiceCandidateDialog
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
 						PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()) //
 						, CountryId.ofRepoId(location.getC_Location().getC_Country_ID()) // country
-						, SystemTime.asLocalDate() // date
+						, SystemTime.asZonedDateTime() // date
 						, soTrx //
 						, (Boolean)null // processedPLVFiltering
 				);

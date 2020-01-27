@@ -67,7 +67,7 @@ public class PackingServiceTest extends AbstractHUTest
 		// Empty Handling Unit for test
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext);
-		huBuilder.setDate(helper.getTodayDate());
+		huBuilder.setDate(helper.getTodayZonedDateTime());
 //		hu = huBuilder.create(huDefIFCO);
 	}
 

@@ -269,7 +269,7 @@ public class Util
 	}
 
 	/**
-	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[]))} and {@link Arrays#equals(Object)}. Instances of this class are obtained by {@link Util#mkKey(Object...)} and can be
+	 * Immutable wrapper for arrays that uses {@link Arrays#hashCode(Object[])} and {@link Arrays#equals(Object)}. Instances of this class are obtained by {@link Util#mkKey(Object...)} and can be
 	 * used as keys in hashmaps and hash sets.
 	 *
 	 * Thanks to http://stackoverflow.com/questions/1595588/java-how-to-be-sure-to-store-unique-arrays-based-on -its-values-on-a-list

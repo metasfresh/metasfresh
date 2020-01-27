@@ -58,7 +58,7 @@ public class LocationBL implements ILocationBL
 				.addEqualsFilter(I_C_Postal.COLUMN_C_Country_ID, countryId)
 				.filter(PostalQueryFilter.of(postal))
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private void addToCPostal(@NonNull final I_C_Location location)

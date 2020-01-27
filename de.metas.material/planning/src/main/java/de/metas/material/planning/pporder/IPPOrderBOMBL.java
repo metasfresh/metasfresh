@@ -32,6 +32,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
@@ -90,7 +91,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
-	
+
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
 	/**
@@ -114,7 +115,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param uom
 	 * @return qty to issue (in given <code>uom</code>)
 	 */
-	Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
+	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 
@@ -130,9 +131,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param qtyFinishedGood
 	 * @return
 	 */
-	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
+	Quantity computeQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
 
 	boolean isSomethingReportedOnBOMLines(PPOrderId ppOrderId);
-	
+
 	Optional<DocSequenceId> getSerialNoSequenceId(PPOrderId ppOrderId);
+
+	QtyCalculationsBOM getQtyCalculationsBOM(I_PP_Order order);
 }

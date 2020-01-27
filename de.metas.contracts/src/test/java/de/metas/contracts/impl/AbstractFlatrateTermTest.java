@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -40,8 +37,8 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
@@ -123,7 +120,7 @@ public abstract class AbstractFlatrateTermTest
 		setupMasterData();
 		initialize();
 
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 	}
 
 	protected void initialize()
@@ -143,7 +140,7 @@ public abstract class AbstractFlatrateTermTest
 		createWarehouse();
 		createDocType();
 		createCountryAndCountryArea();
-		
+
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 	}
 
@@ -158,8 +155,8 @@ public abstract class AbstractFlatrateTermTest
 		createContractChange(conditions);
 
 		return createFlatrateTerm(
-				conditions, 
-				productAndPricingSystem.getProductAndCategoryId(), 
+				conditions,
+				productAndPricingSystem.getProductAndCategoryId(),
 				startDate);
 	}
 
@@ -317,8 +314,8 @@ public abstract class AbstractFlatrateTermTest
 	}
 
 	protected I_C_Flatrate_Term createFlatrateTerm(
-			@NonNull final I_C_Flatrate_Conditions conditions, 
-			@NonNull final ProductAndCategoryId productAndCategoryId, 
+			@NonNull final I_C_Flatrate_Conditions conditions,
+			@NonNull final ProductAndCategoryId productAndCategoryId,
 			@NonNull final Timestamp startDate)
 	{
 		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, productAndCategoryId.getProductId());

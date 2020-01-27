@@ -15,7 +15,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1086288062L;
+	private static final long serialVersionUID = -1116366770L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
@@ -69,18 +69,6 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return (java.lang.String)get_Value(COLUMNNAME_AssignedTo);
 	}
 
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
-	}
-
-	@Override
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
-	}
-
 	/** Set Kosten.
 		@param C_Charge_ID 
 		Additional document charges
@@ -104,6 +92,25 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Cost Preise.
+		@param CostPrice Cost Preise	  */
+	@Override
+	public void setCostPrice (java.math.BigDecimal CostPrice)
+	{
+		set_Value (COLUMNNAME_CostPrice, CostPrice);
+	}
+
+	/** Get Cost Preise.
+		@return Cost Preise	  */
+	@Override
+	public java.math.BigDecimal getCostPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CostPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Maßeinheit.
@@ -571,17 +578,17 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return ii.intValue();
 	}
 
-	/** Set UPC/EAN.
+	/** Set UPC.
 		@param UPC 
-		Bar Code (Universal Product Code or its superset European Article Number)
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	  */
 	@Override
 	public void setUPC (java.lang.String UPC)
 	{
 		throw new IllegalArgumentException ("UPC is virtual column");	}
 
-	/** Get UPC/EAN.
-		@return Bar Code (Universal Product Code or its superset European Article Number)
+	/** Get UPC.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	  */
 	@Override
 	public java.lang.String getUPC () 

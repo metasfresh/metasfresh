@@ -21,6 +21,7 @@ import de.metas.calendar.ICalendarBL;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaVersion;
+import de.metas.phonecall.PhonecallSchemaVersionId;
 import de.metas.phonecall.PhonecallSchemaVersionLine;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -114,6 +115,7 @@ public class PhonecallScheduleService
 	{
 		final BPartnerLocationId bpartnerAndLocationId = schemaVersionLine.getBpartnerAndLocationId();
 		final UserId contactId = schemaVersionLine.getContactId();
+		final PhonecallSchemaVersionId phonecallSchemaVersionId = schemaVersionLine.getVersionId();
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Phonecall_Schedule.class)
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BPartner_ID, bpartnerAndLocationId.getBpartnerId().getRepoId())
@@ -122,8 +124,10 @@ public class PhonecallScheduleService
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMin, TimeUtil.asTimestamp(schemaVersionLine.getStartTime()))
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMax, TimeUtil.asTimestamp(schemaVersionLine.getEndTime()))
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallDate, TimeUtil.asTimestamp(currentPhonecallDate))
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersionId.getPhonecallSchemaId())
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_Version_ID, phonecallSchemaVersionId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private void createPhonecallSchedule(final PhonecallSchemaVersionLine schemaVersionLine, final LocalDate currentPhonecallDate)
@@ -142,6 +146,7 @@ public class PhonecallScheduleService
 				.startTime(schemaVersionLine.getStartTime())
 				.endTime(schemaVersionLine.getEndTime())
 				.salesRepId(salesRepId)
+				.description(schemaVersionLine.getDescription())
 				.build();
 
 		schedulesRepo.save(schedule);

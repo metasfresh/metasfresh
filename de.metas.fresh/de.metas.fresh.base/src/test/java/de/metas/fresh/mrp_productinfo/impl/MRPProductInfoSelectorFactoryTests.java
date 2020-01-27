@@ -1,11 +1,8 @@
 package de.metas.fresh.mrp_productinfo.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -14,8 +11,9 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.Params;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Transaction;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -48,7 +46,7 @@ import de.metas.util.time.SystemTime;
 
 public class MRPProductInfoSelectorFactoryTests
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -74,11 +72,11 @@ public class MRPProductInfoSelectorFactoryTests
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = new MRPProductInfoSelectorFactory();
 		final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNullForModel(pc);
 
-		assertNotNull(selector);
-		assertThat(selector.getParamPrefix(), startsWith(I_PMM_PurchaseCandidate.Table_Name));
-		assertThat(selector.getDate(), is(pc.getDatePromised()));
-		assertThat(selector.getM_Product_ID(), is(pc.getM_Product_ID()));
-		assertThat(selector.getM_AttributeSetInstance_ID(), is(pc.getM_AttributeSetInstance_ID()));
+		assertThat(selector).isNotNull();
+		assertThat(selector.getParamPrefix()).startsWith(I_PMM_PurchaseCandidate.Table_Name);
+		assertThat(selector.getDate()).isEqualTo(TimeUtil.asZonedDateTime(pc.getDatePromised()));
+		assertThat(selector.getM_Product_ID()).isEqualTo(pc.getM_Product_ID());
+		assertThat(selector.getM_AttributeSetInstance_ID()).isEqualTo(pc.getM_AttributeSetInstance_ID());
 	}
 
 	/**
@@ -99,13 +97,13 @@ public class MRPProductInfoSelectorFactoryTests
 		final IMRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = new MRPProductInfoSelectorFactory();
 		final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createOrNullForModel(transaction);
 
-		assertNotNull(selector);
-		assertThat(selector.getParamPrefix(), startsWith(I_M_Transaction.Table_Name));
-		assertThat(selector.getDate(), is(transaction.getMovementDate()));
-		assertThat(selector.getM_Product_ID(), is(transaction.getM_Product_ID()));
-		assertThat(selector.getM_AttributeSetInstance_ID(), is(transaction.getM_AttributeSetInstance_ID()));
+		assertThat(selector).isNotNull();
+		assertThat(selector.getParamPrefix()).startsWith(I_M_Transaction.Table_Name);
+		assertThat(selector.getDate()).isEqualTo(TimeUtil.asZonedDateTime(transaction.getMovementDate()));
+		assertThat(selector.getM_Product_ID()).isEqualTo(transaction.getM_Product_ID());
+		assertThat(selector.getM_AttributeSetInstance_ID()).isEqualTo(transaction.getM_AttributeSetInstance_ID());
 	}
-	
+
 	/**
 	 * Verifies that the factory can create a single selector just using parameters.
 	 * 
@@ -132,20 +130,20 @@ public class MRPProductInfoSelectorFactoryTests
 		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 		InterfaceWrapperHelper.save(asi);
 
-		final Timestamp date = SystemTime.asDayTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		final IParams params = Params.ofMap(ImmutableMap.of(
-				prefix + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, date,
+				prefix + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, TimeUtil.asTimestamp(date),
 				prefix + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 23,
 				prefix + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX, asi.getM_AttributeSetInstance_ID()));
 
 		final MRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = new MRPProductInfoSelectorFactory();
 		final IMRPProductInfoSelector selector = mrpProductInfoSelectorFactory.createSingleForParams(params, prefix);
 
-		assertNotNull(selector);
-		assertThat(selector.getParamPrefix(), is(prefix));
-		assertThat(selector.getDate(), is(date));
-		assertThat(selector.getM_Product_ID(), is(23));
-		assertThat(selector.getM_AttributeSetInstance_ID(), is(asi.getM_AttributeSetInstance_ID()));
+		assertThat(selector).isNotNull();
+		assertThat(selector.getParamPrefix()).isEqualTo(prefix);
+		assertThat(selector.getDate()).isEqualTo(date);
+		assertThat(selector.getM_Product_ID()).isEqualTo(23);
+		assertThat(selector.getM_AttributeSetInstance_ID()).isEqualTo(asi.getM_AttributeSetInstance_ID());
 	}
 
 	@Test
@@ -153,13 +151,13 @@ public class MRPProductInfoSelectorFactoryTests
 	{
 		final MRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = new MRPProductInfoSelectorFactory();
 
-		assertThat(mrpProductInfoSelectorFactory.getPrefix("blah2" + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX), is("blah2"));
-		assertThat(mrpProductInfoSelectorFactory.getPrefix("blah2" + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX), is("blah2"));
-		assertThat(mrpProductInfoSelectorFactory.getPrefix("blah2" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX), is("blah2"));
-		
-		assertThat(mrpProductInfoSelectorFactory.getPrefix(MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX), is(""));
-		assertThat(mrpProductInfoSelectorFactory.getPrefix(MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX), is(""));
-		assertThat(mrpProductInfoSelectorFactory.getPrefix(MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX), is(""));
+		assertThat(mrpProductInfoSelectorFactory.getPrefix("blah2" + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX)).isEqualTo("blah2");
+		assertThat(mrpProductInfoSelectorFactory.getPrefix("blah2" + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX)).isEqualTo("blah2");
+		assertThat(mrpProductInfoSelectorFactory.getPrefix("blah2" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX)).isEqualTo("blah2");
+
+		assertThat(mrpProductInfoSelectorFactory.getPrefix(MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX)).isEqualTo("");
+		assertThat(mrpProductInfoSelectorFactory.getPrefix(MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX)).isEqualTo("");
+		assertThat(mrpProductInfoSelectorFactory.getPrefix(MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX)).isEqualTo("");
 	}
 
 	/**
@@ -174,13 +172,13 @@ public class MRPProductInfoSelectorFactoryTests
 		final I_M_AttributeSetInstance asi2 = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 		InterfaceWrapperHelper.save(asi2);
 
-		final Timestamp date = SystemTime.asDayTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		final IParams params = Params.ofMap(ImmutableMap.<String, Object> builder()
-				.put("blah2" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, date)
+				.put("blah2" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, TimeUtil.asTimestamp(date))
 				.put("blah2" + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 23)
 				.put("blah2" + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX, asi1.getM_AttributeSetInstance_ID())
 
-				.put("blah1" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, date)
+				.put("blah1" + MRPProductInfoSelectorFactory.DATE_PARAM_SUFFIX, TimeUtil.asTimestamp(date))
 				.put("blah1" + MRPProductInfoSelectorFactory.PRODUCT_PARAM_SUFFIX, 24)
 				.put("blah1" + MRPProductInfoSelectorFactory.ASI_PARAM_SUFFIX, asi2.getM_AttributeSetInstance_ID())
 				.build());
@@ -188,17 +186,17 @@ public class MRPProductInfoSelectorFactoryTests
 		final MRPProductInfoSelectorFactory mrpProductInfoSelectorFactory = new MRPProductInfoSelectorFactory();
 		final List<IMRPProductInfoSelector> selectors = mrpProductInfoSelectorFactory.createForParams(params);
 
-		assertThat(selectors.size(), is(2));
+		assertThat(selectors).hasSize(2);
 
 		// note that we want them to be sorted by prefix
-		assertThat(selectors.get(1).getParamPrefix(), is("blah2"));
-		assertThat(selectors.get(1).getDate(), is(date));
-		assertThat(selectors.get(1).getM_Product_ID(), is(23));
-		assertThat(selectors.get(1).getM_AttributeSetInstance_ID(), is(asi1.getM_AttributeSetInstance_ID()));
+		assertThat(selectors.get(1).getParamPrefix()).isEqualTo("blah2");
+		assertThat(selectors.get(1).getDate()).isEqualTo(date);
+		assertThat(selectors.get(1).getM_Product_ID()).isEqualTo(23);
+		assertThat(selectors.get(1).getM_AttributeSetInstance_ID()).isEqualTo(asi1.getM_AttributeSetInstance_ID());
 
-		assertThat(selectors.get(0).getParamPrefix(), is("blah1"));
-		assertThat(selectors.get(0).getDate(), is(date));
-		assertThat(selectors.get(0).getM_Product_ID(), is(24));
-		assertThat(selectors.get(0).getM_AttributeSetInstance_ID(), is(asi2.getM_AttributeSetInstance_ID()));
+		assertThat(selectors.get(0).getParamPrefix()).isEqualTo("blah1");
+		assertThat(selectors.get(0).getDate()).isEqualTo(date);
+		assertThat(selectors.get(0).getM_Product_ID()).isEqualTo(24);
+		assertThat(selectors.get(0).getM_AttributeSetInstance_ID()).isEqualTo(asi2.getM_AttributeSetInstance_ID());
 	}
 }

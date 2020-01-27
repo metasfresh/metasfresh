@@ -24,6 +24,7 @@ package de.metas.event.remote;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -396,7 +397,7 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 
 	private static final class MessageConsumer2EventBusForwarder implements MessageListener
 	{
-		public static final void createAndBind(final ActiveMQJMSEndpoint jms, final IEventBus eventBus) throws JMSException
+		public static void createAndBind(final ActiveMQJMSEndpoint jms, final IEventBus eventBus) throws JMSException
 		{
 			new MessageConsumer2EventBusForwarder(jms, eventBus);
 		}
@@ -472,7 +473,7 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 			}
 		}
 
-		private final void destroy()
+		private void destroy()
 		{
 			this.destoyed = true;
 
@@ -491,10 +492,8 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 			eventBusRef.clear();
 		}
 
-		private static final String extractText(final Message jmsMessage) throws JMSException
+		private static String extractText(@NonNull final Message jmsMessage) throws JMSException
 		{
-			Check.assumeNotNull(jmsMessage, "message not null");
-
 			if (jmsMessage instanceof TextMessage)
 			{
 				final TextMessage txtMessage = (TextMessage)jmsMessage;
@@ -508,7 +507,7 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 				final byte[] bytes = new byte[bytes_len];
 				bytesMessage.readBytes(bytes);
 
-				final String text = new String(bytes);
+				final String text = new String(bytes, StandardCharsets.UTF_8);
 				return text;
 			}
 			else

@@ -13,15 +13,14 @@ package org.adempiere.ad.migration.logger.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,12 +43,17 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_AD_Attachment_Log;
+import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Form_Access;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_Preference;
 import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
@@ -107,6 +111,10 @@ public class MigrationLogger implements IMigrationLogger
 		final List<String> tablesIgnoreListDefault = Arrays.asList(
 				"AD_ACCESSLOG",
 				"AD_ALERTPROCESSORLOG",
+				I_AD_Attachment.Table_Name.toUpperCase(),
+				I_AD_Attachment_Log.Table_Name.toUpperCase(),
+				I_AD_Attachment_MultiRef.Table_Name.toUpperCase(),
+				I_AD_AttachmentEntry.Table_Name.toUpperCase(),
 				"AD_CHANGELOG",
 				"AD_ISSUE",
 				I_AD_Note.Table_Name.toUpperCase(),
@@ -119,6 +127,7 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_PINSTANCE",
 				"AD_PINSTANCE_LOG",
 				"AD_PINSTANCE_PARA",
+				I_AD_Preference.Table_Name.toUpperCase(),
 				"AD_REPLICATION_LOG",
 				"AD_SCHEDULERLOG",
 				"AD_SESSION",
@@ -157,7 +166,7 @@ public class MigrationLogger implements IMigrationLogger
 				// "AD_SEQUENCE"
 
 				I_AD_PInstance_SelectedIncludedRecords.Table_Name.toUpperCase() // https://github.com/metasfresh/metasfresh-webui-api/issues/645
-			);
+		);
 
 		//
 		// Add our standard list of tables to ignore to both lists: client and system
@@ -175,8 +184,7 @@ public class MigrationLogger implements IMigrationLogger
 				I_AD_Task_Access.Table_Name.toUpperCase(),
 				I_AD_Document_Action_Access.Table_Name.toUpperCase(),
 				I_AD_Table_Access.Table_Name.toUpperCase(),
-				I_AD_Column_Access.Table_Name.toUpperCase()
-				));
+				I_AD_Column_Access.Table_Name.toUpperCase()));
 	}
 
 	@Override

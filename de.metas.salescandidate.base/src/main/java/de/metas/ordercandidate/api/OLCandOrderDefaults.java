@@ -4,9 +4,9 @@ import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -24,12 +24,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,19 +40,17 @@ import lombok.Value;
 @Builder
 public class OLCandOrderDefaults
 {
-	public static final OLCandOrderDefaults NULL = builder().build();
+	DocTypeId docTypeTargetId;
 
-	private final DocTypeId docTypeTargetId;
+	DeliveryRule deliveryRule;
+	DeliveryViaRule deliveryViaRule;
+	ShipperId shipperId;
+	WarehouseId warehouseId;
+	FreightCostRule freightCostRule;
 
-	private final DeliveryRule deliveryRule;
-	private final DeliveryViaRule deliveryViaRule;
-	private final ShipperId shipperId;
-	private final WarehouseId warehouseId;
-	private final FreightCostRule freightCostRule;
+	PaymentRule paymentRule;
+	PaymentTermId paymentTermId;
 
-	private final PaymentRule paymentRule;
-	private final PaymentTermId paymentTermId;
-
-	private final InvoiceRule invoiceRule;
-	private final PricingSystemId pricingSystemId;
+	InvoiceRule invoiceRule;
+	PricingSystemId pricingSystemId;
 }

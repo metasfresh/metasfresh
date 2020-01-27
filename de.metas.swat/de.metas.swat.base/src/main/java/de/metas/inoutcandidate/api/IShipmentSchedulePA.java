@@ -15,10 +15,13 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MOrderLine;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -48,6 +51,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 	@Nullable
 	ShipmentScheduleId getShipmentScheduleIdByOrderLineId(OrderLineId orderLineId);
 
+	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
+
 	/**
 	 * @return the shipment schedule entries that refer to given record
 	 */
@@ -71,13 +76,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void setIsDiplayedForProduct(ProductId productId, boolean displayed);
 
 	/**
-	 * Deletes all {@link I_M_ShipmentSchedule} records whose {@link I_C_OrderLine} is not there anymore.
-	 *
-	 * It can occur that an order line for a given shipment schedule record is gone.
-	 */
-	void deleteSchedulesWithoutOrderLines();
-
-	/**
 	 * Mass update DeliveryDate_Override
 	 * No invalidation.
 	 */
@@ -95,26 +93,16 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * <li>Method used for processes that are based on user selection
 	 * <li>The selection will be created out of transaction
 	 * </ul>
-	 *
-	 * @param ctx
-	 * @param userSelectionFilter
-	 * @return the created queryBuilder
 	 */
 	IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(Properties ctx, IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter);
 
 	/**
 	 * Retrieve all the Shipment Schedules that the given invoice candidate is based on.
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	Set<I_M_ShipmentSchedule> retrieveForInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * Retrieve all the SHipment Schedules that the given inout line is based on
-	 *
-	 * @param inoutLine
-	 * @return
 	 */
 	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
 
@@ -123,4 +111,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	Set<ProductId> getProductIdsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
 
 	void save(I_M_ShipmentSchedule record);
+
+	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
 }

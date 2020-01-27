@@ -2,6 +2,7 @@ package de.metas.document;
 
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.model.IDocumentHandOverLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.util.ISingletonService;
 
@@ -18,5 +19,7 @@ public interface IDocumentLocationBL extends ISingletonService
 	void setBillToAddress(IDocumentBillLocation billLocation);
 
 	void setDeliveryToAddress(IDocumentDeliveryLocation order);
+	
+	void setHandOverAddress(IDocumentHandOverLocation order);
 
 }

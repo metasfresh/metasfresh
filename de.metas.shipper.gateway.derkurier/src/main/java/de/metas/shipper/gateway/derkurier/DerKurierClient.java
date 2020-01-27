@@ -34,7 +34,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -88,6 +88,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -125,6 +126,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		}
 	}
 
+	@NonNull
 	@Override
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
@@ -139,7 +141,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		derKurierDeliveryOrderService
 				.attachCsvToDeliveryOrder(deliveryOrder, csvLines);
 
-		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(deliveryOrder.getShipperTransportationId());
+		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 		derKurierDeliveryOrderService.attachCsvToShippertransportation(
 				shipperTransportationId, deliveryOrder, csvLines);
 
@@ -154,7 +156,7 @@ public class DerKurierClient implements ShipperGatewayClient
 	{
 		final OrderId orderId = OrderId.of(
 				getShipperGatewayId(),
-				Integer.toString(originalDeliveryOrder.getRepoId()));
+				Integer.toString(originalDeliveryOrder.getId().getRepoId()));
 
 		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
 				.orderId(orderId)
@@ -189,12 +191,6 @@ public class DerKurierClient implements ShipperGatewayClient
 		}
 
 		return builder.build();
-	}
-
-	@Override
-	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		throw new UnsupportedOperationException("Der Kurier doesn't support voiding delivery orders via software");
 	}
 
 	private void printPackageLabels(@NonNull final DeliveryOrder deliveryOrder)
@@ -247,6 +243,7 @@ public class DerKurierClient implements ShipperGatewayClient
 	 * Returns an empty list, because https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
 	 * so we need to fire up our own jasper report and print them ourselves. This is done in {@link #completeDeliveryOrder(DeliveryOrder)}.
 	 */
+	@NonNull
 	@Override
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder)
 	{

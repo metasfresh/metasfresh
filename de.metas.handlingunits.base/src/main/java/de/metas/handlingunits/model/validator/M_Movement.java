@@ -162,8 +162,7 @@ public class M_Movement
 
 		//
 		// Assign them to movement line
-		final String trxName = InterfaceWrapperHelper.getTrxName(movementLine);
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(movementLine, hus, trxName);
+		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(movementLine, hus);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)

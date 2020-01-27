@@ -3,6 +3,7 @@ package de.metas.bpartner.composite.repository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -11,6 +12,7 @@ import org.compiere.model.I_C_Postal;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -53,6 +55,9 @@ final class CompositeRelatedRecords
 
 	@NonNull
 	ImmutableMap<Integer, I_C_Country> countryId2Country;
+
+	@NonNull
+	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpartnerId2BankAccounts;
 
 	@NonNull
 	ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries;

@@ -47,11 +47,12 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
@@ -520,6 +521,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu)
+	{
+		// this was done in extreme haste.
+		final List<I_M_ShipmentSchedule_QtyPicked> scheduleQtyPickeds = Services.get(IHUShipmentScheduleDAO.class).retrieveSchedsQtyPickedForHU(hu);
+
+		for (final I_M_ShipmentSchedule_QtyPicked scheduleQtyPicked : scheduleQtyPickeds)
+		{
+			if (scheduleQtyPicked.isAnonymousHuPickedOnTheFly())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public I_M_HU getTopLevelParent(@NonNull final I_M_HU hu)
 	{
 		final TopLevelHusQuery query = TopLevelHusQuery.builder()
@@ -709,13 +726,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final int piItemId = huItem.getM_HU_PI_Item_ID();
 		return piItemId > 0 ? loadOutOfTrx(piItemId, I_M_HU_PI_Item.class) : null;
-	}
-
-	@Override
-	public I_M_HU_PackingMaterial getHUPackingMaterial(final I_M_HU_Item huItem)
-	{
-		final int packingMaterialId = huItem.getM_HU_PackingMaterial_ID();
-		return packingMaterialId > 0 ? loadOutOfTrx(packingMaterialId, I_M_HU_PackingMaterial.class) : null;
 	}
 
 	@Override

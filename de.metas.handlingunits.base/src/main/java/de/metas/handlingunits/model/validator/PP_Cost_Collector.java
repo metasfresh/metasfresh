@@ -58,6 +58,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -118,7 +119,7 @@ public class PP_Cost_Collector
 		// We will validate the assigned top level HUs against these informations.
 		final ProductId receiptProductId = ProductId.ofRepoId(cc.getM_Product_ID());
 		final int receiptLocatorId = cc.getM_Locator_ID();
-		final I_C_UOM receiptQtyUOM = cc.getC_UOM();
+		final I_C_UOM receiptQtyUOM = Services.get(IUOMDAO.class).getById(cc.getC_UOM_ID());
 		final BigDecimal receiptQty;
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		if (costCollectorType.isCoOrByProductReceipt())
@@ -229,7 +230,7 @@ public class PP_Cost_Collector
 			final I_M_HU huToVerify = issueCandidate.getM_HU();
 
 			// "active" might also be fine, depending on whether the HU was issued using a legacy swing client
-			if (!huStatusBL.isStatusIssued(huToVerify) && !huStatusBL.isStatusActive(huToVerify))
+			if (!huStatusBL.isStatusActiveOrIssued(huToVerify))
 			{
 				throw new HUException("Expected the HU's status to be 'issued' (or 'active') again but it wasn't.")
 						.setParameter("HUStatus", huToVerify.getHUStatus())

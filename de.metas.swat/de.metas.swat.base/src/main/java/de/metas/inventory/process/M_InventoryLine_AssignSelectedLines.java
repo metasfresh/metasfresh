@@ -56,7 +56,7 @@ public class M_InventoryLine_AssignSelectedLines extends JavaProcess
 
 	private List<I_M_InventoryLine> getSelectedInventoryLines()
 	{
-		final IQueryFilter<I_M_InventoryLine> selectedInventoryLines = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_M_InventoryLine> selectedInventoryLines = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_InventoryLine> queryBuilder = queryBL.createQueryBuilder(I_M_InventoryLine.class);

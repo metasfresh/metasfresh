@@ -20,7 +20,7 @@ import de.metas.rest_api.invoice.SalesInvoicePaymentStatus;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatusResponse;
 import de.metas.rest_api.invoice.impl.SalesInvoicePaymentStatusRepository.PaymentStatusQuery;
 import de.metas.util.Check;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;

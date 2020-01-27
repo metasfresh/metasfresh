@@ -65,13 +65,11 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	 */
 	public int getM_HU_PI_Item_Product_ID();
 
-    /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
     /** Column name M_HU_PI_Item_Product_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set UPC/EAN.
+	 * Set UPC.
 	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
@@ -81,7 +79,7 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	public void setUPC (java.lang.String UPC);
 
 	/**
-	 * Get UPC/EAN.
+	 * Get UPC.
 	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String

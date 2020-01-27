@@ -108,7 +108,7 @@ public class CampaignServiceTest
 		campaignService.addToCampaignIfHasEmailAddress(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consent = getConsentRecord();
-		campaignService.removeFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+		campaignService.removeUserFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		refresh(consent);
 
@@ -124,7 +124,7 @@ public class CampaignServiceTest
 		final I_MKTG_Platform platform = createPlatform();
 		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
 
-		campaignService.removeFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+		campaignService.removeUserFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
 
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();

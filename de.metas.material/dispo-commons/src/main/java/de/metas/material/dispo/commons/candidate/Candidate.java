@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -127,10 +128,25 @@ public class Candidate
 		this.additionalDemandDetail = additionalDemandDetail;
 
 		this.transactionDetails = transactionDetails;
+
+		if (type != CandidateType.STOCK
+				&& !Adempiere.isUnitTestMode() /* TODO create unit test candidates such that they are always valid and remove this */)
+		{
+			validateNonStockCandidate();
+		}
 	}
 
-	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
-	public Candidate validate()
+	public static class CandidateBuilder
+	{
+		public CandidateBuilder quantity(final BigDecimal quantity)
+		{
+			Check.assumeNotNull(materialDescriptor, "Parameter materialDescriptor is not null");
+			return materialDescriptor(materialDescriptor.withQuantity(quantity));
+		}
+	}
+
+	// TODO always validate on construction, then make this method private
+	public Candidate validateNonStockCandidate()
 	{
 		switch (type)
 		{
@@ -145,8 +161,8 @@ public class Candidate
 			case INVENTORY_UP:
 			case INVENTORY_DOWN:
 				break;
-			case UNRELATED_INCREASE:
-			case UNRELATED_DECREASE:
+			case UNEXPECTED_INCREASE:
+			case UNEXPECTED_DECREASE:
 				Check.errorIf(
 						transactionDetails == null || transactionDetails.isEmpty(),
 						"If type={}, then the given transactionDetails may not be null or empty; this={}",
@@ -261,7 +277,7 @@ public class Candidate
 		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 
-	public BigDecimal getDetailQty()
+	public BigDecimal getBusinessCaseDetailQty()
 	{
 		if (businessCaseDetail == null)
 		{

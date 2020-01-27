@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Plain implementation of {@link ITrx}.
@@ -60,10 +61,10 @@ public class PlainTrx extends AbstractTrx
 	/** Debugging: history of transaction important actions like TrxStatus change */
 	private final List<String> debugLog;
 
-	public static enum TrxStatus
+	public enum TrxStatus
 	{
 		NEW, STARTED, ROLLBACK, COMMIT, CLOSED
-	};
+	}
 
 	private TrxStatus trxStatus = TrxStatus.NEW;
 
@@ -115,10 +116,8 @@ public class PlainTrx extends AbstractTrx
 		return savepoint;
 	}
 
-	private final void removeUntilSavepoint(final ITrxSavepoint savepointToRemove)
+	private final void removeUntilSavepoint(@NonNull final ITrxSavepoint savepointToRemove)
 	{
-		Check.assumeNotNull(savepointToRemove, "savepointToRemove not null");
-
 		//
 		// Iterate all active savepoints,
 		// Find the savepoint we were asked to remove,

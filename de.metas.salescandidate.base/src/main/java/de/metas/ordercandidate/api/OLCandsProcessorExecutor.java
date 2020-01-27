@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
@@ -73,7 +74,7 @@ public class OLCandsProcessorExecutor
 	private final UserId userInChargeId;
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
-	private final int processorDataDestinationId;
+	private final InputDataSourceId processorDataDestinationId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
 
 	private final OLCandSource candidatesSource;
@@ -89,13 +90,13 @@ public class OLCandsProcessorExecutor
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
-		this.loggable = Loggables.withLogger(logger, Level.INFO);
+		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
 
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceId(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
+		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		this.candidatesSource = candidatesSource;
 	}
@@ -227,7 +228,17 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
 				//
-				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId()))
+				|| !Objects.equals(previousCandidate.getDeliveryRule(), candidate.getDeliveryRule())
+				|| !Objects.equals(previousCandidate.getDeliveryViaRule(), candidate.getDeliveryViaRule())
+				|| !Objects.equals(previousCandidate.getFreightCostRule(), candidate.getFreightCostRule())
+				|| !Objects.equals(previousCandidate.getInvoiceRule(), candidate.getInvoiceRule())
+				|| !Objects.equals(previousCandidate.getPaymentRule(), candidate.getPaymentRule())
+				|| !Objects.equals(previousCandidate.getPaymentTermId(), candidate.getPaymentTermId())
+				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
+				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
+				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
+				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
+
 		{
 			return true;
 		}
@@ -314,8 +325,8 @@ public class OLCandsProcessorExecutor
 			return false;
 		}
 
-		final int candDataDestinationId = cand.getAD_DataDestination_ID();
-		if (candDataDestinationId != processorDataDestinationId)
+		final InputDataSourceId candDataDestinationId = InputDataSourceId.ofRepoIdOrNull(cand.getAD_DataDestination_ID());
+		if (!Objects.equals(candDataDestinationId, processorDataDestinationId))
 		{
 			logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, processorDataDestinationId, cand);
 			return false;

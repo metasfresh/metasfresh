@@ -353,7 +353,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		huTrxBL.createHUContextProcessorExecutor(huContext)
 				.run((IHUContextProcessor)huContext1 -> {
 					final IHUBuilder huBuilder = handlingUnitsDAO.createHUBuilder(huContext1);
-					huBuilder.setDate(helper.getTodayDate());
+					huBuilder.setDate(helper.getTodayZonedDateTime());
 					hu[0] = huBuilder.create(huDefIFCO.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 					return null; // not relevant
 				});

@@ -3,11 +3,8 @@ package de.metas.rest_api.changelog;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,9 +41,8 @@ public class JsonChangeLogItem
 	@ApiModelProperty(position = 20)
 	Long updatedMillis;
 
-	@ApiModelProperty(value = "Might be empty if no `#AD_User_ID` was in the application context while the record was saved", //
+	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated", //
 			dataType = "java.lang.Integer", position = 30)
-	@JsonInclude(Include.NON_NULL)
 	MetasfreshId updatedBy;
 
 	@ApiModelProperty(position = 40)
@@ -60,7 +56,7 @@ public class JsonChangeLogItem
 	private JsonChangeLogItem(
 			@JsonProperty("fieldName") @NonNull String fieldName,
 			@JsonProperty("updatedMillis") @Nullable Long updatedMillis,
-			@JsonProperty("updatedBy") @NonNull MetasfreshId updatedBy,
+			@JsonProperty("updatedBy") @Nullable MetasfreshId updatedBy,
 			@JsonProperty("oldValue") @NonNull String oldValue,
 			@JsonProperty("newValue") @NonNull String newValue)
 	{
@@ -70,5 +66,4 @@ public class JsonChangeLogItem
 		this.oldValue = oldValue;
 		this.newValue = newValue;
 	}
-
 }

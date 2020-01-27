@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import static de.metas.business.BusinessTestHelper.createLocator;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -16,18 +17,19 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,7 +44,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
-import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
@@ -55,8 +56,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-
-
+import de.metas.util.time.SystemTime;
 
 public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 {
@@ -135,7 +135,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		//
 		// Change VHU's locator
 		// NOTE: we are enforced to change the HU in a transaction
-		final Date dateTrx = TimeUtil.getDay(1993, 10, 10);
+		final ZonedDateTime dateTrx = LocalDate.of(1993, Month.OCTOBER, 10).atStartOfDay(SystemTime.zoneId());
 		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> {
 			InterfaceWrapperHelper.setTrxName(vhu, localTrxName);
 
@@ -149,14 +149,15 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		//
 		// Validate generated trx lines
 		final List<I_M_HU_Trx_Line> trxLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Trx_Line.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_M_HU_Trx_Line.class)
 				.create()
 				.list();
-		Assert.assertEquals("Invalid TrxLines count", 2, trxLines.size());
+		assertThat(trxLines).hasSize(2);
+		
 		// Assert they have the right DateTrx
 		for (final I_M_HU_Trx_Line trxLine : trxLines)
 		{
-			Assert.assertEquals("Invalid DateTrx:" + trxLine, dateTrx, trxLine.getDateTrx());
+			assertThat(trxLine.getDateTrx()).isEqualTo(TimeUtil.asTimestamp(dateTrx));
 		}
 	}
 }

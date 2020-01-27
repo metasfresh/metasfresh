@@ -1,6 +1,5 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -201,10 +200,10 @@ public class RefundInvoiceCandidateRepository
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
-						I_C_Invoice_Candidate.COLUMN_AD_Table_ID,
+						I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID,
 						getTableId(I_C_Flatrate_Term.class))
 				.addEqualsFilter(
-						I_C_Invoice_Candidate.COLUMN_Record_ID,
+						I_C_Invoice_Candidate.COLUMNNAME_Record_ID,
 						query.getRefundContract().getId().getRepoId())
 				.addEqualsFilter(
 						I_C_Invoice_Candidate.COLUMN_Processed,

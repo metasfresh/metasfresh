@@ -34,8 +34,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -66,7 +66,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -112,8 +111,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -144,7 +143,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -190,8 +188,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -222,7 +220,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -268,8 +265,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -300,7 +297,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2527.12,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -346,8 +342,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -378,7 +374,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 95.93,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -424,8 +419,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -456,7 +451,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : -306.99,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -502,8 +496,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -534,7 +528,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -580,8 +573,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -612,7 +605,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -658,8 +650,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -690,7 +682,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -736,8 +727,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -768,7 +759,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -814,8 +804,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -846,7 +836,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -892,8 +881,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -924,7 +913,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -970,8 +958,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1002,7 +990,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1048,8 +1035,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1080,7 +1067,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 20.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1126,8 +1112,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1158,7 +1144,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 4.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1204,8 +1189,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1236,7 +1221,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1282,8 +1266,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1314,7 +1298,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 1.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1360,8 +1343,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1392,7 +1375,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 2,
-    "packingMaterialId" : 0,
     "price" : 1.10,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1438,8 +1420,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1470,7 +1452,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 8.70,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1516,8 +1497,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1548,7 +1529,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 29.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1594,8 +1574,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1626,7 +1606,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 10.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1677,8 +1656,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1709,7 +1688,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1755,8 +1733,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1787,7 +1765,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1833,8 +1810,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1865,7 +1842,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1911,8 +1887,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1943,7 +1919,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2527.12,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -1989,8 +1964,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2021,7 +1996,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 95.93,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2067,8 +2041,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2099,7 +2073,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : -306.99,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2145,8 +2118,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2177,7 +2150,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2223,8 +2195,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2255,7 +2227,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2301,8 +2272,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2333,7 +2304,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2379,8 +2349,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2411,7 +2381,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2457,8 +2426,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2489,7 +2458,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 15.81,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2535,8 +2503,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2567,7 +2535,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 7.90,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2613,8 +2580,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2645,7 +2612,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2691,8 +2657,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2723,7 +2689,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 20.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2769,8 +2734,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2801,7 +2766,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 4.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2847,8 +2811,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2879,7 +2843,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 2.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -2925,8 +2888,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -2957,7 +2920,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 1.0,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3003,8 +2965,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -3035,7 +2997,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 2,
-    "packingMaterialId" : 0,
     "price" : 1.10,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3081,8 +3042,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -3113,7 +3074,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 8.70,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3159,8 +3119,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -3191,7 +3151,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 29.50,
     "currencyCode" : "CHF",
     "discount" : 0,
@@ -3237,8 +3196,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
     "externalHeaderId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -3269,7 +3228,6 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
       }
     },
     "qty" : 1,
-    "packingMaterialId" : 0,
     "price" : 10.0,
     "currencyCode" : "CHF",
     "discount" : 0,

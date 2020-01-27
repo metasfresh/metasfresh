@@ -9,6 +9,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -36,8 +37,18 @@ public final class DocumentBL extends AbstractDocumentBL
 			return (IDocument)documentObj;
 		}
 
+		final PO po;
+		if (documentObj instanceof ITableRecordReference)
+		{
+			final Object model = ((ITableRecordReference)documentObj).getModel();
+			po = InterfaceWrapperHelper.getPO(model);
+		}
+		else
+		{
+			po = InterfaceWrapperHelper.getPO(documentObj);
+		}
+
 		//
-		final PO po = InterfaceWrapperHelper.getPO(documentObj);
 		if (po == null)
 		{
 			if (throwEx)

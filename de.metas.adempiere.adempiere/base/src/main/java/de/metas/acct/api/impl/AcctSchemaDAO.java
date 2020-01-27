@@ -41,6 +41,7 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.AcctSchemaValidCombinationOptions;
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.cache.CCache;
@@ -326,7 +327,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.seqNo(record.getSeqNo())
 				//
 				.defaultValue(getDefaultValue(record))
-				.elementId(record.getC_Element_ID())
+				.chartOfAccountsId(ChartOfAccountsId.ofRepoIdOrNull(record.getC_Element_ID()))
 				//
 				.displayColumnName(getDisplayColumnName(elementType, record.getAD_Column_ID()))
 				//

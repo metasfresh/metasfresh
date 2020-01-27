@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1436579589L;
+	private static final long serialVersionUID = 1657479232L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -27,8 +27,9 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
 			setIsPickDirectlyIfFeasible (false); // N
-			setM_Product_ID (0);
+			setIsPickingOrder (false); // N
 			setPP_Product_Planning_ID (0);
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM PP_Product_Planning where PP_Product_Planning.IsActive = 'Y'
         } */
     }
 
@@ -48,7 +49,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
     }
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getAD_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
@@ -84,18 +85,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -122,7 +111,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution() throws RuntimeException
+	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution()
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class);
 	}
@@ -327,6 +316,29 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return false;
 	}
 
+	/** Set Kommissionierauftrag.
+		@param IsPickingOrder Kommissionierauftrag	  */
+	@Override
+	public void setIsPickingOrder (boolean IsPickingOrder)
+	{
+		set_Value (COLUMNNAME_IsPickingOrder, Boolean.valueOf(IsPickingOrder));
+	}
+
+	/** Get Kommissionierauftrag.
+		@return Kommissionierauftrag	  */
+	@Override
+	public boolean isPickingOrder () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickingOrder);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** 
 	 * IsPurchased AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -336,10 +348,8 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public static final String ISPURCHASED_Yes = "Y";
 	/** No = N */
 	public static final String ISPURCHASED_No = "N";
-	/** Set Eingekauft.
-		@param IsPurchased 
-		Die Organisation kauft dieses Produkt ein
-	  */
+	/** Set Wird Eingekauft.
+		@param IsPurchased Wird Eingekauft	  */
 	@Override
 	public void setIsPurchased (java.lang.String IsPurchased)
 	{
@@ -347,17 +357,45 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
 	}
 
-	/** Get Eingekauft.
-		@return Die Organisation kauft dieses Produkt ein
-	  */
+	/** Get Wird Eingekauft.
+		@return Wird Eingekauft	  */
 	@Override
 	public java.lang.String getIsPurchased () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsPurchased);
 	}
 
+	/** 
+	 * IsTraded AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISTRADED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISTRADED_Yes = "Y";
+	/** No = N */
+	public static final String ISTRADED_No = "N";
+	/** Set Wird gehandelt (Bestellkontrolle).
+		@param IsTraded 
+		Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. 
+	  */
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public void setIsTraded (java.lang.String IsTraded)
+	{
+
+		set_Value (COLUMNNAME_IsTraded, IsTraded);
+	}
+
+	/** Get Wird gehandelt (Bestellkontrolle).
+		@return Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. 
+	  */
+	@Override
+	public java.lang.String getIsTraded () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IsTraded);
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -391,18 +429,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -450,18 +476,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -515,18 +529,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return (java.lang.String)get_Value(COLUMNNAME_OnMaterialReceiptWithDestWarehouse);
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getPlanner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Planner_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setPlanner(org.compiere.model.I_AD_User Planner)
-	{
-		set_ValueFromPO(COLUMNNAME_Planner_ID, org.compiere.model.I_AD_User.class, Planner);
-	}
-
 	/** Set Planner.
 		@param Planner_ID Planner	  */
 	@Override
@@ -550,7 +552,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
 	}
@@ -609,7 +611,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}

@@ -18,12 +18,16 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_BP_Customer_Acct;
+import org.compiere.model.I_C_BP_Vendor_Acct;
 import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.BPGroupId;
+import de.metas.cache.CacheMgt;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
 
 /**
  * Copy BP Group default Accounts
@@ -33,113 +37,116 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class BPGroupAcctCopy extends JavaProcess
 {
-	/** BP Group */
-	private int p_C_BP_Group_ID = 0;
-	/** Acct Schema */
-	private AcctSchemaId acctSchemaId;
+	@Param(parameterName = "C_BP_Group_ID", mandatory = true)
+	private BPGroupId fromBPGroupId;
 
-	@Override
-	protected void prepare()
-	{
-		for (ProcessInfoParameter para : getParameters())
-		{
-			String name = para.getParameterName();
-			if (para.getParameter() == null)
-				;
-			else if (name.equals("C_BP_Group_ID"))
-				p_C_BP_Group_ID = para.getParameterAsInt();
-			else if (name.equals("C_AcctSchema_ID"))
-				acctSchemaId = AcctSchemaId.ofRepoId(para.getParameterAsInt());
-			else
-				log.error("Unknown Parameter: " + name);
-		}
-	}	// prepare
+	@Param(parameterName = "C_AcctSchema_ID", mandatory = true)
+	private AcctSchemaId fromAcctSchemaId;
+
+	@Param(parameterName = "C_BP_Group_To_ID", mandatory = true)
+	private BPGroupId toBPGroupId;
+
+	@Param(parameterName = "C_AcctSchema_To_ID", mandatory = true)
+	private AcctSchemaId toAcctSchemaId;
 
 	@Override
 	protected String doIt()
 	{
-		if (acctSchemaId == null)
-		{
-			throw new FillMandatoryException("C_AcctSchema_ID");
-		}
-		
-		//
-		String sql = null;
-		int updated = 0;
-		int created = 0;
 		int updatedTotal = 0;
 		int createdTotal = 0;
 
+		//
 		// Update existing Customers
-		sql = DB.convertSqlToNative("UPDATE C_BP_Customer_Acct ca "
-				+ "SET (C_Receivable_Acct,C_Receivable_Services_Acct,C_PrePayment_Acct)="
-				+ " (SELECT C_Receivable_Acct,C_Receivable_Services_Acct,C_PrePayment_Acct "
-				+ " FROM C_BP_Group_Acct"
-				+ " WHERE C_BP_Group_ID=" + p_C_BP_Group_ID
-				+ " AND C_AcctSchema_ID=" + acctSchemaId.getRepoId()
-				+ "), Updated=now(), UpdatedBy=0 "
-				+ "WHERE ca.C_AcctSchema_ID=" + acctSchemaId.getRepoId()
-				+ " AND EXISTS (SELECT * FROM C_BPartner p "
-				+ "WHERE p.C_BPartner_ID=ca.C_BPartner_ID"
-				+ " AND p.C_BP_Group_ID=" + p_C_BP_Group_ID + ")");
-		updated = DB.executeUpdate(sql, get_TrxName());
-		addLog(0, null, new BigDecimal(updated), "@Updated@ @C_BPartner_ID@ @IsCustomer@");
-		updatedTotal += updated;
+		{
+			final String sql = DB.convertSqlToNative("UPDATE C_BP_Customer_Acct ca "
+					+ "SET (C_Receivable_Acct,C_Receivable_Services_Acct,C_PrePayment_Acct)="
+					+ " (SELECT C_Receivable_Acct,C_Receivable_Services_Acct,C_PrePayment_Acct "
+					+ " FROM C_BP_Group_Acct"
+					+ " WHERE C_BP_Group_ID=" + fromBPGroupId.getRepoId()
+					+ " AND C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId()
+					+ "), Updated=now(), UpdatedBy=0 "
+					+ "WHERE ca.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
+					+ " AND EXISTS (SELECT 1 FROM C_BPartner p WHERE p.C_BPartner_ID=ca.C_BPartner_ID AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId() + ")");
+			final int updated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			addLog(0, null, BigDecimal.valueOf(updated), "@Updated@ @C_BPartner_ID@ @IsCustomer@");
+			updatedTotal += updated;
+		}
 
+		//
 		// Insert new Customer
-		sql = "INSERT INTO C_BP_Customer_Acct "
-				+ "(C_BPartner_ID, C_AcctSchema_ID,"
-				+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
-				+ " C_Receivable_Acct, C_Receivable_Services_Acct, C_PrePayment_Acct) "
-				+ "SELECT p.C_BPartner_ID, acct.C_AcctSchema_ID,"
-				+ " p.AD_Client_ID, p.AD_Org_ID, 'Y', now(), 0, now(), 0,"
-				+ " acct.C_Receivable_Acct, acct.C_Receivable_Services_Acct, acct.C_PrePayment_Acct "
-				+ "FROM C_BPartner p"
-				+ " INNER JOIN C_BP_Group_Acct acct ON (acct.C_BP_Group_ID=p.C_BP_Group_ID)"
-				+ "WHERE acct.C_AcctSchema_ID=" + acctSchemaId.getRepoId()			// #
-				+ " AND p.C_BP_Group_ID=" + p_C_BP_Group_ID
-				+ " AND NOT EXISTS (SELECT * FROM C_BP_Customer_Acct ca "
-				+ "WHERE ca.C_BPartner_ID=p.C_BPartner_ID"
-				+ " AND ca.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
-		created = DB.executeUpdate(sql, get_TrxName());
-		addLog(0, null, new BigDecimal(created), "@Created@ @C_BPartner_ID@ @IsCustomer@");
-		createdTotal += created;
+		{
+			final String sql = "INSERT INTO C_BP_Customer_Acct "
+					+ "(C_BPartner_ID,"
+					+ " C_AcctSchema_ID,"
+					+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
+					+ " C_Receivable_Acct, C_Receivable_Services_Acct, C_PrePayment_Acct) "
+					//
+					+ " SELECT p.C_BPartner_ID, "
+					+ toAcctSchemaId.getRepoId() + " AS C_AcctSchema_ID,"
+					+ " p.AD_Client_ID, p.AD_Org_ID, 'Y', now(), 0, now(), 0,"
+					+ " acct.C_Receivable_Acct, acct.C_Receivable_Services_Acct, acct.C_PrePayment_Acct "
+					+ " FROM C_BPartner p"
+					+ " INNER JOIN C_BP_Group_Acct acct ON (acct.C_BP_Group_ID=" + fromBPGroupId.getRepoId() + " AND acct.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId() + ")"
+					+ " WHERE 1=1"
+					+ " AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId()
+					+ " AND NOT EXISTS (SELECT 1 FROM C_BP_Customer_Acct ca WHERE ca.C_BPartner_ID=p.C_BPartner_ID AND ca.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
+			final int created = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			addLog(0, null, BigDecimal.valueOf(created), "@Created@ @C_BPartner_ID@ @IsCustomer@");
+			createdTotal += created;
+		}
 
+		//
 		// Update existing Vendors
-		sql = DB.convertSqlToNative("UPDATE C_BP_Vendor_Acct va "
-				+ "SET (V_Liability_Acct,V_Liability_Services_Acct,V_PrePayment_Acct)="
-				+ " (SELECT V_Liability_Acct,V_Liability_Services_Acct,V_PrePayment_Acct "
-				+ " FROM C_BP_Group_Acct"
-				+ " WHERE C_BP_Group_ID=" + p_C_BP_Group_ID
-				+ " AND C_AcctSchema_ID=" + acctSchemaId.getRepoId()
-				+ "), Updated=now(), UpdatedBy=0 "
-				+ "WHERE va.C_AcctSchema_ID=" + acctSchemaId.getRepoId()
-				+ " AND EXISTS (SELECT * FROM C_BPartner p "
-				+ "WHERE p.C_BPartner_ID=va.C_BPartner_ID"
-				+ " AND p.C_BP_Group_ID=" + p_C_BP_Group_ID + ")");
-		updated = DB.executeUpdate(sql, get_TrxName());
-		addLog(0, null, new BigDecimal(updated), "@Updated@ @C_BPartner_ID@ @IsVendor@");
-		updatedTotal += updated;
+		{
+			final String sql = DB.convertSqlToNative("UPDATE C_BP_Vendor_Acct va "
+					+ "SET (V_Liability_Acct,V_Liability_Services_Acct,V_PrePayment_Acct)="
+					+ " (SELECT V_Liability_Acct,V_Liability_Services_Acct,V_PrePayment_Acct "
+					+ " FROM C_BP_Group_Acct"
+					+ " WHERE C_BP_Group_ID=" + fromBPGroupId.getRepoId()
+					+ " AND C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId()
+					+ "), Updated=now(), UpdatedBy=0 "
+					+ " WHERE va.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
+					+ " AND EXISTS (SELECT 1 FROM C_BPartner p WHERE p.C_BPartner_ID=va.C_BPartner_ID AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId() + ")");
+			final int updated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			addLog(0, null, BigDecimal.valueOf(updated), "@Updated@ @C_BPartner_ID@ @IsVendor@");
+			updatedTotal += updated;
+		}
 
+		//
 		// Insert new Vendors
-		sql = "INSERT INTO C_BP_Vendor_Acct "
-				+ "(C_BPartner_ID, C_AcctSchema_ID,"
-				+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
-				+ " V_Liability_Acct, V_Liability_Services_Acct, V_PrePayment_Acct) "
-				+ "SELECT p.C_BPartner_ID, acct.C_AcctSchema_ID,"
-				+ " p.AD_Client_ID, p.AD_Org_ID, 'Y', now(), 0, now(), 0,"
-				+ " acct.V_Liability_Acct, acct.V_Liability_Services_Acct, acct.V_PrePayment_Acct "
-				+ "FROM C_BPartner p"
-				+ " INNER JOIN C_BP_Group_Acct acct ON (acct.C_BP_Group_ID=p.C_BP_Group_ID)"
-				+ "WHERE acct.C_AcctSchema_ID=" + acctSchemaId.getRepoId() // #
-				+ " AND p.C_BP_Group_ID=" + p_C_BP_Group_ID
-				+ " AND NOT EXISTS (SELECT * FROM C_BP_Vendor_Acct va "
-				+ "WHERE va.C_BPartner_ID=p.C_BPartner_ID AND va.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
-		created = DB.executeUpdate(sql, get_TrxName());
-		addLog(0, null, new BigDecimal(created), "@Created@ @C_BPartner_ID@ @IsVendor@");
-		createdTotal += created;
+		{
+			final String sql = "INSERT INTO C_BP_Vendor_Acct "
+					+ "(C_BPartner_ID,"
+					+ " C_AcctSchema_ID,"
+					+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
+					+ " V_Liability_Acct, V_Liability_Services_Acct, V_PrePayment_Acct) "
+					//
+					+ " SELECT p.C_BPartner_ID,"
+					+ toAcctSchemaId.getRepoId() + " AS C_AcctSchema_ID,"
+					+ " p.AD_Client_ID, p.AD_Org_ID, 'Y', now(), 0, now(), 0,"
+					+ " acct.V_Liability_Acct, acct.V_Liability_Services_Acct, acct.V_PrePayment_Acct "
+					+ " FROM C_BPartner p"
+					+ " INNER JOIN C_BP_Group_Acct acct ON (acct.C_BP_Group_ID=" + fromBPGroupId.getRepoId() + " AND acct.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId() + ")"
+					+ " WHERE 1=1"
+					+ " AND p.C_BP_Group_ID=" + toBPGroupId.getRepoId()
+					+ " AND NOT EXISTS (SELECT 1 FROM C_BP_Vendor_Acct va WHERE va.C_BPartner_ID=p.C_BPartner_ID AND va.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
+			final int created = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			addLog(0, null, BigDecimal.valueOf(created), "@Created@ @C_BPartner_ID@ @IsVendor@");
+			createdTotal += created;
+		}
 
 		return "@Created@=" + createdTotal + ", @Updated@=" + updatedTotal;
 	}	// doIt
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (success)
+		{
+			final CacheMgt cacheMgt = CacheMgt.get();
+			cacheMgt.reset(I_C_BP_Customer_Acct.Table_Name);
+			cacheMgt.reset(I_C_BP_Vendor_Acct.Table_Name);
+		}
+	}
 
 }	// BPGroupAcctCopy

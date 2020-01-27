@@ -1,6 +1,6 @@
 package de.metas.fresh.mrp_productinfo;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Properties;
 
@@ -39,7 +39,7 @@ import de.metas.fresh.mrp_productinfo.impl.MRPProductInfoSelectorFactory;
  */
 public interface IMRPProductInfoSelector extends Comparable<IMRPProductInfoSelector>
 {
-	Timestamp getDate();
+	ZonedDateTime getDate();
 
 	int getM_Product_ID();
 

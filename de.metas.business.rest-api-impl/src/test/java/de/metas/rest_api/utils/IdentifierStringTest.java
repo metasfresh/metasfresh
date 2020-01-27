@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString.Type;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 
 /*
  * #%L
@@ -116,6 +116,7 @@ class IdentifierStringTest
 				.put(Type.EXTERNAL_ID, "ext-someExternalId")
 				.put(Type.VALUE, "val-someValue")
 				.put(Type.GLN, "gln-someGLN")
+				.put(Type.INTERNALNAME, "int-someInternalName")
 				.build();
 
 		for (final Type type : Type.values())

@@ -66,7 +66,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		saveRecord(bPartnerRecord);
 
 		bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		bPartnerLocationRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		save(bPartnerLocationRecord);
 
 		final UserRepository userRepository = new UserRepository();

@@ -36,13 +36,13 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -177,16 +177,16 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	// Handling Unit PI Retrieval
 
-	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnitPI, final I_C_BPartner partner);
+	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnitPI, final BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
 	 * @param version mandatory. Only return items that reference this version.
-	 * @param partner optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMN_C_BPartner_ID}.
+	 * @param partnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMN_C_BPartner_ID}.
 	 * @return
 	 */
-	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner);
+	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve all {@link I_M_HU_PI_Item}s (active or inactive) for given M_HU_PI_Version.
@@ -242,7 +242,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param bpartner
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
-	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
 
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
@@ -262,7 +262,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param bpartner
 	 * @return
 	 */
-	I_M_HU_PI_Item retrieveDefaultParentPIItem(I_M_HU_PI huPI, String huUnitType, I_C_BPartner bpartner);
+	I_M_HU_PI_Item retrieveDefaultParentPIItem(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves the default LU.
@@ -274,20 +274,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
 	/**
-	 *
-	 * @param pi
-	 * @param bpartner
 	 * @return packing material or null
 	 */
-	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI pi, I_C_BPartner bpartner);
+	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI pi, BPartnerId bpartnerId);
 
 	/**
-	 *
-	 * @param piVersion
-	 * @param bpartner
 	 * @return packing material or null
 	 */
-	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, I_C_BPartner bpartner);
+	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves packing material of given HU.
@@ -316,8 +310,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * <ul>
 	 * <li>this method will return packing material(s) of this HU only and not for its included HUs.</li>
 	 * </ul>
-	 *
-	 * @param hu
 	 * @return packing material and quantity pairs
 	 */
 	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
@@ -329,15 +321,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @param ctx
 	 *
 	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
-	 *
-	 * @param trxName
-	 * @return
 	 */
 	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
 
 	/**
-	 * @param ctx
-	 * @param adOrgId
 	 * @return all available (i.e. active) HU PIs from system, for the given org_id and for org 0
 	 */
 	List<I_M_HU_PI> retrieveAvailablePIsForOrg(Properties ctx, int adOrgId);
@@ -345,8 +332,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
@@ -354,25 +339,17 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve the aggregated item of the given HU if it has one.
 	 *
-	 * @param hu
-	 * @param piItem
 	 * @return the aggregated item or null.
 	 */
 	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
 	 * Retrieve all the child HUs of the given item, both active and not active
-	 *
-	 * @param parentItem
-	 * @return
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 
 	/**
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
-	 *
-	 * @param hus
-	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 

@@ -161,7 +161,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addColumn(I_C_Payment.COLUMN_DateTrx)
 				.addColumn(I_C_Payment.COLUMN_C_Payment_ID);
 
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID());
+		queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID());
 		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed);
 		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_Processed, true);
 
@@ -369,7 +369,7 @@ public class AllocationDAO implements IAllocationDAO
 
 		final List<I_C_Payment> availablePayments = queryBL.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID())
 				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
 				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
 				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, invoice.isSOTrx())

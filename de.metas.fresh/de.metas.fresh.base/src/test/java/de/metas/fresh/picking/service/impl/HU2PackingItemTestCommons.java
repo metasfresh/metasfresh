@@ -26,12 +26,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,15 +49,7 @@ public class HU2PackingItemTestCommons
 
 	public static HUTestHelper commonCreateHUTestHelper()
 	{
-		return new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				// no transaction by default
-				return ITrx.TRXNAME_None;
-			}
-		};
+		return HUTestHelper.newInstanceOutOfTrx();
 	}
 
 	public static I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper, final int cuQty)
@@ -72,7 +64,7 @@ public class HU2PackingItemTestCommons
 
 	/**
 	 * Creates a {@link I_M_HU_PI} for a loading unit, links the given transport unit's {@code tuHuDef} and returns the respective {@link I_M_HU_PI_Item} (which therefore has type=HU).
-	 * 
+	 *
 	 * @param helper
 	 * @param tuHuDef
 	 * @return
@@ -92,12 +84,6 @@ public class HU2PackingItemTestCommons
 
 	/**
 	 * Creates as many palets as are needed to contain the given qty within IFCOs.
-	 * 
-	 * @param helper
-	 * @param luHuDef
-	 * @param tuHuDef
-	 * @param qtyToLoad
-	 * @return
 	 */
 	public static List<I_M_HU> createLUs(
 			@NonNull final HUTestHelper helper,
@@ -117,7 +103,7 @@ public class HU2PackingItemTestCommons
 
 	/**
 	 * Create one of more TUs which in sum contain the given {@code qtyToLoad}.
-	 * 
+	 *
 	 * @param helper
 	 * @param tuHuDef
 	 * @param qtyToLoad

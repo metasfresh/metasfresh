@@ -13,6 +13,7 @@ import org.compiere.Adempiere;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -103,22 +104,23 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 				.find(ProductPlanningQuery.builder()
 						.orgId(orgId)
 						.productId(productId)
-						.build());
+						.build())
+				.orElse(null);
 
-		int productBOMId = -1;
+		ProductBOMId productBOMId = null;
 		if (productPlanning != null)
 		{
-			productBOMId = productPlanning.getPP_Product_BOM_ID();
+			productBOMId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
 		}
 		else
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_Planning_ID@");
 		}
-		if (productBOMId <= 0)
+		if (productBOMId == null)
 		{
-			productBOMId = productBOMsRepo.getDefaultProductBOMIdByProductId(productId);
+			productBOMId = productBOMsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
 		}
-		if (productBOMId <= 0)
+		if (productBOMId == null)
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_BOM_ID@");
 			return null;

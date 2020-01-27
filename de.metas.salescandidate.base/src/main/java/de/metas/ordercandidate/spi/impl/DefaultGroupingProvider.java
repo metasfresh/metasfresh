@@ -52,12 +52,12 @@ public class DefaultGroupingProvider implements IOLCandGroupingProvider
 		groupingValues.add(olCand.getC_Charge_ID());
 		groupingValues.add(olCand.getM_AttributeSet_ID());
 		groupingValues.add(olCand.getM_AttributeSetInstance_ID());
-		groupingValues.add(olCand.getC_UOM_ID());
+		groupingValues.add(olCand.getQty().getUomId());
 		groupingValues.add(olCand.getWarehouseDestId());
 
 		groupingValues.add(olCand.getBPartnerInfo());
 		groupingValues.add(olCand.getBillBPartnerInfo());
-		
+
 		groupingValues.add(olCand.getDateDoc());
 
 		// task 06269 note that for now we set datepromised only in the header, so different DatePromised values result in different orders, and all ol have the same datepromised

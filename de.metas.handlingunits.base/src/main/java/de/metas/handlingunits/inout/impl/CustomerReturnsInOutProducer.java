@@ -239,7 +239,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void afterInOutProcessed(final I_M_InOut inout)
 	{
-		huAssignmentBL.setAssignedHandlingUnits(inout, getHUsReturned(), ITrx.TRXNAME_ThreadInherited);
+		huAssignmentBL.setAssignedHandlingUnits(inout, getHUsReturned());
 	}
 
 	@Override

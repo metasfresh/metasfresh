@@ -17,7 +17,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +35,7 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegist
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -57,7 +57,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(@NonNull final I_AD_Archive archive, final I_AD_User user, final String action)
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, final String action)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -66,8 +66,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 		docExchangeLine.setAction(action);
-		docExchangeLine.setAD_User(user);
-
+		if (userId != null)
+		{
+			docExchangeLine.setAD_User_ID(userId.getRepoId());
+		}
 		save(docExchangeLine);
 	}
 
@@ -94,7 +96,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
 		docExchangeLine.setStatus(status);
-		if(userMailConfig != null)
+		if (userMailConfig != null)
 		{
 			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
 		}
@@ -106,7 +108,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPrintOut(final I_AD_Archive archive, final I_AD_User user, final String printerName, final int copies, final String status)
+	public void onPrintOut(final I_AD_Archive archive,
+			@Nullable final UserId userId,
+			final String printerName,
+			final int copies,
+			final String status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (IArchiveEventManager.STATUS_Success.equals(status))
@@ -121,8 +127,12 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 
 		docExchangeLine.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
+
 		// create stuff
-		docExchangeLine.setAD_User(user);
+		if (userId != null)
+		{
+			docExchangeLine.setAD_User_ID(userId.getRepoId());
+		}
 		docExchangeLine.setStatus(status);
 
 		save(docExchangeLine);
@@ -130,11 +140,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	/**
 	 * We don't generate logs for archives without table IDs
-	 *
-	 * @param archive
-	 * @return
 	 */
-	private boolean isLoggableArchive(final I_AD_Archive archive)
+	private boolean isLoggableArchive(@Nullable final I_AD_Archive archive)
 	{
 		// task 05334: be robust against archive==null
 		if (archive == null || archive.getAD_Table_ID() <= 0)
@@ -187,13 +194,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	 * @param archiveRecord
 	 * @return {@link I_C_Doc_Outbound_Log}
 	 */
-	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archiveRecord)
+	private I_C_Doc_Outbound_Log createLog(@NonNull final I_AD_Archive archiveRecord)
 	{
 		// Services
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-		final int adTableId = archiveRecord.getAD_Table_ID();
-		final int recordId = archiveRecord.getRecord_ID();
+		final TableRecordReference reference = TableRecordReference.ofReferenced(archiveRecord);
+
+		final int adTableId = reference.getAD_Table_ID();
+		final int recordId = reference.getRecord_ID();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archiveRecord);
 
@@ -209,8 +218,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
 
-		final String docStatus = docActionBL.getDocStatusOrNull(ctx, adTableId, recordId);
-		docOutboundLogRecord.setDocStatus(docStatus);
+		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
+		docOutboundLogRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
 		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
 

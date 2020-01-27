@@ -57,7 +57,7 @@ public class InventoryDAO implements IInventoryDAO
 	{
 		return queryLinesForInventoryId(inventoryId)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override

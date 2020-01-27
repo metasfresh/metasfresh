@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.candidate.commands;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
@@ -83,10 +84,10 @@ public class RejectPickingCommand
 		else
 		{
 			return PickingCandidate.builder()
-					.status(PickingCandidateStatus.Draft)
+					.processingStatus(PickingCandidateStatus.Draft)
 					.qtyPicked(request.getQtyToReject())
 					.shipmentScheduleId(request.getShipmentScheduleId())
-					.pickFromHuId(request.getRejectPickingFromHuId())
+					.pickFrom(PickFrom.ofHuId(request.getRejectPickingFromHuId()))
 					.build();
 		}
 	}

@@ -35,52 +35,44 @@ import java.math.BigDecimal;
 public interface I_C_OrderLine extends de.metas.interfaces.I_C_OrderLine
 {
 	// @formatter:off
-	public static final String COLUMNNAME_PackDescription = "PackDescription";
-	public String getPackDescription();
-	public void setPackDescription(String packDescription);
+	String COLUMNNAME_PackDescription = "PackDescription";
+	String getPackDescription();
+	void setPackDescription(String packDescription);
 	// @formatter:on
 
 	// @formatter:off
-	public static final String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
-	public BigDecimal getQtyItemCapacity();
-	public void setQtyItemCapacity(BigDecimal qtyItemCapacity);
-	// @formatter:on
-
-	// @formatter:off
-	public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
-	public int getM_HU_PI_Item_Product_ID();
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
+	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
+	int getM_HU_PI_Item_Product_ID();
+	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
 	// @formatter:on
 
 	// begin task 05097
 	// @formatter:off
 	//public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
-	@Override
-	public boolean isPackagingMaterial();
-	@Override
-	public void setIsPackagingMaterial(boolean isPackagingMaterial);
+	@Override boolean isPackagingMaterial();
+	@Override void setIsPackagingMaterial(boolean isPackagingMaterial);
 	// @formatter:on
 
 	// @formatter:off
-	public static final String COLUMNNAME_C_PackingMaterial_OrderLine_ID = "C_PackingMaterial_OrderLine_ID";
-	public void setC_PackingMaterial_OrderLine_ID(int C_OrderLineSource_ID);
-	public void setC_PackingMaterial_OrderLine(final I_C_OrderLine ol);
-	public int getC_PackingMaterial_OrderLine_ID();
-	public I_C_OrderLine getC_PackingMaterial_OrderLine() throws RuntimeException;
+	String COLUMNNAME_C_PackingMaterial_OrderLine_ID = "C_PackingMaterial_OrderLine_ID";
+	void setC_PackingMaterial_OrderLine_ID(int C_OrderLineSource_ID);
+	void setC_PackingMaterial_OrderLine(final I_C_OrderLine ol);
+	int getC_PackingMaterial_OrderLine_ID();
+	I_C_OrderLine getC_PackingMaterial_OrderLine() throws RuntimeException;
 	// @formatter:on
 	// end task 05097
 
 	// @formatter:off
-	public static final String COLUMNNAME_IsManualQtyItemCapacity = "IsManualQtyItemCapacity";
-	public boolean isManualQtyItemCapacity();
-	public void setIsManualQtyItemCapacity(boolean isManualQtyItemCapacity);
+	String COLUMNNAME_IsManualQtyItemCapacity = "IsManualQtyItemCapacity";
+	boolean isManualQtyItemCapacity();
+	void setIsManualQtyItemCapacity(boolean isManualQtyItemCapacity);
 	// @formatter:on
 
 	// @formatter:off
-	public static final String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
-	public BigDecimal getQtyEnteredTU();
-	public void setQtyEnteredTU(BigDecimal QtyEnteredTU);
+	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
+	BigDecimal getQtyEnteredTU();
+	void setQtyEnteredTU(BigDecimal QtyEnteredTU);
 	// @formatter:on
 }
