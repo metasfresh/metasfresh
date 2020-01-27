@@ -96,10 +96,10 @@ public interface ICalloutField
 	 * Create and fire Data Status Error Event
 	 *
 	 * @param AD_Message message
-	 * @param info info
+	 * @param info that is shown to the user when hovering over the actual message
 	 * @param isError if not true, it is a Warning
 	 */
-	void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError);
+	void fireDataStatusEEvent(String AD_Message, String info, boolean isError);
 
 	/**
 	 * Create and fire Data Status Error Event (from Error Log)
@@ -107,7 +107,7 @@ public interface ICalloutField
 	 * @param errorLog log
 	 */
 	@Deprecated
-	void fireDataStatusEEvent(final ValueNamePair errorLog);
+	void fireDataStatusEEvent(ValueNamePair errorLog);
 
 	/**
 	 * Put to window context.
