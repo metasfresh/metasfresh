@@ -17,15 +17,15 @@ import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
 {
-	boolean isInvalid(ShipmentScheduleId shipmentScheduleId);
+	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
-	void invalidateShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
+	void flagForRecompute(ShipmentScheduleId shipmentScheduleId);
 
-	void invalidateShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
+	void flagForRecompute(Set<ShipmentScheduleId> shipmentScheduleIds);
 
-	void invalidateStorageSegment(IShipmentScheduleSegment storageSegment);
+	void flagForRecomputeStorageSegment(IShipmentScheduleSegment storageSegment);
 
-	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments);
+	void flagSegmentForRecompute(Collection<IShipmentScheduleSegment> storageSegments);
 
 	/**
 	 * Invalidates shipment schedules for the given storage segments.
@@ -35,7 +35,7 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * @param storageSegments
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
-	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
+	void flagSegmentsForRecompute(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
 
 	/**
 	 * Invalidate just the shipment schedules that directly reference the given <code>shipment</code>'s lines.<br>
@@ -47,7 +47,7 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	/**
 	 * See {@link #invalidateJustForLines(I_M_InOut)}.
 	 */
-	void invalidateJustForLine(I_M_InOutLine shipmentLine);
+	void flagForRecompute(I_M_InOutLine shipmentLine);
 
 	/**
 	 * See {@link #notifySegmentChangedForShipmentLine(I_M_InOutLine)}.
@@ -65,7 +65,7 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * <ul>
 	 *
 	 * @param shipmentLine
-	 * @see IShipmentSchedulePA#invalidateStorageSegments(java.util.Collection)
+	 * @see IShipmentSchedulePA#flagSegmentForRecompute(java.util.Collection)
 	 */
 	void notifySegmentChangedForShipmentLine(I_M_InOutLine shipmentLine);
 
@@ -94,14 +94,14 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * @deprecated please be more selective with the invalidation, using storage segments
 	 */
 	@Deprecated
-	void invalidateForProduct(ProductId productId);
+	void flagForRecompute(ProductId productId);
 	
 	/**
 	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
 	 *
 	 * @param headerAggregationKeys
 	 */
-	void invalidateForHeaderAggregationKeys(Set<String> headerAggregationKeys);
+	void flagHeaderAggregationKeysForRecompute(Set<String> headerAggregationKeys);
 	
 	void notifySegmentChanged(IShipmentScheduleSegment storageSegment);
 

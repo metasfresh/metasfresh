@@ -73,7 +73,6 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(newPPOrderLine.getProductDescriptor())
-					// .date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate()))
 					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), CockpitConstants.TIME_ZONE))
 					.build();
 

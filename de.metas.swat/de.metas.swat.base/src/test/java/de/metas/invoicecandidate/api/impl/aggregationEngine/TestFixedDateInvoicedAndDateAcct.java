@@ -35,12 +35,12 @@ import de.metas.money.MoneyService;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,16 +69,19 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 				.setSOTrx(true);
 	}
 
+	/** Verifies that the "param" dateInvoiced takes precedence over the IC's "preset" dateInvoiced. */
 	@Test
-	public void test_using_defaultDateInvoiced()
+	public void test_using_dateInvoicedParam()
 	{
-		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.build();
 
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -88,7 +91,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 
 		final IInvoiceHeader invoice = invoices.get(0);
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
-		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}
 
 	@Test
@@ -100,8 +103,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
-				.defaultDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 2))
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -114,18 +117,20 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 	}
 
+	/** Verifies that the IC's "preset" dateInvoiced takes precedence over the IC's dateInvoiced. */
 	@Test
 	public void test_using_presetDateInvoiced()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
 				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.setDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 14))
+				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 1)) // dateInvoiced shall take precedence!
 				.build();
 
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);

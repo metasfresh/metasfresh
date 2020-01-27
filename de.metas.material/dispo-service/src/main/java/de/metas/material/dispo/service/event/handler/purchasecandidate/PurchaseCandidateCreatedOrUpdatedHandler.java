@@ -106,7 +106,6 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		return Candidate.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-		// .status(CandidateStatus.doc_planned)
 		;
 	}
 }

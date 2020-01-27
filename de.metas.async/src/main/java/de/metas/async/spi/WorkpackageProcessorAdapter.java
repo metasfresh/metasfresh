@@ -20,9 +20,6 @@ import de.metas.util.Services;
 
 /**
  * Implement what you want adapter for {@link IWorkpackageProcessor2}.
- *
- * @author tsa
- *
  */
 public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcessor2
 {

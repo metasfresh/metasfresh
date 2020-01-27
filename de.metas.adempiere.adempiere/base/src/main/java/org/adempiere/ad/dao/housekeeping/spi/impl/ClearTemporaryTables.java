@@ -27,6 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
@@ -58,7 +59,7 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 		try
 		{
 			DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_None);
-			Loggables.addLog("Truncated table {}", tableName);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Truncated table {}", tableName);
 		}
 		catch (final Exception ex)
 		{

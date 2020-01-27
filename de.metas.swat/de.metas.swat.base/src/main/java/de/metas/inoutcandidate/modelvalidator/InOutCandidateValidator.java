@@ -139,7 +139,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
 
 				final IShipmentScheduleInvalidateBL shipmentScheduleInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-				shipmentScheduleInvalidator.invalidateForProduct(productId);
+				shipmentScheduleInvalidator.flagForRecompute(productId);
 			}
 		}
 	}

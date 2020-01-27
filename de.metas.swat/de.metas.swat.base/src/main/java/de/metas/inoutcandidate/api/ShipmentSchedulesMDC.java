@@ -46,6 +46,6 @@ public class ShipmentSchedulesMDC
 
 	public MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
 	{
-		return MDC.putCloseable("AD_PInstance_ID", Integer.toString(selectionId.getRepoId()));
+		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
 	}
 }
