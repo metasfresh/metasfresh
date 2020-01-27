@@ -60,7 +60,7 @@ public class M_ShipmentSchedule
 		}
 		}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void updateHURelatedValuesFromOrderLineBeforeNew(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final ModelChangeType type)
@@ -69,9 +69,9 @@ public class M_ShipmentSchedule
 		huShipmentScheduleBL.updateEffectiveValues(shipmentSchedule);
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = {
+	@ModelChange(//
+			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+			ifColumnsChanged = {
 			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Calculated,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_TU,
@@ -105,24 +105,24 @@ public class M_ShipmentSchedule
 	/**
 	 * Note: it's important that the schedule is only invalidated on certain value changes.<br>
 	 * For example, a change of lock status or valid status may not cause an invalidation.<br>
-	 * Also note that
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = {
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Calculated,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override,
-			de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
 			I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID,
 			I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_ID,
 			I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID,
-			de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered
 	})
 	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
+		invalidSchedulesService.flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
 		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(shipmentSchedule);
 	}
 }

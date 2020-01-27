@@ -97,7 +97,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1");
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.updateLocationAndContactForInvoice(true)
 				.build();
@@ -128,7 +128,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1");
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.updateLocationAndContactForInvoice(false)
 				.build();
@@ -166,7 +166,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User2");
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.defaultDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.updateLocationAndContactForInvoice(true)
 				.build();

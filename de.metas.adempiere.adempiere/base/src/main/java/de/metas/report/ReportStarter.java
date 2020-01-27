@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import com.google.common.io.Files;
 
+import ch.qos.logback.classic.Level;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -57,7 +58,7 @@ import lombok.Value;
 public abstract class ReportStarter extends JavaProcess
 {
 	// services
-	private static final Logger log = LogManager.getLogger(ReportStarter.class);
+	private static final Logger logger = LogManager.getLogger(ReportStarter.class);
 
 	private static JRReportViewerProvider swingJRReportViewerProvider;
 
@@ -175,7 +176,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Generate report data
-		Loggables.addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(getProcessInfo(), outputType);
 
 		//

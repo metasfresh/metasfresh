@@ -97,7 +97,7 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2019-12-02 17:43:46',
 
 -- 2019-12-02T16:43:46.914Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_SSCC','ALTER TABLE public.EDI_DesadvLine_SSCC ADD COLUMN C_UOM_ID NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_SSCC','ALTER TABLE public.EDI_DesadvLine_SSCC ADD COLUMN C_UOM_ID NUMERIC(10)')
 ;
 
 -- 2019-12-02T16:43:46.993Z
@@ -488,7 +488,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-12-02T19:31:29.368Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN MovementQty NUMERIC NOT NULL')
+/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN MovementQty NUMERIC')
 ;
 
 -- 2019-12-02T19:38:43.627Z
@@ -508,7 +508,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-12-02T19:38:44.952Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN M_InOutLine_ID NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN M_InOutLine_ID NUMERIC(10)')
 ;
 
 -- 2019-12-02T19:38:45.030Z
@@ -579,7 +579,7 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2019-12-03 10:31:58',
 
 -- 2019-12-03T09:32:03.383Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN M_InOut_ID NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN M_InOut_ID NUMERIC(10)')
 ;
 
 -- 2019-12-03T09:32:03.466Z

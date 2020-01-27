@@ -57,6 +57,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
@@ -65,13 +66,9 @@ import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
-import de.metas.util.ConsoleLoggable;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Standard test:
@@ -108,7 +105,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		this.locksDatabase = lockManager.getLockDatabase();
 
 		this.ctx = Env.getCtx();
-		this.loggable = new ConsoleLoggable();
+		this.loggable = Loggables.console();
 
 		this.bpartner1 = icTestSupport.bpartner("test-bp");
 	}
@@ -254,7 +251,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		//
 		// Test: NetAmtToInvoice set per workpackage shall be the sum of NetAmtToInvoice of enqueued invoice candidates
 		final BigDecimal netAmtToInvoiceCalc = calculateTotalNetAmtToInvoice(ics);
-		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(ICNetAmtToInvoiceChecker.PARAMETER_NAME);
+		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(IInvoicingParams.PARA_Check_NetAmtToInvoice);
 		assertThat(netAmtToInvoiceCalc).as("NetAmtToInvoice shall match: " + workpackage).isEqualByComparingTo(netAmtToInvoice);
 	}
 

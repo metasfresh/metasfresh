@@ -172,7 +172,7 @@ public class ShipmentScheduleEnqueuer
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule))
+			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.withTableRecordReference(shipmentSchedule))
 			{
 				final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
@@ -334,7 +334,9 @@ public class ShipmentScheduleEnqueuer
 
 		@NonNull
 		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
-		private String quantityType;
+
+		@NonNull
+		private M_ShipmentSchedule_QuantityTypeToUse quantityType;
 		private boolean completeShipments;
 		private boolean isShipmentDateToday;
 	}

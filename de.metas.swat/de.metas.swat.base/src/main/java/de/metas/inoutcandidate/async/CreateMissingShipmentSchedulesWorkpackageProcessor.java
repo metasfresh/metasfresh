@@ -73,7 +73,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 		// After shipment schedules where created, invalidate them because we want to make sure they are up2date.
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.invalidateShipmentSchedules(shipmentScheduleIds);
+		invalidSchedulesService.flagForRecompute(shipmentScheduleIds);
 
 		Loggables.addLog("Created " + shipmentScheduleIds.size() + " candidates");
 		return Result.SUCCESS;

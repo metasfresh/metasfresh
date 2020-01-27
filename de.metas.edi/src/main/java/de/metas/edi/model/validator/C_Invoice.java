@@ -33,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +46,7 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,6 +55,8 @@ import lombok.NonNull;
 @Component
 public class C_Invoice
 {
+	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
+
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -80,6 +84,7 @@ public class C_Invoice
 
 			if (ValidationState.INVALID == validationState)
 			{
+				logger.debug("validationState={}; persisting error-message in C_Invoice", validationState);
 				// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
 				// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
 				final String errorMessage = ediDocumentBL.buildFeedback(feedback);

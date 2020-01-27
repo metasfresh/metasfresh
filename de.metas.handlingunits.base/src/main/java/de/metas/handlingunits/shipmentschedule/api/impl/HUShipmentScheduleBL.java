@@ -145,7 +145,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, false);
+		final boolean anonymousHuPickedOnTheFly = false;
+		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, anonymousHuPickedOnTheFly);
 	}
 
 	@Override
@@ -170,7 +171,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
 
 		// mark this as an 'anonymousOnTheFly` pick
-		schedQtyPicked.setisAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
+		schedQtyPicked.setIsAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);

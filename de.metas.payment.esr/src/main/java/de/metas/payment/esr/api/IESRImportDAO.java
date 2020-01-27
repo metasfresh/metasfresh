@@ -37,6 +37,8 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IESRImportDAO extends ISingletonService
 {
 
@@ -110,10 +112,10 @@ public interface IESRImportDAO extends ISingletonService
 	 * count lines
 	 *
 	 * @param esrImport
-	 * @param processed
+	 * @param processed 3 possible values: null = ignore processed status; true = only count processed lines; false = only count unprocessed lines
 	 * @return
 	 */
-	int countLines(I_ESR_Import esrImport, Boolean processed);
+	int countLines(I_ESR_Import esrImport, @Nullable Boolean processed);
 
 	/***
 	 * gets the esr line for the specified esr import header and esrlinetext

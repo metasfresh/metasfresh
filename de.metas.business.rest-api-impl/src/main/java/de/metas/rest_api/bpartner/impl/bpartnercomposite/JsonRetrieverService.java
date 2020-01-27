@@ -13,6 +13,7 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -146,6 +147,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.ID, JsonResponseLocation.METASFRESH_ID)
 			.put(BPartnerLocation.ACTIVE, JsonResponseLocation.ACTIVE)
 			.put(BPartnerLocation.NAME, JsonResponseLocation.NAME)
+			.put(BPartnerLocation.BPARTNERNAME, JsonResponseLocation.BPARTNERNAME)
 			.put(BPartnerLocation.ADDRESS_1, JsonResponseLocation.ADDRESS_1)
 			.put(BPartnerLocation.ADDRESS_2, JsonResponseLocation.ADDRESS_2)
 			.put(BPartnerLocation.ADDRESS_3, JsonResponseLocation.ADDRESS_3)
@@ -368,6 +370,7 @@ public class JsonRetrieverService
 		return JsonResponseLocation.builder()
 				.active(location.isActive())
 				.name(location.getName())
+				.bpartnerName(location.getBpartnerName())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.address3(location.getAddress3())
@@ -425,7 +428,7 @@ public class JsonRetrieverService
 		{
 			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 
 			throw new InvalidEntityException(TranslatableStrings.constant("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead"), e)

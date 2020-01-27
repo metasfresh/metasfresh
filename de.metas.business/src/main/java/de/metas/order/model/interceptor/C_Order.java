@@ -1,6 +1,22 @@
 package de.metas.order.model.interceptor;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.ModelValidator;
+
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.DeliveryViaRule;
@@ -15,22 +31,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.DB;
-
-import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -207,7 +207,7 @@ public class C_Order
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void linkWithPaymentByExternalOrderId(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
@@ -216,6 +216,11 @@ public class C_Order
 		}
 
 		if (Check.isBlank(order.getExternalId()))
+		{
+			return;
+		}
+
+		if (order.getC_Payment_ID() > 0)
 		{
 			return;
 		}
@@ -235,13 +240,6 @@ public class C_Order
 		{
 			return;
 		}
-
-		// ! [workaround]
-		// This save should not be needed but it is.
-		// Without it MPayment.setC_Order_ID fails because it tries to read the C_DocType_ID from the order
-		// 		and since the order is not yet saved => only C_DocType_Target_ID has value and C_DocType_ID doesn't (is 0).
-		// Therefore we use this save to flush the order.
-		Services.get(IOrderDAO.class).save(order);
 
 		final I_C_Payment payment = paymentOptional.get();
 		order.setC_Payment_ID(payment.getC_Payment_ID());
