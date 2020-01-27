@@ -71,6 +71,7 @@ public class StepComDesadvSettings
 				.desadvLineDMARK1BatchNoRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DMARK1.batchNo.required", "false"))
 
 				.desadvLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
+				.desadvLineDQVAR1(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.DQVAR1", "true"))
 				.build();
 	}
 
@@ -115,6 +116,8 @@ public class StepComDesadvSettings
 	boolean desadvLineDMARK1BatchNoRequired;
 
 	String desadvLineRequiredMEASUREMENTUNIT;
+
+	boolean desadvLineDQVAR1;
 
 	public boolean isDesadvLineMEASUREMENTUNITRequired()
 	{

@@ -288,7 +288,7 @@ public class StepComXMLDesadvBean
 
 					// check if we need a discrepancy information
 					final BigDecimal quantityDiff = ZERO.subtract(line.getQtyEntered());
-					if (quantityDiff.signum() != 0)
+					if (settings.isDesadvLineDQVAR1() && quantityDiff.signum() != 0)
 					{
 						detail.setDOCUMENTID(documentId);
 						detail.setLINENUMBER(lineNumber);
@@ -350,7 +350,7 @@ public class StepComXMLDesadvBean
 
 				// we iterated all packs if the current line; now check if we a discrepancy information
 				final BigDecimal quantityDiff = qtyDelivered.subtract(line.getQtyEntered());
-				if (quantityDiff.signum() != 0)
+				if (settings.isDesadvLineDQVAR1() && quantityDiff.signum() != 0)
 				{
 					final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
 					detail.setDOCUMENTID(documentId);
@@ -616,7 +616,7 @@ public class StepComXMLDesadvBean
 
 		// check if we need a discrepancy information
 		final BigDecimal quantityDiff = qtyDelivered.subtract(line.getQtyEntered());
-		if (quantityDiff.signum() != 0)
+		if (settings.isDesadvLineDQVAR1() && quantityDiff.signum() != 0)
 		{
 			detail.setDOCUMENTID(documentId);
 			detail.setLINENUMBER(lineNumber);
