@@ -709,23 +709,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 			//
 			// Make sure model if valid before firing the listeners
-		assertModelValidBeforeFiringEvent(po, changeType); // isDocumentValidateEvent=false
+			assertModelValidBeforeFiringEvent(po, changeType); // isDocumentValidateEvent=false
 
-		int countInterceptors = 0;
+			int countInterceptors = 0;
 
 			//
 			// Retrieve system level model interceptors
 			final String propertyNameSystem = getPropertyName(po.get_TableName());
 			final List<ModelValidator> interceptorsSystem = m_modelChangeListeners.get(propertyNameSystem);
-		final int countSystemInterceptors = interceptorsSystem != null ? interceptorsSystem.size() : 0;
-		countInterceptors += countSystemInterceptors;
+			final int countSystemInterceptors = interceptorsSystem != null ? interceptorsSystem.size() : 0;
+			countInterceptors += countSystemInterceptors;
 
 			//
 			// Retrieve client level model interceptors
 			final String propertyNameClient = getPropertyName(po.get_TableName(), po.getAD_Client_ID());
 			final List<ModelValidator> interceptorsClient = m_modelChangeListeners.get(propertyNameClient);
-		final int countClientInterceptors = interceptorsClient != null ? interceptorsClient.size() : 0;
-		countInterceptors += countClientInterceptors;
+			final int countClientInterceptors = interceptorsClient != null ? interceptorsClient.size() : 0;
+			countInterceptors += countClientInterceptors;
 
 			//
 			// Retrieve script interceptors
@@ -734,25 +734,25 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// metas: tsa: 02380: First check if changeType is available in tableEventValidators
 			// FIXME: refactor it and have it as a regular model validator; then remove it from here
 			final List<I_AD_Table_ScriptValidator> scriptValidators;
-		final int countScriptingInterceptors;
-		if (ModelValidator.tableEventValidators.length > changeType.toInt())
+			final int countScriptingInterceptors;
+			if (ModelValidator.tableEventValidators.length > changeType.toInt())
 			{
 				scriptValidators = Services.get(IADTableScriptValidatorDAO.class).retrieveTableScriptValidators(
 						po.getCtx(),
 						po.get_Table_ID(),
-					ModelValidator.tableEventValidators[changeType.toInt()]);
-			countScriptingInterceptors = scriptValidators != null ? scriptValidators.size() : 0;
+						ModelValidator.tableEventValidators[changeType.toInt()]);
+				countScriptingInterceptors = scriptValidators != null ? scriptValidators.size() : 0;
 			}
 			else
 			{
 				scriptValidators = null;
-			countScriptingInterceptors = 0;
+				countScriptingInterceptors = 0;
 			}
-		countInterceptors += countScriptingInterceptors;
+			countInterceptors += countScriptingInterceptors;
 
 			//
 			// In case there are no interceptors, do nothing
-		if (countInterceptors <= 0)
+			if (countInterceptors <= 0)
 			{
 				return;
 			}
@@ -762,7 +762,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final String trxName = po.get_TrxName();
 			executeInTrx(trxName, changeType, () -> fireModelChange0(po, changeType, interceptorsSystem, interceptorsClient, scriptValidators));
 
-		logger.trace("Executed in {}: ALL {} {} interceptors for {}", stopwatch, countInterceptors, changeType, po);
+			logger.trace("Executed in {}: ALL {} {} interceptors for {}", stopwatch, countInterceptors, changeType, po);
+		}
 	}	// fireModelChange
 
 	private final void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
@@ -1086,23 +1087,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 			}
 			//
 			// Make sure model if valid before firing the listeners
-		assertModelValidBeforeFiringEvent(po, docTiming); // isDocumentValidateEvent=true
+			assertModelValidBeforeFiringEvent(po, docTiming); // isDocumentValidateEvent=true
 
-		int countInterceptors = 0;
+			int countInterceptors = 0;
 
 			//
 			// Retrieve system level model interceptors
 			final String propertyNameSystem = getPropertyName(po.get_TableName());
 			final List<ModelValidator> interceptorsSystem = m_docValidateListeners.get(propertyNameSystem);
-		final int countSystemInterceptors = interceptorsSystem != null ? interceptorsSystem.size() : 0;
-		countInterceptors += countSystemInterceptors;
+			final int countSystemInterceptors = interceptorsSystem != null ? interceptorsSystem.size() : 0;
+			countInterceptors += countSystemInterceptors;
 
 			//
 			// Retrieve client level model interceptors
 			final String propertyNameClient = getPropertyName(po.get_TableName(), po.getAD_Client_ID());
 			final List<ModelValidator> interceptorsClient = m_docValidateListeners.get(propertyNameClient);
-		final int countClientInterceptors = interceptorsClient != null ? interceptorsClient.size() : 0;
-		countInterceptors += countClientInterceptors;
+			final int countClientInterceptors = interceptorsClient != null ? interceptorsClient.size() : 0;
+			countInterceptors += countClientInterceptors;
 
 			//
 			// Retrieve script interceptors
@@ -1111,14 +1112,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// metas: tsa: 02380: First check if changeType is available in tableEventValidators
 			// FIXME: refactor it and have it as a regular model validator; then remove it from here
 			final List<I_AD_Table_ScriptValidator> scriptValidators;
-		if (ModelValidator.documentEventValidators.containsKey(docTiming))
+			if (ModelValidator.documentEventValidators.containsKey(docTiming))
 			{
 				scriptValidators = Services.get(IADTableScriptValidatorDAO.class).retrieveTableScriptValidators(
 						po.getCtx(),
 						po.get_Table_ID(),
 						ModelValidator.documentEventValidators.get(docTiming));
-			final int countScriptingInterceptors = scriptValidators != null ? scriptValidators.size() : 0;
-			countInterceptors += countScriptingInterceptors;
+				final int countScriptingInterceptors = scriptValidators != null ? scriptValidators.size() : 0;
+				countInterceptors += countScriptingInterceptors;
 			}
 			else
 			{
@@ -1127,7 +1128,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 			//
 			// In case there are no interceptors, do nothing
-		if (countInterceptors <= 0)
+			if (countInterceptors <= 0)
 			{
 				return null;
 			}
@@ -1137,7 +1138,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final String trxName = po.get_TrxName();
 			executeInTrx(trxName, docTiming, () -> fireDocValidate0(po, docTiming, interceptorsSystem, interceptorsClient, scriptValidators));
 
-		logger.trace("Executed in {}: ALL {} {} interceptors for {}", stopwatch, countInterceptors, docTiming, po);
+			logger.trace("Executed in {}: ALL {} {} interceptors for {}", stopwatch, countInterceptors, docTiming, po);
 
 			return null;
 		}
@@ -1197,9 +1198,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			final String error = interceptor.docValidate(po, docTiming.toInt());
-			if (!Check.isEmpty(error))
-			{
 			final String error = interceptor.docValidate(po, docTiming.toInt());
 			if (!Check.isEmpty(error))
 			{
