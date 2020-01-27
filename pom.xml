@@ -54,7 +54,6 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>4.9</version>
 		</dependency>
 		<!-- we need janino for the conditional that we have in the logback config -->
 		<dependency>
