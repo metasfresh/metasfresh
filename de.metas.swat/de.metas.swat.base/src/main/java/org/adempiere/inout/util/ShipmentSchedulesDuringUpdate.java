@@ -94,7 +94,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	{
 		final DeliveryGroupCandidate group = deliveryLineCandidate.getGroup();
 
-		if (!orderedCandidates.contains(group))
+		if (!deliveryGroupCandidatesOrdered.contains(group))
 		{
 			throw new IllegalStateException("group needs to be added using 'addGroup' first"
 					+ "\n DeliveryGroupCandidate: " + group
@@ -221,8 +221,8 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 						groupCandidate.getShipperId(),
 						groupCandidate.getWarehouseId(),
 						groupCandidate.getBPartnerAddress());
-				shipperKey2Candidate.remove(key);
-				orderedCandidates.remove(groupCandidate);
+				deliveryGroupCandidatesByShipperKey.remove(key);
+				deliveryGroupCandidatesOrdered.remove(groupCandidate);
 				rmGroupCandidates++;
 			}
 		}

@@ -257,7 +257,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// Update invoice candidates
 			for (final I_C_Invoice_Candidate icRecord : allCandidates)
 			{
-				try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
+				try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 				{
 					logger.debug("Set both DateInvoiced={} and DateAcct={} from IInvoiceHeader", header.getDateInvoiced(), header.getDateAcct());
 					icRecord.setDateInvoiced(TimeUtil.asTimestamp(header.getDateInvoiced()));
@@ -798,7 +798,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		while (invoiceCandidates.hasNext())
 		{
 			final I_C_Invoice_Candidate ic = invoiceCandidates.next();
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(ic))
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(ic))
 			{
 				icToUnlock.add(ic);
 

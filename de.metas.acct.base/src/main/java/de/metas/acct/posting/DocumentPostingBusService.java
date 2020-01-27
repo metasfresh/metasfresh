@@ -138,7 +138,7 @@ public class DocumentPostingBusService
 			final DocumentPostRequest request = extractDocumentPostRequest(event);
 
 			try (final IAutoCloseable ctx = switchCtx(request);
-					final MDCCloseable requestRecordMDC = TableRecordMDC.withTableRecordReference(request.getRecord());
+					final MDCCloseable requestRecordMDC = TableRecordMDC.putTableRecordReference(request.getRecord());
 					final MDCCloseable eventHandlerMDC = MDC.putCloseable("eventHandlerClass", handler.getClass().getName());)
 			{
 				eventLogUserService.invokeHandlerAndLog(InvokeHandlerAndLogRequest.builder()
