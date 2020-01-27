@@ -3,6 +3,7 @@ package de.metas.ordercandidate.api;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -73,10 +74,10 @@ public final class OLCand implements IProductPriceAware
 	private final BPartnerInfo billBPartnerInfo;
 
 	@Getter
-	private final BPartnerInfo dropShipBPartnerInfo;
+	private final Optional<BPartnerInfo> dropShipBPartnerInfo;
 
 	@Getter
-	private final BPartnerInfo handOverBPartnerInfo;
+	private final Optional<BPartnerInfo> handOverBPartnerInfo;
 
 	@Getter
 	private final PricingSystemId pricingSystemId;
@@ -153,8 +154,8 @@ public final class OLCand implements IProductPriceAware
 				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
 				.build();
 
-		this.dropShipBPartnerInfo = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCandRecord).orElse(null);
-		this.handOverBPartnerInfo = olCandEffectiveValuesBL.getHandOverPartnerInfo(olCandRecord).orElse(null);
+		this.dropShipBPartnerInfo = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCandRecord);
+		this.handOverBPartnerInfo = olCandEffectiveValuesBL.getHandOverPartnerInfo(olCandRecord);
 
 		this.externalLineId = olCandRecord.getExternalLineId();
 		this.externalHeaderId = olCandRecord.getExternalHeaderId();
@@ -320,7 +321,7 @@ public final class OLCand implements IProductPriceAware
 	}
 
 	// FIXME hardcoded (08691)
-	public Object getValueByColumn(final OLCandAggregationColumn column)
+	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
 	{
 		final String olCandColumnName = column.getColumnName();
 
@@ -338,11 +339,11 @@ public final class OLCand implements IProductPriceAware
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID))
 		{
-			return getDropShipBPartnerInfo().getBpartnerId();
+			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerId();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_ID))
 		{
-			return getDropShipBPartnerInfo().getBpartnerLocationId();
+			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerLocationId();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
 		{
