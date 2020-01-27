@@ -5,11 +5,11 @@ Many thanks to
 * https://www.howtoforge.com/tutorial/how-to-create-docker-images-with-dockerfile/
 
 ```bash
-# build it
-docker build .
+# build the docker image; the CACHEBUST build-arg is optional and merely makes sure that apt upgrade etc is performed at least once a day
+docker build --tag metasfresh-elk --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
 
 # run it; note that in addition to the documentation, we also have `-p 5000:5000`
-docker run -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 --name elk_mf elk_mf
+docker run --rm -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 metasfresh-elk
 ```
 
 You can then run metasfresh-app and/or metasfresh-webui-api with `-Dlogstash.enabled=true -Dlogstash.hort=localhost -Dlogstash.port=5000` to have it direct log messages to localhost.
