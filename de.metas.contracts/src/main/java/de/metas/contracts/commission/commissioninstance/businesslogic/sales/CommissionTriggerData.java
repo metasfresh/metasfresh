@@ -1,17 +1,17 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.Instant;
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -51,15 +51,19 @@ public class CommissionTriggerData
 
 	CommissionPoints invoicedPoints;
 
+	@NonNull
+	Percent tradedCommissionPercent;
+
 	@Builder
 	@JsonCreator
 	private CommissionTriggerData(
-			@JsonProperty("invoiceCandidateId") @NonNull final InvoiceCandidateId invoiceCandidateId,
+			@JsonProperty("invoiceCandidateId") final InvoiceCandidateId invoiceCandidateId,
 			@JsonProperty("invoiceCandidateWasDeleted") final boolean invoiceCandidateWasDeleted,
 			@JsonProperty("timestamp") @NonNull final Instant timestamp,
 			@JsonProperty("forecastedPoints") @NonNull final CommissionPoints forecastedPoints,
 			@JsonProperty("invoiceablePoints") @NonNull final CommissionPoints invoiceablePoints,
-			@JsonProperty("invoicedPoints") @NonNull final CommissionPoints invoicedPoints)
+			@JsonProperty("invoicedPoints") @NonNull final CommissionPoints invoicedPoints,
+			@JsonProperty("tradedCommissionPercent") final Percent tradedCommissionPercent)
 	{
 		this.timestamp = timestamp;
 
@@ -69,5 +73,6 @@ public class CommissionTriggerData
 		this.forecastedPoints = coalesce(forecastedPoints, CommissionPoints.ZERO);
 		this.invoiceablePoints = coalesce(invoiceablePoints, CommissionPoints.ZERO);
 		this.invoicedPoints = coalesce(invoicedPoints, CommissionPoints.ZERO);
+		this.tradedCommissionPercent = coalesce(tradedCommissionPercent, Percent.ZERO);
 	}
 }

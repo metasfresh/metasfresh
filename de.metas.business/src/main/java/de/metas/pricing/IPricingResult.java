@@ -173,4 +173,12 @@ public interface IPricingResult
 	IPricingResult setLoggableMessages(ImmutableList<String> singleMessages);
 
 	ImmutableList<String> getLoggableMessages();
+
+	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
+
+	BigDecimal getBaseCommissionPointsPerPriceUOM();
+
+	void setTradedCommissionPercent(Percent tradedCommissionPercent);
+
+	Percent getTradedCommissionPercent();
 }

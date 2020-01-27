@@ -4,12 +4,15 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -52,9 +55,9 @@ import lombok.NonNull;
 public final class PPOrderCreatedHandler
 		extends PPOrderAdvisedOrCreatedHandler<PPOrderCreatedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCreatedHandler.class);
+
 	/**
-	 *
-	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
 	public PPOrderCreatedHandler(
@@ -95,7 +98,7 @@ public final class PPOrderCreatedHandler
 		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId == null)
 		{
-			Loggables.addLog("The given ppOrderCreatedEvent has no groupId, so it was created manually by a user and not via material-dispo. Going to create new candidate records.");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("The given ppOrderCreatedEvent has no groupId, so it was created manually by a user and not via material-dispo. Going to create new candidate records.");
 			return CandidatesQuery.FALSE;
 		}
 

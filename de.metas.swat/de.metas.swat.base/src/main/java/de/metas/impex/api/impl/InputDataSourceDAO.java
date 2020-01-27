@@ -153,9 +153,9 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 
 		final InputDataSourceId firstId = queryBuilder
 				.create()
-				.firstIdOnly(InputDataSourceId::ofRepoId);
+				.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
 
-		return Optional.of(firstId);
+		return Optional.ofNullable(firstId);
 	}
 
 }

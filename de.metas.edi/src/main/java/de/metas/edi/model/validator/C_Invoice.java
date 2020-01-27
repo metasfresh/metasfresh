@@ -1,7 +1,5 @@
 package de.metas.edi.model.validator;
 
-
-
 /*
  * #%L
  * de.metas.edi
@@ -35,6 +33,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.EDIDocOutBoundLogService;
@@ -46,6 +46,8 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -53,6 +55,8 @@ import lombok.NonNull;
 @Component
 public class C_Invoice
 {
+	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
+
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -65,24 +69,28 @@ public class C_Invoice
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateEdiStatus(final I_C_Invoice document)
 	{
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-		if (!ediDocumentBL.updateEdiEnabled(document))
+		try (final MDCCloseable mdcCloseable = TableRecordMDC.withTableRecordReference(document))
 		{
-			return;
-		}
+			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+			if (!ediDocumentBL.updateEdiEnabled(document))
+			{
+				return;
+			}
 
-		final List<Exception> feedback = ediDocumentBL.isValidInvoice(document);
+			final List<Exception> feedback = ediDocumentBL.isValidInvoice(document);
 
-		final String EDIStatus = document.getEDI_ExportStatus();
-		final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, false); // saveLocally=false
+			final String EDIStatus = document.getEDI_ExportStatus();
+			final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, false); // saveLocally=false
 
-		if (ValidationState.INVALID == validationState)
-		{
-			// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
-			// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
-			final String errorMessage = ediDocumentBL.buildFeedback(feedback);
-			document.setEDIErrorMsg(errorMessage);
-			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Invalid);
+			if (ValidationState.INVALID == validationState)
+			{
+				logger.debug("validationState={}; persisting error-message in C_Invoice", validationState);
+				// document.setIsEdiEnabled(false); // DON'T set this to false, because then the "revalidate" button is also not available (displaylogic)
+				// IsEdiEnabled means "enabled in general", not "valid document and can be send right now"
+				final String errorMessage = ediDocumentBL.buildFeedback(feedback);
+				document.setEDIErrorMsg(errorMessage);
+				document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Invalid);
+			}
 		}
 	}
 

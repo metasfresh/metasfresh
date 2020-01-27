@@ -18,8 +18,11 @@ package org.compiere.process;
 
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Role;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
+import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.security.IRoleDAO;
@@ -31,12 +34,14 @@ import de.metas.util.Services;
 
 /**
  * Update Role Access
- * 
+ *
  * @author Jorg Janke
  * @version $Id: RoleAccessUpdate.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
 public class RoleAccessUpdate extends JavaProcess
 {
+	private static final Logger logger = LogManager.getLogger(RoleAccessUpdate.class);
+
 	/** Update Role */
 	private int p_AD_Role_ID = -1;
 	/** Update Roles of Client */
@@ -65,7 +70,7 @@ public class RoleAccessUpdate extends JavaProcess
 
 	/**
 	 * Process
-	 * 
+	 *
 	 * @return info
 	 * @throws Exception
 	 */
@@ -117,12 +122,10 @@ public class RoleAccessUpdate extends JavaProcess
 
 	/**
 	 * Update Role
-	 * 
-	 * @param role role
 	 */
 	private static void updateRole(final Role role)
 	{
 		final String result = Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-		Loggables.addLog("Role access updated: " + role.getName() + ": " + result);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Role access updated: {}: {}", role.getName(), result);
 	}	// updateRole
 }
