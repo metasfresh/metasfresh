@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T19:16:52 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="148" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -18,6 +17,9 @@
 	<parameter name="ad_language" class="java.lang.String"/>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<parameter name="DatePromised" class="java.util.Date"/>
+	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[BigDecimal.valueOf(-1)]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT
 	o.poreference as reference,
@@ -29,7 +31,8 @@
 	cont.fax	as cont_fax,
 	bpl.name as HandOverLocation,
 	o.PreparationDate,
-	o.DocumentNo as document_no
+	o.DocumentNo as document_no,
+	wh.Name as warehouse
 FROM
 	C_Order o
 	LEFT OUTER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
@@ -39,25 +42,47 @@ FROM
 	LEFT OUTER JOIN C_BPartner_Location bpl	ON o.HandOver_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
 	-- Translatables
 	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
+	-- warehouse
+	LEFT OUTER JOIN  M_Warehouse wh on wh.M_warehouse_id = o.M_warehouse_ID
 WHERE  o.isActive = 'Y' AND
 	CASE
 		WHEN $P{RECORD_ID} IS NOT NULL
 			THEN o.C_Order_ID = $P{RECORD_ID}
 		WHEN $P{C_BPartner_ID} IS NOT NULL AND $P{DatePromised}::date IS NOT NULL
 			THEN o.C_BPartner_ID = $P{C_BPartner_ID} AND o.DatePromised::date = $P{DatePromised}::date
-
 		ELSE false -- shall never happen
 	END
+		AND
+	CASE WHEN  $P{M_Warehouse_ID} IS NOT NULL THEN o.M_Warehouse_ID=$P{M_Warehouse_ID} ELSE  true END
+	
+	
 LIMIT 1
 ;]]>
 	</queryString>
-	<field name="reference" class="java.lang.String"/>
-	<field name="cont_name" class="java.lang.String"/>
-	<field name="cont_phone" class="java.lang.String"/>
-	<field name="cont_fax" class="java.lang.String"/>
-	<field name="handoverlocation" class="java.lang.String"/>
-	<field name="preparationdate" class="java.sql.Timestamp"/>
-	<field name="document_no" class="java.lang.String"/>
+	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="reference"/>
+	</field>
+	<field name="cont_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
+	</field>
+	<field name="cont_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_phone"/>
+	</field>
+	<field name="cont_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_fax"/>
+	</field>
+	<field name="handoverlocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="handoverlocation"/>
+	</field>
+	<field name="preparationdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="preparationdate"/>
+	</field>
+	<field name="document_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="document_no"/>
+	</field>
+	<field name="warehouse" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehouse"/>
+	</field>
 	<variable name="docno" class="java.lang.String">
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA["Auftragsbestätigung"]]></initialValueExpression>
@@ -93,21 +118,21 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="365" y="35" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Kd.-Bestellnummer]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-6" x="365" y="63" width="97" height="13" forecolor="#000000" uuid="44c496d6-bc82-4c9a-b96b-db76a659ebd7"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true" isUnderline="true"/>
 				</textElement>
 				<text><![CDATA[Lieferung an:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-6" x="90" y="63" width="218" height="13" forecolor="#000000" uuid="343b743c-921e-474a-a8eb-12320275ef79"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Abw. Anlieferort]]></text>
 			</staticText>
@@ -127,7 +152,7 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="90" y="8" width="218" height="13" forecolor="#000000" uuid="2d94c569-3bc2-49b0-a3c8-c3b965d541fb"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[AnsprechpartnerIn / Telefon]]></text>
 			</staticText>
@@ -162,14 +187,14 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="90" y="35" width="218" height="13" forecolor="#000000" uuid="0efbbf25-8d77-49c0-b29d-e6c0ef6c1198"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Fax-Nr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-6" x="90" y="90" width="218" height="13" forecolor="#000000" uuid="343b743c-921e-474a-a8eb-12320275ef79"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Abfahrts- / Abholzeit]]></text>
 			</staticText>
@@ -189,7 +214,7 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Auftragsnummer]]></text>
 			</staticText>
@@ -225,10 +250,34 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>
+			<staticText>
+				<reportElement key="textField-6" x="366" y="38" width="135" height="13" forecolor="#000000" uuid="9dbdc942-b46b-4889-af34-93f2742dfe19">
+					<printWhenExpression><![CDATA[$P{M_Warehouse_ID}.compareTo(BigDecimal.ZERO) > 0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Lager]]></text>
+			</staticText>
+			<textField pattern="dd.MM.yyy" isBlankWhenNull="true">
+				<reportElement key="textField-1" x="366" y="50" width="135" height="13" forecolor="#000000" uuid="e995011b-837f-4926-a65e-b6f057a74298">
+					<printWhenExpression><![CDATA[$P{M_Warehouse_ID}.compareTo(BigDecimal.ZERO) > 0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{warehouse}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
