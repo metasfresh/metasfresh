@@ -94,7 +94,7 @@
     "postcss-color-function": "2.0.1",
     "postcss-import": "11.1.0",
     "postcss-loader": "3.0.0",
-    "postcss-simple-vars": "4.1.0",
+    "postcss-simple-vars": "5.0.2",
     "postcss-url": "8.0.0",
     "precss": "4.0.0",
     "prettier": "1.17.0",
