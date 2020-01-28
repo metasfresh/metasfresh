@@ -9,6 +9,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContext;
@@ -80,7 +81,7 @@ public class Application
 
 			new SpringApplicationBuilder(Application.class)
 					.headless(true)
-					.web(true)
+					.web(WebApplicationType.SERVLET)
 					.profiles(Profiles.PROFILE_MaterialDispo, PROFILE_MaterialDispo_Standalone)
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);

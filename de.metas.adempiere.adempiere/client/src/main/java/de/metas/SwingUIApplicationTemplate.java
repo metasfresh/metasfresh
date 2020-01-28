@@ -17,6 +17,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Splash;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -74,7 +75,7 @@ public abstract class SwingUIApplicationTemplate
 					// we first need to solve the problem of running multiple clients on the same machine (they need to bind to differnt ports)
 					// there might be resource/performance problems
 					// at any rate, we have not yet a solution as to how to configure them
-					.web(false)
+					.web(WebApplicationType.NONE)
 					.profiles(Profiles.PROFILE_SwingUI)
 					.properties(CConnection.get().createRabbitmqSpringProperties())
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())

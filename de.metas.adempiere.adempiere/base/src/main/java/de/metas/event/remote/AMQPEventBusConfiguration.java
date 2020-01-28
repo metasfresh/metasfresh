@@ -2,9 +2,11 @@ package de.metas.event.remote;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
+import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionNameStrategy;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -55,13 +57,13 @@ public class AMQPEventBusConfiguration
 	private String appName;
 
 	@Bean
-	public AnonymousQueue.NamingStrategy namingStrategy()
+	public NamingStrategy namingStrategy()
 	{
-		return new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
+		return new Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
 	}
 
 	@Bean(EVENTS_QUEUE_BEAN_NAME)
-	public AnonymousQueue eventsQueue(AnonymousQueue.NamingStrategy eventQueueNamingStrategy)
+	public AnonymousQueue eventsQueue(NamingStrategy eventQueueNamingStrategy)
 	{
 		return new AnonymousQueue(eventQueueNamingStrategy);
 	}
@@ -73,7 +75,7 @@ public class AMQPEventBusConfiguration
 	}
 
 	@Bean
-	public Binding eventsBinding(AnonymousQueue.NamingStrategy eventQueueNamingStrategy)
+	public Binding eventsBinding(NamingStrategy eventQueueNamingStrategy)
 	{
 		return BindingBuilder
 				.bind(eventsQueue(eventQueueNamingStrategy))

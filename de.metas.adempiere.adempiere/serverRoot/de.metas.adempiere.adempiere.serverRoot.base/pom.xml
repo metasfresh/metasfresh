@@ -182,6 +182,11 @@
 			<artifactId>janino</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>it.sauronsoftware.cron4j</groupId>
+			<artifactId>cron4j</artifactId>
+		</dependency>
+
 	</dependencies>
 
 </project>

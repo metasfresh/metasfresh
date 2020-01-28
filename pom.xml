@@ -34,15 +34,15 @@
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
 
-		<spring-boot.version>2.0.6.RELEASE</spring-boot.version>
+		<spring-boot.version>2.2.4.RELEASE</spring-boot.version>
 
-		<!-- this is the version uses by elasticsearch:5.6.12 which is turn is used by spring-boot 2.0.6.RELEASE -->
-		<lucene.version>6.6.1</lucene.version>
+		<!-- this is the version uses by elasticsearch:5.8.6 which is turn is used by spring-boot 2.2.4.RELEASE -->
+		<lucene.version>7.7.2</lucene.version>
 
 		<!-- Note that we need "explicit" spring in de.metas.jax.rs
 			Please keep in sync with spring-boot 
 		-->
-		<spring.version>5.0.10.RELEASE</spring.version>
+		<spring.version>5.2.3.RELEASE</spring.version>
 
 		<guava.version>21.0</guava.version>
 
@@ -319,6 +319,12 @@
 				<groupId>org.apache.activemq</groupId>
 				<artifactId>activemq-kahadb-store</artifactId>
 				<version>${activeMQ.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sun.mail</groupId>
+				<artifactId>javax.mail</artifactId>
+				<version>1.6.2</version>
 			</dependency>
 
 			<dependency>

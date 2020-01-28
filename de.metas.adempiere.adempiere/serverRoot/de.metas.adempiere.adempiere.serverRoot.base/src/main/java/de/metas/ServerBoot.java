@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -96,7 +97,7 @@ public class ServerBoot implements InitializingBean
 	public static void main(final String[] args)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		
+
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
 
@@ -115,7 +116,7 @@ public class ServerBoot implements InitializingBean
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-					.web(true)
+					.web(WebApplicationType.SERVLET)
 					// consider removing the jasper profile
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 					// same goes for PrintService

@@ -8,6 +8,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -73,7 +74,7 @@ public class PrintServiceMain
 
 		new SpringApplicationBuilder(PrintServiceMain.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-				.web(true)
+				.web(WebApplicationType.SERVLET)
 				.profiles(Profiles.PROFILE_PrintService)
 				.beanNameGenerator(new MetasfreshBeanNameGenerator())
 				.run(args);
