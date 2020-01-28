@@ -57,7 +57,7 @@
 		
 		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
 		<woodstox.version>5.1.0</woodstox.version>
-		
+
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -192,7 +192,7 @@
 
 		<module>vertical-healthcare_ch</module>
 
-    </modules>
+	</modules>
 
 	<dependencyManagement>
 		<dependencies>
@@ -274,6 +274,30 @@
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>1.6</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.annotation</groupId>
+				<artifactId>javax.annotation-api</artifactId>
+				<version>1.3.2</version>
+			</dependency>
+
+			<!--  thx to https://stackoverflow.com/questions/48204141/replacements-for-deprecated-jpms-modules-with-java-ee-apis -->
+			<dependency>
+				<groupId>jakarta.xml.bind</groupId>
+				<artifactId>jakarta.xml.bind-api</artifactId>
+				<version>2.3.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>2.3.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sun.xml.ws</groupId>
+				<artifactId>jaxws-ri</artifactId>
+				<version>2.3.2</version>
 			</dependency>
 
 			<dependency>

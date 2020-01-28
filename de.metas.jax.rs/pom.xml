@@ -17,6 +17,7 @@
 	</properties>
 
 	<dependencies>
+
 		<!-- even without using the http transport we do need the servlet API!-->
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -32,6 +33,22 @@
 			<artifactId>javax.transaction-api</artifactId>
 		</dependency>
 
+		<!-- API -->
+		<!--  thx to https://stackoverflow.com/questions/48204141/replacements-for-deprecated-jpms-modules-with-java-ee-apis -->
+		<dependency>
+			<groupId>jakarta.xml.ws</groupId>
+			<artifactId>jakarta.xml.ws-api</artifactId>
+			<version>2.3.2</version>
+			<scope>test</scope>
+		</dependency>
+
+<!-- Runtime
+<dependency>
+    <groupId>com.sun.xml.ws</groupId>
+    <artifactId>jaxws-rt</artifactId>
+    <version>2.3.2</version>
+</dependency>
+ -->
 		<!-- 
 		com.fasterxml.jackson.dataformat:jackson-dataformat-xml also needs woodstox, but in a later version
         -->
