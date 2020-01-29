@@ -7,7 +7,9 @@ Many thanks to
 ```bash
 # build the docker image; the CACHEBUST build-arg is optional and merely makes sure that apt upgrade etc is performed at least once a day
 docker build --tag metasfresh-elk --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
+```
 
+```bash
 # run it; note that in addition to the documentation, we also have `-p 5000:5000`
 docker run --rm -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 metasfresh-elk
 ```
