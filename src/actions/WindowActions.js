@@ -909,7 +909,8 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
           // Advanced edit
           isAdvanced && dispatch(updateData(parsedItem, 'master'));
 
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+          !isAdvanced &&
+            dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
         }
       }
     });

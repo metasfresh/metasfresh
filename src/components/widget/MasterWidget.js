@@ -6,6 +6,7 @@ import Moment from 'moment-timezone';
 import * as windowActions from '../../actions/WindowActions';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
+import _ from 'lodash';
 
 function isNumberField(widgetType) {
   switch (widgetType) {
@@ -30,7 +31,16 @@ class MasterWidget extends Component {
     updated: false,
     edited: false,
     data: '',
+    [this.props.fieldName]: this.props.widgetData,
   };
+
+  shouldComponentUpdate(nextProps) {
+    if (!_.isEqual(nextProps.widgetData, this.state[nextProps.fieldName])) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   componentDidMount() {
     const { data, widgetData, clearValue } = this.props;
@@ -49,8 +59,8 @@ class MasterWidget extends Component {
 
     if (
       !edited &&
-      JSON.stringify(next) !== data &&
-      JSON.stringify(widgetData[0].value) !== JSON.stringify(next)
+      !_.isEqual(next, data) &&
+      !_.isEqual(widgetData[0].value, next)
     ) {
       if (next && dateParse.includes(widgetType) && !Moment.isMoment(next)) {
         next = convertTimeStringToMoment(next);
@@ -60,6 +70,7 @@ class MasterWidget extends Component {
         {
           updated: true,
           data: next,
+          [this.props.fieldName]: this.props.widgetData,
         },
         () => {
           this.timeout = setTimeout(() => {
