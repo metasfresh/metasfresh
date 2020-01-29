@@ -163,7 +163,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	}
 
 	/**
-	 *
 	 * @param evalCtx
 	 * @return lookup values list
 	 * @see #getRetrieveEntriesParameters()
@@ -215,19 +214,23 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		final String displayName = nameAndDescriptionAndActive[0];
 		final String description = nameAndDescriptionAndActive.length >= 2 ? nameAndDescriptionAndActive[1] : null;
 		final boolean active = nameAndDescriptionAndActive.length >= 3 ? StringUtils.toBoolean(nameAndDescriptionAndActive[2]) : true;
+		final String validationMsg = nameAndDescriptionAndActive.length >= 4 ? nameAndDescriptionAndActive[3] : null;
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
+		final ITranslatableString validationMsgTrl;
 		if (isTranslatable)
 		{
 			final String adLanguage = evalCtx.getAD_Language();
 			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, displayName);
 			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, description);
+			validationMsgTrl = TranslatableStrings.singleLanguage(adLanguage, validationMsg);
 		}
 		else
 		{
 			displayNameTrl = TranslatableStrings.anyLanguage(displayName);
 			descriptionTrl = TranslatableStrings.anyLanguage(description);
+			validationMsgTrl = TranslatableStrings.anyLanguage(validationMsg);
 		}
 
 		//
@@ -250,6 +253,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 					.displayName(displayNameTrl)
 					.description(descriptionTrl)
 					.active(active)
+					.validationMsg(validationMsgTrl)
 					.build();
 		}
 	}

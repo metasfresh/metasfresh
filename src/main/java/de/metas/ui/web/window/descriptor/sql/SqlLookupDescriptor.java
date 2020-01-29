@@ -125,7 +125,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 	/**
 	 * @param AD_Reference_Value_ID has to be > 0
-	 * @param AD_Val_Rule_ID may be <= 0
+	 * @param AD_Val_Rule_ID        may be <= 0
 	 */
 	public static LookupDescriptorProvider searchByAD_Val_Rule_ID(
 			final int AD_Reference_Value_ID,
@@ -211,9 +211,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				//
 				highVolume,
 				numericKey
-		// dependsOnFieldNames // not needed because it's computed
-		// lookupSourceType // not needed because it's computed
-		// lookupDataSourceFetcher // not needed because it's computed
+				// dependsOnFieldNames // not needed because it's computed
+				// lookupSourceType // not needed because it's computed
+				// lookupDataSourceFetcher // not needed because it's computed
 		);
 	}
 
@@ -243,10 +243,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				&& Objects.equals(postQueryPredicate, other.postQueryPredicate)
 				&& highVolume == other.highVolume
 				&& numericKey == other.numericKey
-		// dependsOnFieldNames // not needed because it's computed
-		// lookupSourceType // not needed because it's computed
-		// lookupDataSourceFetcher // not needed because it's computed
-		;
+				// dependsOnFieldNames // not needed because it's computed
+				// lookupSourceType // not needed because it's computed
+				// lookupDataSourceFetcher // not needed because it's computed
+				;
 	}
 
 	@Override
@@ -436,7 +436,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 				numericKey = lookupInfo.isNumericKey();
 				validationRuleEffective = extractValidationRule(lookupInfo);
-				dependsOnFieldNames = ImmutableSet.<String> builder()
+				dependsOnFieldNames = ImmutableSet.<String>builder()
 						.addAll(validationRuleEffective.getPrefilterWhereClause().getParameterNames())
 						.addAll(validationRuleEffective.getPostQueryFilter().getParameters())
 						.build();
@@ -643,6 +643,17 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				descriptionColumnSQL = descriptionColumnSqlOrNull;
 			}
 
+			final IStringExpression validationMsgColumnSqlOrNull = TranslatableParameterizedStringExpression.of(lookupInfo.getValidationMsgColumnSQL());
+			final IStringExpression validationMsgColumnSQL;
+			if (validationMsgColumnSqlOrNull == null || validationMsgColumnSqlOrNull.isNullExpression())
+			{
+				validationMsgColumnSQL = ConstantStringExpression.of("NULL");
+			}
+			else
+			{
+				validationMsgColumnSQL = validationMsgColumnSqlOrNull;
+			}
+
 			final IStringExpression fromSqlPart = TranslatableParameterizedStringExpression.of(lookupInfo.getFromSqlPart());
 
 			final String keyColumnFQ = lookupInfo.getKeyColumnFQ();
@@ -652,7 +663,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			final org.adempiere.ad.expression.api.impl.CompositeStringExpression.Builder composer = IStringExpression
 					.composer()
 					.append("SELECT ")
-					.append("\n ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append(",").append(lookupInfo.getActiveColumnSQL()).append("]")
+					.append("\n ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append(",").append(lookupInfo.getActiveColumnSQL()).append(", ").append(validationMsgColumnSQL).append("]")
 					.append("\n FROM ")
 					.append(fromSqlPart)
 					.append("\n WHERE ")
@@ -742,7 +753,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return DescriptorsFactoryHelper.extractLookupSource(displayType, AD_Reference_Value_ID);
 		}
 
-		/** Advice the lookup to show all records on which current user has at least read only access */
+		/**
+		 * Advice the lookup to show all records on which current user has at least read only access
+		 */
 		public Builder setReadOnlyAccess()
 		{
 			this.requiredAccess = Access.READ;
