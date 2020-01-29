@@ -192,7 +192,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(Boolean.class);
 
 	/**
-	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it an {@link LocalDate}
+	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
 	 * @task 08451 */
 	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
 
@@ -1032,7 +1032,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
 	}
 
-	/** For internal use */
+	/** For class-internal use */
 	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
