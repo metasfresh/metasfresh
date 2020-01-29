@@ -155,12 +155,12 @@ public class OrgDAO implements IOrgDAO
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private OrgInfo retrieveOrgInfo(@NonNull final OrgId adOrgId, final String trxName)
+	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
-		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(adOrgId, trxName);
+		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(orgId, trxName);
 		if (record == null)
 		{
-			throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + adOrgId);
+			throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + orgId);
 		}
 
 		return toOrgInfo(record);
