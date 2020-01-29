@@ -745,6 +745,29 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_EftValutaDate = "EftValutaDate";
 
 	/**
+	 * Set Imported Bill Partner IBAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setImportedBillPartnerIBAN (java.lang.String ImportedBillPartnerIBAN);
+
+	/**
+	 * Get Imported Bill Partner IBAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getImportedBillPartnerIBAN();
+
+    /** Column definition for ImportedBillPartnerIBAN */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ImportedBillPartnerIBAN = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ImportedBillPartnerIBAN", null);
+    /** Column name ImportedBillPartnerIBAN */
+    public static final String COLUMNNAME_ImportedBillPartnerIBAN = "ImportedBillPartnerIBAN";
+
+	/**
 	 * Set Importierter Rechnungspartner Name.
 	 * Name of the Bill Partner as appears in the import file
 	 *

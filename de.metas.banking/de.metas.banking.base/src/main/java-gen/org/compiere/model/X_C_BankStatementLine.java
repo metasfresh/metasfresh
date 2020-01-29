@@ -15,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 969838600L;
+	private static final long serialVersionUID = 1727600090L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -666,6 +666,22 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getEftValutaDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EftValutaDate);
+	}
+
+	/** Set Imported Bill Partner IBAN.
+		@param ImportedBillPartnerIBAN Imported Bill Partner IBAN	  */
+	@Override
+	public void setImportedBillPartnerIBAN (java.lang.String ImportedBillPartnerIBAN)
+	{
+		set_Value (COLUMNNAME_ImportedBillPartnerIBAN, ImportedBillPartnerIBAN);
+	}
+
+	/** Get Imported Bill Partner IBAN.
+		@return Imported Bill Partner IBAN	  */
+	@Override
+	public java.lang.String getImportedBillPartnerIBAN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ImportedBillPartnerIBAN);
 	}
 
 	/** Set Importierter Rechnungspartner Name.
