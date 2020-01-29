@@ -57,6 +57,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
@@ -250,7 +251,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		//
 		// Test: NetAmtToInvoice set per workpackage shall be the sum of NetAmtToInvoice of enqueued invoice candidates
 		final BigDecimal netAmtToInvoiceCalc = calculateTotalNetAmtToInvoice(ics);
-		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(ICNetAmtToInvoiceChecker.PARAMETER_NAME);
+		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(IInvoicingParams.PARA_Check_NetAmtToInvoice);
 		assertThat(netAmtToInvoiceCalc).as("NetAmtToInvoice shall match: " + workpackage).isEqualByComparingTo(netAmtToInvoice);
 	}
 

@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.List;
 
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
@@ -49,6 +52,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
 public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler<AbstractPPOrderEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCreatedOrAdvisedEventHandler.class);
+
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 
 	public PPOrderCreatedOrAdvisedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
@@ -70,7 +75,7 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 			final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
 			if (ppOrderCreatedEvent.getPpOrder().getMaterialDispoGroupId() != null)
 			{
-				Loggables.addLog("This PPOrderCreatedEvent has a PPOrder with MaterialDispoGroupId set, so we already processed its respective PPOrderAdvisedEvent; skipping");
+				Loggables.withLogger(logger, Level.DEBUG).addLog("This PPOrderCreatedEvent has a PPOrder with MaterialDispoGroupId set, so we already processed its respective PPOrderAdvisedEvent; skipping");
 				return;
 			}
 		}

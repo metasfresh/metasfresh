@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.esb.edi.model.X_EDI_DesadvLine;
@@ -146,7 +147,11 @@ class DesadvBLTest_addInOutLine
 
 		huPIItemProductRecord = huTestHelper.assignProduct(maItemIFCO, ProductId.ofRepoId(productRecord.getM_Product_ID()), new BigDecimal("5"), stockUOMRecord);
 
+		final I_EDI_Desadv desadv = newInstance(I_EDI_Desadv.class);
+		saveRecord(desadv);
+
 		desadvLine = newInstance(I_EDI_DesadvLine.class);
+		desadvLine.setEDI_Desadv_ID(desadv.getEDI_Desadv_ID());
 		desadvLine.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		desadvLine.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
 		desadvLine.setQtyDeliveredInStockingUOM(new BigDecimal("2")); // initial quantity in stock-UOM..we don't care from where it came..

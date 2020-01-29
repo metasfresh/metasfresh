@@ -168,6 +168,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	BPartnerId getBPartnerSalesRepId(BPartnerId bPartnerId);
+
 	@Value
 	@Builder
 	public static class RetrieveContactRequest

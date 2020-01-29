@@ -189,10 +189,13 @@ public class StockQtyAndUOMQty
 		return result.build();
 	}
 
-	/** @return the minimum by looking at the stock quantities. */
+	/**
+	 * @return the minimum by looking at the stock quantities.
+	 *         Important: if this instance's stock quantity is equal to {@code other}'s stock quantity, then return {@code this}.
+	 */
 	public StockQtyAndUOMQty min(@NonNull final StockQtyAndUOMQty other)
 	{
-		if (this.getStockQty().compareTo(other.getStockQty()) < 0)
+		if (this.getStockQty().compareTo(other.getStockQty()) <= 0)
 		{
 			return this;
 		}

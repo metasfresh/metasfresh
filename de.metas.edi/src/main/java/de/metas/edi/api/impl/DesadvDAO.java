@@ -54,10 +54,9 @@ public class DesadvDAO implements IDesadvDAO
 	private static final String SYS_CONFIG_DefaultMinimumPercentage_DEFAULT = "50";
 
 	@Override
-	public I_EDI_Desadv retrieveMatchingDesadvOrNull(final String poReference, final IContextAware ctxAware)
+	public I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull final String poReference, @NonNull final IContextAware ctxAware)
 	{
-		Check.assumeNotNull(ctxAware, "Param 'ctxAware' is not null");
-		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy");
+		Check.assumeNotEmpty(poReference, "Param 'poReference' is not emtpy; ctxAware={}", ctxAware);
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_EDI_Desadv.class, ctxAware)
 				.addOnlyActiveRecordsFilter()

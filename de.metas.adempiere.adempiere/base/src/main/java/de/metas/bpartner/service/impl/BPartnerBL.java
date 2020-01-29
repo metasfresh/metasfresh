@@ -595,13 +595,16 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final I_C_BPartner bpartnerRecord = bPartnerDAO.getById(bpartnerId);
-
-		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
+		final int salesRepRecordId = getById(bpartnerId).getSalesRep_ID();
 
 		return UserId.ofRepoIdOrNull(salesRepRecordId);
+	}
+
+	@Override public BPartnerId getBPartnerSalesRepId(BPartnerId bPartnerId)
+	{
+		final int salesRepRecordId = getById(bPartnerId).getC_BPartner_SalesRep_ID();
+
+		return BPartnerId.ofRepoIdOrNull(salesRepRecordId);
 	}
 
 	@Override

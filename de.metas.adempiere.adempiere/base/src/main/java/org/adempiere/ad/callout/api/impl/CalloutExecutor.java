@@ -38,10 +38,11 @@ import com.google.common.base.Strings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public final class CalloutExecutor implements ICalloutExecutor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -167,7 +168,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 				for (final ICalloutInstance callout : callouts)
 				{
 					// Optimization: don't fire this callout if it was indirectly already fired.
-					if (executedCalloutsTrace.contains(callout))
+					if (executedCalloutsTrace.contains(Util.mkKey(field.getColumnName(), callout)))
 					{
 						statisticsCollector = statisticsCollector == null ? null : statisticsCollector.childSkipped(field, callout, "it was already executed");
 						continue;
@@ -216,7 +217,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		return true;
 	}
 
-	private void execute(final ICalloutInstance callout, final ICalloutField field)
+	private void execute(@NonNull final ICalloutInstance callout, final ICalloutField field)
 	{
 		final String calloutId = callout.getId();
 
@@ -275,9 +276,9 @@ public final class CalloutExecutor implements ICalloutExecutor
 		{
 			logger.error("Callout {} failed with init error on execution. Discarding the callout from next calls and propagating the exception", callout, e);
 			executionBlackListIds.add(calloutId);
-			
+
 			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
-			
+
 			throw e.setCalloutExecutorIfAbsent(this)
 					.setFieldIfAbsent(field)
 					.setCalloutInstanceIfAbsent(callout);
@@ -285,7 +286,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		catch (final CalloutException e)
 		{
 			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
-			
+
 			throw e.setCalloutExecutorIfAbsent(this)
 					.setFieldIfAbsent(field)
 					.setCalloutInstanceIfAbsent(callout);
@@ -293,7 +294,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		catch (final Exception e)
 		{
 			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
-			
+
 			throw CalloutExecutionException.of(e)
 					.setCalloutExecutor(this)
 					.setField(field)
@@ -380,13 +381,13 @@ public final class CalloutExecutor implements ICalloutExecutor
 			_calloutProvider = calloutProvider;
 			return this;
 		}
-		
+
 		public Builder addCalloutProvider(final ICalloutProvider calloutProviderToAdd)
 		{
 			_calloutProvider = CompositeCalloutProvider.compose(_calloutProvider, calloutProviderToAdd);
 			return this;
 		}
-		
+
 		public Builder addDefaultCalloutProvider()
 		{
 			addCalloutProvider(getDefaultCalloutProvider());
@@ -419,13 +420,13 @@ public final class CalloutExecutor implements ICalloutExecutor
 	 */
 	private static final class CalloutStatisticsEntry
 	{
-		public static final CalloutStatisticsEntry newRoot()
+		public static CalloutStatisticsEntry newRoot()
 		{
 			return new CalloutStatisticsEntry()
 					.setStatusStarted();
 		}
 
-		public static final CalloutStatisticsEntry child(@Nullable final CalloutStatisticsEntry parent, final ICalloutField field, final ICalloutInstance callout)
+		public static CalloutStatisticsEntry child(@Nullable final CalloutStatisticsEntry parent, final ICalloutField field, final ICalloutInstance callout)
 		{
 			if (parent == null)
 			{
@@ -446,10 +447,10 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 		//
 		// Node level info
-		private static enum Status
+		private enum Status
 		{
 			Unknown, Started, Executed, Skipped, Failed
-		};
+		}
 
 		private Status status = Status.Unknown;
 		private String skipReasonSummary;
@@ -470,13 +471,13 @@ public final class CalloutExecutor implements ICalloutExecutor
 		private CalloutStatisticsEntry(final IntSupplier indexSupplier, final ICalloutField field, final ICalloutInstance callout)
 		{
 			super();
-			
+
 			this.indexSupplier = indexSupplier != null ? indexSupplier : new AtomicInteger(1)::getAndIncrement;
 			index = this.indexSupplier.getAsInt();
-			
+
 			this.calloutField = field;
 			this.columnName = calloutField == null ? null : calloutField.getColumnName();
-			
+
 			this.callout = callout;
 		}
 
@@ -552,7 +553,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 			// Status
 			sb.append(" ").append(Strings.padStart(status.toString(), 8, ' '));
-			
+
 			// ColumnName
 			sb.append(" ").append(columnName != null ? columnName : "(ROOT)");
 
@@ -584,7 +585,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			{
 				sb.append(" - ").append(skipReasonDetails);
 			}
-			
+
 			if(status == Status.Failed && exception != null)
 			{
 				sb.append(" - Exception: ").append(AdempiereException.extractMessage(exception));
@@ -601,7 +602,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 			fieldValueOldOnStart = calloutField == null ? FIELD_VALUE_UNKNOWN : calloutField.getValue();
 			duration = Stopwatch.createStarted();
 			_nodeSummary = null; // reset
-			
+
 			logger.debug("Executing callout {}: {}={} - old={}", callout, calloutField, fieldValueOnStart, fieldValueOldOnStart);
 
 			return this;

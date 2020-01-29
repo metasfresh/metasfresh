@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -79,13 +81,16 @@ public class MaterialEventHandlerRegistry
 
 		for (final MaterialEventHandler handler : handlersForEventClass)
 		{
-			@SuppressWarnings("unchecked")
-			final InvokeHandlerAndLogRequest request = InvokeHandlerAndLogRequest.builder()
-					.handlerClass(handler.getClass())
-					.invokaction(() -> handler.handleEvent(event))
-					.build();
+			try (final MDCCloseable eventHandlerMDC = MDC.putCloseable("MaterialEventHandlerClass", handler.getClass().getName()))
+			{
+				@SuppressWarnings("unchecked")
+				final InvokeHandlerAndLogRequest request = InvokeHandlerAndLogRequest.builder()
+						.handlerClass(handler.getClass())
+						.invokaction(() -> handler.handleEvent(event))
+						.build();
 
-			eventLogUserService.invokeHandlerAndLog(request);
+				eventLogUserService.invokeHandlerAndLog(request);
+			}
 		}
 	}
 }

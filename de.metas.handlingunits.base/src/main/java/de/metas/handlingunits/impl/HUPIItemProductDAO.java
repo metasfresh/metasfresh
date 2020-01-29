@@ -668,7 +668,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(
 			@NonNull final ProductId productId,
-			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ZonedDateTime date)
 	{
 		final IHUPIItemProductQuery query = createHUPIItemProductQuery();
