@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -205,7 +205,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	InvoiceRule getInvoiceRule(I_C_Invoice_Candidate ic);
 
-	Timestamp getDateToInvoice(I_C_Invoice_Candidate ic);
+	LocalDate getDateToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Determine if the candidate has been changed manually or by the background process.<br>
@@ -343,7 +343,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return today date (without time!) to be used by invoicing BLs
 	 */
-	Timestamp getToday();
+	LocalDate getToday();
 
 	/**
 	 * @return current QtyToInvoice_Override or QtyToInvoice

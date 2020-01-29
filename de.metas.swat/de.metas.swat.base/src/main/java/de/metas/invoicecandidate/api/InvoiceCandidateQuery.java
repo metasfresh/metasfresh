@@ -2,7 +2,7 @@ package de.metas.invoicecandidate.api;
 
 import static de.metas.util.Check.isEmpty;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
@@ -10,20 +10,25 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.Builder;
 import lombok.Value;
 
-/** all properties of this filter are {@code AND}ed. */
+/**
+ * All properties of this filter are {@code AND}ed.
+ */
 @Value
 public class InvoiceCandidateQuery
 {
+	OrgId orgId;
+
 	// It's mandatory to have at least one of the following query properties set.
 	// Because we assume that any of these properties alone can ensure a to select only a limited number of invoice candidates.
 	InvoiceCandidateId invoiceCandidateId;
 	ExternalHeaderIdWithExternalLineIds externalIds;
 	BPartnerId billBPartnerId;
-	Timestamp dateToInvoice;
+	LocalDate dateToInvoice;
 	String headerAggregationKey;
 
 	// Any of the following properties may or may not be part of a valid query.
@@ -34,16 +39,18 @@ public class InvoiceCandidateQuery
 
 	@Builder
 	private InvoiceCandidateQuery(
+			@Nullable final OrgId orgId,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@Nullable final ExternalHeaderIdWithExternalLineIds externalIds,
 			@Nullable final BPartnerId billBPartnerId,
-			@Nullable final Timestamp dateToInvoice,
+			@Nullable final LocalDate dateToInvoice,
 			@Nullable final String headerAggregationKey,
 			@Nullable final InvoiceCandidateId excludeC_Invoice_Candidate_ID,
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
 			@Nullable final Boolean processed,
 			@Nullable final Boolean error)
 	{
+		this.orgId = orgId;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.externalIds = externalIds;
 		this.billBPartnerId = billBPartnerId;
@@ -53,6 +60,14 @@ public class InvoiceCandidateQuery
 		this.maxManualC_Invoice_Candidate_ID = maxManualC_Invoice_Candidate_ID;
 		this.processed = processed;
 		this.error = error;
+
+		if (dateToInvoice != null && orgId == null)
+		{
+			throw new AdempiereException("Invalid invoiceCandidateQuery. "
+					+ "If dateToInvoice is specified, then also orgId nedds to be specified (to get the date's time zone)")
+							.appendParametersToMessage()
+							.setParameter("invoiceCandidateQuery", this);
+		}
 
 		if (invoiceCandidateId == null
 				&& externalIds == null
@@ -71,8 +86,9 @@ public class InvoiceCandidateQuery
 	public InvoiceCandidateQuery copy()
 	{
 		final InvoiceCandidateQuery newQuery = InvoiceCandidateQuery.builder()
+				.orgId(orgId)
 				.billBPartnerId(billBPartnerId)
-				.dateToInvoice(new Timestamp(dateToInvoice.getTime()))
+				.dateToInvoice(dateToInvoice)
 				.headerAggregationKey(headerAggregationKey)
 				.excludeC_Invoice_Candidate_ID(excludeC_Invoice_Candidate_ID)
 				.maxManualC_Invoice_Candidate_ID(maxManualC_Invoice_Candidate_ID)
@@ -80,6 +96,19 @@ public class InvoiceCandidateQuery
 				.error(error)
 				.build();
 		return newQuery;
+	}
+
+	public OrgId getOrgIdNotNull()
+	{
+		final OrgId orgId = getOrgId();
+		if (orgId == null)
+		{
+			throw new AdempiereException("Invalid invoiceCandidateQuery. "
+					+ "the calling method requires orgId to be not-null")
+							.appendParametersToMessage()
+							.setParameter("invoiceCandidateQuery", this);
+		}
+		return orgId;
 	}
 
 }
