@@ -24,6 +24,7 @@ package de.metas.banking.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -124,7 +125,7 @@ public class BankStatementBL implements IBankStatementBL
 		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
 		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
 
-		final I_C_Payment possiblePayment = Services.get(IQueryBL.class)
+		final List<I_C_Payment> possiblePayments = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
@@ -134,12 +135,18 @@ public class BankStatementBL implements IBankStatementBL
 				.addEqualsFilter(I_C_Payment.COLUMN_PayAmt, expectedPaymentAmount)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, line.getC_Currency_ID())
 				.create()
-				.first(I_C_Payment.class);
+				.list(I_C_Payment.class);
 
-		// payment exists, so link it
-		if (possiblePayment != null)
+		// don't create a new Payment and don't link any of the payments.
+		// the user must fix this case manually
+		if (possiblePayments.size() > 1)
 		{
-			line.setC_Payment_ID(possiblePayment.getC_Payment_ID());
+			return;
+		}
+
+		if (possiblePayments.size() == 1)
+		{
+			line.setC_Payment_ID(possiblePayments.get(0).getC_Payment_ID());
 			InterfaceWrapperHelper.save(line);
 			return;
 		}
@@ -156,7 +163,7 @@ public class BankStatementBL implements IBankStatementBL
 		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
 		final LocalDate statementLineDate = TimeUtil.asLocalDate(line.getStatementLineDate());
 
-		final Optional<BankAccountId> bankAccountIdOptional = Services.get(IBPBankAccountDAO.class).retrieveByBPartnerAndCurrency(bpartnerId, currencyId);
+		final Optional<BankAccountId> bankAccountIdOptional = Services.get(IBPBankAccountDAO.class).retrieveFirstIdByBPartnerAndCurrency(bpartnerId, currencyId);
 		if (!bankAccountIdOptional.isPresent())
 		{
 			return;
