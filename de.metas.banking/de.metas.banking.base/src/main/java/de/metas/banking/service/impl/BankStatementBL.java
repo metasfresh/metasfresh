@@ -10,22 +10,33 @@ package de.metas.banking.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.banking.api.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.payment.PaymentId;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.DefaultPaymentBuilder;
+import de.metas.payment.api.IPaymentBL;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -97,16 +108,111 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
-			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
+			createFindUnreconciledPaymentsAndLinkToBankStatementLine(line);
+			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
+		}
+	}
+
+	private void createFindUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
+	{
+		// a payment is already linked
+		if (line.getC_Payment_ID() > 0)
+		{
+			return;
+		}
+
+		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
+		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
+
+		final I_C_Payment possiblePayment = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_C_Payment.COLUMN_IsReconciled, false)
+				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, isReceipt)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, line.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Payment.COLUMN_PayAmt, expectedPaymentAmount)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, line.getC_Currency_ID())
+				.create()
+				.first(I_C_Payment.class);
+
+		// payment exists, so link it
+		if (possiblePayment != null)
+		{
+			line.setC_Payment_ID(possiblePayment.getC_Payment_ID());
+			InterfaceWrapperHelper.save(line);
+			return;
+		}
+
+		//
+		// no payment exists for this line, so create one now
+		if (line.getC_BPartner_ID() <= 0)
+		{
+			return;
+		}
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
+		final LocalDate statementLineDate = TimeUtil.asLocalDate(line.getStatementLineDate());
+
+		final Optional<BankAccountId> bankAccountIdOptional = Services.get(IBPBankAccountDAO.class).retrieveByBPartnerAndCurrency(bpartnerId, currencyId);
+		if (!bankAccountIdOptional.isPresent())
+		{
+			return;
+		}
+
+		final PaymentId createdPaymentId = createAndCompletePaymentNoInvoice(bankAccountIdOptional.get(), statementLineDate, expectedPaymentAmount, isReceipt, orgId, bpartnerId, currencyId);
+		line.setC_Payment_ID(createdPaymentId.getRepoId());
+		InterfaceWrapperHelper.save(line);
+	}
+
+	private PaymentId createAndCompletePaymentNoInvoice(
+			@NonNull final BankAccountId bankAccountId,
+			@NonNull final LocalDate dateAcct,
+			@NonNull final BigDecimal payAmt,
+			final boolean isReceipt,
+			@NonNull final OrgId adOrgId,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CurrencyId currencyId)
+	{
+		final DefaultPaymentBuilder paymentBuilder;
+
+		if (isReceipt)
+		{
+			paymentBuilder = Services.get(IPaymentBL.class).newInboundReceiptBuilder();
+		}
+		else
+		{
+			paymentBuilder = Services.get(IPaymentBL.class).newOutboundPaymentBuilder();
+		}
+
+		final I_C_Payment payment = paymentBuilder
+				.adOrgId(adOrgId)
+				.bpartnerId(bpartnerId)
+				.bpBankAccountId(bankAccountId)
+				.currencyId(currencyId)
+				.payAmt(payAmt)
+				.dateAcct(dateAcct)
+				.dateTrx(dateAcct)
+				.description("Automatically created when BankStatement was completed.")
+				.tenderType(TenderType.DirectDeposit)
+				.createAndProcess();
+
+		return PaymentId.ofRepoId(payment.getC_Payment_ID());
+	}
+
+	private void reconcilePaymentsFromBankStatementLine_Ref(final IBankStatementDAO bankStatementDAO, final I_C_BankStatementLine line)
+	{
+		if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
+		{
+			for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
 			{
-				for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
+				if (refLine.getC_Payment_ID() > 0)
 				{
-					if (refLine.getC_Payment_ID() > 0)
-					{
-						final I_C_Payment payment = refLine.getC_Payment();
-						payment.setIsReconciled(true);
-						InterfaceWrapperHelper.save(payment);
-					}
+					final I_C_Payment payment = refLine.getC_Payment();
+					payment.setIsReconciled(true);
+					InterfaceWrapperHelper.save(payment);
 				}
 			}
 		}
@@ -128,7 +234,7 @@ public class BankStatementBL implements IBankStatementBL
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 			{
 				// NOTE: for line, the payment is unlinked in MBankStatement.voidIt()
-				
+
 				for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
 				{
 					//
@@ -190,11 +296,11 @@ public class BankStatementBL implements IBankStatementBL
 						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
 						ClientId.ofRepoId(bsl.getAD_Client_ID()), // AD_Client_ID
 						OrgId.ofRepoId(bsl.getAD_Org_ID()) // AD_Org_ID
-						);
+				);
 
 				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
 				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
-				
+
 				final BigDecimal trxAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getTrxAmt(),
 						refLineCurrencyId, // CurFrom_ID,
@@ -215,7 +321,7 @@ public class BankStatementBL implements IBankStatementBL
 						refLineCurrencyId, // CurFrom_ID,
 						bslCurrencyId) // CurTo_ID
 						.getAmount();
-				
+
 				totalStmtAmt = totalStmtAmt.add(trxAmt);
 				totalTrxAmt = totalTrxAmt.add(trxAmt);
 				totalDiscountAmt = totalDiscountAmt.add(discountAmt);
@@ -255,7 +361,7 @@ public class BankStatementBL implements IBankStatementBL
 
 		bankStatement.setEndingBalance(endingBalance);
 	}
-	
+
 	@Override
 	public void unpost(final I_C_BankStatement bankStatement)
 	{
@@ -264,7 +370,7 @@ public class BankStatementBL implements IBankStatementBL
 		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
 		Services.get(IFactAcctDAO.class).deleteForDocumentModel(bankStatement);
-		
+
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);
 	}
