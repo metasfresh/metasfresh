@@ -200,6 +200,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		bankStatementLine.setC_BankStatement_ID(bankStatementId);
 		bankStatementLine.setImportedBillPartnerName(importRecord.getBill_BPartner_Name());
+		bankStatementLine.setImportedBillPartnerIBAN(importRecord.getIBAN_To());
 		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
 		bankStatementLine.setReferenceNo(importRecord.getReferenceNo());
 		bankStatementLine.setDescription(importRecord.getLineDescription());
