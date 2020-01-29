@@ -115,7 +115,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 
 
 	@Override
-	public Optional<BankAccountId> retrieveBankAccountByBPartnerAndCurrencyAndIBAN(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @NonNull final String iban)
+	public Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @NonNull final String iban)
 	{
 		final BankAccountId bankAccountId = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, bPartnerId)
