@@ -106,7 +106,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			return document.isEdiEnabled();
 		}
 
-		loggable.addLog("return non-updated isEdiEnabled={}", document.isEdiEnabled());
+		logger.debug("return non-updated isEdiEnabled={}", document.isEdiEnabled());
 		return document.isEdiEnabled();
 	}
 
