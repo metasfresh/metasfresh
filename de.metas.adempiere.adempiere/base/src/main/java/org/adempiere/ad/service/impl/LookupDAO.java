@@ -467,13 +467,13 @@ public class LookupDAO implements ILookupDAO
 			return null;
 		}
 		final Object[] sqlParams = new Object[] { AD_Reference_ID };
-		final String sql = "SELECT t.TableName,ck.ColumnName AS KeyColumn,"				// 1..2
-				+ "cd.ColumnName AS DisplayColumn,rt.IsValueDisplayed,cd.IsTranslated,"	// 3..5
+		final String sql = "SELECT t.TableName,ck.ColumnName AS KeyColumn,"                // 1..2
+				+ "cd.ColumnName AS DisplayColumn,rt.IsValueDisplayed,cd.IsTranslated,"    // 3..5
 				+ "rt.WhereClause," // 6
 				+ "rt.OrderByClause," // 7
 				+ "t.AD_Window_ID," // 8
 				+ "t.PO_Window_ID, " // 9
-				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "					// 10..11
+				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "                    // 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", r.Name as ReferenceName"
@@ -775,7 +775,9 @@ public class LookupDAO implements ILookupDAO
 			this.entityTypeColumnIndex = entityTypeColumnIndex;
 		}
 
-		/** Fetch and return all data from this iterator (from current's position until the end) */
+		/**
+		 * Fetch and return all data from this iterator (from current's position until the end)
+		 */
 		public List<NamePair> fetchAll()
 		{
 			final List<NamePair> result = new LinkedList<>();
@@ -808,6 +810,17 @@ public class LookupDAO implements ILookupDAO
 			final String name = getDisplayName(rs, isActive);
 			final String description = rs.getString(MLookupFactory.COLUMNINDEX_Description);
 
+			String validationMessage;
+			try
+			{
+				validationMessage = rs.getString(MLookupFactory.COLUMNINDEX_ValidationMsg);
+			}
+			catch (Exception e)
+			{
+				validationMessage = null;
+				logger.info("Only used in DocAction dropdown");
+			}
+
 			final NamePair item;
 			if (numericKey)
 			{
@@ -817,7 +830,7 @@ public class LookupDAO implements ILookupDAO
 			else
 			{
 				final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-				item = ValueNamePair.of(value, name, description);
+				item = ValueNamePair.of(value, name, description, validationMessage);
 			}
 
 			lastItemActive = isActive;
@@ -911,7 +924,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);
-	}	// run
+	}    // run
 
 	@Override
 	public Object createValidationKey(final IValidationContext validationCtx, final MLookupInfo lookupInfo)
@@ -1117,5 +1130,5 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		return directValue;
-	}	// getDirect
+	}    // getDirect
 }

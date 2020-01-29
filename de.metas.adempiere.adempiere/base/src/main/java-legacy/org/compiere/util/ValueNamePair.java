@@ -18,6 +18,7 @@ package org.compiere.util;
 
 import java.util.Objects;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,7 +35,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class ValueNamePair extends NamePair
 {
 	private static final long serialVersionUID = -8315081335749462163L;
-
 
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
@@ -53,24 +53,46 @@ public final class ValueNamePair extends NamePair
 		{
 			return EMPTY;
 		}
-		return new ValueNamePair(value, name, description);
+		return new ValueNamePair(value, name, description, null/*validation message*/);
 	}
 
-	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
+	@JsonCreator
+	public static final ValueNamePair of(
+			@JsonProperty("v") final String value,
+			@JsonProperty("n") final String name,
+			@JsonProperty("description") final String description,
+			@Nullable @JsonProperty("validationMsg") final String validationMsg)
+	{
+		if (Objects.equals(value, EMPTY.getValue()) && Objects.equals(name, EMPTY.getName()))
+		{
+			return EMPTY;
+		}
+		return new ValueNamePair(value, name, description, validationMsg);
+	}
+
+	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */, null/*validation message*/);
 
 	/**
 	 * Construct KeyValue Pair
 	 *
 	 * @param value value
-	 * @param name string representation
+	 * @param name  string representation
 	 */
 	public ValueNamePair(final String value, final String name, final String help)
 	{
-		super(name, help);
+		super(name, help, null);
 		m_value = value == null ? "" : value;
 	}   // ValueNamePair
 
-	/** The Value */
+	public ValueNamePair(final String value, final String name, final String help, final String validationMsg)
+	{
+		super(name, help, validationMsg);
+		m_value = value == null ? "" : value;
+	}   // ValueNamePair
+
+	/**
+	 * The Value
+	 */
 	private final String m_value;
 
 	/**
@@ -82,7 +104,7 @@ public final class ValueNamePair extends NamePair
 	public String getValue()
 	{
 		return m_value;
-	}	// getValue
+	}    // getValue
 
 	/**
 	 * Get ID
@@ -94,7 +116,7 @@ public final class ValueNamePair extends NamePair
 	public String getID()
 	{
 		return m_value;
-	}	// getID
+	}    // getID
 
 	@Override
 	public boolean equals(final Object obj)
@@ -111,7 +133,7 @@ public final class ValueNamePair extends NamePair
 					&& Objects.equals(this.getName(), other.getName());
 		}
 		return false;
-	}	// equals
+	}    // equals
 
 	/**
 	 * Return Hashcode of value
@@ -124,4 +146,4 @@ public final class ValueNamePair extends NamePair
 		return m_value.hashCode();
 	}   // hashCode
 
-}	// KeyValuePair
+}    // KeyValuePair

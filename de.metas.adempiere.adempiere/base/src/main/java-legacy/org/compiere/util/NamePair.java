@@ -35,6 +35,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 
 	private final String m_name;
 	private final String m_description;
+	private final String m_validationMessage;
 
 	/**
 	 * @param name (Display) Name of the Pair
@@ -43,6 +44,14 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	{
 		m_name = coalesce(name, "");
 		m_description = description;
+		m_validationMessage = null;
+	}
+
+	protected NamePair(final String name, final String description, final String validationMessage)
+	{
+		m_name = coalesce(name, "");
+		m_description = description;
+		m_validationMessage = validationMessage;
 	}
 
 	/**
@@ -58,6 +67,12 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	public final String getDescription()
 	{
 		return m_description;
+	}
+
+	@JsonProperty("validationMsg")
+	public final String getValidationMsg()
+	{
+		return m_validationMessage;
 	}
 
 	/**
@@ -80,7 +95,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 		String s1 = o1 == null ? "" : o1.toString();
 		String s2 = o2 == null ? "" : o2.toString();
 		return s1.compareTo(s2);    // sort order ??
-	}	// compare
+	}    // compare
 
 	/**
 	 * Comparator Interface (based on toString value)
@@ -94,32 +109,32 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 		String s1 = o1 == null ? "" : o1.toString();
 		String s2 = o2 == null ? "" : o2.toString();
 		return s1.compareTo(s2);    // sort order ??
-	}	// compare
+	}    // compare
 
 	/**
 	 * Comparable Interface (based on toString value)
 	 *
 	 * @param o the Object to be compared.
 	 * @return a negative integer, zero, or a positive integer as this object
-	 *         is less than, equal to, or greater than the specified object.
+	 * is less than, equal to, or greater than the specified object.
 	 */
 	@Override
 	public final int compareTo(Object o)
 	{
 		return compare(this, o);
-	}	// compareTo
+	}    // compareTo
 
 	/**
 	 * Comparable Interface (based on toString value)
 	 *
 	 * @param o the Object to be compared.
 	 * @return a negative integer, zero, or a positive integer as this object
-	 *         is less than, equal to, or greater than the specified object.
+	 * is less than, equal to, or greater than the specified object.
 	 */
 	public final int compareTo(NamePair o)
 	{
 		return compare(this, o);
-	}	// compareTo
+	}    // compareTo
 
 	/**
 	 * To String - returns name
@@ -140,5 +155,5 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 		StringBuilder sb = new StringBuilder(getID());
 		sb.append("=").append(m_name);
 		return sb.toString();
-	}	// toStringX
-}	// NamePair
+	}    // toStringX
+}    // NamePair

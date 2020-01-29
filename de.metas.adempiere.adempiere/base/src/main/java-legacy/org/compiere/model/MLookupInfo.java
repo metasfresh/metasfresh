@@ -70,9 +70,9 @@ public final class MLookupInfo implements Serializable, Cloneable
 			@NonNull final String sqlQuery_Trl,
 			@NonNull final String tableName,
 			@NonNull final String keyColumn,
-			final AdWindowId zoomSO_Window_ID, 
-			final AdWindowId zoomPO_Window_ID, 
-			final AdWindowId zoomAD_Window_ID_Override, 
+			final AdWindowId zoomSO_Window_ID,
+			final AdWindowId zoomPO_Window_ID,
+			final AdWindowId zoomAD_Window_ID_Override,
 			final MQuery zoomQuery)
 	{
 		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
@@ -98,16 +98,21 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private List<ILookupDisplayColumn> displayColumns = Collections.emptyList();
 
 	private TranslatableParameterizedString descriptionColumnSQL = TranslatableParameterizedString.EMPTY;
+	private TranslatableParameterizedString validationMsgColumnSQL = TranslatableParameterizedString.EMPTY;
 
 	private TranslatableParameterizedString selectSqlPart = TranslatableParameterizedString.EMPTY;
 	private TranslatableParameterizedString fromSqlPart = TranslatableParameterizedString.EMPTY;
 	private String whereClauseSqlPart = null;
 
-	/** SQL WHERE part (without WHERE keyword); this SQL includes context variables references */
+	/**
+	 * SQL WHERE part (without WHERE keyword); this SQL includes context variables references
+	 */
 	private String whereClauseDynamicSqlPart = null;
 	private String orderBySqlPart = null;
 
-	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
+	/**
+	 * True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation)
+	 */
 	private boolean securityDisabled = false;
 
 	private final AdWindowId zoomSO_Window_ID;
@@ -115,21 +120,33 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private final AdWindowId zoomAD_Window_ID_Override;
 	private final MQuery zoomQuery;
 
-	/** Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?) */
+	/**
+	 * Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?)
+	 */
 	private TranslatableParameterizedString sqlQueryDirect = TranslatableParameterizedString.EMPTY;
-	/** Parent Flag */
+	/**
+	 * Parent Flag
+	 */
 	private boolean IsParent = false;
-	/** Key Flag */
+	/**
+	 * Key Flag
+	 */
 	private boolean IsKey = false;
 	private IValidationRule _validationRule = NullValidationRule.instance;
 	private IValidationRule _validationRuleEffective = null; // lazy
 
-	/** WindowNo */
+	/**
+	 * WindowNo
+	 */
 	private int WindowNo;
 
-	/** AD_Reference_ID */
+	/**
+	 * AD_Reference_ID
+	 */
 	private int DisplayType;
-	/** CreadedBy?updatedBy */
+	/**
+	 * CreadedBy?updatedBy
+	 */
 	private boolean IsCreadedUpdatedBy = false;
 	@Deprecated
 	public String InfoFactoryClass = null;
@@ -151,7 +168,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 				.append("-Direct=").append(sqlQueryDirect)
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	/**
 	 * Clone
@@ -171,7 +188,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 			logger.error("Failed cloning: " + this, e);
 		}
 		return null;
-	}	// clone
+	}    // clone
 
 	public AdWindowId getZoomSO_Window_ID()
 	{
@@ -229,6 +246,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	// metas
+
 	/**
 	 * @return effective validation rule
 	 */
@@ -307,6 +325,16 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public TranslatableParameterizedString getDescriptionColumnSQL()
 	{
 		return descriptionColumnSQL;
+	}
+
+	public TranslatableParameterizedString getValidationMsgColumnSQL()
+	{
+		return validationMsgColumnSQL;
+	}
+
+	/* package */ void setValidationMsgColumnSQL(final String validationMsgColumnSQL_BaseLang, final String validationMsgColumnSQL_Trl)
+	{
+		this.validationMsgColumnSQL = TranslatableParameterizedString.of(CTXNAME_AD_Language, validationMsgColumnSQL_BaseLang, validationMsgColumnSQL_Trl);
 	}
 
 	/* package */ void setDescriptionColumnSQL(
@@ -417,7 +445,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	/**
-	 *
 	 * @return true if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation)
 	 */
 	public boolean isSecurityDisabled()

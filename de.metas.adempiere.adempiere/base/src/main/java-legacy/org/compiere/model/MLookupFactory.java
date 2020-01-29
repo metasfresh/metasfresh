@@ -77,6 +77,7 @@ public class MLookupFactory
 	public static final int COLUMNINDEX_IsActive = 4;
 	public static final int COLUMNINDEX_Description = 5;
 	public static final int COLUMNINDEX_EntityType = 6;
+	public static final int COLUMNINDEX_ValidationMsg = 7;
 
 	/** Logging */
 	private static final Logger s_log = LogManager.getLogger(MLookupFactory.class);
@@ -361,6 +362,9 @@ public class MLookupFactory
 		final String descriptionColumnSQL_BaseLang = "AD_Ref_List.Description";
 		final String descriptionColumnSQL_Trl = "trl.Description";
 
+		final String validationMsgColumnSQL_BaseLang = "AD_Ref_List.ValidationMessage";
+		final String validationMsgColumnSQL_Trl = "trl.ValidationMessage";
+
 		// SQL Select
 		final StringBuilder sqlSelect_BaseLang = new StringBuilder("SELECT ") // Key, Value
 				.append(" NULL") // Key
@@ -369,6 +373,7 @@ public class MLookupFactory
 				.append(",AD_Ref_List.IsActive") // IsActive
 				.append(",").append(descriptionColumnSQL_BaseLang)
 				.append(",AD_Ref_List.EntityType") // EntityType
+				.append(",").append(validationMsgColumnSQL_BaseLang)
 				.append(" FROM ").append(sqlFrom_BaseLang);
 
 		final StringBuilder sqlSelect_Trl = new StringBuilder("SELECT ") // Key, Value
@@ -378,6 +383,7 @@ public class MLookupFactory
 				.append(",AD_Ref_List.IsActive") // IsActive
 				.append(",").append(descriptionColumnSQL_Trl)
 				.append(",AD_Ref_List.EntityType") // EntityType
+				.append(",").append(validationMsgColumnSQL_Trl)
 				.append(" FROM ").append(sqlFrom_Trl);
 
 		// SQL WHERE
@@ -417,6 +423,7 @@ public class MLookupFactory
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
 		lookupInfo.setDescriptionColumnSQL(descriptionColumnSQL_BaseLang, descriptionColumnSQL_Trl);
+		lookupInfo.setValidationMsgColumnSQL(validationMsgColumnSQL_BaseLang, validationMsgColumnSQL_Trl);
 
 		lookupInfo.setSelectSqlPart(sqlSelect_BaseLang.toString(), sqlSelect_Trl.toString());
 		lookupInfo.setFromSqlPart(sqlFrom_BaseLang, sqlFrom_Trl);
