@@ -52,6 +52,8 @@ public interface IBPBankAccountDAO extends ISingletonService
 	 */
 	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID);
 
+	Optional<BankAccountId> retrieveFirstIdByBPartnerAndCurrency(@NonNull BPartnerId bPartnerId, @NonNull CurrencyId currencyId);
+
 	Optional<BankAccountId> retrieveBankAccountByBPartnerAndCurrencyAndIBAN(@NonNull BPartnerId bPartnerId, @NonNull CurrencyId currencyId, @NonNull String iban);
 
 	void deactivateByBPartnerExcept(BPartnerId bpartnerId, Collection<BPartnerBankAccountId> exceptIds);
