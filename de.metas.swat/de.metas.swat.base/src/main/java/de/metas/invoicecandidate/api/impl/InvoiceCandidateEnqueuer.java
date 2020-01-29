@@ -178,7 +178,7 @@ import lombok.NonNull;
 
 		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
 		{
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.withTableRecordReference(icRecord))
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
 				if (isFailOnInvoiceCandidateError() && icRecord.isError())
