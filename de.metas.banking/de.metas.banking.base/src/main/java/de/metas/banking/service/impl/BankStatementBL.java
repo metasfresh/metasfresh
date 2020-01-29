@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
@@ -114,7 +115,8 @@ public class BankStatementBL implements IBankStatementBL
 		}
 	}
 
-	private void createFindUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
+	@VisibleForTesting
+	void createFindUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
 	{
 		// a payment is already linked
 		if (line.getC_Payment_ID() > 0)
