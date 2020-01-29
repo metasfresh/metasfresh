@@ -36,6 +36,8 @@ public final class ValueNamePair extends NamePair
 {
 	private static final long serialVersionUID = -8315081335749462163L;
 
+	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */, null/*validation message*/);
+
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name)
@@ -69,8 +71,6 @@ public final class ValueNamePair extends NamePair
 		}
 		return new ValueNamePair(value, name, description, validationMsg);
 	}
-
-	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */, null/*validation message*/);
 
 	/**
 	 * Construct KeyValue Pair

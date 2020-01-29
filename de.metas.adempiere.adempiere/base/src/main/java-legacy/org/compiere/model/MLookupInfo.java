@@ -54,36 +54,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 {
 	private static final transient Logger logger = LogManager.getLogger(MLookupInfo.class);
 
-	/**************************************************************************
-	 * Constructor.
-	 * (called from MLookupFactory)
-	 *
-	 * @param sqlQuery SQL query
-	 * @param tableName table name
-	 * @param keyColumn key column
-	 * @param zoomSO_Window_ID zoom window
-	 * @param zoomPO_Window_ID PO zoom window
-	 * @param zoomQuery zoom query
-	 */
-	/* package */ MLookupInfo(
-			@NonNull final String sqlQuery_BaseLang,
-			@NonNull final String sqlQuery_Trl,
-			@NonNull final String tableName,
-			@NonNull final String keyColumn,
-			final AdWindowId zoomSO_Window_ID,
-			final AdWindowId zoomPO_Window_ID,
-			final AdWindowId zoomAD_Window_ID_Override,
-			final MQuery zoomQuery)
-	{
-		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
-		TableName = tableName;
-		KeyColumn = keyColumn;
-		this.zoomSO_Window_ID = zoomSO_Window_ID;
-		this.zoomPO_Window_ID = zoomPO_Window_ID;
-		this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
-		this.zoomQuery = zoomQuery;
-	}   // MLookupInfo
-
 	static final long serialVersionUID = -7958664359250070233L;
 
 	/* package */static final CtxName CTXNAME_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
@@ -154,6 +124,36 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private boolean queryHasEntityType = false;
 
 	private boolean translated = false;
+
+	/**************************************************************************
+	 * Constructor.
+	 * (called from MLookupFactory)
+	 *
+	 * @param sqlQuery SQL query
+	 * @param tableName table name
+	 * @param keyColumn key column
+	 * @param zoomSO_Window_ID zoom window
+	 * @param zoomPO_Window_ID PO zoom window
+	 * @param zoomQuery zoom query
+	 */
+	/* package */ MLookupInfo(
+			@NonNull final String sqlQuery_BaseLang,
+			@NonNull final String sqlQuery_Trl,
+			@NonNull final String tableName,
+			@NonNull final String keyColumn,
+			final AdWindowId zoomSO_Window_ID,
+			final AdWindowId zoomPO_Window_ID,
+			final AdWindowId zoomAD_Window_ID_Override,
+			final MQuery zoomQuery)
+	{
+		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
+		TableName = tableName;
+		KeyColumn = keyColumn;
+		this.zoomSO_Window_ID = zoomSO_Window_ID;
+		this.zoomPO_Window_ID = zoomPO_Window_ID;
+		this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
+		this.zoomQuery = zoomQuery;
+	}   // MLookupInfo
 
 	/**
 	 * String representation
