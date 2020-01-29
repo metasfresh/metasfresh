@@ -172,7 +172,7 @@ public class ShipmentScheduleEnqueuer
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.withTableRecordReference(shipmentSchedule))
+			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule))
 			{
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
