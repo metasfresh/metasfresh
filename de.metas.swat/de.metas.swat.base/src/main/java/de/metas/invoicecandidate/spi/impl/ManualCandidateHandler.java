@@ -44,6 +44,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
@@ -132,18 +133,18 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		final String trxName = InterfaceWrapperHelper.getTrxName(icRecord);
 
 		final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
+				.orgId(OrgId.ofRepoIdOrAny(icRecord.getAD_Org_ID()))
 				.headerAggregationKey(icRecord.getHeaderAggregationKey())
 				.maxManualC_Invoice_Candidate_ID(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID() - 1)) // For manual candidates, fetch only those which were created before this one
 				.processed(false) // only those which are not processed
 				.error(false)
 				.build();
 		final int adClientId = icRecord.getAD_Client_ID();
-		final int adOrgId = icRecord.getAD_Org_ID();
 		final CurrencyId targetCurrencyId = CurrencyId.ofRepoId(icRecord.getC_Currency_ID());
 
 		// TODO: handle the case when everything is negative
 
-		final BigDecimal amtOthers = invoiceCandDAO.retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, adOrgId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
+		final BigDecimal amtOthers = invoiceCandDAO.retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
 		logger.debug("Amt on other lines: {}", amtOthers);
 
 		final BigDecimal amtTotal = netAmtToInvoice.add(amtOthers);
