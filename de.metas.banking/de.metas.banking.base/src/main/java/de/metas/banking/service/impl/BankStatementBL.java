@@ -177,7 +177,11 @@ public class BankStatementBL implements IBankStatementBL
 		// a payment is already linked
 		if (line.getC_Payment_ID() > 0)
 		{
-			return false;
+			return true;
+		}
+		if (line.getC_BPartner_ID() <= 0)
+		{
+			return true;
 		}
 
 		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
