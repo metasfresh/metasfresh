@@ -642,7 +642,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 
 			// Balance source amounts
-			if (!fact.isSourceBalanced())
+			if (fact.isSingleCurrency() && !fact.isSourceBalanced())
 			{
 				fact.balanceSource();
 				if (!fact.isSourceBalanced())

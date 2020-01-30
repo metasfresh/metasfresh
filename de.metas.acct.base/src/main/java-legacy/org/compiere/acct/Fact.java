@@ -260,6 +260,24 @@ public final class Fact
 		return postingType;
 	}
 
+	public boolean isSingleCurrency()
+	{
+		CurrencyId currencyId = null;
+		for (final FactLine line : m_lines)
+		{
+			if (currencyId == null)
+			{
+				currencyId = line.getCurrencyId();
+			}
+			else if (!CurrencyId.equals(currencyId, line.getCurrencyId()))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	/**************************************************************************
 	 * Are the lines Source Balanced
 	 *
