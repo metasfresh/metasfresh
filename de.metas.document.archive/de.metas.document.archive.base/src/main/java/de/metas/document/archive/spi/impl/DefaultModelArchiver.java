@@ -1,5 +1,8 @@
 package de.metas.document.archive.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -11,9 +14,12 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_DocType;
@@ -124,31 +130,34 @@ public class DefaultModelArchiver
 		// Mark as processed
 		markProcessed();
 
-		//
-		// Create PDF data
 		final ReportEngine reportEngine = createReportEngine();
-		final byte[] pdfData = reportEngine.createPDFData();
-		if (pdfData == null || pdfData.length == 0)
-		{
-			throw new AdempiereException("Cannot create PDF data for " + this);
-		}
-		logger.debug("PDF Data: {} bytes", pdfData.length);
-
 		//
 		// PrintInfo (needed for archiving)
 		final PrintInfo printInfo = reportEngine.getPrintInfo();
 
-		final MPrintFormat printFormat = reportEngine.getPrintFormat();
-		if (printFormat != null && printFormat.getJasperProcess_ID() > 0)
-		{
-			printInfo.setAD_Process_ID(printFormat.getJasperProcess_ID());
-		}
-		logger.debug("PrintInfo: {}", printInfo);
+		ITableRecordReference reference = TableRecordReference.of(printInfo.getAD_Table_ID(), printInfo.getRecord_ID());
 
 		//
 		// Create AD_Archive and save it
 		final I_AD_Archive archive;
+		final byte pdfData[];
+		if (reportEngine.getPrintFormat() != null)
 		{
+
+			pdfData = reportEngine.createPDFData();
+			if (pdfData == null || pdfData.length == 0)
+			{
+				throw new AdempiereException("Cannot create PDF data for " + this);
+			}
+			logger.debug("PDF Data: {} bytes", pdfData.length);
+
+			final MPrintFormat printFormat = reportEngine.getPrintFormat();
+			if (printFormat != null && printFormat.getJasperProcess_ID() > 0)
+			{
+				printInfo.setAD_Process_ID(printFormat.getJasperProcess_ID());
+			}
+			logger.debug("PrintInfo: {}", printInfo);
+
 			final boolean forceArchive = true; // always force archive (i.e. don't check again if document needs to be archived)
 			archive = InterfaceWrapperHelper.create(archiveBL.archive(pdfData, printInfo, forceArchive, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
 			// archive.setIsDirectPrint(true);
@@ -169,6 +178,21 @@ public class DefaultModelArchiver
 
 			InterfaceWrapperHelper.save(archive);
 			logger.debug("Archive: {}", archive);
+		}
+		else
+		{
+			final List<org.compiere.model.I_AD_Archive> lastArchives = Services.get(IArchiveDAO.class).retrieveLastArchives(getCtx(), reference, 1);
+
+			if (lastArchives.isEmpty())
+			{
+				throw new AdempiereException("@NoDocPrintFormat@@NoArchive@");
+			}
+
+			final org.compiere.model.I_AD_Archive lastArchive = lastArchives.get(0);
+
+			archive = load(lastArchive.getAD_Archive_ID(), I_AD_Archive.class);
+
+			pdfData = archive == null? null : archive.getBinaryData();
 		}
 
 		//
@@ -370,14 +394,20 @@ public class DefaultModelArchiver
 			{
 				printFormatId = getAD_PrintFormat_ID();
 			}
-			if (printFormatId <= 0)
-			{
-				throw new AdempiereException("NoDocPrintFormat");
-			}
-			final MPrintFormat printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
 
-			final Language language = getLanguage();
-			printFormat.setLanguage(language);
+			final MPrintFormat printFormat;
+
+			if (printFormatId > 0)
+			{
+				printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
+				final Language language = getLanguage();
+				printFormat.setLanguage(language);
+			}
+
+			else
+			{
+				printFormat = null;
+			}
 
 			reportEngine = new ReportEngine(ctx, printFormat, query, printInfo, trxName);
 		}
