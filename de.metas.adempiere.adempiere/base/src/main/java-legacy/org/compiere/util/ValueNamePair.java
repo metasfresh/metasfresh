@@ -36,7 +36,7 @@ public final class ValueNamePair extends NamePair
 {
 	private static final long serialVersionUID = -8315081335749462163L;
 
-	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */, null/*validation message*/);
+	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
 
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
@@ -45,7 +45,6 @@ public final class ValueNamePair extends NamePair
 		return of(value, name, null/*help*/);
 	}
 
-	@JsonCreator
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name,
@@ -55,7 +54,7 @@ public final class ValueNamePair extends NamePair
 		{
 			return EMPTY;
 		}
-		return new ValueNamePair(value, name, description, null/*validation message*/);
+		return new ValueNamePair(value, name, description);
 	}
 
 	@JsonCreator
@@ -80,14 +79,16 @@ public final class ValueNamePair extends NamePair
 	 */
 	public ValueNamePair(final String value, final String name, final String help)
 	{
-		super(name, help, null);
+		super(name, help);
 		m_value = value == null ? "" : value;
+		m_validationMessage = null;
 	}   // ValueNamePair
 
-	public ValueNamePair(final String value, final String name, final String help, final String validationMsg)
+	public ValueNamePair(final String value, final String name, final String help, @Nullable final String validationMsg)
 	{
-		super(name, help, validationMsg);
+		super(name, help);
 		m_value = value == null ? "" : value;
+		m_validationMessage = validationMsg;
 	}   // ValueNamePair
 
 	/**
@@ -105,6 +106,23 @@ public final class ValueNamePair extends NamePair
 	{
 		return m_value;
 	}    // getValue
+
+	/**
+	 * The Validation Message
+	 */
+	private final String m_validationMessage;
+
+	/**
+	 * Get Validation Message
+	 *
+	 * @return Validation Message
+	 */
+
+	@JsonProperty("validationmessage")
+	public final String getValidationMessage()
+	{
+		return m_validationMessage;
+	}
 
 	/**
 	 * Get ID

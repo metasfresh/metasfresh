@@ -35,7 +35,6 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 
 	private final String m_name;
 	private final String m_description;
-	private final String m_validationMessage;
 
 	/**
 	 * @param name (Display) Name of the Pair
@@ -44,14 +43,6 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	{
 		m_name = coalesce(name, "");
 		m_description = description;
-		m_validationMessage = null;
-	}
-
-	protected NamePair(final String name, final String description, final String validationMessage)
-	{
-		m_name = coalesce(name, "");
-		m_description = description;
-		m_validationMessage = validationMessage;
 	}
 
 	/**
@@ -67,12 +58,6 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	public final String getDescription()
 	{
 		return m_description;
-	}
-
-	@JsonProperty("validationMsg")
-	public final String getValidationMsg()
-	{
-		return m_validationMessage;
 	}
 
 	/**
