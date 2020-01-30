@@ -210,13 +210,14 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		final DefaultPaymentBuilder paymentBuilder;
 
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 		if (isReceipt)
 		{
-			paymentBuilder = Services.get(IPaymentBL.class).newInboundReceiptBuilder();
+			paymentBuilder = paymentBL.newInboundReceiptBuilder();
 		}
 		else
 		{
-			paymentBuilder = Services.get(IPaymentBL.class).newOutboundPaymentBuilder();
+			paymentBuilder = paymentBL.newOutboundPaymentBuilder();
 		}
 
 		final I_C_Payment payment = paymentBuilder
