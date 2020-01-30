@@ -53,7 +53,7 @@ public class NamePairJsonTest
 	public void test_ValueNamePair() throws Exception
 	{
 		testJsonIdentical(ValueNamePair.EMPTY, ValueNamePair.class);
-		testJsonEquals(ValueNamePair.of("1", "test-name-1", "test-description-1"), ValueNamePair.class);
+		testJsonEquals(ValueNamePair.of("1", "test-name-1", "test-description-1", "test-validation-message-1"), ValueNamePair.class);
 	}
 
 	private <T> void testJsonEquals(final T value, final Class<T> type) throws Exception

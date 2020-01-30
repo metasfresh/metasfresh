@@ -38,6 +38,11 @@ public final class ValueNamePair extends NamePair
 
 	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
 
+	/**
+	 * The Validation Message
+	 */
+	private final String m_validationMessage;
+
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name)
@@ -108,17 +113,12 @@ public final class ValueNamePair extends NamePair
 	}    // getValue
 
 	/**
-	 * The Validation Message
-	 */
-	private final String m_validationMessage;
-
-	/**
 	 * Get Validation Message
 	 *
 	 * @return Validation Message
 	 */
 
-	@JsonProperty("validationmessage")
+	@JsonProperty("validationMsg")
 	public final String getValidationMessage()
 	{
 		return m_validationMessage;
