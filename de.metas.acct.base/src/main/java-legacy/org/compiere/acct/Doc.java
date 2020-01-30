@@ -77,6 +77,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
@@ -615,15 +616,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setDetailMessage("No fact");
 			}
 
-			//
-			// p_Status = STATUS_PostPrepared;
-
 			// check accounts
-			if (!fact.checkAccounts())
+			final BooleanWithReason checkAccountsResult = fact.checkAccounts();
+			if (checkAccountsResult.isFalse())
 			{
 				throw newPostingException()
 						.setAcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.InvalidAccount)
+						.setDetailMessage(checkAccountsResult.getReason())
 						.setFact(fact);
 			}
 
