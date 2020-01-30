@@ -275,7 +275,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		// Case: WeightNet is same as HU Storage Qty
 		if (qtyToAllocateAbs.signum() == 0)
 		{
-			logger.debug("HU Storage's Qty is same as WeightNet => nothing to do");
+			logger.debug("HU Storage's Qty is same as WeightNet -> nothing to do");
 			return;
 		}
 

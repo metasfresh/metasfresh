@@ -396,6 +396,20 @@ class InvoiceCandidateTest
 	}
 
 	@Test
+	void sales_immediate_catchWeight_qtyInvoicedOverride_less_than_qtyOrdered()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_immediate_catchWeight_qtyInvoicedOverride_less_than_qtyOrdered");
+		assertThat(invoiceCandidate.getQtyToInvoiceOverrideInStockUom()).isEqualByComparingTo("4"); // guard
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("8");
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("4"); // qtyToInvoiceOverride
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
 	void sales_afterOrderDelivered()
 	{
 		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_afterOrderDelivered");
