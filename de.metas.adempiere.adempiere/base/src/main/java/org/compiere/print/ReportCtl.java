@@ -16,15 +16,21 @@
  *****************************************************************************/
 package org.compiere.print;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
@@ -254,57 +260,72 @@ public final class ReportCtl
 		final Properties ctx = Env.getCtx();
 		final PInstanceId adPInstanceId = processInfo.getPinstanceId();
 		final ReportEngine re = ReportEngine.get(ctx, reportEngineDocumentType, recordId, adPInstanceId, ITrx.TRXNAME_None);
+
 		if (re == null)
 		{
-			throw new AdempiereException("@NoDocPrintFormat@");
-		}
+			ITableRecordReference reference = TableRecordReference.of(adTableId, recordId);
 
-		final MPrintFormat printFormat = re.getPrintFormat();
-		if (printFormat == null)
-		{
-			throw new AdempiereException("@NoDocPrintFormat@");
-		}
+			final List<I_AD_Archive> lastArchive = Services.get(IArchiveDAO.class).retrieveLastArchives(ctx, reference, 1);
 
-		if (printFormat.getJasperProcess_ID() > 0)
-		{
-			final ProcessExecutionResult jasperProcessResult = ProcessInfo.builder()
-					//
-					.setCtx(processInfo.getCtx())
-					.setCreateTemporaryCtx()
-					.setClientId(processInfo.getClientId())
-					.setUserId(processInfo.getUserId())
-					.setRoleId(processInfo.getRoleId())
-					.setWhereClause(processInfo.getWhereClause())
-					.setWindowNo(processInfo.getWindowNo())
-					.setTabNo(processInfo.getTabNo())
-					.setPrintPreview(processInfo.isPrintPreview())
-					//
-					.setAD_Process_ID(printFormat.getJasperProcess_ID())
-					.setRecord(adTableId, recordId)
-					.setReportLanguage(processInfo.getReportLanguage())
-					//
-					// Execute Process
-					.buildAndPrepareExecution()
-					.executeSync()
-					.getResult();
+			if (lastArchive.isEmpty())
+			{
+				throw new AdempiereException("@NoDocPrintFormat@@NoArchive@");
+			}
 
-			//
-			// Throw exception in case of failure
-			jasperProcessResult.propagateErrorIfAny();
+			final I_AD_Archive archive = lastArchive.get(0);
 
-			//
-			// Update caller process result
 			final ProcessExecutionResult callerProcessResult = processInfo.getResult();
-			callerProcessResult.setReportData(jasperProcessResult.getReportData(), jasperProcessResult.getReportFilename(), jasperProcessResult.getReportContentType());
+			final String fileName = archive.getName();
+			callerProcessResult.setReportData(archive.getBinaryData(), fileName, MimeType.getMimeType(fileName));
 		}
 		else
 		{
-			final boolean isPrintPreview = processInfo.isPrintPreview();
-			final String printerName = getPrinterName();
-			createOutput(re, isPrintPreview, printerName);
-			if (!isPrintPreview)
+			final MPrintFormat printFormat = re.getPrintFormat();
+			if (printFormat == null)
 			{
-				ReportEngine.printConfirm(reportEngineDocumentType, recordId);
+				throw new AdempiereException("@NoDocPrintFormat@");
+			}
+			else if (printFormat.getJasperProcess_ID() > 0)
+			{
+				final ProcessExecutionResult jasperProcessResult = ProcessInfo.builder()
+						//
+						.setCtx(processInfo.getCtx())
+						.setCreateTemporaryCtx()
+						.setClientId(processInfo.getClientId())
+						.setUserId(processInfo.getUserId())
+						.setRoleId(processInfo.getRoleId())
+						.setWhereClause(processInfo.getWhereClause())
+						.setWindowNo(processInfo.getWindowNo())
+						.setTabNo(processInfo.getTabNo())
+						.setPrintPreview(processInfo.isPrintPreview())
+						//
+						.setAD_Process_ID(printFormat.getJasperProcess_ID())
+						.setRecord(adTableId, recordId)
+						.setReportLanguage(processInfo.getReportLanguage())
+						//
+						// Execute Process
+						.buildAndPrepareExecution()
+						.executeSync()
+						.getResult();
+
+				//
+				// Throw exception in case of failure
+				jasperProcessResult.propagateErrorIfAny();
+
+				//
+				// Update caller process result
+				final ProcessExecutionResult callerProcessResult = processInfo.getResult();
+				callerProcessResult.setReportData(jasperProcessResult.getReportData(), jasperProcessResult.getReportFilename(), jasperProcessResult.getReportContentType());
+			}
+			else
+			{
+				final boolean isPrintPreview = processInfo.isPrintPreview();
+				final String printerName = getPrinterName();
+				createOutput(re, isPrintPreview, printerName);
+				if (!isPrintPreview)
+				{
+					ReportEngine.printConfirm(reportEngineDocumentType, recordId);
+				}
 			}
 		}
 	}
