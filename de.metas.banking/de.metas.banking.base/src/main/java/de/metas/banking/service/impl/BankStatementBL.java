@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
@@ -182,7 +183,9 @@ public class BankStatementBL implements IBankStatementBL
 		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
 		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
 
-		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()), BPartnerId.ofRepoId(line.getC_BPartner_ID()));
+		final Money money = Money.of(expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()));
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
+		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, bPartnerId, money);
 
 		// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
 		// The user must fix this case manually by choosing the correct Payment

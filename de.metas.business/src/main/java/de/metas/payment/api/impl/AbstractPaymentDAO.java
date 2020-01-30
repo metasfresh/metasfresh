@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -221,7 +221,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 
 	@Override
-	public ImmutableSet<PaymentId> retrieveAllMatchingPayments(final boolean isReceipt, @NonNull final BigDecimal paymentAmount, @NonNull final CurrencyId currencyId, @NonNull final BPartnerId bPartnerId)
+	public ImmutableSet<PaymentId> retrieveAllMatchingPayments(final boolean isReceipt, @NonNull final BPartnerId bPartnerId, @NonNull final Money money)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
@@ -230,8 +230,8 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, false)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, paymentAmount)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, currencyId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, money.toBigDecimal())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, money.getCurrencyId())
 				.create()
 				.listIds(PaymentId::ofRepoId);
 	}

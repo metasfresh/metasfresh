@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -100,5 +100,5 @@ public interface IPaymentDAO extends ISingletonService
 	 */
 	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 
-	ImmutableSet<PaymentId> retrieveAllMatchingPayments(boolean isReceipt, @NonNull BigDecimal paymentAmount, @NonNull CurrencyId currencyId, @NonNull BPartnerId bPartnerId);
+	ImmutableSet<PaymentId> retrieveAllMatchingPayments(boolean isReceipt, @NonNull BPartnerId bPartnerId, @NonNull final Money money);
 }
