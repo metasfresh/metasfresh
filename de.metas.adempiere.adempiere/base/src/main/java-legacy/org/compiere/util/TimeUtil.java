@@ -1358,6 +1358,10 @@ public class TimeUtil
 		return new Timestamp(Date.from(instant).getTime());
 	}
 
+	/**
+	 * @deprecated please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
+	 */
+	@Deprecated
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		final ZoneId timezone = null;

@@ -30,11 +30,14 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -46,6 +49,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.security.permissions.Access;
@@ -248,86 +252,90 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		Check.assume(this == currentInstance(), "This process shall be the current active instance: {}", this);
 
-		// Initialize process instance state from given process instance info.
-		init(pi);
-
-		// Trx: we are setting it to null to be consistent with running prepare() out-of-transaction
-		// Later we will set the actual transaction or we will start a local transaction.
-		m_trx = ITrx.TRX_None;
-
-		boolean success = false;
-		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(this);
-				final IAutoCloseable contextRestorer = Env.switchContext(_ctx); // FRESH-314: make sure our derived context will always be used
-		)
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, pi.getPinstanceId());
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, pi.getAdProcessId()))
 		{
-			//
-			// Prepare out of transaction, if needed
-			final ProcessClassInfo processClassInfo = getProcessInfo().getProcessClassInfo();
-			boolean prepareExecuted = false;
-			if (processClassInfo.isRunPrepareOutOfTransaction())
-			{
-				assertOutOfTransaction(trx, "prepare"); // make sure we were asked to run out of transaction
-				prepareExecuted = true;
-				prepareProcess();
-			}
+			// Initialize process instance state from given process instance info.
+			init(pi);
 
-			//
-			// doIt out of transaction, if needed
-			String doItResult = null;
-			boolean doItExecuted = false;
-			if (processClassInfo.isRunDoItOutOfTransaction())
-			{
-				assertOutOfTransaction(trx, "run"); // make sure we were asked to run out of transaction
-				doItExecuted = true;
-				doItResult = doIt();
-			}
+			// Trx: we are setting it to null to be consistent with running prepare() out-of-transaction
+			// Later we will set the actual transaction or we will start a local transaction.
+			m_trx = ITrx.TRX_None;
 
-			//
-			// Prepare and doIt in transaction, if not already executed
-			if (!prepareExecuted || !doItExecuted)
+			boolean success = false;
+			try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(this);
+					final IAutoCloseable contextRestorer = Env.switchContext(_ctx); // FRESH-314: make sure our derived context will always be used
+			)
 			{
-				startTrx(trx);
-
-				if (!prepareExecuted)
+				//
+				// Prepare out of transaction, if needed
+				final ProcessClassInfo processClassInfo = getProcessInfo().getProcessClassInfo();
+				boolean prepareExecuted = false;
+				if (processClassInfo.isRunPrepareOutOfTransaction())
 				{
+					assertOutOfTransaction(trx, "prepare"); // make sure we were asked to run out of transaction
 					prepareExecuted = true;
 					prepareProcess();
 				}
-				if (!doItExecuted)
+
+				//
+				// doIt out of transaction, if needed
+				String doItResult = null;
+				boolean doItExecuted = false;
+				if (processClassInfo.isRunDoItOutOfTransaction())
 				{
+					assertOutOfTransaction(trx, "run"); // make sure we were asked to run out of transaction
 					doItExecuted = true;
 					doItResult = doIt();
 				}
-			}
 
-			// Legacy: transaction should rollback if there are error in process
-			if (MSG_Error.equals(doItResult))
+				//
+				// Prepare and doIt in transaction, if not already executed
+				if (!prepareExecuted || !doItExecuted)
+				{
+					startTrx(trx);
+
+					if (!prepareExecuted)
+					{
+						prepareExecuted = true;
+						prepareProcess();
+					}
+					if (!doItExecuted)
+					{
+						doItExecuted = true;
+						doItResult = doIt();
+					}
+				}
+
+				// Legacy: transaction should rollback if there are error in process
+				if (MSG_Error.equals(doItResult))
+				{
+					throw new AdempiereException(doItResult);
+				}
+
+				setProcessResultOK(doItResult);
+				success = true;
+			}
+			catch (final Throwable e)
 			{
-				throw new AdempiereException(doItResult);
+				success = false;
+				setProcessResultError(e);
+			}
+			finally
+			{
+				// NOTE: at this point the thread local loggable was restored
+
+				endTrx(success);
 			}
 
-			setProcessResultOK(doItResult);
-			success = true;
-		}
-		catch (final Throwable e)
-		{
-			success = false;
-			setProcessResultError(e);
-		}
-		finally
-		{
-			// NOTE: at this point the thread local loggable was restored
+			//
+			// outside transaction processing [ teo_sarca, 1646891 ]
+			postProcess(!getResult().isError());
 
-			endTrx(success);
-		}
-
-		//
-		// outside transaction processing [ teo_sarca, 1646891 ]
-		postProcess(!getResult().isError());
-
-		// NOTE: we shall check again the result because it might be changed by postProcess()
-		getResult().propagateErrorIfAny();
-	}   // startProcess
+			// NOTE: we shall check again the result because it might be changed by postProcess()
+			getResult().propagateErrorIfAny();
+		}   // startProcess
+	}
 
 	/**
 	 * Initialize this process from given process instance info.
@@ -967,7 +975,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return getProcessInfo().getAD_Client_ID();
 	}
-	
+
 	protected final OrgId getOrgId()
 	{
 		return getProcessInfo().getOrgId();

@@ -13,6 +13,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -73,7 +74,7 @@ public class InvoiceHeaderImplBuilder
 	public InvoiceHeaderImpl build()
 	{
 		final InvoiceHeaderImpl invoiceHeader = new InvoiceHeaderImpl();
-		invoiceHeader.setAD_Org_ID(getAD_Org_ID());
+		invoiceHeader.setOrgId(OrgId.ofRepoId(getAD_Org_ID()));
 
 		// Document Type
 		invoiceHeader.setC_DocTypeInvoice(getC_DocTypeInvoice());

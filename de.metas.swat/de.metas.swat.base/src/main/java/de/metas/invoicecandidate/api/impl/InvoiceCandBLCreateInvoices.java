@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -88,7 +90,9 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
@@ -106,6 +110,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	//
 	// Services
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -156,7 +162,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	/**
 	 * Default {@link IInvoiceGeneratorRunnable} implementation
 	 */
-	// NOTE: not static becase we share the services
+	// NOTE: not static because we share the services
 	private class DefaultInvoiceGeneratorRunnable implements IInvoiceGeneratorRunnable, TrxRunnable2
 	{
 		// Input parameters
@@ -173,7 +179,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public void init(final Properties ctx, final IInvoiceHeader header)
+		public void init(final Properties ctx, @NonNull final IInvoiceHeader header)
 		{
 			this.header = header;
 			this.ctx = ctx;
@@ -253,10 +259,16 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Update invoice candidates
-			for (final I_C_Invoice_Candidate ic : allCandidates)
+			for (final I_C_Invoice_Candidate icRecord : allCandidates)
 			{
-				ic.setDateInvoiced(TimeUtil.asTimestamp(header.getDateInvoiced()));
-				ic.setDateAcct(TimeUtil.asTimestamp(header.getDateAcct()));
+				try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+				{
+					final ZoneId timeZone = orgDAO.getTimeZone(header.getOrgId());
+
+					logger.debug("Set both DateInvoiced={} and DateAcct={} from IInvoiceHeader; timezone={}", header.getDateInvoiced(), header.getDateAcct(), timeZone);
+					icRecord.setDateInvoiced(TimeUtil.asTimestamp(header.getDateInvoiced(), timeZone));
+					icRecord.setDateAcct(TimeUtil.asTimestamp(header.getDateAcct(), timeZone));
+				}
 			}
 
 			//
@@ -325,11 +337,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(invoiceHeader.getC_PaymentTerm_ID());
 
-				invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
 				setC_DocType(invoice, invoiceHeader);
 
-				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced()));
-				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct())); // 03905: also updating DateAcct
+				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
+				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced(), timeZone));
+				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
 			}
@@ -337,7 +349,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
-			invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
+			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 			invoice.setC_BPartner_ID(invoiceHeader.getBill_BPartner_ID());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
@@ -792,24 +804,27 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		while (invoiceCandidates.hasNext())
 		{
 			final I_C_Invoice_Candidate ic = invoiceCandidates.next();
-			icToUnlock.add(ic);
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(ic))
+			{
+				icToUnlock.add(ic);
 
-			// Skip invoice candidate if we are adviced to do so
-			// TODO: i think this checking is no longer needed because we are doing it when enqueueing
-			if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
-			{
-				continue;
-			}
+				// Skip invoice candidate if we are adviced to do so
+				// TODO: i think this checking is no longer needed because we are doing it when enqueueing
+				if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
+				{
+					continue;
+				}
 
-			// add 'ic' to our aggregation
-			try
-			{
-				aggregationEngine.addInvoiceCandidate(ic);
-				netAmtToInvoiceChecker.add(ic); // collect the IC's NetAmtToInvoice; later we will make sure the amount is the same as the one user expects
-			}
-			catch (final AdempiereException e)
-			{
-				createNoticesAndMarkICs(ImmutableList.of(ic), e);
+				// add 'ic' to our aggregation
+				try
+				{
+					aggregationEngine.addInvoiceCandidate(ic);
+					netAmtToInvoiceChecker.add(ic); // collect the IC's NetAmtToInvoice; later we will make sure the amount is the same as the one user expects
+				}
+				catch (final AdempiereException e)
+				{
+					createNoticesAndMarkICs(ImmutableList.of(ic), e);
+				}
 			}
 		}
 
@@ -835,8 +850,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		return AggregationEngine.builder()
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
-				.defaultDateInvoiced(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
-				.defaultDateAcct(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
+				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.updateLocationAndContactForInvoice(invoicingParams != null ? invoicingParams.isUpdateLocationAndContactForInvoice() : false)
 				.build();
 	}

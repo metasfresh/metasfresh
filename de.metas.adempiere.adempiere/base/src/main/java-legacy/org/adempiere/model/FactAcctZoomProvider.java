@@ -12,11 +12,14 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
+import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -44,6 +47,8 @@ import de.metas.util.Services;
 
 public class FactAcctZoomProvider implements IZoomProvider
 {
+	private static final Logger logger = LogManager.getLogger(FactAcctZoomProvider.class);
+
 	public static final transient FactAcctZoomProvider instance = new FactAcctZoomProvider();
 	private static final String COLUMNNAME_Posted = "Posted";
 
@@ -97,7 +102,7 @@ public class FactAcctZoomProvider implements IZoomProvider
 			final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 			query.setRecordCount(count, countDuration);
 
-			Loggables.addLog("FactAcctZoomProvider {} took {}", this, countDuration);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("FactAcctZoomProvider {} took {}", this, countDuration);
 		}
 
 		//

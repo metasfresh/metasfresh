@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -25,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,6 +37,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.Joiner;
 
@@ -54,6 +57,7 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -160,6 +164,7 @@ import lombok.NonNull;
 		// NOTE: loading them again after we made sure that they are fairly up to date.
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setInvoiceCandidatesLock(icLock)
+				.setInvoicingParams(getInvoicingParams())
 				.setC_Async_Batch(_asyncBatch);
 
 		if (setWorkpackageADPInstanceCreatorId)
@@ -171,57 +176,60 @@ import lombok.NonNull;
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
-		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
+		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
 		{
-			// Fail if the invoice candidate has issues
-			if (isFailOnInvoiceCandidateError() && ic.isError())
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 			{
-				throw new AdempiereException(ic.getErrorMsg())
-						.setParameter("invoiceCandidate", ic);
-			}
-
-			// Check if invoice candidate is eligible for enqueueing
-			if (!isEligibleForEnqueueing(ic))
-			{
-				continue;
-			}
-
-			//
-			// Add invoice candidate to workpackage
-			workpackageAggregator.add(ic);
-
-			//
-			// 06283 : use the priority from the first invoice candidate of each group
-			// NTH: use the max prio of all candidates of the group
-			final IWorkpackagePrioStrategy priorityToUse;
-			if (_priority == null)
-			{
-				if (!Check.isEmpty(ic.getPriority()))
+				// Fail if the invoice candidate has issues
+				if (isFailOnInvoiceCandidateError() && icRecord.isError())
 				{
-					priorityToUse = ConstantWorkpackagePrio.fromString(ic.getPriority());
+					throw new AdempiereException(icRecord.getErrorMsg())
+							.setParameter("invoiceCandidate", icRecord);
+				}
+
+				// Check if invoice candidate is eligible for enqueueing
+				if (!isEligibleForEnqueueing(icRecord))
+				{
+					continue;
+				}
+
+				//
+				// Add invoice candidate to workpackage
+				workpackageAggregator.add(icRecord);
+
+				//
+				// 06283 : use the priority from the first invoice candidate of each group
+				// NTH: use the max prio of all candidates of the group
+				final IWorkpackagePrioStrategy priorityToUse;
+				if (_priority == null)
+				{
+					if (!Check.isEmpty(icRecord.getPriority()))
+					{
+						priorityToUse = ConstantWorkpackagePrio.fromString(icRecord.getPriority());
+					}
+					else
+					{
+						priorityToUse = SizeBasedWorkpackagePrio.INSTANCE;// fallback to default
+					}
 				}
 				else
 				{
-					priorityToUse = SizeBasedWorkpackagePrio.INSTANCE;// fallback to default
+					priorityToUse = _priority;
 				}
-			}
-			else
-			{
-				priorityToUse = _priority;
-			}
 
-			workpackageAggregator.setPriority(priorityToUse);
+				workpackageAggregator.setPriority(priorityToUse);
 
-			//
-			// 07666: Set approval back to false after enqueuing and save within transaction
-			try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
-			{
-				ic.setApprovalForInvoicing(false);
-				save(ic);
+				//
+				// 07666: Set approval back to false after enqueuing and save within transaction
+				try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+				{
+					icRecord.setApprovalForInvoicing(false);
+					save(icRecord);
+				}
+
+				invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
+				totalNetAmtToInvoiceChecksum.add(icRecord);
 			}
-
-			invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
-			totalNetAmtToInvoiceChecksum.add(ic);
 		}
 
 		//
@@ -296,25 +304,48 @@ import lombok.NonNull;
 			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
 		}
 
+		// Note: we set dateInvoiced and updateDateAcct *before* enqueuing, because they are always relevant for aggregation (no matter which aggregation rules we choose)
+		// That means that they may cause ICs to end up in the same package or in different packages.
+		// If nothing else, to change this after enqueuing would lead to trouble with IInvoiceCandidatesChangesChecker, if the change has effects of that aggregation.
+
+		//
+		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
+		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
+		// This is critical because we assume that dateInvoiced is *implicitly* part of the aggregation key, so different values would fail the invoicing
+		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final LocalDate paramDateInvoiced = invoicingParams.getDateInvoiced();
+		if (paramDateInvoiced != null)
+		{
+			invoiceCandDAO.updateDateInvoiced(paramDateInvoiced, selectionId);
+		}
+
+		//
+		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
+		// task 08628: same as for dateInvoiced
+		final LocalDate paramDateAcct = coalesce(invoicingParams.getDateAcct(), paramDateInvoiced);
+		if (paramDateAcct != null)
+		{
+			invoiceCandDAO.updateDateAcct(paramDateAcct, selectionId);
+		}
+
 		//
 		// Update POReference (task 07978)
-		final String poReference = getInvoicingParams().getPOReference();
+		final String poReference = invoicingParams.getPOReference();
 		if (!Check.isEmpty(poReference, true))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
 		}
 
 		// issue https://github.com/metasfresh/metasfresh/issues/3809
-		if (getInvoicingParams().isSupplementMissingPaymentTermIds())
+		if (invoicingParams.isSupplementMissingPaymentTermIds())
 		{
 			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
 	}
 
+	/** NOTE: we designed this method for the case of enqueuing a big number of invoice candidates. */
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
-		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
-
 		return () -> {
 			final Properties ctx = getCtx();
 			trxManager.assertThreadInheritedTrxExists();

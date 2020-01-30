@@ -13,6 +13,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +42,9 @@ import lombok.Setter;
 
 	private LocalDate dateAcct;
 
-	private int AD_Org_ID;
+	@Getter
+	@Setter
+	private OrgId orgId;
 
 	private int C_Order_ID;
 
@@ -75,7 +78,6 @@ import lombok.Setter;
 
 	/* package */ InvoiceHeaderImpl()
 	{
-		super();
 	}
 
 	@Override
@@ -84,7 +86,7 @@ import lombok.Setter;
 		return "InvoiceHeaderImpl ["
 				+ "docBaseType=" + docBaseType
 				+ ", dateInvoiced=" + dateInvoiced
-				+ ", AD_Org_ID=" + AD_Org_ID
+				+ ", AD_Org_ID=" + OrgId.toRepoId(orgId)
 				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
 				+ ", Bill_BPartner_ID=" + Bill_BPartner_ID
@@ -166,12 +168,6 @@ import lombok.Setter;
 		return Bill_User_ID;
 	}
 
-	@Override
-	public int getAD_Org_ID()
-	{
-		return AD_Org_ID;
-	}
-
 	public void setLines(final List<IInvoiceCandAggregate> lines)
 	{
 		this.lines = lines;
@@ -195,11 +191,6 @@ import lombok.Setter;
 	public void setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
-	}
-
-	public void setAD_Org_ID(final int ad_Org_ID)
-	{
-		AD_Org_ID = ad_Org_ID;
 	}
 
 	public void setC_Order_ID(final int c_Order_ID)

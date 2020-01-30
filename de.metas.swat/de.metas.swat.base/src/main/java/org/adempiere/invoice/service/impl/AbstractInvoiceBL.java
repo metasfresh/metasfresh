@@ -331,11 +331,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// copyValues override of the handler & save
 		InterfaceWrapperHelper.refresh(to);
 
+		Services.get(ICopyHandlerBL.class).copyValues(from, to); // invoke the "generic" handlers first; we expect them not to complete the target invoice
+
 		if (additionalDocCopyHandler != null)
 		{
 			additionalDocCopyHandler.copyValues(from, to);
 		}
-		Services.get(ICopyHandlerBL.class).copyValues(from, to);
 		InterfaceWrapperHelper.save(to);
 
 		return to;
