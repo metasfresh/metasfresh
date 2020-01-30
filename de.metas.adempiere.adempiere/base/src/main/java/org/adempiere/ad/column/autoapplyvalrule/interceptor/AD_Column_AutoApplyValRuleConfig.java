@@ -80,7 +80,7 @@ public class AD_Column_AutoApplyValRuleConfig
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Column.COLUMN_IsAutoApplyValidationRule, true)
-				.orderBy(I_AD_Column.COLUMN_AD_Table_ID)
+				.orderBy(I_AD_Column.COLUMNNAME_AD_Table_ID)
 				.orderBy(I_AD_Column.COLUMN_AD_Column_ID);
 	}
 
@@ -89,7 +89,7 @@ public class AD_Column_AutoApplyValRuleConfig
 			ifColumnsChanged = { I_AD_Column.COLUMNNAME_AD_Val_Rule_ID, I_AD_Column.COLUMNNAME_IsAutoApplyValidationRule })
 	public void resetModelInterceptor(@NonNull final I_AD_Column column)
 	{
-		final String tableName = column.getAD_Table().getTableName();
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
 
 		valRuleAutoApplierService.unregisterForTableName(tableName);
 
@@ -101,7 +101,7 @@ public class AD_Column_AutoApplyValRuleConfig
 		tabCalloutFactory.unregisterTabCalloutForTable(tableName, AD_Column_AutoApplyValRuleTabCallout.class);
 
 		final IQueryBuilder<I_AD_Column> queryBuilder = createQueryBuilder()
-				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, column.getAD_Table_ID());
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, column.getAD_Table_ID());
 
 		createAndRegisterForQuery(engine, queryBuilder.create());
 	}
