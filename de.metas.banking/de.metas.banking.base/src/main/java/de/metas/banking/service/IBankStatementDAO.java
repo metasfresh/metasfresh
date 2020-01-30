@@ -1,6 +1,18 @@
 package de.metas.banking.service;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+
 import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -24,16 +36,6 @@ import java.util.Date;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.util.ISingletonService;
-
 public interface IBankStatementDAO extends ISingletonService
 {
 	<T extends I_C_BankStatementLine> List<T> retrieveLines(I_C_BankStatement bankStatement, Class<T> clazz);
@@ -42,26 +44,30 @@ public interface IBankStatementDAO extends ISingletonService
 
 	/**
 	 * Checks if given payment is present on any {@link I_C_BankStatementLine} or {@link I_C_BankStatementLine_Ref}.
-	 *
+	 * <p>
 	 * This method is NOT checking the {@link I_C_Payment#isReconciled()} flag but instead is doing a lookup in bank statement lines.
 	 *
-	 * @param payment
 	 * @return true if given payment is present on any bank statement line or reference.
 	 */
 	boolean isPaymentOnBankStatement(I_C_Payment payment);
 
 	/**
 	 * Retrieve all the BankStatement documents that are marked as posted but do not actually have fact accounts.
-	 *
+	 * <p>
 	 * Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
-	 *
-	 * @param ctx
-	 * @param startTime
-	 * @return
 	 */
 	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
 	de.metas.banking.model.I_C_BankStatement getById(int id);
 
+	de.metas.banking.model.I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
+
+	/**
+	 * @deprecated please use the repoIdAware version
+	 */
+	@Deprecated
 	de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId);
+
+	@NonNull
+	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 }

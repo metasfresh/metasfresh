@@ -27,8 +27,14 @@ import java.util.Date;
  */
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.banking.model.BankStatementId;
+import de.metas.payment.PaymentId;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -53,11 +59,29 @@ public class BankStatementDAO implements IBankStatementDAO
 		return load(id, de.metas.banking.model.I_C_BankStatement.class);
 	}
 
+	@Override
+	public de.metas.banking.model.I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
+	{
+		return load(bankStatementId, de.metas.banking.model.I_C_BankStatement.class);
+	}
 
+	@Deprecated
 	@Override
 	public de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId)
 	{
 		return load(lineId, de.metas.banking.model.I_C_BankStatementLine.class);
+	}
+
+	@NonNull
+	@Override
+	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
+	{
+		final de.metas.banking.model.I_C_BankStatement bankStatement = getById(bankStatementId);
+		final List<de.metas.banking.model.I_C_BankStatementLine> lines = retrieveLines(bankStatement, de.metas.banking.model.I_C_BankStatementLine.class);
+		return lines.stream()
+				.map(l -> PaymentId.ofRepoIdOrNull(l.getC_Payment_ID()))
+				.filter(Objects::nonNull)
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
 	@Override
