@@ -24,21 +24,20 @@ package de.metas.banking.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -68,6 +67,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -110,54 +111,38 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
-			createFindUnreconciledPaymentsAndLinkToBankStatementLine(line);
+			findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(line);
 			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
 		}
 	}
 
 	@VisibleForTesting
-	void createFindUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
+	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
+	{
+		findAndLinkPaymentToBankStatementLineIfPossible(line);
+
+		setOrCreateAndLinkPaymentToBankStatementLine(line, null);
+	}
+
+	@Override
+	public Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(@NonNull final I_C_BankStatementLine line, @Nullable final PaymentId paymentIdToSet)
 	{
 		// a payment is already linked
 		if (line.getC_Payment_ID() > 0)
 		{
-			return;
+			return Optional.of(PaymentId.ofRepoId(line.getC_Payment_ID()));
 		}
 
-		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
-		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
-
-		final List<I_C_Payment> possiblePayments = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Payment.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.addEqualsFilter(I_C_Payment.COLUMN_IsReconciled, false)
-				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, isReceipt)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, line.getC_BPartner_ID())
-				.addEqualsFilter(I_C_Payment.COLUMN_PayAmt, expectedPaymentAmount)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, line.getC_Currency_ID())
-				.create()
-				.list(I_C_Payment.class);
-
-		// don't create a new Payment and don't link any of the payments.
-		// the user must fix this case manually
-		if (possiblePayments.size() > 1)
+		if (paymentIdToSet != null)
 		{
-			return;
-		}
-
-		if (possiblePayments.size() == 1)
-		{
-			line.setC_Payment_ID(possiblePayments.get(0).getC_Payment_ID());
+			line.setC_Payment_ID(paymentIdToSet.getRepoId());
 			InterfaceWrapperHelper.save(line);
-			return;
+			return Optional.of(paymentIdToSet);
 		}
 
-		//
-		// no payment exists for this line, so create one now
 		if (line.getC_BPartner_ID() <= 0)
 		{
-			return;
+			return Optional.empty();
 		}
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
@@ -168,15 +153,46 @@ public class BankStatementBL implements IBankStatementBL
 		final Optional<BankAccountId> bankAccountIdOptional = Services.get(IBPBankAccountDAO.class).retrieveFirstIdByBPartnerAndCurrency(bpartnerId, currencyId);
 		if (!bankAccountIdOptional.isPresent())
 		{
+			return Optional.empty();
+		}
+
+		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
+		final BigDecimal payAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
+
+		final PaymentId createdPaymentId = createAndCompletePayment(bankAccountIdOptional.get(), statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
+		line.setC_Payment_ID(createdPaymentId.getRepoId());
+		InterfaceWrapperHelper.save(line);
+		return Optional.of(createdPaymentId);
+	}
+
+	private void findAndLinkPaymentToBankStatementLineIfPossible(final I_C_BankStatementLine line)
+	{
+		// a payment is already linked
+		if (line.getC_Payment_ID() > 0)
+		{
 			return;
 		}
 
-		final PaymentId createdPaymentId = createAndCompletePaymentNoInvoice(bankAccountIdOptional.get(), statementLineDate, expectedPaymentAmount, isReceipt, orgId, bpartnerId, currencyId);
-		line.setC_Payment_ID(createdPaymentId.getRepoId());
-		InterfaceWrapperHelper.save(line);
+		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
+		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
+
+		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()), BPartnerId.ofRepoId(line.getC_BPartner_ID()));
+
+		// don't create a new Payment and don't link any of the payments.
+		// the user must fix this case manually
+		if (possiblePayments.size() > 1)
+		{
+			return;
+		}
+
+		if (possiblePayments.size() == 1)
+		{
+			line.setC_Payment_ID(possiblePayments.iterator().next().getRepoId());
+			InterfaceWrapperHelper.save(line);
+		}
 	}
 
-	private PaymentId createAndCompletePaymentNoInvoice(
+	private PaymentId createAndCompletePayment(
 			@NonNull final BankAccountId bankAccountId,
 			@NonNull final LocalDate dateAcct,
 			@NonNull final BigDecimal payAmt,

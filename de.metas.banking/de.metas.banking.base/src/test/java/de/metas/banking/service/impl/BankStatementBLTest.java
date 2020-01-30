@@ -123,7 +123,7 @@ class BankStatementBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatementBL testBankStatementBL = new BankStatementBL();
-			testBankStatementBL.createFindUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
 
 			//
 			// Checks
@@ -166,7 +166,7 @@ class BankStatementBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatementBL testBankStatementBL = new BankStatementBL();
-			testBankStatementBL.createFindUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
 
 			//
 			// Checks

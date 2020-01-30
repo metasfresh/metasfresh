@@ -33,6 +33,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -89,7 +91,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public BigDecimal getInvoiceOpenAmount(I_C_Payment payment, final boolean creditMemoAdjusted)
+	public BigDecimal getInvoiceOpenAmount(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		final I_C_Invoice invoice = payment.getC_Invoice();
 		Check.assumeNotNull(invoice, "Invoice available for {}", payment);
@@ -154,7 +156,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_Payment> retrievePayments(de.metas.adempiere.model.I_C_Invoice invoice)
+	public List<I_C_Payment> retrievePayments(final de.metas.adempiere.model.I_C_Invoice invoice)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
@@ -217,4 +219,20 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	 */
 	@Override
 	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
+
+	@Override
+	public ImmutableSet<PaymentId> retrieveAllMatchingPayments(final boolean isReceipt, @NonNull final BigDecimal paymentAmount, @NonNull final CurrencyId currencyId, @NonNull final BPartnerId bPartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, false)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, paymentAmount)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.listIds(PaymentId::ofRepoId);
+	}
 }
