@@ -148,23 +148,29 @@ public abstract class LookupValue
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
-		final ITranslatableString validationMsgTrl;
 		if (adLanguage == null)
 		{
 			displayNameTrl = TranslatableStrings.anyLanguage(namePair.getName());
 			descriptionTrl = TranslatableStrings.anyLanguage(namePair.getDescription());
-			validationMsgTrl = TranslatableStrings.anyLanguage(namePair.getValidationMsg());
 		}
 		else
 		{
 			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getName());
 			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getDescription());
-			validationMsgTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getValidationMsg());
 		}
 
 		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
+			final ITranslatableString validationMsgTrl;
+			if (adLanguage == null)
+			{
+				validationMsgTrl = TranslatableStrings.anyLanguage(vnp.getValidationMessage());
+			}
+			else
+			{
+				validationMsgTrl = TranslatableStrings.singleLanguage(adLanguage, vnp.getValidationMessage());
+			}
 			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl, validationMsgTrl);
 		}
 		else if (namePair instanceof KeyNamePair)
