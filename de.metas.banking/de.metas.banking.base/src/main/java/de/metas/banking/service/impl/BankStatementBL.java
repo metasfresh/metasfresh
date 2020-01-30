@@ -119,9 +119,12 @@ public class BankStatementBL implements IBankStatementBL
 	@VisibleForTesting
 	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
 	{
-		findAndLinkPaymentToBankStatementLineIfPossible(line);
+		final boolean manualActionRequired = findAndLinkPaymentToBankStatementLineIfPossible(line);
 
-		setOrCreateAndLinkPaymentToBankStatementLine(line, null);
+		if (!manualActionRequired)
+		{
+			setOrCreateAndLinkPaymentToBankStatementLine(line, null);
+		}
 	}
 
 	@Override
@@ -165,12 +168,15 @@ public class BankStatementBL implements IBankStatementBL
 		return Optional.of(createdPaymentId);
 	}
 
-	private void findAndLinkPaymentToBankStatementLineIfPossible(final I_C_BankStatementLine line)
+	/**
+	 * @return true if the automatic flow should STOP as manual action is required; false if the automatic flow should continue
+	 */
+	private boolean findAndLinkPaymentToBankStatementLineIfPossible(final I_C_BankStatementLine line)
 	{
 		// a payment is already linked
 		if (line.getC_Payment_ID() > 0)
 		{
-			return;
+			return false;
 		}
 
 		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
@@ -178,11 +184,11 @@ public class BankStatementBL implements IBankStatementBL
 
 		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()), BPartnerId.ofRepoId(line.getC_BPartner_ID()));
 
-		// don't create a new Payment and don't link any of the payments.
-		// the user must fix this case manually
+		// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
+		// The user must fix this case manually by choosing the correct Payment
 		if (possiblePayments.size() > 1)
 		{
-			return;
+			return true;
 		}
 
 		if (possiblePayments.size() == 1)
@@ -190,6 +196,7 @@ public class BankStatementBL implements IBankStatementBL
 			line.setC_Payment_ID(possiblePayments.iterator().next().getRepoId());
 			InterfaceWrapperHelper.save(line);
 		}
+		return false;
 	}
 
 	private PaymentId createAndCompletePayment(
