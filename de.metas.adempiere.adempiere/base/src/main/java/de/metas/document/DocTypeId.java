@@ -31,7 +31,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value(staticConstructor = "ofRepoId")
+@Value
 public class DocTypeId implements RepoIdAware
 {
 	@JsonCreator

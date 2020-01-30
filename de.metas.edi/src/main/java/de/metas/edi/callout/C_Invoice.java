@@ -14,7 +14,7 @@ public class C_Invoice extends CalloutEngine
 	public String onC_BPartner_ID(final ICalloutField calloutField)
 	{
 		final I_C_Invoice invoice = calloutField.getModel(I_C_Invoice.class);
-		try (final MDCCloseable mdcCloseable = TableRecordMDC.withTableRecordReference(invoice))
+		try (final MDCCloseable mdcCloseable = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			Services.get(IEDIDocumentBL.class).updateEdiEnabled(invoice);
 			return CalloutEngine.NO_ERROR;

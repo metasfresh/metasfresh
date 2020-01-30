@@ -114,6 +114,7 @@ public class PrinterRoutingDAO implements IPrinterRoutingDAO
 				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID + ",0) DESC"
 				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID + ",0) DESC"
 				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_AD_User_ID + ",0) DESC"
+				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID + ",0) DESC"
 				+ ", " + I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID;
 
 		return new Query(ctx, I_AD_PrinterRouting.Table_Name, whereClause.toString(), null)

@@ -50,6 +50,7 @@ import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -69,6 +70,7 @@ public class C_Invoice_Candidate_Builder
 	private final AbstractICTestSupport test;
 
 	private String instanceName;
+	private OrgId orgId;
 	private BPartnerId billBPartnerId;
 	private BPartnerLocationId billBPartnerLocationId;
 	private int priceEntered;
@@ -123,7 +125,8 @@ public class C_Invoice_Candidate_Builder
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		POJOWrapper.setInstanceName(ic, instanceName);
-		ic.setAD_Org_ID(1);
+
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		//
 		// Dates
@@ -462,6 +465,12 @@ public class C_Invoice_Candidate_Builder
 	public C_Invoice_Candidate_Builder setQualityDiscountPercent_Override(final BigDecimal qualityDiscountPercent_Override)
 	{
 		this.qualityDiscountPercent_Override = qualityDiscountPercent_Override;
+		return this;
+	}
+
+	public C_Invoice_Candidate_Builder setOrgId(@NonNull final OrgId orgId)
+	{
+		this.orgId = orgId;
 		return this;
 	}
 }
