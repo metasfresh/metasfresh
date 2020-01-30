@@ -804,7 +804,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		@Override
-		protected NamePair fetch(final ResultSet rs) throws SQLException
+		protected NamePair fetch(@NonNull final ResultSet rs) throws SQLException
 		{
 			final boolean isActive = isActive(rs) && isDisplayedInUI(rs);
 			final String name = getDisplayName(rs, isActive);
@@ -912,16 +912,13 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
-	public INamePairIterator retrieveLookupValues(final IValidationContext validationCtx, final MLookupInfo lookupInfo, final IValidationRule additionalValidationRule)
+	public INamePairIterator retrieveLookupValues(final IValidationContext validationCtx, @NonNull final MLookupInfo lookupInfo, final IValidationRule additionalValidationRule)
 	{
 		final String sql = getSQL(validationCtx, lookupInfo, additionalValidationRule);
 		final boolean numericKey = lookupInfo.isNumericKey();
 		final int entityTypeColumnIndex = lookupInfo.isQueryHasEntityType() ? MLookupFactory.COLUMNINDEX_EntityType : -1;
 
-		if (logger.isTraceEnabled())
-		{
-			logger.trace(lookupInfo.getKeyColumnFQ() + ": " + sql);
-		}
+		logger.trace("retrieveLookupValues - keyColumnFQ={}; sql={}", lookupInfo.getKeyColumnFQ(), sql);
 
 		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);
 	}    // run
