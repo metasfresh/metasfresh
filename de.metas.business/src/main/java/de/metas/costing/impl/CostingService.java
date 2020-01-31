@@ -351,8 +351,13 @@ public class CostingService implements ICostingService
 				.map(CostDetail::getCostElementId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableList<CostDetailCreateResult> costElementResults = costDetailsRepo
-				.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId())
+		final List<CostDetail> initialDocCostDetails = costDetailsRepo.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId());
+		if (initialDocCostDetails.isEmpty())
+		{
+			throw new AdempiereException("Initial document has no cost details: " + request);
+		}
+
+		final ImmutableList<CostDetailCreateResult> costElementResults = initialDocCostDetails
 				.stream()
 				.filter(costDetail -> !costElementIdsWithExistingCostDetails.contains(costDetail.getCostElementId())) // not already created
 				.flatMap(costDetail -> createReversalCostDetailsAndStream(costDetail, request))
