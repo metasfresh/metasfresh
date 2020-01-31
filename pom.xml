@@ -39,7 +39,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		-->
 		<assertj.version>3.8.0</assertj.version>
 
-		<jasperreports.version>6.5.1</jasperreports.version>
+		<jasperreports.version>6.7.0</jasperreports.version>
 
 		<itext.version>2.1.7.js6</itext.version>
 		
@@ -183,9 +183,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			<version>1.4.1</version>
 			<scope>test</scope>
 		</dependency>
-
-
-
 	</dependencies>
 
 	<dependencyManagement>
