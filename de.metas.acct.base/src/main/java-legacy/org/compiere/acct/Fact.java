@@ -32,6 +32,8 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -51,6 +53,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -263,20 +266,10 @@ public final class Fact
 
 	public boolean isSingleCurrency()
 	{
-		CurrencyId currencyId = null;
-		for (final FactLine line : m_lines)
-		{
-			if (currencyId == null)
-			{
-				currencyId = line.getCurrencyId();
-			}
-			else if (!CurrencyId.equals(currencyId, line.getCurrencyId()))
-			{
-				return false;
-			}
-		}
+		final ImmutableList<CurrencyId> distinctCurrencyIds = CollectionUtils.extractDistinctElements(m_lines, FactLine::getCurrencyId);
 
-		return true;
+		final boolean lessThanTwoCurrencies = distinctCurrencyIds.size() < 2;
+		return lessThanTwoCurrencies;
 	}
 
 	/**************************************************************************
@@ -481,9 +474,10 @@ public final class Fact
 					oldBalance = new Balance(line.getAmtSourceDr(), line.getAmtSourceCr());
 					map.put(key, oldBalance);
 				}
-				else {
+				else
+				{
 					oldBalance.add(line.getAmtSourceDr(), line.getAmtSourceCr());
-				// log.info("Key=" + key + ", Balance=" + balance + " - " + line);
+					// log.info("Key=" + key + ", Balance=" + balance + " - " + line);
 				}
 			}
 
