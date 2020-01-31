@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -273,23 +274,41 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
+	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
-		schedule.setIsClosed(true);
-		save(schedule);
+		scheduleRecord.setIsClosed(true);
+		save(scheduleRecord);
 	}
 
 	@Override
-	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		Check.errorUnless(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
+		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
 
-		shipmentSchedule.setIsClosed(false);
+		shipmentScheduleRecord.setIsClosed(false);
 
-		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentSchedule);
-		updateQtyOrdered(shipmentSchedule);
+		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentScheduleRecord);
+		updateQtyOrdered(shipmentScheduleRecord);
 
-		save(shipmentSchedule);
+		save(shipmentScheduleRecord);
+	}
+
+	@Override
+	public boolean isJustOpened(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final boolean isClosed = shipmentScheduleRecord.isClosed();
+		if (isClosed)
+		{
+			return false;
+		}
+
+		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
+		if (!wasClosed)
+		{
+			return false;
+		}
+
+		return true; // was closed, but is now open
 	}
 
 	@Override

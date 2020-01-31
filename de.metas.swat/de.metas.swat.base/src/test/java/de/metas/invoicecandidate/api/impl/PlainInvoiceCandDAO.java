@@ -44,7 +44,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -72,7 +71,6 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 			final InvoiceCandidateQuery query,
 			final CurrencyId targetCurrencyId,
 			final int adClientId,
-			final int adOrgId,
 			final String amountColumnName,
 			final String trxName)
 	{
@@ -97,7 +95,7 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 					dateConv,
 					CurrencyConversionTypeId.ofRepoIdOrNull(ic.getC_ConversionType_ID()),
 					ClientId.ofRepoId(adClientId),
-					OrgId.ofRepoId(adOrgId));
+					query.getOrgIdNotNull());
 
 			totalAmt = totalAmt.add(netAmtToInvoiceConv);
 

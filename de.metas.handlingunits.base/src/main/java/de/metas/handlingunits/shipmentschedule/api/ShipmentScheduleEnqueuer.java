@@ -172,57 +172,57 @@ public class ShipmentScheduleEnqueuer
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.withTableRecordReference(shipmentSchedule))
+			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule))
 			{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+				final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
-			{
+				{
 					logger.debug("shipmentScheduleId={} is flagged for recompute; won't enqueue the current workpackage");
-				doEnqueueCurrentPackage = false;
-			}
+					doEnqueueCurrentPackage = false;
+				}
 
-			//
-			// Check if we shall close our current workpackage (if any)
-			final String headerAggregationKey = shipmentSchedule.getHeaderAggregationKey();
-			if (!Objects.equals(headerAggregationKey, lastHeaderAggregationKey))
-			{
-				handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
-				workpackageBuilder = null;
-				doEnqueueCurrentPackage = true;
-			}
-			lastHeaderAggregationKey = headerAggregationKey;
+				//
+				// Check if we shall close our current workpackage (if any)
+				final String headerAggregationKey = shipmentSchedule.getHeaderAggregationKey();
+				if (!Objects.equals(headerAggregationKey, lastHeaderAggregationKey))
+				{
+					handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
+					workpackageBuilder = null;
+					doEnqueueCurrentPackage = true;
+				}
+				lastHeaderAggregationKey = headerAggregationKey;
 
-			//
-			// Create workpackage
-			if (workpackageBuilder == null)
-			{
-				workpackageBuilder = blockBuilder
-						.newWorkpackage()
+				//
+				// Create workpackage
+				if (workpackageBuilder == null)
+				{
+					workpackageBuilder = blockBuilder
+							.newWorkpackage()
 							.setUserInChargeId(Env.getAD_User_ID())
-						.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
-						.bindToTrxName(localCtx.getTrxName());
+							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
+							.bindToTrxName(localCtx.getTrxName());
 
-				workpackageBuilder
-						.parameters()
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
+					workpackageBuilder
+							.parameters()
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
-				// Create a new locker which will grab the locked invoice candidates from 'mainLock'
-				// and it will move them to a new owner which is created per workpackage
-				final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ShipmentScheds_" + shipmentSchedule.getHeaderAggregationKey());
-				final ILockCommand workpackageElementsLocker = mainLock
-						.split()
-						.setOwner(workpackageElementsLockOwner)
-						.setAutoCleanup(false); // from this point own we don't want to allow the system to auto clean the locks
-				workpackageBuilder.setElementsLocker(workpackageElementsLocker);
+					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
+					// and it will move them to a new owner which is created per workpackage
+					final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ShipmentScheds_" + shipmentSchedule.getHeaderAggregationKey());
+					final ILockCommand workpackageElementsLocker = mainLock
+							.split()
+							.setOwner(workpackageElementsLockOwner)
+							.setAutoCleanup(false); // from this point own we don't want to allow the system to auto clean the locks
+					workpackageBuilder.setElementsLocker(workpackageElementsLocker);
+				}
+
+				//
+				// Enqueue shipmentSchedule to current workpackage
+				workpackageBuilder.addElement(shipmentSchedule);
 			}
-
-			//
-			// Enqueue shipmentSchedule to current workpackage
-			workpackageBuilder.addElement(shipmentSchedule);
-		}
 		}
 
 		//
@@ -253,9 +253,9 @@ public class ShipmentScheduleEnqueuer
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog(
 					msgBL.parseTranslation(
-					_ctx,
-					"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
-							+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));
+							_ctx,
+							"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
+									+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));
 			workpackageBuilder.discard();
 			result.incSkipped();
 		}
