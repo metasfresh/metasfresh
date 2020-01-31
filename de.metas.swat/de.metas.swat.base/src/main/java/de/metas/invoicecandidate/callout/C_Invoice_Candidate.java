@@ -18,11 +18,11 @@ import java.util.Properties;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -150,10 +150,10 @@ public class C_Invoice_Candidate
 		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 	}
 
-	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override)
-	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate ic, final ICalloutField field)
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override )
+	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate icRecord, final ICalloutField field)
 	{
-		ic.setIsInDispute(false);
+		icRecord.setIsInDispute(false);
 	}
 
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)

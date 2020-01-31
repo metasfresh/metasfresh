@@ -152,7 +152,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.withShipmentScheduleId(shipmentScheduleId))
+		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
 		{
 			final CreateCandidatesRequest request = requestBuilder
 					.shipmentScheduleId(shipmentScheduleId)
