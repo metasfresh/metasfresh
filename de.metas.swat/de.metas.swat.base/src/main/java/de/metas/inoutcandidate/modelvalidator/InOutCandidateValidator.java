@@ -50,7 +50,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_Shipment_Constraint(), client);
-		engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client);
+		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		engine.addModelValidator(new M_InOut_Shipment(), client);
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
@@ -139,7 +139,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
 
 				final IShipmentScheduleInvalidateBL shipmentScheduleInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-				shipmentScheduleInvalidator.invalidateForProduct(productId);
+				shipmentScheduleInvalidator.flagForRecompute(productId);
 			}
 		}
 	}

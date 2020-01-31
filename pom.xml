@@ -6,6 +6,7 @@
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<relativePath>../metasfresh-parent</relativePath>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
@@ -681,14 +682,6 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
-
-			<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>2.2.2</version>
-			</plugin>
-
 		</plugins>
 
 	</build>

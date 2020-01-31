@@ -51,7 +51,8 @@ public class BPartnerRecordsUtil
 	public static final String C_BPARTNER_LOCATION_GLN = "bpartnerLocationRecord.gln";
 	public static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
 	public static final int AD_ORG_ID = 10;
-	public static final String AD_USER_EXTERNAL_ID = "abcde";
+	public static final String AD_USER_EXTERNAL_ID = "contactRecord.externalId";
+	public static final String AD_USER_VALUE = "contactRecord.value";
 
 	public static final String C_BPARTNER_EXTERNAL_ID = "fghij";
 	public static final String C_BPARTNER_VALUE = "bpartnerRecord.value";
@@ -91,12 +92,12 @@ public class BPartnerRecordsUtil
 		contactRecord.setAD_User_ID(AD_USER_ID + idOffSet);
 		contactRecord.setC_BPartner(bpartnerRecord);
 		contactRecord.setExternalId(AD_USER_EXTERNAL_ID + idOffSetStr);
-		contactRecord.setValue(C_BPARTNER_VALUE + idOffSetStr);
-		contactRecord.setName("bpartnerRecord.name" + idOffSetStr);
-		contactRecord.setLastname("bpartnerRecord.lastName" + idOffSetStr);
-		contactRecord.setFirstname("bpartnerRecord.firstName" + idOffSetStr);
-		contactRecord.setEMail("bpartnerRecord.email" + idOffSetStr);
-		contactRecord.setPhone("bpartnerRecord.phone" + idOffSetStr);
+		contactRecord.setValue(AD_USER_VALUE + idOffSetStr);
+		contactRecord.setName("contactRecord.name" + idOffSetStr);
+		contactRecord.setLastname("contactRecord.lastName" + idOffSetStr);
+		contactRecord.setFirstname("contactRecord.firstName" + idOffSetStr);
+		contactRecord.setEMail("contactRecord.email" + idOffSetStr);
+		contactRecord.setPhone("contactRecord.phone" + idOffSetStr);
 		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
 		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);

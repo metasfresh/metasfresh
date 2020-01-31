@@ -79,5 +79,6 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	/**
 	 * @return shipper transportation document of given HUs. It's expected to be the same among the passed parameters (otherwise will throw {@link AdempiereException}).
 	 */
+	@Nullable
 	I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(Collection<I_M_HU> hus);
 }

@@ -37,7 +37,7 @@ import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 {
-	boolean isInvalid(ShipmentScheduleId shipmentScheduleId);
+	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
 	/**
 	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose order line has the given product id.

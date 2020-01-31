@@ -79,6 +79,7 @@ import org.compiere.model.MNote;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -132,6 +133,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -1651,7 +1653,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setError(final I_C_Invoice_Candidate ic, final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
+	public void setError(
+			@NonNull final I_C_Invoice_Candidate ic,
+			final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
 	{
 		final String errorMessageToUse;
 		if (!askForDeleteRegeneration)
@@ -1966,15 +1970,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine)
-				.stream()
-				.forEach(cand -> setCandInDispute(cand));
-	}
-
-	private void setCandInDispute(final I_C_Invoice_Candidate cand)
-	{
-		cand.setIsInDispute(true);
-		save(cand);
+		final List<I_C_Invoice_Candidate> icRecords = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine);
+		for (final I_C_Invoice_Candidate icRecord : icRecords)
+		{
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			{
+				logger.debug("Set IsInDispute=true because ic bleongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
+				icRecord.setIsInDispute(true);
+				save(icRecord);
+			}
+		}
 	}
 
 	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)

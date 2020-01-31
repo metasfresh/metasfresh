@@ -27,6 +27,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -58,6 +60,7 @@ public class CostingMethodHandlerUtils
 	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final CurrencyRepository currenciesRepo;
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
@@ -71,6 +74,11 @@ public class CostingMethodHandlerUtils
 
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsRepo = costDetailsRepo;
+	}
+
+	public QuantityUOMConverter getQuantityUOMConverter()
+	{
+		return uomConversionBL;
 	}
 
 	public CostSegment extractCostSegment(final CostDetail costDetail)

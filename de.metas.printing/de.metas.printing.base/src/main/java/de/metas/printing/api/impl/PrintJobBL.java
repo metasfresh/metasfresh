@@ -600,11 +600,14 @@ public class PrintJobBL implements IPrintJobBL
 		final int AD_Role_ID = item.getAD_Role_ID();
 		final int AD_User_ID = item.getAD_User_ID();
 
+		final int AD_Table_ID = item.getAD_Table_ID();
+
 		final List<I_AD_PrinterRouting> rs = Services.get(IPrinterRoutingDAO.class).fetchPrinterRoutings(ctx,
 				AD_Client_ID, AD_Org_ID,
 				AD_Role_ID, AD_User_ID,
 				C_DocType_ID,
 				AD_Process_ID,
+				AD_Table_ID,
 				null, // printerType
 				I_AD_PrinterRouting.class);
 

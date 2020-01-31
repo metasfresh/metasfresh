@@ -2,12 +2,15 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.detailrecord.DetailDataRequestHandler;
@@ -57,6 +60,8 @@ import lombok.NonNull;
 public class ShipmentScheduleEventHandler
 		implements MaterialEventHandler<AbstractShipmentScheduleEvent>
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEventHandler.class);
+
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final DetailDataRequestHandler detailRequestHandler;
 
@@ -100,7 +105,7 @@ public class ShipmentScheduleEventHandler
 		if (shipmentScheduleEvent.getOrderedQuantityDelta().signum() == 0
 				&& shipmentScheduleEvent.getReservedQuantityDelta().signum() == 0)
 		{
-			Loggables.addLog("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
 
@@ -140,7 +145,7 @@ public class ShipmentScheduleEventHandler
 					.handleRemoveDetailRequest(RemoveDetailRequest.builder()
 							.detailDataRecordIdentifier(detailIdentifier)
 							.build());
-			Loggables.addLog("Deleted {} detail records", deletedCount);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Deleted {} detail records", deletedCount);
 		}
 	}
 

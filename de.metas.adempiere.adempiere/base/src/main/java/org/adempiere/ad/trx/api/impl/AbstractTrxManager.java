@@ -66,6 +66,7 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.TrxRunnable2Wrapper;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -1180,6 +1181,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
+		
+		MDC.put("TrxName", trxName);
 
 		return trxNameOld;
 	}

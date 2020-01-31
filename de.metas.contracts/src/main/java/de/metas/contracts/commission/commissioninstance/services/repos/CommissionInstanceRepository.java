@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.lang.Percent;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
@@ -159,6 +160,7 @@ public class CommissionInstanceRepository
 				.forecastedPoints(CommissionPoints.of(instanceRecord.getPointsBase_Forecasted()))
 				.invoiceablePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiceable()))
 				.invoicedPoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiced()))
+				.tradedCommissionPercent(Percent.ZERO)
 				.timestamp(TimeUtil.asInstant(instanceRecord.getMostRecentTriggerTimestamp()))
 				.build();
 	}

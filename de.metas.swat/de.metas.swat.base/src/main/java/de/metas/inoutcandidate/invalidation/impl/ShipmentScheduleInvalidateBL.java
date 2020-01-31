@@ -86,39 +86,39 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public boolean isInvalid(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public boolean isFlaggedForRecompute(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return invalidSchedulesRepo.isInvalid(shipmentScheduleId);
+		return invalidSchedulesRepo.isFlaggedForRecompute(shipmentScheduleId);
 	}
 
 	@Override
-	public void invalidateShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public void flagForRecompute(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		invalidateShipmentSchedules(ImmutableSet.of(shipmentScheduleId));
+		flagForRecompute(ImmutableSet.of(shipmentScheduleId));
 	}
 
 	@Override
-	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	public void flagForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		invalidSchedulesRepo.invalidateShipmentSchedules(shipmentScheduleIds);
 	}
 
 	@Override
-	public void invalidateStorageSegment(@NonNull final IShipmentScheduleSegment segment)
+	public void flagForRecomputeStorageSegment(@NonNull final IShipmentScheduleSegment segment)
 	{
 		final PInstanceId addToSelectionId = null;
 		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(segment), addToSelectionId);
 	}
 
 	@Override
-	public void invalidateStorageSegments(final Collection<IShipmentScheduleSegment> segments)
+	public void flagSegmentForRecompute(final Collection<IShipmentScheduleSegment> segments)
 	{
 		final PInstanceId addToSelectionId = null;
 		invalidSchedulesRepo.invalidateStorageSegments(segments, addToSelectionId);
 	}
 
 	@Override
-	public void invalidateStorageSegments(
+	public void flagSegmentsForRecompute(
 			@Nullable final Collection<IShipmentScheduleSegment> segments,
 			@Nullable final PInstanceId addToSelectionId)
 	{
@@ -133,16 +133,16 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.flatMap(this::streamShipmentScheduleIdsForInOutLine)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invalidateShipmentSchedules(shipmentScheduleIds);
+		flagForRecompute(shipmentScheduleIds);
 	}
 
 	@Override
-	public void invalidateJustForLine(final I_M_InOutLine shipmentLine)
+	public void flagForRecompute(final I_M_InOutLine shipmentLine)
 	{
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = streamShipmentScheduleIdsForInOutLine(shipmentLine)
 				.collect(ImmutableSet.toImmutableSet());
 
-		invalidateShipmentSchedules(shipmentScheduleIds);
+		flagForRecompute(shipmentScheduleIds);
 	}
 
 	private Stream<ShipmentScheduleId> streamShipmentScheduleIdsForInOutLine(@NonNull final I_M_InOutLine inoutLine)
@@ -249,17 +249,17 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
-		invalidateShipmentSchedule(shipmentScheduleId);
+		flagForRecompute(shipmentScheduleId);
 	}
 
 	@Override
-	public void invalidateForProduct(@NonNull final ProductId productId)
+	public void flagForRecompute(@NonNull final ProductId productId)
 	{
 		invalidSchedulesRepo.invalidateForProduct(productId);
 	}
 
 	@Override
-	public void invalidateForHeaderAggregationKeys(@NonNull final Set<String> headerAggregationKeys)
+	public void flagHeaderAggregationKeysForRecompute(@NonNull final Set<String> headerAggregationKeys)
 	{
 		invalidSchedulesRepo.invalidateForHeaderAggregationKeys(headerAggregationKeys);
 	}
@@ -296,7 +296,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		{
 			final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
 			taskExecutorService.submit(
-					() -> invalidateStorageSegments(segmentsEffective),
+					() -> flagSegmentForRecompute(segmentsEffective),
 					this.getClass().getSimpleName());
 		}
 	}

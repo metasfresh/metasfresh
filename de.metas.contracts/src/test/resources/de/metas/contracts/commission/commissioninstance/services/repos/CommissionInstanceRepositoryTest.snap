@@ -6,7 +6,8 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "timestamp" : "2019-09-17T11:50:55Z",
     "forecastedPoints" : 10,
     "invoiceablePoints" : 11,
-    "invoicedPoints" : 12
+    "invoicedPoints" : 12,
+    "tradedCommissionPercent" : 0
   },
   "config" : {
     "@type" : "HierarchyConfig",

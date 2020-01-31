@@ -184,21 +184,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						final List<Integer> chunkInvoiceCandidateIds = new ArrayList<>();
 
 						@Override
-						public void process(final I_C_Invoice_Candidate ic)
+						public void process(final I_C_Invoice_Candidate icRecord)
 						{
-							try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(ic))
+							try (final MDCCloseable icMDC = TableRecordMDC.putTableRecordReference(icRecord))
 							{
-								chunkInvoiceCandidateIds.add(ic.getC_Invoice_Candidate_ID());
+								chunkInvoiceCandidateIds.add(icRecord.getC_Invoice_Candidate_ID());
 
-								updateInvalid(ic);
-								if (!ic.isError())
+								updateInvalid(icRecord);
+								if (!icRecord.isError())
 								{
-									result.addInvoiceCandidate(ic);
+									result.addInvoiceCandidate(icRecord);
 								}
 								else
 								{
 									Loggables.withLogger(logger, Level.DEBUG)
-											.addLog("Error processing invoice; ic.errorMessage={}; ic={}", ic.getErrorMsg(), ic);
+											.addLog("Error processing invoice; ic.errorMessage={}; ic={}", icRecord.getErrorMsg(), icRecord);
 									result.incrementErrorsCount();
 								}
 							}

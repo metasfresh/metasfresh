@@ -43,6 +43,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
@@ -267,9 +268,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
 		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);
-		Check.assumeNotNull(shipmentScheduleHandler,
-				"ShipmentScheduleHandler for the given shipmentSchedule with table name {} is not null; shipmentSchedule={}",
-				tableName, sched);
+		if (shipmentScheduleHandler == null)
+		{
+			throw new AdempiereException("No shipment schedule handler defined for " + tableName + " (" + sched + ")");
+		}
 
 		return shipmentScheduleHandler;
 	}

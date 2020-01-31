@@ -127,10 +127,8 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		setConnection(con);
 	}	// Trx
 
-	/** Static Log */
-	// private static final Logger s_log = CLogMgt.getLogger(Trx.class);
 	/** Logger */
-	private Logger log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(Trx.class);
 
 	private Connection m_connection = null;
 

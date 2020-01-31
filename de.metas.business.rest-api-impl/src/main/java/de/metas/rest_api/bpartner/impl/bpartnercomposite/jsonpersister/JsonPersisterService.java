@@ -283,9 +283,9 @@ public class JsonPersisterService
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 		for (final JsonRequestContactUpsertItem requestItem : jsonContactUpsert.getRequestItems())
 		{
-			final IdentifierString locationIdentifier = IdentifierString.of(requestItem.getContactIdentifier());
+			final IdentifierString contactIdentifier = IdentifierString.of(requestItem.getContactIdentifier());
 
-			final BPartnerContact bpartnerContact = shortTermIndex.extract(locationIdentifier);
+			final BPartnerContact bpartnerContact = shortTermIndex.extract(contactIdentifier);
 
 			response.responseItem(JsonResponseUpsertItem.builder()
 					.identifier(requestItem.getContactIdentifier())
@@ -678,7 +678,6 @@ public class JsonPersisterService
 		if (existingContact != null)
 		{
 			contact = existingContact;
-			shortTermIndex.remove(existingContact.getId());
 		}
 		else
 		{
@@ -1048,6 +1047,16 @@ public class JsonPersisterService
 		else if (isUpdateRemove)
 		{
 			location.setName(null);
+		}
+
+		// bpartnerName
+		if (!isEmpty(jsonBPartnerLocation.getBpartnerName(), true))
+		{
+			location.setBpartnerName(jsonBPartnerLocation.getBpartnerName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			location.setBpartnerName(null);
 		}
 
 		// address1

@@ -1,11 +1,8 @@
 package de.metas.handlingunits.pporder.api;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -41,11 +38,4 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 	{
 		return Services.get(IUOMDAO.class).getById(ppOrderQty.getC_UOM_ID());
 	}
-
-	static I_M_Product extractProduct(@NonNull final I_PP_Order_Qty ppOrderQty)
-	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrderQty.getM_Product_ID());
-		return Services.get(IProductDAO.class).getById(productId);
-	}
-
 }

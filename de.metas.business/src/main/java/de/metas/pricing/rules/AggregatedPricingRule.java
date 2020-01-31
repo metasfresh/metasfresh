@@ -9,9 +9,11 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.util.Loggables;
 import lombok.ToString;
 
 /**
@@ -59,7 +61,7 @@ public final class AggregatedPricingRule implements IPricingRule
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		logger.debug("Evaluating prcing rules with pricingContext: {}", pricingCtx);
+		logger.debug("Evaluating pricing rules with pricingContext: {}", pricingCtx);
 
 		for (final IPricingRule rule : rules)
 		{
@@ -71,7 +73,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// Preliminary check if there is a chance this pricing rule to be applied
 			if (!rule.applies(pricingCtx, result))
 			{
-				logger.debug("Skipped rule {}, result: {}", rule, result);
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Skipped rule {}, result: {}", rule, result);
 				continue;
 			}
 
@@ -88,7 +90,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
 			// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
 			result.addPricingRuleApplied(rule);
-			logger.debug("Applied rule {}, result: {}", rule, result);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Applied rule {}, result: {}", rule, result);
 		}
 	}
 }
