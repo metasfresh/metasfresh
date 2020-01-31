@@ -340,3 +340,8 @@ UPDATE AD_Element_Trl SET Name='Berichte - Format', PrintName='Berichte - Format
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577492,'nl_NL')
 ;
 
+-- 2020-01-31T07:57:45.974Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2020-01-31 09:57:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541674
+;
+
