@@ -3,7 +3,6 @@ package de.metas.tourplanning.api.impl;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import de.metas.tourplanning.model.TourId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -18,6 +17,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
+import de.metas.tourplanning.model.TourId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
@@ -30,7 +30,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	@Override
-	public boolean setPreparationDate(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
+	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
 	{
 		// Don't touch processed orders
 		if (order.isProcessed())
@@ -101,6 +101,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		else if (isUseFallback)
 		{
 			order.setPreparationDate(order.getDatePromised());
+			order.setM_Tour_ID(-1);
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",
 					order.getDatePromised(), order, preparationDate, isUseFallback, systemTime);
@@ -108,6 +109,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		else
 		{
 			order.setPreparationDate(null);
+			order.setM_Tour_ID(-1);
 			logger.info(
 					"Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
 					preparationDate, order, preparationDate, isUseFallback, systemTime);

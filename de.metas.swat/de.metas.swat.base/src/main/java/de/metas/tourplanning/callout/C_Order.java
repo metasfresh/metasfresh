@@ -82,6 +82,6 @@ public class C_Order
 		// If we are currently copying this record, it's fine to fallback to DatePromised (task 09000).
 		final boolean fallbackToDatePromised = field.isRecordCopyingMode();
 
-		Services.get(IOrderDeliveryDayBL.class).setPreparationDate(order, fallbackToDatePromised);
+		Services.get(IOrderDeliveryDayBL.class).setPreparationDateAndTour(order, fallbackToDatePromised);
 	}
 }
