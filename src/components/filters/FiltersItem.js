@@ -312,7 +312,7 @@ class FiltersItem extends PureComponent {
         if (paramsMap[param.parameterName]) {
           const { value, valueTo } = paramsMap[param.parameterName];
 
-          if (value) {
+          if (value !== null && value !== '') {
             return {
               ...param,
               value: parseDateToReadable(param.widgetType, value),
