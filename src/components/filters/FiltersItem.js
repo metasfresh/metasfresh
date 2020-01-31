@@ -152,23 +152,21 @@ class FiltersItem extends PureComponent {
       resetInitialValues && resetInitialValues(filterId, parameter);
     }
 
-    //@TODO: LOOKUPS GENERATE DIFFERENT TYPE OF parameters parameters
-    // IT HAS TO BE UNIFIED
-    //
-    // OVERWORKED WORKAROUND
     if (!Array.isArray(parameter)) {
       parameter = [parameter];
     }
 
     parameter = parameter.map(param => ({
-      parameterName: param,
+      parameterName: param.parameterName ? param.parameterName : param,
       value,
       valueTo,
     }));
 
     const { filter, activeFilter } = this.mergeSingle(parameter, true);
 
-    this.setState({ filter, activeFilter });
+    return new Promise(resolve => {
+      this.setState({ filter, activeFilter }, () => resolve(true));
+    });
   };
 
   /**
