@@ -70,7 +70,7 @@ class MasterWidget extends Component {
         {
           updated: true,
           data: next,
-          [nextProps.fieldName]: nextProps.widgetData,
+          [this.props.fieldName]: this.props.widgetData,
         },
         () => {
           this.timeout = setTimeout(() => {
@@ -251,7 +251,7 @@ class MasterWidget extends Component {
           res.data &&
           /*eslint-disable */
           window.open(url, '_blank');
-        /*eslint-enable */
+          /*eslint-enable */
       });
   };
 
