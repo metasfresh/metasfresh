@@ -36,7 +36,7 @@ public class ShipmentSchedulesMDC
 {
 	public MDCCloseable withShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return TableRecordMDC.withTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		return TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
 	}
 
 	public MDCCloseable withShipmentScheduleUpdateRunNo(final int runNo)
@@ -46,6 +46,6 @@ public class ShipmentSchedulesMDC
 
 	public MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
 	{
-		return MDC.putCloseable("AD_PInstance_ID", Integer.toString(selectionId.getRepoId()));
+		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
 	}
 }

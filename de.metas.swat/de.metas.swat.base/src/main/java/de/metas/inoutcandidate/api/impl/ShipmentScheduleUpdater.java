@@ -524,7 +524,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					final ShipmentScheduleAvailableStock storages = qtyOnHands.getStockDetailsMatching(sched);
 					final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
 
-					logger.debug("For the current schedule we have totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
+					logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
 					sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 					final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);

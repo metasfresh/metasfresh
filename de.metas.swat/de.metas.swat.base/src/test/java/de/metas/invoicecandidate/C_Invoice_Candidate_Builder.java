@@ -50,6 +50,7 @@ import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -69,6 +70,7 @@ public class C_Invoice_Candidate_Builder
 	private final AbstractICTestSupport test;
 
 	private String instanceName;
+	private OrgId orgId;
 	private BPartnerId billBPartnerId;
 	private BPartnerLocationId billBPartnerLocationId;
 	private int priceEntered;
@@ -88,6 +90,7 @@ public class C_Invoice_Candidate_Builder
 	private boolean invoiceRule_OverrideSet;
 	private String poReference;
 	private LocalDate dateAcct;
+	private LocalDate dateInvoiced;
 	private LocalDate presetDateInvoiced;
 	private BigDecimal qualityDiscountPercent_Override;
 
@@ -122,12 +125,14 @@ public class C_Invoice_Candidate_Builder
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		POJOWrapper.setInstanceName(ic, instanceName);
-		ic.setAD_Org_ID(1);
+
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		//
 		// Dates
 		ic.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 		ic.setPresetDateInvoiced(TimeUtil.asTimestamp(presetDateInvoiced));
+		ic.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
 
 		// InvoiceRule
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
@@ -299,7 +304,7 @@ public class C_Invoice_Candidate_Builder
 	public C_Invoice_Candidate_Builder setBillBPartnerAndLocationId(final BPartnerLocationId billBPartnerAndLocationId)
 	{
 		setBillBPartnerId(billBPartnerAndLocationId.getBpartnerId());
-		this.billBPartnerLocationId = billBPartnerAndLocationId;
+		billBPartnerLocationId = billBPartnerAndLocationId;
 		return this;
 	}
 
@@ -419,41 +424,53 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setInvoiceRule(String invoiceRule)
+	public C_Invoice_Candidate_Builder setInvoiceRule(final String invoiceRule)
 	{
 		this.invoiceRule = invoiceRule;
-		this.invoiceRuleSet = true;
+		invoiceRuleSet = true;
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setInvoiceRule_Override(String invoiceRule_Override)
+	public C_Invoice_Candidate_Builder setInvoiceRule_Override(final String invoiceRule_Override)
 	{
 		this.invoiceRule_Override = invoiceRule_Override;
-		this.invoiceRule_OverrideSet = true;
+		invoiceRule_OverrideSet = true;
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setPOReference(String poReference)
+	public C_Invoice_Candidate_Builder setPOReference(final String poReference)
 	{
 		this.poReference = poReference;
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setDateAcct(LocalDate dateAcct)
+	public C_Invoice_Candidate_Builder setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setQualityDiscountPercent_Override(BigDecimal qualityDiscountPercent_Override)
+	public C_Invoice_Candidate_Builder setDateInvoiced(final LocalDate dateInvoiced)
 	{
-		this.qualityDiscountPercent_Override = qualityDiscountPercent_Override;
+		this.dateInvoiced = dateInvoiced;
 		return this;
 	}
 
 	public C_Invoice_Candidate_Builder setPresetDateInvoiced(final LocalDate presetDateInvoiced)
 	{
 		this.presetDateInvoiced = presetDateInvoiced;
+		return this;
+	}
+
+	public C_Invoice_Candidate_Builder setQualityDiscountPercent_Override(final BigDecimal qualityDiscountPercent_Override)
+	{
+		this.qualityDiscountPercent_Override = qualityDiscountPercent_Override;
+		return this;
+	}
+
+	public C_Invoice_Candidate_Builder setOrgId(@NonNull final OrgId orgId)
+	{
+		this.orgId = orgId;
 		return this;
 	}
 }

@@ -45,16 +45,11 @@ public interface IWorkPackageParamsBuilder
 
 	/**
 	 * Set/Updates given workpackage parameter
-	 *
-	 * @param parameterName
-	 * @param parameterValue
 	 */
 	IWorkPackageParamsBuilder setParameter(final String parameterName, final Object parameterValue);
 
 	/**
 	 * Set/Updates given workpackage parameters
-	 * 
-	 * @param parameters
 	 */
 	IWorkPackageParamsBuilder setParameters(final Map<String, ? extends Object> parameters);
 }
