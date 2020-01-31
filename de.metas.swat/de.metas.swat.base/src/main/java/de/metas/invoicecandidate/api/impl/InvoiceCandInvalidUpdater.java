@@ -244,7 +244,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
-	private void updateInvalid(final I_C_Invoice_Candidate icRecord)
+	private void updateInvalid(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 

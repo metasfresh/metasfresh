@@ -150,11 +150,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result;
-		if (isInboundTrx)
+		if (isInboundTrx || request.isReversal())
 		{
 			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-			currentCosts.addWeightedAverage(request.getAmt(), qty);
+			currentCosts.addWeightedAverage(request.getAmt(), qty, utils.getQuantityUOMConverter());
 		}
 		else
 		{
@@ -163,7 +163,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			// aaa;
+			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
 		utils.saveCurrentCost(currentCosts);
@@ -179,11 +180,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
 		if (isInboundTrx)
 		{
-			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate());
+			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
-			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), request.getAmt().negate());
+			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
 		}
 
 		utils.saveCurrentCost(currentCosts);
@@ -341,7 +342,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost currentCost = utils.getCurrentCost(costDetail);
 		currentCost.setFrom(costDetail.getPreviousAmounts());
 
-		currentCost.addWeightedAverage(amount, costDetail.getQty());
+		currentCost.addWeightedAverage(amount, costDetail.getQty(), utils.getQuantityUOMConverter());
 
 		final List<CostDetailAdjustment> nextCostDetailAdjustments = utils.streamAllCostDetailsAfter(costDetail)
 				.map(nextCostDetail -> recalculateCostDetailAmount(nextCostDetail, currentCost))
@@ -366,7 +367,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (costDetail.isInboundTrx())
 		{
 			amt = costDetail.getAmt();
-			currentCost.addWeightedAverage(amt, qty);
+			currentCost.addWeightedAverage(amt, qty, utils.getQuantityUOMConverter());
 		}
 		//
 		// Outbound
@@ -376,7 +377,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 					.multiply(qty)
 					.roundToPrecisionIfNeeded(currentCost.getPrecision());
 
-			currentCost.addToCurrentQtyAndCumulate(qty, amt);
+			currentCost.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
 		//

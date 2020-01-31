@@ -183,7 +183,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
 
 		return result;
@@ -215,7 +215,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
 
 		return result;
@@ -238,7 +238,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
 
 		return result;

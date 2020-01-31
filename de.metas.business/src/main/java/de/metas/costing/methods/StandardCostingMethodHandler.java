@@ -55,7 +55,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
@@ -79,7 +79,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -91,7 +91,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
 
-		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate());
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
 	}

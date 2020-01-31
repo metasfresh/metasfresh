@@ -289,7 +289,7 @@ public class HUOrderBL implements IHUOrderBL
 					huUnitType,
 					allowInfiniteCapacity);
 
-			logger.debug("C_OrderLine={} has M_Product_ID={}, but the ol's current M_HU_PI_Item_Product={} has M_Product_ID={}; => going to change the ol's M_HU_PI_Item_Product to {}!",
+			logger.debug("C_OrderLine={} has M_Product_ID={}, but the ol's current M_HU_PI_Item_Product={} has M_Product_ID={}; -> going to change the ol's M_HU_PI_Item_Product to {}!",
 					ol, ol.getM_Product_ID(), olPip, olPip.getM_Product_ID(), newPIIP);
 		}
 		else

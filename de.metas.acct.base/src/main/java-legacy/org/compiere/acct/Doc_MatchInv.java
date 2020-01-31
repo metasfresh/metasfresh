@@ -307,7 +307,13 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().negate();
 			ipvCurrencyId = dr_NotInvoicedReceipts.getCurrencyId();
 		}
-		// Case: both lines are not null
+		// Case: both lines are not null and same currency
+		else if (CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
+		{
+			ipvAmount = cr_InventoryClearing.getSourceBalance().add(dr_NotInvoicedReceipts.getSourceBalance()).negate();
+			ipvCurrencyId = cr_InventoryClearing.getCurrencyId();
+		}
+		// Case: both lines are not null but different currency
 		else
 		{
 			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).negate();
