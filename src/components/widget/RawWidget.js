@@ -26,7 +26,6 @@ import Labels from './Labels';
 import Link from './Link';
 import List from './List/List';
 import Lookup from './Lookup/Lookup';
-import _ from 'lodash';
 
 /**
  * @file Class based component.
@@ -57,7 +56,6 @@ export class RawWidget extends Component {
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
-      [this.props.fieldName]: cachedValue,
     };
 
     this.getClassNames = getClassNames.bind(this);
@@ -81,24 +79,13 @@ export class RawWidget extends Component {
    *  Re-rendering conditions by widgetType this to prevent unnecessary re-renders
    *  Performance boost
    */
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps) {
     switch (this.props.widgetType) {
       case 'YesNo':
         return nextProps.widgetData[0].value !== this.props.widgetData[0].value;
+
       default:
-        if (
-          !_.isEqual(
-            nextState[nextProps.fieldName],
-            this.state[nextProps.fieldName]
-          ) ||
-          !_.isEqual(
-            nextProps.widgetData[0].value,
-            this.state[nextProps.fieldName]
-          )
-        ) {
-          return true;
-        }
-        return false;
+        return true;
     }
   }
 
@@ -353,33 +340,6 @@ export class RawWidget extends Component {
   };
 
   /**
-   * @method handleProxy
-   * @summary Sets value in state and apply debounce
-   */
-  handleProxy = e => {
-    let newInputValue = e.target.value;
-    if (e.key === 'Enter') {
-      this.handleKeyDown(
-        e,
-        this.props.widgetField,
-        e.target.value,
-        this.props.widgetType
-      );
-      return false;
-    }
-    this.setState({ [this.props.fieldName]: newInputValue });
-    return this.applyDebounce();
-  };
-
-  /**
-   * @method applyDebounce
-   * @summary It is used to apply a debouncer on input fields
-   */
-  applyDebounce = _.debounce(() => {
-    return true;
-  }, 1000);
-
-  /**
    * @method renderWidget
    * @summary ToDo: Describe the method.
    */
@@ -456,19 +416,15 @@ export class RawWidget extends Component {
       //switched to autocomplete=off instead
       autoComplete: 'off',
       className: 'input-field js-input-field',
-      value: this.state[this.props.fieldName],
+      value: widgetValue,
       defaultValue,
       placeholder: fields[0].emptyText,
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e =>
-        this.handleProxy(e) &&
-        handleChange &&
-        handleChange(widgetField, e.target.value),
+      onChange: e => handleChange && handleChange(widgetField, e.target.value),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
-        this.handleProxy(e) &&
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
       title: widgetValue,
       id,
@@ -1046,9 +1002,6 @@ export class RawWidget extends Component {
           />
         );
       }
-      case 'Color': {
-        return;
-      }
       default:
         return false;
     }
@@ -1090,7 +1043,7 @@ export class RawWidget extends Component {
       ['Switch', 'YesNo', 'Label', 'Button'].indexOf(widgetType) > -1;
 
     // Unsupported widget type
-    if (!widgetBody && typeof widgetBody !== 'undefined') {
+    if (!widgetBody) {
       // eslint-disable-next-line no-console
       console.warn(
         'The %c' + widgetType,

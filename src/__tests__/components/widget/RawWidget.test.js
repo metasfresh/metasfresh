@@ -185,7 +185,6 @@ describe('RawWidget component', () => {
       wrapper.find('textarea')
         .prop('onFocus')({ target: { value: '' } });
       jest.runAllTimers();
-      
 
       expect(handleFocusSpy).toHaveBeenCalled();
       expect(focusSpy).toHaveBeenCalled();
@@ -344,17 +343,12 @@ describe('RawWidget component', () => {
       wrapper.instance().forceUpdate();
       wrapper.update();
 
-      const w = wrapper.find('input');
-      
       wrapper.find('input')
         .prop('onFocus')({ target: { value: '' } });
-      // jest.runAllTimers();
+      jest.runAllTimers();
 
       expect(handleFocusSpy).toHaveBeenCalled();
-      setTimeout(() => {
-        expect(focusSpy).toHaveBeenCalled();
-      }, 1000);
-      
+      expect(focusSpy).toHaveBeenCalled();
       expect(listenOnKeysFalseSpy).toHaveBeenCalled();
 
       wrapper.find('input')
