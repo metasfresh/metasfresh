@@ -38,9 +38,6 @@ public class C_BPartner
 	/**
 	 * If <code>C_InvoiceSchedule_ID</code> changes, then this MV calls {@link IInvoiceCandDAO#invalidateCandsForBPartnerInvoiceRule(org.compiere.model.I_C_BPartner)} to invalidate those ICs that
 	 * might be concerned by the change.
-	 *
-	 * @param bPartner
-	 * @throws Exception
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_InvoiceSchedule_ID })
 	public void onInvoiceRuleChange(final I_C_BPartner bPartner) throws Exception
@@ -53,8 +50,6 @@ public class C_BPartner
 
 	/**
 	 * Invalidate all invoice candidates of given partner, in case the header/line aggregation definitions were changed.
-	 *
-	 * @param bpartner
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_BPartner.COLUMNNAME_PO_Invoice_Aggregation_ID, I_C_BPartner.COLUMNNAME_PO_InvoiceLine_Aggregation_ID, I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID, I_C_BPartner.COLUMNNAME_SO_InvoiceLine_Aggregation_ID })

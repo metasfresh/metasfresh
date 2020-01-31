@@ -64,7 +64,7 @@ public class InArrayQueryFilterTest
 		// Expect exception:
 		assertThatThrownBy(() -> new InArrayQueryFilter<>(columnName, Collections.emptyList()))
 				.isInstanceOf(NullPointerException.class)
-				.hasMessage("columnName");
+				.hasMessageContaining("columnName");
 	}
 
 	@Test
