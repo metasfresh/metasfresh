@@ -24,10 +24,9 @@ package org.adempiere.archive.api;
 
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_User;
-
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -56,11 +55,11 @@ public interface IArchiveEventManager extends ISingletonService
 	/**
 	 * @param action the value given as action is stored in the respective <code>C_Doc_Outbound_Log_Line</code> column.
 	 */
-	void firePdfUpdate(I_AD_Archive archive, I_AD_User user, String action);
+	void firePdfUpdate(I_AD_Archive archive, UserId userId, String action);
 
 	void fireEmailSent(I_AD_Archive archive, String action, UserEMailConfig user, EMailAddress from, EMailAddress to, EMailAddress cc, EMailAddress bcc, String status);
 
-	void firePrintOut(I_AD_Archive archive, I_AD_User user, String printerName, int copies, String status);
+	void firePrintOut(I_AD_Archive archive, UserId userId, String printerName, int copies, String status);
 
 	/**
 	 * To be invoked if the archive document is voided, reversed etc.

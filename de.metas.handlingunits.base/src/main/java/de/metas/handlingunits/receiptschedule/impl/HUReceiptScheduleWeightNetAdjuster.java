@@ -71,6 +71,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Helper class used to iterate TUs assigned to a receipt schedule and adjust their product storage with their WeightNet attribute.
@@ -133,9 +134,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 		this.inScopeHU_IDs = inScopeHU_IDs;
 	}
 
-	public void addReceiptSchedule(final I_M_ReceiptSchedule receiptSchedule)
+	public void addReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
 		Check.assume(!receiptSchedule.isProcessed(), "receiptSchedule not processed: {}", receiptSchedule);
 		logger.debug("Adding {}", receiptSchedule);
 
@@ -166,16 +166,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 		logger.debug("Done adjusting the receipt schedule: {}", receiptSchedule);
 	}
 
-	/**
-	 * Retrieve assigned TU handling units
-	 *
-	 * @param receiptSchedule
-	 * @return VHUs
-	 */
-	private Collection<I_M_HU> retrieveVHUs(final I_M_ReceiptSchedule receiptSchedule)
+	private Collection<I_M_HU> retrieveVHUs(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
-
 		//
 		// Build up a map of VHU's M_HU_ID to "SUM of QtyAllocated" (if not ZERO)
 		final Map<Integer, BigDecimal> huId2qtyAllocatedMap = new HashMap<>();
@@ -195,8 +187,6 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 			final I_M_HU vhu = rsa.getVHU();
 			Check.assumeNotNull(vhu, "vhu not null"); // shall not be null at this point
-			// final I_M_HU tuHU = rsa.getM_TU_HU();
-			// Check.assumeNotNull(tuHU, "TU HU not null for {}", rsa); // shall not be null at this point
 
 			final int vhuId = vhu.getM_HU_ID();
 			final BigDecimal rsaQtyAllocated = rsa.getHU_QtyAllocated();
@@ -233,14 +223,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		//
 		// Run in a sub-transaction of the original HUContext if possible
 		final String initialTrxName = getInitialTrxName();
-		trxManager.run(initialTrxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				adjustHUStorageToWeightNet0(vhu, receiptSchedule, localTrxName);
-			}
-		});
+		trxManager.run(initialTrxName, (TrxRunnable)localTrxName -> adjustHUStorageToWeightNet0(vhu, receiptSchedule, localTrxName));
 	}
 
 	private void adjustHUStorageToWeightNet0(final I_M_HU vhu, final I_M_ReceiptSchedule receiptSchedule, final String trxName)
@@ -292,7 +275,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		// Case: WeightNet is same as HU Storage Qty
 		if (qtyToAllocateAbs.signum() == 0)
 		{
-			logger.debug("HU Storage's Qty is same as WeightNet => nothing to do");
+			logger.debug("HU Storage's Qty is same as WeightNet -> nothing to do");
 			return;
 		}
 
@@ -325,7 +308,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 				huContext,
 				productId,
 				Quantity.of(qtyToAllocate, weightNetUOM),
-				SystemTime.asDate(),
+				SystemTime.asZonedDateTime(),
 				receiptSchedule, // referenceModel
 				true // forceAllocation => we want to transfer that quantity, no matter what
 				);

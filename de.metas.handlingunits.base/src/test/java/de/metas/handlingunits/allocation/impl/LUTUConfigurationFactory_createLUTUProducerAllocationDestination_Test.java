@@ -32,12 +32,12 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
@@ -57,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -75,7 +76,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 	private ProductId cuProductId;
 	private I_C_UOM cuUOM;
-	private I_C_BPartner bpartner;
+	private BPartnerId bpartnerId;
 
 	private I_M_HU_PI piPalet;
 	private I_M_HU_PI piIFCO;
@@ -93,7 +94,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		huContext = helper.getHUContext();
 		cuProductId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 		cuUOM = uomEach;
-		bpartner = null;
+		bpartnerId = null;
 
 		// Inherited transaction (needed for LUTUConfigFactory)
 		// NOTE: not needed
@@ -126,8 +127,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
-				bpartner,
+				UomId.ofRepoId(cuUOM.getC_UOM_ID()),
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
 		// Make sure configuration is saved, else HUBuilder will fail
@@ -148,7 +149,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
 				cuProductId,
 				Quantity.of(cuQty, cuUOM),
-				helper.getTodayDate(),
+				helper.getTodayZonedDateTime(),
 				referencedModel,
 				false);
 
@@ -174,8 +175,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		lutuFactory.createLUTUConfiguration(
 				null, // tuPIItemProduct
 				cuProductId,
-				cuUOM,
-				bpartner,
+				UomId.ofRepoId(cuUOM.getC_UOM_ID()),
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 	}
 

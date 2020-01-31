@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner.impl;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
@@ -24,27 +24,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
+import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -102,7 +103,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@GetMapping("{bpartnerIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -122,7 +123,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -147,7 +148,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -197,7 +198,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@PutMapping
 	@Override
@@ -232,14 +234,15 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated location"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -260,14 +263,14 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
+			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@ApiOperation("Create or update a contacts for a particular bpartner. If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/contact")
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
-
-			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 
@@ -283,6 +286,35 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		return createdOrNotFound(response);
 	}
+	
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
+	@ApiOperation("Create or update a bank account for a particular bpartner. If a bank account exists, then its properties that are *not* specified are left untouched.")
+	@PutMapping("{bpartnerIdentifier}/bankAccount")
+	@Override
+	public ResponseEntity<JsonResponseUpsert> createOrUpdateBankAccount(
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifierStr,
+
+			@RequestBody @NonNull final JsonRequestBankAccountsUpsert bankAccounts)
+	{
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+
+		final JsonPersisterService persister = jsonServiceFactory.createPersister();
+		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
+				bpartnerIdentifier,
+				bankAccounts,
+				SyncAdvise.CREATE_OR_MERGE);
+
+		return createdOrNotFound(response);
+	}
+
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)
 	{

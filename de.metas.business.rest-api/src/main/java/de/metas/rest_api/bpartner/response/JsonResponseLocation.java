@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.changelog.JsonChangeInfo;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,6 +43,7 @@ public class JsonResponseLocation
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String NAME = "name";
+	public static final String BPARTNERNAME = "bpartnerName";
 	public static final String ADDRESS_1 = "address1";
 	public static final String ADDRESS_2 = "address2";
 	public static final String ADDRESS_3 = "address3";
@@ -61,10 +62,10 @@ public class JsonResponseLocation
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 
-	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Integer")
+	@ApiModelProperty(dataType = "java.lang.Integer")
 	MetasfreshId metasfreshId;
 
-	@ApiModelProperty(allowEmptyValue = true, //
+	@ApiModelProperty(
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
@@ -73,8 +74,11 @@ public class JsonResponseLocation
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean active;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
 	String name;
+
+	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
+	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String address1;
@@ -128,6 +132,7 @@ public class JsonResponseLocation
 			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(NAME) @Nullable final String name,
+			@JsonProperty(BPARTNERNAME) @Nullable final String bpartnerName,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(ADDRESS_1) @Nullable final String address1,
 			@JsonProperty(ADDRESS_2) @Nullable final String address2,
@@ -154,6 +159,8 @@ public class JsonResponseLocation
 		this.active = active;
 
 		this.name = name;
+
+		this.bpartnerName = bpartnerName;
 
 		this.address1 = address1;
 		this.address2 = address2;

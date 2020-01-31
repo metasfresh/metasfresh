@@ -1,5 +1,8 @@
 package de.metas.document.archive.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -11,9 +14,12 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_DocType;
@@ -41,6 +47,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -123,35 +130,43 @@ public class DefaultModelArchiver
 		// Mark as processed
 		markProcessed();
 
-		//
-		// Create PDF data
 		final ReportEngine reportEngine = createReportEngine();
-		final byte[] pdfData = reportEngine.createPDFData();
-		if (pdfData == null || pdfData.length == 0)
-		{
-			throw new AdempiereException("Cannot create PDF data for " + this);
-		}
-		logger.debug("PDF Data: {} bytes", pdfData.length);
-
 		//
 		// PrintInfo (needed for archiving)
 		final PrintInfo printInfo = reportEngine.getPrintInfo();
 
-		final MPrintFormat printFormat = reportEngine.getPrintFormat();
-		if (printFormat != null && printFormat.getJasperProcess_ID() > 0)
-		{
-			printInfo.setAD_Process_ID(printFormat.getJasperProcess_ID());
-		}
-		logger.debug("PrintInfo: {}", printInfo);
+		ITableRecordReference reference = TableRecordReference.of(printInfo.getAD_Table_ID(), printInfo.getRecord_ID());
 
 		//
 		// Create AD_Archive and save it
 		final I_AD_Archive archive;
+		final byte pdfData[];
+		if (reportEngine.getPrintFormat() != null)
 		{
+
+			pdfData = reportEngine.createPDFData();
+			if (pdfData == null || pdfData.length == 0)
+			{
+				throw new AdempiereException("Cannot create PDF data for " + this);
+			}
+			logger.debug("PDF Data: {} bytes", pdfData.length);
+
+			final MPrintFormat printFormat = reportEngine.getPrintFormat();
+			if (printFormat != null && printFormat.getJasperProcess_ID() > 0)
+			{
+				printInfo.setAD_Process_ID(printFormat.getJasperProcess_ID());
+			}
+			logger.debug("PrintInfo: {}", printInfo);
+
 			final boolean forceArchive = true; // always force archive (i.e. don't check again if document needs to be archived)
 			archive = InterfaceWrapperHelper.create(archiveBL.archive(pdfData, printInfo, forceArchive, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
 			// archive.setIsDirectPrint(true);
 			archive.setC_Doc_Outbound_Config(getC_Doc_Outbound_Config_OrNull()); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
+
+			// https://github.com/metasfresh/metasfresh/issues/1240
+			// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
+			// but it needs to be available in case the system has to create a printing queue item for this archive
+			IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
 
 			//
 			// forward async batch if there is one
@@ -163,6 +178,21 @@ public class DefaultModelArchiver
 
 			InterfaceWrapperHelper.save(archive);
 			logger.debug("Archive: {}", archive);
+		}
+		else
+		{
+			final List<org.compiere.model.I_AD_Archive> lastArchives = Services.get(IArchiveDAO.class).retrieveLastArchives(getCtx(), reference, 1);
+
+			if (lastArchives.isEmpty())
+			{
+				throw new AdempiereException("@NoDocPrintFormat@@NoArchive@");
+			}
+
+			final org.compiere.model.I_AD_Archive lastArchive = lastArchives.get(0);
+
+			archive = load(lastArchive.getAD_Archive_ID(), I_AD_Archive.class);
+
+			pdfData = archive == null? null : archive.getBinaryData();
 		}
 
 		//
@@ -214,7 +244,7 @@ public class DefaultModelArchiver
 	}
 
 	// NOTE: private is ok since we are setting the record from the factory method
-	private DefaultModelArchiver setRecord(final Object record)
+	private DefaultModelArchiver setRecord(@NonNull final Object record)
 	{
 		assertNotProcessed();
 		_record = record;
@@ -316,8 +346,8 @@ public class DefaultModelArchiver
 			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).orElse(-1);
 			if (adClientId != null && adClientId >= 0)
 			{
-								final I_AD_Client client = clientDAO.retriveClient(ctx, adClientId);
-					language = Language.getLanguage(client.getAD_Language());
+				final I_AD_Client client = clientDAO.retriveClient(ctx, adClientId);
+				language = Language.getLanguage(client.getAD_Language());
 				if (language != null)
 				{
 					logger.debug("Using {}'s language: {}", client, language);
@@ -364,14 +394,20 @@ public class DefaultModelArchiver
 			{
 				printFormatId = getAD_PrintFormat_ID();
 			}
-			if (printFormatId <= 0)
-			{
-				throw new AdempiereException("NoDocPrintFormat");
-			}
-			final MPrintFormat printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
 
-			final Language language = getLanguage();
-			printFormat.setLanguage(language);
+			final MPrintFormat printFormat;
+
+			if (printFormatId > 0)
+			{
+				printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
+				final Language language = getLanguage();
+				printFormat.setLanguage(language);
+			}
+
+			else
+			{
+				printFormat = null;
+			}
 
 			reportEngine = new ReportEngine(ctx, printFormat, query, printInfo, trxName);
 		}
@@ -411,7 +447,7 @@ public class DefaultModelArchiver
 		return printInfo;
 	}
 
-	private void createCCFile(final I_AD_Archive archive)
+	private void createCCFile(@NonNull final I_AD_Archive archive)
 	{
 		DocOutboundCCWorkpackageProcessor.scheduleOnTrxCommit(archive);
 	}

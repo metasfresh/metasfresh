@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -45,9 +47,9 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
@@ -55,6 +57,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
+import de.metas.util.collections.IteratorUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
@@ -80,7 +83,7 @@ public interface IQuery<T>
 
 	/**
 	 * Default value for {@link #OPTION_GuaranteedIteratorRequired}.
-	 *
+	 * <p>
 	 * Currently it's <code>true</code> because most of the business logic relies on guaranteed iterator.
 	 */
 	boolean DEFAULT_OPTION_GuaranteedIteratorRequired = true;
@@ -92,7 +95,6 @@ public interface IQuery<T>
 	String getTrxName();
 
 	/**
-	 *
 	 * @return a copy of this object
 	 */
 	IQuery<T> copy();
@@ -159,7 +161,9 @@ public interface IQuery<T>
 
 	<ET extends T> ET first() throws DBException;
 
-	/** @return first record or null */
+	/**
+	 * @return first record or null
+	 */
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
 	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
@@ -174,6 +178,7 @@ public interface IQuery<T>
 	 * @return
 	 * @throws DBException
 	 */
+	@NonNull
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
@@ -183,6 +188,7 @@ public interface IQuery<T>
 	 * @throws DBMoreThenOneRecordsFoundException
 	 * @see {@link #first()}
 	 */
+	@Nullable
 	<ET extends T> ET firstOnly(Class<ET> clazz) throws DBException;
 
 	/**
@@ -192,6 +198,7 @@ public interface IQuery<T>
 	 * @return
 	 * @throws DBException
 	 */
+	@NonNull
 	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
 
 	/**
@@ -201,6 +208,7 @@ public interface IQuery<T>
 	 * @return model or null if not found or if there were more then one record found.
 	 * @throws DBException
 	 */
+	@Nullable
 	<ET extends T> ET firstOnlyOrNull(Class<ET> clazz) throws DBException;
 
 	/**
@@ -213,9 +221,9 @@ public interface IQuery<T>
 
 	/**
 	 * Sets a nonSQL filter which will be applied right before retrieving records from database.
-	 *
+	 * <p>
 	 * Using this method you can combine pure SQL where clause with pure Java filters in a seamless way.
-	 *
+	 * <p>
 	 * NOTE: using post-filters is introducing some limitations mainly on {@link #setLimit(int)} and {@link #iterate(Class)} methods.
 	 *
 	 * @param postQueryFilter
@@ -230,16 +238,16 @@ public interface IQuery<T>
 	IQuery<T> setOptions(Map<String, Object> options);
 
 	/**
-	 * Check if there items for query criteria
+	 * Check if there items for query criteria.
 	 *
 	 * @return true if exists, false otherwise
 	 * @throws DBException
 	 */
-	boolean match() throws DBException;
+	boolean anyMatch() throws DBException;
 
 	/**
 	 * Returns an {@link Iterator} over current query selection.
-	 *
+	 * <p>
 	 * The iterator will be guaranteed or not based on option {@link #OPTION_GuaranteedIteratorRequired}'s value. If the option is not set then {@link #DEFAULT_OPTION_GuaranteedIteratorRequired} will
 	 * be considered.
 	 *
@@ -247,18 +255,26 @@ public interface IQuery<T>
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
 
+	default <ID extends RepoIdAware> Iterator<ID> iterateIds(@NonNull final IntFunction<ID> idMapper) throws DBException
+	{
+		// TODO: implement an efficient solution and not this workaround
+		final Iterator<T> modelIterator = iterate(getModelClass());
+		final Function<T, ID> mapper = model -> idMapper.apply(InterfaceWrapperHelper.getId(model));
+		return IteratorUtils.map(modelIterator, mapper);
+	}
+
 	<ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException;
 
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
-	 *
+	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 */
 	IQuery<T> setOnlySelection(PInstanceId pisntanceId);
 
 	/**
 	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
-	 *
+	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 *
 	 * @param AD_PInstance_ID
@@ -283,10 +299,10 @@ public interface IQuery<T>
 		FIRST(null, true);
 
 		@Getter
-		private final String sqlFunction;
+		private String sqlFunction;
 
 		@Getter
-		private final boolean useOrderByClause;
+		private boolean useOrderByClause;
 
 		private Aggregate(final String sqlFunction, final boolean useOrderByClause)
 		{
@@ -299,7 +315,7 @@ public interface IQuery<T>
 		{
 			return sqlFunction;
 		}
-	};
+	}
 
 	/**
 	 * Aggregate given expression on this criteria
@@ -319,7 +335,9 @@ public interface IQuery<T>
 		return aggregate(columnName, aggregateType, returnType);
 	}
 
-	/** @return maximum int of <code>columnName</code> or ZERO */
+	/**
+	 * @return maximum int of <code>columnName</code> or ZERO
+	 */
 	default int maxInt(final String columnName)
 	{
 		return aggregate(columnName, Aggregate.MAX, Integer.class);
@@ -336,22 +354,22 @@ public interface IQuery<T>
 
 	/**
 	 * Sets query LIMIT to be used.
-	 *
+	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
 	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 *              page size.
 	 * @return this
 	 */
 	IQuery<T> setLimit(int limit);
 
 	/**
 	 * Sets query LIMIT and OFFSET to be used.
-	 *
+	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 * @param limit  integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 *               page size.
 	 * @param offset integer greater than zero or {@link #NO_LIMIT}
 	 * @return this
 	 */
@@ -359,9 +377,9 @@ public interface IQuery<T>
 
 	/**
 	 * Directly execute DELETE FROM database.
-	 *
+	 * <p>
 	 * Models, won't be loaded so no model validators will be triggered.
-	 *
+	 * <p>
 	 * NOTE: please call it when you know what are you doing.
 	 *
 	 * @return how many records were deleted
@@ -382,9 +400,9 @@ public interface IQuery<T>
 
 	/**
 	 * Update records which are matched by this query.
-	 *
+	 * <p>
 	 * If <code>queryUpdater</code> implements {@link ISqlQueryUpdater} then an SQL "UPDATE" will be issued directly.
-	 *
+	 * <p>
 	 * Else, records will be updated one by one, by using {@link #update(IQueryUpdater)}.
 	 *
 	 * @param queryUpdater
@@ -394,12 +412,11 @@ public interface IQuery<T>
 
 	/**
 	 * Update records which are matched by this query.
-	 *
+	 * <p>
 	 * The records will be updated one by one, by issuing {@link IQueryUpdater#update(Object)}.
-	 *
+	 * <p>
 	 * In the {@link IQueryUpdater} implementation, there is no need to save the record, because the API will save it after {@link IQueryUpdater#update(Object)} call.
 	 *
-	 * @param queryUpdater
 	 * @return how many records were updated
 	 */
 	int update(IQueryUpdater<T> queryUpdater);
@@ -437,13 +454,12 @@ public interface IQuery<T>
 	 * Selects DISTINCT given column and return the result as a list.
 	 *
 	 * @param columnName
-	 * @param valueType value type
+	 * @param valueType  value type
 	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
-	 *
 	 * @param columnName
 	 * @param valueType
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
@@ -491,7 +507,7 @@ public interface IQuery<T>
 
 	/**
 	 * "Appends" the given {@code query} to {@code this} query be joined as UNION ALL/DISTINCT.
-	 *
+	 * <p>
 	 * WARNING: atm, the implementation is minimal and was tested only with {@link #list()} methods.
 	 */
 	IQuery<T> addUnion(IQuery<T> query, boolean distinct);
@@ -502,7 +518,9 @@ public interface IQuery<T>
 		return this;
 	}
 
-	/** @return UNION DISTINCT {@link IQuery} reducer */
+	/**
+	 * @return UNION DISTINCT {@link IQuery} reducer
+	 */
 	static <T> BinaryOperator<IQuery<T>> unionDistict()
 	{
 		return (previousDBQuery, dbQuery) -> {
@@ -555,6 +573,13 @@ public interface IQuery<T>
 	default Stream<T> iterateAndStream() throws DBException
 	{
 		final Iterator<T> iterator = iterate(getModelClass());
+		final boolean parallel = false;
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
+	}
+
+	default <ID extends RepoIdAware> Stream<ID> iterateAndStreamIds(@NonNull final IntFunction<ID> idMapper) throws DBException
+	{
+		final Iterator<ID> iterator = iterateIds(idMapper);
 		final boolean parallel = false;
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
 	}

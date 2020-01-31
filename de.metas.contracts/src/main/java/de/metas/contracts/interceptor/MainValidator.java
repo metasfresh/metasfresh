@@ -47,8 +47,8 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.util.Services;
 
@@ -83,7 +83,8 @@ public class MainValidator extends AbstractModuleInterceptor
 			newDest.setEntityType(Contracts_Constants.ENTITY_TYPE);
 			newDest.setInternalName(Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME);
 			newDest.setIsDestination(true);
-			newDest.setName(Services.get(IMsgBL.class).translate(Env.getCtx(), "@C_Flatrate_Term_ID@"));
+			newDest.setValue(Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME);
+			newDest.setName(Services.get(IMsgBL.class).translate(Env.getCtx(), "C_Flatrate_Term_ID"));
 			InterfaceWrapperHelper.save(newDest);
 		}
 	}
@@ -99,9 +100,9 @@ public class MainValidator extends AbstractModuleInterceptor
 	public void registerFactories()
 	{
 		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(SubscriptionShipmentScheduleHandler.class);
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(new SubscriptionShipmentScheduleHandler());
 
-		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
+		Services.get(IShipmentScheduleUpdater.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
 
 		// material balance matcher
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());

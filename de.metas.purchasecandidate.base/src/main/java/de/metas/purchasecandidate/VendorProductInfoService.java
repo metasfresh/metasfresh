@@ -111,7 +111,7 @@ public class VendorProductInfoService
 		for (final Map.Entry<BPartnerId, Integer> entry : discountSchemaIds.entrySet())
 		{
 			final BPartnerId vendorId = entry.getKey();
-			final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(entry.getValue());
+			final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoId(entry.getValue());
 
 			final I_C_BPartner_Product bpartnerProductRecord = bpartnerProductRecords.get(vendorId);
 
@@ -134,7 +134,7 @@ public class VendorProductInfoService
 		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(vendorId, BPartnerType.VENDOR.getSOTrx());
-		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(discountSchemaId);
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoId(discountSchemaId);
 
 		final I_C_BPartner_Product bpartnerProductRecord = partnerProductDAO.retrieveByVendorId(vendorId, productId, orgId);
 

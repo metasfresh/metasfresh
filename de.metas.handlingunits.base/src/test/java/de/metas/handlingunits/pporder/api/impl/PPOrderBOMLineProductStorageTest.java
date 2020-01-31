@@ -43,7 +43,7 @@ import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.quantity.Quantity;
 
 /**
- * Tests {@link PPOrderBOMBL#calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.
+ * Tests {@link PPOrderBOMBL#computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.
  * 
  * @author tsa
  * @task refactored from http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29

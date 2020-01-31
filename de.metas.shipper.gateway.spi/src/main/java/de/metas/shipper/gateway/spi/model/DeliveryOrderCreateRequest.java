@@ -1,8 +1,10 @@
 package de.metas.shipper.gateway.spi.model;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Set;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,22 +36,29 @@ import lombok.Value;
 @Value
 public class DeliveryOrderCreateRequest
 {
-	LocalDate pickupDate;
 	Set<Integer> packageIds;
-	int shipperTransportationId;
+	ShipperTransportationId shipperTransportationId;
 
 	String shipperGatewayId;
+
+	LocalDate pickupDate;
+	LocalTime timeFrom;
+	LocalTime timeTo;
 
 	@Builder
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
 			@NonNull @Singular final Set<Integer> packageIds,
-			final int shipperTransportationId,
-			@NonNull String shipperGatewayId)
+			final ShipperTransportationId shipperTransportationId,
+			@NonNull String shipperGatewayId,
+			@NonNull final LocalTime timeFrom,
+			@NonNull final LocalTime timeTo)
 	{
 		this.pickupDate = pickupDate;
 		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
 		this.shipperTransportationId = shipperTransportationId;
 		this.shipperGatewayId = shipperGatewayId;
+		this.timeFrom = timeFrom;
+		this.timeTo = timeTo;
 	}
 }

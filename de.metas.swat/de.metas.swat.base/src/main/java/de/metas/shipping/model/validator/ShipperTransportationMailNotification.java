@@ -104,7 +104,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 					
 					if (user == null)
 					{
-						user = sp.getM_InOut().getAD_User();
+						user = InterfaceWrapperHelper.load(sp.getM_InOut().getAD_User_ID(), I_AD_User.class);
 					}
 					else
 					{

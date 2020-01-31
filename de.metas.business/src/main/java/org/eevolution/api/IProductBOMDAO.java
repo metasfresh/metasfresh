@@ -2,31 +2,8 @@ package org.eevolution.api;
 
 import java.util.Arrays;
 import java.util.Collection;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.compiere.model.IQuery;
@@ -47,21 +24,23 @@ public interface IProductBOMDAO extends ISingletonService
 		return productBomId > 0 ? getById(ProductBOMId.ofRepoId(productBomId)) : null;
 	}
 
+	List<I_PP_Product_BOM> getByIds(Collection<ProductBOMId> bomIds);
+
 	I_PP_Product_BOMLine getBOMLineById(int productBOMLineId);
 
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM);
 
-	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM, Date date);
+	List<I_PP_Product_BOMLine> retrieveLinesByBOMIds(Collection<ProductBOMId> bomIds);
 
 	int retrieveLastLineNo(int ppProductBOMId);
 
-	int retrieveDefaultBOMId(I_M_Product product);
+	Optional<I_PP_Product_BOM> getDefaultBOM(I_M_Product product);
 
-	I_PP_Product_BOM retrieveDefaultBOM(I_M_Product product);
+	Optional<I_PP_Product_BOM> getDefaultBOMByProductId(ProductId productId);
 
-	int getDefaultProductBOMIdByProductId(ProductId productId);
+	Optional<ProductBOMId> getDefaultBOMIdByProductId(ProductId productId);
 
-	boolean hasBOMs(I_M_Product product);
+	boolean hasBOMs(ProductId productId);
 
 	IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(Properties ctx, int productId, String trxName);
 

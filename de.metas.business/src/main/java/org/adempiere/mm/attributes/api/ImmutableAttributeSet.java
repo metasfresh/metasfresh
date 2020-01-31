@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -15,11 +16,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -57,8 +59,8 @@ import lombok.NonNull;
 /**
  * Immutable {@link IAttributeSet} implementation.
  *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * To get your instance for an {@link AttributeSetInstanceId},
+ * you can use {@link IAttributeDAO#getImmutableAttributeSetById(AttributeSetInstanceId)}.
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {
@@ -130,6 +132,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
@@ -171,6 +174,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public Collection<I_M_Attribute> getAttributes()
 	{
 		return attributesByKey.values();
+	}
+
+	public Set<AttributeId> getAttributeIds()
+	{
+		return attributesById.keySet();
 	}
 
 	@Override
@@ -249,6 +257,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	private static BigDecimal toBigDecimal(final Object valueObj)
 	{
 		if (valueObj == null)
+		{
+			return null;
+		}
+
+		if ("".equals(valueObj))
 		{
 			return null;
 		}
@@ -344,6 +357,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			throw AdempiereException
 					.wrapIfNeeded(e)
+					.appendParametersToMessage()
 					.setParameter("immutableAttributeSet", this)
 					.setParameter("attributeKey", Check.isEmpty(attributeKey, true) ? "<EMPTY>" : attributeKey);
 		}
@@ -379,7 +393,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public String getValueAsString(final String attributeKey)
+	public String getValueAsString(@NonNull final String attributeKey)
 	{
 		final Object valueObj = getValue(attributeKey);
 		return valueObj != null ? valueObj.toString() : null;
@@ -461,6 +475,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	//
 	public static final class Builder
 	{
+		private IAttributeDAO _attributesRepo; // lazy
+
 		private final LinkedHashMap<AttributeId, I_M_Attribute> attributesById = new LinkedHashMap<>();
 		private final LinkedHashMap<String, I_M_Attribute> attributesByKey = new LinkedHashMap<>();
 		private final LinkedHashMap<String, Object> valuesByAttributeKey = new LinkedHashMap<>();
@@ -483,6 +499,15 @@ public final class ImmutableAttributeSet implements IAttributeSet
 					ImmutableMap.copyOf(valueIdsByAttributeKey));
 		}
 
+		private IAttributeDAO attributesRepo()
+		{
+			if (_attributesRepo == null)
+			{
+				_attributesRepo = Services.get(IAttributeDAO.class);
+			}
+			return _attributesRepo;
+		}
+
 		public Builder attributeValue(@NonNull final AttributeId attributeId, final Object attributeValue)
 		{
 			final AttributeValueId attributeValueId = null;
@@ -495,38 +520,32 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				final Object attributeValue,
 				final AttributeValueId attributeValueId)
 		{
-			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
 			attributeValue(attribute, attributeValue, attributeValueId);
 			return this;
 		}
 
 		public Builder attributeValue(@NonNull final String attributeCode, final Object attributeValue)
 		{
-			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
-			final I_M_Attribute attribute = attributesRepo.retrieveAttributeByValue(attributeCode);
+			final I_M_Attribute attribute = attributesRepo().retrieveAttributeByValue(attributeCode);
 			final AttributeValueId attributeValueId = null;
 			attributeValue(attribute, attributeValue, attributeValueId);
 			return this;
 		}
 
-		public Builder attributeValue(@NonNull final I_M_AttributeValue attributeValue)
+		public Builder attributeValue(@NonNull final AttributeListValue attributeValue)
 		{
-			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeValue.getM_Attribute_ID());
+			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeValue.getAttributeId());
 			final String value = attributeValue.getValue();
-			final AttributeValueId attributeValueId = AttributeValueId.ofRepoId(attributeValue.getM_AttributeValue_ID());
+			final AttributeValueId attributeValueId = attributeValue.getId();
 
 			attributeValue(attribute, value, attributeValueId);
 			return this;
 		}
 
-		public Builder attributeValues(@NonNull final I_M_AttributeValue... attributeValues)
+		public Builder attributeValues(@NonNull final AttributeListValue... attributeValues)
 		{
-			for (I_M_AttributeValue attributeValue : attributeValues)
+			for (AttributeListValue attributeValue : attributeValues)
 			{
 				attributeValue(attributeValue);
 			}
@@ -542,8 +561,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		public Builder attributeValue(
 				@NonNull final I_M_Attribute attribute,
-				final Object attributeValue,
-				final AttributeValueId attributeValueId)
+				@Nullable final Object attributeValue,
+				@Nullable final AttributeValueId attributeValueId)
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 			attributesById.put(attributeId, attribute);

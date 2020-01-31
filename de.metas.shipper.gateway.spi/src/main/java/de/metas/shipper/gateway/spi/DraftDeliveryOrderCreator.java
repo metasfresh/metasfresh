@@ -1,13 +1,17 @@
 package de.metas.shipper.gateway.spi;
 
-import java.time.LocalDate;
-import java.util.Set;
-
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
 
 /*
  * #%L
@@ -43,32 +47,36 @@ public interface DraftDeliveryOrderCreator
 	{
 		DeliveryOrderKey deliveryOrderKey;
 
-		int grossWeightInKg;
-		String packageContentDescription;
-		Set<Integer> mpackageIds;
+		int allPackagesGrossWeightInKg;
+		String allPackagesContentDescription;
+		Set<PackageId> mpackageIds;
 	}
 
 	@Value
 	public static final class DeliveryOrderKey
 	{
-		int shipperId;
-		int shipperTransportationId;
+		ShipperId shipperId;
+		ShipperTransportationId shipperTransportationId;
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
 		LocalDate pickupDate;
+		LocalTime timeFrom;
+		LocalTime timeTo;
 
 		@Builder
 		public DeliveryOrderKey(
-				final int shipperId,
-				final int shipperTransportationId,
+				final ShipperId shipperId,
+				final ShipperTransportationId shipperTransportationId,
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
-				@NonNull final LocalDate pickupDate)
+				@NonNull final LocalDate pickupDate,
+				@NonNull final LocalTime timeFrom,
+				@NonNull final LocalTime timeTo)
 		{
-			Check.assume(shipperId > 0, "shipperId > 0");
-			Check.assume(shipperTransportationId > 0, "shipperTransportationId > 0");
+			Check.assume(shipperId != null, "shipperId != null");
+			Check.assume(shipperTransportationId != null, "shipperTransportationId != null");
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
 			Check.assume(deliverToBPartnerLocationId > 0, "deliverToBPartnerLocationId > 0");
@@ -79,6 +87,8 @@ public interface DraftDeliveryOrderCreator
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
 			this.pickupDate = pickupDate;
+			this.timeFrom = timeFrom;
+			this.timeTo = timeTo;
 		}
 	}
 }

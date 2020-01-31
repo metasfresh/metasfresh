@@ -26,11 +26,11 @@ import java.util.List;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.KeyNamePair;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.i18n.ITranslatableString;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -59,6 +59,8 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 */
 	boolean isVirtualHUPIItemProduct(I_M_HU_PI_Item_Product piip);
 
+	boolean isInfiniteCapacity(HUPIItemProductId id);
+
 	/**
 	 * @return builder used to create the display name
 	 */
@@ -74,7 +76,7 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 */
 	void setNameAndDescription(I_M_HU_PI_Item_Product itemProduct);
 
-	KeyNamePair getDisplayName(HUPIItemProductId piItemProductId, String adLanguage);
+	ITranslatableString getDisplayName(HUPIItemProductId piItemProductId);
 
 	static I_C_UOM extractUOMOrNull(final I_M_HU_PI_Item_Product itemProduct)
 	{

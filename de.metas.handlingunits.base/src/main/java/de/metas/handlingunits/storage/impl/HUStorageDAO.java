@@ -70,8 +70,8 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Storage.class, hu)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.firstOnly(I_M_HU_Storage.class);
 	}

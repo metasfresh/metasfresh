@@ -103,7 +103,8 @@ class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 		final BPartnerId newBPartnerId = event.getNewBPartnerId();
 		if (EventType.NEW_RECORD.equals(eventType))
 		{
-			grantFrom = toTableRecordReference(newBPartnerId);
+			// newBPartnerId can be null if documentRef is a C_BPArtner with BPartner_Parent_ID <= 0 (see BPartnerToBPartnerDependentDocumentHandler)
+			grantFrom = newBPartnerId != null ? toTableRecordReference(newBPartnerId) : null;
 			revokeFrom = null;
 		}
 		else if (EventType.BPARTNER_CHANGED.equals(eventType))

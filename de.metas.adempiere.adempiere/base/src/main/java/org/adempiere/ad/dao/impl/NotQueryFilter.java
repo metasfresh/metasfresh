@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -35,14 +34,22 @@ import lombok.NonNull;
 
 public class NotQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
-	public static final <T> NotQueryFilter<T> of(final IQueryFilter<T> filter)
+	public static final <T> IQueryFilter<T> of(@NonNull final IQueryFilter<T> filter)
 	{
-		return new NotQueryFilter<>(filter);
+		if (filter instanceof NotQueryFilter)
+		{
+			final NotQueryFilter<T> notFilter = (NotQueryFilter<T>)filter;
+			return notFilter.filter;
+		}
+		else
+		{
+			return new NotQueryFilter<>(filter);
+		}
 	}
 
 	private final IQueryFilter<T> filter;
 
-	public NotQueryFilter(@NonNull final IQueryFilter<T> filter)
+	private NotQueryFilter(@NonNull final IQueryFilter<T> filter)
 	{
 		this.filter = filter;
 	}

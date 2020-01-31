@@ -33,10 +33,10 @@ import org.junit.Ignore;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 
-import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 
 @Ignore
 public class ListAttributeStorage extends AbstractAttributeStorage
@@ -75,7 +75,7 @@ public class ListAttributeStorage extends AbstractAttributeStorage
 	}
 
 	@Override
-	public void updateHUTrxAttribute(final IMutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
+	public void updateHUTrxAttribute(final MutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
 	{
 		throw new UnsupportedOperationException();
 	}

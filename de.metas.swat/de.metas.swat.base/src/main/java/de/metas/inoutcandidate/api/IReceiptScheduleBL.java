@@ -27,18 +27,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
 public interface IReceiptScheduleBL extends ISingletonService
@@ -87,18 +91,16 @@ public interface IReceiptScheduleBL extends ISingletonService
 	BigDecimal getQtyMovedWithIssues(I_M_ReceiptSchedule rs);
 
 	/**
-	 *
-	 * @param rs
 	 * @return override-qty or the qty (if no override set) of the given {@code rs}.
 	 */
-	BigDecimal getQtyToMove(final I_M_ReceiptSchedule rs);
+	StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs);
 
 	/**
 	 *
 	 * @param rs
 	 * @return M_Warehouse_Override_ID and falls back to M_Warehouse_ID if no override value is set
 	 */
-	int getM_Warehouse_Effective_ID(final I_M_ReceiptSchedule rs);
+	WarehouseId getWarehouseEffectiveId(final I_M_ReceiptSchedule rs);
 
 	/**
 	 * @param rs
@@ -112,7 +114,7 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 * @param rs
 	 * @return default locator for {@link #getM_Warehouse_Effective(I_M_ReceiptSchedule)}.
 	 */
-	I_M_Locator getM_Locator_Effective(I_M_ReceiptSchedule rs);
+	LocatorId getLocatorEffectiveId(I_M_ReceiptSchedule rs);
 
 	/**
 	 *
@@ -127,6 +129,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 */
 
 	I_C_BPartner_Location getC_BPartner_Location_Effective(I_M_ReceiptSchedule rs);
+
+	BPartnerId getBPartnerEffectiveId(I_M_ReceiptSchedule rs);
 
 	/**
 	 * @param rs
@@ -162,11 +166,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	/**
 	 * Sets the effective attribute set instance (i.e. M_AttributeSetInstance_Override_ID)
-	 *
-	 * @param rs
-	 * @param asi
 	 */
-	void setM_AttributeSetInstance_Effective(I_M_ReceiptSchedule rs, I_M_AttributeSetInstance asi);
+	void setM_AttributeSetInstance_Effective(I_M_ReceiptSchedule rs, AttributeSetInstanceId asiId);
 
 	IAggregationKeyBuilder<I_M_ReceiptSchedule> getHeaderAggregationKeyBuilder();
 

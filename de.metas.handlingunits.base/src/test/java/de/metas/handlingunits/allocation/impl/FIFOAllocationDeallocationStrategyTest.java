@@ -24,7 +24,7 @@ package de.metas.handlingunits.allocation.impl;
 
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -333,7 +333,7 @@ public class FIFOAllocationDeallocationStrategyTest
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(new Quantity(new BigDecimal(qtyStr), uom))
-				.setDate(new Date()) // not important
+				.setDate(ZonedDateTime.now()) // not important
 				.setFromReferencedModel(huTestHelper.createDummyReferenceModel()) // not important
 				.setForceQtyAllocation(false) // not important
 		;

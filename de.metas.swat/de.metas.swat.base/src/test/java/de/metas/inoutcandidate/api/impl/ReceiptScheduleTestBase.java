@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -24,9 +22,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -48,12 +50,14 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -63,18 +67,15 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
+import lombok.NonNull;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public abstract class ReceiptScheduleTestBase
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public final static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -91,8 +92,7 @@ public abstract class ReceiptScheduleTestBase
 
 	// 07629 just adding to fix existing tests; TODO extend the tests
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
-	@Mocked
-	protected IProductAcctDAO productAcctDAO; // 07629
+	private IProductAcctDAO productAcctDAO; // 07629
 
 	protected Properties ctx;
 	/** Today (date+time) */
@@ -121,8 +121,8 @@ public abstract class ReceiptScheduleTestBase
 	public I_M_Attribute attr_LotNumberDate;
 	public I_M_Attribute attr_LotNumber;
 
-	@Before
-	public void init()
+	@BeforeEach
+	public final void init()
 	{
 		AdempiereTestHelper.get().init(); // need to init this now
 
@@ -151,9 +151,12 @@ public abstract class ReceiptScheduleTestBase
 		warehouse2 = createWarehouse("WH2");
 		warehouse2_locator1 = createLocator(warehouse2);
 
-		product1_wh1 = createProduct("P1", warehouse1_locator1);
-		product2_wh1 = createProduct("P2", warehouse1_locator1);
-		product3_wh2 = createProduct("P3", warehouse2_locator1);
+		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("StockUOM");
+		final UomId stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
+
+		product1_wh1 = createProduct("P1", stockUomId, warehouse1_locator1);
+		product2_wh1 = createProduct("P2", stockUomId, warehouse1_locator1);
+		product3_wh2 = createProduct("P3", stockUomId, warehouse2_locator1);
 
 		receiptDocType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, ITrx.TRXNAME_None);
 		receiptDocType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
@@ -166,22 +169,17 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(priceUOM);
 
 		// 07629 just adding to fix existing tests; TODO extend the tests
+		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
-		//@formatter:off
-		new Expectations()
-		{{
-			productAcctDAO.retrieveActivityForAcct(
-					(ClientId)any,
-					orgId,
-					(ProductId)any);
-
-			minTimes=0;
-			result = activityId;
-		}};
-		//@formatter:on
+		Mockito.when(productAcctDAO.retrieveActivityForAcct(
+				(ClientId)Matchers.any(),
+				Matchers.eq(orgId),
+				(ProductId)Matchers.any()))
+				.thenReturn(activityId);
 
 		// #653
 		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
@@ -210,7 +208,10 @@ public abstract class ReceiptScheduleTestBase
 		return bp;
 	}
 
-	public I_M_Product createProduct(final String productName, final I_M_Locator locator)
+	public I_M_Product createProduct(
+			final String productName,
+			@NonNull final UomId stockUOMId,
+			@Nullable final I_M_Locator locator)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
 		product.setValue(productName);
@@ -220,6 +221,8 @@ public abstract class ReceiptScheduleTestBase
 		{
 			product.setM_Locator_ID(locator.getM_Locator_ID());
 		}
+
+		product.setC_UOM_ID(stockUOMId.getRepoId());
 
 		saveRecord(product);
 		return product;
@@ -267,7 +270,7 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		receiptSchedule.setM_Product_ID(product.getM_Product_ID());
-		//receiptSchedule.setC_UOM(productUOM);
+		// receiptSchedule.setC_UOM(productUOM);
 
 		receiptSchedule.setQtyOrdered(qtyBD);
 		receiptSchedule.setQtyToMove(qtyBD);

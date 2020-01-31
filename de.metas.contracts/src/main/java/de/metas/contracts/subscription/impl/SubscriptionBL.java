@@ -45,8 +45,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -63,7 +61,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
@@ -99,6 +97,7 @@ import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
@@ -370,24 +369,24 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
-			final I_C_OLCand olCand,
+			@NonNull final I_C_OLCand olCandRecord,
 			final boolean completeIt)
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(olCandRecord);
+		final String trxName = InterfaceWrapperHelper.getTrxName(olCandRecord);
 
-		final I_C_Flatrate_Conditions cond = olCand.getC_Flatrate_Conditions();
+		final I_C_Flatrate_Conditions cond = olCandRecord.getC_Flatrate_Conditions();
 
-		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCandRecord);
 		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final I_C_Flatrate_Matching matching = retrieveMatching(
-				ctx, 
-				olCand.getC_Flatrate_Conditions_ID(), 
-				productAndCategoryId, 
+				ctx,
+				olCandRecord.getC_Flatrate_Conditions_ID(),
+				productAndCategoryId,
 				null);
 
 		final BigDecimal deliveryQty;
@@ -402,36 +401,40 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_Term.class, trxName);
 
-		newTerm.setAD_Org_ID(olCand.getAD_Org_ID());
+		newTerm.setAD_Org_ID(olCandRecord.getAD_Org_ID());
 		newTerm.setC_Flatrate_Conditions_ID(cond.getC_Flatrate_Conditions_ID());
 
 		// important: we need to use qtyEntered here, because qtyOrdered (which
 		// is used for pricing) contains the number of goods to be delivered
 		// over the whole subscription term
 
-		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCand.getQty()));
-		newTerm.setStartDate(olCand.getDateCandidate());
+		newTerm.setPlannedQtyPerUnit(deliveryQty.multiply(olCandRecord.getQtyEntered()));
+		newTerm.setStartDate(olCandRecord.getDateCandidate());
 
-		newTerm.setDeliveryRule(olCand.getDeliveryRule());
-		newTerm.setDeliveryViaRule(olCand.getDeliveryViaRule());
+		newTerm.setDeliveryRule(olCandRecord.getDeliveryRule());
+		newTerm.setDeliveryViaRule(olCandRecord.getDeliveryViaRule());
 
-		final I_C_BPartner bill_BPartner = olCandEffectiveValuesBL.getBill_BPartner_Effective(olCand, I_C_BPartner.class);
-		final int bill_Location_ID = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olCand));
-		final int bill_User_ID = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCand));
+		final I_C_BPartner bill_BPartner = olCandEffectiveValuesBL.getBill_BPartner_Effective(olCandRecord, I_C_BPartner.class);
+		final int bill_Location_ID = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord));
+		final int bill_User_ID = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord));
 
 		newTerm.setBill_BPartner_ID(bill_BPartner.getC_BPartner_ID());
 		newTerm.setBill_Location_ID(bill_Location_ID);
 		newTerm.setBill_User_ID(bill_User_ID);
 
-		newTerm.setDropShip_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(olCand)));
-		newTerm.setDropShip_Location_ID(BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olCand)));
-		newTerm.setDropShip_User_ID(BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getDropShipContactEffectiveId(olCand)));
+		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
+				.getDropShipPartnerInfo(olCandRecord)
+				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
+
+		newTerm.setDropShip_BPartner_ID(BPartnerId.toRepoId(shipToPartnerInfo.getBpartnerId()));
+		newTerm.setDropShip_Location_ID(BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()));
+		newTerm.setDropShip_User_ID(BPartnerContactId.toRepoId(shipToPartnerInfo.getContactId()));
 
 		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
 
 		newTerm.setC_Flatrate_Data(existingData);
 
-		final I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
+		final I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCandRecord.getAD_Org_ID(), trxName);
 		if (userInCharge != null)
 		{
 			newTerm.setAD_User_InCharge_ID(userInCharge.getAD_User_ID());
@@ -443,30 +446,30 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 
 		newTerm.setM_Product_ID(ProductId.toRepoId(productId));
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(olCand, newTerm);
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(olCandRecord, newTerm);
 
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
 		save(newTerm);
 
-		if (olCand.getM_PricingSystem_ID() > 0)
+		if (olCandRecord.getM_PricingSystem_ID() > 0)
 		{
-			newTerm.setM_PricingSystem_ID(olCand.getM_PricingSystem_ID());
+			newTerm.setM_PricingSystem_ID(olCandRecord.getM_PricingSystem_ID());
 		}
 
 		final IPricingResult pricingResult = olCandBL.computePriceActual(
-				olCand,
+				olCandRecord,
 				newTerm.getPlannedQtyPerUnit(),
 				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()),
-				TimeUtil.asLocalDate(olCand.getDateCandidate()));
+				TimeUtil.asLocalDate(olCandRecord.getDateCandidate()));
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
 		newTerm.setC_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand
-		Check.errorIf(pricingResult.getCurrencyRepoId() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
+		Check.errorIf(pricingResult.getCurrencyRepoId() != olCandRecord.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCandRecord, pricingResult);
 		newTerm.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
 		InterfaceWrapperHelper.save(newTerm);
@@ -779,23 +782,20 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
-		
-		BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
+
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList pl = InterfaceWrapperHelper.create(
-				priceListDAO.retrievePriceListByPricingSyst(
-						pricingSystemId,
-						bpLocation,
-						SOTrx.SALES),
-				I_M_PriceList.class);
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
+				pricingSystemId,
+				bpLocationId,
+				SOTrx.SALES);
 
 		final IProductPA productPA = Services.get(IProductPA.class);
 		final BigDecimal newPrice = productPA.retrievePriceStd(
 				ol.getM_Product_ID(),
 				ol.getC_BPartner_ID(),
-				pl.getM_PriceList_ID(),
+				plId.getRepoId(),
 				qtySum,
 				true).multiply(qtySum);
 
@@ -826,7 +826,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		delivery.setSeqNo(seqNo);
 
 		final int flatrateConditionsId = term.getC_Flatrate_Conditions_ID();
-		final ProductId productId= ProductId.ofRepoIdOrNull(term.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(term.getM_Product_ID());
 		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
@@ -855,9 +855,9 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	@Override
 	public I_C_Flatrate_Matching retrieveMatching(
-			final Properties ctx, 
-			final int flatrateConditionsId, 
-			@NonNull final ProductAndCategoryId productAndCategoryId, 
+			final Properties ctx,
+			final int flatrateConditionsId,
+			@NonNull final ProductAndCategoryId productAndCategoryId,
 			final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

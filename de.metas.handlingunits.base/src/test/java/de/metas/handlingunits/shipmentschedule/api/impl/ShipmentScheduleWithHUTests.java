@@ -16,8 +16,8 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -32,8 +32,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -78,7 +76,7 @@ public class ShipmentScheduleWithHUTests
 
 	private StockQtyAndUOMQty ninetyNineNoCatch;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		// AdempiereTestHelper.get().init();
@@ -92,9 +90,7 @@ public class ShipmentScheduleWithHUTests
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
-		ninetyNineNoCatch = StockQtyAndUOMQtys.create(new BigDecimal("99"), productId, null, null);
-
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+		ninetyNineNoCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("99"), productId);
 	}
 
 	@Test

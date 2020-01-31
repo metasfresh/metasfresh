@@ -121,7 +121,7 @@ public final class PackingItems
 				.productId(ProductId.ofRepoId(sched.getM_Product_ID()))
 				.bpartnerId(shipmentScheduleEffectiveBL.getBPartnerId(sched))
 				.bpartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched))
-				.packingMaterialId(huShipmentScheduleBL.getPackingMaterialId(sched))
+				.packingMaterialId(huShipmentScheduleBL.getEffectivePackingMaterialId(sched))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
 				.deliveryRule(shipmentScheduleEffectiveBL.getDeliveryRule(sched))
 				.sourceDocumentLineRef(TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID()));

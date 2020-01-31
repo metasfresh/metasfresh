@@ -23,9 +23,9 @@ package de.metas.handlingunits.allocation.transfer.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
@@ -89,14 +90,13 @@ public class LUTUAssignBuilder
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-
 	//
 	// Parameters
 	private IContextAware _context;
 	private List<I_M_HU> _tusToAssign;
 	private I_M_HU_PI _luPI;
 	private IHUDocumentLine _documentLine = null;
-	private I_C_BPartner _bpartner;
+	private BPartnerId _bpartnerId;
 	private int _bpLocationId = -1;
 	private LocatorId _locatorId;
 	private String _huStatus;
@@ -118,19 +118,14 @@ public class LUTUAssignBuilder
 		final IMutable<I_M_HU> resultLUHU = new Mutable<>(null);
 		final IContextAware contextInitial = getContext();
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(contextInitial);
-		executor.run(new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
-			{
-				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-				final I_M_HU luHU = createLUHU(huContext, trxAttributesBuilder);
-				assignTUsToLU(huContext, luHU, tusToAssign);
+		executor.run((IHUContextProcessor)huContext -> {
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final I_M_HU luHU = createLUHU(huContext, trxAttributesBuilder);
+			assignTUsToLU(huContext, luHU, tusToAssign);
 
-				resultLUHU.setValue(luHU);
+			resultLUHU.setValue(luHU);
 
-				return NULL_RESULT; // we don't care
-			}
+			return IHUContextProcessor.NULL_RESULT; // we don't care
 		});
 
 		//
@@ -167,9 +162,9 @@ public class LUTUAssignBuilder
 		//
 		// Create the LU now
 		final IHUBuilder huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
-		huBuilder.setC_BPartner(getC_BPartner());
+		huBuilder.setBPartnerId(getBPartnerId());
 		huBuilder.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
-		huBuilder.setDate(SystemTime.asDate());
+		huBuilder.setDate(SystemTime.asZonedDateTime());
 		huBuilder.setLocatorId(getLocatorId());
 		huBuilder.setHUStatus(X_M_HU.HUSTATUS_Planning);
 
@@ -245,7 +240,7 @@ public class LUTUAssignBuilder
 		final I_C_UOM mockUOM = mockProductStorage.getC_UOM();
 		final Quantity mockQuantity = new Quantity(mockQty, mockUOM);
 
-		final Date date = SystemTime.asTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		final Object referencedModel = documentLine.getTrxReferencedModel();
 
 		//
@@ -323,7 +318,7 @@ public class LUTUAssignBuilder
 		final IHUStorage huStorageFrom = storageFactory.getStorage(luHU);
 
 		final ProductId productId = documentLine.getProductId();
-		
+
 		final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
 				.setProductId(productId)
 				.setQty(documentLine.getQty())
@@ -406,15 +401,13 @@ public class LUTUAssignBuilder
 	public LUTUAssignBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		assertConfigurable();
-		_bpartner = bpartner;
+		this._bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
 		return this;
 	}
 
-	private final I_C_BPartner getC_BPartner()
+	private final BPartnerId getBPartnerId()
 	{
-		// NOTE: allow null bpartner because in some cases, our HUs does not have a BPartner set. (see #1346)
-		// Check.assumeNotNull(_bpartner, "_bpartner not null");
-		return _bpartner;
+		return _bpartnerId;
 	}
 
 	public LUTUAssignBuilder setC_BPartner_Location_ID(final int bpartnerLocationId)

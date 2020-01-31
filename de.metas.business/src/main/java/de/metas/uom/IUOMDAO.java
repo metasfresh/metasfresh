@@ -1,6 +1,8 @@
 package de.metas.uom;
 
 import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -34,13 +36,18 @@ public interface IUOMDAO extends ISingletonService
 {
 	String X12DE355_Each = "PCE";
 	int C_UOM_ID_Each = 100;
+
 	String X12DE355_Kilogram = "KGM";
+	String X12DE355_TU = "TU";
+	String X12DE355_COLI = "COLI";
 
 	I_C_UOM getById(int uomId);
 
 	I_C_UOM getByIdOrNull(int uomId);
 
 	I_C_UOM getById(UomId uomId);
+
+	List<I_C_UOM> getByIds(Collection<UomId> uomIds);
 
 	UomId getUomIdByX12DE355(String x12de355);
 
@@ -59,14 +66,17 @@ public interface IUOMDAO extends ISingletonService
 
 	/**
 	 * Gets UOM for Each/Stuck.
-	 *
-	 * @param ctx
-	 * @return
 	 */
 	I_C_UOM retrieveEachUOM(Properties ctx);
 
-	TemporalUnit getTemporalUnitByUomId(final UomId uomId);
+	TemporalUnit getTemporalUnitByUomId(UomId uomId);
 
-	UOMPrecision getStandardPrecision(final UomId uomId);
+	UOMPrecision getStandardPrecision(UomId uomId);
 
+	/**
+	 * Tells if the given UOM is used for TUs.
+	 * This is significant because in order to convert from the TU to a CU-quantity,
+	 * we need to look at the respective PIIP or {@code QtyItemCapacity} and not at any UOM-conversion-rate.
+	 */
+	boolean isUOMForTUs(UomId uomId);
 }

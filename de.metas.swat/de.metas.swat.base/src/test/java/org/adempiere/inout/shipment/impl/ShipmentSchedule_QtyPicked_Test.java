@@ -1,5 +1,7 @@
 package org.adempiere.inout.shipment.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -34,18 +36,14 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.product.ProductId;
@@ -64,14 +62,12 @@ public class ShipmentSchedule_QtyPicked_Test
 	private I_C_UOM uom;
 	private UomId uomId;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		this.contextProvider = PlainContextAware.newOutOfTrx();
-
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 
 		shipmentScheduleAllocBL = new ShipmentScheduleAllocBL();
 		Services.registerService(IShipmentScheduleAllocBL.class, shipmentScheduleAllocBL);
@@ -146,11 +142,9 @@ public class ShipmentSchedule_QtyPicked_Test
 	public void testAddAndGetQtyPicked()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule();
-
-		Assert.assertThat("Invalid initial QtyPicked",
-				shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
-				Matchers.comparesEqualTo(BigDecimal.ZERO) // Expected
-		);
+		assertThat(shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule))
+				.as("initial QtyPicked")
+				.isZero();
 
 		testAddAndGetQtyPicked(shipmentSchedule, new BigDecimal("1"), new BigDecimal("1"));
 		testAddAndGetQtyPicked(shipmentSchedule, new BigDecimal("2"), new BigDecimal("3"));
@@ -171,20 +165,17 @@ public class ShipmentSchedule_QtyPicked_Test
 
 		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = shipmentScheduleAllocBL
 				.createNewQtyPickedRecord(shipmentSchedule, stockQtyToAdd);
-		Assert.assertNotNull("QtyPicked record was not created", qtyPickedRecord);
+		assertThat(qtyPickedRecord).as("qtyPickedRecord").isNotNull();
 
-		Assert.assertThat("Invalid getQtyPicked()",
-				Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
-				Matchers.comparesEqualTo(qtyPickedExpected) // Expected
-		);
+		assertThat(Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule))
+				.as("sum of M_ShipmentSchedule_QtyPicked.QtyPicked")
+				.isEqualByComparingTo(qtyPickedExpected);
 
 		//
 		// Now check the record
-		Assert.assertThat("Invalid I_M_ShipmentSchedule_QtyPicked.QtyPicked",
-				qtyPickedRecord.getQtyPicked(), // Actual
-				Matchers.comparesEqualTo(qtyPickedToAdd) // Expected
-		);
-
+		assertThat(qtyPickedRecord.getQtyPicked())
+				.as("qtyPicked added now")
+				.isEqualByComparingTo(qtyPickedToAdd);
 	}
 
 }

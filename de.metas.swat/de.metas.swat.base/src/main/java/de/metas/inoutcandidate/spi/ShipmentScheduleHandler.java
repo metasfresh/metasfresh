@@ -35,6 +35,9 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -61,7 +64,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * This interface declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
+ * This abstract class declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
  * other records from a specific source table (e.g. order lines or subscription lines).
  *
  * Implementors are also related to {@link I_M_IolCandHandler} records.
@@ -133,12 +136,14 @@ public abstract class ShipmentScheduleHandler
 	 * <li>the framework will look up and set the shipment schedules' {@link I_M_ShipmentSchedule#COLUMNNAME_M_IolCandHandler_ID} with the correct value for this handler.
 	 * <li>the instances returned by this method's implementation will be saved by the framework</li>
 	 * </ul>
-	 *
-	 * @param model
-	 *
-	 * @return
 	 */
 	public abstract List<I_M_ShipmentSchedule> createCandidatesFor(Object model);
+
+	/**
+	 * (Re-)sync the given shipment schedule from the record that it references. Use-case: sales order is re-completed after reactivation.
+	 * In that case, we need to sync the potentially changed properties from the sales order lines to their repsective shipment schedules.
+	 */
+	public abstract void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Invalidates invoice candidates for the given model.
@@ -211,9 +216,11 @@ public abstract class ShipmentScheduleHandler
 			return true;
 		}
 
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
+
 		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
 				.retrieveAttributeInstance(
-						asiAware.getM_AttributeSetInstance(),
+						asiId,
 						attributeConfigToUse.getAttributeId());
 
 		final boolean referencedRecordAsiContainsAttribute = attributeInstance != null;
@@ -222,9 +229,20 @@ public abstract class ShipmentScheduleHandler
 			return false;
 		}
 
-		final boolean referencedRecordAsiHasValue = attributeInstance.getM_AttributeValue_ID() > 0
-						&& !attributeInstance.getM_AttributeValue().isNullFieldValue();
-		return referencedRecordAsiHasValue;
+		return hasNonNullAttributeListValue(attributeInstance);
+	}
+
+	private boolean hasNonNullAttributeListValue(final I_M_AttributeInstance attributeInstance)
+	{
+		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
+		if (attributeValueId == null)
+		{
+			return false;
+		}
+
+		final AttributeId attributeId = AttributeId.ofRepoId(attributeInstance.getM_Attribute_ID());
+		final AttributeListValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attributeId, attributeValueId);
+		return attributeValue != null && !attributeValue.isNullFieldValue();
 	}
 
 	@VisibleForTesting

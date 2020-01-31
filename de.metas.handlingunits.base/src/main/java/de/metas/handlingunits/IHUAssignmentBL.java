@@ -102,20 +102,6 @@ public interface IHUAssignmentBL extends ISingletonService
 
 	/**
 	 * Deletes existing links between a specific <code>model</code> and it's existing handling units.
-	 *
-	 * Creates new assignments afterwards between <code>model</code> and the specified handling units.
-	 *
-	 * @param model
-	 * @param handlingUnits
-	 * @param trxName
-	 */
-	void setAssignedHandlingUnits(Object model, Collection<I_M_HU> handlingUnits, String trxName);
-
-	/**
-	 * Same as {@link #setAssignedHandlingUnits(Object, Collection, String)} but <code>trxName</code> will be fetched from <code>model</code>.
-	 *
-	 * @param model
-	 * @param handlingUnits
 	 */
 	void setAssignedHandlingUnits(Object model, Collection<I_M_HU> handlingUnits);
 

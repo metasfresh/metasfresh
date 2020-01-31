@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,9 +30,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;
@@ -49,7 +50,6 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -57,34 +57,37 @@ import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IInvoiceCandDAO extends ISingletonService
 {
+	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+
+	I_C_Invoice_Candidate getByIdOutOfTrx(InvoiceCandidateId invoiceCandidateId);
+
+	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
+
 	/**
-	 * f * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
-	 *
+	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
 
 	/**
-	 *
-	 * @param queryBuilder
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
 	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
 
-	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
+	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
 
-	List<I_C_Invoice_Candidate> fetchInvoiceCandidates(Properties ctx, String tableName, int recordId, String trxName);
+	int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
+
+	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
 	 *
 	 * This method ALWAYS return non-manual candidates first in the list.
-	 *
-	 * @param recomputeTag
-	 * @param trxName
-	 * @return
 	 */
 	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, InvoiceCandRecomputeTag recomputeTag, String trxName);
 
@@ -102,6 +105,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
+	List<I_C_InvoiceLine> retrieveIlForIc(InvoiceCandidateId invoiceCandidateId);
+
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIl(I_C_InvoiceLine il);
@@ -113,40 +118,28 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <ul>
 	 * <li>whose Bill_BPartner references he given invoiceSchedule and
 	 * <li>that have their InvoiceRule_Override/InvoiceRule_Override set to 'S'
-	 *
-	 * @param invoiceSchedule
-	 * @return
 	 */
 	List<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
 
 	/**
 	 * Returns all ICs that have the given <code>headerAggregationKey</code>.
-	 *
-	 * @param ctx
-	 * @param headerAggregationKey
-	 * @param trxName
-	 * @return
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveForHeaderAggregationKey(Properties ctx, String headerAggregationKey, String trxName);
 
+	void invalidateCandsThatReference(TableRecordReference recordReference);
+
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 *
-	 * @param icQueryBuilder
 	 */
 	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 *
-	 * @param icQuery
 	 */
 	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
 	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
-	 *
-	 * @param ic
 	 */
 	void invalidateCand(I_C_Invoice_Candidate ic);
 
@@ -161,7 +154,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Invalidates all candidates that have the same <code>(AD_Table_ID, Record_ID)</code> reference.
 	 *
-	 * @param ic
 	 * @throws AdempiereException if the invoice candidate does not have the AD_Table_ID/Record_ID set
 	 */
 	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
@@ -181,15 +173,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code>.
-	 *
-	 * @param bpartner
 	 */
 	void invalidateCandsForBPartner(I_C_BPartner bpartner);
 
 	/**
 	 * Load the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
 	 */
-	List<I_C_Invoice_Candidate> retrieveReferencing(Object model);
+	List<I_C_Invoice_Candidate> retrieveReferencing(TableRecordReference tableRecordReference);
 
 	/**
 	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
@@ -203,12 +193,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 *
 	 * @param dateInvoiced new value to be set.
 	 * @param selectionId id of the <code>T_Selection</code> containing the candidates that shall be updated.
-	 * @param updateOnlyIfNull if true then the DateInvoiced column will be updated only if is null
 	 */
-	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId, boolean updateOnlyIfNull);
+	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
 	 *
 	 * @task 08437
 	 */
@@ -217,7 +206,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateNullDateAcctFromDateInvoiced(PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, String)}, but updates the <code>POReference</code> column.
 	 */
 	void updatePOReference(String poReference, PInstanceId selectionId);
 
@@ -234,30 +223,21 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * amounts are converted to the currency which is set in the accounting schema of the bPartner's clients AD_ClientInfo.
 	 *
 	 */
-	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, Timestamp date);
-
-	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
+	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, LocalDate date);
 
 	/**
-	 * Creates a new {@link IInvoiceCandidateQuery} instance
-	 *
-	 * @return
+	 * @param query needs to have a non-null orgId
 	 */
-	IInvoiceCandidateQuery newInvoiceCandidateQuery();
+	BigDecimal retrieveInvoicableAmount(Properties ctx, InvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, String amountColumnName, String trxName);
 
 	List<I_M_InOutLine> retrieveInOutLines(Properties ctx, int C_OrderLine_ID, String trxName);
 
 	/**
 	 * Retrieve all invoices which have an invoice candidate for given tableName/recordId. We can select unpaid invoices only or all invoices.
 	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param recordId
-	 * @param onlyUnpaid
-	 * @param trxName
 	 * @return map of C_Invoice_ID to {@link I_C_Invoice} objects
 	 */
-	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(Properties ctx, String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid, String trxName);
+	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid);
 
 	/**
 	 * @deprecated please use {@link #retrieveICIOLAssociationsExclRE(InvoiceCandidateId)}
@@ -322,14 +302,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	<T extends org.compiere.model.I_M_InOutLine> List<T> retrieveInOutLinesForCandidate(I_C_Invoice_Candidate ic, Class<T> clazz);
 
 	/**
-	 * Checks if there exists an allocation between given invoice candidate and given receipt/shipment line.
-	 *
-	 * @param ic invoice candidate
-	 * @param iol receipt/shipment line
-	 * @return true if an allocation exists
+	 * Return the unique allocation between the given invoice candidate and receipt/shipment line.
+	 * We know it's unique as there is a Unique Index on the 2 columns named C_IC_IOL_Unique_Active.
 	 * @see I_C_InvoiceCandidate_InOutLine
 	 */
-	boolean existsInvoiceCandidateInOutLinesForInvoiceCandidate(I_C_Invoice_Candidate ic, I_M_InOutLine iol);
+	@Nullable
+	I_C_InvoiceCandidate_InOutLine retrieveInvoiceCandidateInOutLine(@NonNull I_C_Invoice_Candidate ic, @NonNull I_M_InOutLine iol);
 
 	/**
 	 * Checks if the given <code>ic</code> is referenced by a <code>C_Invoice_Candidate_Recompute</code> record. The check is made within the ic's transaction.<br>
@@ -361,8 +339,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidate all ICs that have the given <code>aggregation</code> as either their <code>HeaderAggregationKeyBuilder_ID</code> or <code>LineAggregationKeyBuilder_ID</code>.
-	 *
-	 * @param aggregation
 	 */
 	void invalidateCandsForAggregationBuilder(I_C_Aggregation aggregation);
 
@@ -370,13 +346,10 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Delete given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
-	 *
-	 * @param ic
 	 */
 	void deleteAndAvoidRecreateScheduling(I_C_Invoice_Candidate ic);
 
 	/**
-	 * @param ic invoice candidate
 	 * @return true if re-create scheduling shall be avoided for given invoice candidate
 	 */
 	boolean isAvoidRecreate(I_C_Invoice_Candidate ic);
@@ -390,9 +363,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>Only retrieve invoice candidates the user and role have access to
 	 *
 	 * To be kept in sync with {@link #getSQLDefaultFilter(Properties)}
-	 *
-	 * @param queryBuilder
-	 * @return
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder);
 
@@ -405,25 +375,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>Only retrieve invoice candidates the user and role have access to.
 	 *
 	 * To be kept in sync with {{@link #applyDefaultFilter(IQueryBuilder)}
-	 *
-	 * @param ctx
-	 * @return
 	 */
 	String getSQLDefaultFilter(Properties ctx);
-
-	/**
-	 * Retrieve all the invoice candidates for the given inventoryLine
-	 *
-	 * @param inventoryLine
-	 * @return
-	 */
-	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
 	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
-
-	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 }

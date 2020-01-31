@@ -13,29 +13,29 @@ package de.metas.acct.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
-import org.compiere.util.Env;
+import org.compiere.model.MAccount;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.acct.tax.ITaxAcctBL;
+import de.metas.acct.tax.TaxAcctType;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 
 /**
@@ -144,15 +144,15 @@ import de.metas.util.Services;
 	 */
 	public void onC_Tax_ID(final ITaxAccountable taxAccountable)
 	{
-		final int taxAcctType;
+		final TaxAcctType taxAcctType;
 		if (taxAccountable.isAccountSignDR())
 		{
-			taxAcctType = ITaxAcctBL.ACCTTYPE_TaxCredit;
-			// taxAcctType = ITaxAcctBL.ACCTTYPE_TaxExpense; // used for booking services tax
+			taxAcctType = TaxAcctType.TaxCredit;
+			// taxAcctType = TaxAcctType.TaxExpense; // used for booking services tax
 		}
 		else if (taxAccountable.isAccountSignCR())
 		{
-			taxAcctType = ITaxAcctBL.ACCTTYPE_TaxDue;
+			taxAcctType = TaxAcctType.TaxDue;
 		}
 		else
 		{
@@ -161,14 +161,13 @@ import de.metas.util.Services;
 
 		//
 		// Set DR/CR Tax Account
-		final int taxId = taxAccountable.getC_Tax_ID();
-		if (taxId > 0)
+		final TaxId taxId = TaxId.ofRepoIdOrNull(taxAccountable.getC_Tax_ID());
+		if (taxId != null)
 		{
-			final Properties ctx = Env.getCtx();
 			final AcctSchemaId acctSchemaId = taxAccountable.getAcctSchemaId();
 			final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
-			final I_C_ValidCombination taxAcct = taxAcctBL.getC_ValidCombination(ctx, taxId, acctSchemaId, taxAcctType);
-			taxAccountable.setTax_Acct(taxAcct);
+			final MAccount taxAccount = taxAcctBL.getAccount(taxId, acctSchemaId, taxAcctType);
+			taxAccountable.setTax_Acct(taxAccount);
 		}
 		else
 		{

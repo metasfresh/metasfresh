@@ -1,5 +1,7 @@
 package de.metas.adempiere.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -35,10 +37,8 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.currency.CurrencyCode;
@@ -56,7 +56,7 @@ public class OrderLineBLTest
 {
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -89,11 +89,13 @@ public class OrderLineBLTest
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, I_M_PriceList.class, ITrx.TRXNAME_None);
 		priceList.setC_Currency_ID(currency.getRepoId());
+		priceList.setM_PricingSystem_ID(1000000);
 		InterfaceWrapperHelper.save(priceList);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		order.setC_Currency_ID(currency.getRepoId());
+		order.setC_BPartner_ID(10);
 		InterfaceWrapperHelper.save(order);
 
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
@@ -145,8 +147,8 @@ public class OrderLineBLTest
 
 		Services.get(IOrderLineBL.class).updatePrices(orderline);
 
-		Assert.assertThat("Invalid PriceEntered", orderline.getPriceEntered(), Matchers.comparesEqualTo(expectedPrice));
-		Assert.assertThat("Invalid PriceActual", orderline.getPriceActual(), Matchers.comparesEqualTo(expectedPrice));
+		assertThat(orderline.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(expectedPrice);
+		assertThat(orderline.getPriceActual()).as("PriceActual").isEqualByComparingTo(expectedPrice);
 	}
 
 	@Test
@@ -158,8 +160,8 @@ public class OrderLineBLTest
 
 		Services.get(IOrderLineBL.class).updatePrices(orderline);
 
-		Assert.assertThat("Invalid PriceEntered", orderline.getPriceEntered(), Matchers.comparesEqualTo(expectedPrice));
-		Assert.assertThat("Invalid PriceActual", orderline.getPriceActual(), Matchers.comparesEqualTo(expectedPrice));
+		assertThat(orderline.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(expectedPrice);
+		assertThat(orderline.getPriceActual()).as("PriceActual").isEqualByComparingTo(expectedPrice);
 	}
 
 	@Test
@@ -174,8 +176,8 @@ public class OrderLineBLTest
 
 		Services.get(IOrderLineBL.class).updatePrices(orderline);
 
-		Assert.assertThat("Invalid PriceEntered", orderline.getPriceEntered(), Matchers.comparesEqualTo(expectedPrice));
-		Assert.assertThat("Invalid PriceActual", orderline.getPriceActual(), Matchers.comparesEqualTo(expectedPrice));
+		assertThat(orderline.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(expectedPrice);
+		assertThat(orderline.getPriceActual()).as("PriceActual").isEqualByComparingTo(expectedPrice);
 	}
 
 	@Test
@@ -190,7 +192,7 @@ public class OrderLineBLTest
 
 		Services.get(IOrderLineBL.class).updatePrices(orderline);
 
-		Assert.assertThat("Invalid PriceEntered", orderline.getPriceEntered(), Matchers.comparesEqualTo(expectedPrice));
-		Assert.assertThat("Invalid PriceActual", orderline.getPriceActual(), Matchers.comparesEqualTo(expectedPrice));
+		assertThat(orderline.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(expectedPrice);
+		assertThat(orderline.getPriceActual()).as("PriceActual").isEqualByComparingTo(expectedPrice);
 	}
 }

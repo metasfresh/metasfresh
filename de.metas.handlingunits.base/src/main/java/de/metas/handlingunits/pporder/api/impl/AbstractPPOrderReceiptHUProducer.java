@@ -1,7 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -26,25 +25,24 @@ import java.util.ArrayList;
  */
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -53,9 +51,9 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -66,18 +64,25 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateReceiptCandidateRequestBuilder;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
@@ -87,46 +92,34 @@ import lombok.NonNull;
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
 	private transient I_M_HU_LUTU_Configuration _lutuConfiguration;
-	private Date _movementDate;
+	private ZonedDateTime _movementDate;
+	private LocatorId locatorId;
+	private PickingCandidateId pickingCandidateId;
+	//
 	@Deprecated
-	private boolean _skipCreateCandidates;
+	private boolean skipCreatingReceiptCandidates;
+	private boolean processReceiptCandidates;
+	private boolean receiveOneVHU;
 
-	// State
-	private final List<I_PP_Order_Qty> createdCandidates = new ArrayList<>();
-
-	protected abstract I_M_Product getM_Product();
-
+	//
+	// Abstract methods
+	// @formatter:off
+	protected abstract ProductId getProductId();
 	protected abstract Object getAllocationRequestReferencedModel();
-
 	protected abstract IAllocationSource createAllocationSource();
-
 	protected abstract IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager();
-
-	protected abstract I_PP_Order_Qty newCandidate();
-
 	protected abstract void setAssignedHUs(final Collection<I_M_HU> hus);
+	// @formatter:on
 
 	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
 	{
 		this.ppOrderId = ppOrderId;
-	}
-
-	@Override
-	@Deprecated
-	public final void setSkipCreateCandidates()
-	{
-		this._skipCreateCandidates = true;
-	}
-
-	@Deprecated
-	private boolean isSkipCreateCandidates()
-	{
-		return _skipCreateCandidates;
 	}
 
 	private PPOrderId getPpOrderId()
@@ -135,10 +128,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs()
+	public final void createDraftReceiptCandidatesAndPlanningHUs()
 	{
-		return trxManager.callInNewTrx(() -> {
-
+		trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())
@@ -150,25 +142,48 @@ import lombok.NonNull;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createHUsInTrx(qtyCUsTotal.toBigDecimal(), qtyCUsTotal.getUOM());
+			return createReceiptCandidatesAndPlanningHUs_InTrx(qtyCUsTotal);
 		});
 	}
 
 	@Override
-	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
+	public List<I_M_HU> createPlanningHUs(@NonNull final Quantity qtyToReceive)
 	{
-		return trxManager.callInNewTrx(() -> createHUsInTrx(qtyToReceive, uom));
+		skipCreatingReceiptCandidates = true;
+		return trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
 	}
 
-	private final List<I_M_HU> createHUsInTrx(final BigDecimal qtyToReceive, final I_C_UOM uom)
+	@Override
+	public I_M_HU receiveVHU(@NonNull final Quantity qtyToReceive)
+	{
+		this.processReceiptCandidates = true;
+		this.receiveOneVHU = true;
+
+		final List<I_M_HU> vhus = trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
+
+		if (vhus.isEmpty())
+		{
+			throw new AdempiereException("No VHU was created for " + qtyToReceive);
+		}
+		else if (vhus.size() == 1)
+		{
+			return vhus.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("More than one VHU was created for " + qtyToReceive + ": " + vhus);
+		}
+	}
+
+	private final List<I_M_HU> createReceiptCandidatesAndPlanningHUs_InTrx(@NonNull final Quantity qtyToReceive)
 	{
 		//
 		// Create HU Context
 		trxManager.assertThreadInheritedTrxExists();
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 		//
-		final CreateReceiptCandidateRequestCollector ppOrderReceiptCandidateCollector = new CreateReceiptCandidateRequestCollector();
-		huContext.getTrxListeners().callAfterLoad(ppOrderReceiptCandidateCollector::addAllocationResults);
+		final ReceiptCandidateRequestProducer ppOrderReceiptCandidateCollector = newReceiptCandidateRequestProducer();
+		huContext.getTrxListeners().callAfterLoad(ppOrderReceiptCandidateCollector::collectAllocationResults);
 
 		//
 		// Create Allocation Source
@@ -182,7 +197,7 @@ import lombok.NonNull;
 
 		//
 		// Create Allocation Request
-		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive, uom);
+		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive);
 
 		//
 		// Execute transfer
@@ -193,32 +208,54 @@ import lombok.NonNull;
 		Check.assume(allocationResult.isCompleted(), "Result shall be completed: {}", allocationResult);
 
 		//
-		// Create receipt candidates
-		if (!isSkipCreateCandidates())
-		{
-			ppOrderReceiptCandidateCollector
-					.streamRequests()
-					.forEach(this::createReceiptCandidateFromRequest);
-		}
-
-		//
 		// Generate the HUs
-		final List<I_M_HU> createdHUs = huProducerDestination.getCreatedHUs();
+		final List<I_M_HU> planningHUs = huProducerDestination.getCreatedHUs();
 
 		//
 		// Update received HUs
-		InterfaceWrapperHelper.setThreadInheritedTrxName(createdHUs); // just to be sure
-		updateReceivedHUs(createdHUs);
+		InterfaceWrapperHelper.setThreadInheritedTrxName(planningHUs); // just to be sure
+		updateReceivedHUs(planningHUs);
+
+		//
+		// Create receipt candidates
+		createAndProcessReceiptCandidatesIfRequested(ppOrderReceiptCandidateCollector.getRequests());
 
 		//
 		// Return created HUs
-		return createdHUs;
+		return planningHUs;
 	}
 
-	@Override
-	public final void createReceiptCandidatesFromPlanningHU(final I_M_HU planningHU)
+	private void createAndProcessReceiptCandidatesIfRequested(final ImmutableList<CreateReceiptCandidateRequest> requests)
 	{
-		Preconditions.checkNotNull(planningHU);
+		if (skipCreatingReceiptCandidates)
+		{
+			return;
+		}
+
+		if (requests.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_PP_Order_Qty> receiptCandidates = huPPOrderQtyDAO.saveAll(requests);
+
+		if (processReceiptCandidates && !receiptCandidates.isEmpty())
+		{
+			// Process the receipt candidates we just created
+			// => HU will be activated, a receipt cost collector will be generated,
+			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+					.setCandidatesToProcess(receiptCandidates)
+					.process();
+		}
+	}
+
+	protected abstract ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer();
+
+	@Override
+	public final void createReceiptCandidatesFromPlanningHU(@NonNull final I_M_HU planningHU)
+	{
+		processReceiptCandidates = true;
+
 		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
 		{
 			throw new HUException("HU " + planningHU + " shall have status Planning but it has " + planningHU.getHUStatus());
@@ -241,30 +278,36 @@ import lombok.NonNull;
 					true // destroyOldParentIfEmptyStorage
 			);
 
-			final int topLevelHUId = planningHU.getM_HU_ID();
-			final int locatorId = planningHU.getM_Locator_ID();
+			final HuId topLevelHUId = HuId.ofRepoId(planningHU.getM_HU_ID());
+			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(planningHU.getM_Locator_ID());
 
 			// Stream all product storages
 			// ... and create planning receipt candidates
-			huContext.getHUStorageFactory()
-					.getStorage(planningHU)
-					.getProductStorages().stream()
-					// FIXME: validate if the product from storage is accepted
-					//
-					// Create candidate request
-					.map(productStorage -> CreateReceiptCandidateRequest.builder()
-							.locatorId(locatorId)
-							.topLevelHUId(topLevelHUId)
-							.productId(productStorage.getProductId())
-							.build()
-							.addQty(productStorage.getQty()))
-					//
-					// Create candidate from request
-					.forEach(this::createReceiptCandidateFromRequest);
+			{
+				final ImmutableList<CreateReceiptCandidateRequest> requests = huContext.getHUStorageFactory()
+						.getStorage(planningHU)
+						.getProductStorages()
+						.stream()
+						// FIXME: validate if the storage product is accepted
+						.map(productStorage -> toCreateReceiptCandidateRequest(productStorage, topLevelHUId, locatorId))
+						.collect(ImmutableList.toImmutableList());
+
+				createAndProcessReceiptCandidatesIfRequested(requests);
+			}
 
 			//
 			updateReceivedHUs(ImmutableSet.of(planningHU));
 		});
+	}
+
+	private static CreateReceiptCandidateRequest toCreateReceiptCandidateRequest(final IHUProductStorage productStorage, final HuId topLevelHUId, final LocatorId locatorId)
+	{
+		return CreateReceiptCandidateRequest.builder()
+				.locatorId(locatorId)
+				.topLevelHUId(topLevelHUId)
+				.productId(productStorage.getProductId())
+				.qtyToReceive(productStorage.getQty())
+				.build();
 	}
 
 	private void updateReceivedHUs(final Collection<I_M_HU> hus)
@@ -278,83 +321,65 @@ import lombok.NonNull;
 		setAssignedHUs(hus);
 	}
 
-	/**
-	 * Creates candidate from request.
-	 *
-	 * NOTE: when implementing you could start by calling {@link #prepareReceiptCandidate(CreateReceiptCandidateRequest)}.
-	 *
-	 * @param request
-	 * @return candidate
-	 */
-	private void createReceiptCandidateFromRequest(@NonNull final CreateReceiptCandidateRequest request)
-	{
-		final Date movementDate = getMovementDate();
-
-		final I_PP_Order_Qty candidate = newCandidate();
-		candidate.setM_Locator_ID(request.getLocatorId());
-		candidate.setM_HU_ID(request.getTopLevelHUId());
-		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
-		candidate.setQty(request.getQty().toBigDecimal());
-		candidate.setC_UOM_ID(request.getQty().getUOMId());
-		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
-		candidate.setProcessed(false);
-		huPPOrderQtyDAO.save(candidate);
-
-		createdCandidates.add(candidate);
-	}
-
 	@Override
-	public final List<I_PP_Order_Qty> getCreatedCandidates()
+	public final IPPOrderReceiptHUProducer movementDate(@NonNull final ZonedDateTime movementDate)
 	{
-		return ImmutableList.copyOf(createdCandidates);
-	}
-
-	@Override
-	public final IPPOrderReceiptHUProducer setMovementDate(final Date movementDate)
-	{
-		Check.assumeNotNull(movementDate, "Parameter movementDate is not null");
 		_movementDate = movementDate;
 		return this;
 	}
 
-	protected final Date getMovementDate()
+	protected final ZonedDateTime getMovementDate()
 	{
 		if (_movementDate == null)
 		{
-			_movementDate = SystemTime.asTimestamp();
+			_movementDate = SystemTime.asZonedDateTime();
 		}
 		return _movementDate;
 	}
 
-	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final BigDecimal qtyToReceive, final I_C_UOM uom)
+	@Override
+	public final IPPOrderReceiptHUProducer locatorId(@NonNull final LocatorId locatorId)
 	{
-		final I_M_Product product = getM_Product();
-		final Date date = getMovementDate();
+		this.locatorId = locatorId;
+		return this;
+	}
+
+	protected final LocatorId getLocatorId()
+	{
+		return locatorId;
+	}
+
+	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
+	{
+		final ProductId productId = getProductId();
+		final ZonedDateTime date = getMovementDate();
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
-		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
-				product, // product
+		return AllocationUtils.createQtyRequest(huContext,
+				productId, // product
 				qtyToReceive, // the quantity to receive
-				uom,
 				date, // transaction date
 				referencedModel, // referenced model
 				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 		);
-
-		return allocationRequest;
 	}
 
 	private final IHUProducerAllocationDestination createAllocationDestination()
 	{
-		final I_M_HU_LUTU_Configuration lutuConfiguration = getCreateLUTUConfiguration();
-		final ILUTUProducerAllocationDestination lutuProducer = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
-		return lutuProducer;
+		if (receiveOneVHU)
+		{
+			return HUProducerDestination.ofVirtualPI();
+		}
+		else
+		{
+			final I_M_HU_LUTU_Configuration lutuConfiguration = getCreateLUTUConfiguration();
+			return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+		}
 	}
 
 	@Override
-	public final IPPOrderReceiptHUProducer setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final IPPOrderReceiptHUProducer packUsingLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
 		_lutuConfiguration = lutuConfiguration;
 		return this;
 	}
@@ -371,28 +396,73 @@ import lombok.NonNull;
 		return _lutuConfiguration;
 	}
 
+	@Override
+	public IPPOrderReceiptHUProducer pickingCandidateId(final PickingCandidateId pickingCandidateId)
+	{
+		this.pickingCandidateId = pickingCandidateId;
+		return this;
+	}
+
+	protected final PickingCandidateId getPickingCandidateId()
+	{
+		return pickingCandidateId;
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	/**
 	 * Aggregates {@link HUTransactionCandidate}s and creates manufacturing receipt candidates requests.
 	 */
-	private static final class CreateReceiptCandidateRequestCollector
+	protected static final class ReceiptCandidateRequestProducer
 	{
-		private final Map<Integer, CreateReceiptCandidateRequest> requestsByTopLevelHUId = new HashMap<>();
+		private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		public Stream<CreateReceiptCandidateRequest> streamRequests()
+		private final PPOrderId orderId;
+		private final PPOrderBOMLineId coByProductOrderBOMLineId;
+		private final OrgId orgId;
+		private final ZonedDateTime date;
+		private final LocatorId locatorId;
+		private final PickingCandidateId pickingCandidateId;
+
+		private final Map<AggregationKey, CreateReceiptCandidateRequestBuilder> requests = new HashMap<>();
+
+		@Builder
+		private ReceiptCandidateRequestProducer(
+				@NonNull final PPOrderId orderId,
+				@Nullable final PPOrderBOMLineId coByProductOrderBOMLineId,
+				@NonNull final OrgId orgId,
+				@NonNull final ZonedDateTime date,
+				@Nullable final LocatorId locatorId,
+				@Nullable final PickingCandidateId pickingCandidateId)
 		{
-			return requestsByTopLevelHUId.values()
-					.stream()
-					.filter(candidate -> !candidate.isZeroQty());
+			this.orderId = orderId;
+			this.coByProductOrderBOMLineId = coByProductOrderBOMLineId;
+			this.orgId = orgId;
+			this.date = date;
+			this.locatorId = locatorId;
+			this.pickingCandidateId = pickingCandidateId;
 		}
 
-		public void addAllocationResults(final IHUContext IGNORED, @NonNull final List<IAllocationResult> loadResults)
+		public ImmutableList<CreateReceiptCandidateRequest> getRequests()
+		{
+			return requests.values()
+					.stream()
+					.map(CreateReceiptCandidateRequestBuilder::build)
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		public void collectAllocationResults(final IHUContext IGNORED, @NonNull final List<IAllocationResult> loadResults)
 		{
 			loadResults.stream()
 					.flatMap(loadResult -> loadResult.getTransactions().stream())
-					.forEach(this::addHUTransaction);
+					.forEach(this::collectHUTransactionCandidate);
 		}
 
-		private void addHUTransaction(final IHUTransactionCandidate huTransaction)
+		private void collectHUTransactionCandidate(final IHUTransactionCandidate huTransaction)
 		{
 			final I_M_HU hu = huTransaction.getM_HU();
 			if (hu == null)
@@ -406,49 +476,54 @@ import lombok.NonNull;
 				return;
 			}
 
-			final I_M_HU topLevelHU = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
+			final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
 
-			final CreateReceiptCandidateRequest request = requestsByTopLevelHUId.computeIfAbsent(topLevelHU.getM_HU_ID(), topLevelHUId -> CreateReceiptCandidateRequest.builder()
-					.locatorId(huTransaction.getLocatorId().getRepoId())
-					.topLevelHUId(topLevelHUId)
+			final LocatorId effectiveLocatorId = CoalesceUtil.coalesceSuppliers(
+					() -> locatorId,
+					() -> huTransaction.getLocatorId(),
+					() -> IHandlingUnitsBL.extractLocatorIdOrNull(topLevelHU));
+			if (effectiveLocatorId == null)
+			{
+				throw new AdempiereException("Cannot figure out on which locator to receive.")
+						.setParameter("providedLocatorId", locatorId)
+						.setParameter("huTransaction", huTransaction)
+						.setParameter("topLevelHU", topLevelHU)
+						.appendParametersToMessage();
+			}
+
+			final AggregationKey key = AggregationKey.builder()
+					.locatorId(effectiveLocatorId)
+					.topLevelHUId(HuId.ofRepoId(topLevelHU.getM_HU_ID()))
 					.productId(huTransaction.getProductId())
-					.build());
-			request.addQty(quantity);
-		}
-	}
+					.build();
 
-	@Data
-	@Builder
-	static final class CreateReceiptCandidateRequest
-	{
-		private final int locatorId;
-		private final int topLevelHUId;
-		private final ProductId productId;
-		private Quantity qty;
-
-		public CreateReceiptCandidateRequest addQty(final Quantity qtyToAdd)
-		{
-			Check.assumeNotNull(qtyToAdd, "Parameter qtyToAdd is not null");
-			if (qty == null)
-			{
-				qty = qtyToAdd;
-			}
-			else
-			{
-				qty = qty.add(qtyToAdd);
-			}
-			return this;
+			requests.computeIfAbsent(key, this::createReceiptCandidateRequestBuilder)
+					.addQtyToReceive(quantity);
 		}
 
-		public CreateReceiptCandidateRequest addQty(final BigDecimal qty, final I_C_UOM uom)
+		private CreateReceiptCandidateRequestBuilder createReceiptCandidateRequestBuilder(final AggregationKey key)
 		{
-			addQty(new Quantity(qty, uom));
-			return this;
+			return CreateReceiptCandidateRequest.builder()
+					.orderId(orderId)
+					.orderBOMLineId(coByProductOrderBOMLineId)
+					.orgId(orgId)
+					.date(date)
+					.locatorId(key.getLocatorId())
+					.topLevelHUId(key.getTopLevelHUId())
+					.productId(key.getProductId())
+					.pickingCandidateId(pickingCandidateId);
 		}
 
-		public boolean isZeroQty()
+		@Builder
+		@Value
+		private static class AggregationKey
 		{
-			return qty == null || qty.isZero();
+			@NonNull
+			LocatorId locatorId;
+			@NonNull
+			HuId topLevelHUId;
+			@NonNull
+			ProductId productId;
 		}
 	}
 

@@ -9,17 +9,15 @@ import java.util.Optional;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler.AttributeConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler.AttributeConfig.AttributeConfigBuilder;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Tested;
 
 /*
  * #%L
@@ -45,20 +43,19 @@ import mockit.Tested;
 
 public class ShipmentScheduleHandlerTest
 {
-
-	@Tested
-	@Mocked
-	ShipmentScheduleHandler shipmentScheduleHandler;
+	private ShipmentScheduleHandler shipmentScheduleHandler;
 
 	private I_M_Attribute attribute;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		attribute = newInstance(I_M_Attribute.class);
 		save(attribute);
+
+		shipmentScheduleHandler = Mockito.spy(ShipmentScheduleHandler.class);
 	}
 
 	@Test
@@ -66,11 +63,8 @@ public class ShipmentScheduleHandlerTest
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			shipmentScheduleHandler.getAttributeConfigs(); result = ImmutableList.of();
-		}};	// @formatter:on
+		Mockito.when(shipmentScheduleHandler.getAttributeConfigs())
+				.thenReturn(ImmutableList.of());
 
 		final boolean result = shipmentScheduleHandler.attributeShallBePartOfShipmentLine(shipmentSchedule, attribute);
 		assertThat(result).isFalse();
@@ -104,11 +98,8 @@ public class ShipmentScheduleHandlerTest
 			final AttributeConfig attributeConfigConfig,
 			final ImmutableList<AttributeConfig> list)
 	{
-		// @formatter:off
-		new Expectations()
-		{{
-			shipmentScheduleHandler.getAttributeConfigs(); result = list;
-		}};	// @formatter:on
+		Mockito.when(shipmentScheduleHandler.getAttributeConfigs())
+				.thenReturn(list);
 
 		// invoke the method under test
 		final Optional<AttributeConfig> matchingAttributeConfig = shipmentScheduleHandler.findMatchingAttributeConfig(10, attribute);

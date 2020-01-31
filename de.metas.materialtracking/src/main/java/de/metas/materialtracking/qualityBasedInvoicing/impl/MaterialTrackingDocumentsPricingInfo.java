@@ -1,31 +1,9 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.document.engine.IDocument;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -39,10 +17,36 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
+
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /*
  * #%L
@@ -103,7 +107,6 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * @param plv
 	 * @return the vendor receipt info that belongs to the given <code>plv</code> and that was not yet issued at all or that was issued to <code>PP_Order</code>s this were not yet invoiced.
 	 */
 	public IVendorReceipt<I_M_InOutLine> getVendorReceiptForPLV(final I_M_PriceList_Version plv)
@@ -252,7 +255,11 @@ import lombok.NonNull;
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
 		{
 			final I_M_PricingSystem pricingSystem = getM_PricingSystem();
-			final CountryId countryId = CountryId.ofRepoId(inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID());
+			final I_M_InOut inOut = InterfaceWrapperHelper.load(inOutLine.getM_InOut_ID(), I_M_InOut.class);
+			final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(inOut.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+			final I_C_Location location = InterfaceWrapperHelper.load(bPartnerLocation.getC_Location_ID(), I_C_Location.class);
+
+			final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
 					PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 					countryId,
@@ -265,7 +272,7 @@ import lombok.NonNull;
 				return null;
 			}
 
-			final LocalDate movementDate = TimeUtil.asLocalDate(inOutLine.getM_InOut().getMovementDate());
+			final ZonedDateTime movementDate = TimeUtil.asZonedDateTime(inOutLine.getM_InOut().getMovementDate());
 			final I_M_PriceList priceList = priceLists.next();
 			final Boolean processedPLVFiltering = true; // task 09533: in material-tracking we work only with PLVs that are cleared
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
@@ -279,8 +286,6 @@ import lombok.NonNull;
 		/**
 		 * The created vendor receipt contains only those iols that do not belong to a PP_Order that are already invoiced.
 		 *
-		 * @param plv
-		 * @return
 		 */
 		private IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
 		{
@@ -291,7 +296,7 @@ import lombok.NonNull;
 					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GREATER_OR_EQUAL, plv.getValidFrom());
 
-			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv, true /* onlyProcessed */ );
+			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv, true /* onlyProcessed */);
 			if (nextPLV != null)
 			{
 				inOutFilter.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.LESS, nextPLV.getValidFrom());
@@ -309,7 +314,10 @@ import lombok.NonNull;
 					.create()
 					.iterate(I_M_InOutLine.class);
 
-			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(_materialTracking.getM_Product());
+			final ProductId productId = ProductId.ofRepoId(_materialTracking.getM_Product_ID());
+			final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+
+			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(product);
 			vendorReceipt.setPlv(plv);
 
 			while (inOutLines.hasNext())

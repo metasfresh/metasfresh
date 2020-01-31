@@ -93,7 +93,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	 * Processes the given invoice candidates into invoices
 	 */
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		// use the workpackge's ctx. It contains the client, org and user that created the queu-block this package belongs to
 		final Properties localCtx = InterfaceWrapperHelper.getCtx(workPackage);
@@ -112,7 +112,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 					.setContext(localCtx, localTrxName)
 					.setCollector(createInvoiceResults)
 					.setInvoicingParams(getInvoicingParams())
-					.setIgnoreInvoiceSchedule(true) // we don't need to check for the invoice schedules because ICs where would be skipped here would already be skipped on enqueue time.
+					.setIgnoreInvoiceSchedule(true) // we don't need to check for the invoice schedules because ICs that would be skipped here would already have been skipped on enqueue time.
 					.generateInvoices(candidatesOfPackage.iterator());
 
 			// Log invoices generation result

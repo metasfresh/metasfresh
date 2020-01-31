@@ -13,19 +13,15 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
-import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
@@ -34,7 +30,6 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -58,21 +53,10 @@ import mockit.Mocked;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class,
-
-		// note that we partially mock this service in this test
-		ShipmentScheduleReferencedLineFactory.class,
-
-		// note that we won't test against this class. we just need one ShipmentScheduleReferencedLineProvider to be present,
-		// so ShipmentScheduleReferencedLineFactory can be initialized by spring
-		ShipmentScheduleOrderReferenceProvider.class
-})
 public class M_ShipmentScheduleTest
 {
-	@Mocked
 	private ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
+	// private PostMaterialEventService postMaterialEventService;
 
 	private static final BPartnerId BPARTNER_ID1 = BPartnerId.ofRepoId(40);
 	private static final BPartnerId BPARTNER_ID2 = BPartnerId.ofRepoId(45);
@@ -87,14 +71,22 @@ public class M_ShipmentScheduleTest
 	private static final BigDecimal TEN = BigDecimal.TEN;
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 
-	private I_M_ShipmentSchedule shipmentSchedule;
+	private M_ShipmentSchedule shipmentScheduleInterceptor;
 
+	private I_M_ShipmentSchedule shipmentSchedule;
 	private I_M_ShipmentSchedule oldShipmentSchedule;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		shipmentScheduleReferencedLineFactory = Mockito.mock(ShipmentScheduleReferencedLineFactory.class);
+
+		shipmentScheduleInterceptor = new M_ShipmentSchedule(
+				Mockito.mock(PostMaterialEventService.class),
+				shipmentScheduleReferencedLineFactory,
+				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory());
 
 		oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		oldShipmentSchedule.setQtyOrdered_Calculated(TWENTY); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
@@ -126,7 +118,7 @@ public class M_ShipmentScheduleTest
 				.build();
 		setupShipmentScheduleReferencedLineFactory(orderLineDescriptor);
 
-		final AbstractShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
+		final AbstractShipmentScheduleEvent result = shipmentScheduleInterceptor
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.AFTER_NEW);
 
 		assertThat(result).isNotNull();
@@ -157,12 +149,9 @@ public class M_ShipmentScheduleTest
 						.shipperId(ShipperId.optionalOfRepoId(20))
 						.warehouseId(WAREHOUSE_ID)
 						.documentLineDescriptor(orderLineDescriptor).build();
-		// @formatter:off
-		new Expectations(ShipmentScheduleReferencedLineFactory.class)
-		{{
-			shipmentScheduleReferencedLineFactory.createFor(shipmentSchedule);
-			result = shipmentScheduleReferencedLine;
-		}};	// @formatter:on
+
+		Mockito.when(shipmentScheduleReferencedLineFactory.createFor(shipmentSchedule))
+				.thenReturn(shipmentScheduleReferencedLine);
 	}
 
 	@Test
@@ -175,7 +164,7 @@ public class M_ShipmentScheduleTest
 			times = 1; result = oldShipmentSchedule;
 		}}; // @formatter:on
 
-		final AbstractShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
+		final AbstractShipmentScheduleEvent result = shipmentScheduleInterceptor
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
 
 		assertThat(result).isNotNull();
@@ -195,7 +184,7 @@ public class M_ShipmentScheduleTest
 	@Test
 	public void createShipmentscheduleEvent_before_delete()
 	{
-		final AbstractShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
+		final AbstractShipmentScheduleEvent result = shipmentScheduleInterceptor
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.BEFORE_DELETE);
 
 		assertThat(result).isNotNull();

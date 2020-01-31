@@ -1,8 +1,7 @@
 package de.metas.handlingunits.expiry;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.util.OptionalInt;
 
 import javax.annotation.PostConstruct;
 
@@ -54,11 +53,10 @@ public class MonthsUntilExpiryAttributeStorageListener implements IAttributeStor
 	public void onAttributeValueChanged(
 			@NonNull final IAttributeValueContext attributeValueContext,
 			@NonNull final IAttributeStorage storage,
-			IAttributeValue attributeValue,
-			Object valueOld)
+			final IAttributeValue attributeValue,
+			final Object valueOld_NOTUSED)
 	{
 		final AbstractHUAttributeStorage huAttributeStorage = AbstractHUAttributeStorage.castOrNull(storage);
-
 		final boolean storageIsAboutHUs = huAttributeStorage != null;
 		if (!storageIsAboutHUs)
 		{
@@ -72,18 +70,22 @@ public class MonthsUntilExpiryAttributeStorageListener implements IAttributeStor
 			return;
 		}
 
-		final String attributeIdentifier = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
+		final String attributeKey = attributeValue.getM_Attribute().getValue();
+		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeKey);
 		if (!relevantAttributeHasChanged)
 		{
 			return;
 		}
 
-		final LocalDate bestBeforeDate = storage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
-
 		final LocalDate today = SystemTime.asLocalDate();
-		final long months = ChronoUnit.MONTHS.between(today, bestBeforeDate);
-
-		storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, new BigDecimal(months));
+		final OptionalInt monthsUntilExpiry = UpdateMonthsUntilExpiryCommand.computeMonthsUntilExpiry(storage, today);
+		if (monthsUntilExpiry.isPresent())
+		{
+			storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
+		}
+		else
+		{
+			storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
+		}
 	}
 }

@@ -67,7 +67,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	{
 	}
 
-	public final void enable()
+	public void enable()
 	{
 		// Do nothing if already registered.
 		if (_initalized.getAndSet(true))
@@ -82,7 +82,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
 	}
 
-	private final boolean isEnabled()
+	private boolean isEnabled()
 	{
 		return _initalized.get();
 	}
@@ -173,7 +173,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		CacheMgt.get().reset(request, CacheMgt.ResetMode.LOCAL); // don't broadcast it anymore because else we would introduce recursion
 	}
 
-	private final Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
+	private Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
 	{
 		final Event event = Event.builder()
 				.putProperty(EVENT_PROPERTY, jsonSerializer.toJson(request))
@@ -182,7 +182,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		return event;
 	}
 
-	private final CacheInvalidateMultiRequest createRequestFromEvent(final Event event)
+	private CacheInvalidateMultiRequest createRequestFromEvent(final Event event)
 	{
 		final String jsonRequest = event.getProperty(EVENT_PROPERTY);
 		if (Check.isEmpty(jsonRequest, true))

@@ -46,6 +46,8 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	I_AD_Column retrieveColumn(String tableName, String columnName);
 
+	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
+
 	/**
 	 *
 	 * @param columnName
@@ -147,6 +149,8 @@ public interface IADTableDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
+
+	I_AD_Table retrieveTable(AdTableId tableId);
 
 	/**
 	 * Return the table with the given name. Use {@link org.compiere.model.MTable} under the hood,

@@ -193,7 +193,7 @@ class InvoiceCandidateRecordServiceTest
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
 		assertThat(shippedData.isEmpty()).isFalse();
 
-		assertThat(shippedData.getShippedQtyItems())
+		assertThat(shippedData.getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN, FOUR_HUNDRET, FOUR_HUNDRET_TWENTY, null),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
@@ -313,7 +313,7 @@ class InvoiceCandidateRecordServiceTest
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
 		assertThat(shippedData.isEmpty()).isFalse();
 
-		assertThat(shippedData.getShippedQtyItems())
+		assertThat(shippedData.getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
 						tuple(FIVE, TWO_HUNDRET, null, null));

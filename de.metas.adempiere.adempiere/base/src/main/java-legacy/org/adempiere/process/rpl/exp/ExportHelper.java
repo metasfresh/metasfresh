@@ -29,6 +29,7 @@
  *********************************************************************/
 package org.adempiere.process.rpl.exp;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -143,8 +144,6 @@ public class ExportHelper
 
 	/**
 	 * Process - Generate Export Format
-	 *
-	 * @return info
 	 */
 	public String exportRecord(final PO po, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent) throws ReplicationException
 	{
@@ -206,17 +205,17 @@ public class ExportHelper
 		}
 		// metas: tsa: end
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(po.getCtx(), m_AD_Client_ID);
-		log.info("Client = " + client.toString());
+		log.debug("Client = " + client.toString());
 
-		log.info("po.getAD_Org_ID() = " + po.getAD_Org_ID());
+		log.debug("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 
-		log.info("po.get_TrxName() = " + po.get_TrxName());
+		log.debug("po.get_TrxName() = " + po.get_TrxName());
 		if (po.get_TrxName() == null || po.get_TrxName().equals(""))
 		{
 			po.set_TrxName("exportRecord");
 		}
 
-		log.info("Table = " + po.get_TableName());
+		log.debug("Table = " + po.get_TableName());
 
 		if (po.get_KeyColumns().length < 1)
 		{
@@ -229,7 +228,7 @@ public class ExportHelper
 		{
 			final String whereClause = "(" + po.get_WhereClause(true) + ") AND (" + exportFormat.getWhereClause() + ")";
 			final boolean match = new Query(po.getCtx(), po.get_TableName(), whereClause, po.get_TrxName())
-					.match();
+					.anyMatch();
 			if (!match)
 			{
 				log.info("Object " + po + " does not match export format where clause (" + whereClause + ")");
@@ -282,7 +281,7 @@ public class ExportHelper
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(exportFormat.getCtx(), m_AD_Client_ID);
 		final MTable table = MTable.get(exportFormat.getCtx(), exportFormat.getAD_Table_ID());
-		log.info("Table = " + table);
+		log.debug("Table = " + table);
 
 		// metas: begin: build where clause
 		final StringBuffer whereClause = new StringBuffer("1=1");
@@ -304,7 +303,7 @@ public class ExportHelper
 
 		for (final PO po : records)
 		{
-			log.info("Client = " + client.toString());
+			log.debug("Client = " + client.toString());
 			log.trace("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 			log.trace("po.get_TrxName() = " + po.get_TrxName());
 			if (po.get_TrxName() == null || po.get_TrxName().equals(""))
@@ -366,7 +365,7 @@ public class ExportHelper
 
 		for (final I_EXP_FormatLine formatLine : formatLines)
 		{
-			log.info("Format Line Seach key: {}", formatLine.getValue());
+			log.debug("Format Line Seach key: {}", formatLine.getValue());
 
 			try
 			{
@@ -471,7 +470,7 @@ public class ExportHelper
 			final MEXPFormat embeddedFormat = MEXPFormat.get(masterPO.getCtx(), embeddedFormat_ID, masterPO.get_TrxName());
 
 			final MTable tableEmbedded = MTable.get(masterPO.getCtx(), embeddedFormat.getAD_Table_ID());
-			log.info("Table Embedded = " + tableEmbedded);
+			log.debug("Table Embedded = " + tableEmbedded);
 
 			final String linkColumnName = getLinkColumnName(masterPO, tableEmbedded); // metas
 			final Object linkId = masterPO.get_Value(linkColumnName); // metas
@@ -578,7 +577,7 @@ public class ExportHelper
 				throw new IllegalStateException("Column's reference type not supported: " + column + " , DisplayType=" + displayType);
 			}
 
-			log.info("Embedded: Table={}, KeyColumName={}", new Object[] { embeddedTableName, embeddedKeyColumnName });
+			log.debug("Embedded: Table={}, KeyColumName={}", new Object[] { embeddedTableName, embeddedKeyColumnName });
 
 			final StringBuilder whereClause = new StringBuilder().append(embeddedKeyColumnName).append("=?");
 			if (!Check.isEmpty(embeddedFormat.getWhereClause()))
@@ -750,7 +749,7 @@ public class ExportHelper
 			final byte[] data;
 			if (value instanceof String)
 			{
-				data = ((String)value).getBytes();
+				data = ((String)value).getBytes(StandardCharsets.UTF_8);
 			}
 			else
 			{
@@ -775,7 +774,8 @@ public class ExportHelper
 			}
 			else
 			{
-				df = DisplayType.getDateFormat(displayType);
+				//df = DisplayType.getDateFormat(displayType); // since we export to xsd:date, it makes no sense to by default use the current user's locale's (or whatever) dateFormat.
+				df = new SimpleDateFormat("yyyy-MM-dd");
 				valueAttributes.put(RPL_Constants.XML_ATTR_DateFormat, df.toPattern());
 			}
 			log.debug("DatePattern: {}", df.toPattern());

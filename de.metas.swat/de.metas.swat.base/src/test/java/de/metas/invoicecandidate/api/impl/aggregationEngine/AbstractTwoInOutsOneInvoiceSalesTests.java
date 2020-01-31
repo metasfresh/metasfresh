@@ -73,7 +73,7 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(1));
 
 			final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
-			final ProductPrice priceEntered = invoiceCandBL.getPriceEntered(ic);
+			final ProductPrice priceEntered = invoiceCandBL.getPriceEnteredEffective(ic);
 
 			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
 			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));

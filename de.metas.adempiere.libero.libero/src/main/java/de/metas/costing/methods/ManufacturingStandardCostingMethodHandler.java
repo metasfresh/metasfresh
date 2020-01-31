@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -108,7 +109,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final I_PP_Cost_Collector cc = costCollectorsService.getById(request.getDocumentRef().getRecordId());
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
 
@@ -181,7 +183,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
 
 		return result;
@@ -213,7 +215,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
 
 		return result;
@@ -236,7 +238,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
 
 		return result;

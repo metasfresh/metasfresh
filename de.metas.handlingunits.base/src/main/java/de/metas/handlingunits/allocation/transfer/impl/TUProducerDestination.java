@@ -126,7 +126,7 @@ import de.metas.util.Services;
 	 *
 	 * @param maxTUs
 	 */
-	public final void setMaxTUs(final int maxTUs)
+	public void setMaxTUs(final int maxTUs)
 	{
 		Check.assume(maxTUs > 0, "maxTUs > 0 but it was {}", maxTUs);
 		this.maxTUs = maxTUs;
@@ -243,7 +243,7 @@ import de.metas.util.Services;
 		return result;
 	}
 
-	private final IAllocationStrategy getAllocationStrategy(final IAllocationRequest request, final Capacity capacityToUse)
+	private IAllocationStrategy getAllocationStrategy(final IAllocationRequest request, final Capacity capacityToUse)
 	{
 		final IAllocationStrategy allocationStrategy = new UpperBoundAllocationStrategy(capacityToUse);
 		return allocationStrategy;
@@ -267,7 +267,7 @@ import de.metas.util.Services;
 			// So there was no override capacity provided for this product.
 			// The allocationStrategy we are creating just now might execute against the aggregate VHU which does not have any M_HU_PI_Item_Products and therefore does not know the TUs actual capacity.
 			// To compensate for this, we now find out the TU's capacity and make it the allocation strategy's upper bound
-			final List<I_M_HU_PI_Item> materialPIItems = handlingUnitsDAO.retrievePIItems(tuPI, getC_BPartner()).stream()
+			final List<I_M_HU_PI_Item> materialPIItems = handlingUnitsDAO.retrievePIItems(tuPI, getBPartnerId()).stream()
 					.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_Material, piItem.getItemType()))
 					.collect(Collectors.toList());
 
@@ -275,10 +275,10 @@ import de.metas.util.Services;
 					+ "M_HU_PI={};\n "
 					+ "C_BPartner={};\n "
 					+ "M_HU_PI_Item(s) found={}\n "
-					+ "this={}", tuPI, getC_BPartner(), materialPIItems, this);
+					+ "this={}", tuPI, getBPartnerId(), materialPIItems, this);
 
 			final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProductId(), request.getDate());
+			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getBPartnerId(), request.getProductId(), request.getDate());
 
 			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());

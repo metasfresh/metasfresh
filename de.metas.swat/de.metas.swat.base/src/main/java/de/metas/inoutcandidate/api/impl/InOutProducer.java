@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,17 +15,15 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,11 +37,11 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -58,6 +58,11 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -78,6 +83,7 @@ public class InOutProducer implements IInOutProducer
 	protected final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
 
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
 
@@ -470,8 +476,8 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Warehouse
 		{
-			final int warehouseId = receiptScheduleBL.getM_Warehouse_Effective_ID(rs);
-			receiptHeader.setM_Warehouse_ID(warehouseId);
+			final WarehouseId warehouseId = receiptScheduleBL.getWarehouseEffectiveId(rs);
+			receiptHeader.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
 
 		//
@@ -515,10 +521,7 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * Helper method to update receipt line with values from given {@link I_M_ReceiptSchedule}.
-	 *
-	 * @param line
-	 * @param rs
+	 * Helper method to update an "empty" receipt line with values from given {@link I_M_ReceiptSchedule}.
 	 */
 	protected void updateReceiptLine(final I_M_InOutLine line, final I_M_ReceiptSchedule rs)
 	{
@@ -542,17 +545,33 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Line Warehouse & Locator
 		{
-			final I_M_Warehouse warehouse = inout.getM_Warehouse();
-			final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-			line.setM_Locator_ID(locator.getM_Locator_ID());
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+			line.setM_Locator_ID(locatorId.getRepoId());
 		}
 
 		//
 		// Quantities
-		final BigDecimal qtyToMove = receiptScheduleBL.getQtyToMove(rs);
-		line.setQtyEntered(qtyToMove);
-		line.setMovementQty(qtyToMove);
-		line.setC_UOM_ID(rs.getC_UOM_ID());
+		final StockQtyAndUOMQty qtyToMove = receiptScheduleBL.getQtyToMove(rs);
+		line.setMovementQty(qtyToMove.getStockQty().toBigDecimal());
+
+		final UomId lineUomId = coalesce(
+				UomId.ofRepoIdOrNull(rs.getC_UOM_ID()),
+				qtyToMove.getStockQty().getUomId());
+
+		final Quantity qtyEntered = uomConversionBL
+				.convertQuantityTo(
+						qtyToMove.getStockQty(),
+						UOMConversionContext.of(qtyToMove.getProductId()),
+						lineUomId);
+		line.setQtyEntered(qtyEntered.toBigDecimal());
+		line.setC_UOM_ID(lineUomId.getRepoId());
+
+		if (qtyToMove.getUOMQtyOpt().isPresent())
+		{
+			line.setQtyDeliveredCatch(qtyToMove.getUOMQtyNotNull().toBigDecimal());
+			line.setCatch_UOM_ID(qtyToMove.getUOMQtyNotNull().getUomId().getRepoId());
+		}
 
 		//
 		// Order Line Link

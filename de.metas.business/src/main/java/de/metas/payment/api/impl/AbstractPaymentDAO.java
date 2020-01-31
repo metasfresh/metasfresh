@@ -1,6 +1,7 @@
 package de.metas.payment.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 /*
  * #%L
@@ -27,9 +28,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.organization.OrgId;
+import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -40,6 +45,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
@@ -61,6 +67,25 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
 		return load(paymentId, I_C_Payment.class);
+	}
+
+	@Override
+	public Optional<I_C_Payment> getByExternalOrderId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
+	{
+		final I_C_Payment i_c_payment = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalOrderId, externalId.getValue())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstOnlyOrNull(I_C_Payment.class);
+
+		return Optional.ofNullable(i_c_payment);
+	}
+
+	@Override
+	public List<I_C_Payment> getByIds(@NonNull final Set<PaymentId> paymentIds)
+	{
+		return loadByRepoIdAwares(paymentIds, I_C_Payment.class);
 	}
 
 	@Override
@@ -99,8 +124,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
-		;
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses());
 
 		// Only the documents created after the given start time
 		if (startTime != null)
@@ -176,9 +200,21 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
-				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(PaymentId::ofRepoId)
 				.stream();
 	}
+
+	/*
+	 * TODO please consider the following improvement
+	 * - create an AD_Table like `C_InvoiceOpenAmounts` that has the required values (`C_BPartner_ID`, `C_Currency_ID`, `InvoiceOpen`...) as columns
+	 * - put this select-stuff into a DB function. that function shall return the `C_InvoiceOpenAmounts` as result (i.e. the metasfresh `C_InvoiceOpenAmounts` table is not a physical table in the DB; it's just what the DB-function returns)
+	 * - create a model class `I_C_InvoiceOpenAmounts` for your AD_Table.
+	 * - have the `PaymentDAO` implementation invoke the DB-function to get it's `I_C_InvoiceOpenAmounts` (=> you can do this with IQueryBL)
+	 * - have the `PlainPaymentDAO ` implementation return "plain" instances of `I_C_InvoiceOpenAmounts`
+	 * - that way, one can write a unit test where they first create one or two plain `I_C_InvoiceOpenAmounts`s and then query them in their test
+	 */
+	@Override
+	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

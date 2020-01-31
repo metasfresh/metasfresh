@@ -3,11 +3,11 @@ package de.metas.materialtracking;
 import java.util.Optional;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.ISingletonService;
@@ -33,7 +33,7 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	/**
 	 * Called by API when {@link I_M_Material_Tracking} record is changed.
 	 *
-	 * This method will update the corresponding {@link I_M_AttributeValue} record.
+	 * This method will update the corresponding attribute value record.
 	 *
 	 * When changing the implementation, please make sure that the model interceptors' <code>ifColumnsChanged</code> are in sync.
 	 *
@@ -63,11 +63,8 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 
 	/**
 	 * Gets material tracking from given ASI
-	 *
-	 * @param asi
-	 * @return
 	 */
-	I_M_Material_Tracking getMaterialTrackingOrNull(I_M_AttributeSetInstance asi);
+	I_M_Material_Tracking getMaterialTrackingOrNull(AttributeSetInstanceId asiId);
 
 	I_M_Material_Tracking getMaterialTracking(IContextAware context, IAttributeSet attributeSet);
 
@@ -76,10 +73,10 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	/**
 	 * Check if the given ASI has a material tracking attribute. Note that this attribute's value can still be <code>null</code>, even if this method returns <code>true</code>.
 	 *
-	 * @param asi the asi to check
+	 * @param asi the asi to check; not {@code null}, but may be "none".
 	 * @return <code>true</code> if the given asi's attribute set contains the <code>M_Attribute</code> with <code>value=M_Material_Tracking_ID.</code>
 	 */
-	boolean hasMaterialTrackingAttribute(I_M_AttributeSetInstance asi);
+	boolean hasMaterialTrackingAttribute(AttributeSetInstanceId asiId);
 
 	/** @return true if material tracking attribute exists and it's set */
 	boolean isMaterialTrackingSet(IContextAware context, IAttributeSet attributeSet);

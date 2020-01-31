@@ -22,13 +22,33 @@ package de.metas.invoice.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.invoice.IInvoiceLineBL;
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,32 +67,12 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.invoice.IInvoiceLineBL;
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.pricing.service.ProductPrices;
-import de.metas.product.ProductId;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxNotFoundException;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -126,7 +126,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(io.getM_Warehouse_ID());
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
-		final I_C_BPartner_Location locationTo = InterfaceWrapperHelper.create(io.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location locationTo = Services.get(IBPartnerDAO.class).getBPartnerLocationById(partnerLocationId);
 
 		final Timestamp shipDate = io.getMovementDate();
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(ctx,
@@ -220,7 +221,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asLocalDate(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -250,7 +251,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asLocalDate(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -319,6 +320,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 
 		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createInitialContext(
+				invoiceLine.getAD_Org_ID(),
 				productId,
 				bPartnerId,
 				invoiceLine.getPrice_UOM_ID(),
@@ -364,7 +366,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (qtyEntered != null)
 		{
 			final I_C_Invoice invoice = line.getC_Invoice();
-			final int priceListId = invoice.getM_PriceList_ID();
+			final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
 
 			//
 			// We need to get the quantity in the pricing's UOM (if different)
@@ -372,7 +374,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
+			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(priceListId);
 
 			BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
 			logger.debug("LineNetAmt={}", lineNetAmt);
@@ -403,11 +405,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return;
 		}
 
-		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
-		if (!pricingResult.isCalculated())
-		{
-			throw new ProductNotOnPriceListException(pricingCtx, invoiceLine.getLine());
-		}
+		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx.setFailIfNotCalculated());
 
 		//
 		// PriceList

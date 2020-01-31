@@ -15,7 +15,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2094397327L;
+	private static final long serialVersionUID = 737472173L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Demand_Detail (Properties ctx, int MD_Candidate_Demand_Detail_ID, String trxName)
@@ -63,7 +63,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -144,7 +144,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -178,7 +178,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_M_ForecastLine getM_ForecastLine() throws RuntimeException
+	public org.compiere.model.I_M_ForecastLine getM_ForecastLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ForecastLine_ID, org.compiere.model.I_M_ForecastLine.class);
 	}

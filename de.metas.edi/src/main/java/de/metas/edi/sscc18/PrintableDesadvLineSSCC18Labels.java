@@ -1,7 +1,5 @@
 package de.metas.edi.sscc18;
 
-
-
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -30,11 +28,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
@@ -43,12 +36,18 @@ import com.google.common.base.Suppliers;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC18Labels
 {
@@ -64,15 +63,13 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	private final String productName;
 
 	private int existingSSCC18sCount;
-	private final Supplier<List<I_EDI_DesadvLine_SSCC>> existingSSCC18s;
+	private final Supplier<List<I_EDI_DesadvLine_Pack>> existingSSCC18s;
 	private BigDecimal requiredSSCC18sCount;
 
 	private TotalQtyCUBreakdownCalculator huQtysCalculator;
 
-	private PrintableDesadvLineSSCC18Labels(final Builder builder)
+	private PrintableDesadvLineSSCC18Labels(@NonNull final Builder builder)
 	{
-		super();
-
 		this.desadvLine = builder.getEDI_DesadvLine();
 
 		this.lineNo = builder.getLineNo();
@@ -118,7 +115,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_SSCC> getExistingSSCC18s()
+	public List<I_EDI_DesadvLine_Pack> getExistingSSCC18s()
 	{
 		return existingSSCC18s.get();
 	}
@@ -160,7 +157,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		private Builder()
 		{
-			super();
 		}
 
 		public PrintableDesadvLineSSCC18Labels build()
@@ -204,18 +200,17 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				return existingSSCC18Count;
 			}
 
-			return desadvDAO.retrieveDesadvLineSSCCsCount(_desadvLine);
+			return desadvDAO.retrieveDesadvLinePackRecordsCount(_desadvLine);
 		}
 
-		Supplier<List<I_EDI_DesadvLine_SSCC>> getExistingSSCC18s()
+		Supplier<List<I_EDI_DesadvLine_Pack>> getExistingSSCC18s()
 		{
-			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_SSCC>>()
+			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_Pack>>()
 			{
-
 				@Override
-				public List<I_EDI_DesadvLine_SSCC> get()
+				public List<I_EDI_DesadvLine_Pack> get()
 				{
-					return desadvDAO.retrieveDesadvLineSSCCs(_desadvLine);
+					return desadvDAO.retrieveDesadvLinePacks(_desadvLine);
 				}
 			});
 		}
@@ -232,7 +227,6 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			{
 				return requiredSSCC18Count;
 			}
-
 			return getHUQtysCalculator().getAvailableLUs();
 		}
 
@@ -271,10 +265,9 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 			TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
 
-
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
-					shipmentSchedule.getQtyOrdered(),
-					Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID()),
+					Quantity.of(shipmentSchedule.getQtyOrdered(),
+							Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID())),
 					lutuConfiguration);
 
 			builder.setQtyCUsTotal(qtyCUsTotal.getQty());

@@ -162,7 +162,7 @@ public class HUStorageQuery implements IStorageQuery
 		// Filter by in scope M_Product_IDs
 		if (!_productIds.isEmpty())
 		{
-			huStorageQueryBuilder.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, _productIds);
+			huStorageQueryBuilder.addInArrayOrAllFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, _productIds);
 		}
 
 		huStorageQueryBuilder.orderBy()
@@ -346,7 +346,7 @@ public class HUStorageQuery implements IStorageQuery
 		if (_availableAttributeIds == null)
 		{
 			final IHUStorageBL huStorageBL = Services.get(IHUStorageBL.class);
-			_availableAttributeIds = ImmutableSet.copyOf(huStorageBL.getAvailableAttributeIds());;
+			_availableAttributeIds = ImmutableSet.copyOf(huStorageBL.getAvailableAttributeIds());
 		}
 		return _availableAttributeIds;
 	}

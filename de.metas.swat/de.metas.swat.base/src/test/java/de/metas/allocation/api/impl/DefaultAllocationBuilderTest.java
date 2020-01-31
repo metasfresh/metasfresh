@@ -13,15 +13,14 @@ package de.metas.allocation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -29,12 +28,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.allocation.api.DefaultAllocationBuilder;
 import de.metas.allocation.api.DefaultAllocationLineBuilder;
@@ -45,10 +44,10 @@ public class DefaultAllocationBuilderTest
 
 	static final IContextAware ctxProvider = InterfaceWrapperHelper.getContextAware(POJOWrapper.create(Env.getCtx(), I_C_Greeting.class, "trxName"));
 
-	@Before
+	@BeforeEach
 	public void enableUnitTestMode()
 	{
-		Adempiere.enableUnitTestMode();
+		AdempiereTestHelper.get().init();
 	}
 
 	@Test
@@ -67,7 +66,7 @@ public class DefaultAllocationBuilderTest
 			super(parent);
 		}
 
-	};
+	}
 
 	@Test
 	public void addLineWithCustomBuilderTest()

@@ -2,8 +2,6 @@ package de.metas.material.event.pporder;
 
 import java.time.Instant;
 
-import org.eevolution.model.I_PP_Order;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -36,7 +34,7 @@ import lombok.Value;
  * #L%
  */
 /**
- * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
+ * Send by the material-dispo when it wants a manufacturing order to be created.
  * <p>
  * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
  * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.

@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -59,8 +61,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /**
  * Generic {@link IAttributeValue} value implementation
@@ -404,7 +404,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			return getInternalValueString();
 		}
-		return null;
+		final Object value = getValue();
+		return value == null ? null : value.toString();
 	}
 
 	@Override
@@ -648,7 +649,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		return availableValues;
 	}
 
-	protected final Date valueToDate(final Object value)
+	protected static final Date valueToDate(final Object value)
 	{
 		if (value == null)
 		{
@@ -728,7 +729,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		}
 	}
 
-	@Nullable @Override
+	@Nullable
+	@Override
 	public final Object getEmptyValue()
 	{
 		final Object value = getValue();
@@ -745,7 +747,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			return null;
 		}
-		else if(TimeUtil.isDateOrTimeObject(value))
+		else if (TimeUtil.isDateOrTimeObject(value))
 		{
 			return null;
 		}

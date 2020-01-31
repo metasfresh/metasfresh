@@ -4,6 +4,9 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,10 +38,15 @@ import lombok.Value;
 @Value
 public class DeliveryOrder
 {
+	/**
+	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}.
+	 *
+	 * @deprecated Not sure if it's correct to deprecate this, but i believe we should use {@link #id} instead when persisting the DeliveryOrder
+	 */
+	@Deprecated
 	@Nullable
 	OrderId orderId;
 
-	/** optional, can be {@code null} */
 	@Nullable
 	CustomDeliveryData customDeliveryData;
 
@@ -46,40 +54,80 @@ public class DeliveryOrder
 	OrderStatus orderStatus;
 
 	@NonNull
-	private Address pickupAddress;
+	Address pickupAddress;
 
 	@NonNull
-	private PickupDate pickupDate;
+	PickupDate pickupDate;
 
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
 	@Nullable
-	private String pickupNote;
+	String pickupNote;
 
 	@NonNull
-	private Address deliveryAddress;
+	Address deliveryAddress;
 
 	@Nullable
-	private ContactPerson deliveryContact;
+	ContactPerson deliveryContact;
 
 	@Nullable
-	private DeliveryDate deliveryDate;
+	DeliveryDate deliveryDate;
 
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
 	@Nullable
-	private String deliveryNote;
+	String deliveryNote;
 
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
 	@Nullable
-	private String customerReference;
+	String customerReference;
 
+	/**
+	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderLines}.
+	 * <p>
+	 * We should update GO, DerKurier and DHL to use deliveryOrderLines as well if possible.
+	 * <p>
+	 * The big (and only) difference is that a DeliveryOrderLine stores 1 package per line,
+	 * whilst DeliveryPosition stores multiple packages per position, and there's no easy way to match the shipper "expected" packages
+	 * (each with their own dimensions/size, content) with the specific package inside a delivery position.
+	 */
 	@NonNull
 	@Singular
-	private ImmutableList<DeliveryPosition> deliveryPositions;
+	@Deprecated
+	ImmutableList<DeliveryPosition> deliveryPositions;
 
+	/**
+	 * 1 delivery lines represents 1 package
+	 */
 	@NonNull
-	private ServiceType serviceType;
+	@Singular
+	ImmutableList<DeliveryOrderLine> deliveryOrderLines;
 
+	/**
+	 * The Shipper Product
+	 */
+	@NonNull
+	ShipperProduct shipperProduct;
 
-	/** ID in external repository */
-	private int repoId;
+	/**
+	 * ID in external repository
+	 */
+	DeliveryOrderId id;
 
-	private int shipperId;
-	private int shipperTransportationId;
+	ShipperId shipperId;
+
+	/**
+	 * Transportation Order id
+	 */
+	ShipperTransportationId shipperTransportationId;
+
+	@Nullable
+	String trackingNumber;
+
+	@Nullable
+	String trackingUrl;
 }

@@ -3,6 +3,8 @@
  */
 package de.metas.modelvalidator;
 
+import java.time.Duration;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -99,7 +101,7 @@ import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.report.ReportStarter;
-import de.metas.report.jasper.client.JRClient;
+import de.metas.report.client.ReportsClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 import de.metas.util.Check;
@@ -119,7 +121,7 @@ public class SwatValidator implements ModelValidator
 	private static final String SYSCONFIG_C3P0 = "com.mchange.v2.c3p0.ComboPooledDataSource.";
 	private static final String SYSCONFIG_C3P0_Server = "com.mchange.v2.c3p0.ComboPooledDataSource.server.";
 	private static final String SYSCONFIG_C3P0_Client = "com.mchange.v2.c3p0.ComboPooledDataSource.client.";
-	private static final String SYSCONFIG_C3P0_UnreturnedConnectionTimeout = SYSCONFIG_C3P0 + "UnreturnedConnectionTimeout";
+	private static final String SYSCONFIG_C3P0_UnreturnedConnectionTimeoutInSeconds = SYSCONFIG_C3P0 + "UnreturnedConnectionTimeout";
 	private static final String SYSCONFIG_C3P0_DebugUnreturnedConnectionStackTraces = SYSCONFIG_C3P0 + "DebugUnreturnedConnectionStackTraces";
 	private static final String SYSCONFIG_C3P0_Server_MaxStatements = SYSCONFIG_C3P0_Server + "MaxStatements";
 	private static final String SYSCONFIG_C3P0_Client_MaxStatements = SYSCONFIG_C3P0_Client + "MaxStatements";
@@ -221,7 +223,7 @@ public class SwatValidator implements ModelValidator
 
 		new de.metas.invoicecandidate.modelvalidator.ConfigValidator().initialize(engine, client);
 
-		JRClient.get(); // make sure Jasper client is loaded and initialized
+		ReportsClient.get(); // make sure reports client is loaded and initialized
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.instance);
 
@@ -364,7 +366,7 @@ public class SwatValidator implements ModelValidator
 		//
 		// Get configuration from SysConfigs
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final int unreturnedConnectionTimeout = sysConfigBL.getIntValue(SYSCONFIG_C3P0_UnreturnedConnectionTimeout, 0);
+		final Duration unreturnedConnectionTimeout = Duration.ofSeconds(sysConfigBL.getIntValue(SYSCONFIG_C3P0_UnreturnedConnectionTimeoutInSeconds, 0));
 		final boolean debugUnreturnedConnectionStackTraces = sysConfigBL.getBooleanValue(SYSCONFIG_C3P0_DebugUnreturnedConnectionStackTraces, false);
 
 		final String maxStatementsSysConfig;
@@ -394,11 +396,12 @@ public class SwatValidator implements ModelValidator
 		{
 			ComboPooledDataSource cpds = (ComboPooledDataSource)ds;
 
-			if (unreturnedConnectionTimeout > 0)
+			if (unreturnedConnectionTimeout.getSeconds() > 0)
 			{
 				final int old = cpds.getUnreturnedConnectionTimeout();
-				cpds.setUnreturnedConnectionTimeout(unreturnedConnectionTimeout);
-				log.info("Config " + SYSCONFIG_C3P0_UnreturnedConnectionTimeout + "=" + unreturnedConnectionTimeout + " (Old: " + old + ")");
+				// IMPORTANT: unreturnedConnectionTimeout is in seconds, see https://www.mchange.com/projects/c3p0/#unreturnedConnectionTimeout 
+				cpds.setUnreturnedConnectionTimeout((int)unreturnedConnectionTimeout.getSeconds());
+				log.info("Config " + SYSCONFIG_C3P0_UnreturnedConnectionTimeoutInSeconds + "=" + unreturnedConnectionTimeout + " (Old: " + old + " seconds)");
 			}
 
 			{

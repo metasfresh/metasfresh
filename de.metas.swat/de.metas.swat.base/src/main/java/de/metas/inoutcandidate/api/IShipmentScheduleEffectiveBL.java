@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.api;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import org.adempiere.warehouse.LocatorId;
@@ -77,8 +76,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	int getAD_User_ID(I_M_ShipmentSchedule sched);
 
 	/**
-	 * @param sched
-	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined by from different values and flags of the given {@code sched}.
+	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined from different values and flags of the given {@code sched}.
 	 */
 	BigDecimal computeQtyOrdered(I_M_ShipmentSchedule sched);
 
@@ -98,5 +96,5 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * @param sched
 	 * @return
 	 */
-	Timestamp getPreparationDate(I_M_ShipmentSchedule sched);
+	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule sched);
 }

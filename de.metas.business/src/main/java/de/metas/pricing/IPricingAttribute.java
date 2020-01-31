@@ -1,5 +1,7 @@
 package de.metas.pricing;
 
+import org.adempiere.mm.attributes.AttributeListValue;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,7 +26,6 @@ package de.metas.pricing;
 
 
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 /**
  * Contains information about a particular pricing relevant attribute and its value. <br>
@@ -44,5 +45,5 @@ public interface IPricingAttribute
 	 * 
 	 * @return
 	 */
-	I_M_AttributeValue getAttributeValue();
+	AttributeListValue getAttributeValue();
 }

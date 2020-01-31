@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Recent_V;
@@ -12,6 +13,9 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.money.CurrencyId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -47,7 +51,8 @@ public class BPartnerRecordsUtil
 	public static final String C_BPARTNER_LOCATION_GLN = "bpartnerLocationRecord.gln";
 	public static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
 	public static final int AD_ORG_ID = 10;
-	public static final String AD_USER_EXTERNAL_ID = "abcde";
+	public static final String AD_USER_EXTERNAL_ID = "contactRecord.externalId";
+	public static final String AD_USER_VALUE = "contactRecord.value";
 
 	public static final String C_BPARTNER_EXTERNAL_ID = "fghij";
 	public static final String C_BPARTNER_VALUE = "bpartnerRecord.value";
@@ -55,10 +60,11 @@ public class BPartnerRecordsUtil
 	public static final int C_BPARTNER_ID = 20;
 	public static final int AD_USER_ID = 30;
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
+	public static final int C_BP_BANKACCOUNT_ID = 50;
 
 	public static void createBPartnerData(final int idOffSet)
 	{
-		SystemTime.setTimeSource(() -> 1561133544); // Fri, 21 Jun 2019 16:12:24 GMT
+		setupTimeSource();
 
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
 
@@ -86,12 +92,12 @@ public class BPartnerRecordsUtil
 		contactRecord.setAD_User_ID(AD_USER_ID + idOffSet);
 		contactRecord.setC_BPartner(bpartnerRecord);
 		contactRecord.setExternalId(AD_USER_EXTERNAL_ID + idOffSetStr);
-		contactRecord.setValue(C_BPARTNER_VALUE + idOffSetStr);
-		contactRecord.setName("bpartnerRecord.name" + idOffSetStr);
-		contactRecord.setLastname("bpartnerRecord.lastName" + idOffSetStr);
-		contactRecord.setFirstname("bpartnerRecord.firstName" + idOffSetStr);
-		contactRecord.setEMail("bpartnerRecord.email" + idOffSetStr);
-		contactRecord.setPhone("bpartnerRecord.phone" + idOffSetStr);
+		contactRecord.setValue(AD_USER_VALUE + idOffSetStr);
+		contactRecord.setName("contactRecord.name" + idOffSetStr);
+		contactRecord.setLastname("contactRecord.lastName" + idOffSetStr);
+		contactRecord.setFirstname("contactRecord.firstName" + idOffSetStr);
+		contactRecord.setEMail("contactRecord.email" + idOffSetStr);
+		contactRecord.setPhone("contactRecord.phone" + idOffSetStr);
 		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
 		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
@@ -126,7 +132,7 @@ public class BPartnerRecordsUtil
 		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
 		bpartnerLocationRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerLocationRecord.setC_BPartner_Location_ID(C_BBPARTNER_LOCATION_ID + idOffSet);
-		bpartnerLocationRecord.setC_BPartner(bpartnerRecord);
+		bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpartnerLocationRecord.setC_Location(locationRecord);
 		bpartnerLocationRecord.setGLN(C_BPARTNER_LOCATION_GLN + idOffSetStr);
 		bpartnerLocationRecord.setExternalId(C_BPARTNER_LOCATION_EXTERNAL_ID + idOffSetStr);
@@ -135,6 +141,34 @@ public class BPartnerRecordsUtil
 		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
 		saveRecord(bpartnerLocationRecord);
 
+		{
+			final CurrencyRepository currencyRepo = new CurrencyRepository();
+			final CurrencyId currencyId = currencyRepo.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
+
+			final I_C_BP_BankAccount bpBankAccountRecord = newInstance(I_C_BP_BankAccount.class);
+			bpBankAccountRecord.setAD_Org_ID(AD_ORG_ID);
+			bpBankAccountRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+			bpBankAccountRecord.setC_BP_BankAccount_ID(C_BP_BANKACCOUNT_ID + idOffSet);
+			bpBankAccountRecord.setIBAN("INITIAL-IBAN-1");
+			bpBankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
+			InterfaceWrapperHelper.setValue(bpBankAccountRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
+			InterfaceWrapperHelper.setValue(bpBankAccountRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
+			InterfaceWrapperHelper.setValue(bpBankAccountRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
+			saveRecord(bpBankAccountRecord);
+		}
+
+		resetTimeSource();
+	}
+
+	/** Set time source to one static value so that we know which created/updated timestamps to expect in our created records */
+	public static void setupTimeSource()
+	{
+		SystemTime.setTimeSource(() -> 1561133544); // Fri, 21 Jun 2019 16:12:24 GMT
+	}
+
+	public static void resetTimeSource()
+	{
 		SystemTime.resetTimeSource();
 	}
+
 }

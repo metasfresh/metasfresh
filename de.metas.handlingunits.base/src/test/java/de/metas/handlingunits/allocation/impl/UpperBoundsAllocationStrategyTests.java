@@ -133,7 +133,7 @@ public class UpperBoundsAllocationStrategyTests
 				helper.pTomato, // product
 				qtyTomatoes, // qty
 				helper.uomKg, // uom
-				SystemTime.asTimestamp());
+				SystemTime.asZonedDateTime());
 		return request;
 	}
 }

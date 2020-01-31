@@ -29,7 +29,6 @@ import java.time.LocalDate;
 import org.adempiere.util.api.IParams;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 /**
@@ -37,15 +36,6 @@ import lombok.NonNull;
  */
 public class InvoicingParams implements IInvoicingParams
 {
-	private static final String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
-	private static final String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
-	private static final String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
-	private static final String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
-	private static final String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
-	private static final String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
-	private static final String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
-	private static final String PARA_Check_NetAmtToInvoice = ICNetAmtToInvoiceChecker.PARAMETER_NAME;
-
 	private final IParams params;
 
 	public InvoicingParams(@NonNull final IParams params)
@@ -69,6 +59,12 @@ public class InvoicingParams implements IInvoicingParams
 	public boolean isIgnoreInvoiceSchedule()
 	{
 		return params.getParameterAsBool(PARA_IgnoreInvoiceSchedule);
+	}
+
+	@Override
+	public boolean isUpdateLocationAndContactForInvoice()
+	{
+		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
 	}
 
 	@Override

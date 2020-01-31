@@ -23,9 +23,9 @@ package de.metas.fresh.picking;
  */
 
 import java.text.MessageFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,13 +53,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PackingMaterialKeyBuilder
 {
 	private final ITerminalContext terminalContext;
-	private final Date date;
+	private final ZonedDateTime date;
 
 	/** List of M_HU_PI_Item_IDs which were already evaluated and are excluded */
 	private final Set<Integer> piItemIdBlackList = new HashSet<>();
@@ -67,13 +67,9 @@ public class PackingMaterialKeyBuilder
 
 	private final transient IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
-	public PackingMaterialKeyBuilder(final ITerminalContext terminalContext, final Date date)
+	public PackingMaterialKeyBuilder(@NonNull final ITerminalContext terminalContext, final ZonedDateTime date)
 	{
-		super();
-
-		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
-
 		this.date = date;
 	}
 

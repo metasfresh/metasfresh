@@ -34,8 +34,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -123,8 +128,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	"salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -212,8 +222,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -301,8 +316,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -390,8 +410,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -479,8 +504,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -568,8 +598,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -657,8 +692,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -746,8 +786,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -835,8 +880,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -924,8 +974,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1013,8 +1068,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1102,8 +1162,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1191,8 +1256,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1280,8 +1350,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1369,8 +1444,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1458,8 +1538,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1547,8 +1632,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1636,8 +1726,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+   
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1725,8 +1820,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
@@ -1814,8 +1914,13 @@
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
     "externalHeaderId" : "2011234567890_2009_01:001",
-    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
-    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "dataSource" : "int-SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDest" : "int-DEST.de.metas.invoicecandidate",
+	 "salesPartnerCode": "SalesRep",
+   "shipper": "val-DPD",
+   "paymentRule": "Paypal",
+  
+   "orderDocType": "SalesOrder",
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",

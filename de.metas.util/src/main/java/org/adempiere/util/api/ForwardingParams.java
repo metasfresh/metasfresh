@@ -3,7 +3,9 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -91,14 +93,20 @@ public class ForwardingParams implements IParams
 	}
 
 	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		return params.getParameterAsZonedDateTime(parameterName);
+	}
+
+	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);
 	}
 
 	@Override
-	public <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	public <T extends Enum<T>> Optional<T> getParameterAsEnum(final String parameterName, final Class<T> enumType)
 	{
-		return params.getParameterAsEnum(parameterName, enumType, defaultValueWhenNull);
+		return params.getParameterAsEnum(parameterName, enumType);
 	}
 }

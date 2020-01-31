@@ -14,7 +14,7 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1415769564L;
+	private static final long serialVersionUID = -327817164L;
 
     /** Standard Constructor */
     public X_AD_User_Login (Properties ctx, int AD_User_Login_ID, String trxName)
@@ -42,7 +42,7 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
     }
 
 	@Override
-	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	public org.compiere.model.I_AD_Role getAD_Role()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
 	}
@@ -79,7 +79,7 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Session getAD_Session() throws RuntimeException
+	public org.compiere.model.I_AD_Session getAD_Session()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Session_ID, org.compiere.model.I_AD_Session.class);
 	}
@@ -113,18 +113,6 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
 	}
 
 	/** Set Ansprechpartner.
@@ -209,19 +197,16 @@ public class X_AD_User_Login extends org.compiere.model.PO implements I_AD_User_
 		return (java.lang.String)get_Value(COLUMNNAME_Password);
 	}
 
-	/** Set Registered EMail.
-		@param UserName 
-		Email of the responsible for the System
-	  */
+	/** Set Nutzer-ID/Login.
+		@param UserName Nutzer-ID/Login	  */
 	@Override
 	public void setUserName (java.lang.String UserName)
 	{
 		set_Value (COLUMNNAME_UserName, UserName);
 	}
 
-	/** Get Registered EMail.
-		@return Email of the responsible for the System
-	  */
+	/** Get Nutzer-ID/Login.
+		@return Nutzer-ID/Login	  */
 	@Override
 	public java.lang.String getUserName () 
 	{

@@ -1,10 +1,8 @@
 package de.metas.handlingunits.attribute.impl;
 
-import lombok.NonNull;
+import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
-
-import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 
@@ -54,6 +52,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -100,7 +99,7 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final HUIterator iterator = new HUIterator();
 		// I'm not 100% sure which time to pick, but i think for the iterator itself it makes no difference, and i also don't need it in the beforeHU implementation.
-		iterator.setDate(SystemTime.asTimestamp());
+		iterator.setDate(SystemTime.asZonedDateTime());
 		iterator.setListener(new HUIteratorListenerAdapter()
 		{
 			@Override

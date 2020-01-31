@@ -36,6 +36,7 @@ import lombok.NonNull;
 
 /**
  * Wraps an {@link ObjectMapper} that is configured with special tweaks for {@link ZonedDateTime}.
+ * Thx to https://stackoverflow.com/questions/10004241/jackson-objectmapper-with-utf-8-encoding for a note about string encoding.
  *
  * @param <T> the class to serialize/deserialize
  */

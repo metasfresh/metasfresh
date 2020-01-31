@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 268508805L;
+	private static final long serialVersionUID = -301018082L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -26,9 +26,10 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			setC_UOM_ID (0);
 			setEDI_Desadv_ID (0);
 			setEDI_DesadvLine_ID (0);
-			setIsManual_IPA_SSCC18 (false); // N
+			setInvoicableQtyBasedOn (null);
 			setIsSubsequentDeliveryPlanned (false);
 			setM_Product_ID (0);
+			setQtyOrdered (BigDecimal.ZERO);
         } */
     }
 
@@ -138,8 +139,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
-	/** Set EDI_DesadvLine.
-		@param EDI_DesadvLine_ID EDI_DesadvLine	  */
+	/** Set DESADV-Position.
+		@param EDI_DesadvLine_ID DESADV-Position	  */
 	@Override
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID)
 	{
@@ -149,8 +150,8 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, Integer.valueOf(EDI_DesadvLine_ID));
 	}
 
-	/** Get EDI_DesadvLine.
-		@return EDI_DesadvLine	  */
+	/** Get DESADV-Position.
+		@return DESADV-Position	  */
 	@Override
 	public int getEDI_DesadvLine_ID () 
 	{
@@ -176,46 +177,33 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
-	/** Set SSCC18.
-		@param IPA_SSCC18 SSCC18	  */
-	@Override
-	public void setIPA_SSCC18 (java.lang.String IPA_SSCC18)
-	{
-		set_Value (COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
-	}
-
-	/** Get SSCC18.
-		@return SSCC18	  */
-	@Override
-	public java.lang.String getIPA_SSCC18 () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_IPA_SSCC18);
-	}
-
-	/** Set manuelle SSCC18.
-		@param IsManual_IPA_SSCC18 
-		Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
 	  */
 	@Override
-	public void setIsManual_IPA_SSCC18 (boolean IsManual_IPA_SSCC18)
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
 	{
-		set_Value (COLUMNNAME_IsManual_IPA_SSCC18, Boolean.valueOf(IsManual_IPA_SSCC18));
+
+		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
 	}
 
-	/** Get manuelle SSCC18.
-		@return Wenn der jeweiligen Lieferzeile keine HU zugeordnet ist, dann setzt das System dieses Feld auf "Ja" und der Nutzer kann dann eine SSCC18 Nummer eintragen.
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
 	  */
 	@Override
-	public boolean isManual_IPA_SSCC18 () 
+	public java.lang.String getInvoicableQtyBasedOn () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsManual_IPA_SSCC18);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	/** Set Spätere Nachlieferung.
@@ -266,50 +254,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
-	@Override
-	public void setM_HU_ID (int M_HU_ID)
-	{
-		if (M_HU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
-	}
-
-	/** Get Handling Unit.
-		@return Handling Unit	  */
-	@Override
-	public int getM_HU_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Menge eines bewegten Produktes.
-	  */
-	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	/** Get Bewegungs-Menge.
-		@return Menge eines bewegten Produktes.
-	  */
-	@Override
-	public java.math.BigDecimal getMovementQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -333,6 +277,28 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Einzelpreis.
+		@param PriceActual 
+		Effektiver Preis
+	  */
+	@Override
+	public void setPriceActual (java.math.BigDecimal PriceActual)
+	{
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
+	}
+
+	/** Get Einzelpreis.
+		@return Effektiver Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Produktbeschreibung.
@@ -368,6 +334,25 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.lang.String getProductNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+	}
+
+	/** Set Geliefert (Lagereinheit).
+		@param QtyDeliveredInStockingUOM Geliefert (Lagereinheit)	  */
+	@Override
+	public void setQtyDeliveredInStockingUOM (java.math.BigDecimal QtyDeliveredInStockingUOM)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInStockingUOM, QtyDeliveredInStockingUOM);
+	}
+
+	/** Get Geliefert (Lagereinheit).
+		@return Geliefert (Lagereinheit)	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInStockingUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInStockingUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Liefermenge.
@@ -414,20 +399,23 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return bd;
 	}
 
-	/** Set Verpackungskapazität.
-		@param QtyItemCapacity Verpackungskapazität	  */
+	/** Set Bestellt/ Beauftragt.
+		@param QtyOrdered 
+		Bestellt/ Beauftragt
+	  */
 	@Override
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
 	{
-		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
+		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Verpackungskapazität.
-		@return Verpackungskapazität	  */
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
+	  */
 	@Override
-	public java.math.BigDecimal getQtyItemCapacity () 
+	public java.math.BigDecimal getQtyOrdered () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyItemCapacity);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

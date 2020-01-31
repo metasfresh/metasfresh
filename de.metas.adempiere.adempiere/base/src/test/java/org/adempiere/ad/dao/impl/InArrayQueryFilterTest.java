@@ -2,6 +2,7 @@ package org.adempiere.ad.dao.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -32,9 +33,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.model.I_Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -49,19 +50,21 @@ public class InArrayQueryFilterTest
 {
 	private final Properties ctx = null; // Context is not used in InArrayQueryFilter
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void test_ColumnName_NULL()
 	{
 		final String columnName = null;
 
 		// Expect exception:
-		new InArrayQueryFilter<>(columnName, Collections.emptyList());
+		assertThatThrownBy(() -> new InArrayQueryFilter<>(columnName, Collections.emptyList()))
+				.isInstanceOf(NullPointerException.class)
+				.hasMessageContaining("columnName");
 	}
 
 	@Test
@@ -193,8 +196,7 @@ public class InArrayQueryFilterTest
 		final String columnName = "MyColumnName";
 		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, Collections.emptyList());
 
-		Assert.assertEquals("Invalid DefaultReturnWhenEmpty default", true, filter.isDefaultReturnWhenEmpty());
-
+		assertThat(filter.isDefaultReturnWhenEmpty()).isTrue();
 	}
 
 	@Test
@@ -213,6 +215,17 @@ public class InArrayQueryFilterTest
 		assertDefaultReturnWhenEmpty(false, new ArrayList<>());
 	}
 
+	@Test
+	public void test_equals()
+	{
+		final InArrayQueryFilter<I_Test> filter1 = new InArrayQueryFilter<>("columnName", "value1", "value2");
+		final InArrayQueryFilter<I_Test> filter2 = new InArrayQueryFilter<>("columnName", "value1", "value2");
+		assertThat(filter1).isEqualTo(filter2);
+
+		filter1.getSql(); // IMPORTANT: trigger sql build
+		assertThat(filter1).isEqualTo(filter2);
+	}
+
 	private void assertDefaultReturnWhenEmpty(final boolean defaultReturnWhenEmpty, final List<Object> params)
 	{
 		final String columnName = "MyColumnName";
@@ -222,8 +235,7 @@ public class InArrayQueryFilterTest
 		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, params);
 		filter.setDefaultReturnWhenEmpty(defaultReturnWhenEmpty);
 
-		Assert.assertEquals("Invalid build SQL: " + filter, sqlExpected, filter.getSql());
-		Assert.assertEquals("Invalid build SQL Params: " + filter, sqlParamsExpected, filter.getSqlParams(ctx));
+		assertFilter(filter, sqlExpected, sqlParamsExpected);
 	}
 
 	private void assertFilter(
@@ -243,10 +255,7 @@ public class InArrayQueryFilterTest
 			final String sqlExpected,
 			final List<Object> sqlParamsExpected)
 	{
-		final String sqlActual = filter.getSql();
-		final List<Object> sqlParamsActual = filter.getSqlParams(ctx);
-
-		Assert.assertEquals("Invalid build SQL: " + filter, sqlExpected, sqlActual);
-		Assert.assertEquals("Invalid build SQL Params: " + filter, sqlParamsExpected, sqlParamsActual);
+		assertThat(filter.getSql()).isEqualTo(sqlExpected);
+		assertThat(filter.getSqlParams(ctx)).isEqualTo(sqlParamsExpected);
 	}
 }

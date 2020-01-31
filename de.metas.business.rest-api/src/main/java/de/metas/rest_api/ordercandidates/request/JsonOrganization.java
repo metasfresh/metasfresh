@@ -5,7 +5,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;

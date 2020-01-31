@@ -15,15 +15,14 @@ import static de.metas.business.BusinessTestHelper.createBPartner;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -32,6 +31,7 @@ import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -49,10 +49,10 @@ public class HandlingUnitsDAO_retrieveParentPIItemsForParentPI_Test extends Abst
 {
 	protected HandlingUnitsDAO dao;
 
-	private I_C_BPartner bpartner_NULL;
-	private I_C_BPartner bpartner1;
-	private I_C_BPartner bpartner2;
-	private I_C_BPartner bpartner3;
+	private BPartnerId bpartner_NULL;
+	private BPartnerId bpartner1;
+	private BPartnerId bpartner2;
+	private BPartnerId bpartner3;
 
 	private I_M_HU_PI tuPI1;
 	private I_M_HU_PI tuPI_withoutLU;
@@ -69,9 +69,9 @@ public class HandlingUnitsDAO_retrieveParentPIItemsForParentPI_Test extends Abst
 		Services.registerService(IHandlingUnitsDAO.class, dao);
 
 		bpartner_NULL = null;
-		bpartner1 = createBPartner("BP1");
-		bpartner2 = createBPartner("BP2");
-		bpartner3 = createBPartner("BP3");
+		bpartner1 = BPartnerId.ofRepoId(createBPartner("BP1").getC_BPartner_ID());
+		bpartner2 = BPartnerId.ofRepoId(createBPartner("BP2").getC_BPartner_ID());
+		bpartner3 = BPartnerId.ofRepoId(createBPartner("BP3").getC_BPartner_ID());
 
 		tuPI1 = helper.createHUDefinition("TU1", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		tuPI_withoutLU = helper.createHUDefinition("TU_withoutLU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -153,12 +153,12 @@ public class HandlingUnitsDAO_retrieveParentPIItemsForParentPI_Test extends Abst
 		assertLUItem(lu2_tu1_item, tuPI1, bpartner_NULL);
 	}
 
-	private void assertLUItem(final I_M_HU_PI_Item expectedLUItem, final I_M_HU_PI tuPI, final I_C_BPartner bpartner)
+	private void assertLUItem(final I_M_HU_PI_Item expectedLUItem, final I_M_HU_PI tuPI, final BPartnerId bpartnerId)
 	{
-		final I_M_HU_PI_Item actualLUItem = dao.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner);
+		final I_M_HU_PI_Item actualLUItem = dao.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
 		final String message = "Invalid LU Item"
 				+ "\n tuPI=" + tuPI
-				+ "\n bpartner=" + bpartner
+				+ "\n bpartner=" + bpartnerId
 				+ "\n expected LU PI item=" + expectedLUItem
 				+ "\n actual LU PI item=" + actualLUItem
 				+ "\n\n";

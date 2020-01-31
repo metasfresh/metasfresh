@@ -1,7 +1,5 @@
 package de.metas.handlingunits.model.validator;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -18,10 +16,11 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHU;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
-import de.metas.storage.IStorageListeners;
-import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_M_HU.class)
 public class M_HU
@@ -158,7 +157,7 @@ public class M_HU
 			return;
 		}
 
-		final StorageSegmentFromHU storageSegment = new StorageSegmentFromHU(hu);
-		Services.get(IStorageListeners.class).notifyStorageSegmentChanged(storageSegment);
+		final ShipmentScheduleSegmentFromHU storageSegment = new ShipmentScheduleSegmentFromHU(hu);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 }

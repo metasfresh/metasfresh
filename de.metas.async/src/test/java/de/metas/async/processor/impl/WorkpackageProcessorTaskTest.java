@@ -39,6 +39,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.async.QueueProcessorTestBase;
+import de.metas.async.api.IWorkpackageLogsRepository;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
@@ -54,9 +56,13 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	{
 		private boolean afterWorkpackageProcessedInvoked = false;
 
-		public TestableWorkpackageProcessorTask(IQueueProcessor queueProcessor, IWorkpackageProcessor workPackageProcessor, I_C_Queue_WorkPackage workPackage)
+		public TestableWorkpackageProcessorTask(
+				IQueueProcessor queueProcessor,
+				IWorkpackageProcessor workPackageProcessor,
+				I_C_Queue_WorkPackage workPackage,
+				IWorkpackageLogsRepository logsRepository)
 		{
-			super(queueProcessor, workPackageProcessor, workPackage);
+			super(queueProcessor, workPackageProcessor, workPackage, logsRepository);
 		}
 
 		@Override
@@ -72,12 +78,15 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	}
 
 	private MockedQueueProcessor queueProcessor;
+	private IWorkpackageLogsRepository logsRepository;
+
 	private I_C_Queue_WorkPackage workpackage;
 
 	@Override
 	protected void beforeTestCustomized()
 	{
 		queueProcessor = new MockedQueueProcessor();
+		logsRepository = NOPWorkpackageLogsRepository.instance;
 
 		workpackage = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
 		workpackage.setProcessed(false);
@@ -102,16 +111,8 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	@Test
 	public void testProcessSuccess()
 	{
-		final IWorkpackageProcessor workPackageProcessor = new IWorkpackageProcessor()
-		{
-
-			@Override
-			public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-			{
-				return Result.SUCCESS;
-			}
-		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage);
+		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> IWorkpackageProcessor.Result.SUCCESS;
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -127,16 +128,10 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	public void testProcessError()
 	{
 		final String processingErrorMsg = "test-error";
-		final IWorkpackageProcessor workPackageProcessor = new IWorkpackageProcessor()
-		{
-
-			@Override
-			public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-			{
-				throw new RuntimeException(processingErrorMsg);
-			}
+		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+			throw new RuntimeException(processingErrorMsg);
 		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -156,16 +151,10 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	{
 		final String skipReason = "test-skip";
 		final int skipTimeoutMillis = 12345;
-		final IWorkpackageProcessor workPackageProcessor = new IWorkpackageProcessor()
-		{
-
-			@Override
-			public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-			{
-				throw WorkpackageSkipRequestException.createWithTimeout(skipReason, skipTimeoutMillis);
-			}
+		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+			throw WorkpackageSkipRequestException.createWithTimeout(skipReason, skipTimeoutMillis);
 		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -181,16 +170,10 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	public void testProcessSkipOnDeadLock()
 	{
 		final int skipTimeoutMillis = 5000; // for now this needs to be kept in sync with the code under test
-		final IWorkpackageProcessor workPackageProcessor = new IWorkpackageProcessor()
-		{
-
-			@Override
-			public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-			{
-				throw new DBDeadLockDetectedException(null, null);
-			}
+		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+			throw new DBDeadLockDetectedException(null, null);
 		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage);
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
@@ -208,19 +191,13 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	@Test
 	public void testProcessSkipSuccesive()
 	{
-		final IWorkpackageProcessor workPackageProcessor = new IWorkpackageProcessor()
-		{
-
-			@Override
-			public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-			{
-				throw WorkpackageSkipRequestException.create("test-skip");
-			}
+		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> {
+			throw WorkpackageSkipRequestException.create("test-skip");
 		};
 
 		for (int i = 1; i <= 10; i++)
 		{
-			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage);
+			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
 			task.run();
 			Assert.assertEquals("Invalid Skipped_Count", i, workpackage.getSkipped_Count());
 		}
@@ -232,16 +209,8 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 	@Test
 	public void testProcessInvalidReturnValue()
 	{
-		final IWorkpackageProcessor workPackageProcessor = new IWorkpackageProcessor()
-		{
-
-			@Override
-			public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
-			{
-				return null; // return an invalid result
-			}
-		};
-		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage);
+		final IWorkpackageProcessor workPackageProcessor = (workpackage, localTrxName) -> null;
+		final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository);
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);

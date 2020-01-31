@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -81,11 +82,14 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 	}
 
 	@Builder(builderMethodName = "subscriptionPricingContextNew")
-	public final IEditablePricingContext createSubscriptionPricingContext(@NonNull final I_M_PriceList priceList,
+	public final IEditablePricingContext createSubscriptionPricingContext(
+			@NonNull final OrgId orgId,
+			@NonNull final I_M_PriceList priceList,
 			@NonNull final I_M_PriceList_Version priceListVersion,
 			@NonNull final I_C_Country country)
 	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
+		pricingCtx.setOrgId(orgId);
 		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(getDefaultPricingSystem().getM_PricingSystem_ID()));
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
 		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));

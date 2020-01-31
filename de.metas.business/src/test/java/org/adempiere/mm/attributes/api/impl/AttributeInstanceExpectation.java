@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
@@ -75,7 +76,13 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 	public AttributeInstanceExpectation<ParentExpectationType> assertExpected(final ErrorMessage message, final I_M_AttributeSetInstance asi)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(getAttributeNotNull().getM_Attribute_ID());
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
+
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
+				.retrieveAttributeInstance(
+						asi == null
+								? null
+								: AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID()),
+						attributeId);
 		return assertExpected(message, attributeInstance);
 	}
 
@@ -88,12 +95,14 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 
 		if (attribute != null)
 		{
-			assertModelEquals(messageToUse.expect("M_Attribute_ID"), attribute, attributeInstance.getM_Attribute());
+			assertEquals(messageToUse.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), attributeInstance.getM_Attribute_ID());
 		}
 		if (attributeKey != null)
 		{
-			final I_M_Attribute attributeActual = attributeInstance.getM_Attribute();
-			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActual);
+			final AttributeId attributeActualId = AttributeId.ofRepoIdOrNull(attributeInstance.getM_Attribute_ID());
+			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActualId);
+
+			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(attributeActualId);
 			assertEquals(messageToUse.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
 		}
 		if (valueStringSet)

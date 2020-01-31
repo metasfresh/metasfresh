@@ -320,7 +320,7 @@ public abstract class AbstractTrx implements ITrx
 		}
 		catch (Exception e)
 		{
-			throw new DBException("Cannot release savepoint " + savepoint + " on " + this, e);
+			throw new DBException("Cannot release savepoint " + savepoint + " on AbstractTrx=" + this, e);
 		}
 
 		if (released)
@@ -333,7 +333,7 @@ public abstract class AbstractTrx implements ITrx
 	 * Release native savepoint
 	 *
 	 * @param savepointNative
-	 * @return true if released or if it was already realeased
+	 * @return true if released or if it was already released
 	 */
 	protected abstract boolean releaseSavepointNative(ITrxSavepoint savepoint) throws Exception;
 
@@ -471,7 +471,7 @@ public abstract class AbstractTrx implements ITrx
 
 		if (create)
 		{
-			trxListenerManager = new TrxListenerManager();
+			trxListenerManager = new TrxListenerManager(getTrxName());
 			return trxListenerManager;
 		}
 
@@ -489,7 +489,7 @@ public abstract class AbstractTrx implements ITrx
 	{
 		return trxManager;
 	}
-	
+
 	private final Map<String, Object> getPropertiesMap()
 	{
 		if(_properties == null)
@@ -504,7 +504,7 @@ public abstract class AbstractTrx implements ITrx
 		}
 		return _properties;
 	}
-	
+
 	private final Map<String, Object> getPropertiesMapOrNull()
 	{
 		synchronized (this)
@@ -517,7 +517,7 @@ public abstract class AbstractTrx implements ITrx
 	public final <T> T setProperty(final String name, final Object value)
 	{
 		Check.assumeNotEmpty(name, "name is not empty");
-		
+
 		// Handle null value case
 		if(value == null)
 		{
@@ -526,7 +526,7 @@ public abstract class AbstractTrx implements ITrx
 			{
 				return null;
 			}
-			
+
 			@SuppressWarnings("unchecked")
 			final T valueOld = (T)properties.remove(name);
 			return valueOld;
@@ -554,7 +554,7 @@ public abstract class AbstractTrx implements ITrx
 		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.get());
 		return value;
 	}
-	
+
 	@Override
 	public <T> T getProperty(final String name, final Function<ITrx, T> valueInitializer)
 	{
@@ -562,21 +562,21 @@ public abstract class AbstractTrx implements ITrx
 		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
 		return value;
 	}
-	
+
 	@Override
 	public <T> T setAndGetProperty(@NonNull final String name, @NonNull final Function<T, T> valueRemappingFunction)
 	{
 		final BiFunction<? super String, ? super Object, ? extends Object> remappingFunction = (propertyName, oldValue) -> {
 			@SuppressWarnings("unchecked")
 			final T oldValueCasted = (T)oldValue;
-			
+
 			return valueRemappingFunction.apply(oldValueCasted);
 		};
-		
+
 		@SuppressWarnings("unchecked")
 		final T value = (T)getPropertiesMap().compute(name, remappingFunction);
 		return value;
-		
+
 	}
 
 

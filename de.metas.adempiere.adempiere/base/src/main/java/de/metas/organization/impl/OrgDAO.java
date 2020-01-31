@@ -106,7 +106,7 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	public OrgInfo createOrUpdateOrgInfo(@NonNull OrgInfoUpdateRequest request)
+	public OrgInfo createOrUpdateOrgInfo(@NonNull final OrgInfoUpdateRequest request)
 	{
 		I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(request.getOrgId(), ITrx.TRXNAME_ThreadInherited);
 		if (record == null)
@@ -123,7 +123,7 @@ public class OrgDAO implements IOrgDAO
 
 		if (request.getOrgBPartnerLocationId() != null)
 		{
-			BPartnerLocationId bpartnerLocationId = request.getOrgBPartnerLocationId().orElse(null);
+			final BPartnerLocationId bpartnerLocationId = request.getOrgBPartnerLocationId().orElse(null);
 			record.setOrg_BPartner_ID(bpartnerLocationId != null ? bpartnerLocationId.getBpartnerId().getRepoId() : -1);
 			record.setOrgBP_Location_ID(bpartnerLocationId != null ? bpartnerLocationId.getRepoId() : -1);
 		}
@@ -144,7 +144,7 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	public OrgInfo getOrgInfoById(final OrgId adOrgId)
+	public OrgInfo getOrgInfoById(@NonNull final OrgId adOrgId)
 	{
 		return orgInfosCache.getOrLoad(adOrgId, k -> retrieveOrgInfo(adOrgId, ITrx.TRXNAME_None));
 	}
@@ -155,12 +155,12 @@ public class OrgDAO implements IOrgDAO
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private OrgInfo retrieveOrgInfo(@NonNull final OrgId adOrgId, final String trxName)
+	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
-		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(adOrgId, trxName);
+		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(orgId, trxName);
 		if (record == null)
 		{
-			throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + adOrgId);
+			throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + orgId);
 		}
 
 		return toOrgInfo(record);
@@ -286,6 +286,10 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public ZoneId getTimeZone(@NonNull final OrgId orgId)
 	{
+		if (!orgId.isRegular())
+		{
+			return SystemTime.zoneId();
+		}
 		final ZoneId timeZone = getOrgInfoById(orgId).getTimeZone();
 		return timeZone != null ? timeZone : SystemTime.zoneId();
 	}

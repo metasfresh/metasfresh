@@ -154,7 +154,7 @@ public class CompletePrintOrder extends JavaProcess
 		String whereClause = "QtyOnHand >= QtyRequiered AND PP_Order_ID=?";
 		boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
 				.setParameters(new Object[] { p_PP_Order_ID })
-				.match();
+				.anyMatch();
 		return available;
 	}
 

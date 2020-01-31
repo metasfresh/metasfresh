@@ -18,7 +18,9 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.aggregation.IFactAcctLogIterable;
 import de.metas.acct.aggregation.IFactAcctSummaryKey;
@@ -26,6 +28,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -53,6 +56,8 @@ import de.metas.util.Services;
 
 public class FactAcctLogDAO implements IFactAcctLogDAO
 {
+	private static final Logger logger = LogManager.getLogger(FactAcctLogDAO.class);
+
 	/** Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance} */
 	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = IFactAcctDAO.DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
 
@@ -87,7 +92,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 	{
 		return retrieveForTagQuery(ctx, processingTag)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	private final IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)
@@ -176,7 +181,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 			if (rs.next())
 			{
 				final String resultStr = rs.getString(1);
-				Loggables.addLog(resultStr);
+				Loggables.withLogger(logger, Level.DEBUG).addLog(resultStr);
 			}
 
 		}

@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -238,7 +239,7 @@ public class AggregateHUEditorModel extends HUEditorModel
 
 		//
 		// From HUs, create M_Packages and then assign them to selected Shipper Transportation
-		trxManager.runInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus));
+		trxManager.runInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportationId), hus));
 
 		//
 		// Iterate HU Keys and fire status changed (those HUs got locked)

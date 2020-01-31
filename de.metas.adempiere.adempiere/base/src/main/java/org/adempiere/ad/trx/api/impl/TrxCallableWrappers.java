@@ -2,6 +2,8 @@ package org.adempiere.ad.trx.api.impl;
 
 import java.util.concurrent.Callable;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.api.TrxCallableAdapter;
 import org.compiere.util.TrxRunnable;
@@ -34,14 +36,14 @@ import org.compiere.util.TrxRunnable2;
 	private TrxCallableWrappers()
 	{
 	}
-	
-	public static TrxCallableWithTrxName<Void> wrapIfNeeded(final Runnable runnable)
+
+	public static TrxCallableWithTrxName<Void> wrapIfNeeded(@Nullable final Runnable runnable)
 	{
 		if(runnable == null)
 		{
 			return null;
 		}
-		
+
 		return new TrxCallableWithTrxName<Void>()
 		{
 			@Override
@@ -215,7 +217,7 @@ import org.compiere.util.TrxRunnable2;
 			{
 				return "TrxCallableWithTrxName-wrapper[" + callable + "]";
 			}
-			
+
 			@Override
 			public T call(final String localTrxName) throws Exception
 			{

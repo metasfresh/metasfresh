@@ -15,7 +15,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1357304617L;
+	private static final long serialVersionUID = -1424387361L;
 
     /** Standard Constructor */
     public X_PP_Order (Properties ctx, int PP_Order_ID, String trxName)
@@ -33,6 +33,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 			setDocStatus (null); // DR
 			setDocumentNo (null);
 			setIsApproved (false); // N
+			setIsPickingOrder (false); // N
 			setIsPrinted (false); // N
 			setIsSelected (false); // N
 			setIsSOTrx (false); // N
@@ -155,18 +156,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	@Override
-	public org.compiere.model.I_C_Activity getC_Activity()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
-
-	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
 	}
 
 	/** Set Kostenstelle.
@@ -816,6 +805,29 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Kommissionierauftrag.
+		@param IsPickingOrder Kommissionierauftrag	  */
+	@Override
+	public void setIsPickingOrder (boolean IsPickingOrder)
+	{
+		set_Value (COLUMNNAME_IsPickingOrder, Boolean.valueOf(IsPickingOrder));
+	}
+
+	/** Get Kommissionierauftrag.
+		@return Kommissionierauftrag	  */
+	@Override
+	public boolean isPickingOrder () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickingOrder);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

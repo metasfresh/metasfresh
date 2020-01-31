@@ -14,8 +14,8 @@ import org.compiere.model.I_R_RequestType;
 import org.compiere.model.X_R_Request;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
@@ -53,7 +53,7 @@ public class RequestBLTest
 {
 	private IRequestBL requestBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -188,9 +188,9 @@ public class RequestBLTest
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
 		inout.setIsSOTrx(true);
 
-		inout.setC_BPartner(createPartner("Partner 1"));
+		inout.setC_BPartner_ID(createPartner("Partner 1").getC_BPartner_ID());
 
-		inout.setAD_User(createUser("User1"));
+		inout.setAD_User_ID(createUser("User1").getAD_User_ID());
 
 		inout.setMovementDate(SystemTime.asDayTimestamp());
 		save(inout);

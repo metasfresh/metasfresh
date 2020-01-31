@@ -5,6 +5,10 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -36,6 +40,8 @@ import org.eevolution.model.I_PP_Product_BOM;
 @Callout(I_PP_Product_BOM.class)
 public class PP_Product_BOM
 {
+	private final IProductBL productsService = Services.get(IProductBL.class);
+
 	/**
 	 * Updates BOM fields from selected product, if any.
 	 *
@@ -44,11 +50,13 @@ public class PP_Product_BOM
 	@CalloutMethod(columnNames = I_PP_Product_BOM.COLUMNNAME_M_Product_ID)
 	public void onProductChanged(final I_PP_Product_BOM bom)
 	{
-		final I_M_Product product = bom.getM_Product();
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(bom.getM_Product_ID());
+		if (productId == null)
 		{
 			return;
 		}
+
+		final I_M_Product product = productsService.getById(productId);
 
 		bom.setValue(product.getValue());
 		bom.setName(product.getName());

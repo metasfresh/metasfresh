@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -44,6 +45,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
@@ -62,6 +64,18 @@ public class PaymentBL implements IPaymentBL
 	private static final Logger log = LogManager.getLogger(PaymentBL.class);
 
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+
+	@Override
+	public I_C_Payment getById(@NonNull final PaymentId paymentId)
+	{
+		return Services.get(IPaymentDAO.class).getById(paymentId);
+	}
+
+	@Override
+	public List<I_C_Payment> getByIds(@NonNull final Set<PaymentId> paymentIds)
+	{
+		return Services.get(IPaymentDAO.class).getByIds(paymentIds);
+	}
 
 	/**
 	 * Get Invoice Currency
@@ -114,16 +128,16 @@ public class PaymentBL implements IPaymentBL
 
 		// Get Currency Rate
 		BigDecimal CurrencyRate = BigDecimal.ONE;
-		if (currencyId != null 
-				&& invoiceCurrencyId != null 
+		if (currencyId != null
+				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
 			CurrencyRate = Services.get(ICurrencyBL.class).getRate(
-					invoiceCurrencyId, 
-					currencyId, 
-					ConvDate, 
-					conversionTypeId, 
-					clientId, 
+					invoiceCurrencyId,
+					currencyId,
+					ConvDate,
+					conversionTypeId,
+					clientId,
 					orgId);
 			if (CurrencyRate == null || CurrencyRate.compareTo(ZERO) == 0)
 			{
@@ -238,8 +252,8 @@ public class PaymentBL implements IPaymentBL
 
 		// Get Currency Rate
 		BigDecimal currencyRate = BigDecimal.ONE;
-		if (currencyId != null 
-				&& invoiceCurrencyId != null 
+		if (currencyId != null
+				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -253,9 +267,9 @@ public class PaymentBL implements IPaymentBL
 			if (currencyRate == null || currencyRate.signum() == 0)
 			{
 				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-						convDate, 
-						conversionTypeId, 
-						clientId, 
+						convDate,
+						conversionTypeId,
+						clientId,
 						orgId);
 				throw new NoCurrencyRateFoundException(conversionCtx, invoiceCurrencyId, currencyId);
 			}
@@ -265,7 +279,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal DiscountAmt = payment.getDiscountAmt();
 		BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
-		
+
 		final CurrencyPrecision precision = currencyId != null
 				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
 				: CurrencyPrecision.TWO;
@@ -322,7 +336,7 @@ public class PaymentBL implements IPaymentBL
 
 			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(OverUnderAmt);
 			payment.setWriteOffAmt(WriteOffAmt);
-
+			payment.setDiscountAmt(DiscountAmt);
 		}
 
 	}
@@ -332,7 +346,7 @@ public class PaymentBL implements IPaymentBL
 	{
 		return DefaultPaymentBuilder.newInboundReceiptBuilder();
 	}
-	
+
 	@Override
 	public DefaultPaymentBuilder newOutboundPaymentBuilder()
 	{
@@ -399,7 +413,7 @@ public class PaymentBL implements IPaymentBL
 		// metas: tsa: begin: 01955:
 		// If is an zero payment and it has no allocations and the AutoPayZeroAmt flag is not set
 		// then don't touch the payment
-		if (total.signum() == 0 
+		if (total.signum() == 0
 				&& !hasAllocations
 				&& !sysConfigBL.getBooleanValue("org.compiere.model.MInvoice.AutoPayZeroAmt", true, payment.getAD_Client_ID()))
 		{

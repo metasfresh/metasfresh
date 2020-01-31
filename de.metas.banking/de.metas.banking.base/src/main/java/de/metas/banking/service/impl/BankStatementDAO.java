@@ -113,7 +113,7 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
-				.match();
+				.anyMatch();
 		if (hasBankStatementLineRefs)
 		{
 			return true;
@@ -125,7 +125,7 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine.COLUMN_C_Payment_ID, paymentId)
 				.create()
-				.match();
+				.anyMatch();
 		if (hasBankStatementLines)
 		{
 			return true;

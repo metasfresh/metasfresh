@@ -35,4 +35,9 @@ public interface ILoggable
 	 * Add a log message and return the loggable.
 	 */
 	ILoggable addLog(String msg, Object... msgParameters);
+
+	/** Flush any buffered logs */
+	default void flush()
+	{
+	}
 }

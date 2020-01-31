@@ -47,7 +47,7 @@ public class UserMenuFavoritesDAO implements IUserMenuFavoritesDAO
 				.addEqualsFilter(I_AD_TreeBar.COLUMN_AD_User_ID, adUserId)
 				.addEqualsFilter(I_AD_TreeBar.COLUMN_Node_ID, adMenuId)
 				.create()
-				.match();
+				.anyMatch();
 		if (exists)
 		{
 			logger.warn("Not creating a favorite record for adUserId={}, adMenuId={} because another one already exists", adUserId, adMenuId);

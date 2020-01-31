@@ -25,8 +25,11 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Optional;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * No parameters implementation of {@link IParams}. Get your instance using {@link IParams#NULL}.
@@ -85,6 +88,12 @@ import java.util.Collections;
 	}
 
 	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		return null;
+	}
+
+	@Override
 	public BigDecimal getParameterAsBigDecimal(final String paraCheckNetamttoinvoice)
 	{
 		return null;
@@ -96,12 +105,12 @@ import java.util.Collections;
 	@Override
 	public Collection<String> getParameterNames()
 	{
-		return Collections.emptyList();
+		return ImmutableList.of();
 	}
 
 	@Override
-	public <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	public <T extends Enum<T>> Optional<T> getParameterAsEnum(final String parameterName, final Class<T> enumType)
 	{
-		return defaultValueWhenNull;
+		return Optional.empty();
 	}
 }

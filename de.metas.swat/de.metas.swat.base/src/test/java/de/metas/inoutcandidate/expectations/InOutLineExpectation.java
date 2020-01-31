@@ -45,15 +45,21 @@ import org.compiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InOutLineExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
 	private String asiDescription = null;
 	private boolean asiDescriptionSet = false;
-	private StockQtyAndUOMQty qtys = null;
+	private StockQtyAndUOMQty qtys = null; // uomQty - if not null - is the catch-qty!
+	private UomId uomId;
 
 	private BigDecimal qualityDiscountPercent;
 	private boolean qualityDiscountPercentSet;
@@ -163,9 +169,20 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	protected void populateModel(final I_M_InOutLine inoutLine)
 	{
 		inoutLine.setM_Product_ID(qtys.getProductId().getRepoId());
-		inoutLine.setQtyEntered(qtys.getUOMQtyNotNull().toBigDecimal());
-		inoutLine.setC_UOM_ID(qtys.getUOMQtyNotNull().getUomId().getRepoId());
 		inoutLine.setMovementQty(qtys.getStockQty().toBigDecimal());
+
+		final Quantity qtyEntered = Services.get(IUOMConversionBL.class).convertQuantityTo(
+				qtys.getStockQty(),
+				UOMConversionContext.of(qtys.getProductId()),
+				uomId);
+		inoutLine.setQtyEntered(qtyEntered.toBigDecimal());
+		inoutLine.setC_UOM_ID(uomId.getRepoId());
+
+		if (qtys.getUOMQtyOpt().isPresent())
+		{
+			inoutLine.setQtyDeliveredCatch(qtys.getUOMQtyNotNull().toBigDecimal());
+			inoutLine.setCatch_UOM_ID(qtys.getUOMQtyNotNull().getUomId().getRepoId());
+		}
 
 		if (inDispute != null)
 		{
@@ -197,9 +214,15 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		return asiDescription;
 	}
 
-	public InOutLineExpectation<ParentExpectationType> qtys(@NonNull final StockQtyAndUOMQty qtys)
+	public InOutLineExpectation<ParentExpectationType> stockQtyAndMaybeCatchQty(@NonNull final StockQtyAndUOMQty qtys)
 	{
 		this.qtys = qtys;
+		return this;
+	}
+
+	public InOutLineExpectation<ParentExpectationType> uomId(@NonNull final UomId uomId)
+	{
+		this.uomId = uomId;
 		return this;
 	}
 

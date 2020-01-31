@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -39,6 +41,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -61,6 +64,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.logging.TableRecordMDC;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -77,6 +81,8 @@ public class C_Invoice_Candidate
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
+
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
@@ -98,8 +104,15 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
-		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
+		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+		{
+			if (isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
+			{
+				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			}
+			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
+		}
 	}
 
 	/**
@@ -129,7 +142,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
 					I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM,
 					I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate })
-	public void invalidateCandidatesAfterChange(final I_C_Invoice_Candidate ic)
+	public void invalidateCandidatesAfterChange(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		invalidateCandidates0(ic);
 	}
@@ -266,9 +279,20 @@ public class C_Invoice_Candidate
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
 			ifColumnsChanged = {
-					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
+					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, //
+					I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, //
+					I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, //
+					I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, //
+					I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, //
+					I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, //
+					I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID //
+			})
 	public void updatePriceActual_Net_Effective(final I_C_Invoice_Candidate candidate)
 	{
+		if (candidate.getC_Currency_ID() <= 0)
+		{
+			return; // the IC is not yet ready for this
+		}
 		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
 	}
 
@@ -365,7 +389,7 @@ public class C_Invoice_Candidate
 
 		//
 		// Schedule IC generation
-		Services.get(IInvoiceCandidateHandlerBL.class).scheduleCreateMissingCandidatesFor(model);
+		invoiceCandidateHandlerBL.scheduleCreateMissingCandidatesFor(model);
 	}
 
 	/**

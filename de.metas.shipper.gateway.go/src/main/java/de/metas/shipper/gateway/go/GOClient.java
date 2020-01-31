@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBElement;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
@@ -128,13 +129,16 @@ public class GOClient implements ShipperGatewayClient
 				.toString();
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
+	@Deprecated
 	@Override
+	@VisibleForTesting
 	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder)
 	{
 		logger.trace("Creating delivery order for {}", draftDeliveryOrder);
@@ -143,7 +147,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"createDeliveryOrder",
-				draftDeliveryOrder.getRepoId());
+				draftDeliveryOrder.getId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, draftDeliveryOrder, GOOrderStatus.NEW);
 		logger.trace("Delivery order created: {}", deliveryOrderResponse);
@@ -151,6 +155,7 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
+	@NonNull
 	@Override
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
@@ -160,7 +165,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"completeDeliveryOrder",
-				deliveryOrderRequest.getRepoId());
+				deliveryOrderRequest.getId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.APPROVED);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -168,7 +173,10 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
-	@Override
+	/**
+	 * @deprecated This method is not used. In the future, if cancelling is needed, we could revise this.
+	 */
+	@Deprecated
 	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
 		logger.trace("Creating delivery order for {}", deliveryOrderRequest);
@@ -177,7 +185,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"voidDeliveryOrder",
-				deliveryOrderRequest.getRepoId());
+				deliveryOrderRequest.getId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.CANCELLATION);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -185,6 +193,7 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
+	@NonNull
 	@Override
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
@@ -195,7 +204,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsnummern(goRequest),
 				"getPackageLabelsList",
-				deliveryOrder.getRepoId());
+				deliveryOrder.getId().getRepoId());
 		if (goResponseObj instanceof Label)
 		{
 			final Label goLabels = (Label)goResponseObj;
@@ -301,7 +310,7 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustelldatum(createGODeliveryDateOrNull(request.getDeliveryDate())); // Delivery date (not mandatory)
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
-		goRequest.setService(request.getServiceType().getCode()); // Service type (mandatory)
+		goRequest.setService(request.getShipperProduct().getCode()); // Service type (mandatory)
 		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
 		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
 		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)
@@ -517,16 +526,19 @@ public class GOClient implements ShipperGatewayClient
 				.defaultLabelType(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
 				.label(PackageLabel.builder()
 						.type(GOPackageLabelType.DIN_A4_HWB)
+						.fileName(GOPackageLabelType.DIN_A4_HWB.toString())
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.labelData(pdfs.getFrachtbrief())
 						.build())
 				.label(PackageLabel.builder()
 						.type(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
+						.fileName(GOPackageLabelType.DIN_A6_ROUTER_LABEL.toString())
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.labelData(pdfs.getRouterlabel())
 						.build())
 				.label(PackageLabel.builder()
 						.type(GOPackageLabelType.DIN_A6_ROUTER_LABEL_ZEBRA)
+						.fileName(GOPackageLabelType.DIN_A6_ROUTER_LABEL_ZEBRA.toString())
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.labelData(pdfs.getRouterlabelZebra())
 						.build())

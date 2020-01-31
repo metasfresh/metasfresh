@@ -7,8 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -27,7 +28,6 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -55,12 +55,10 @@ public class CandidateServiceTests
 {
 	private RequestMaterialOrderService requestMaterialOrderService;
 
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
 				postMaterialEventService);
@@ -123,7 +121,7 @@ public class CandidateServiceTests
 
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		assertThat(ppOrder).isNotNull();
-		assertThat(ppOrder.getOrgId().getRepoId()).isEqualTo(30);
+		assertThat(ppOrder.getClientAndOrgId().getOrgId().getRepoId()).isEqualTo(30);
 		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 
 		assertThat(ppOrder.getLines()).hasSize(2);

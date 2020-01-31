@@ -3,6 +3,8 @@ package org.adempiere.ad.table.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 /*
@@ -42,6 +44,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
@@ -65,6 +68,33 @@ public class ADTableDAO implements IADTableDAO
 			"IsActive",
 			"Created", "CreatedBy",
 			"Updated", "UpdatedBy");
+
+	@Override
+	public I_AD_Column retrieveColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)
+	{
+		final I_AD_Column columnRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnly(I_AD_Column.class);
+
+		if (columnRecord == null)
+		{
+			if (Adempiere.isUnitTestMode())
+			{
+				final I_AD_Column newColumnRecord = newInstance(I_AD_Column.class);
+				newColumnRecord.setAD_Table_ID(tableId.getRepoId());
+				newColumnRecord.setColumnName(columnName);
+				newColumnRecord.setName(columnName + " + on-the-fly created for unit-test");
+				saveRecord(newColumnRecord);
+				return newColumnRecord;
+			}
+			throw new AdempiereException("@NotFound@ @AD_Column_ID@ " + columnName + " (@AD_Table_ID@=" + tableId + ")");
+		}
+		return columnRecord;
+	}
 
 	@Override
 	public I_AD_Column retrieveColumn(final String tableName, final String columnName)
@@ -92,7 +122,7 @@ public class ADTableDAO implements IADTableDAO
 		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -244,6 +274,12 @@ public class ADTableDAO implements IADTableDAO
 		@SuppressWarnings("deprecation")
 		final int tableID = MTable.getTable_ID(tableName);
 		return loadOutOfTrx(tableID, I_AD_Table.class); // load out of trx to benefit from caching
+	}
+
+	@Override
+	public I_AD_Table retrieveTable(@NonNull final AdTableId tableId)
+	{
+		return loadOutOfTrx(tableId, I_AD_Table.class); // load out of trx to benefit from caching
 	}
 
 	@Override

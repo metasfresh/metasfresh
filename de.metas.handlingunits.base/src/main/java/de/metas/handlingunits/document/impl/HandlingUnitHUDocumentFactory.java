@@ -1,5 +1,7 @@
 package de.metas.handlingunits.document.impl;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,7 +26,6 @@ package de.metas.handlingunits.document.impl;
 
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class HandlingUnitHUDocumentFactory extends AbstractHUDocumentFactory<I_M
 	@Override
 	protected void createHUDocumentsFromTypedModel(final HUDocumentsCollector documentsCollector, final I_M_HU hu)
 	{
-		final Date dateTrx = SystemTime.asDayTimestamp();
+		final ZonedDateTime dateTrx = SystemTime.asZonedDateTimeAtStartOfDay();
 
 		//
 		// Storage Factory
@@ -76,7 +77,7 @@ public class HandlingUnitHUDocumentFactory extends AbstractHUDocumentFactory<I_M
 		iterator.setStorageFactory(storageFactory);
 		iterator.setListener(new HUIteratorListenerAdapter()
 		{
-			final Map<Integer, List<IHUDocumentLine>> huId2documentLines = new HashMap<Integer, List<IHUDocumentLine>>();
+			final Map<Integer, List<IHUDocumentLine>> huId2documentLines = new HashMap<>();
 
 			@Override
 			public Result beforeHU(final IMutable<I_M_HU> hu)

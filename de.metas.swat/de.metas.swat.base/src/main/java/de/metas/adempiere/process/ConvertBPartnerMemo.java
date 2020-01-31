@@ -10,12 +10,12 @@ package de.metas.adempiere.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ package de.metas.adempiere.process;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -70,7 +71,7 @@ public class ConvertBPartnerMemo extends JavaProcess {
 				continue;
 			}
 
-			final InputStream r = new ByteArrayInputStream(memoInput.getBytes());
+			final InputStream r = new ByteArrayInputStream(memoInput.getBytes(StandardCharsets.UTF_8));
 
 			final DefaultStyledDocument doc = new DefaultStyledDocument();
 
@@ -94,7 +95,7 @@ public class ConvertBPartnerMemo extends JavaProcess {
 			bPartner.set_ValueOfColumn(I_C_BPartner.COLUMNNAME_Memo, memoHtml);
 			bPartner.saveEx();
 			counter++;
-			
+
 			if (counter % 1000 == 0) {
 				commitEx();
 			}

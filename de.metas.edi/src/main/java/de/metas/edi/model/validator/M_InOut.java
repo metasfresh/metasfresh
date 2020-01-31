@@ -1,41 +1,44 @@
 package de.metas.edi.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-@Validator(I_M_InOut.class)
+@Interceptor(I_M_InOut.class)
+@Component
 public class M_InOut
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
 	public void updateEdiStatus(final I_M_InOut document)
 	{
-		if (Services.get(IHUInOutBL.class).isCustomerReturn(document))
+		try (final MDCCloseable inOutMDC = TableRecordMDC.putTableRecordReference(document))
 		{
-			// no EDI for customer return (for the time being)
-			return;
+			if (Services.get(IHUInOutBL.class).isCustomerReturn(document))
+			{
+				return; // no EDI for customer return (for the time being)
+			}
+
+			// make sure the inout is initialized with the ediEnabled flag from order, if the order is set
+			setEdiEnabledFromOrder(document);
+
+			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+			ediDocumentBL.updateEdiEnabled(document);
 		}
-
-		// make sure the inout is initialized with the ediEnabled flag from order, if the order is set
-		setEdiEnabledFromOrder(document);
-
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-		if (!ediDocumentBL.updateEdiEnabled(document))
-		{
-			return;
-		}
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_Order_ID)
@@ -59,6 +62,14 @@ public class M_InOut
 		if (order == null || order.getC_Order_ID() <= 0)
 		{
 			// nothing to do
+			return;
+		}
+
+		// order.isEdiEnabled might be for DESADV or INVOIC; so we also need to check the bpartner's flag
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
+		if (!bpartner.isEdiDesadvRecipient())
+		{
+			inout.setIsEdiEnabled(false);
 			return;
 		}
 

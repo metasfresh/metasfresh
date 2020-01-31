@@ -58,7 +58,7 @@ public class CandidateChangeService
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		candidate.validate();
+		candidate.validateNonStockCandidate();
 
 		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
 		return candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -66,7 +66,7 @@ public class CandidateChangeService
 
 	public void onCandidateDelete(@NonNull final Candidate candidate)
 	{
-		candidate.validate();
+		candidate.validateNonStockCandidate();
 
 		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
 		candidateChangeHandler.onCandidateDelete(candidate);

@@ -112,7 +112,7 @@ INSERT INTO de_metas_invoicecandidate.C_Invoice_Candidate_Failed_To_Update (
     task_08848_fixed,
     lineaggregationkeybuilder_id,
     ispackagingmaterial,
-    isedirecipient,
+    IsEdiInvoicRecipient,
     isedienabled,
     m_pricelist_version_id,
     qualityinvoicelinegrouptype
@@ -224,7 +224,7 @@ found,
     task_08848_fixed,
     lineaggregationkeybuilder_id,
     ispackagingmaterial,
-    isedirecipient,
+    IsEdiInvoicRecipient,
     isedienabled,
     m_pricelist_version_id,
     qualityinvoicelinegrouptype

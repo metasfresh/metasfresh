@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2014206672L;
+	private static final long serialVersionUID = 999941230L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -49,18 +49,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Customer);
-	}
-
 	/** Set Kunde.
 		@param C_BPartner_Customer_ID Kunde	  */
 	@Override
@@ -84,7 +72,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_OrderSO() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_OrderSO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -137,7 +125,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -251,7 +239,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent() throws RuntimeException
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_Parent_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -331,14 +319,18 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_TYPE_SUPPLY = "SUPPLY";
 	/** STOCK_UP = STOCK_UP */
 	public static final String MD_CANDIDATE_TYPE_STOCK_UP = "STOCK_UP";
-	/** UNRELATED_INCREASE = UNRELATED_INCREASE */
-	public static final String MD_CANDIDATE_TYPE_UNRELATED_INCREASE = "UNRELATED_INCREASE";
-	/** UNRELATED_DECREASE = UNRELATED_DECREASE */
-	public static final String MD_CANDIDATE_TYPE_UNRELATED_DECREASE = "UNRELATED_DECREASE";
+	/** UNEXPECTED_INCREASE = UNEXPECTED_INCREASE */
+	public static final String MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE = "UNEXPECTED_INCREASE";
+	/** UNEXPECTED_DECREASE = UNEXPECTED_DECREASE */
+	public static final String MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE = "UNEXPECTED_DECREASE";
 	/** INVENTORY_UP = INVENTORY_UP */
 	public static final String MD_CANDIDATE_TYPE_INVENTORY_UP = "INVENTORY_UP";
 	/** INVENTORY_DOWN = INVENTORY_DOWN */
 	public static final String MD_CANDIDATE_TYPE_INVENTORY_DOWN = "INVENTORY_DOWN";
+	/** ATTRIBUTES_CHANGED_FROM = ATTRIBUTES_CHANGED_FROM */
+	public static final String MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_FROM = "ATTRIBUTES_CHANGED_FROM";
+	/** ATTRIBUTES_CHANGED_TO = ATTRIBUTES_CHANGED_TO */
+	public static final String MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_TO = "ATTRIBUTES_CHANGED_TO";
 	/** Set Typ.
 		@param MD_Candidate_Type Typ	  */
 	@Override
@@ -357,7 +349,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public org.compiere.model.I_M_Forecast getM_Forecast() throws RuntimeException
+	public org.compiere.model.I_M_Forecast getM_Forecast()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
 	}
@@ -391,18 +383,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -450,18 +430,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.

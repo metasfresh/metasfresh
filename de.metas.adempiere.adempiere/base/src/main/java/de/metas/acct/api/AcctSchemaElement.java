@@ -1,5 +1,7 @@
 package de.metas.acct.api;
 
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,8 +39,8 @@ public class AcctSchemaElement
 	int seqNo;
 
 	int defaultValue;
-	/* C_Element_ID (needed for Account related element types) */
-	int elementId;
+	@Nullable
+	ChartOfAccountsId chartOfAccountsId;
 
 	@NonNull
 	String displayColumnName;

@@ -8,16 +8,22 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
@@ -30,9 +36,6 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -58,12 +61,15 @@ import mockit.Verifications;
 
 public class PPOrderChangedHandlerTest
 {
-
-	@Mocked
 	private CandidateChangeService candidateChangeService;
-
-	@Mocked
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	@BeforeEach
+	public void init()
+	{
+		candidateChangeService = Mockito.mock(CandidateChangeService.class);
+		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
+	}
 
 	@Test
 	public void handleEvent()
@@ -74,6 +80,7 @@ public class PPOrderChangedHandlerTest
 				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(ProductionDetail.builder()
 						.qty(TEN)
 						.advised(Flag.FALSE)
@@ -84,12 +91,8 @@ public class PPOrderChangedHandlerTest
 		final PPOrder ppOrder = createPPOrder();
 		final int ppOrderId = ppOrder.getPpOrderId();
 
-		// @formatter:off
-		new Expectations()
-		{{
-			candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId);
-			result = ImmutableList.of(candidateToUpdate);
-		}};	// @formatter:on
+		when(candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId))
+				.thenReturn(ImmutableList.of(candidateToUpdate));
 
 		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
@@ -115,18 +118,16 @@ public class PPOrderChangedHandlerTest
 
 		//
 		// verify the updated candidate created by the handler
-		// @formatter:off
-		new Verifications()
-		{{
-			Candidate updatedCandidate;
-			candidateChangeService.onCandidateNewOrChange(updatedCandidate = withCapture());
+		final ArgumentCaptor<Candidate> updatedCandidateCaptor = ArgumentCaptor.forClass(Candidate.class);
+		verify(candidateChangeService)
+				.onCandidateNewOrChange(updatedCandidateCaptor.capture());
+		final Candidate updatedCandidate = updatedCandidateCaptor.getValue();
 
-			assertThat(updatedCandidate.getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
+		assertThat(updatedCandidate.getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
 
-			final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
-			assertThat(productionDetail).isNotNull();
-			assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
-		}};	// @formatter:on
+		final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
+		assertThat(productionDetail).isNotNull();
+		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
 	}
 
 	private PPOrder createPPOrder()

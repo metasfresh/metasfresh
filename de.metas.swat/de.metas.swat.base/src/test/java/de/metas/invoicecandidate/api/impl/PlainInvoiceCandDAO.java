@@ -10,21 +10,19 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -35,19 +33,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ClientId;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.currency.ICurrencyBL;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -71,19 +67,20 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 
 	@Override
 	public BigDecimal retrieveInvoicableAmount(
-			final Properties ctx, 
-			final IInvoiceCandidateQuery query, 
-			final CurrencyId targetCurrencyId, 
-			final int adClientId, 
-			final int adOrgId,
-			final String amountColumnName, 
+			final Properties ctx,
+			final InvoiceCandidateQuery query,
+			final CurrencyId targetCurrencyId,
+			final int adClientId,
+			final String amountColumnName,
 			final String trxName)
 	{
 		// Conversion date to be used on currency conversion
 		final LocalDate dateConv = SystemTime.asLocalDate();
 
+		final List<I_C_Invoice_Candidate> records = getByQuery(InvoiceCandidateMultiQuery.builder().query(query).build());
+
 		BigDecimal totalAmt = BigDecimal.ZERO;
-		for (final I_C_Invoice_Candidate ic : retrieveCandidates(query))
+		for (final I_C_Invoice_Candidate ic : records)
 		{
 			final BigDecimal netAmtToInvoice = (BigDecimal)POJOWrapper.getWrapper(ic).getValue(amountColumnName, BigDecimal.class);
 			if (netAmtToInvoice == null)
@@ -98,61 +95,18 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 					dateConv,
 					CurrencyConversionTypeId.ofRepoIdOrNull(ic.getC_ConversionType_ID()),
 					ClientId.ofRepoId(adClientId),
-					OrgId.ofRepoId(adOrgId));
+					query.getOrgIdNotNull());
 
 			totalAmt = totalAmt.add(netAmtToInvoiceConv);
 
-			logger.debug("netAmtToInvoice=" + netAmtToInvoice + ", netAmtToInvoiceConv=" + netAmtToInvoiceConv + " => total=" + totalAmt + " (ic=" + ic + ")");
+			logger.debug("netAmtToInvoice=" + netAmtToInvoice + ", netAmtToInvoiceConv=" + netAmtToInvoiceConv + " -> total=" + totalAmt + " (ic=" + ic + ")");
 		}
 
 		return totalAmt;
 	}
 
-	private List<I_C_Invoice_Candidate> retrieveCandidates(final IInvoiceCandidateQuery query)
-	{
-		return db.getRecords(I_C_Invoice_Candidate.class, pojo -> {
-			if (query.getBill_BPartner_ID() > 0 && query.getBill_BPartner_ID() != pojo.getBill_BPartner_ID())
-			{
-				return false;
-			}
 
-			if (query.getDateToInvoice() != null)
-			{
-				final Timestamp queryDateToInvoice = TimeUtil.getDay(query.getDateToInvoice());
-				final Timestamp pojoDateToInvoice = Services.get(IInvoiceCandBL.class).getDateToInvoice(pojo);
-				if (!queryDateToInvoice.equals(pojoDateToInvoice))
-				{
-					return false;
-				}
-			}
 
-			if (query.getExcludeC_Invoice_Candidate_ID() > 0 && pojo.getC_Invoice_Candidate_ID() == query.getExcludeC_Invoice_Candidate_ID())
-			{
-				return false;
-			}
-
-			// either the candidate is *not* manual, or its ID is less or equal than MaxManualC_Invoice_Candidate_ID
-			if (query.getMaxManualC_Invoice_Candidate_ID() > 0
-					&& pojo.isManual()
-					&& pojo.getC_Invoice_Candidate_ID() > query.getMaxManualC_Invoice_Candidate_ID())
-			{
-				return false;
-			}
-
-			if (query.getHeaderAggregationKey() != null && !query.getHeaderAggregationKey().equals(pojo.getHeaderAggregationKey()))
-			{
-				return false;
-			}
-
-			if (query.getProcessed() != null && query.getProcessed() != pojo.isProcessed())
-			{
-				return false;
-			}
-
-			return true;
-		});
-	}
-	
 	@Override
 	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final PInstanceId adPInstanceId)
 	{

@@ -1,6 +1,7 @@
 package de.metas.rest_api.data_import;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -22,7 +23,7 @@ import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
 import de.metas.impexp.config.DataImportConfig;
 import de.metas.logging.LogManager;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
@@ -62,7 +63,7 @@ public class DataImportRestController
 		this.dataImportService = dataImportService;
 	}
 
-	@ApiOperation("Uploads a text file. This endpoint is oftentimes simpler for clients of this API than to upload a multipart file via the other endpoint.")
+	@ApiOperation("Uploads a text file. Using this endpoint is technically simpler for clients of this API than to upload a multipart file via the other endpoint.")
 	@PostMapping("/text")
 	public ResponseEntity<JsonDataImportResponseWrapper> importFile(
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
@@ -74,7 +75,7 @@ public class DataImportRestController
 			@ApiParam("The text file you are importing") //
 			@RequestBody @NonNull final String content)
 	{
-		final Resource data = new ByteArrayResource(content.getBytes());
+		final Resource data = new ByteArrayResource(content.getBytes(StandardCharsets.UTF_8));
 		return importFile(dataImportConfigInternalName, completeDocuments, data);
 	}
 
@@ -83,8 +84,8 @@ public class DataImportRestController
 			@ApiParam("Data Import internal name (i.e. `C_DataImport.InternalName`)") //
 			@RequestParam("dataImportConfig") @NonNull final String dataImportConfigInternalName,
 
-			@ApiParam("Try complete documents in case it applies") //
-			@RequestParam(name = "completeDocuments", required = false, defaultValue = "false") final boolean completeDocuments,
+			@ApiParam("Try to complete documents if it applies to the given import") //
+			@RequestParam(name = "completeDocuments", required = false, defaultValue = "true") final boolean completeDocuments,
 
 			@ApiParam("The text file you are importing") //
 			@RequestParam("file") @NonNull final MultipartFile file)

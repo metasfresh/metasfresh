@@ -2487,6 +2487,17 @@ public final class Env
 	{
 		return getLocalDate(getCtx());
 	}
+	
+	public static ZonedDateTime getZonedDateTime(final Properties ctx)
+	{
+		return TimeUtil.asZonedDateTime(getDate(ctx));
+	}
+
+	public static ZonedDateTime getZonedDateTime()
+	{
+		return getZonedDateTime(getCtx());
+	}
+
 
 	/**
 	 * @return value or <code>null</code> if the value was not present and value initializer was null

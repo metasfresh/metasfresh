@@ -98,9 +98,10 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return repoId == NONE.repoId;
 	}
 
+	/** @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}. */
 	public boolean isRegular()
 	{
-		return !isNone();
+		return repoId > NONE.repoId;
 	}
 
 	public static boolean isRegular(final AttributeSetInstanceId asiId)

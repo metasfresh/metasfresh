@@ -28,11 +28,15 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.TimeUtil;
 
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -135,7 +139,8 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		}
 
 		// ----------------
-		ic.setM_PricingSystem_ID(materialTracking.getC_Flatrate_Term().getM_PricingSystem_ID());
+		final I_C_Flatrate_Term flatrateTerm = Services.get(IFlatrateDAO.class).getById(materialTracking.getC_Flatrate_Term_ID());
+		ic.setM_PricingSystem_ID(flatrateTerm.getM_PricingSystem_ID());
 
 		if (!InterfaceWrapperHelper.isInstanceOf(referencedObject, I_M_InOutLine.class))
 		{
@@ -148,10 +153,12 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
+		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(inOut.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+		final I_C_Location location = InterfaceWrapperHelper.load(bPartnerLocation.getC_Location_ID(), I_C_Location.class);
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
 				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-				CountryId.ofRepoId(inOut.getC_BPartner_Location().getC_Location().getC_Country_ID()),
-				TimeUtil.asLocalDate(inOut.getMovementDate()),
+				CountryId.ofRepoId(location.getC_Country_ID()),
+				TimeUtil.asZonedDateTime(inOut.getMovementDate()),
 				SOTrx.ofBoolean(inOut.isSOTrx()),
 				processedPLVFiltering);
 		ic.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());

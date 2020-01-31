@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1657834495L;
+	private static final long serialVersionUID = -1299076063L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -269,6 +269,40 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
+	@Override
+	public org.eevolution.model.I_PP_Order getPickFrom_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class, PickFrom_Order);
+	}
+
+	/** Set Pick From Order.
+		@param PickFrom_Order_ID Pick From Order	  */
+	@Override
+	public void setPickFrom_Order_ID (int PickFrom_Order_ID)
+	{
+		if (PickFrom_Order_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_Order_ID, Integer.valueOf(PickFrom_Order_ID));
+	}
+
+	/** Get Pick From Order.
+		@return Pick From Order	  */
+	@Override
+	public int getPickFrom_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickFrom_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * PickStatus AD_Reference_ID=540919
 	 * Reference name: M_Picking_Candidate_PickStatus
@@ -299,16 +333,16 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		return (java.lang.String)get_Value(COLUMNNAME_PickStatus);
 	}
 
-	/** Set Qty Picked.
-		@param QtyPicked Qty Picked	  */
+	/** Set Menge (Lagereinheit).
+		@param QtyPicked Menge (Lagereinheit)	  */
 	@Override
 	public void setQtyPicked (java.math.BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
 
-	/** Get Qty Picked.
-		@return Qty Picked	  */
+	/** Get Menge (Lagereinheit).
+		@return Menge (Lagereinheit)	  */
 	@Override
 	public java.math.BigDecimal getQtyPicked () 
 	{

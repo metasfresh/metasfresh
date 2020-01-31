@@ -3,12 +3,15 @@ package de.metas.material.dispo.service.event.handler.receiptschedule;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -48,6 +51,8 @@ import lombok.NonNull;
 public class ReceiptsScheduleDeletedHandler
 		implements MaterialEventHandler<ReceiptScheduleDeletedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(ReceiptsScheduleDeletedHandler.class);
+
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
@@ -68,11 +73,11 @@ public class ReceiptsScheduleDeletedHandler
 	@Override
 	public void handleEvent(@NonNull final ReceiptScheduleDeletedEvent event)
 	{
-		final CandidatesQuery query = ReceiptsScheduleHandlerUtil.createExistingCandidatesQuery(event);
+		final CandidatesQuery query = ReceiptsScheduleHandlerUtil.queryByReceiptScheduleId(event);
 		final Candidate candidateToDelete = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		if (candidateToDelete == null)
 		{
-			Loggables.addLog("No deletable candidate found; query={}", query);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No deletable candidate found; query={}", query);
 			return;
 		}
 
@@ -80,13 +85,13 @@ public class ReceiptsScheduleDeletedHandler
 		final boolean candidateHasTransactions = actualQty.signum() > 0;
 		if (candidateHasTransactions)
 		{
-			Loggables.addLog("candidateId={} for the deleted receiptScheduleId={} already has actual trasactions",
+			Loggables.withLogger(logger, Level.DEBUG).addLog("candidateId={} for the deleted receiptScheduleId={} already has actual trasactions",
 					candidateToDelete.getId(), event.getReceiptScheduleId());
 			candidateChangeHandler.onCandidateNewOrChange(candidateToDelete.withQuantity(actualQty));
 		}
 		else
 		{
-			Loggables.addLog("candidateId={} for the deleted receiptScheduleId={} can be deleted",
+			Loggables.withLogger(logger, Level.DEBUG).addLog("candidateId={} for the deleted receiptScheduleId={} can be deleted",
 					candidateToDelete.getId(), event.getReceiptScheduleId());
 			candidateChangeHandler.onCandidateDelete(candidateToDelete);
 		}

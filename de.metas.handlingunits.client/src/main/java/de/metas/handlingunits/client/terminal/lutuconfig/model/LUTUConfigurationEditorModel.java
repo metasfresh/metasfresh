@@ -34,13 +34,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -516,9 +516,9 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final Properties ctx = getCtx();
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
-		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration);
+		final BPartnerId bpartnerId = ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfiguration);
 
-		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, bpartner);
+		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, bpartnerId);
 
 		//
 		// Create TU Keys
@@ -642,8 +642,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
 
-		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration);
-		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
+		final BPartnerId bpartnerId = ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfiguration);
+		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartnerId);
 
 		final Map<String, ILUTUCUKey> luKeys = new LinkedHashMap<>(luPIItems.size());
 		for (final I_M_HU_PI_Item luPIItem : luPIItems)

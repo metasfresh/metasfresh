@@ -9,9 +9,15 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
+import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -28,7 +34,9 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,34 +54,34 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 {
 	//
 	// Services
+	private static final Logger logger = LogManager.getLogger(GenerateInOutFromShipmentSchedules.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-
+	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = retriveShipmentSchedules();
-
 		// Create candidates
-		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(shipmentSchedules);
+		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates();
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
-			Loggables.addLog("No unprocessed candidates were found");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
 
 		final IParams parameters = getParameters();
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final String quantityTypeToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-
-		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
+				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
 		final boolean onlyUsePicked = quantityTypeToUse.isOnlyUsePicked();
 
 		final boolean isCreatPackingLines = !onlyUsePicked;
 
-		final InOutGenerateResult result = Services.get(IHUShipmentScheduleBL.class)
+		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatPackingLines)
@@ -99,46 +107,59 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	}
 
 	/**
-	 * Creates the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
+	 * Retrieves the {@link IShipmentScheduleWithHU}s for which we will create the shipment(s).
 	 *
-	 * Note that required and missing handling units are created on the fly.
+	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
-	private final List<ShipmentScheduleWithHU> retrieveCandidates(
-			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
+	private final List<ShipmentScheduleWithHU> retrieveCandidates()
 	{
-		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
+		final List<I_M_ShipmentSchedule> shipmentSchedules = retriveShipmentSchedules();
+		if (shipmentSchedules.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IHUContext huContext = huContextFactory.createMutableHUContext();
 
-		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = getParameters()
+				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
+				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
 		final CreateCandidatesRequestBuilder requestBuilder = CreateCandidatesRequest.builder()
 				.huContext(huContext)
 				.quantityType(quantityTypeToUse);
 
-		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
+		final ArrayList<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			if (shipmentSchedule.isProcessed())
-			{
-				continue;
-			}
-
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-
-			final CreateCandidatesRequest request = requestBuilder
-					.shipmentScheduleId(shipmentScheduleId)
-					.build();
-
-			final List<ShipmentScheduleWithHU> scheduleCandidates = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
+			final ImmutableList<ShipmentScheduleWithHU> scheduleCandidates = createCandidatesForSched(requestBuilder, shipmentSchedule);
 			candidates.addAll(scheduleCandidates);
 		}
 
 		// Sort our candidates
 		Collections.sort(candidates, new ShipmentScheduleWithHUComparator());
 		return candidates;
+	}
+
+	private ImmutableList<ShipmentScheduleWithHU> createCandidatesForSched(
+			@NonNull final CreateCandidatesRequestBuilder requestBuilder,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.isProcessed())
+		{
+			return ImmutableList.of();
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putShipmentScheduleId(shipmentScheduleId))
+		{
+			final CreateCandidatesRequest request = requestBuilder
+					.shipmentScheduleId(shipmentScheduleId)
+					.build();
+
+			return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
+		}
 	}
 
 	private List<I_M_ShipmentSchedule> retriveShipmentSchedules()

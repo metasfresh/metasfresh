@@ -123,7 +123,7 @@ public class UnProcessPickingCandidateCommand
 
 	private void unCloseIfNeeded(final PickingCandidate pickingCandidate)
 	{
-		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
+		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getProcessingStatus()))
 		{
 			return;
 		}

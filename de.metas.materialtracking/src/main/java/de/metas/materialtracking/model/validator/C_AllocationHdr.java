@@ -27,10 +27,10 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
@@ -75,7 +75,7 @@ public class C_AllocationHdr extends MaterialTrackableDocumentByASIInterceptor<I
 	}
 
 	@Override
-	protected I_M_AttributeSetInstance getM_AttributeSetInstance(final I_C_AllocationLine documentLine)
+	protected AttributeSetInstanceId getM_AttributeSetInstance(final I_C_AllocationLine documentLine)
 	{
 		// shall not be called because we implement "getMaterialTrackingFromDocumentLineASI"
 		throw new IllegalStateException("shall not be called");

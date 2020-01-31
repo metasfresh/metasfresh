@@ -2,17 +2,20 @@ package de.metas.handlingunits.inventory.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Activity;
@@ -23,13 +26,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_M_Inventory;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
@@ -54,13 +57,13 @@ import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -92,16 +95,12 @@ import mockit.Mocked;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUInternalUseInventoryProducerTests
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private LUTUProducerDestinationTestSupport data;
 
-	@Mocked
-	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
+	private static final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector = null;
 
 	private IHandlingUnitsBL handlingUnitsBL;
 	private IHUStatusBL huStatusBL;
@@ -109,9 +108,10 @@ public class HUInternalUseInventoryProducerTests
 	private IHUInventoryBL huInventoryBL;
 	private IInventoryDAO inventoryDAO;
 
+	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(12345);
 	private I_M_Locator locator;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
@@ -125,18 +125,18 @@ public class HUInternalUseInventoryProducerTests
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
 		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory);
-		save(dt);
+		saveRecord(dt);
 
 		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
-		save(wh);
+		saveRecord(wh);
 
 		locator = newInstance(I_M_Locator.class);
 		locator.setM_Warehouse(wh);
-		save(locator);
+		saveRecord(locator);
 
-		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, 0);
+		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.SYSTEM, OrgId.ANY);
 
-		SystemTime.setTimeSource(new FixedTimeSource(2019, 6, 10, 10, 00, 00));
+		SystemTime.setTimeSource(new FixedTimeSource(LocalDate.of(2019, Month.JUNE, 10).atTime(10, 00)));
 	}
 
 	@Test
@@ -370,7 +370,7 @@ public class HUInternalUseInventoryProducerTests
 		assignment.setRecord_ID(inoutLine.getM_InOutLine_ID());
 		assignment.setM_HU(hu);
 
-		save(assignment);
+		saveRecord(assignment);
 
 		return assignment;
 	}
@@ -378,9 +378,10 @@ public class HUInternalUseInventoryProducerTests
 	private I_M_InOutLine createInOutLine(final I_M_Product product, final I_C_UOM uom, final BigDecimal qty)
 	{
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		inout.setC_BPartner_ID(bpartnerId.getRepoId());
 		inout.setMovementDate(SystemTime.asDayTimestamp());
 		inout.setDocStatus(X_M_InOut.DOCSTATUS_Completed);
-		save(inout);
+		saveRecord(inout);
 
 		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
 		inoutLine.setM_InOut(inout);
@@ -389,7 +390,7 @@ public class HUInternalUseInventoryProducerTests
 		inoutLine.setC_UOM_ID(uom.getC_UOM_ID());
 		inoutLine.setM_Locator_ID(locator.getM_Locator_ID());
 
-		save(inoutLine);
+		saveRecord(inoutLine);
 		return inoutLine;
 	}
 
@@ -397,7 +398,7 @@ public class HUInternalUseInventoryProducerTests
 	{
 		final I_C_Activity activity = newInstance(I_C_Activity.class);
 		activity.setName(name);
-		save(activity);
+		saveRecord(activity);
 
 		return activity;
 	}
@@ -450,7 +451,7 @@ public class HUInternalUseInventoryProducerTests
 		createdLU.setM_Locator_ID(locator.getM_Locator_ID());
 
 		M_HU.INSTANCE.updateChildren(createdLU);
-		save(createdLU);
+		handlingUnitsDAO.saveHU(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
 		assertThat(createdAggregateHUs).hasSize(1);
@@ -490,7 +491,7 @@ public class HUInternalUseInventoryProducerTests
 
 		cuToSplit.setM_Locator_ID(locator.getM_Locator_ID());
 		huStatusBL.setHUStatus(data.helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
-		save(cuToSplit);
+		handlingUnitsDAO.saveHU(cuToSplit);
 
 		return cuToSplit;
 	}
@@ -511,7 +512,7 @@ public class HUInternalUseInventoryProducerTests
 		createdTU.setM_Locator_ID(locator.getM_Locator_ID());
 
 		M_HU.INSTANCE.updateChildren(createdTU);
-		save(createdTU);
+		handlingUnitsDAO.saveHU(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
 		assertThat(createdCUs.size(), is(1));

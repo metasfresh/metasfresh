@@ -1,7 +1,7 @@
 package de.metas.uom.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
@@ -45,10 +46,12 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UOMPrecision;
@@ -61,6 +64,9 @@ public class UOMConversionBL implements IUOMConversionBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
+
 	@Override
 	public BigDecimal convertQty(
 			@NonNull final UOMConversionContext conversionCtx /* could technically be nullable, right now I don't see why we should allow it */,
@@ -68,19 +74,37 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final UomId uomFrom,
 			@NonNull final UomId uomTo)
 	{
-		return convertQty(conversionCtx.getProductId(), qty,
-				loadOutOfTrx(uomFrom, I_C_UOM.class),
-				loadOutOfTrx(uomTo, I_C_UOM.class));
+		return convertQty(
+				conversionCtx.getProductId(),
+				conversionCtx.getRounding(),
+				qty,
+				uomDAO.getById(uomFrom),
+				uomDAO.getById(uomTo));
 	}
 
 	@Override
 	public BigDecimal convertQty(
 			@Nullable final ProductId productId,
+			@Nullable final Rounding rounding,
 			@NonNull final BigDecimal qty,
 			@NonNull final I_C_UOM fromUOM,
 			@NonNull final I_C_UOM toUOM)
 	{
-		final UOMPrecision precision = extractStandardPrecision(toUOM);
+		final Rounding roundingEff = coalesce(rounding, Rounding.TO_TARGET_UOM_PRECISION);
+		final UOMPrecision toUOMPrecision = extractStandardPrecision(toUOM);
+
+		final UOMPrecision precision;
+		switch (roundingEff)
+		{
+			case TO_TARGET_UOM_PRECISION:
+				precision = toUOMPrecision;
+				break;
+			case PRESERVE_SCALE:
+				precision = UOMPrecision.ofInt(Math.max(qty.scale(), toUOMPrecision.toInt()));
+				break;
+			default:
+				throw new AdempiereException("Unexpected rounding=" + roundingEff);
+		}
 
 		if (qty.signum() == 0)
 		{
@@ -96,20 +120,35 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertQty(@NonNull final UOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
+	public BigDecimal convertQty(
+			@NonNull final UOMConversionContext conversionCtx,
+			final BigDecimal qty,
+			final I_C_UOM uomFrom,
+			final I_C_UOM uomTo)
 	{
-		return convertQty(conversionCtx.getProductId(), qty, uomFrom, uomTo);
+		return convertQty(
+				conversionCtx.getProductId(),
+				conversionCtx.getRounding(),
+				qty,
+				uomFrom,
+				uomTo);
 	}
 
 	@Override
-	public Quantity convertQuantityTo(@NonNull final Quantity quantity, final UOMConversionContext conversionCtx, @NonNull final UomId uomToId)
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final UOMConversionContext conversionCtx,
+			@NonNull final UomId uomToId)
 	{
-		final I_C_UOM uomTo = Services.get(IUOMDAO.class).getById(uomToId);
+		final I_C_UOM uomTo = uomDAO.getById(uomToId);
 		return convertQuantityTo(quantity, conversionCtx, uomTo);
 	}
 
 	@Override
-	public Quantity convertQuantityTo(@NonNull final Quantity quantity, final UOMConversionContext conversionCtx, @NonNull final I_C_UOM uomTo)
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final UOMConversionContext conversionCtx,
+			@NonNull final I_C_UOM uomTo)
 	{
 		final UomId uomToId = UomId.ofRepoId(uomTo.getC_UOM_ID());
 
@@ -132,7 +171,8 @@ public class UOMConversionBL implements IUOMConversionBL
 		// Convert current quantity to "uomTo"
 		final BigDecimal sourceQtyNew = quantity.toBigDecimal();
 		final int sourceUOMNewId = currentUomId.getRepoId();
-		final I_C_UOM sourceUOMNew = Services.get(IUOMDAO.class).getById(sourceUOMNewId);
+		final I_C_UOM sourceUOMNew = uomDAO.getById(sourceUOMNewId);
+
 		final BigDecimal qtyNew = convertQty(conversionCtx,
 				sourceQtyNew,
 				sourceUOMNew, // From UOM
@@ -173,9 +213,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final Collection<Quantity> quantities,
 			@NonNull final UomId toUomId)
 	{
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-
-		final I_C_UOM toUomRecord = uomDao.getById(toUomId);
+		final I_C_UOM toUomRecord = uomDAO.getById(toUomId);
 		Quantity resultInTargetUOM = Quantity.zero(toUomRecord);
 
 		for (final Quantity currentQuantity : quantities)
@@ -211,7 +249,12 @@ public class UOMConversionBL implements IUOMConversionBL
 			I_C_UOM uomTo,
 			int pricePrecision)
 	{
-		BigDecimal priceConv = convertQty(ProductId.ofRepoIdOrNull(productId), price, uomFrom, uomTo);
+		BigDecimal priceConv = convertQty(
+				ProductId.ofRepoIdOrNull(productId),
+				null /* rounding */,
+				price,
+				uomFrom,
+				uomTo);
 		if (priceConv.scale() > pricePrecision)
 		{
 			priceConv = priceConv.setScale(pricePrecision, RoundingMode.HALF_UP);
@@ -289,14 +332,12 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	private UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
-		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
-		return uomConversionsRepo.getProductConversions(productId);
+		return uomConversionsDAO.getProductConversions(productId);
 	}
 
 	private UOMConversionsMap getGenericRates()
 	{
-		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
-		return uomConversionsRepo.getGenericConversions();
+		return uomConversionsDAO.getGenericConversions();
 	}
 
 	private Optional<UOMConversionRate> getGenericRate(I_C_UOM uomFrom, I_C_UOM uomTo)
@@ -317,9 +358,10 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		// try to derive
 		return getTimeConversionRate(uomFrom, uomTo);
-	}	// getConversion
+	}    // getConversion
 
-	private UOMConversionRate getRate(
+	@Override
+	public UOMConversionRate getRate(
 			@Nullable final ProductId productId,
 			@NonNull final UomId fromUomId,
 			@NonNull final UomId toUomId)
@@ -384,7 +426,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
-			final I_C_UOM toUOM = Services.get(IUOMDAO.class).getById(toUomId);
+			final I_C_UOM toUOM = uomDAO.getById(toUomId);
 			final UOMPrecision precision = extractStandardPrecision(toUOM);
 			return rate.convert(qtyToConvert, precision);
 		}
@@ -392,6 +434,24 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			return null;
 		}
+	}
+
+	@Override
+	public Optional<BigDecimal> convert(@NonNull final UomId fromUomId, @NonNull final UomId toUomId, @NonNull final BigDecimal qty)
+	{
+		final I_C_UOM fromUom = uomDAO.getById(fromUomId);
+		final I_C_UOM toUom = uomDAO.getById(toUomId);
+
+		return convert(fromUom, toUom, qty);
+	}
+
+	@Override
+	public Optional<Quantity> convertQtyTo(@NonNull final Quantity quantity, @NonNull final UomId toUomId)
+	{
+		final I_C_UOM fromUom = uomDAO.getById(quantity.getUomId());
+		final I_C_UOM toUom = uomDAO.getById(toUomId);
+
+		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.create(bigDecimal, toUomId));
 	}
 
 	@Override
@@ -423,13 +483,12 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			return Optional.empty();
 		}
-	}	// convert
+	}    // convert
 
 	private Optional<UOMConversionRate> getTimeConversionRate(@NonNull final UomId fromTimeUomId, @NonNull final UomId toTimeUomId)
 	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-		final I_C_UOM fromUom = uomsRepo.getById(fromTimeUomId);
-		final I_C_UOM toUom = uomsRepo.getById(toTimeUomId);
+		final I_C_UOM fromUom = uomDAO.getById(fromTimeUomId);
+		final I_C_UOM toUom = uomDAO.getById(toTimeUomId);
 		return getTimeConversionRate(fromUom, toUom);
 	}
 

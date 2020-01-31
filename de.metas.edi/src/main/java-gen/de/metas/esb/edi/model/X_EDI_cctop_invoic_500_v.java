@@ -15,7 +15,7 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -587829026L;
+	private static final long serialVersionUID = -1276739754L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_500_v (Properties ctx, int EDI_cctop_invoic_500_v_ID, String trxName)
@@ -78,6 +78,28 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
+	/** 
+	 * EanCom_Ordered_UOM AD_Reference_ID=114
+	 * Reference name: C_UOM_Default_First
+	 */
+	public static final int EANCOM_ORDERED_UOM_AD_Reference_ID=114;
+	/** Set Auftrags-Maßeinheit.
+		@param EanCom_Ordered_UOM Auftrags-Maßeinheit	  */
+	@Override
+	public void setEanCom_Ordered_UOM (java.lang.String EanCom_Ordered_UOM)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_EanCom_Ordered_UOM, EanCom_Ordered_UOM);
+	}
+
+	/** Get Auftrags-Maßeinheit.
+		@return Auftrags-Maßeinheit	  */
+	@Override
+	public java.lang.String getEanCom_Ordered_UOM () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EanCom_Ordered_UOM);
+	}
+
 	/** Set EanCom_Price_UOM.
 		@param EanCom_Price_UOM EanCom_Price_UOM	  */
 	@Override
@@ -95,19 +117,51 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	}
 
 	/** Set eancom_uom.
-		@param eancom_uom eancom_uom	  */
+		@param EanCom_UOM eancom_uom	  */
 	@Override
-	public void seteancom_uom (java.lang.String eancom_uom)
+	public void setEanCom_UOM (java.lang.String EanCom_UOM)
 	{
-		set_Value (COLUMNNAME_eancom_uom, eancom_uom);
+		set_Value (COLUMNNAME_EanCom_UOM, EanCom_UOM);
 	}
 
 	/** Get eancom_uom.
 		@return eancom_uom	  */
 	@Override
-	public java.lang.String geteancom_uom () 
+	public java.lang.String getEanCom_UOM () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_eancom_uom);
+		return (java.lang.String)get_Value(COLUMNNAME_EanCom_UOM);
+	}
+
+	/** Set CU-EAN.
+		@param EAN_CU CU-EAN	  */
+	@Override
+	public void setEAN_CU (java.lang.String EAN_CU)
+	{
+		set_ValueNoCheck (COLUMNNAME_EAN_CU, EAN_CU);
+	}
+
+	/** Get CU-EAN.
+		@return CU-EAN	  */
+	@Override
+	public java.lang.String getEAN_CU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+	}
+
+	/** Set TU-EAN.
+		@param EAN_TU TU-EAN	  */
+	@Override
+	public void setEAN_TU (java.lang.String EAN_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_EAN_TU, EAN_TU);
+	}
+
+	/** Get TU-EAN.
+		@return TU-EAN	  */
+	@Override
+	public java.lang.String getEAN_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
 	}
 
 	/** Set EDI_cctop_invoic_500_v.
@@ -164,6 +218,22 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set GTIN.
+		@param GTIN GTIN	  */
+	@Override
+	public void setGTIN (java.lang.String GTIN)
+	{
+		set_ValueNoCheck (COLUMNNAME_GTIN, GTIN);
+	}
+
+	/** Get GTIN.
+		@return GTIN	  */
+	@Override
+	public java.lang.String getGTIN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
 	/** Set ISO Währungscode.
@@ -280,16 +350,16 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
-	/** Set Order Line.
-		@param OrderLine Order Line	  */
+	/** Set Auftragszeile.
+		@param OrderLine Auftragszeile	  */
 	@Override
 	public void setOrderLine (int OrderLine)
 	{
 		set_Value (COLUMNNAME_OrderLine, Integer.valueOf(OrderLine));
 	}
 
-	/** Get Order Line.
-		@return Order Line	  */
+	/** Get Auftragszeile.
+		@return Auftragszeile	  */
 	@Override
 	public int getOrderLine () 
 	{
@@ -400,6 +470,25 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return bd;
 	}
 
+	/** Set Fakturierte Menge in Auftrags-Maßeinheit.
+		@param QtyInvoicedInOrderedUOM Fakturierte Menge in Auftrags-Maßeinheit	  */
+	@Override
+	public void setQtyInvoicedInOrderedUOM (java.math.BigDecimal QtyInvoicedInOrderedUOM)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyInvoicedInOrderedUOM, QtyInvoicedInOrderedUOM);
+	}
+
+	/** Get Fakturierte Menge in Auftrags-Maßeinheit.
+		@return Fakturierte Menge in Auftrags-Maßeinheit	  */
+	@Override
+	public java.math.BigDecimal getQtyInvoicedInOrderedUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoicedInOrderedUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Satz.
 		@param Rate 
 		Rate or Tax or Exchange
@@ -467,20 +556,36 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return false;
 	}
 
-	/** Set UPC/EAN.
-		@param UPC UPC/EAN	  */
+	/** Set CU-UPC.
+		@param UPC_CU CU-UPC	  */
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC_CU (java.lang.String UPC_CU)
 	{
-		set_Value (COLUMNNAME_UPC, UPC);
+		set_ValueNoCheck (COLUMNNAME_UPC_CU, UPC_CU);
 	}
 
-	/** Get UPC/EAN.
-		@return UPC/EAN	  */
+	/** Get CU-UPC.
+		@return CU-UPC	  */
 	@Override
-	public java.lang.String getUPC () 
+	public java.lang.String getUPC_CU () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_CU);
+	}
+
+	/** Set TU-UPC.
+		@param UPC_TU TU-UPC	  */
+	@Override
+	public void setUPC_TU (java.lang.String UPC_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_UPC_TU, UPC_TU);
+	}
+
+	/** Get TU-UPC.
+		@return TU-UPC	  */
+	@Override
+	public java.lang.String getUPC_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
 	}
 
 	/** Set Suchschlüssel.

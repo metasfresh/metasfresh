@@ -154,7 +154,9 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 		I_C_Bank bank = getC_Bank();
 		String rt = super.getRoutingNo();
 		if (bank != null && bank.getC_Bank_ID() > 0)
+		{
 			rt = bank.getRoutingNo();
+		}
 		return rt;
 	}	//	getRoutingNo
 
@@ -180,13 +182,13 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	 * 	@return info
 	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MBP_BankAccount[")
-			.append (get_ID ())
-			.append(", Name=").append(getA_Name())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+		return new StringBuilder("MBP_BankAccount[")
+				.append(get_ID())
+				.append(", Name=").append(getA_Name())
+				.append("]")
+				.toString();
+	}
 
 }	//	MBPBankAccount

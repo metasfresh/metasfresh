@@ -6,8 +6,10 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\de\metas\docs\sales\pickingv2\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="release.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="305"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="688"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -16,28 +18,7 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select
-  v.bpartnervalue,
-  v.bpartnername,
-  v.bpartneraddress_override,
-  v.orderdocumentno,
-  v.warehousename,
-  v.preparationdate,
-  p.value as productvalue,
-  v.productname,
-  v.qtyordered,
-  v.c_uom_id,
-  v.ad_org_id,
-  v.c_orderso_id,
-  u.uomsymbol,
-  l.value as locator
-from m_packageable_v v
-  join m_product p on p.m_product_id = v.m_product_id
-  join m_picking_candidate pc on pc.m_shipmentschedule_id = v.m_shipmentschedule_id
-  join C_Uom u on u.C_Uom_id = v.C_Uom_id
-  left join M_HU hu on hu.M_hu_id = pc.pickfrom_hu_id
-  left join m_locator l on l.m_locator_id = hu.m_locator_id
-where c_orderso_id = $P{c_order_id};]]>
+		<![CDATA[select * from de_metas_endcustomer_fresh_reports.PickingList WHERE c_orderso_id = $P{c_order_id};]]>
 	</queryString>
 	<field name="bpartnervalue" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bpartnervalue"/>

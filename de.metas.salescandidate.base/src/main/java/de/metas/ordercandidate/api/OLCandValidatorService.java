@@ -32,7 +32,9 @@ public class OLCandValidatorService
 		olCand.setErrorMsg(null);
 		olCand.setIsError(false);
 
-		return validators.validate(olCand);
+		validators.validate(olCand);
+
+		return !olCand.isError();
 	}
 
 	/**

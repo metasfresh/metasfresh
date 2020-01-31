@@ -2,29 +2,24 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import java.util.Collection;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 
-import com.google.common.base.Preconditions;
-
-import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.product.IProductDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
-public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
+final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private final I_PP_Order _ppOrder;
-	private final I_M_Product _product;
+	private final I_PP_Order ppOrder;
+	private final ProductId productId;
 
 	public CostCollectorCandidateFinishedGoodsHUProducer(final org.eevolution.model.I_PP_Order ppOrder)
 	{
@@ -32,21 +27,19 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 		// TODO: validate:
 		// * if is a completed PP_Order
 
-		_ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
-
-		_product = Services.get(IProductDAO.class).getById(ppOrder.getM_Product_ID());
-		Preconditions.checkNotNull(_product); // shall not happen
+		this.ppOrder = InterfaceWrapperHelper.create(ppOrder, I_PP_Order.class);
+		productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 	}
 
-	private final I_PP_Order getPP_Order()
+	private I_PP_Order getPP_Order()
 	{
-		return _ppOrder;
+		return ppOrder;
 	}
 
 	@Override
-	protected I_M_Product getM_Product()
+	protected ProductId getProductId()
 	{
-		return _product;
+		return productId;
 	}
 
 	@Override
@@ -58,11 +51,8 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 	@Override
 	protected IAllocationSource createAllocationSource()
 	{
-		final de.metas.handlingunits.model.I_PP_Order ppOrder = InterfaceWrapperHelper.create(getPP_Order(), de.metas.handlingunits.model.I_PP_Order.class);
-
-		final IAllocationSource allocationSource = huPPOrderBL.createAllocationSourceForPPOrder(ppOrder);
-
-		return allocationSource;
+		final I_PP_Order ppOrder = getPP_Order();
+		return huPPOrderBL.createAllocationSourceForPPOrder(ppOrder);
 	}
 
 	@Override
@@ -73,24 +63,25 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 	}
 
 	@Override
-	protected I_PP_Order_Qty newCandidate()
+	protected ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer()
 	{
-		final I_PP_Order_Qty ppOrderQty = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
+		final I_PP_Order order = getPP_Order();
+		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
-		final I_PP_Order ppOrder = getPP_Order();
-		ppOrderQty.setAD_Org_ID(ppOrder.getAD_Org_ID());
-		ppOrderQty.setPP_Order(ppOrder);
-		ppOrderQty.setPP_Order_BOMLine(null);
-
-		return ppOrderQty;
+		return ReceiptCandidateRequestProducer.builder()
+				.orderId(orderId)
+				.orgId(orgId)
+				.date(getMovementDate())
+				.locatorId(getLocatorId())
+				.pickingCandidateId(getPickingCandidateId())
+				.build();
 	}
 
 	@Override
 	protected void setAssignedHUs(final Collection<I_M_HU> hus)
 	{
 		final I_PP_Order ppOrder = getPP_Order();
-
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(ppOrder, hus, ITrx.TRXNAME_ThreadInherited);
-
+		huPPOrderBL.setAssignedHandlingUnits(ppOrder, hus);
 	}
 }

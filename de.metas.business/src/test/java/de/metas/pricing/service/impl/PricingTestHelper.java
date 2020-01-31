@@ -6,15 +6,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_CountryArea;
+import org.compiere.model.I_C_CountryArea_Assign;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -25,6 +30,7 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.location.ICountryAreaBL;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -75,12 +81,12 @@ public class PricingTestHelper
 	private I_C_UOM defaultUOM;
 
 	public I_M_Attribute attr_Country;
-	public I_M_AttributeValue attr_Country_DE;
-	public I_M_AttributeValue attr_Country_CH;
+	public AttributeListValue attr_Country_DE;
+	public AttributeListValue attr_Country_CH;
 
 	public I_M_Attribute attr_Label;
-	public I_M_AttributeValue attr_Label_Bio;
-	public final I_M_AttributeValue attr_Label_NULL = null;
+	public AttributeListValue attr_Label_Bio;
+	public final AttributeListValue attr_Label_NULL = null;
 
 	private final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(1);
 
@@ -88,7 +94,8 @@ public class PricingTestHelper
 	{
 		createPricingRules();
 
-		defaultCountry = createCountry("DE", C_Currency_ID_EUR);
+		defaultCountry = createCountryWithArea("DE", C_Currency_ID_EUR, ICountryAreaBL.COUNTRYAREAKEY_EU);
+
 		defaultPricingSystem = createPricingSystem();
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
@@ -134,14 +141,47 @@ public class PricingTestHelper
 		}
 	}
 
-	public final I_C_Country createCountry(final String countryCode, final int currencyId)
+	/**
+	 * @param countryAreaValue if not {@code null}, then a country area is created and the new country is assigned to it.
+	 */
+	public final I_C_Country createCountry(
+			@NonNull final String countryCode,
+			final int currencyId)
 	{
-		final I_C_Country country = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Country.class, ITrx.TRXNAME_None);
+		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setCountryCode(countryCode);
 		country.setName(countryCode);
 		country.setC_Currency_ID(currencyId);
-		InterfaceWrapperHelper.save(country);
+		saveRecord(country);
+
 		return country;
+	}
+
+	public final I_C_Country createCountryWithArea(
+			@NonNull final String countryCode,
+			final int currencyId,
+			@NonNull final String countryAreaValue)
+	{
+		final I_C_Country country = createCountry(countryCode, currencyId);
+		createArea(country, countryAreaValue);
+
+		return country;
+	}
+
+	private void createArea(
+			@NonNull final I_C_Country country,
+			@NonNull final String countryAreaValue)
+	{
+
+		final I_C_CountryArea countryAreaRecord = newInstance(I_C_CountryArea.class);
+		countryAreaRecord.setValue(countryAreaValue);
+		saveRecord(countryAreaRecord);
+
+		final I_C_CountryArea_Assign countryAreaAssignRecord = newInstance(I_C_CountryArea_Assign.class);
+		countryAreaAssignRecord.setC_Country_ID(country.getC_Country_ID());
+		countryAreaAssignRecord.setValidFrom(TimeUtil.getDay(0L));
+		countryAreaAssignRecord.setC_CountryArea_ID(countryAreaRecord.getC_CountryArea_ID());
+		saveRecord(countryAreaAssignRecord);
 	}
 
 	public final I_M_Product createProduct(
@@ -196,14 +236,13 @@ public class PricingTestHelper
 		return attribute;
 	}
 
-	public final I_M_AttributeValue createM_AttributeValue(final I_M_Attribute attribute, final String value)
+	public final AttributeListValue createM_AttributeValue(final I_M_Attribute attribute, final String value)
 	{
-		final I_M_AttributeValue av = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, attribute);
-		av.setM_Attribute(attribute);
-		av.setValue(value);
-		av.setName(value);
-		InterfaceWrapperHelper.save(av);
-		return av;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(value)
+				.build());
 	}
 
 	public final IAttributeSetInstanceAware asiAware(final I_M_AttributeSetInstance asi)

@@ -13,6 +13,8 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
+import javax.annotation.Nullable;
+
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
 
@@ -24,23 +26,21 @@ import de.metas.util.Services;
 
 /**
  * Any exception that occurs when no UOM conversion rate was found
- * 
+ *
  * @author Teo Sarca, http://www.arhipac.ro
  */
 public class NoUOMConversionException extends AdempiereException
 {
 	public static final String AD_Message = "NoUOMConversion";
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -4868882017576097089L;
 
-	public NoUOMConversionException(ProductId productId, UomId fromUomId, UomId toUomId)
+	public NoUOMConversionException(@Nullable final ProductId productId, @Nullable final UomId fromUomId, @Nullable final UomId toUomId)
 	{
 		super(buildMessage(productId, fromUomId, toUomId));
 	}
 
-	private static String buildMessage(ProductId productId, UomId fromUomId, UomId toUomId)
+	private static String buildMessage(@Nullable final ProductId productId, @Nullable final UomId fromUomId, @Nullable final UomId toUomId)
 	{
 		final StringBuilder sb = new StringBuilder("@" + AD_Message + "@ - ");
 
@@ -63,7 +63,7 @@ public class NoUOMConversionException extends AdempiereException
 		return sb.toString();
 	}
 
-	private static String extractProductName(ProductId productId)
+	private static String extractProductName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
 		{
@@ -101,5 +101,4 @@ public class NoUOMConversionException extends AdempiereException
 
 		return uom.getUOMSymbol();
 	}
-
 }

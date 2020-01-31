@@ -1,6 +1,7 @@
 package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
@@ -30,12 +31,14 @@ import java.time.Duration;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery.Aggregate;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -44,17 +47,33 @@ import org.eevolution.model.X_PP_Cost_Collector;
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PPCostCollectorDAO implements IPPCostCollectorDAO
 {
 	@Override
-	public I_PP_Cost_Collector getById(final int costCollectorId)
+	public I_PP_Cost_Collector getById(@NonNull final PPCostCollectorId costCollectorId)
 	{
-		Check.assumeGreaterThanZero(costCollectorId, "costCollectorId");
-		return load(costCollectorId, I_PP_Cost_Collector.class);
+		return getById(costCollectorId, I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public <T extends I_PP_Cost_Collector> T getById(@NonNull final PPCostCollectorId costCollectorId, @NonNull final Class<T> modelClass)
+	{
+		return load(costCollectorId, modelClass);
+	}
+
+	@Override
+	public List<I_PP_Cost_Collector> getByIds(@NonNull final Set<PPCostCollectorId> costCollectorIds)
+	{
+		return getByIds(costCollectorIds, I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public <T extends I_PP_Cost_Collector> List<T> getByIds(@NonNull final Set<PPCostCollectorId> costCollectorIds, @NonNull final Class<T> modelClass)
+	{
+		return loadByRepoIdAwares(costCollectorIds, modelClass);
 	}
 
 	@Override
@@ -131,12 +150,13 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	public List<I_PP_Cost_Collector> retrieveNotReversedForOrder(@NonNull final I_PP_Order order)
 	{
 		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
-			.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID())
-			.addInArrayOrAllFilter(I_PP_Cost_Collector.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID())
+				.addInArrayOrAllFilter(I_PP_Cost_Collector.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
 		queryBuilder.orderBy()
-			.addColumn(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID);
+				.addColumn(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID);
 		return queryBuilder.create().list();
 	}
+
 	@Override
 	public Duration getDurationReal(@NonNull final PPOrderRoutingActivity activity, @NonNull final CostCollectorType costCollectorType)
 	{

@@ -96,7 +96,7 @@ class DeliveredQtysLoaderTest
 				.build()
 				.loadDeliveredQtys();
 
-		assertThat(result.getShipmentData().getShippedQtyItems())
+		assertThat(result.getShipmentData().getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN, FOUR_HUNDRET, FOUR_HUNDRET_TWENTY, null),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
@@ -136,7 +136,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
 
-		assertThat(result.getShipmentData().getShippedQtyItems())
+		assertThat(result.getShipmentData().getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
@@ -178,7 +178,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
 
-		assertThat(result.getShipmentData().getShippedQtyItems())
+		assertThat(result.getShipmentData().getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN, FOUR_HUNDRET, null, null),
 						tuple(FIVE, TWO_HUNDRET, null, null));
@@ -214,7 +214,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
 
-		assertThat(result.getShipmentData().getShippedQtyItems())
+		assertThat(result.getShipmentData().getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN, FOUR_HUNDRET, null, FOUR_HUNDRET_TWENTY),
 						tuple(FIVE, TWO_HUNDRET, ONE_HUNDRET_NINETY, null));
@@ -252,7 +252,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
 
-		assertThat(result.getShipmentData().getShippedQtyItems())
+		assertThat(result.getShipmentData().getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
 				.contains(tuple(TEN.negate(), FOUR_HUNDRET.negate(), null, FOUR_HUNDRET_TWENTY.negate()),
 						tuple(FIVE.negate(), TWO_HUNDRET.negate(), ONE_HUNDRET_NINETY.negate(), null));

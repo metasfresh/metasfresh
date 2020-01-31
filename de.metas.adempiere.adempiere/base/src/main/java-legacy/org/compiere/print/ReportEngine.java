@@ -37,6 +37,7 @@ import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.print.DocFlavor;
 import javax.print.StreamPrintService;
 import javax.print.StreamPrintServiceFactory;
@@ -82,7 +83,6 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
@@ -92,6 +92,7 @@ import de.metas.print.IPrintService;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -132,7 +133,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param query Optional Query
 	 * @param info print info
 	 */
-	public ReportEngine(Properties ctx, MPrintFormat pf, MQuery query, PrintInfo info)
+	public ReportEngine(Properties ctx, @NonNull final MPrintFormat pf, MQuery query, PrintInfo info)
 	{
 		this(ctx, pf, query, info, null);
 	}	// ReportEngine
@@ -146,14 +147,19 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param info print info
 	 * @param trxName
 	 */
-	public ReportEngine(Properties ctx, MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
+	public ReportEngine(Properties ctx, @Nullable final MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
 	{
-		Check.errorIf(pf == null, "ReportEngine - no PrintFormat"); // emulating old code, throwing same error msg as before.
-		Check.assumeNotNull(pf.getLanguage(), "Param {} has a language set", pf);
+
+		if(pf != null)
+		{
+			Check.assumeNotNull(pf.getLanguage(), "Param {} has a language set", pf);
+			log.info(pf + " -- " + query);
+		}
+
 
 		m_printerName = Services.get(IPrinterRoutingBL.class).getDefaultPrinterName(); // metas: us319
 
-		log.info(pf + " -- " + query);
+
 		m_ctx = ctx;
 		//
 		m_printFormat = pf;
@@ -243,7 +249,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	private void setPrintData()
 	{
-		if (m_query == null)
+		if (m_query == null || m_printFormat == null)
 			return;
 
 		final DataEngine de = new DataEngine(m_printFormat.getLanguage(), m_trxName);
@@ -993,8 +999,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 	{
 		try
 		{
+
 			// 03744: begin
-			if (getPrintFormat().getJasperProcess_ID() > 0)
+			if (getPrintFormat() != null && getPrintFormat().getJasperProcess_ID() > 0)
 			{
 				return createPdfDataInvokeReportProcess();
 			}
@@ -1021,7 +1028,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 				.setCtx(ctx)
 				.setAD_Process_ID(getPrintFormat().getJasperProcess_ID())
 				.setRecord(getPrintInfo().getAD_Table_ID(), getPrintInfo().getRecord_ID())
-				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(ctx))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(ctx))
 				.addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
 				.setPrintPreview(true) // don't archive it! just give us the PDF data
 				.buildAndPrepareExecution()
@@ -1033,7 +1040,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	public static String getBarcodeServlet(@NonNull final Properties ctx)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final String barcodeServlet = sysConfigBL.getValue(JasperConstants.SYSCONFIG_BarcodeServlet,
+		final String barcodeServlet = sysConfigBL.getValue(ReportConstants.SYSCONFIG_BarcodeServlet,
 				null,  // defaultValue,
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));
@@ -1308,13 +1315,13 @@ public class ReportEngine implements PrintServiceAttributeListener
 			"C_Order_ID", "M_InOut_ID", "C_Invoice_ID", "C_Project_ID",
 			"C_DunningRunEntry_ID", "PP_Order_ID", "DD_Order_ID" };
 	private static final int[] DOC_TABLE_ID = new int[] {
-			I_C_Order.Table_ID,
+			getTableId(I_C_Order.class),
 			getTableId(I_M_InOut.class),
 			getTableId(I_C_Invoice.class),
 			getTableId(I_C_Project.class),
 			I_C_DunningRunEntry.Table_ID,
 			Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
-			Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name) };
+			Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name)};
 
 	/**************************************************************************
 	 * Get Document Print Engine for Document Type.

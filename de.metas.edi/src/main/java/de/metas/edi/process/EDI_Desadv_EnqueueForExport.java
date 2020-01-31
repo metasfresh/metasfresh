@@ -10,14 +10,14 @@ package de.metas.edi.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,19 +37,22 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.adempiere.form.IClientUI;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
-import de.metas.i18n.IMsgBL;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Send EDI documents for selected desadv entries.
@@ -57,21 +60,24 @@ import de.metas.util.Services;
  * @task 08646
  *
  */
-public class EDI_Desadv_EnqueueForExport extends JavaProcess
+public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
-	private static final String MSG_DESADV_PerformEnqueuing = "DESADV_PerformEnqueuing";
-	private static final String MSG_EDI_DESADV_RefuseSending = "EDI_DESADV_RefuseSending";
-
-	/**
-	 * Minimum Sum Percentage set in the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'
-	 */
-	private final BigDecimal minimumSumPercentage = Services.get(IDesadvDAO.class).retrieveMinimumSumPercentage();
-
 	private final List<I_EDI_Desadv> desadvsToSkip = new ArrayList<I_EDI_Desadv>();
 
-	final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	@RunOutOfTrx
@@ -105,8 +111,8 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 					public void process(final I_EDI_Desadv desadv) throws Exception
 					{
 						// make sure the desadvs that don't meet the sum percentage requirement won't get enqueued
-						final BigDecimal currentSumPercentage = desadv.getEDI_DESADV_SumPercentage();
-						if (currentSumPercentage.compareTo(minimumSumPercentage) < 0)
+						final BigDecimal currentSumPercentage = desadv.getFulfillmentPercent();
+						if (currentSumPercentage.compareTo(desadv.getFulfillmentPercentMin()) < 0)
 						{
 							desadvsToSkip.add(desadv);
 						}
@@ -124,32 +130,10 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 		// display the desadvs that didn't meet the sum percentage requirement
 		if (!desadvsToSkip.isEmpty())
 		{
-			logSkippedLines();
+			desadvBL.createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList.copyOf(desadvsToSkip));
 		}
 
-		return "Success";
-	}
-
-	private void logSkippedLines()
-	{
-
-		final StringBuilder skippedDesadvsString = new StringBuilder();
-
-		for (final I_EDI_Desadv desadv : desadvsToSkip)
-		{
-			skippedDesadvsString.append("#")
-					.append(desadv.getDocumentNo())
-					.append(" - ")
-					.append(desadv.getEDI_DESADV_SumPercentage())
-					.append("\n");
-		}
-
-		// log a message that includes all the skipped lines'documentNo and percentage
-		final String logMessage = Services.get(IMsgBL.class).getMsg(getCtx(),
-				MSG_EDI_DESADV_RefuseSending,
-				new Object[] { minimumSumPercentage, skippedDesadvsString.toString() });
-
-		addLog(logMessage);
+		return MSG_OK;
 	}
 
 	private void enqueueDesadv0(
@@ -169,7 +153,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 
 	private IQueryBuilder<I_EDI_Desadv> createEDIDesadvQueryBuilder()
 	{
-		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_EDI_Desadv> processQueryFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBuilder<I_EDI_Desadv> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
@@ -198,20 +182,6 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 			// don't ask
 			return;
 		}
-
-		// total number of desadv entries in selection
-		final int totalCounter = countTotalLines();
-
-		final boolean performEnqueuing = Services.get(IClientUI.class).ask()
-				.setParentWindowNo(getProcessInfo().getWindowNo())
-				.setAD_Message(MSG_DESADV_PerformEnqueuing, totalCounter, counterQty0)
-				.setDefaultAnswer(false)
-				.getAnswer();
-		if (!performEnqueuing)
-		{
-			throw new ProcessCanceledException();
-		}
-
 	}
 
 	private Iterator<I_EDI_Desadv> createIterator()
@@ -223,21 +193,14 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess
 				.iterate(I_EDI_Desadv.class);
 	}
 
-	private int countTotalLines()
-	{
-		return createEDIDesadvQueryBuilder().create().count();
-	}
-
 	/**
 	 * Returns the number of desadv records that have at least one line with qty 0.
-	 *
-	 * @return
 	 */
 	private int countDESADVWithLinesQty0()
 	{
 		return createEDIDesadvQueryBuilder()
 				.andCollectChildren(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, I_EDI_DesadvLine.class)
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM, BigDecimal.ZERO)
+				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM, BigDecimal.ZERO)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_EDI_Desadv.COLUMN_EDI_Desadv_ID, I_EDI_Desadv.class)
 				.create()

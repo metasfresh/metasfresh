@@ -32,13 +32,14 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
@@ -94,7 +95,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 		Services.get(IStorageEngineService.class).registerStorageEngine(storageEngine);
 
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -370,9 +371,9 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final HuId packedHUId = HuId.ofRepoId(packedToHU.getM_HU_ID());
 
 		final PickingCandidate pickingCandidate = PickingCandidate.builder()
-				.status(PickingCandidateStatus.Processed) // not relevant
+				.processingStatus(PickingCandidateStatus.Processed) // not relevant
 				.qtyPicked(Quantity.zero(uom)) // not relevant
-				.pickFromHuId(packedHUId)
+				.pickFrom(PickFrom.ofHuId(packedHUId))
 				.packedToHuId(packedHUId)
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.build();

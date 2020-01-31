@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -94,6 +95,111 @@ public class Candidate
 
 	List<TransactionDetail> transactionDetails;
 
+	@Builder(toBuilder = true)
+	private Candidate(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final CandidateType type,
+			final CandidateBusinessCase businessCase,
+			final CandidateId id,
+			final CandidateId parentId,
+			final MaterialDispoGroupId groupId,
+			final int seqNo,
+			@NonNull final MaterialDescriptor materialDescriptor,
+			final BusinessCaseDetail businessCaseDetail,
+			final DemandDetail additionalDemandDetail,
+			@Singular final List<TransactionDetail> transactionDetails)
+	{
+		this.clientAndOrgId = clientAndOrgId;
+		this.type = type;
+		this.businessCase = businessCase;
+
+		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
+		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
+
+		this.parentId = CoalesceUtil.coalesce(parentId, CandidateId.NULL);
+		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
+
+		this.groupId = groupId;
+		this.seqNo = seqNo;
+
+		this.materialDescriptor = materialDescriptor;
+
+		this.businessCaseDetail = businessCaseDetail;
+		this.additionalDemandDetail = additionalDemandDetail;
+
+		this.transactionDetails = transactionDetails;
+
+		if (type != CandidateType.STOCK
+				&& !Adempiere.isUnitTestMode() /* TODO create unit test candidates such that they are always valid and remove this */)
+		{
+			validateNonStockCandidate();
+		}
+	}
+
+	public static class CandidateBuilder
+	{
+		public CandidateBuilder quantity(final BigDecimal quantity)
+		{
+			Check.assumeNotNull(materialDescriptor, "Parameter materialDescriptor is not null");
+			return materialDescriptor(materialDescriptor.withQuantity(quantity));
+		}
+	}
+
+	// TODO always validate on construction, then make this method private
+	public Candidate validateNonStockCandidate()
+	{
+		switch (type)
+		{
+			case DEMAND:
+			case STOCK_UP:
+			case SUPPLY:
+				Check.errorIf(
+						businessCaseDetail == null,
+						"If type={}, then the given businessCaseDetail may not be null; this={}",
+						type, this);
+				break;
+			case INVENTORY_UP:
+			case INVENTORY_DOWN:
+				break;
+			case UNEXPECTED_INCREASE:
+			case UNEXPECTED_DECREASE:
+				Check.errorIf(
+						transactionDetails == null || transactionDetails.isEmpty(),
+						"If type={}, then the given transactionDetails may not be null or empty; this={}",
+						type, this);
+				break;
+			case ATTRIBUTES_CHANGED_FROM:
+			case ATTRIBUTES_CHANGED_TO:
+				break;
+			default:
+				Check.errorIf(true, "Unexpected candidateType={}; this={}", type, this);
+		}
+
+		for (final TransactionDetail transactionDetail : transactionDetails)
+		{
+			Check.errorIf(
+					!transactionDetail.isComplete(),
+					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail={}; this={}",
+					transactionDetail, this);
+		}
+
+		Check.errorIf((businessCase != null) != (businessCaseDetail != null),
+				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
+
+		Check.errorIf(
+				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
+				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
+
+		return this;
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
+	}
+
 	/**
 	 * @param addedQuantity may also be negative, in case of subtraction
 	 */
@@ -171,98 +277,12 @@ public class Candidate
 		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 
-	public BigDecimal getDetailQty()
+	public BigDecimal getBusinessCaseDetailQty()
 	{
 		if (businessCaseDetail == null)
 		{
 			return BigDecimal.ZERO;
 		}
 		return businessCaseDetail.getQty();
-	}
-
-	@Builder(toBuilder = true)
-	private Candidate(
-			@NonNull final ClientAndOrgId clientAndOrgId,
-			@NonNull final CandidateType type,
-			final CandidateBusinessCase businessCase,
-			final CandidateId id,
-			final CandidateId parentId,
-			final MaterialDispoGroupId groupId,
-			final int seqNo,
-			@NonNull final MaterialDescriptor materialDescriptor,
-			final BusinessCaseDetail businessCaseDetail,
-			final DemandDetail additionalDemandDetail,
-			@Singular final List<TransactionDetail> transactionDetails)
-	{
-		this.clientAndOrgId = clientAndOrgId;
-		this.type = type;
-		this.businessCase = businessCase;
-
-		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
-		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
-
-		this.parentId = CoalesceUtil.coalesce(parentId, CandidateId.NULL);
-		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
-
-		this.groupId = groupId;
-		this.seqNo = seqNo;
-
-		this.materialDescriptor = materialDescriptor;
-
-		this.businessCaseDetail = businessCaseDetail;
-		this.additionalDemandDetail = additionalDemandDetail;
-
-		this.transactionDetails = transactionDetails;
-	}
-
-	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
-	public Candidate validate()
-	{
-		switch (type)
-		{
-			case DEMAND:
-			case STOCK_UP:
-			case SUPPLY:
-				Check.errorIf(
-						businessCaseDetail == null,
-						"If type={}, then the given businessCaseDetail may not be null; this={}",
-						type, this);
-				break;
-			case UNRELATED_INCREASE:
-			case UNRELATED_DECREASE:
-			case INVENTORY_UP:
-			case INVENTORY_DOWN:
-				Check.errorIf(
-						transactionDetails == null || transactionDetails.isEmpty(),
-						"If type={}, then the given transactionDetails may not be null or empty; this={}",
-						type, this);
-				break;
-			default:
-				Check.errorIf(true, "Unexpected candidateType={}; this={}", type, this);
-		}
-
-		for (final TransactionDetail transactionDetail : transactionDetails)
-		{
-			Check.errorIf(
-					!transactionDetail.isComplete(),
-					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail={}; this={}",
-					transactionDetail, this);
-		}
-
-		Check.errorIf((businessCase != null) != (businessCaseDetail != null),
-				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
-				businessCase, businessCaseDetail, this);
-
-		Check.errorIf(
-				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
-				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
-				businessCase, businessCaseDetail, this);
-
-		return this;
-	}
-
-	public OrgId getOrgId()
-	{
-		return getClientAndOrgId().getOrgId();
 	}
 }

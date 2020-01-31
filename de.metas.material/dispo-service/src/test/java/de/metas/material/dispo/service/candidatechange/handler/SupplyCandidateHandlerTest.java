@@ -18,10 +18,9 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -57,7 +56,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class SupplyCandidateHandlerTest
 {
 
@@ -65,15 +64,11 @@ public class SupplyCandidateHandlerTest
 
 	private static final BigDecimal TWENTY_THREE = new BigDecimal("23");
 
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private SupplyCandidateHandler supplyCandiateHandler;
 
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -251,7 +246,7 @@ public class SupplyCandidateHandlerTest
 	@Test
 	public void increase_stock()
 	{
-		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_INCREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_INCREASE);
 
 		supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
@@ -259,7 +254,7 @@ public class SupplyCandidateHandlerTest
 		assertThat(allRecords).hasSize(2);
 
 		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
-		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_INCREASE);
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE);
 		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
 
 		final I_MD_Candidate stockCandidate = allRecords.get(1);

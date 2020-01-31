@@ -15,7 +15,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1460095005L;
+	private static final long serialVersionUID = -151004397L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Dist_Detail (Properties ctx, int MD_Candidate_Dist_Detail_ID, String trxName)
@@ -65,7 +65,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine() throws RuntimeException
+	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class);
 	}
@@ -145,7 +145,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_Order getDD_Order() throws RuntimeException
+	public org.eevolution.model.I_DD_Order getDD_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_Order_ID, org.eevolution.model.I_DD_Order.class);
 	}
@@ -179,7 +179,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine() throws RuntimeException
+	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_OrderLine_ID, org.eevolution.model.I_DD_OrderLine.class);
 	}
@@ -287,7 +287,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -321,7 +321,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
 	}
@@ -377,7 +377,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant() throws RuntimeException
+	public org.compiere.model.I_S_Resource getPP_Plant()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Plant_ID, org.compiere.model.I_S_Resource.class);
 	}
@@ -411,7 +411,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
 	}

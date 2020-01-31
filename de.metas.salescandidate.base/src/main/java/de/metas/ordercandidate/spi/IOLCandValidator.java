@@ -13,11 +13,11 @@ package de.metas.ordercandidate.spi;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,18 +26,14 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 
 /**
  * General note: implementations do not just set the error flag, but also a lot of other data.
- *
- *
  */
 public interface IOLCandValidator
 {
+	/** Validators with lower sequence number are executed first. They might set fields that later validators might need. */
+	int getSeqNo();
+
 	/**
-	 * Validate the given <code>olCand</code>.
-	 * <p>
-	 * Change {@link I_C_OLCand#COLUMN_IsError IsError} and {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg} accordingly, but <b>do not</b> save.
-	 *
-	 * @param olCand
-	 * @return <code>true</code> if the validation was successful
+	 * Validate the given <code>olCand</code>. Throw an informative exception if things went wrong.
 	 */
-	boolean validate(I_C_OLCand olCand);
+	void validate(I_C_OLCand olCand);
 }

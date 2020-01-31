@@ -1,5 +1,7 @@
 package de.metas.acct.api.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,10 +36,14 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -45,24 +51,29 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 
 public class ProductAcctDAO implements IProductAcctDAO
 {
+	private final CCache<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> productAcctRecords = CCache.<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> builder()
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(100)
+			.additionalTableNameToResetFor(I_M_Product_Acct.Table_Name)
+			.build();
+
 	@Override
 	public ActivityId retrieveActivityForAcct(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId)
 	{
-		final Properties ctx = Env.getCtx();
-
 		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(clientId, orgId);
 		if (acctSchemaId == null)
 		{
 			return null;
 		}
 
-		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(ctx, acctSchemaId, productId);
+		final I_M_Product_Acct acctInfo = getProductAcctRecord(acctSchemaId, productId).orElse(null);
 		if (acctInfo == null)
 		{
 			return null;
@@ -71,23 +82,45 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return ActivityId.ofRepoIdOrNull(acctInfo.getC_Activity_ID());
 	}
 
-	@Cached(cacheName = I_M_Product_Acct.Table_Name)
-	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final AcctSchemaId acctSchemaId, final ProductId productId)
+	private Optional<I_M_Product_Acct> getProductAcctRecord(final AcctSchemaId acctSchemaId, final ProductId productId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product_Acct.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
-				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, productId)
+		return productAcctRecords.getOrLoad(
+				ProductIdAndAcctSchemaId.of(productId, acctSchemaId),
+				this::retrieveProductAcctRecord);
+	}
+
+	private Optional<I_M_Product_Acct> retrieveProductAcctRecord(@NonNull final ProductIdAndAcctSchemaId key)
+	{
+		final I_M_Product_Acct record = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Product_Acct.class)
+				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, key.getAcctSchemaId())
+				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, key.getProductId())
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_M_Product_Acct.class);
+
+		return Optional.ofNullable(record);
 	}
 
 	@Override
-	public I_M_Product_Acct retrieveProductAcctOrNull(final AcctSchema acctSchema, final ProductId productId)
+	public Optional<AccountId> getProductAcct(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductId productId,
+			@NonNull final ProductAcctType acctType)
 	{
-		final Properties ctx = Env.getCtx();
-		return retrieveProductAcctOrNull(ctx, acctSchema.getId(), productId);
+		final I_M_Product_Acct productAcct = getProductAcctRecord(acctSchemaId, productId).orElse(null);
+		if (productAcct == null)
+		{
+			return Optional.empty();
+		}
+
+		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
+		if (validCombinationId == null || validCombinationId <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(AccountId.ofRepoId(validCombinationId));
 	}
 
 	@Override
@@ -95,7 +128,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	{
 		final Properties ctx = Env.getCtx();
 		final AcctSchema schema = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(ctx);
-		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getId(), productId);
+		final I_M_Product_Acct productAcct = getProductAcctRecord(schema.getId(), productId).orElse(null);
 		if (productAcct == null)
 		{
 			return null;
@@ -126,4 +159,12 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return retrieveDefaultProductCategoryAcct(ctx, acctSchema.getId());
 	}
 
+	@Value(staticConstructor = "of")
+	private static class ProductIdAndAcctSchemaId
+	{
+		@NonNull
+		ProductId productId;
+		@NonNull
+		AcctSchemaId acctSchemaId;
+	}
 }

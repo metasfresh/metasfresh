@@ -150,6 +150,9 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
 
-	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
+	List<org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
+	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
+
+	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
 }

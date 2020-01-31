@@ -56,6 +56,11 @@ public class HUPIItemProductId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	public static HUPIItemProductId ofRepoIdOrNone(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : VIRTUAL_HU;
+	}
+
 	public static int toRepoId(final HUPIItemProductId id)
 	{
 		return id != null ? id.getRepoId() : -1;
@@ -83,6 +88,11 @@ public class HUPIItemProductId implements RepoIdAware
 		return Objects.equals(id1, id2);
 	}
 
+	public static HUPIItemProductId nullToVirtual(final HUPIItemProductId id)
+	{
+		return id != null ? id : VIRTUAL_HU;
+	}
+
 	public boolean isVirtualHU()
 	{
 		return isVirtualHU(repoId);
@@ -91,6 +101,12 @@ public class HUPIItemProductId implements RepoIdAware
 	public static boolean isVirtualHU(final int repoId)
 	{
 		return repoId == VIRTUAL_HU.repoId;
+	}
+
+	public boolean isRegular()
+	{
+		return repoId != VIRTUAL_HU.repoId
+				&& repoId != TEMPLATE_HU.repoId;
 	}
 
 }

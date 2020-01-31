@@ -13,8 +13,7 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -24,9 +23,9 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -63,13 +62,9 @@ import lombok.NonNull;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class StockCandidateServiceTests
 {
-	@Rule
-	public final AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
-	// private final Instant t1 = TimeUtil.parseLocalDateTime("2017-11-22 00:00");
-
 	private final Instant t1 = Instant.parse("2017-11-22T00:00:00.00Z");
 	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
 	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
@@ -82,7 +77,7 @@ public class StockCandidateServiceTests
 
 	private int parentIdSequence;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -166,16 +161,17 @@ public class StockCandidateServiceTests
 		assertThat(result.getPreviousQty()).isEqualByComparingTo(TEN);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void updateQuantity_error_if_missing_candidate_record()
 	{
-		final Candidate candidate = Candidate.builder()
+		final CandidateBuilder candidateBuilder = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.id(CandidateId.ofRepoId(23))
-				.build();
+				.id(CandidateId.ofRepoId(23));
 
-		stockCandidateService.updateQtyAndDate(candidate);
+		assertThatThrownBy(() -> candidateBuilder.build())
+				.isInstanceOf(NullPointerException.class)
+				.hasMessageStartingWith("clientAndOrgId");
 	}
 
 	@Test
@@ -221,7 +217,7 @@ public class StockCandidateServiceTests
 
 		// all these stock records need to have the same group-ID
 		final int groupId = records.get(0).getMD_Candidate_GroupId();
-		assertThat(groupId, greaterThan(0));
+		assertThat(groupId).isGreaterThan(0);
 		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
 	}
 
@@ -265,7 +261,7 @@ public class StockCandidateServiceTests
 		// all these stock records need to have the same group-ID
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllRecords());
 		final int groupId = records.get(0).getMD_Candidate_GroupId();
-		assertThat(groupId, greaterThan(0));
+		assertThat(groupId).isGreaterThan(0);
 		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
 	}
 

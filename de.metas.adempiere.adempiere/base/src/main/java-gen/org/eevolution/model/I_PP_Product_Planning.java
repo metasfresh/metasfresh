@@ -32,10 +32,6 @@ public interface I_PP_Product_Planning
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Client>(I_PP_Product_Planning.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_PP_Product_Planning
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,18 +49,12 @@ public interface I_PP_Product_Planning
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Org>(I_PP_Product_Planning.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -117,12 +107,6 @@ public interface I_PP_Product_Planning
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_C_BPartner>(I_PP_Product_Planning.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -151,8 +135,6 @@ public interface I_PP_Product_Planning
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_User>(I_PP_Product_Planning.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -378,8 +360,30 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
 
 	/**
-	 * Set Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Set Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPickingOrder (boolean IsPickingOrder);
+
+	/**
+	 * Get Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPickingOrder();
+
+    /** Column definition for IsPickingOrder */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickingOrder = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPickingOrder", null);
+    /** Column name IsPickingOrder */
+    public static final String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
+
+	/**
+	 * Set Wird Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -388,8 +392,7 @@ public interface I_PP_Product_Planning
 	public void setIsPurchased (java.lang.String IsPurchased);
 
 	/**
-	 * Get Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Get Wird Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -401,6 +404,31 @@ public interface I_PP_Product_Planning
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPurchased = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPurchased", null);
     /** Column name IsPurchased */
     public static final String COLUMNNAME_IsPurchased = "IsPurchased";
+
+	/**
+	 * Set Wird gehandelt (Bestellkontrolle).
+	 * Legt fest, ob mit dem bestreffenden Produkt gehandelt wird.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTraded (java.lang.String IsTraded);
+
+	/**
+	 * Get Wird gehandelt (Bestellkontrolle).
+	 * Legt fest, ob mit dem bestreffenden Produkt gehandelt wird.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIsTraded();
+
+    /** Column definition for IsTraded */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsTraded = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsTraded", null);
+    /** Column name IsTraded */
+    public static final String COLUMNNAME_IsTraded = "IsTraded";
 
 	/**
 	 * Set Merkmale.
@@ -436,7 +464,7 @@ public interface I_PP_Product_Planning
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Product_ID (int M_Product_ID);
@@ -446,17 +474,11 @@ public interface I_PP_Product_Planning
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Product>(I_PP_Product_Planning.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -503,12 +525,6 @@ public interface I_PP_Product_Planning
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Warehouse>(I_PP_Product_Planning.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
@@ -553,12 +569,6 @@ public interface I_PP_Product_Planning
 	 */
 	public int getPlanner_ID();
 
-	public org.compiere.model.I_AD_User getPlanner();
-
-	public void setPlanner(org.compiere.model.I_AD_User Planner);
-
-    /** Column definition for Planner_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_User> COLUMN_Planner_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_User>(I_PP_Product_Planning.class, "Planner_ID", org.compiere.model.I_AD_User.class);
     /** Column name Planner_ID */
     public static final String COLUMNNAME_Planner_ID = "Planner_ID";
 
@@ -649,7 +659,7 @@ public interface I_PP_Product_Planning
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setSeqNo (int SeqNo);
@@ -660,7 +670,7 @@ public interface I_PP_Product_Planning
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getSeqNo();
@@ -741,8 +751,6 @@ public interface I_PP_Product_Planning
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_User>(I_PP_Product_Planning.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

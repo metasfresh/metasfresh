@@ -35,6 +35,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class WorkPackageParamsBuilder implements IWorkPackageParamsBuilder
 {
@@ -49,9 +50,8 @@ import de.metas.util.Services;
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
 
-	/* package */WorkPackageParamsBuilder(final IWorkPackageBuilder parentBuilder)
+	/* package */WorkPackageParamsBuilder(@NonNull final IWorkPackageBuilder parentBuilder)
 	{
-		super();
 		_parentBuilder = parentBuilder;
 	}
 

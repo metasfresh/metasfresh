@@ -47,6 +47,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -115,7 +116,8 @@ public class DDOrderProducer
 			@NonNull final Date dateOrdered,
 			@Nullable final IMRPCreateSupplyRequest request)
 	{
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ddOrder.getProductPlanningId());
+		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrder.getProductPlanningId());
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
 		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(ddOrder.getOrgId());
 

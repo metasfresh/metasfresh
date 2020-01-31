@@ -2,8 +2,15 @@ package de.metas.materialtracking.impl;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -11,16 +18,16 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -39,41 +46,27 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		return Optional.ofNullable(attributeId);
 	}
 
+	private AttributeId getMaterialTrackingAttributeIdOrFail()
+	{
+		return getMaterialTrackingAttributeId()
+				.orElseThrow(() -> new AdempiereException("M_Attribute record with Value=" + M_Attribute_Value_MaterialTracking + " is missing or deactivated"));
+	}
+
 	@Override
 	public I_M_Attribute getMaterialTrackingAttribute()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		return getMaterialTrackingAttributeId()
-				.map(attributeDAO::getAttributeById)
-				.orElseThrow(() -> new AdempiereException("M_Attribute record with Value=" + M_Attribute_Value_MaterialTracking + " is missing or deactivated"));
+		final AttributeId attributeId = getMaterialTrackingAttributeIdOrFail();
+		return attributeDAO.getAttributeById(attributeId);
 	}
 
 	@Override
 	public void createOrUpdateMaterialTrackingAttributeValue(@NonNull final I_M_Material_Tracking materialTracking)
 	{
-		I_M_AttributeValue attributeValue = materialTracking.getM_AttributeValue();
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
-		//
-		// If the attribute value was not already created, create it now
-		if (attributeValue == null || attributeValue.getM_AttributeValue_ID() <= 0)
-		{
-			final AttributeId attributeId = getMaterialTrackingAttributeId()
-					.orElseThrow(() -> new AdempiereException("M_Attribute record with Value=" + M_Attribute_Value_MaterialTracking + " is missing or deactivated")
-							.appendParametersToMessage()
-							.setParameter("materialTracking", materialTracking));
-
-			attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, materialTracking);
-			// attributeValue.setAD_Org_ID(attribute.getAD_Org_ID());
-			attributeValue.setM_Attribute_ID(attributeId.getRepoId());
-		}
-
-		//
-		// Update Attribute Value
 		final String name = buildName(materialTracking);
-		attributeValue.setName(name);
-
-		//
 		final String value;
 		if (materialTracking.getM_Material_Tracking_ID() <= 0)
 		{
@@ -86,19 +79,37 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		{
 			value = getMaterialTrackingIdStr(materialTracking);
 		}
-		attributeValue.setValue(value);
-
 		final String description = materialTracking.getDescription();
-		attributeValue.setDescription(description);
-
 		final boolean isActive = materialTracking.isActive() && !materialTracking.isProcessed();
-		attributeValue.setIsActive(isActive);
 
 		//
-		// Save it
-		InterfaceWrapperHelper.save(attributeValue);
+		// If the attribute value was not already created, create it now
+		AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(materialTracking.getM_AttributeValue_ID());
+		if (attributeValueId == null)
+		{
+			final AttributeId attributeId = getMaterialTrackingAttributeIdOrFail();
+			final AttributeListValue attributeValue = attributesRepo.createAttributeValue(AttributeListValueCreateRequest.builder()
+					.attributeId(attributeId)
+					.value(value)
+					.name(name)
+					.description(description)
+					.active(isActive)
+					.build());
+			attributeValueId = attributeValue.getId();
+		}
+		else
+		{
+			final AttributeListValue attributeValue = attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+					.id(attributeValueId)
+					.value(Optional.ofNullable(value))
+					.name(name)
+					.description(Optional.ofNullable(description))
+					.active(isActive)
+					.build());
+			attributeValueId = attributeValue.getId();
+		}
 
-		materialTracking.setM_AttributeValue(attributeValue);
+		materialTracking.setM_AttributeValue_ID(attributeValueId.getRepoId());
 	}
 
 	@Override
@@ -139,27 +150,31 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		sb.append(materialTracking.getLot());
 
 		// Vendor/BPartner
-		final I_C_BPartner bpartner = materialTracking.getC_BPartner();
-		if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(materialTracking.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
+			final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerName(bpartnerId);
 			sb.append("_");
-			sb.append(bpartner.getName());
+			sb.append(bpartnerName);
 		}
 
 		// Tracked product
-		final I_M_Product product = materialTracking.getM_Product();
-		if (product != null && product.getM_Product_ID() > 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(materialTracking.getM_Product_ID());
+		if (productId != null)
 		{
+			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			sb.append("_");
-			sb.append(product.getName());
+			sb.append(productName);
 		}
 
 		return sb.toString();
 	}
 
-	private I_M_AttributeInstance getMaterialTrackingAttributeInstanceOrNull(final I_M_AttributeSetInstance asi, final boolean createIfNotFound)
+	private I_M_AttributeInstance getMaterialTrackingAttributeInstanceOrNull(
+			@NonNull final AttributeSetInstanceId asiId,
+			final boolean createIfNotFound)
 	{
-		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
+		if (asiId.isNone())
 		{
 			return null;
 		}
@@ -175,8 +190,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, materialTrackingAttributeId.get());
-
+		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
 		if (materialTrackingAttributeInstance != null)
 		{
 			return materialTrackingAttributeInstance;
@@ -189,24 +203,27 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		//
 		// Create a new one
-		final I_M_AttributeInstance materialTrackingAttributeInstanceNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
-		materialTrackingAttributeInstanceNew.setAD_Org_ID(asi.getAD_Org_ID());
-		materialTrackingAttributeInstanceNew.setM_AttributeSetInstance(asi);
+		final I_M_AttributeInstance materialTrackingAttributeInstanceNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class);
+		materialTrackingAttributeInstanceNew.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		materialTrackingAttributeInstanceNew.setM_Attribute_ID(materialTrackingAttributeId.get().getRepoId());
 		// NOTE: don't save it
 
 		return materialTrackingAttributeInstanceNew;
 	}
 
-	private I_M_AttributeValue getMaterialTrackingAttributeValue(final I_M_Material_Tracking materialTracking)
+	private AttributeListValue getMaterialTrackingAttributeValue(final I_M_Material_Tracking materialTracking)
 	{
 		if (materialTracking == null)
 		{
 			return null;
 		}
 
-		final I_M_AttributeValue materialTrackingAttributeValue = materialTracking.getM_AttributeValue();
-		if (materialTrackingAttributeValue == null || materialTrackingAttributeValue.getM_AttributeValue_ID() <= 0)
+		final AttributeId attributeId = getMaterialTrackingAttributeIdOrFail();
+		final AttributeValueId attributeValueId = AttributeValueId.ofRepoId(materialTracking.getM_AttributeValue_ID());
+
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final AttributeListValue materialTrackingAttributeValue = attributesRepo.retrieveAttributeValueOrNull(attributeId, attributeValueId);
+		if (materialTrackingAttributeValue == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_AttributeValue_ID@"
 					+ "\n@M_Material_Tracking_ID@: " + materialTracking);
@@ -258,7 +275,9 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
 		final boolean createAttributeInstanceIfNotFound = materialTracking != null;
-		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(asi, createAttributeInstanceIfNotFound);
+		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(
+				AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID()),
+				createAttributeInstanceIfNotFound);
 		if (materialTrackingAttributeInstance == null)
 		{
 			return;
@@ -266,34 +285,38 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		//
 		// Get corresponding material tracking attribute value
-		final I_M_AttributeValue materialTrackingAttributeValue = getMaterialTrackingAttributeValue(materialTracking);
+		final AttributeListValue materialTrackingAttributeValue = getMaterialTrackingAttributeValue(materialTracking);
 
 		//
 		// Update Attribute Instance
 		materialTrackingAttributeInstance.setValue(materialTrackingAttributeValue == null ? null : materialTrackingAttributeValue.getValue());
-		materialTrackingAttributeInstance.setM_AttributeValue(materialTrackingAttributeValue);
+		materialTrackingAttributeInstance.setM_AttributeValue_ID(materialTrackingAttributeValue.getId().getRepoId());
 
 		InterfaceWrapperHelper.save(materialTrackingAttributeInstance);
 	}
 
 	@Override
-	public I_M_Material_Tracking getMaterialTrackingOrNull(final I_M_AttributeSetInstance asi)
+	public I_M_Material_Tracking getMaterialTrackingOrNull(@Nullable final AttributeSetInstanceId asiId)
 	{
-		if (asi == null || asi.getM_AttributeSetInstance_ID() <= 0)
+		if (asiId == null || asiId.isNone())
 		{
 			return null;
 		}
 
-		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(asi, false); // createIfNotFound=false
+		final I_M_AttributeInstance materialTrackingAttributeInstance = getMaterialTrackingAttributeInstanceOrNull(asiId, false); // createIfNotFound=false
 		if (materialTrackingAttributeInstance == null)
 		{
 			return null;
 		}
 
-		final I_M_AttributeValue materialTrackingAttributeValue = materialTrackingAttributeInstance.getM_AttributeValue();
+		final AttributeValueId materialTrackingAttributeValueId = AttributeValueId.ofRepoIdOrNull(materialTrackingAttributeInstance.getM_AttributeValue_ID());
+		if (materialTrackingAttributeValueId == null)
+		{
+			return null;
+		}
 
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		return materialTrackingDAO.retrieveMaterialTrackingByAttributeValue(materialTrackingAttributeValue);
+		return materialTrackingDAO.retrieveMaterialTrackingByAttributeValue(materialTrackingAttributeValueId);
 	}
 
 	@Override
@@ -337,8 +360,13 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	}
 
 	@Override
-	public boolean hasMaterialTrackingAttribute(final I_M_AttributeSetInstance asi)
+	public boolean hasMaterialTrackingAttribute(@NonNull final AttributeSetInstanceId asiId)
 	{
+		if (asiId.isNone())
+		{
+			return false;
+		}
+
 		final Optional<AttributeId> materialTrackingAttributeId = getMaterialTrackingAttributeId();
 		if (!materialTrackingAttributeId.isPresent())
 		{
@@ -346,7 +374,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, materialTrackingAttributeId.get());
+		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asiId, materialTrackingAttributeId.get());
 
 		return materialTrackingAttributeInstance != null;
 	}

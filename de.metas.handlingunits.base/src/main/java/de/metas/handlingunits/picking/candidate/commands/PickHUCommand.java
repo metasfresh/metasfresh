@@ -1,22 +1,28 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -63,27 +69,31 @@ public class PickHUCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ShipmentScheduleId shipmentScheduleId;
-	private final HuId pickFromHuId;
+	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
 	private final Quantity qtyToPick;
 	private final HuPackingInstructionsId packToId;
 	private final boolean autoReview;
+	private final ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrderRequests;
 
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
 	@Builder
 	private PickHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickHURequest request)
+			@NonNull final PickRequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
-		this.pickFromHuId = request.getPickFromHuId();
+
+		this.pickFrom = request.getPickFrom();
+
 		this.pickingSlotId = request.getPickingSlotId();
 		this.packToId = request.getPackToId();
 		this.qtyToPick = request.getQtyToPick();
 		this.autoReview = request.isAutoReview();
+		this.issuesToPickingOrderRequests = request.getIssuesToPickingOrder();
 	}
 
 	public PickHUResult perform()
@@ -109,6 +119,8 @@ public class PickHUCommand
 			pickingCandidate.reviewPicking(qtyToPick.toBigDecimal());
 		}
 
+		pickingCandidate.issueToPickingOrder(getIssuesToPickingOrder());
+
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();
@@ -120,10 +132,11 @@ public class PickHUCommand
 
 	private PickingCandidate getOrCreatePickingCandidate()
 	{
-		final PickingCandidate existingPickingCandidate = pickingCandidateRepository.streamByShipmentScheduleId(shipmentScheduleId)
+		final PickingCandidate existingPickingCandidate = pickingCandidateRepository.getByShipmentScheduleId(shipmentScheduleId)
+				.stream()
 				.filter(PickingCandidate::isDraft)
 				.filter(pc -> PickingSlotId.equals(pickingSlotId, pc.getPickingSlotId()))
-				.filter(pc -> HuId.equals(pickFromHuId, pc.getPickFromHuId()))
+				.filter(pc -> pickFrom.equals(pc.getPickFrom()))
 				.findFirst()
 				.orElse(null);
 		if (existingPickingCandidate != null)
@@ -133,13 +146,35 @@ public class PickHUCommand
 		else
 		{
 			return PickingCandidate.builder()
-					.status(PickingCandidateStatus.Draft)
+					.processingStatus(PickingCandidateStatus.Draft)
 					.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
 					.shipmentScheduleId(shipmentScheduleId)
-					.pickFromHuId(pickFromHuId)
+					.pickFrom(pickFrom)
 					.pickingSlotId(pickingSlotId)
 					.build();
 		}
+	}
+
+	private List<PickingCandidateIssueToBOMLine> getIssuesToPickingOrder()
+	{
+		if (issuesToPickingOrderRequests == null || issuesToPickingOrderRequests.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return issuesToPickingOrderRequests.stream()
+				.map(request -> toPickingCandidateIssueToBOMLine(request))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private PickingCandidateIssueToBOMLine toPickingCandidateIssueToBOMLine(final IssueToPickingOrderRequest request)
+	{
+		return PickingCandidateIssueToBOMLine.builder()
+				.issueToOrderBOMLineId(request.getIssueToOrderBOMLineId())
+				.issueFromHUId(request.getIssueFromHUId())
+				.productId(request.getProductId())
+				.qtyToIssue(request.getQtyToIssue())
+				.build();
 	}
 
 	private Quantity getQtyToPick()
@@ -156,7 +191,7 @@ public class PickHUCommand
 
 	private Quantity getQtyFromHU()
 	{
-		final I_M_HU pickFromHU = handlingUnitsDAO.getById(pickFromHuId);
+		final I_M_HU pickFromHU = handlingUnitsDAO.getById(pickFrom.getHuId());
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());

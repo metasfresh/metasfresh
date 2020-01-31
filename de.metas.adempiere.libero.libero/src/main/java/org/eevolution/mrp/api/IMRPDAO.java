@@ -68,13 +68,6 @@ public interface IMRPDAO extends ISingletonService
 	I_PP_MRP retrieveMRPRecord(Object referencedModel);
 
 	/**
-	 * Delete MRP records for given document/document line.
-	 *
-	 * @param model
-	 */
-	void deleteMRP(Object model);
-
-	/**
 	 * Delete MRP records that match given query
 	 * 
 	 * @param mrpQuery

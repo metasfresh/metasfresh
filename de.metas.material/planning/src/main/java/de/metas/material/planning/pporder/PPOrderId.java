@@ -55,12 +55,7 @@ public class PPOrderId implements RepoIdAware
 
 	public static int toRepoId(final PPOrderId PPOrderId)
 	{
-		return toRepoIdOr(PPOrderId, -1);
-	}
-
-	public static int toRepoIdOr(final PPOrderId PPOrderId, final int defaultValue)
-	{
-		return PPOrderId != null ? PPOrderId.getRepoId() : defaultValue;
+		return PPOrderId != null ? PPOrderId.getRepoId() : -1;
 	}
 
 	int repoId;

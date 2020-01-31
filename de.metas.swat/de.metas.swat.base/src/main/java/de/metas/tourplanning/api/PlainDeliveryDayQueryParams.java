@@ -6,11 +6,12 @@ import java.time.ZonedDateTime;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 /**
  * Plain implementation of {@link IDeliveryDayQueryParams}
- * 
- * @author tsa
  *
+ * @author tsa
  */
 public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParams
 {
@@ -26,6 +27,7 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	/**
 	 * The day when the products should be delivered
 	 */
+	@Nullable
 	private LocalDate preparationDay = null;
 
 	@Override
@@ -69,7 +71,6 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	}
 
 	/**
-	 * 
 	 * @param toBeFetched
 	 * @see #isToBeFetched()
 	 */
@@ -97,7 +98,7 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 
 	/**
 	 * See {@link IDeliveryDayQueryParams#getCalculationTime()}.
-	 * 
+	 *
 	 * @param calculationTime
 	 */
 	public void setCalculationTime(final ZonedDateTime calculationTime)
@@ -105,13 +106,14 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 		this.calculationTime = calculationTime;
 	}
 
+	@Nullable
 	@Override
 	public LocalDate getPreparationDay()
 	{
 		return preparationDay;
 	}
 
-	public void setPreparationDay(LocalDate preparationDay)
+	public void setPreparationDay(@Nullable LocalDate preparationDay)
 	{
 		this.preparationDay = preparationDay;
 	}

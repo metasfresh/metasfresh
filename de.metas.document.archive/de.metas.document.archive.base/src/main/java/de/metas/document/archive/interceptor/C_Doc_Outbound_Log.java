@@ -83,7 +83,7 @@ public class C_Doc_Outbound_Log
 		if (docOutboundlogRecord.getC_BPartner_ID() <= 0)
 		{
 			// reset everything
-			docOutboundlogRecord.setCurrentEMailRecipient(null);
+			docOutboundlogRecord.setCurrentEMailRecipient_ID(-1);
 			docOutboundlogRecord.setCurrentEMailAddress(null);
 			docOutboundlogRecord.setIsInvoiceEmailEnabled(false);
 			return;

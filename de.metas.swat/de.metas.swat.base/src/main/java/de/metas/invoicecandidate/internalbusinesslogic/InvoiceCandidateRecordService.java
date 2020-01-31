@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
@@ -13,14 +14,15 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -52,6 +54,8 @@ import lombok.NonNull;
 @Service
 public class InvoiceCandidateRecordService
 {
+	private static final Logger logger = LogManager.getLogger(InvoiceCandidateRecordService.class);
+
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
@@ -88,10 +92,9 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
-			invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight; // for purchase candidates it's *always* nominal weight
 			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
 			{
 				qualityDiscountOverride = Optional.of(Percent.of(icRecord.getQualityDiscountPercent_Override()));
@@ -116,6 +119,7 @@ public class InvoiceCandidateRecordService
 				.stockUomId(stockUomId)
 				.deliveryQualityDiscount(qualityDiscountOverride)
 				.negateQtys(orderedData.isNegative())
+				.defaultQtyDelivered(StockQtyAndUOMQtys.create(icRecord.getQtyDelivered(), productId, icRecord.getQtyDeliveredInUOM(), icUomId))
 				.build()
 				.loadDeliveredQtys();
 
@@ -166,28 +170,30 @@ public class InvoiceCandidateRecordService
 			@NonNull final InvoiceCandidate invoiceCandidate,
 			@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		if (icRecord.getC_ILCandHandler_ID() > 0) // in unit tests there might be no handler; don't bother in those cases
-		{
-			// updating qty delivered; this part used to be in InvoiceCandInvalidupdater
-			// 07814-IT2 only from now on we have the correct QtyDelivered
-			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
-			Services.get(IInvoiceCandidateHandlerBL.class).setDeliveredData(icRecord);
-		}
-
-		final DeliveredData deliveredData = invoiceCandidate.getDeliveredData();
+		// (receipt) quality discount
 		if (invoiceCandidate.getSoTrx().isPurchase())
 		{
+			final DeliveredData deliveredData = invoiceCandidate.getDeliveredData();
 			final ReceiptData receiptData = deliveredData.getReceiptData();
 
 			final Percent qualityDiscountOverride = invoiceCandidate.getQualityDiscountOverride();
+			final InvoicableQtyBasedOn invoicableQtyBasedOn = invoiceCandidate.getInvoicableQtyBasedOn();
+
 			icRecord.setQualityDiscountPercent_Override(qualityDiscountOverride == null ? null : qualityDiscountOverride.toBigDecimal());
 
-			icRecord.setQtyWithIssues(receiptData.getQtysWithIssues().getStockQty().toBigDecimal());
-			icRecord.setQtyWithIssues_Effective(receiptData.computeQtysWithIssuesEffective(qualityDiscountOverride).getStockQty().toBigDecimal());
+			icRecord.setQtyWithIssues(
+					receiptData
+							.getQtysWithIssues(invoicableQtyBasedOn)
+							.getStockQty().toBigDecimal());
+
+			icRecord.setQtyWithIssues_Effective(
+					receiptData
+							.computeQtysWithIssuesEffective(qualityDiscountOverride, invoicableQtyBasedOn)
+							.getStockQty().toBigDecimal());
 
 			// check if QualityDiscountPercent from the inout lines equals the effective quality-percent which we currently have
 			final BigDecimal qualityDiscountPercentOld = icRecord.getQualityDiscountPercent();
-			final BigDecimal qualityDiscountPercentNew = receiptData.computeQualityDiscount().toBigDecimal();
+			final BigDecimal qualityDiscountPercentNew = receiptData.computeQualityDiscount(invoicableQtyBasedOn).toBigDecimal();
 
 			final boolean isQualityDiscountPercentChanged = qualityDiscountPercentOld.compareTo(qualityDiscountPercentNew) != 0;
 			if (isQualityDiscountPercentChanged)
@@ -202,6 +208,7 @@ public class InvoiceCandidateRecordService
 
 				if (qualityDiscountPercentNew.signum() > 0)
 				{
+					logger.debug("Set IsIndispute=true because QualityDiscountPercent={}", qualityDiscountPercentNew);
 					// the inOuts' indisputQqty changed and we (now) have effective qualityDiscountPercent > 0
 					// set the IC to IsInDispute = true to make sure the qtywithissue-chage is dealt with
 					icRecord.setIsInDispute(true);

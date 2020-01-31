@@ -32,8 +32,6 @@ public interface I_EDI_cctop_invoic_500_v
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_Client>(I_EDI_cctop_invoic_500_v.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_EDI_cctop_invoic_500_v
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_Org>(I_EDI_cctop_invoic_500_v.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -116,10 +112,31 @@ public interface I_EDI_cctop_invoic_500_v
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_User>(I_EDI_cctop_invoic_500_v.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEanCom_Ordered_UOM (java.lang.String EanCom_Ordered_UOM);
+
+	/**
+	 * Get Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEanCom_Ordered_UOM();
+
+    /** Column definition for EanCom_Ordered_UOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_EanCom_Ordered_UOM = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "EanCom_Ordered_UOM", null);
+    /** Column name EanCom_Ordered_UOM */
+    public static final String COLUMNNAME_EanCom_Ordered_UOM = "EanCom_Ordered_UOM";
 
 	/**
 	 * Set EanCom_Price_UOM.
@@ -151,7 +168,7 @@ public interface I_EDI_cctop_invoic_500_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void seteancom_uom (java.lang.String eancom_uom);
+	public void setEanCom_UOM (java.lang.String EanCom_UOM);
 
 	/**
 	 * Get eancom_uom.
@@ -160,12 +177,58 @@ public interface I_EDI_cctop_invoic_500_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String geteancom_uom();
+	public java.lang.String getEanCom_UOM();
 
-    /** Column definition for eancom_uom */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_eancom_uom = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "eancom_uom", null);
-    /** Column name eancom_uom */
-    public static final String COLUMNNAME_eancom_uom = "eancom_uom";
+    /** Column definition for EanCom_UOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_EanCom_UOM = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "EanCom_UOM", null);
+    /** Column name EanCom_UOM */
+    public static final String COLUMNNAME_EanCom_UOM = "EanCom_UOM";
+
+	/**
+	 * Set CU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEAN_CU (java.lang.String EAN_CU);
+
+	/**
+	 * Get CU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEAN_CU();
+
+    /** Column definition for EAN_CU */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_EAN_CU = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "EAN_CU", null);
+    /** Column name EAN_CU */
+    public static final String COLUMNNAME_EAN_CU = "EAN_CU";
+
+	/**
+	 * Set TU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEAN_TU (java.lang.String EAN_TU);
+
+	/**
+	 * Get TU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEAN_TU();
+
+    /** Column definition for EAN_TU */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_EAN_TU = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "EAN_TU", null);
+    /** Column name EAN_TU */
+    public static final String COLUMNNAME_EAN_TU = "EAN_TU";
 
 	/**
 	 * Set EDI_cctop_invoic_500_v.
@@ -216,6 +279,29 @@ public interface I_EDI_cctop_invoic_500_v
     public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, de.metas.esb.edi.model.I_EDI_cctop_invoic_v> COLUMN_EDI_cctop_invoic_v_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, de.metas.esb.edi.model.I_EDI_cctop_invoic_v>(I_EDI_cctop_invoic_500_v.class, "EDI_cctop_invoic_v_ID", de.metas.esb.edi.model.I_EDI_cctop_invoic_v.class);
     /** Column name EDI_cctop_invoic_v_ID */
     public static final String COLUMNNAME_EDI_cctop_invoic_v_ID = "EDI_cctop_invoic_v_ID";
+
+	/**
+	 * Set GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGTIN (java.lang.String GTIN);
+
+	/**
+	 * Get GTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGTIN();
+
+    /** Column definition for GTIN */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_GTIN = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "GTIN", null);
+    /** Column name GTIN */
+    public static final String COLUMNNAME_GTIN = "GTIN";
 
 	/**
 	 * Set Aktiv.
@@ -389,7 +475,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Order Line.
+	 * Set Auftragszeile.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -398,7 +484,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setOrderLine (int OrderLine);
 
 	/**
-	 * Get Order Line.
+	 * Get Auftragszeile.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -535,6 +621,29 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
+	 * Set Fakturierte Menge in Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoicedInOrderedUOM (java.math.BigDecimal QtyInvoicedInOrderedUOM);
+
+	/**
+	 * Get Fakturierte Menge in Auftrags-Maßeinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoicedInOrderedUOM();
+
+    /** Column definition for QtyInvoicedInOrderedUOM */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_QtyInvoicedInOrderedUOM = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "QtyInvoicedInOrderedUOM", null);
+    /** Column name QtyInvoicedInOrderedUOM */
+    public static final String COLUMNNAME_QtyInvoicedInOrderedUOM = "QtyInvoicedInOrderedUOM";
+
+	/**
 	 * Set Satz.
 	 * Rate or Tax or Exchange
 	 *
@@ -608,27 +717,50 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_taxfree = "taxfree";
 
 	/**
-	 * Set UPC/EAN.
+	 * Set CU-UPC.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUPC (java.lang.String UPC);
+	public void setUPC_CU (java.lang.String UPC_CU);
 
 	/**
-	 * Get UPC/EAN.
+	 * Get CU-UPC.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUPC();
+	public java.lang.String getUPC_CU();
 
-    /** Column definition for UPC */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "UPC", null);
-    /** Column name UPC */
-    public static final String COLUMNNAME_UPC = "UPC";
+    /** Column definition for UPC_CU */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_UPC_CU = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "UPC_CU", null);
+    /** Column name UPC_CU */
+    public static final String COLUMNNAME_UPC_CU = "UPC_CU";
+
+	/**
+	 * Set TU-UPC.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUPC_TU (java.lang.String UPC_TU);
+
+	/**
+	 * Get TU-UPC.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUPC_TU();
+
+    /** Column definition for UPC_TU */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object> COLUMN_UPC_TU = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, Object>(I_EDI_cctop_invoic_500_v.class, "UPC_TU", null);
+    /** Column name UPC_TU */
+    public static final String COLUMNNAME_UPC_TU = "UPC_TU";
 
 	/**
 	 * Get Aktualisiert.
@@ -655,8 +787,6 @@ public interface I_EDI_cctop_invoic_500_v
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_500_v, org.compiere.model.I_AD_User>(I_EDI_cctop_invoic_500_v.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

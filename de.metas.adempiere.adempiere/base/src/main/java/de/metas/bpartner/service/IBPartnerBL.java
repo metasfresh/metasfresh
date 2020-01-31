@@ -42,8 +42,6 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.order.DeliveryViaRule;
-import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -54,6 +52,8 @@ import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
+	I_C_BPartner getById(BPartnerId bpartnerId);
+	
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
 	String getBPartnerName(final BPartnerId bpartnerId);
@@ -63,32 +63,15 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * make full address
 	 *
-	 * @param bPartner
-	 * @param location
-	 * @param user
-	 * @param trxName
-	 * @return
 	 */
 	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, String trxName);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.
 	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param trxName
 	 * @return user/contact or null
 	 */
 	I_AD_User retrieveShipContact(Properties ctx, int bPartnerId, String trxName);
-
-	/**
-	 * Retrieve user/contact assigned to default/first bill to address. If no user/contact found, the first default user contact will be returned.
-	 *
-	 * @return user/contact or null
-	 * @deprecated it's not clear what this method does if there are multiple potential matches. Please use {@link #retrieveBillContactOrNull(RetrieveBillContactRequest)} instead.
-	 */
-	@Deprecated
-	I_AD_User retrieveBillContact(Properties ctx, int bPartnerId, String trxName);
 
 	/**
 	 * Retrieve user/contact that is assigned to given location. If no assigned contact found then the default BPartner contact will be returned.<br>
@@ -119,8 +102,11 @@ public interface IBPartnerBL extends ISingletonService
 	I_AD_User createDraftContact(I_C_BPartner bpartner);
 
 	/**
-	 * @param partner the partner to check for. Internally working with {@link de.metas.interfaces.I_C_BPartner}.
-	 * @param isSOTrx
+	 * @return true if InOut consolidation is allowed for given partner
+	 */
+	boolean isAllowConsolidateInOutEffective(BPartnerId bpartnerId, SOTrx soTrx);
+
+	/**
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
 	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, SOTrx soTrx);
@@ -174,24 +160,32 @@ public interface IBPartnerBL extends ISingletonService
 	int getDiscountSchemaId(BPartnerId bpartnerId, SOTrx soTrx);
 
 	/**
-	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link RetrieveBillContactRequest}.
+	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link ContactQuery}.
 	 */
-	User retrieveBillContactOrNull(RetrieveBillContactRequest request);
+	User retrieveContactOrNull(RetrieveContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
-	ShipperId getShipperIdOrNull(final BPartnerId bpartnerId);
+	BPartnerId getBPartnerSalesRepId(BPartnerId bPartnerId);
 
 	@Value
 	@Builder
-	public static class RetrieveBillContactRequest
+	public static class RetrieveContactRequest
 	{
+		public enum ContactType
+		{
+			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER;
+		}
+
 		@NonNull
 		BPartnerId bpartnerId;
 
-		/** If specified, then users with this location are preferred, even if a user ad another location is the default bill-to user. */
+		@Nullable
+		ContactType contactType;
+
+		/** If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user. */
 		@Nullable
 		BPartnerLocationId bPartnerLocationId;
 
@@ -212,8 +206,6 @@ public interface IBPartnerBL extends ISingletonService
 	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
-
-	DeliveryViaRule getDeliveryViaRuleOrNull(BPartnerId bpartnerId, SOTrx soTrx);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 }

@@ -418,7 +418,7 @@ public abstract class AbstractDLMService implements IDLMService
 						.addEqualsFilter(I_DLM_Partition_Record_V.COLUMNNAME_AD_Table_ID, r.getAD_Table_ID())
 						.addEqualsFilter(I_DLM_Partition_Record_V.COLUMNNAME_Record_ID, r.getRecord_ID())
 						.create()
-						.match();
+						.anyMatch();
 				if (!match)
 				{
 					final I_DLM_Partition_Record_V viewRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class, ctxAware);

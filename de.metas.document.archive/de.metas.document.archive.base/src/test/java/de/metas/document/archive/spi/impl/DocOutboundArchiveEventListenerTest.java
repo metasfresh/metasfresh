@@ -52,6 +52,7 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
@@ -93,6 +94,7 @@ public class DocOutboundArchiveEventListenerTest
 		invoice.setDocumentNo(documentNoExpected);
 		invoice.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		invoice.setAD_User_ID(user.getAD_User_ID());
+		invoice.setDocStatus(DocStatus.Reversed.getCode());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_AD_Archive archive = createArchive(invoice);

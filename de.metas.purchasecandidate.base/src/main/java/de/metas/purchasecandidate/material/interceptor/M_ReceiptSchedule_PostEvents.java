@@ -8,7 +8,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
@@ -216,7 +215,7 @@ public class M_ReceiptSchedule_PostEvents
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
-				.warehouseId(WarehouseId.ofRepoId(receiptScheduleBL.getM_Warehouse_Effective_ID(receiptSchedule)))
+				.warehouseId(receiptScheduleBL.getWarehouseEffectiveId(receiptSchedule))
 				// .customerId() we don't have the *customer* ID
 				.quantity(orderedQuantity)
 				.build();

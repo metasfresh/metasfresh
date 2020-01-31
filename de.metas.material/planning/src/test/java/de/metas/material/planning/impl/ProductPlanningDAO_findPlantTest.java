@@ -1,5 +1,8 @@
 package de.metas.material.planning.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -13,9 +16,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
@@ -28,7 +30,7 @@ public class ProductPlanningDAO_findPlantTest
 	private ProductPlanningDAO productPlanningDAO;
 	private IContextAware context;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -59,8 +61,8 @@ public class ProductPlanningDAO_findPlantTest
 				productId,
 				attributeSetInstanceId);
 
-		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plantId.getRepoId(), plantActual.getS_Resource_ID());
+		assertThat(plantActual).as("plant").isNotNull();
+		assertThat(plantActual.getS_Resource_ID()).isEqualTo(plantId.getRepoId());
 	}
 
 	/**
@@ -85,8 +87,8 @@ public class ProductPlanningDAO_findPlantTest
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plantId.getRepoId(), plantActual.getS_Resource_ID());
+		assertThat(plantActual).as("plant").isNotNull();
+		assertThat(plantActual.getS_Resource_ID()).isEqualTo(plantId.getRepoId());
 	}
 
 	/**
@@ -96,15 +98,15 @@ public class ProductPlanningDAO_findPlantTest
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
 	 */
-	@Test(expected = NoPlantForWarehouseException.class)
+	@Test
 	public void findPlant_WarehouseWithoutPlant_NoProductPlanning()
 	{
 		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
 		final int adOrgId = 1;
 		final int productId = 2;
 
-		// shall throw exception
-		productPlanningDAO.findPlant(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None);
+		assertThatThrownBy(() -> productPlanningDAO.findPlant(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None))
+				.isInstanceOf(NoPlantForWarehouseException.class);
 	}
 
 	/**
@@ -129,11 +131,11 @@ public class ProductPlanningDAO_findPlantTest
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plantExpected.getS_Resource_ID(), plantActual.getS_Resource_ID());
+		assertThat(plantActual).as("plant").isNotNull();
+		assertThat(plantActual.getS_Resource_ID()).isEqualTo(plantExpected.getS_Resource_ID());
 	}
 
-	@Test(expected = NoPlantForWarehouseException.class)
+	@Test
 	public void findPlant_WarehouseWithoutPlant_DifferentPlantsFound()
 	{
 		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
@@ -143,11 +145,13 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanningWithPlant(org, warehouse, product);
 		createProductPlanningWithPlant(org, warehouse, product);
 
-		productPlanningDAO.findPlant(
+		assertThatThrownBy(() -> productPlanningDAO.findPlant(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
-				AttributeConstants.M_AttributeSetInstance_ID_None);
+				AttributeConstants.M_AttributeSetInstance_ID_None))
+						//
+						.isInstanceOf(NoPlantForWarehouseException.class);
 	}
 
 	@Test
@@ -171,8 +175,8 @@ public class ProductPlanningDAO_findPlantTest
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plantId.getRepoId(), plantActual.getS_Resource_ID());
+		assertThat(plantActual).as("plant").isNotNull();
+		assertThat(plantActual.getS_Resource_ID()).isEqualTo(plantId.getRepoId());
 	}
 
 	private final ResourceId createPlant(final String name)
@@ -229,9 +233,9 @@ public class ProductPlanningDAO_findPlantTest
 	{
 		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
 		pp.setIsAttributeDependant(false);
-		pp.setAD_Org(org);
-		pp.setM_Warehouse(warehouse);
-		pp.setM_Product(product);
+		pp.setAD_Org_ID(org.getAD_Org_ID());
+		pp.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		pp.setM_Product_ID(product.getM_Product_ID());
 		if (plantId != null)
 		{
 			pp.setS_Resource_ID(plantId.getRepoId());

@@ -46,6 +46,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
@@ -75,6 +76,8 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -110,12 +113,14 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.testsupport.AbstractTestSupport;
 import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Getter;
@@ -235,12 +240,17 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		config_StandardDocTypes();
 		config_Pricing();
 
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
-		InterfaceWrapperHelper.save(org);
-		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+		final I_AD_Org orgRecord = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
+		InterfaceWrapperHelper.save(orgRecord);
+		orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+
+		final I_AD_OrgInfo orgInfoRecord = newInstance(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		saveRecord(orgInfoRecord);
 
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, trxName);
-		warehouse.setAD_Org_ID(org.getAD_Org_ID());
+		warehouse.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		InterfaceWrapperHelper.save(warehouse);
 		warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -274,6 +284,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
 	}
 
 	protected void config_InvoiceCand_HeaderAggregation()
@@ -286,27 +298,27 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			.setName("Default")
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_Location_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_C_Currency_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_AD_Org_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsSOTrx)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsTaxIncluded)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded)
 				.end()
 			.build();
 		//@formatter:on
@@ -335,7 +347,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.end()
 			.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
-				.setAD_Column(I_C_Invoice_Candidate.COLUMN_C_Order_ID)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 				.end()
 //			.newItem()
 //				.setType(X_C_AggregationItem.TYPE_Attribute)
@@ -471,6 +483,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	public final C_Invoice_Candidate_Builder createInvoiceCandidate()
 	{
 		return new C_Invoice_Candidate_Builder(this)
+				.setOrgId(orgId)
 				// Set defaults (backward compatibility with existing tests)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
@@ -649,7 +662,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			final boolean existingInvalidCandidates = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
-					.match();
+					.anyMatch();
 			Assert.assertEquals("Existing invalid invoice candidates", false, existingInvalidCandidates);
 		}
 	}

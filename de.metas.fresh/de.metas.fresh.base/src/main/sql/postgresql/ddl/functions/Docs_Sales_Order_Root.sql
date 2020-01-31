@@ -6,7 +6,10 @@ RETURNS TABLE
 	ad_org_id numeric(10,0),
 	docstatus character(2),
 	printname character varying(60),
-	displayhu text
+	C_Currency_ID numeric,
+	poreference varchar(60),
+	displayhu text,
+	isoffer character(1)
 	)
 AS
 $$	
@@ -15,6 +18,8 @@ SELECT
 	o.AD_Org_ID,
 	o.DocStatus,
 	dt.PrintName,
+	o.C_Currency_ID,
+	poreference,
 	CASE
 		WHEN
 		EXISTS(
@@ -27,7 +32,11 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhu
+	END as displayhu,
+		CASE WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
+		THEN 'Y'
+		ELSE 'N'
+	END AS isoffer
 FROM
 	C_Order o
 	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'

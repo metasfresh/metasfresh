@@ -7,9 +7,11 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import de.metas.rest_api.common.MetasfreshId;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,16 +46,15 @@ public class JsonChangeInfo
 	@ApiModelProperty(position = 10)
 	Long createdMillis;
 
-	@ApiModelProperty(value = "Might be empty if no `#AD_User_ID` was in the application context while the record was saved", dataType = "java.lang.Integer", position = 20)
-	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was created", //
+			dataType = "java.lang.Integer", position = 20)
 	MetasfreshId createdBy;
 
 	@ApiModelProperty(position = 30)
-	@JsonInclude(Include.NON_NULL)
 	Long lastUpdatedMillis;
 
-	@ApiModelProperty(allowEmptyValue = true, dataType = "java.lang.Integer", position = 30)
-	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(value = "Might be `null` if no `#AD_User_ID` was in the application context while the record was updated", //
+			allowEmptyValue = true, dataType = "java.lang.Integer", position = 30)
 	MetasfreshId lastUpdatedBy;
 
 	@JsonInclude(Include.NON_EMPTY)

@@ -2,6 +2,7 @@ package de.metas.inout.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,6 +36,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -44,6 +47,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -54,6 +58,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -68,15 +73,36 @@ public class InOutDAO implements IInOutDAO
 		return load(inoutId, I_M_InOut.class);
 	}
 
+	@Nullable
+	@Override
+	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutId, modelClass);
+	}
+
 	@Override
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
 	}
 
+	@NonNull
+	@Override
+	public ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.asList();
+	}
+
 	@Override
 	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 		return inoutLine;
 	}
@@ -194,7 +220,7 @@ public class InOutDAO implements IInOutDAO
 		// + " AND io.IsSOTrx='Y'"
 		// + " AND iol.AD_Client_ID=?";
 
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
 						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
 						// anymore, because they are already in a shipper-transportation
@@ -204,8 +230,6 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class);
-
-		return queryBuilder;
 	}
 
 	@Override
@@ -232,7 +256,7 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine retrieveLineWithQualityDiscount(final I_M_InOutLine originInOutLine)
+	public I_M_InOutLine retrieveLineWithQualityDiscount(@NonNull final I_M_InOutLine originInOutLine)
 	{
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = createInDisputeQueryBuilder(originInOutLine.getM_InOut());
 
@@ -262,9 +286,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMN_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, soTrx.toBoolean())
 				.create()
 				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
@@ -274,9 +299,8 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOut retrieveInOut(@NonNull final List<I_M_InOutLine> receiptLines)
 	{
 		final int inOutId = CollectionUtils.extractSingleElement(receiptLines, I_M_InOutLine::getM_InOut_ID);
-		final I_M_InOut receipt = load(inOutId, I_M_InOut.class);
 
-		return receipt;
+		return load(inOutId, I_M_InOut.class);
 	}
 
 	@Override
@@ -284,7 +308,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOut.class)
-				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(InOutId::ofRepoId)
 				.stream();
@@ -304,5 +328,18 @@ public class InOutDAO implements IInOutDAO
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
 	{
 		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
+	}
+
+	@Override
+	public void setExportedInCustomsInvoice(final InOutId shipmentId)
+	{
+		final I_M_InOut shipment = getById(shipmentId, I_M_InOut.class);
+
+		if (!shipment.isExportedToCustomsInvoice())
+		{
+			shipment.setIsExportedToCustomsInvoice(true);
+
+			saveRecord(shipment);
+		}
 	}
 }

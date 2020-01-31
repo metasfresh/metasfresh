@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.organization.OrgId;
 
@@ -43,14 +45,14 @@ import de.metas.organization.OrgId;
 
 public class BPartnerDAOTest
 {
-	private BPartnerDAO bpartnersRepo;
+	private BPartnerDAO bpartnerDAO;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		bpartnersRepo = new BPartnerDAO();
+		bpartnerDAO = new BPartnerDAO();
 	}
 
 	@Test
@@ -69,7 +71,7 @@ public class BPartnerDAOTest
 		save(bPartnerRecord2);
 
 		// invoke the method under test
-		final Map<BPartnerId, Integer> result = bpartnersRepo
+		final Map<BPartnerId, Integer> result = bpartnerDAO
 				.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType.VENDOR);
 
 		assertThat(result)
@@ -91,13 +93,30 @@ public class BPartnerDAOTest
 
 	private AbstractComparableAssert<?, BPartnerId> assertRetrieveBPartnerIdByName(final String queryBPName)
 	{
-		final BPartnerId bpartnerId = bpartnersRepo.retrieveBPartnerIdBy(BPartnerQuery.builder()
+		final BPartnerId bpartnerId = bpartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 				.bpartnerName(queryBPName)
 				.onlyOrgId(OrgId.ANY)
 				.failIfNotExists(false)
 				.build())
 				.orElse(null);
 		return assertThat(bpartnerId);
+	}
+
+	@Test
+	public void retrieveBPartnerIdBy_notFound()
+	{
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("noSuchPartner")
+				.onlyOrgId(OrgId.ofRepoId(20))
+				.onlyOrgId(OrgId.ANY)
+				.failIfNotExists(true)
+				.build();
+
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(BPartnerIdNotFoundException.class)
+				.hasMessage("Found no existing BPartner;"
+						+ " Searched via the following properties one-after-one (list may be empty): Value/Code=noSuchPartner;"
+						+ " The search was restricted to the following orgIds (empty means no restriction): [20, 0]");
 	}
 
 	private BPartnerId createBPartnerWithName(final String name)

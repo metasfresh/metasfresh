@@ -1,6 +1,10 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -13,18 +17,31 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
+import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
+import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -53,6 +70,20 @@ import lombok.NonNull;
 @Service
 class JsonConverters
 {
+	private final CurrencyService currencyService;
+	private final DocTypeService docTypeService;
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
+	public JsonConverters(
+			@NonNull final CurrencyService currencyService,
+			@NonNull final DocTypeService docTypeService)
+	{
+		this.currencyService = currencyService;
+		this.docTypeService = docTypeService;
+
+	}
+
 	public final OLCandCreateRequestBuilder fromJson(
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
@@ -70,22 +101,48 @@ class JsonConverters
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
-		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
+		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
 
 		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
+		final InputDataSourceId dataSourceId = retrieveDataSourceId(request, orgId, masterdataProvider);
+
+		final InputDataSourceId dataDestId = retrieveDataDestId(request, orgId, masterdataProvider);
+		final I_AD_InputDataSource dataDestRecord = inputDataSourceDAO.getById(dataDestId);
+		final String dataDestInternalName = dataDestRecord.getInternalName();
+		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
+		{
+			Check.assumeNotNull(request.getDateRequired(),
+					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
+					"DEST.de.metas.invoicecandidate", this);
+		}
+
+		final ShipperId shipperId = masterdataProvider.getShipperId(request);
+
+		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request, orgId);
+
+		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
+
+		final UomId uomId;
+		if (!isEmpty(request.getUomCode(), true))
+		{
+			uomId = uomDAO.getUomIdByX12DE355(request.getUomCode());
+		}
+		else
+		{
+			uomId = productInfo.getUomId();
+		}
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
 				//
-				.dataSourceInternalName(request.getDataSourceInternalName())
-				.dataDestInternalName(request.getDataDestInternalName())
+				.dataSourceId(dataSourceId)
+				.dataDestId(dataDestId)
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
-				//
-				.dataDestInternalName(request.getDataDestInternalName())
 				//
 				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
 				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
@@ -97,7 +154,8 @@ class JsonConverters
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
-				.docTypeInvoiceId(masterdataProvider.getDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
 				.presetDateShipped(request.getPresetDateShipped())
@@ -107,8 +165,8 @@ class JsonConverters
 				.productId(productInfo.getProductId())
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
-				.uomId(productInfo.getUomId())
-				.huPIItemProductId(request.getPackingMaterialId())
+				.uomId(uomId)
+				.huPIItemProductId(MetasfreshId.toValue(request.getPackingMaterialId()))
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -116,13 +174,61 @@ class JsonConverters
 				.discount(Percent.ofNullable(request.getDiscount()))
 				//
 				.warehouseDestId(warehouseDestId)
+
+				.shipperId(shipperId)
+
+				.paymentRule(paymentRule)
+
+				.salesRepId(salesRepId)
 		//
 		;
 	}
 
+	private InputDataSourceId retrieveDataDestId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final String dataDestIdentifier = request.getDataDest();
+		if (Check.isEmpty(dataDestIdentifier))
+		{
+			throw new MissingPropertyException("dataDest", request);
+		}
+		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
+		if (dataDestId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataDest")
+					.resourceIdentifier(dataDestIdentifier)
+					.parentResource(request).build();
+		}
+		return dataDestId;
+	}
+
+	private InputDataSourceId retrieveDataSourceId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final String dataSourceIdentifier = request.getDataSource();
+		if (Check.isEmpty(dataSourceIdentifier))
+		{
+			throw new MissingPropertyException("dataSource", request);
+		}
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceIdentifier)
+					.parentResource(request).build();
+		}
+		return dataSourceId;
+	}
+
 	private final JsonResponseBPartnerLocationAndContact toJson(
-			final BPartnerInfo bpartnerInfo,
-			final MasterdataProvider masterdataProvider)
+			@Nullable final BPartnerInfo bpartnerInfo,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		if (bpartnerInfo == null)
 		{
@@ -149,7 +255,9 @@ class JsonConverters
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-	private JsonOLCand toJson(final OLCand olCand, final MasterdataProvider masterdataProvider)
+	private JsonOLCand toJson(
+			@NonNull final OLCand olCand,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -161,8 +269,8 @@ class JsonConverters
 				//
 				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
-				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
-				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo(), masterdataProvider))
+				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
+				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
@@ -170,8 +278,9 @@ class JsonConverters
 				//
 				.productId(olCand.getM_Product_ID())
 				.productDescription(olCand.getProductDescription())
-				.qty(olCand.getQty())
-				.uomId(olCand.getC_UOM_ID())
+				.qty(olCand.getQty().toBigDecimal())
+				.uomId(olCand.getQty().getUomId().getRepoId())
+				.qtyItemCapacity(olCand.getQtyItemCapacity())
 				.huPIItemProductId(olCand.getHUPIProductItemId())
 				//
 				.pricingSystemId(PricingSystemId.toRepoId(olCand.getPricingSystemId()))

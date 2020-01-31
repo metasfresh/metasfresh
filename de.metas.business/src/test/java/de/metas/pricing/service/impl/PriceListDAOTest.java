@@ -33,6 +33,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.lang.SOTrx;
@@ -46,6 +47,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -96,12 +98,14 @@ public class PriceListDAOTest
 	public void test_retrievePriceListByPricingSyst_WithCountryMatched()
 	{
 		createPriceList(pricingSystem,
+				null,
 				"test price list",
 				true,
 				country,
 				EURO);
 
 		final I_M_PriceList pl2 = createPriceList(pricingSystem,
+				null,
 				"test price list",
 				true,
 				null,
@@ -118,25 +122,30 @@ public class PriceListDAOTest
 
 		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class);
 		bpl.setC_Location(location);
-		bpl.setC_BPartner(bpartner);
+		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		save(bpl);
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()), bpl, SOTrx.SALES);
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
+				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
+				toBPartnerLocationId(bpl),
+				SOTrx.SALES);
 
-		assertThat(pl).isNotNull();
-		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl2.getM_PriceList_ID());
+		assertThat(plId).isNotNull();
+		assertThat(plId.getRepoId()).isEqualByComparingTo(pl2.getM_PriceList_ID());
 	}
 
 	@Test
 	public void test_retrievePriceListByPricingSyst_WithCountryNull()
 	{
 		final I_M_PriceList pl1 = createPriceList(pricingSystem,
+				null,
 				"test price list",
 				true,
 				country,
 				EURO);
 
 		createPriceList(pricingSystem,
+				null,
 				"test price list",
 				true,
 				country,
@@ -152,13 +161,23 @@ public class PriceListDAOTest
 
 		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class);
 		bpl.setC_Location(location);
-		bpl.setC_BPartner(bpartner);
+		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		save(bpl);
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()), bpl, SOTrx.SALES);
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
+				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
+				toBPartnerLocationId(bpl),
+				SOTrx.SALES);
 
-		assertThat(pl).isNotNull();
-		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl1.getM_PriceList_ID());
+		assertThat(plId).isNotNull();
+		assertThat(plId.getRepoId()).isEqualByComparingTo(pl1.getM_PriceList_ID());
+	}
+
+	private BPartnerLocationId toBPartnerLocationId(@NonNull final I_C_BPartner_Location bplRecord)
+	{
+		return BPartnerLocationId.ofRepoId(
+				bplRecord.getC_BPartner_ID(),
+				bplRecord.getC_BPartner_Location_ID());
 	}
 
 	@Test
@@ -172,6 +191,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -227,6 +247,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
@@ -278,9 +299,9 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerSchema.getM_DiscountSchema_ID());
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -299,7 +320,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice1 = productPrice1OrNull.get();
 
-		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(basePriceProduct1.add(customerSurcharge1));
+		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(customPriceProduct1.add(baseSurcharge1));
 
 		final Optional<I_M_ProductPrice> productPrice2OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
@@ -309,7 +330,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice2 = productPrice2OrNull.get();
 
-		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(basePriceProduct2.add(customerSurcharge2));
+		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(customPriceProduct2.add(baseSurcharge2));
 
 		final Optional<I_M_ProductPrice> productPrice3OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product3.getM_Product_ID())
@@ -319,7 +340,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice3 = productPrice3OrNull.get();
 
-		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(basePriceProduct3.add(customerSurcharge3));
+		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(customPriceProduct3.add(baseSurcharge3));
 
 	}
 
@@ -334,6 +355,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -390,25 +412,15 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
 				EURO);
 
-		final I_M_DiscountSchema customerSchema = createSchema(oldValidFrom);
-
-		final BigDecimal customerSurcharge1 = new BigDecimal(444);
-		createSchemaLine(customerSchema, -1, product1.getM_Product_ID(), customerSurcharge1);
-
-		final BigDecimal customerSurcharge2 = new BigDecimal(555);
-		createSchemaLine(customerSchema, -1, product2.getM_Product_ID(), customerSurcharge2);
-
-		final BigDecimal customerSurcharge3 = new BigDecimal(666);
-		createSchemaLine(customerSchema, -1, product3.getM_Product_ID(), customerSurcharge3);
-
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
 				oldValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
+				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
@@ -433,6 +445,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customer2PriceList = createPriceList(
 				customer2PricingSystem,
+				originalBasePriceList,
 				"CUSTOMER 2 PRICELIST",
 				true,
 				country,
@@ -485,9 +498,9 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerSchema.getM_DiscountSchema_ID());
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -506,7 +519,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice1 = productPrice1OrNull.get();
 
-		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(basePriceProduct1.add(customerSurcharge1));
+		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(customPriceProduct1.add(baseSurcharge1));
 
 		final Optional<I_M_ProductPrice> productPrice2OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
@@ -516,7 +529,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice2 = productPrice2OrNull.get();
 
-		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(basePriceProduct2.add(customerSurcharge2));
+		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(customPriceProduct2.add(baseSurcharge2));
 
 		final Optional<I_M_ProductPrice> productPrice3OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product3.getM_Product_ID())
@@ -526,7 +539,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice3 = productPrice3OrNull.get();
 
-		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(basePriceProduct3.add(customerSurcharge3));
+		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(customPriceProduct3.add(baseSurcharge3));
 
 		// Customer 2
 
@@ -536,9 +549,9 @@ public class PriceListDAOTest
 
 		assertThat(newestCustomer2PriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customer2OldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestCustomer2PriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestCustomer2PriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customer2OldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestCustomer2PriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customer2Schema.getM_DiscountSchema_ID());
+		assertThat(newestCustomer2PriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
 		assertThat(newestCustomer2PriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -557,7 +570,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productCustomer2Price1 = productCustomer2Price1OrNull.get();
 
-		assertThat(productCustomer2Price1.getPriceStd()).isEqualByComparingTo(basePriceProduct1.add(customer2Surcharge1));
+		assertThat(productCustomer2Price1.getPriceStd()).isEqualByComparingTo(custom2PriceProduct1.add(baseSurcharge1));
 
 		final Optional<I_M_ProductPrice> productCustomer2Price2OrNull = newCustomer2ProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
@@ -567,7 +580,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productCustomer2Price2 = productCustomer2Price2OrNull.get();
 
-		assertThat(productCustomer2Price2.getPriceStd()).isEqualByComparingTo(basePriceProduct2.add(customer2Surcharge2));
+		assertThat(productCustomer2Price2.getPriceStd()).isEqualByComparingTo(custom2PriceProduct2.add(baseSurcharge2));
 
 		final Optional<I_M_ProductPrice> productCustomer2Price3OrNull = newCustomer2ProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product3.getM_Product_ID())
@@ -577,11 +590,11 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productCustomer2Price3 = productCustomer2Price3OrNull.get();
 
-		assertThat(productCustomer2Price3.getPriceStd()).isEqualByComparingTo(basePriceProduct3.add(customer2Surcharge3));
+		assertThat(productCustomer2Price3.getPriceStd()).isEqualByComparingTo(custom2PriceProduct3.add(baseSurcharge3));
 	}
 
 	@Test
-	public void mutateCustomerPrices_onlyForProductsFromCustomerSchema()
+	public void mutateCustomerPrices_onlyForProductsFromCustomerPLV()
 	{
 		final I_AD_User user = createUser("User");
 
@@ -591,6 +604,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -645,6 +659,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
@@ -669,8 +684,6 @@ public class PriceListDAOTest
 		final BigDecimal customPriceProduct2 = new BigDecimal(2);
 		createProductPrice(product2, customPriceProduct2, customerOldPLV.getM_PriceList_Version_ID());
 
-		final BigDecimal customPriceProduct3 = new BigDecimal(3);
-		createProductPrice(product3, customPriceProduct3, customerOldPLV.getM_PriceList_Version_ID());
 
 		// Here starts the testing of the Price Mutation functionality
 
@@ -693,9 +706,9 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerSchema.getM_DiscountSchema_ID());
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -714,7 +727,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice1 = productPrice1OrNull.get();
 
-		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(basePriceProduct1.add(customerSurcharge1));
+		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(customPriceProduct1.add(baseSurcharge1));
 
 		final Optional<I_M_ProductPrice> productPrice2OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
@@ -724,7 +737,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice2 = productPrice2OrNull.get();
 
-		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(basePriceProduct2.add(customerSurcharge2));
+		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(customPriceProduct2.add(baseSurcharge2));
 
 	}
 
@@ -739,6 +752,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -793,6 +807,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
@@ -831,7 +846,52 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion).isNotNull();
 
-		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion).isNotNull();
+
+		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
+
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
+
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
+
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+
+		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
+				ImmutableSet.of());
+
+		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
+
+		assertThat(newProductPrices.size()).isEqualTo(3);
+
+		final Optional<I_M_ProductPrice> productPrice1OrNull = newProductPrices.stream()
+				.filter(pp -> pp.getM_Product_ID() == product1.getM_Product_ID())
+				.findFirst();
+
+		assertThat(productPrice1OrNull).isNotNull();
+
+		final I_M_ProductPrice productPrice1 = productPrice1OrNull.get();
+
+		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(customPriceProduct1.add(baseSurcharge1));
+
+		final Optional<I_M_ProductPrice> productPrice2OrNull = newProductPrices.stream()
+				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
+				.findFirst();
+
+		assertThat(productPrice2OrNull).isNotNull();
+
+		final I_M_ProductPrice productPrice2 = productPrice2OrNull.get();
+
+		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(customPriceProduct2.add(baseSurcharge2));
+
+		final Optional<I_M_ProductPrice> productPrice3OrNull = newProductPrices.stream()
+				.filter(pp -> pp.getM_Product_ID() == product3.getM_Product_ID())
+				.findFirst();
+
+		assertThat(productPrice3OrNull).isNotNull();
+
+		final I_M_ProductPrice productPrice3 = productPrice3OrNull.get();
+
+		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(customPriceProduct3.add(baseSurcharge3));
 
 	}
 
@@ -846,6 +906,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -900,6 +961,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
@@ -980,9 +1042,9 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerIntermediatePLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerIntermediatePLV.getM_DiscountSchema_ID());
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerIntermediatePLV.getM_PriceList_Version_ID());
 
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -1001,7 +1063,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice1 = productPrice1OrNull.get();
 
-		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(basePriceProduct1.add(customerSurcharge1));
+		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(intermediateCustomPriceProduct1.add(baseSurcharge1));
 
 		final Optional<I_M_ProductPrice> productPrice2OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
@@ -1011,7 +1073,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice2 = productPrice2OrNull.get();
 
-		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(basePriceProduct2.add(customerSurcharge2));
+		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(intermediateCustomPriceProduct2.add(baseSurcharge2));
 
 		final Optional<I_M_ProductPrice> productPrice3OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product3.getM_Product_ID())
@@ -1021,7 +1083,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice3 = productPrice3OrNull.get();
 
-		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(basePriceProduct3.add(customerSurcharge3));
+		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(intermediateCustomPriceProduct3.add(baseSurcharge3));
 
 	}
 
@@ -1047,6 +1109,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -1101,6 +1164,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
@@ -1165,6 +1229,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList originalBasePriceList = createPriceList(
 				originalBasePricingSystem,
+				null,
 				"ORIGINAL BASE PRICELIST",
 				true,
 				country,
@@ -1219,6 +1284,7 @@ public class PriceListDAOTest
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
+				originalBasePriceList,
 				"CUSTOMER PRICELIST",
 				true,
 				country,
@@ -1270,9 +1336,9 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_PriceList_Version_ID()).isNotEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(originalBasePLV.getM_PriceList_Version_ID());
+		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerOldPLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(customerSchema.getM_DiscountSchema_ID());
+		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
 
@@ -1291,7 +1357,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice1 = productPrice1OrNull.get();
 
-		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(basePriceProduct1.add(customerSurcharge1));
+		assertThat(productPrice1.getPriceStd()).isEqualByComparingTo(customPriceProduct1.add(baseSurcharge1));
 
 		final Optional<I_M_ProductPrice> productPrice2OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product2.getM_Product_ID())
@@ -1301,7 +1367,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice2 = productPrice2OrNull.get();
 
-		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(basePriceProduct2.add(customerSurcharge2));
+		assertThat(productPrice2.getPriceStd()).isEqualByComparingTo(customPriceProduct2.add(baseSurcharge2));
 
 		final Optional<I_M_ProductPrice> productPrice3OrNull = newProductPrices.stream()
 				.filter(pp -> pp.getM_Product_ID() == product3.getM_Product_ID())
@@ -1311,7 +1377,7 @@ public class PriceListDAOTest
 
 		final I_M_ProductPrice productPrice3 = productPrice3OrNull.get();
 
-		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(basePriceProduct3.add(customerSurcharge3));
+		assertThat(productPrice3.getPriceStd()).isEqualByComparingTo(customPriceProduct3.add(baseSurcharge3));
 
 	}
 
@@ -1337,6 +1403,7 @@ public class PriceListDAOTest
 
 	private I_M_PriceList createPriceList(
 			final I_M_PricingSystem pricingSystem,
+			final I_M_PriceList basePriceList,
 			final String name,
 			final boolean isSOTrx,
 			final I_C_Country country,
@@ -1348,6 +1415,8 @@ public class PriceListDAOTest
 		pl.setIsSOPriceList(isSOTrx);
 		pl.setC_Country_ID(country != null ? country.getC_Country_ID() : -1);
 		pl.setC_Currency_ID(currencyId.getRepoId());
+
+		pl.setBasePriceList_ID(basePriceList == null ? -1 : basePriceList.getM_PriceList_ID());
 		save(pl);
 		return pl;
 	}

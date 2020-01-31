@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,11 +24,9 @@ package de.metas.handlingunits.allocation;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -45,23 +43,18 @@ import lombok.NonNull;
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
 	/**
-	 * 
+	 *
 	 * @param tuPIItemProduct may not be {@code null}
 	 * @param cuProductId
 	 * @param cuUOM
-	 * @param bpartner
+	 * @param bpartnerId
 	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
 	 *            Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
-	 * @return
 	 */
-	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, ProductId cuProductId, I_C_UOM cuUOM, I_C_BPartner bpartner, boolean noLUForVirtualTU);
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, ProductId cuProductId, UomId cuUomId, BPartnerId bpartnerId, boolean noLUForVirtualTU);
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
-	 * 
-	 * @param lutuConfiguration
-	 * 
-	 * @return
 	 */
 	ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration lutuConfiguration);
 
@@ -77,7 +70,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Decide if both parameters are not {@code null} and are "equal enough" (according to location, status, bpartner etc) for the LUTU-config user interface.
-	 * 
+	 *
 	 * @param lutuConfiguration1
 	 * @param lutuConfiguration2
 	 * @return
@@ -127,17 +120,16 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Calculate how many LUs we would need (using given configuration) for given total CU quantity
-	 * 
+	 *
 	 * @param lutuConfiguration
 	 * @param qtyCUsTotal total CU quantity
-	 * @param qtyCUsTotalUOM total CU quantity's UOM
 	 * @return how many LUs are needed or ZERO if we are dealing with infinite capacities
 	 */
-	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyCUsTotal, I_C_UOM qtyCUsTotalUOM);
+	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, Quantity qtyCUsTotal);
 
 	/**
 	 * Calculates how many CUs (in total).
-	 * 
+	 *
 	 * @param lutuConfiguration
 	 * @return quantity; could be infinite or zero.
 	 */
@@ -145,13 +137,10 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	/**
 	 * Converts given quantity to {@link I_M_HU_LUTU_Configuration}'s UOM.
-	 * 
-	 * @param qty
-	 * @param qtyUOM
-	 * @param lutuConfiguration
+	 *
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
-	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);
+	Quantity convertQtyToLUTUConfigurationUOM(Quantity qty, I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
@@ -161,12 +150,9 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 				: null;
 	}
 
-	static I_C_BPartner extractBPartnerOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	static BPartnerId extractBPartnerIdOrNull(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID());
-		return bpartnerId != null
-				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
-				: null;
+		return BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID());
 	}
 
 	static I_M_HU_PI_Item_Product extractHUPIItemProduct(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)

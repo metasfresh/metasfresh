@@ -26,7 +26,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -35,7 +37,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
-import com.google.common.base.Function;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
@@ -64,6 +65,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return firstOnly(clazz, throwExIfMoreThenOneFound);
 	}
 
+	@NonNull
 	@Override
 	public final <ET extends T> ET firstOnlyNotNull(final Class<ET> clazz) throws DBException
 	{
@@ -78,6 +80,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return model;
 	}
 
+	@NonNull
 	@Override
 	public final <ET extends T> ET firstNotNull(final Class<ET> clazz) throws DBException
 	{
@@ -141,7 +144,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	public <K, ET extends T> Map<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)
 	{
 		final List<ET> list = list(modelClass);
-		return Maps.uniqueIndex(list, keyFunction);
+		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
 
 	@Override

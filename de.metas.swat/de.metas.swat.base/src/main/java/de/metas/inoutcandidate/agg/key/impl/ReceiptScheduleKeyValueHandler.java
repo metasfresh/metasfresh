@@ -44,12 +44,12 @@ public class ReceiptScheduleKeyValueHandler implements IAggregationKeyValueHandl
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		values.add(rs.getC_DocType_ID());
 		values.add(receiptScheduleBL.getC_BPartner_Effective_ID(rs));
 		values.add(receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs));
-		values.add(receiptScheduleBL.getM_Warehouse_Effective_ID(rs));
+		values.add(receiptScheduleBL.getWarehouseEffectiveId(rs).getRepoId());
 		values.add(receiptScheduleBL.getAD_User_Effective_ID(rs));
 		values.add(rs.getAD_Org_ID());
 		values.add(rs.getDateOrdered());

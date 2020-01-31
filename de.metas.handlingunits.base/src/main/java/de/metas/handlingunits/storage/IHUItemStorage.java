@@ -23,6 +23,7 @@ package de.metas.handlingunits.storage;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -83,7 +84,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * @param date
 	 * @return total capacity
 	 */
-	CapacityInterface getCapacity(ProductId productId, I_C_UOM uom, Date date);
+	CapacityInterface getCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	/**
 	 * Override current total capacity settings
@@ -102,7 +103,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * 
 	 * @return available capacity
 	 */
-	CapacityInterface getAvailableCapacity(ProductId productId, I_C_UOM uom, Date date);
+	CapacityInterface getAvailableCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	/**
 	 * 
@@ -139,9 +140,9 @@ public interface IHUItemStorage extends IGenericHUStorage
 
 	int getHUCapacity();
 
-	IProductStorage getProductStorage(ProductId productId, I_C_UOM uom, Date date);
+	IProductStorage getProductStorage(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
-	List<IProductStorage> getProductStorages(Date date);
+	List<IProductStorage> getProductStorages(ZonedDateTime date);
 
 	/**
 	 *

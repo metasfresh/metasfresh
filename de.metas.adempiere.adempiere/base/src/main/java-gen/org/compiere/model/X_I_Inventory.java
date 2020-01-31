@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1328292846L;
+	private static final long serialVersionUID = -778619830L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -79,6 +79,93 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DataImport getC_DataImport()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
+	}
+
+	@Override
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Daten Import.
+		@param C_DataImport_ID Daten Import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_Value (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Daten Import.
+		@return Daten Import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DataImport_Run getC_DataImport_Run()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class);
+	}
+
+	@Override
+	public void setC_DataImport_Run(org.compiere.model.I_C_DataImport_Run C_DataImport_Run)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class, C_DataImport_Run);
+	}
+
+	/** Set Data Import Run.
+		@param C_DataImport_Run_ID Data Import Run	  */
+	@Override
+	public void setC_DataImport_Run_ID (int C_DataImport_Run_ID)
+	{
+		if (C_DataImport_Run_ID < 1) 
+			set_Value (COLUMNNAME_C_DataImport_Run_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DataImport_Run_ID, Integer.valueOf(C_DataImport_Run_ID));
+	}
+
+	/** Get Data Import Run.
+		@return Data Import Run	  */
+	@Override
+	public int getC_DataImport_Run_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_Run_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Cost Preise.
+		@param CostPrice Cost Preise	  */
+	@Override
+	public void setCostPrice (java.math.BigDecimal CostPrice)
+	{
+		set_Value (COLUMNNAME_CostPrice, CostPrice);
+	}
+
+	/** Get Cost Preise.
+		@return Cost Preise	  */
+	@Override
+	public java.math.BigDecimal getCostPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CostPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Datum der letzten Inventur.
@@ -167,16 +254,16 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
 	}
 
-	/** Set Best Before Date.
-		@param HU_BestBeforeDate Best Before Date	  */
+	/** Set Mindesthaltbarkeit.
+		@param HU_BestBeforeDate Mindesthaltbarkeit	  */
 	@Override
 	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate)
 	{
 		set_Value (COLUMNNAME_HU_BestBeforeDate, HU_BestBeforeDate);
 	}
 
-	/** Get Best Before Date.
-		@return Best Before Date	  */
+	/** Get Mindesthaltbarkeit.
+		@return Mindesthaltbarkeit	  */
 	@Override
 	public java.sql.Timestamp getHU_BestBeforeDate () 
 	{
@@ -251,6 +338,41 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Import Line Content.
+		@param I_LineContent Import Line Content	  */
+	@Override
+	public void setI_LineContent (java.lang.String I_LineContent)
+	{
+		set_Value (COLUMNNAME_I_LineContent, I_LineContent);
+	}
+
+	/** Get Import Line Content.
+		@return Import Line Content	  */
+	@Override
+	public java.lang.String getI_LineContent () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_I_LineContent);
+	}
+
+	/** Set Import Line No.
+		@param I_LineNo Import Line No	  */
+	@Override
+	public void setI_LineNo (int I_LineNo)
+	{
+		set_Value (COLUMNNAME_I_LineNo, Integer.valueOf(I_LineNo));
+	}
+
+	/** Get Import Line No.
+		@return Import Line No	  */
+	@Override
+	public int getI_LineNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_I_LineNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Inventurdatum.
@@ -533,10 +655,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 
 	/** Set Produktschlüssel.
 		@param ProductValue 
-		Can be:
-	* The exact product value
-	* The product id
-	* Part of the product value, using this pattern val-%
+		Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	  */
 	@Override
 	public void setProductValue (java.lang.String ProductValue)
@@ -545,10 +664,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	/** Get Produktschlüssel.
-		@return Can be:
-	* The exact product value
-	* The product id
-	* Part of the product value, using this pattern val-%
+		@return Produkt-Identifikator; "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	  */
 	@Override
 	public java.lang.String getProductValue () 
@@ -657,9 +773,9 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_TE);
 	}
 
-	/** Set UPC/EAN.
+	/** Set UPC.
 		@param UPC 
-		Bar Code (Universal Product Code or its superset European Article Number)
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	  */
 	@Override
 	public void setUPC (java.lang.String UPC)
@@ -667,8 +783,8 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
 
-	/** Get UPC/EAN.
-		@return Bar Code (Universal Product Code or its superset European Article Number)
+	/** Get UPC.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	  */
 	@Override
 	public java.lang.String getUPC () 

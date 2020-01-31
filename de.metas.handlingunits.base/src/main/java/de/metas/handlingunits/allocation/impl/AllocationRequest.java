@@ -13,59 +13,54 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /* package */final class AllocationRequest implements IAllocationRequest
 {
 	private final IHUContext huContext;
 
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final Quantity quantity;
-	private final Date date;
+	private final ZonedDateTime date;
 	private final boolean forceQtyAllocation;
 
 	// Reference
-	private final ITableRecordReference fromTableRecord;
+	private final TableRecordReference fromTableRecord;
 
 	public AllocationRequest(
-			final IHUContext huContext,
-			final I_M_Product product,
-			final Quantity quantity,
-			final Date date,
-			final ITableRecordReference fromTableRecord,
+			@NonNull final IHUContext huContext,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity quantity,
+			@NonNull final ZonedDateTime date,
+			final TableRecordReference fromTableRecord,
 			final boolean forceQtyAllocation)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
-		this.huContext = huContext;
-
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
-
-		Check.assumeNotNull(quantity, "quantity not null");
 		Check.assumeNotNull(quantity.signum() >= 0, "qty >= 0 ({})", quantity);
-		this.quantity = quantity;
 
-		Check.assumeNotNull(date, "date not null");
-		this.date = (Date)date.clone();
+		this.huContext = huContext;
+		this.productId = productId;
+		this.quantity = quantity;
+		this.date = date;
 
 		// Check.assumeNotNull(fromTableRecord, "fromTableRecord not null");
 		this.fromTableRecord = fromTableRecord;
@@ -78,7 +73,7 @@ import de.metas.util.Check;
 	{
 		final String fromTableRecordStr = fromTableRecord == null ? null : "" + fromTableRecord.getTableName() + "/" + fromTableRecord.getRecord_ID();
 		return "AllocationRequest ["
-				+ "product=" + product.getValue()
+				+ "product=" + productId
 				+ ", qty=" + (isInfiniteQty() ? "inifinite" : quantity)
 				+ ", date=" + date
 				+ ", fromTableRecord=" + fromTableRecordStr
@@ -93,9 +88,9 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public I_M_Product getProduct()
+	public ProductId getProductId()
 	{
-		return product;
+		return productId;
 	}
 
 	@Override
@@ -129,13 +124,13 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public Date getDate()
+	public ZonedDateTime getDate()
 	{
 		return date;
 	}
 
 	@Override
-	public ITableRecordReference getReference()
+	public TableRecordReference getReference()
 	{
 		return fromTableRecord;
 	}

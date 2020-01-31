@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringJoiner;
 
+import de.metas.banking.api.BankAccountId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -331,7 +332,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	/**
 	 * Generates a payment for given pay selection line. The payment will be also processed.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT checking if the payment was already created or it's not needed.
 	 *
 	 * @param line
@@ -345,7 +346,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final org.compiere.model.I_C_Payment payment = Services.get(IPaymentBL.class).newBuilderOfInvoice(line.getC_Invoice())
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.bpBankAccountId(ownBankAccountId)
+				.bpBankAccountId(BankAccountId.ofRepoId(ownBankAccountId))
 				.dateAcct(payDate)
 				.dateTrx(payDate)
 				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))
@@ -401,7 +402,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void completePaySelection(final I_C_PaySelection paySelection)
 	{
-		validateBankAccounts(paySelection); 
+		validateBankAccounts(paySelection);
 
 		paySelection.setProcessed(true);
 		paySelection.setDocAction(IDocument.ACTION_ReActivate);
@@ -412,9 +413,9 @@ public class PaySelectionBL implements IPaySelectionBL
 	public void validateBankAccounts(final I_C_PaySelection paySelection)
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-		
+
 		StringJoiner joiner = new StringJoiner(",");
-		
+
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
 		{
 			if (paySelectionLine.getC_BP_BankAccount_ID() <= 0)
@@ -425,9 +426,9 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		if (joiner.length() != 0)
 		{
-			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount , new Object []{joiner.toString()} );
+			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount, new Object[] { joiner.toString() });
 		}
-		
+
 	}
 
 	@Override
@@ -448,5 +449,5 @@ public class PaySelectionBL implements IPaySelectionBL
 		paySelection.setDocAction(IDocument.ACTION_Complete);
 
 	}
-	
+
 }

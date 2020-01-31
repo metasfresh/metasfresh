@@ -34,8 +34,8 @@ import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -92,8 +92,8 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
-		AccountImportTableSqlUpdater.updateAccountImportTable(whereClause);
+		final ImportRecordsSelection importRecordsSelection = getImportRecordsSelection();
+		AccountImportTableSqlUpdater.updateAccountImportTable(importRecordsSelection);
 	}
 
 	@Override
@@ -286,9 +286,9 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected void afterImport(final IMutable<Object> state)
+	protected void afterImport()
 	{
-		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getWhereClause());
+		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getImportRecordsSelection());
 		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);
 	}
 

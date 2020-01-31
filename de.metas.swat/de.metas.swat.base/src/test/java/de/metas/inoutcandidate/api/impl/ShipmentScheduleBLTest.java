@@ -6,89 +6,32 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.inout.util.DeliveryGroupCandidate;
-import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.model.I_C_OrderLine;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.shipping.ShipperId;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.util.Services;
 
 public class ShipmentScheduleBLTest
 {
-	private static final ShipperId SHIPPER_ID = ShipperId.ofRepoId(20);
-	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(35);
-
 	private ShipmentScheduleBL shipmentScheduleBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		this.shipmentScheduleBL = ShipmentScheduleBL.newInstanceForUnitTesting();
-	}
-
-	/**
-	 * Calls updateSchedule with an empty list.
-	 */
-	@Test
-	public void updateSchedules_emptyList()
-	{
-		final List<OlAndSched> olAndScheds = new ArrayList<>();
-
-		shipmentScheduleBL.updateSchedules(Env.getCtx(), olAndScheds, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	@Test
-	public void createGroup()
-	{
-		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
-		sched.setBPartnerAddress_Override("bPartnerAddress");
-		sched.setM_Warehouse_Override_ID(WAREHOUSE_ID.getRepoId());
-		// save(sched); // not needed
-
-		final TableRecordReference orderRef = TableRecordReference.of(I_C_Order.Table_Name, 10);
-		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
-				.recordRef(orderRef)
-				.shipperId(ShipperId.optionalOfRepoId(SHIPPER_ID.getRepoId()))
-				.warehouseId(WarehouseId.ofRepoId(30)) // different from the sched's effective WH
-				.documentLineDescriptor(OrderLineDescriptor.builder().build()) // documentLineDescriptor is not relevant for this test
-				.build();
-
-		// invoke method under test
-		final DeliveryGroupCandidate result = shipmentScheduleBL.createGroup(scheduleSourceDoc, sched);
-
-		assertThat(result.getGroupId()).isEqualTo(DeliveryGroupCandidateGroupId.of(orderRef));
-		assertThat(result.getShipperId().get()).isEqualTo(SHIPPER_ID);
-		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
-	}
-
-	@Test
-	public void updateProcessedFlag()
-	{
-		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
-		sched.setQtyReserved(BigDecimal.TEN);
-
-		shipmentScheduleBL.updateProcessedFlag(sched);
-		assertThat(sched.isProcessed()).isFalse();
-
-		sched.setIsClosed(true);
-		shipmentScheduleBL.updateProcessedFlag(sched);
-		assertThat(sched.isProcessed()).isTrue();
+		shipmentScheduleBL = (ShipmentScheduleBL)Services.get(IShipmentScheduleBL.class);
 	}
 
 	@Test
@@ -114,6 +57,8 @@ public class ShipmentScheduleBLTest
 	@Test
 	public void openProcessedShipmentSchedule()
 	{
+		setupMockShipmentScheduleHandlerBL();
+
 		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
 		schedule.setIsClosed(true);
 
@@ -136,6 +81,22 @@ public class ShipmentScheduleBLTest
 		assertThat(schedule.getQtyOrdered())
 				.as("opening a shipmentschedule shall restore its QtyOrdered from its QtyOrdered_Override or .._Calculated value")
 				.isEqualByComparingTo("23");
+	}
+
+	private void setupMockShipmentScheduleHandlerBL()
+	{
+		final IShipmentScheduleHandlerBL mockHandler = new IShipmentScheduleHandlerBL()
+		{
+			// @formatter:off
+			@Override public void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentScheduleRecord)	{ }
+			@Override public void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName) { }
+			@Override public <T extends ShipmentScheduleHandler> void registerHandler(T handler) { }
+			@Override public ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched) { return null; }
+			@Override public Set<ShipmentScheduleId> createMissingCandidates(Properties ctx) { return null; }
+			@Override public IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, I_C_OrderLine salesOrderLine) { return null; }
+			// @formatter:on
+		};
+		Services.registerService(IShipmentScheduleHandlerBL.class, mockHandler);
 	}
 
 	@Test

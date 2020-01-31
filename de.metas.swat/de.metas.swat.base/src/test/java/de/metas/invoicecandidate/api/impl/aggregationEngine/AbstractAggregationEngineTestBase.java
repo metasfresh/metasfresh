@@ -48,6 +48,8 @@ import org.junit.rules.TestWatcher;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -65,11 +67,13 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSupport
 {
+
 	protected I_C_ILCandHandler manualHandler;
 
 	@Rule
@@ -91,6 +95,8 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		// registerModelInterceptors(); doesn't work well with the legacy tests. Only register then in AbstractNewAggregationEngineTests
 
 		LogManager.setLevel(Level.DEBUG);
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	protected final List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
@@ -253,7 +259,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 		final String messagePrefix = message + " - IC=" + POJOWrapper.getInstanceName(fromIC);
 
-		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getAD_Org_ID());
+		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getOrgId().getRepoId());
 
 		if (fromIC.getM_PriceList_Version_ID() > 0)
 		{

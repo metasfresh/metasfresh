@@ -23,6 +23,8 @@ import lombok.NonNull;
 
 public class PPOrderBOMDAO implements IPPOrderBOMDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
@@ -30,9 +32,9 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	}
 
 	@Override
-	public I_PP_Order_BOM getByOrderId(@NonNull final PPOrderId orderId)
+	public I_PP_Order_BOM getByOrderIdOrNull(@NonNull final PPOrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_BOM.class)
 				.addEqualsFilter(I_PP_Order_BOM.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
@@ -70,7 +72,6 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(@NonNull final PPOrderId orderId, @NonNull final Class<T> orderBOMLineClass)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(orderBOMLineClass)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderId)
 				.addOnlyActiveRecordsFilter()
@@ -86,7 +87,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public I_PP_Order_BOMLine retrieveOrderBOMLine(@NonNull final I_PP_Order ppOrder, @NonNull final I_M_Product product)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_BOMLine.class, ppOrder)
+		return queryBL.createQueryBuilder(I_PP_Order_BOMLine.class, ppOrder)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.addOnlyActiveRecordsFilter()
@@ -97,18 +98,24 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public void deleteOrderBOMLinesByOrderId(@NonNull final PPOrderId orderId)
 	{
-		Services.get(IQueryBL.class)
+		final List<I_PP_Order_BOMLine> lines = queryBL
 				.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_ID, orderId)
 				// .addOnlyActiveRecordsFilter()
 				.create()
-				.delete();
+				.list();
+
+		for (final I_PP_Order_BOMLine line : lines)
+		{
+			line.setProcessed(false);
+			InterfaceWrapperHelper.delete(line);
+		}
 	}
 
 	@Override
 	public int retrieveNextLineNo(@NonNull final PPOrderId orderId)
 	{
-		Integer maxLine = Services.get(IQueryBL.class)
+		Integer maxLine = queryBL
 				.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
@@ -138,7 +145,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public void deleteByOrderId(@NonNull final PPOrderId orderId)
 	{
-		I_PP_Order_BOM orderBOM = getByOrderId(orderId);
+		final I_PP_Order_BOM orderBOM = getByOrderIdOrNull(orderId);
 		if (orderBOM != null)
 		{
 			InterfaceWrapperHelper.delete(orderBOM);

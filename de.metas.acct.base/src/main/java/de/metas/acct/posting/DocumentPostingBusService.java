@@ -8,6 +8,8 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -19,8 +21,9 @@ import de.metas.event.IEventListener;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
+import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
 
 /*
@@ -76,7 +79,7 @@ public class DocumentPostingBusService
 		return eventBusFactory.getEventBus(TOPIC);
 	}
 
-	private Event createEventFromRequest(final DocumentPostRequest request)
+	private Event createEventFromRequest(@NonNull final DocumentPostRequest request)
 	{
 		final String requestStr = SimpleObjectSerializer.get().serialize(request);
 
@@ -86,7 +89,7 @@ public class DocumentPostingBusService
 				.build();
 	}
 
-	private static DocumentPostRequest extractDocumentPostRequest(final Event event)
+	private static DocumentPostRequest extractDocumentPostRequest(@NonNull final Event event)
 	{
 		final String requestStr = event.getProperty(PROPERTY_DocumentPostRequest);
 
@@ -134,9 +137,11 @@ public class DocumentPostingBusService
 		{
 			final DocumentPostRequest request = extractDocumentPostRequest(event);
 
-			try (final IAutoCloseable c = switchCtx(request))
+			try (final IAutoCloseable ctx = switchCtx(request);
+					final MDCCloseable requestRecordMDC = TableRecordMDC.putTableRecordReference(request.getRecord());
+					final MDCCloseable eventHandlerMDC = MDC.putCloseable("eventHandler.className", handler.getClass().getName());)
 			{
-				eventLogUserService.invokeHandlerAndLog(InvokeHandlerandLogRequest.builder()
+				eventLogUserService.invokeHandlerAndLog(InvokeHandlerAndLogRequest.builder()
 						.handlerClass(handler.getClass())
 						.invokaction(() -> handleRequest(request))
 						.build());

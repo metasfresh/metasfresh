@@ -56,7 +56,7 @@ public class C_OLCand_Validate_Selected extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_OLCand> queryFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false) // already processed records shall not be validated

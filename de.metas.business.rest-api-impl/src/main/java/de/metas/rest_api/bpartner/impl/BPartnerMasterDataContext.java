@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.common.SyncAdvise;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,13 +44,16 @@ public class BPartnerMasterDataContext
 
 	@NonNull
 	OrgId orgId;
+
 	BPartnerId bpartnerId;
 	BPartnerLocationId locationId;
 	BPartnerContactId contactId;
 
+	SyncAdvise syncAdvise;
+
 	boolean bPartnerIsOrgBP;
 
-	public BPartnerMasterDataContext setIfNotNull(@Nullable final BPartnerId bpartnerId)
+	public BPartnerMasterDataContext withBPartnerIdIfNotNull(@Nullable final BPartnerId bpartnerId)
 	{
 		if (bpartnerId == null)
 		{
@@ -58,7 +62,7 @@ public class BPartnerMasterDataContext
 		return toBuilder().bpartnerId(bpartnerId).build();
 	}
 
-	public BPartnerMasterDataContext setIfNotNull(@Nullable final BPartnerLocationId locationId)
+	public BPartnerMasterDataContext withLocationIdIfNotNull(@Nullable final BPartnerLocationId locationId)
 	{
 		if (locationId == null)
 		{
@@ -67,12 +71,21 @@ public class BPartnerMasterDataContext
 		return toBuilder().locationId(locationId).build();
 	}
 
-	public BPartnerMasterDataContext setIfNotNull(final BPartnerContactId contactId)
+	public BPartnerMasterDataContext withContactIdIfNotNull(@Nullable final BPartnerContactId contactId)
 	{
 		if (contactId == null)
 		{
 			return this;
 		}
 		return toBuilder().contactId(contactId).build();
+	}
+
+	public BPartnerMasterDataContext withSyncAdviseIfNotNull(@Nullable final SyncAdvise syncAdvise)
+	{
+		if (syncAdvise == null)
+		{
+			return this;
+		}
+		return toBuilder().syncAdvise(syncAdvise).build();
 	}
 }

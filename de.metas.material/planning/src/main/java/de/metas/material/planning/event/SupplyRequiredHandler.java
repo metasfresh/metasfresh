@@ -15,12 +15,15 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -68,6 +71,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
+	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
+
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
 	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
 
@@ -97,8 +102,6 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	/**
 	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionAdvisedOrCreatedEvent}
-	 *
-	 * @param materialDemandEvent
 	 */
 	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
@@ -140,10 +143,10 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
 		if (productPlanning == null)
 		{
-			Loggables.addLog("No PP_Product_Planning record found => nothing to do; query={}", productPlanningQuery);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No PP_Product_Planning record found => nothing to do; query={}", productPlanningQuery);
 			return null;
 		}
 

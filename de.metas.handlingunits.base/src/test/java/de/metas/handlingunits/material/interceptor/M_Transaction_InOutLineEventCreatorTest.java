@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -28,14 +27,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -71,12 +65,8 @@ import mockit.Expectations;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_Transaction_InOutLineEventCreatorTest
 {
-
 	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal TWO = new BigDecimal("2");
@@ -95,6 +85,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 	private InOutAndLineId inoutLineId;
 
 	private TransactionDescriptorFactory transactionDescriptorFactory;
+	private M_Transaction_TransactionEventCreator mtransactionEventCreator;
 
 	@Before
 	public void init()
@@ -110,17 +101,18 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(bPartner);
 
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
-		inout.setC_BPartner(bPartner);
+		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		save(inout);
 
 		inoutLine = newInstance(I_M_InOutLine.class);
 		inoutLine.setM_Product_ID(product.getM_Product_ID());
-		inoutLine.setM_InOut(inout);
+		inoutLine.setM_InOut_ID(inout.getM_InOut_ID());
 		save(inoutLine);
 
 		inoutLineId = InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID());
 
 		transactionDescriptorFactory = new TransactionDescriptorFactory();
+		mtransactionEventCreator = new M_Transaction_TransactionEventCreator();
 	}
 
 	@Test
@@ -131,7 +123,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
@@ -157,7 +149,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -188,7 +180,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 		//
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -217,7 +209,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 				.build();
 
 		// @formatter:off
-		final M_Transaction_HuDescriptor huDescriptorCreator = M_Transaction_HuDescriptor.INSTANCE;
+		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
 		new Expectations(M_Transaction_HuDescriptor.class)
 		{{
 			// partial mocking - we only want to mock this one method
@@ -255,7 +247,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -282,7 +274,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
@@ -346,8 +338,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 		//
 		// invoke the method under test
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
 				.transaction(transactionDescriptor)
 				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
 				.build();
@@ -400,8 +392,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
 
 		// invoke the method under test
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
 				.transaction(transactionDescriptor)
 				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
 				.build();

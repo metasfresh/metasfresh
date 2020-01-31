@@ -30,7 +30,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -69,7 +68,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Create HU Context.
-	 *
+	 * <p>
 	 * Compared with {@link #createMutableHUContext(IContextAware)} this method optimizes the HU Context for HU generation/processing (i.e. enable caching etc etc).
 	 *
 	 * @param contextProvider
@@ -117,14 +116,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @param hu
 	 * @return true if HU was destroyed
-	 *
 	 * @throws AdempiereException if hu has local changes
 	 */
 	boolean isDestroyedRefreshFirst(I_M_HU hu) throws AdempiereException;
 
 	/**
 	 * Build a user friendly display name of given HU.
-	 *
+	 * <p>
 	 * If u want more options, please use {@link #buildDisplayName(I_M_HU)}.
 	 *
 	 * @param hu
@@ -135,14 +133,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	IHUDisplayNameBuilder buildDisplayName(I_M_HU hu);
 
 	/**
-	 *
 	 * @param hu may be {@code null}
 	 * @return true if this is a virtual HU
 	 */
 	boolean isVirtual(I_M_HU hu);
 
 	/**
-	 *
 	 * @param huItem
 	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
 	 */
@@ -150,13 +146,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Checks if given <code>huItem</code> is part of a pure virtual HU.
-	 *
+	 * <p>
 	 * A HU is considered pure virtual when:
 	 * <ul>
 	 * <li>{@link #isVirtual(I_M_HU)}
 	 * <li>and its parent HU Item ({@link I_M_HU#getM_HU_Item_Parent()}) is a material line (i.e. {@link #getItemType(I_M_HU_Item)} is {@link X_M_HU_PI_Item#ITEMTYPE_Material})
 	 * </ul>
-	 *
+	 * <p>
 	 * e.g.
 	 * <ul>
 	 * <li>a VHU on a palet is virtual but it's NOT PURE virtual (i.e. it's parent HU Item is an item of type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit})
@@ -231,7 +227,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
 	 * @param query see {@link TopLevelHusQuery}.
-	 *
 	 * @return top level HUs; never return {@code null}
 	 */
 	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery query);
@@ -265,11 +260,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @param hu
 	 * @return top level parent; never return null; more preciselly:
-	 *         <ul>
-	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
-	 *         <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
-	 *         <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
-	 *         </ul>
+	 * <ul>
+	 * <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
+	 * <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
+	 * <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
+	 * </ul>
 	 */
 	LUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
@@ -313,14 +308,25 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Checks if given handling unit is top level (i.e. it has no parents)
 	 *
-	 * @param hu
 	 * @return true if is a top level handling unit
 	 */
 	boolean isTopLevel(I_M_HU hu);
 
 	/**
-	 * Gets top level LU of given HU.
+	 * If an HU is picked "on-the-fly" or "anonymous" then it is added to a Shipment even though the user did not actually pick that particular HU. This is done to keep the metasfresh stock quantity near the real quantity and avoid some inventory effort for users that don't want to use metasfresh's picking.
 	 *
+	 * @param hu hu to check if it is picked on the fly
+	 * @return true if it is picked on the fly; false otherwise
+	 * @see the following 2 methods:
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
+	 */
+	@SuppressWarnings("JavadocReference")
+	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu);
+
+	/**
+	 * Gets top level LU of given HU.
+	 * <p>
 	 * If given HU is a loading unit then given HU will be returned.
 	 *
 	 * @param hu
@@ -329,9 +335,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU getLoadingUnitHU(I_M_HU hu);
 
 	/**
-	 * Gets the TU of given HU.
+	 * Get the TU of the given (included) HU.
 	 *
-	 * @param hu
 	 * @return TU handling unit or null.
 	 */
 	I_M_HU getTransportUnitHU(I_M_HU hu);
@@ -353,14 +358,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	String getHU_UnitType(I_M_HU hu);
 
 	/**
-	 *
 	 * @param piItem
 	 * @return true if given <code>piItem</code> is null or is NoPI
 	 */
 	boolean isNoPI(I_M_HU_PI_Item piItem);
 
 	/**
-	 *
 	 * @param huPI
 	 * @return true if given HU PI is not null and is Virtual PI
 	 */
@@ -378,7 +381,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
 	 * @param huContext
-	 * @param hus HUs to mark as destroyed
+	 * @param hus       HUs to mark as destroyed
 	 */
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
 
@@ -417,11 +420,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
-	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
+	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
+	{
+		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+	}
 
 	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+		final BPartnerId bpartnerId = extractBPartnerIdOrNull(hu);
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
 				: null;
@@ -437,11 +443,17 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{
-		final int locatorRepoId = hu.getM_Locator_ID();
-		if (locatorRepoId <= 0)
+		final LocatorId locatorId = extractLocatorIdOrNull(hu);
+		if (locatorId == null)
 		{
 			throw new HUException("Warehouse Locator shall be set for: " + hu);
 		}
+		return locatorId;
+	}
+
+	static LocatorId extractLocatorIdOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
 		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
 	}
 

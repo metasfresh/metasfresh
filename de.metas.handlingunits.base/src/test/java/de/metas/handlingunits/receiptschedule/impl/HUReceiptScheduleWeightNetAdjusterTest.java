@@ -40,8 +40,6 @@ import de.metas.quantity.Quantity;
 
 /**
  * Asserts correct behavior of NET Weight when adjusting ReceiptSchedule Quantity
- *
- * @author al
  */
 public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocationWithWeightAttributeTest
 {

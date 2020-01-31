@@ -83,12 +83,12 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		return piAttributes;
 	}
 
-	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
+	private List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
 	{
 		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, attributeId)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
 				.list(I_M_HU_Attribute.class);
 

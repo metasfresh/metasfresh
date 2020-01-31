@@ -102,6 +102,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
 		final int doctypeID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
 		queueItem.setC_DocType_ID(doctypeID);
+		queueItem.setAD_Table_ID(archive.getAD_Table_ID());
 
 		// Handles operations specific for invoices.
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
@@ -156,8 +157,8 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		// services
 		final IShipmentScheduleAllocDAO schedAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-		queueItem.setC_BPartner(inout.getC_BPartner());
-		queueItem.setC_BPartner_Location(inout.getC_BPartner_Location());
+		queueItem.setC_BPartner_ID(inout.getC_BPartner_ID());
+		queueItem.setC_BPartner_Location_ID(inout.getC_BPartner_Location_ID());
 
 		// find the delivery date from the lieferdispo
 		if (!inout.isSOTrx())

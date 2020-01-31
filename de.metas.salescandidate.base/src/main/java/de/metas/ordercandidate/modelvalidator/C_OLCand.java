@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -119,7 +120,8 @@ public class C_OLCand
 				olCand,
 				ImmutableSet.<String> of(
 						I_C_OLCand.COLUMNNAME_C_BPartner_ID,
-						I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)))
+						I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID))
+				&& InterfaceWrapperHelper.isUIAction(olCand))
 		{
 			// task 09686
 			olCand.setM_PricingSystem_ID(0);
@@ -137,7 +139,6 @@ public class C_OLCand
 			return; // if olCand is new and product description is already set, do not copy anything
 		}
 
-		//
 		// Services
 		final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
@@ -154,30 +155,20 @@ public class C_OLCand
 		final I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(
 				bpartnerProductDAO.retrieveBPartnerProductAssociation(partner, product, orgId),
 				I_C_BPartner_Product.class);
+		if (bpp == null)
+		{
+			return; // nothing that we can add here with any benefit
+		}
 
-		final String productDescriptionToUse;
-		if (bpp != null)
+		// If we have a BPP association, first try its ProductDescription, then its ProductName
+		final String productName = product.getName().trim();
+		final String productDescription = firstNotEmptyTrimmed(bpp.getProductDescription(), bpp.getProductName(), productName);
+
+		final boolean descriptionHasAddedValue = !productName.contentEquals(productDescription.trim());
+		if (descriptionHasAddedValue)
 		{
-			//
-			// If we have a BPP association, first try it's ProductDescription, then it's ProductName, then fallback to M_Product.Name
-			String bppDescription = bpp.getProductDescription(); // BPP.ProductDescription
-			if (Check.isEmpty(bppDescription, true))
-			{
-				bppDescription = bpp.getProductName(); // BPP.ProductName fallback
-			}
-			if (Check.isEmpty(bppDescription, true))
-			{
-				bppDescription = product.getName(); // M_Product.Name fallback
-			}
-			productDescriptionToUse = bppDescription;
+			olCand.setProductDescription(productDescription);
 		}
-		else
-		{
-			//
-			// If we don't have a BPP association, just use the M_Product.Name
-			productDescriptionToUse = product.getName();
-		}
-		olCand.setProductDescription(productDescriptionToUse);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)

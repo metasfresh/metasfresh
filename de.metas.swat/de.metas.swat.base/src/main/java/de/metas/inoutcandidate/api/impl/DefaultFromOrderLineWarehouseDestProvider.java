@@ -106,7 +106,7 @@ import de.metas.util.Services;
 				// no warehouse, no plant
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			return null;

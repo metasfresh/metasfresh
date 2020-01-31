@@ -102,12 +102,12 @@ public class EventLogUserService
 	/**
 	 * Creates a builder to log a message to the current event processing log.
 	 * <p>
-	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerandLogRequest)},
+	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerAndLogRequest)},
 	 * it might be more convenient to use {@link Loggables#get()}.
 	 *
 	 * @param handlerClass the class to be logged in the record.
 	 */
-	public EventLogEntryRequest.EventLogEntryRequestBuilder newLogEntry(@NonNull final Class<?> handlerClass)
+	private EventLogEntryRequest.EventLogEntryRequestBuilder newLogEntry(@NonNull final Class<?> handlerClass)
 	{
 		return EventLogEntryRequest.builder()
 				.eventHandlerClass(handlerClass);
@@ -116,7 +116,7 @@ public class EventLogUserService
 	/**
 	 * Creates a builder to log a an error to the current event processing log.
 	 * <p>
-	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerandLogRequest)},
+	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerAndLogRequest)},
 	 * it might be more convenient just throw a runtime exception.
 	 *
 	 * @param handlerClass the class to be logged in the record.
@@ -136,10 +136,12 @@ public class EventLogUserService
 
 	@Value
 	@Builder
-	public static class InvokeHandlerandLogRequest
+	public static class InvokeHandlerAndLogRequest
 	{
+		@NonNull
 		Class<?> handlerClass;
 
+		@NonNull
 		Runnable invokaction;
 
 		@Default
@@ -148,10 +150,8 @@ public class EventLogUserService
 
 	/**
 	 * Invokes the given {@code request}'s runnable and sets up a threadlocal {@link ILoggable}.
-	 *
-	 * @param request
 	 */
-	public void invokeHandlerAndLog(@NonNull final InvokeHandlerandLogRequest request)
+	public void invokeHandlerAndLog(@NonNull final InvokeHandlerAndLogRequest request)
 	{
 		if (request.isOnlyIfNotAlreadyProcessed()
 				&& wasEventProcessedbyHandler(request.getHandlerClass()))

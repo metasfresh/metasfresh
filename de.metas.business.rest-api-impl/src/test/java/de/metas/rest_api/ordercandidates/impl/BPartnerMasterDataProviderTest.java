@@ -27,16 +27,16 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
+import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
@@ -175,12 +175,15 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bpartnerRecord);
 
 		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
 		saveRecord(bpLocationRecord);
 
 		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.DONT_UPDATE).build();
-		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder()
+				.syncAdvise(syncAdvise)
+				.contact(null)
+				.build();
 
 		// invoke the method under test
 		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
@@ -203,6 +206,34 @@ public class BPartnerMasterDataProviderTest
 		assertThat(bpartnerContactRecordsAfter).isEmpty();
 	}
 
+	/** Verifies that the masterdata provider will attempt to get a location from the masterdata if none is specified in our JSON */
+	@Test
+	public void getCreateBPartnerInfo_Exists_GetFallBackLocation()
+	{
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setValue("jsonBPartner.Code");
+		saveRecord(bpartnerRecord);
+
+		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
+		saveRecord(bpLocationRecord);
+
+		final SyncAdvise syncAdvise = SyncAdvise.READ_ONLY;
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder()
+				.location(null) // no location provided! - shall be supplemented from masterdata
+				.contact(null)
+				.syncAdvise(syncAdvise).build();
+
+		// invoke the method under test
+		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
+
+		assertThat(result.getBpartnerId().getRepoId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(result.getContactId()).isNull();
+
+		assertThat(result.getBpartnerLocationId().getRepoId()).isEqualTo(bpLocationRecord.getC_BPartner_Location_ID());
+	}
+
 	@Test
 	public void getCreateBPartnerInfo_Exists_Update()
 	{
@@ -218,13 +249,16 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpLocationRecord.setC_Location(locationRecord);
 		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
 		saveRecord(bpLocationRecord);
 
 		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build();
-		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder()
+				.syncAdvise(syncAdvise)
+				.contact(jsonBPartnerInfo.getContact().toBuilder().syncAdvise(SyncAdvise.CREATE_OR_MERGE).build())
+				.build();
 
 		// invoke the method under test
 		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
@@ -254,6 +288,61 @@ public class BPartnerMasterDataProviderTest
 		assertThat(bpartnerContactRecordAfter.getExternalId()).isEqualTo("jsonBPartnerContact.ExternalId");
 		assertThat(bpartnerContactRecordAfter.getEMail()).isEqualTo("jsonBPartnerContact.Email");
 		assertThat(bpartnerContactRecordAfter.getC_BPartner_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+	}
+
+	@Test
+	public void getCreateBPartnerInfo_Exists_JUST_CREATE_IF_NOT_EXISTS()
+	{
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setValue("jsonBPartner.Code"); // further down, we'll want to find the bpartner, but not via location-GLN
+		saveRecord(bpartnerRecord);
+
+		final I_C_Country countryRecord = newInstance(I_C_Country.class);
+		countryRecord.setCountryCode("DE");
+		saveRecord(countryRecord);
+
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
+		locationRecord.setC_Country(countryRecord);
+		saveRecord(locationRecord);
+
+		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+		bpLocationRecord.setC_Location(locationRecord);
+		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
+		saveRecord(bpLocationRecord);
+
+		final JsonRequestLocation jsonLocationMod = jsonBPartnerInfo.getLocation().toBuilder()
+				.externalId(JsonExternalId.of(jsonBPartnerInfo.getLocation().getExternalId().getValue() + "_MOD"))
+				.gln(jsonBPartnerInfo.getLocation().getGln() + "_MOD")
+				.build();
+		final JsonRequestContact jsonContactMod = jsonBPartnerInfo.getContact().toBuilder().externalId(JsonExternalId.of(jsonBPartnerInfo.getContact().getExternalId().getValue() + "_MOD")).build();
+
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder()
+				.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
+				.location(jsonLocationMod)
+				.contact(jsonContactMod)
+				.build();
+
+		// invoke the method under test
+		final BPartnerInfo result = bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfoToUse, OrgId.ofRepoId(10));
+
+		assertThat(result.getBpartnerId().getRepoId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(result.getBpartnerLocationId().getRepoId()).isNotEqualTo(bpLocationRecord.getC_BPartner_Location_ID()); // different location was created on-the-fly
+		assertThat(result.getContactId()).isNotNull(); // contact was created on-the-fly
+
+		final I_C_BPartner bpartnerRecordAfter = load(bpartnerRecord.getC_BPartner_ID(), I_C_BPartner.class);
+		assertThat(bpartnerRecordAfter.getName()).isNotEqualTo(jsonBPartnerInfoToUse.getBpartner().getName()); // was not updated
+
+		final I_C_BPartner_Location newBPLocationRecord = load(result.getBpartnerLocationId().getRepoId(), I_C_BPartner_Location.class);
+		assertThat(newBPLocationRecord.getGLN()).isEqualTo("jsonBPartnerLocation.GLN_MOD");
+		assertThat(newBPLocationRecord.getExternalId()).isEqualTo("jsonBPartnerLocation.ExternalId_MOD"); // was updated
+
+		final I_AD_User newBPContactRecord = load(result.getContactId().getRepoId(), I_AD_User.class);
+		assertThat(newBPContactRecord.getAD_User_ID()).isEqualTo(result.getContactId().getRepoId());
+		assertThat(newBPContactRecord.getAD_Org_ID()).isEqualTo(10);
+		assertThat(newBPContactRecord.getExternalId()).isEqualTo("jsonBPartnerContact.ExternalId_MOD");
+		assertThat(newBPContactRecord.getEMail()).isEqualTo("jsonBPartnerContact.Email");
+		assertThat(newBPContactRecord.getC_BPartner_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 	}
 
 	@Test
@@ -296,7 +385,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		bPartnerLocationRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		bPartnerLocationRecord.setC_Location(locationRecord);
 		bPartnerLocationRecord.setExternalId("ExternalId");
 		bPartnerLocationRecord.setGLN("GLN");

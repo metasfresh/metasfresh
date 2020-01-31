@@ -1,5 +1,7 @@
 package org.adempiere.product.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,15 +15,14 @@ package org.adempiere.product.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -33,9 +34,8 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
@@ -50,13 +50,13 @@ public class ProductBLTest
 
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		ctx = Env.getCtx();
-		
+
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
@@ -73,7 +73,7 @@ public class ProductBLTest
 
 		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
-		Assert.assertEquals(as1.getM_AttributeSet_ID(), productAS_ID);
+		assertThat(productAS_ID).isEqualTo(as1.getM_AttributeSet_ID());
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class ProductBLTest
 
 		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
-		Assert.assertEquals(category1.getM_AttributeSet_ID(), productAS_ID);
+		assertThat(productAS_ID).isEqualTo(category1.getM_AttributeSet_ID());
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class ProductBLTest
 
 		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
-		Assert.assertEquals(product1.getM_AttributeSet_ID(), productAS_ID);
+		assertThat(productAS_ID).isEqualTo(product1.getM_AttributeSet_ID());
 	}
 
 }

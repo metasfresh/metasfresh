@@ -199,7 +199,7 @@ public class RfqDAO implements IRfqDAO
 		return retrieveResponseLinesQuery(rfqResponse)
 				.addEqualsFilter(I_C_RfQResponseLine.COLUMN_IsSelectedWinner, true)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -245,7 +245,7 @@ public class RfqDAO implements IRfqDAO
 	{
 		return retrieveResponseQtysQuery(rfqResponseLine)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	@Override
@@ -298,7 +298,7 @@ public class RfqDAO implements IRfqDAO
 		return retrieveResponseLinesQuery(rfqResponse)
 				.addNotEqualsFilter(I_C_RfQResponseLine.COLUMNNAME_QtyRequiered, BigDecimal.ZERO)
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 }

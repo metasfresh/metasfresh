@@ -7,7 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.common.JsonPagingDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

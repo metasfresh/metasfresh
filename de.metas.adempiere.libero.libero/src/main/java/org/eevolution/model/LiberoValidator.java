@@ -25,14 +25,11 @@ package org.eevolution.model;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
-import org.eevolution.mrp.jmx.JMXMRPStatus;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
@@ -71,19 +68,13 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onAfterInit()
-	{
-		setupJMX();
-	}
-
-	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		//
 		// Master data
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOMLine(), client);
-		engine.addModelValidator(org.eevolution.model.validator.PP_Product_Planning.INSTANCE, client);
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning(), client);
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(ppOrderConverter, materialEventService), client);
@@ -119,14 +110,6 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class);
 
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_PP_Order.Table_Name);
-	}
-
-	private void setupJMX()
-	{
-		final JMXRegistry jmxRegistry = JMXRegistry.get();
-
-		final JMXMRPStatus jmxMRPStatus = new JMXMRPStatus();
-		jmxRegistry.registerJMX(jmxMRPStatus, OnJMXAlreadyExistsPolicy.Replace);
 	}
 
 	@Override

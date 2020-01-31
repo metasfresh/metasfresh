@@ -38,30 +38,35 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class InOutBL implements IInOutBL
 {
@@ -70,22 +75,22 @@ public class InOutBL implements IInOutBL
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
 	@Override
-	public IPricingContext createPricingCtx(final org.compiere.model.I_M_InOutLine inOutLine)
+	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		Check.assumeNotNull(inOutLine, "Param 'inOutLine' is not null");
-
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_InOut inOut = inOutLine.getM_InOut();
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(inOutLine.getM_Product_ID(),
-				inOut.getC_BPartner_ID(),
-				inOutLine.getC_UOM_ID(),
-				inOutLine.getQtyEntered(),
-				soTrx.toBoolean());
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
+				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
+				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
+				bPartnerId,
+				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
+				soTrx);
 
 		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, soTrx);
 
@@ -106,43 +111,73 @@ public class InOutBL implements IInOutBL
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
 					+ "\n @M_InOut_ID@: " + inOut
-					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner().getValue());
+					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
 		Check.assumeNotNull(pricingSystemId, "No pricing system found for M_InOut_ID={}", inOut);
 
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), soTrx);
-		Check.errorIf(priceList == null,
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
+				pricingSystemId,
+				BPartnerLocationId.ofRepoId(bPartnerId, inOut.getC_BPartner_Location_ID()),
+				soTrx);
+		Check.errorIf(priceListId == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
 				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(priceListId);
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(inOut.getDateOrdered()));
-		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+
+		pricingCtx.setFailIfNotCalculated();
+
 		// note: the qty was already passed to the pricingCtx upon creation, further up.
-
 		return pricingCtx;
-	}
-
-	@Override
-	public IPricingResult getProductPrice(final IPricingContext pricingCtx)
-	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
-		if (!result.isCalculated())
-		{
-			throw new ProductNotOnPriceListException(pricingCtx);
-		}
-		return result;
 	}
 
 	@Override
 	public IPricingResult getProductPrice(final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
-		return getProductPrice(pricingCtx);
+
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		return  pricingBL.calculatePrice(pricingCtx);
+
+	}
+
+public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final UomId catchUomIdOrNull;
+		if (inoutLine.getQtyDeliveredCatch().signum() != 0)
+		{
+			catchUomIdOrNull = UomId.ofRepoIdOrNull(inoutLine.getCatch_UOM_ID());
+		}
+		else
+		{
+			catchUomIdOrNull = null;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+				inoutLine.getMovementQty(),
+				productId,
+				inoutLine.getQtyDeliveredCatch(),
+				catchUomIdOrNull);
+		return qtyToAllocate;
+	}
+
+	@Override
+	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
+		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+				inoutLine.getMovementQty(),
+				productId,
+				inoutLine.getQtyEntered(),
+				uomId);
+		return qtyToAllocate;
 	}
 
 	@Override
@@ -155,7 +190,7 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner().getValue());
+						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
@@ -164,10 +199,6 @@ public class InOutBL implements IInOutBL
 	/**
 	 * Find the pricing system based on the soTrx. This method will be used in the rare cases when we are not relying upon the SOTrx of the inout, because we need the pricing system for the opposite
 	 * SOTrx nature.
-	 *
-	 * @param inOut
-	 * @param isSOTrx
-	 * @return
 	 */
 	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final SOTrx soTrx)
 	{
@@ -178,7 +209,7 @@ public class InOutBL implements IInOutBL
 			return priceListsRepo.getPricingSystemById(pricingSystemId);
 		}
 
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
 		if (pricingSystemId == null)
 		{
 			return null;
@@ -252,7 +283,7 @@ public class InOutBL implements IInOutBL
 		line.setAD_Org_ID(inout.getAD_Org_ID());
 		line.setM_InOut(inout);
 
-		final I_M_Warehouse warehouse = inout.getM_Warehouse();
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
 		final I_M_Locator locator = warehouseBL.getDefaultLocator(warehouse);
 		if (locator != null)
 		{

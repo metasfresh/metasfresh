@@ -48,8 +48,8 @@ public class BOMCreateRequest
 	String productValue;
 	String productName;
 	UomId uomId;
-	String bomType;
-	String bomUse;
+	BOMType bomType;
+	BOMUse bomUse;
 	LocalDate validFrom;
 	ImmutableList<BOMLine> lines;
 
@@ -60,8 +60,8 @@ public class BOMCreateRequest
 			@NonNull final String productValue,
 			@NonNull final String productName,
 			@NonNull final UomId uomId,
-			@NonNull final String bomType,
-			@NonNull final String bomUse,
+			@NonNull final BOMType bomType,
+			@NonNull final BOMUse bomUse,
 			@Nullable final LocalDate validFrom,
 			@NonNull @Singular final ImmutableList<BOMLine> lines)
 	{

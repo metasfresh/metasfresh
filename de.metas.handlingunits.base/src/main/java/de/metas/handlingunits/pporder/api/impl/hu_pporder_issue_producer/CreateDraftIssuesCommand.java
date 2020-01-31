@@ -1,20 +1,21 @@
 package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.TimeUtil;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -25,10 +26,14 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -78,30 +83,52 @@ public class CreateDraftIssuesCommand
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
+	//
+	// Parameters
 	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
-	private final LocalDate movementDate;
+	private final ZonedDateTime movementDate;
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
-	private final ImmutableList<I_M_HU> hus;
+	private final ImmutableList<I_M_HU> issueFromHUs;
+	private final boolean changeHUStatusToIssued;
+	private final PickingCandidateId pickingCandidateId;
+
+	//
+	// Status
+	private Quantity remainingQtyToIssue;
 
 	@Builder
 	private CreateDraftIssuesCommand(
-			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
-			final @Nullable LocalDate movementDate,
+			@NonNull final List<I_PP_Order_BOMLine> targetOrderBOMLines,
+			@Nullable final ZonedDateTime movementDate,
+			@Nullable final Quantity fixedQtyToIssue,
 			final boolean considerIssueMethodForQtyToIssueCalculation,
-			@NonNull final Collection<I_M_HU> hus)
+			@NonNull final Collection<I_M_HU> issueFromHUs,
+			@Nullable final Boolean changeHUStatusToIssued,
+			//
+			@Nullable final PickingCandidateId pickingCandidateId)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
+		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
+		{
+			throw new AdempiereException("fixedQtyToIssue shall be positive or not set at all");
+		}
 
 		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
-		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDate();
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
-		this.hus = ImmutableList.copyOf(hus);
+		this.issueFromHUs = ImmutableList.copyOf(issueFromHUs);
+		this.changeHUStatusToIssued = changeHUStatusToIssued != null ? changeHUStatusToIssued : true;
+
+		remainingQtyToIssue = fixedQtyToIssue;
+
+		this.pickingCandidateId = pickingCandidateId;
 	}
 
 	public List<I_PP_Order_Qty> execute()
 	{
-		if (hus.isEmpty())
+		if (issueFromHUs.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -111,19 +138,34 @@ public class CreateDraftIssuesCommand
 		// the candidates are created and processed in one uber-transaction
 		// trxManager.assertThreadInheritedTrxNotExists();
 
-		final List<I_PP_Order_Qty> candidates = huTrxBL.process(huContext -> {
-			return hus.stream()
-					.map(hu -> createCreateDraftIssue_InTrx(huContext, hu))
-					.filter(issueCandidate -> issueCandidate != null)
-					.collect(ImmutableList.toImmutableList());
-		});
+		return huTrxBL.process(this::executeInTrx);
+	}
+
+	private List<I_PP_Order_Qty> executeInTrx(final IHUContext huContext)
+	{
+		final ImmutableList<I_PP_Order_Qty> candidates = issueFromHUs.stream()
+				.map(hu -> createIssueCandidateOrNull(huContext, hu))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+
+		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() != 0)
+		{
+			throw new AdempiereException("Cannot issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
+		}
+
 		return candidates;
 	}
 
-	private I_PP_Order_Qty createCreateDraftIssue_InTrx(
+	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
 	{
+		// Stop if we had to issue a fixed quantity and we already issued it
+		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() <= 0)
+		{
+			return null;
+		}
+
 		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 		{
 			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
@@ -139,11 +181,18 @@ public class CreateDraftIssuesCommand
 		}
 
 		// Actually create and save the candidate
-		final I_PP_Order_Qty candidate = createIssueCandidate(hu, productStorage);
+		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
+		if (candidate == null)
+		{
+			return null;
+		}
 
 		// update the HU's status so that it's not moved somewhere else etc
-		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
-		handlingUnitsDAO.saveHU(hu);
+		if (changeHUStatusToIssued)
+		{
+			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
+			handlingUnitsDAO.saveHU(hu);
+		}
 
 		return candidate;
 	}
@@ -206,32 +255,38 @@ public class CreateDraftIssuesCommand
 		return productStorage;
 	}
 
-	private I_PP_Order_Qty createIssueCandidate(
+	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
 		final ProductId productId = productStorage.getProductId();
 		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
 
-		final I_PP_Order_Qty candidate = newInstance(I_PP_Order_Qty.class);
-
-		candidate.setPP_Order_ID(targetBOMLine.getPP_Order_ID());
-		candidate.setPP_Order_BOMLine(targetBOMLine);
-
-		candidate.setM_Locator_ID(hu.getM_Locator_ID());
-		candidate.setM_HU_ID(hu.getM_HU_ID());
-		candidate.setM_Product_ID(productId.getRepoId());
-
 		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
 				.switchToSourceIfMorePrecise();
-		candidate.setQty(qtyToIssue.toBigDecimal());
-		candidate.setC_UOM_ID(qtyToIssue.getUOMId());
+		if (qtyToIssue.isZero())
+		{
+			return null;
+		}
 
-		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
-		candidate.setProcessed(false);
-		huPPOrderQtyDAO.save(candidate);
+		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
+				.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+				//
+				.date(movementDate)
+				//
+				.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+				.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.productId(productId)
+				//
+				.qtyToIssue(qtyToIssue)
+				//
+				.pickingCandidateId(pickingCandidateId)
+				//
+				.build());
 
 		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
+
 		return candidate;
 	}
 
@@ -248,6 +303,18 @@ public class CreateDraftIssuesCommand
 	/** @return how much quantity to take "from" and issue it to given BOM line */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
+		//
+		// Case: enforced qty to issue
+		if (remainingQtyToIssue != null)
+		{
+			final Quantity huStorageQty = from.getQty(remainingQtyToIssue.getUOM());
+			final Quantity qtyToIssue = huStorageQty.min(remainingQtyToIssue);
+
+			remainingQtyToIssue = remainingQtyToIssue.subtract(qtyToIssue);
+
+			return qtyToIssue;
+		}
+
 		if (considerIssueMethodForQtyToIssueCalculation)
 		{
 			//
@@ -258,7 +325,7 @@ public class CreateDraftIssuesCommand
 			final String issueMethod = targetBOMLine.getIssueMethod();
 			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
 			{
-				return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
+				return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
 			}
 		}
 

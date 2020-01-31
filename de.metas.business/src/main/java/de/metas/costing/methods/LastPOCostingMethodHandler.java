@@ -93,7 +93,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			}
 		}
 
-		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -106,7 +106,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt());
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt(), utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
 

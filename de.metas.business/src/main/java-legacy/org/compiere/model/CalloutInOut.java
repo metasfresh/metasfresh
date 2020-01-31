@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
@@ -50,12 +51,12 @@ import de.metas.util.Services;
  * Shipment/Receipt Callouts
  *
  * @author Jorg Janke
- * @version $Id: CalloutInOut.java,v 1.7 2006/07/30 00:51:05 jjanke Exp $
  * @author victor.perez@e-evolution.com www.e-evolution.com [ 1867464 ]
- *         http://sourceforge
- *         .net/tracker/index.php?func=detail&aid=1867464&group_id
- *         =176962&atid=879332
+ * http://sourceforge
+ * .net/tracker/index.php?func=detail&aid=1867464&group_id
+ * =176962&atid=879332
  * @author kh http://dewiki908/mediawiki/index.php/Fehlerliste_Integrationstest#B062
+ * @version $Id: CalloutInOut.java,v 1.7 2006/07/30 00:51:05 jjanke Exp $
  */
 // metas: synched with rev. 10203
 public class CalloutInOut extends CalloutEngine
@@ -176,7 +177,7 @@ public class CalloutInOut extends CalloutEngine
 		final I_M_InOut inout = calloutField.getModel(I_M_InOut.class);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(inout.getC_DocType())
+				.setNewDocType(loadOutOfTrx(inout.getC_DocType_ID(), I_C_DocType.class))
 				.setOldDocumentNo(inout.getDocumentNo())
 				.setDocumentModel(inout)
 				.buildOrNull();
@@ -229,7 +230,7 @@ public class CalloutInOut extends CalloutEngine
 	public String bpartner(final ICalloutField calloutField)
 	{
 		final I_M_InOut inout = calloutField.getModel(I_M_InOut.class);
-		final I_C_BPartner bpartner = inout.getC_BPartner();
+		final I_C_BPartner bpartner = load(inout.getC_BPartner_ID(), I_C_BPartner.class);
 		if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
 		{
 			return NO_ERROR;
@@ -240,7 +241,7 @@ public class CalloutInOut extends CalloutEngine
 		//
 		// BPartner Location (i.e. ShipTo)
 		final I_C_BPartner_Location shipToLocation = suggestShipToLocation(calloutField, bpartner);
-		inout.setC_BPartner_Location(shipToLocation);
+		inout.setC_BPartner_Location_ID(shipToLocation.getC_BPartner_Location_ID());
 
 		//
 		// BPartner Contact
@@ -255,7 +256,7 @@ public class CalloutInOut extends CalloutEngine
 			{
 				contact = Services.get(IBPartnerBL.class).retrieveShipContact(bpartner);
 			}
-			inout.setAD_User(contact);
+			inout.setAD_User_ID(contact.getAD_User_ID());
 		}
 
 		//
@@ -312,7 +313,7 @@ public class CalloutInOut extends CalloutEngine
 			return NO_ERROR;
 		}
 		final I_M_InOut inout = calloutField.getModel(I_M_InOut.class);
-		final I_M_Warehouse warehouse = inout.getM_Warehouse();
+		final I_M_Warehouse warehouse = load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
 		if (warehouse == null)
 		{
 			return NO_ERROR;
@@ -696,16 +697,11 @@ public class CalloutInOut extends CalloutEngine
 	/**
 	 * M_InOutLine - ASI.
 	 *
-	 * @param ctx
-	 *            context
-	 * @param WindowNo
-	 *            window no
-	 * @param mTab
-	 *            tab model
-	 * @param mField
-	 *            field model
-	 * @param value
-	 *            new value
+	 * @param ctx      context
+	 * @param WindowNo window no
+	 * @param mTab     tab model
+	 * @param mField   field model
+	 * @param value    new value
 	 * @return error message or ""
 	 */
 	public String asi(final ICalloutField calloutField)

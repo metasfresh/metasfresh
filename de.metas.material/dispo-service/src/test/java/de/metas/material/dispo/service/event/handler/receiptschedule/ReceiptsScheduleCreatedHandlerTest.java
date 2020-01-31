@@ -2,17 +2,17 @@ package de.metas.material.dispo.service.event.handler.receiptschedule;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -56,10 +56,11 @@ import lombok.NonNull;
 
 public class ReceiptsScheduleCreatedHandlerTest
 {
-	public static final int RECEIPT_SCHEDULE_ID = 70;
+	static final int RECEIPT_SCHEDULE_ID = 70;
+
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -79,9 +80,7 @@ public class ReceiptsScheduleCreatedHandlerTest
 		handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
 	}
 
-
-	public static void handleEvent_ReceiptScheduleCreatedEvent_performTest(
-			@NonNull final ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler)
+	static void handleEvent_ReceiptScheduleCreatedEvent_performTest(@NonNull final ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler)
 	{
 		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor().withDate(NOW);
 
@@ -97,14 +96,18 @@ public class ReceiptsScheduleCreatedHandlerTest
 						.build())
 				.receiptScheduleId(RECEIPT_SCHEDULE_ID)
 				.vendorId(80)
-				.reservedQuantity(TEN)
+				.reservedQuantity(new BigDecimal("10"))
 				.build()
 				.validate();
 
 		receiptsScheduleCreatedHandler.handleEvent(receiptScheduleCreatedEvent);
 
+		//
+		// Check DEMAND candidates
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).isEmpty();
 
+		//
+		// Check SUPPLY candidates
 		final List<I_MD_Candidate> supplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 		assertThat(supplyCandidates).hasSize(1);
 		final I_MD_Candidate supplyCandidate = supplyCandidates.get(0);
@@ -113,6 +116,8 @@ public class ReceiptsScheduleCreatedHandlerTest
 		assertThat(supplyCandidate.getQty()).isEqualByComparingTo(eventMaterialDescriptor.getQuantity());
 		assertThat(supplyCandidate.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(eventMaterialDescriptor.getDate()));
 
+		//
+		// Check PURCHASE DETAILS
 		final List<I_MD_Candidate_Purchase_Detail> purchaseDetails = POJOLookupMap.get().getRecords(I_MD_Candidate_Purchase_Detail.class);
 		assertThat(purchaseDetails).hasSize(1);
 		final I_MD_Candidate_Purchase_Detail purchaseDetail = purchaseDetails.get(0);
@@ -120,8 +125,10 @@ public class ReceiptsScheduleCreatedHandlerTest
 		assertThat(purchaseDetail.getC_OrderLinePO_ID()).isEqualTo(40);
 		assertThat(purchaseDetail.getM_ReceiptSchedule_ID()).isEqualTo(70);
 		assertThat(purchaseDetail.getC_BPartner_Vendor_ID()).isEqualTo(80);
-		assertThat(purchaseDetail.getQtyOrdered()).isEqualByComparingTo(TEN);
+		assertThat(purchaseDetail.getQtyOrdered()).isEqualByComparingTo("10");
 
+		//
+		// Check STOCK candidates
 		final List<I_MD_Candidate> stockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
 		final I_MD_Candidate stockCandidate = stockCandidates.get(0);
 		assertThat(stockCandidate.getM_Product_ID()).isEqualTo(eventMaterialDescriptor.getProductId());

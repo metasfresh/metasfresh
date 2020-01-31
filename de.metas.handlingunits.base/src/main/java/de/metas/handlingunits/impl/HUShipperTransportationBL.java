@@ -1,5 +1,39 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHULockBL;
+import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IInOutPackageDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.inout.InOutId;
+import de.metas.lock.api.LockOwner;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.shipping.api.IShipperTransportationDAO;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -24,55 +58,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUPackageBL;
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
-import de.metas.lock.api.LockOwner;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
 	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
 
 	@Override
-	public List<I_M_Package> addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
+	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)
 	{
 		//
 		// Load Shipper transportation document and validate it
 		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		if (shipperTransportation == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@");
+			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", shipperTransportationId.getRepoId());
 		}
 		// Make sure Shipper Transportation is still open
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", shipperTransportationId);
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
@@ -137,8 +144,56 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		return ImmutableList.copyOf(result);
 	}
 
+	@NonNull
 	@Override
-	public boolean isEligibleForAddingToShipperTransportation(final I_M_HU hu)
+	public ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final ImmutableList<de.metas.inout.model.I_M_InOut> inOuts)
+	{
+		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
+
+		// Make sure Shipper Transportation is still open
+		if (shipperTransportation.isProcessed())
+		{
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { shipperTransportation.getM_ShipperTransportation_ID() });
+		}
+
+		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
+
+		// services
+		final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
+
+		//
+		// Iterate InOuts and:
+		// - create M_Packages
+		// - assign M_Packages them to Shipper Transportation document
+		// - assign ShipperTransportation to the InOut
+		final ImmutableList.Builder<I_M_Package> result = ImmutableList.builder();
+		for (final de.metas.inout.model.I_M_InOut inOut : inOuts)
+		{
+			// Skip the InOuts which already have a Shipper Transportation
+			if (inOut.getM_ShipperTransportation_ID() != 0)
+			{
+				continue;
+			}
+
+			//
+			// Create M_Package
+			final I_M_Package mpackage = inOutPackageDAO.createM_Package(InOutId.ofRepoId(inOut.getM_InOut_ID()), shipperId);
+			result.add(mpackage);
+
+			//
+			// Add M_Package to Shipper Transportation document
+			shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
+
+			// Add ShipperTransportation to InOut
+			inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+		}
+
+		return result.build();
+	}
+
+	@Override
+	public boolean isEligibleForAddingToShipperTransportation(@Nullable final I_M_HU hu)
 	{
 		// guard against null
 		if (hu == null)
@@ -231,6 +286,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		return shippingPackagesMatchingHU;
 	}
 
+	@Nullable
 	@Override
 	public I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(final Collection<I_M_HU> hus)
 	{
@@ -266,7 +322,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		}
 
 		final I_M_ShippingPackage firstPackage = shippingPackages.iterator().next();
-		final I_M_ShipperTransportation shipperTransportation = firstPackage.getM_ShipperTransportation(); // get the common shipper transportation document of the HUs
-		return shipperTransportation;
+		return firstPackage.getM_ShipperTransportation();
 	}
 }

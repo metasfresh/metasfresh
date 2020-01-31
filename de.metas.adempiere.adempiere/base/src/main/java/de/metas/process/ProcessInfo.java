@@ -48,7 +48,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
@@ -57,6 +56,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
+import de.metas.report.server.OutputType;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -589,6 +589,7 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
+	 * IMPORTANT: in most cases, {@link #getQueryFilterOrElseFalse()} is what you probably want to use.
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
 	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
@@ -596,10 +597,19 @@ public final class ProcessInfo implements Serializable
 	 * @task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
-	public <T> IQueryFilter<T> getQueryFilter()
+	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
 		final ConstantQueryFilter<T> defaultQueryFilter = ConstantQueryFilter.of(true);
+		return getQueryFilterOrElse(defaultQueryFilter);
+	}
+
+	/**
+	 * Like {@link #getQueryFilterOrElseTrue()} but returns an "all exclusive" query filter if the {@code whereClause} is empty.
+	 */
+	public <T> IQueryFilter<T> getQueryFilterOrElseFalse()
+	{
+		final ConstantQueryFilter<T> defaultQueryFilter = ConstantQueryFilter.of(false);
 		return getQueryFilterOrElse(defaultQueryFilter);
 	}
 

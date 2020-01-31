@@ -1,6 +1,8 @@
 package org.adempiere.invoice.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -27,6 +29,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -43,8 +46,12 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -54,6 +61,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -81,6 +89,44 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public void save(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		saveRecord(invoiceLine);
+	}
+
+	@Override
+	public final I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, int bPartnerID)
+	{
+		if (bPartnerID <= 0)
+		{
+			return null;
+		}
+		if (invoiceNo == null)
+		{
+			return null;
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_Invoice.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, invoiceNo)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bPartnerID)
+				.create()
+				.firstOnly(I_C_Invoice.class);
+	}
+
+	@Override
+	public final Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(final I_AD_Org adOrg)
+	{
+		final int adOrgID = adOrg.getAD_Org_ID();
+		Check.assume(adOrgID > 0, "Valid transactional Org: {}", adOrg);
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, adOrgID)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.iterate(I_C_Invoice.class);
 	}
 
 	@Override
@@ -267,7 +313,19 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull final InvoiceId invoiceId)
 	{
-		return load(invoiceId.getRepoId(), org.compiere.model.I_C_Invoice.class);
+		return load(invoiceId, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public List<org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return loadByRepoIdAwares(ImmutableSet.copyOf(invoiceIds), org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(ImmutableSet.copyOf(invoiceIds), org.compiere.model.I_C_Invoice.class);
 	}
 
 	@Override

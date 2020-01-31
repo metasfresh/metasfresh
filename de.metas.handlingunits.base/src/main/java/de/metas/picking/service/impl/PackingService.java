@@ -71,7 +71,7 @@ public class PackingService implements IPackingService
 				huContext,
 				part.getProductId(),
 				part.getQty(),
-				SystemTime.asDate(),
+				SystemTime.asZonedDateTime(),
 				schedule, // reference model
 				false // forceQtyAllocation
 		);

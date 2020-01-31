@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.runner.Description;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -49,8 +48,8 @@ import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.product.ProductId;
@@ -156,11 +155,11 @@ public abstract class AbstractHUTest
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher()
 	{
 		@Override
-		protected void failed(final Throwable e, final Description description)
+		protected void onTestFailed(final String testName, final Throwable exception)
 		{
-			super.failed(e, description);
+			super.onTestFailed(testName, exception);
 			afterTestFailed();
-		}
+		};
 	};
 
 	@Before
@@ -175,7 +174,7 @@ public abstract class AbstractHUTest
 
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
 
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 
 		initialize();
 	}

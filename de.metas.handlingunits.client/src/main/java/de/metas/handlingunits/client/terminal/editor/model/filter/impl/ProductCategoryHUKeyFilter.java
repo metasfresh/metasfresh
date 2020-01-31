@@ -98,14 +98,14 @@ public class ProductCategoryHUKeyFilter extends AbstractHUKeyFilter
 		//
 		// Filter Product Category
 		final IQuery<I_M_Product> productSubQuery = queryBL.createQueryBuilder(I_M_Product.class, contextProvider)
-				.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId)
 				.create();
 
 		//
 		// Filter HU Storage
 		final IQuery<I_M_HU_Storage> huStorageSubQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, contextProvider)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_HU_Storage.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productSubQuery)
+				.addInSubQueryFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productSubQuery)
 				.create();
 
 		//

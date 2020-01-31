@@ -1,43 +1,49 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.mforecast.IForecastDAO;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)
 public class M_Forecast
 {
 	private static final String MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION = "M_Forecast_DocAction_Not_Allowed_After_Completion";
-	static final M_Forecast INSTANCE = new M_Forecast();
 
-	private M_Forecast()
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
+	private final M_ForecastEventCreator forecastEventCreator;
+	private final PostMaterialEventService materialEventService;
+
+	public M_Forecast(
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final PostMaterialEventService materialEventService)
 	{
+		forecastEventCreator = new M_ForecastEventCreator(productDescriptorFactory);
+		this.materialEventService = materialEventService;
 	}
 
 	@Init
-	public void init(final IModelValidationEngine engine)
+	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
@@ -57,7 +63,6 @@ public class M_Forecast
 	})
 	public void preventUnsupportedDocActions(@NonNull final I_M_Forecast forecast)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String message = msgBL.getMsg(Env.getCtx(), MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION);
 		throw new AdempiereException(message);
 	}
@@ -65,28 +70,14 @@ public class M_Forecast
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void fireForecastCreatedEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
-		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
+		final List<I_M_ForecastLine> forecastLines = forecastsRepo.retrieveLinesByForecastId(forecast.getM_Forecast_ID());
 		if (forecastLines.isEmpty())
 		{
 			return;
 		}
 
-		final ForecastCreatedEvent forecastCreatedEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
-				forecastLines,
-				timing);
-
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		final ForecastCreatedEvent forecastCreatedEvent = forecastEventCreator.createEventWithLinesAndTiming(forecastLines, timing);
 		materialEventService.postEventAfterNextCommit(forecastCreatedEvent);
-	}
-
-	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)
-	{
-		final List<I_M_ForecastLine> forecastLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_ForecastLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ForecastLine.COLUMN_M_Forecast_ID, forecast.getM_Forecast_ID())
-				.create()
-				.list();
-		return forecastLines;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
@@ -97,19 +88,16 @@ public class M_Forecast
 	})
 	public void updateForecastLines(@NonNull final I_M_Forecast forecast)
 	{
-		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
-		if (forecastLines.isEmpty())
-		{
-			return;
-		}
+		final List<I_M_ForecastLine> forecastLines = forecastsRepo.retrieveLinesByForecastId(forecast.getM_Forecast_ID());
+		forecastLines.forEach(forecastLine -> updateForecastLineFromHeaderAndSave(forecastLine, forecast));
+	}
 
-		forecastLines.forEach( forecastLine ->
-		{
-			forecastLine.setC_BPartner(forecast.getC_BPartner());
-			forecastLine.setM_Warehouse(forecast.getM_Warehouse());
-			forecastLine.setC_Period(forecast.getC_Period());
-			forecastLine.setDatePromised(forecast.getDatePromised());
-			save(forecastLine);
-		});
+	private void updateForecastLineFromHeaderAndSave(final I_M_ForecastLine forecastLine, final I_M_Forecast forecast)
+	{
+		forecastLine.setC_BPartner_ID(forecast.getC_BPartner_ID());
+		forecastLine.setM_Warehouse_ID(forecast.getM_Warehouse_ID());
+		forecastLine.setC_Period_ID(forecast.getC_Period_ID());
+		forecastLine.setDatePromised(forecast.getDatePromised());
+		saveRecord(forecastLine);
 	}
 }

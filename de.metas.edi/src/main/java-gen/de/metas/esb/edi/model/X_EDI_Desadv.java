@@ -15,7 +15,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 683045244L;
+	private static final long serialVersionUID = -51758202L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -24,8 +24,10 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
       /** if (EDI_Desadv_ID == 0)
         {
 			setEDI_Desadv_ID (0);
-			setEDI_ExportStatus (null); // P
+			setFulfillmentPercent (BigDecimal.ZERO); // 0
 			setProcessing (false); // N
+			setSumDeliveredInStockingUOM (BigDecimal.ZERO);
+			setSumOrderedInStockingUOM (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -204,43 +206,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return ii.intValue();
 	}
 
-	/** Set Geliefert % Minimum.
-		@param EDI_DESADV_MinimumSumPercentage Geliefert % Minimum	  */
-	@Override
-	public void setEDI_DESADV_MinimumSumPercentage (java.math.BigDecimal EDI_DESADV_MinimumSumPercentage)
-	{
-		set_Value (COLUMNNAME_EDI_DESADV_MinimumSumPercentage, EDI_DESADV_MinimumSumPercentage);
-	}
-
-	/** Get Geliefert % Minimum.
-		@return Geliefert % Minimum	  */
-	@Override
-	public java.math.BigDecimal getEDI_DESADV_MinimumSumPercentage () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DESADV_MinimumSumPercentage);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Geliefert %.
-		@param EDI_DESADV_SumPercentage Geliefert %	  */
-	@Override
-	public void setEDI_DESADV_SumPercentage (java.math.BigDecimal EDI_DESADV_SumPercentage)
-	{
-		throw new IllegalArgumentException ("EDI_DESADV_SumPercentage is virtual column");	}
-
-	/** Get Geliefert %.
-		@return Geliefert %	  */
-	@Override
-	public java.math.BigDecimal getEDI_DESADV_SumPercentage () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EDI_DESADV_SumPercentage);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set EDI Fehlermeldung.
 		@param EDIErrorMsg EDI Fehlermeldung	  */
 	@Override
@@ -291,6 +256,44 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	public java.lang.String getEDI_ExportStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EDI_ExportStatus);
+	}
+
+	/** Set Geliefert %.
+		@param FulfillmentPercent Geliefert %	  */
+	@Override
+	public void setFulfillmentPercent (java.math.BigDecimal FulfillmentPercent)
+	{
+		set_ValueNoCheck (COLUMNNAME_FulfillmentPercent, FulfillmentPercent);
+	}
+
+	/** Get Geliefert %.
+		@return Geliefert %	  */
+	@Override
+	public java.math.BigDecimal getFulfillmentPercent () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FulfillmentPercent);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert % Minimum.
+		@param FulfillmentPercentMin Geliefert % Minimum	  */
+	@Override
+	public void setFulfillmentPercentMin (java.math.BigDecimal FulfillmentPercentMin)
+	{
+		set_Value (COLUMNNAME_FulfillmentPercentMin, FulfillmentPercentMin);
+	}
+
+	/** Get Geliefert % Minimum.
+		@return Geliefert % Minimum	  */
+	@Override
+	public java.math.BigDecimal getFulfillmentPercentMin () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FulfillmentPercentMin);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Übergabeadresse.
@@ -355,7 +358,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -364,7 +367,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
@@ -400,6 +403,44 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set SumDeliveredInStockingUOM.
+		@param SumDeliveredInStockingUOM SumDeliveredInStockingUOM	  */
+	@Override
+	public void setSumDeliveredInStockingUOM (java.math.BigDecimal SumDeliveredInStockingUOM)
+	{
+		set_Value (COLUMNNAME_SumDeliveredInStockingUOM, SumDeliveredInStockingUOM);
+	}
+
+	/** Get SumDeliveredInStockingUOM.
+		@return SumDeliveredInStockingUOM	  */
+	@Override
+	public java.math.BigDecimal getSumDeliveredInStockingUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SumDeliveredInStockingUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set SumOrderedInStockingUOM.
+		@param SumOrderedInStockingUOM SumOrderedInStockingUOM	  */
+	@Override
+	public void setSumOrderedInStockingUOM (java.math.BigDecimal SumOrderedInStockingUOM)
+	{
+		set_Value (COLUMNNAME_SumOrderedInStockingUOM, SumOrderedInStockingUOM);
+	}
+
+	/** Get SumOrderedInStockingUOM.
+		@return SumOrderedInStockingUOM	  */
+	@Override
+	public java.math.BigDecimal getSumOrderedInStockingUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SumOrderedInStockingUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set UserFlag.

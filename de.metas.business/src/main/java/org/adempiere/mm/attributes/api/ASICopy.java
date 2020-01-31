@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -38,19 +39,26 @@ import lombok.NonNull;
 
 /**
  * Helper class used to copy a given ASI.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ASICopy
 {
-	public static final ASICopy newInstance(final I_M_AttributeSetInstance fromASI)
+
+	public static final ASICopy newInstance(@NonNull final I_M_AttributeSetInstance fromASI)
 	{
 		return new ASICopy(fromASI);
 	}
 
-	private final transient IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
+	public static final ASICopy newInstance(@NonNull final AttributeSetInstanceId fromAttributeSetInstanceId)
+	{
+		final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
+		final I_M_AttributeSetInstance fromASI = attributesDAO.getAttributeSetInstanceById(fromAttributeSetInstanceId);
+		return new ASICopy(fromASI);
+	}
 
+	private final transient IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
 	private final I_M_AttributeSetInstance _fromASI;
 	private AttributeSetId _overrideAttributeSetId;
 
@@ -68,9 +76,9 @@ public class ASICopy
 
 	/**
 	 * Sets a M_AttributeSet_ID to override the one that is coming from "fromASI".
-	 * 
+	 *
 	 * If the parameter is zero or negative the it will be ignored, so the attribute set from "fromASI" will be used.
-	 * 
+	 *
 	 * @param overrideAttributeSetId
 	 */
 	public ASICopy overrideAttributeSetId(final AttributeSetId overrideAttributeSetId)
@@ -86,7 +94,7 @@ public class ASICopy
 
 	/**
 	 * Adds a filter to attribute instances of "fromASI".
-	 * 
+	 *
 	 * @param filter
 	 */
 	public ASICopy filter(final Predicate<I_M_AttributeInstance> filter)

@@ -11,8 +11,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
@@ -22,7 +24,6 @@ import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.X_C_DocType;
@@ -40,6 +41,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.impexp.processing.ImportGroupKey;
 import de.metas.impexp.processing.ImportGroupResult;
 import de.metas.impexp.processing.ImportProcessTemplate;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
@@ -95,10 +97,11 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
-		MInventoryImportTableSqlUpdater.updateInventoryImportTable(whereClause);
+		final ImportRecordsSelection selection = getImportRecordsSelection();
 
-		final int countErrorRecords = MInventoryImportTableSqlUpdater.countRecordsWithErrors(whereClause);
+		MInventoryImportTableSqlUpdater.updateInventoryImportTable(selection);
+
+		final int countErrorRecords = MInventoryImportTableSqlUpdater.countRecordsWithErrors(selection);
 		getResultCollector().setCountImportRecordsWithErrors(countErrorRecords);
 	}
 
@@ -177,6 +180,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
 		inventoryLine.setExternalId(importRecord.getExternalLineId());
 		inventoryLine.setQtyCount(importRecord.getQtyCount());
+		inventoryLine.setCostPrice(importRecord.getCostPrice());
 		inventoryLine.setM_Inventory_ID(inventoryId.getRepoId());
 		inventoryLine.setM_Locator_ID(importRecord.getM_Locator_ID());
 
@@ -210,43 +214,41 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		}
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		//
 		// Lot
 		if (!Check.isEmpty(importRecord.getLot(), true))
 		{
 			final AttributeId lotNumberAttrId = lotNumberDateAttributeDAO.getLotNumberAttributeId();
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttrId, importRecord.getLot());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, lotNumberAttrId, importRecord.getLot());
 		}
 
 		//
 		// BestBeforeDate
 		if (importRecord.getHU_BestBeforeDate() != null)
 		{
-			final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate);
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, bestBeforeDateAttr, importRecord.getHU_BestBeforeDate());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_BestBeforeDate, importRecord.getHU_BestBeforeDate());
 		}
 
 		//
 		// TE
 		if (!Check.isEmpty(importRecord.getTE(), true))
 		{
-			final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_TE);
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, TEAttr, importRecord.getTE());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_TE, importRecord.getTE());
 		}
 
 		//
 		// DateReceived
 		if (importRecord.getDateReceived() != null)
 		{
-			final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_DateReceived);
-			attributeSetInstanceBL.setAttributeInstanceValue(asi, dateReceivedAttr, importRecord.getDateReceived());
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_DateReceived, importRecord.getDateReceived());
 		}
 
 		//
 		// SubProducerBPartner_Value
 		{
-			final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(importRecord);
+			final AttributeListValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(importRecord);
 			if (subProducerBPartneValue != null)
 			{
 				getCreateAttributeInstanceForSubproducer(asi, subProducerBPartneValue);
@@ -259,7 +261,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	private I_M_AttributeValue getOrCreateSubproducerAttributeValue(@NonNull final I_I_Inventory importRecord)
+	private AttributeListValue getOrCreateSubproducerAttributeValue(@NonNull final I_I_Inventory importRecord)
 	{
 		final String subproducerBPartnerValue = importRecord.getSubProducerBPartner_Value();
 		if (Check.isEmpty(subproducerBPartnerValue, true))
@@ -276,38 +278,38 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory>
 		final I_M_Attribute subProducerAttribute = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
 
 		final String subproducerBPartnerIdString = String.valueOf(subproducerBPartnerId);
-		I_M_AttributeValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(subProducerAttribute, subproducerBPartnerIdString);
-		if (attributeValue != null)
+		final AttributeListValue existingAttributeValue = attributeDAO.retrieveAttributeValueOrNull(subProducerAttribute, subproducerBPartnerIdString);
+		if (existingAttributeValue != null)
 		{
-			return attributeValue;
+			return existingAttributeValue;
 		}
-
-		// search is done out of transaction because
-		attributeValue = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_AttributeValue.class);
-		attributeValue.setM_Attribute_ID(subProducerAttribute.getM_Attribute_ID());
-		attributeValue.setValue(subproducerBPartnerIdString);
-		attributeValue.setName(subproducerBPartnerValue);
-		attributeValue.setIsActive(true);
-		InterfaceWrapperHelper.saveRecord(attributeValue);
-		return attributeValue;
+		else
+		{
+			return attributeDAO.createAttributeValue(AttributeListValueCreateRequest.builder()
+					.attributeId(AttributeId.ofRepoId(subProducerAttribute.getM_Attribute_ID()))
+					.value(subproducerBPartnerIdString)
+					.name(subproducerBPartnerValue)
+					.build());
+		}
 	}
 
 	private void getCreateAttributeInstanceForSubproducer(
 			@NonNull final I_M_AttributeSetInstance asi,
-			@NonNull final I_M_AttributeValue attributeValue)
+			@NonNull final AttributeListValue attributeValue)
 	{
 		// M_Attribute_ID
-		final AttributeId attributeId = AttributeId.ofRepoId(attributeValue.getM_Attribute_ID());
+		final AttributeId attributeId = attributeValue.getAttributeId();
 
 		//
 		// Get/Create/Update Attribute Instance
-		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
+		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
 			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
 		}
 		attributeInstance.setM_AttributeSetInstance(asi);
-		attributeInstance.setM_AttributeValue(attributeValue);
+		attributeInstance.setM_AttributeValue_ID(attributeValue.getId().getRepoId());
 		attributeInstance.setM_Attribute_ID(attributeId.getRepoId());
 		// the attribute is a list, but expect to store as number, the id of the partner
 		attributeInstance.setValueNumber(new BigDecimal(attributeValue.getValue()));

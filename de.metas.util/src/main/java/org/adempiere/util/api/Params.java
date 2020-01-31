@@ -25,6 +25,7 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -125,6 +127,15 @@ public final class Params implements IParams
 				? value.toLocalDateTime().toLocalDate()
 				: null;
 
+	}
+
+	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		final Timestamp value = getParameterAsTimestamp(parameterName);
+		return value != null
+				? value.toLocalDateTime().atZone(SystemTime.zoneId())
+				: null;
 	}
 
 	@Override

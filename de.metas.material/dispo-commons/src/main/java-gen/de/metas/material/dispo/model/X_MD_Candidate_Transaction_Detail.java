@@ -15,7 +15,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -971073169L;
+	private static final long serialVersionUID = -1925944509L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
@@ -45,7 +45,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
     }
 
 	@Override
-	public org.compiere.model.I_AD_PInstance getAD_PInstance_ResetStock() throws RuntimeException
+	public org.compiere.model.I_AD_PInstance getAD_PInstance_ResetStock()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ResetStock_ID, org.compiere.model.I_AD_PInstance.class);
 	}
@@ -79,7 +79,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -157,7 +157,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -212,7 +212,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public org.compiere.model.I_M_Transaction getM_Transaction() throws RuntimeException
+	public org.compiere.model.I_M_Transaction getM_Transaction()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Transaction_ID, org.compiere.model.I_M_Transaction.class);
 	}

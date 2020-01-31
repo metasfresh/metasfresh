@@ -13,19 +13,20 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
+
+import lombok.EqualsAndHashCode;
 
 /**
  * Pass-through modifier (i.e. do nothing)
@@ -33,6 +34,7 @@ import org.adempiere.ad.dao.IQueryFilterModifier;
  * @author tsa
  * 
  */
+@EqualsAndHashCode
 public final class NullQueryFilterModifier implements IQueryFilterModifier
 {
 	public static final NullQueryFilterModifier instance = new NullQueryFilterModifier();
@@ -42,7 +44,7 @@ public final class NullQueryFilterModifier implements IQueryFilterModifier
 	 * @param modifier
 	 * @return true if given modifier is null
 	 */
-	public static final boolean isNull(IQueryFilterModifier modifier)
+	public static boolean isNull(IQueryFilterModifier modifier)
 	{
 		return modifier == null || modifier == instance;
 	}
@@ -52,13 +54,13 @@ public final class NullQueryFilterModifier implements IQueryFilterModifier
 	}
 
 	@Override
-	public final String toString()
+	public String toString()
 	{
 		return "-";
 	}
 
 	@Override
-	public final String getColumnSql(String columnSql)
+	public String getColumnSql(String columnSql)
 	{
 		return columnSql;
 	}
@@ -67,7 +69,7 @@ public final class NullQueryFilterModifier implements IQueryFilterModifier
 	 * @return Column Name if value is {@link ModelColumnNameValue} or "?" else.
 	 */
 	@Override
-	public final String getValueSql(Object value, List<Object> params)
+	public String getValueSql(Object value, List<Object> params)
 	{
 		if (value instanceof ModelColumnNameValue<?>)
 		{
@@ -80,7 +82,7 @@ public final class NullQueryFilterModifier implements IQueryFilterModifier
 	}
 
 	@Override
-	public final Object convertValue(final String columnName, Object value, final Object model)
+	public Object convertValue(final String columnName, Object value, final Object model)
 	{
 		return value;
 	}

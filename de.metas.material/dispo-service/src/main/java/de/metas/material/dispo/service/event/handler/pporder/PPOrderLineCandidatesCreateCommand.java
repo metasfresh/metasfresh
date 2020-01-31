@@ -41,6 +41,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Creates (or updates) {@link Candidate}s for each {@link PPOrderLine}.
+ */
 final class PPOrderLineCandidatesCreateCommand
 {
 	// services
@@ -142,7 +145,6 @@ final class PPOrderLineCandidatesCreateCommand
 				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))
 				.build();
 	}
-
 
 	private MaterialDescriptor createMaterialDescriptor(@NonNull final PPOrderLine ppOrderLine)
 	{

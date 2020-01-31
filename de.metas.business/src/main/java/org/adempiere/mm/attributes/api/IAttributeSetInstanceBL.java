@@ -3,11 +3,11 @@ package org.adempiere.mm.attributes.api;
 import java.util.function.Predicate;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 
 import com.google.common.base.Predicates;
 
@@ -60,22 +60,19 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	I_M_AttributeSetInstance getCreateASI(IAttributeSetInstanceAware asiAware);
 
 	/**
-	 * Get/Create {@link I_M_AttributeInstance} for given <code>asi</code>. If a new ai is created, if is also saved.
+	 * Get/Create {@link I_M_AttributeInstance} for given <code>asiId</code>. If a new ai is created, it is also saved.
 	 *
-	 * @param asi
-	 * @param attributeId
 	 * @return attribute instance; never return null
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeId attributeId);
+	I_M_AttributeInstance getCreateAttributeInstance(AttributeSetInstanceId asiId, AttributeId attributeId);
 
 	/**
-	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link I_M_AttributeValue}.
+	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link AttributeListValue}.
 	 *
-	 * @param asi
 	 * @param attributeValue attribute value to set; must be not null
 	 * @return created/updated attribute instance
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, I_M_AttributeValue attributeValue);
+	I_M_AttributeInstance getCreateAttributeInstance(AttributeSetInstanceId asiId, AttributeListValue attributeValue);
 
 	/**
 	 * If both the given <code>to</code> and <code>from</code> can be converted to {@link IAttributeSetInstanceAware}s and if <code>from</code>'s ASI-aware has an M_AttributeSetInstance,
@@ -102,19 +99,31 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * set in {@link I_M_AttributeInstance} the correct value for given <code>asi</code> and given <code>attribute</code>
 	 * <br>
 	 * the ai is also saved.
-	 *
-	 * @param asi
-	 * @param attribute
-	 * @param value
-	 * @return
 	 */
-	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeId attributeId, Object value);
 
-	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
+	/**
+	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, but the {@link AttributeId} is loaded from the given {@code attributeValue}.
+	 *
+	 * @param attributeValue {@code M_Attribute.Value} of the attribute for which an attribute instance shall be created.
+	 */
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, String attributeValue, Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 
 	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
 
 	boolean isStorageRelevant(I_M_AttributeInstance ai);
+
+	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
+
+	/**
+	 * Synchs the given {@code attributeSet}  to the given {@code asiAware}.
+	 * <p/>
+	 * Creates a new ASI if neccessary.
+	 * Existing attribute instances that are not part of the given {@code attributeSet} are left untouched.
+	 * {@code null}-Values from the given {@code attributeSet} are also synched to the given {@code asiAware}.
+	 * The given {@code asiAware} is <b>not</b> saved, but the the respective ASI and AIs are saved
+	 */
+	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 }

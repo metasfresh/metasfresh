@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
@@ -7,10 +8,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -27,20 +35,26 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -75,20 +89,19 @@ import lombok.NonNull;
 @Service
 public class PickingCandidateRepository
 {
-	// private static final Logger logger = LogManager.getLogger(PickingCandidateRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	public PickingCandidate getById(@NonNull final PickingCandidateId id)
 	{
-		return toPickingCandidate(getRecordById(id));
+		return toPickingCandidateAndLoadIssuesToBOMLine(getRecordById(id));
 	}
 
 	public List<PickingCandidate> getByIds(@NonNull final Set<PickingCandidateId> ids)
 	{
 		return getRecordsByIds(ids)
 				.stream()
-				.map(this::toPickingCandidate)
-				.collect(ImmutableList.toImmutableList());
+				.collect(toPickingCandidatesList());
 	}
 
 	private I_M_Picking_Candidate getRecordById(@NonNull final PickingCandidateId id)
@@ -125,11 +138,17 @@ public class PickingCandidateRepository
 
 		updateRecord(record, candidate);
 		saveRecord(record);
-
 		candidate.markSaved(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()));
+
+		saveIssuesToBOMLine(candidate.getId(), candidate.getIssuesToPickingOrder());
 	}
 
-	private PickingCandidate toPickingCandidate(final I_M_Picking_Candidate record)
+	private PickingCandidate toPickingCandidateAndLoadIssuesToBOMLine(@NonNull final I_M_Picking_Candidate record)
+	{
+		return loadIssuesToBOMLine(toPickingCandidate(record));
+	}
+
+	private PickingCandidate toPickingCandidate(@NonNull final I_M_Picking_Candidate record)
 	{
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 		final Quantity qtyPicked = Quantity.of(record.getQtyPicked(), uom);
@@ -139,12 +158,15 @@ public class PickingCandidateRepository
 		return PickingCandidate.builder()
 				.id(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
 				//
-				.status(PickingCandidateStatus.ofCode(record.getStatus()))
+				.processingStatus(PickingCandidateStatus.ofCode(record.getStatus()))
 				.pickStatus(PickingCandidatePickStatus.ofCode(record.getPickStatus()))
 				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
 				//
-
-				.pickFromHuId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
+				.pickFrom(PickFrom.builder()
+						.huId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
+						.pickingOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()))
+						.build())
+				//
 				.qtyPicked(qtyPicked)
 				.qtyReview(qtyReview)
 				//
@@ -159,11 +181,12 @@ public class PickingCandidateRepository
 
 	private static void updateRecord(final I_M_Picking_Candidate record, final PickingCandidate from)
 	{
-		record.setStatus(from.getStatus().getCode());
+		record.setStatus(from.getProcessingStatus().getCode());
 		record.setPickStatus(from.getPickStatus().getCode());
 		record.setApprovalStatus(from.getApprovalStatus().getCode());
 
-		record.setPickFrom_HU_ID(HuId.toRepoId(from.getPickFromHuId()));
+		record.setPickFrom_HU_ID(HuId.toRepoId(from.getPickFrom().getHuId()));
+		record.setPickFrom_Order_ID(PPOrderId.toRepoId(from.getPickFrom().getPickingOrderId()));
 
 		record.setQtyPicked(from.getQtyPicked().toBigDecimal());
 		record.setC_UOM_ID(from.getQtyPicked().getUomId().getRepoId());
@@ -183,7 +206,6 @@ public class PickingCandidateRepository
 			return ImmutableSet.of();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_Picking_Candidate_ID, pickingCandidateIds)
@@ -206,13 +228,11 @@ public class PickingCandidateRepository
 		return retrievePickingCandidatesByHUIdsQuery(huIds)
 				.create()
 				.stream()
-				.map(this::toPickingCandidate)
-				.collect(ImmutableList.toImmutableList());
+				.collect(toPickingCandidatesList());
 	}
 
 	private IQueryBuilder<I_M_Picking_Candidate> retrievePickingCandidatesByHUIdsQuery(@NonNull final Collection<HuId> huIds)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
@@ -224,16 +244,15 @@ public class PickingCandidateRepository
 		return queryBuilder;
 	}
 
-	public Stream<PickingCandidate> streamByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public ImmutableList<PickingCandidate> getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Picking_Candidate.class)
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.orderBy(I_M_Picking_Candidate.COLUMN_M_Picking_Candidate_ID) // just to have a predictable order
 				.create()
 				.stream()
-				.map(this::toPickingCandidate);
+				.collect(toPickingCandidatesList());
 	}
 
 	public Optional<PickingCandidate> getByShipmentScheduleIdAndHuIdAndPickingSlotId(
@@ -241,31 +260,36 @@ public class PickingCandidateRepository
 			@NonNull final HuId huId,
 			@Nullable final PickingSlotId pickingSlotId)
 	{
-		final I_M_Picking_Candidate existingRecord = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Picking_Candidate.class)
+		final I_M_Picking_Candidate existingRecord = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
 				.create()
 				.firstOnly(I_M_Picking_Candidate.class);
+		if (existingRecord == null)
+		{
+			return Optional.empty();
+		}
 
-		return Optional.ofNullable(existingRecord)
-				.map(this::toPickingCandidate);
+		final PickingCandidate pickingCandidate = toPickingCandidateAndLoadIssuesToBOMLine(existingRecord);
+		return Optional.of(pickingCandidate);
 	}
 
 	public void deletePickingCandidates(@NonNull final Collection<PickingCandidate> candidates)
 	{
-		final Set<PickingCandidateId> ids = candidates.stream()
+		final Set<PickingCandidateId> pickingCandidateIds = candidates.stream()
 				.map(PickingCandidate::getId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
-		if (ids.isEmpty())
+		if (pickingCandidateIds.isEmpty())
 		{
 			return;
 		}
 
-		final List<I_M_Picking_Candidate> records = loadByRepoIdAwares(ids, I_M_Picking_Candidate.class);
+		deleteIssuesToBOMLine(pickingCandidateIds);
+
+		final List<I_M_Picking_Candidate> records = loadByRepoIdAwares(pickingCandidateIds, I_M_Picking_Candidate.class);
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
@@ -285,27 +309,38 @@ public class PickingCandidateRepository
 			return ImmutableList.of();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, status.getCode())
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
 				.stream(I_M_Picking_Candidate.class)
-				.map(this::toPickingCandidate)
-				.collect(ImmutableList.toImmutableList());
+				.collect(toPickingCandidatesList());
+	}
+
+	public boolean existsPickingCandidates(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.anyMatch();
 
 	}
 
 	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
 				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
 				.create()
-				.match();
+				.anyMatch();
 	}
 
 	public void inactivateForHUIds(@NonNull final Collection<HuId> huIds)
@@ -345,8 +380,6 @@ public class PickingCandidateRepository
 	public List<PickingCandidate> query(@NonNull final PickingCandidatesQuery pickingCandidatesQuery)
 	{
 		// configure the query builder
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter();
@@ -411,8 +444,7 @@ public class PickingCandidateRepository
 				.orderBy(I_M_Picking_Candidate.COLUMNNAME_M_Picking_Candidate_ID)
 				.create()
 				.stream()
-				.map(this::toPickingCandidate)
-				.collect(ImmutableList.toImmutableList());
+				.collect(toPickingCandidatesList());
 	}
 
 	/**
@@ -420,13 +452,152 @@ public class PickingCandidateRepository
 	 */
 	public boolean isHuIdPicked(@NonNull final HuId huId)
 	{
-		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
+		final boolean isAlreadyPicked = queryBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
-				.match();
+				.anyMatch();
 		return isAlreadyPicked;
 	}
 
+	private Collector<I_M_Picking_Candidate, ?, ImmutableList<PickingCandidate>> toPickingCandidatesList()
+	{
+		final Supplier<ArrayList<PickingCandidate>> supplier = ArrayList::new;
+		final BiConsumer<ArrayList<PickingCandidate>, I_M_Picking_Candidate> accumulator = (list, record) -> list.add(toPickingCandidate(record));
+		final BinaryOperator<ArrayList<PickingCandidate>> combiner = (list1, list2) -> {
+			list1.addAll(list2);
+			return list1;
+		};
+		final Function<ArrayList<PickingCandidate>, ImmutableList<PickingCandidate>> finisher = pickingCandidates -> loadIssuesToBOMLine(ImmutableList.copyOf(pickingCandidates));
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	private PickingCandidate loadIssuesToBOMLine(@NonNull final PickingCandidate pickingCandidate)
+	{
+		return loadIssuesToBOMLine(ImmutableList.of(pickingCandidate)).get(0);
+	}
+
+	private ImmutableList<PickingCandidate> loadIssuesToBOMLine(@NonNull final ImmutableList<PickingCandidate> pickingCandidates)
+	{
+		if (pickingCandidates.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList<PickingCandidateId> pickingCandidateIds = pickingCandidates.stream()
+				.filter(PickingCandidate::isPickFromPickingOrder)
+				.map(PickingCandidate::getId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+		if (pickingCandidateIds.isEmpty())
+		{
+			return pickingCandidates;
+		}
+
+		final ImmutableListMultimap<PickingCandidateId, PickingCandidateIssueToBOMLine> issuesToPickingOrderMap = retrieveIssuesToOrder(pickingCandidateIds);
+		if (issuesToPickingOrderMap.isEmpty())
+		{
+			return pickingCandidates;
+		}
+
+		return pickingCandidates.stream()
+				.map(pickingCandidate -> loadIssuesToBOMLine(pickingCandidate, issuesToPickingOrderMap))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static PickingCandidate loadIssuesToBOMLine(
+			@NonNull final PickingCandidate pickingCandidate,
+			@NonNull final ImmutableListMultimap<PickingCandidateId, PickingCandidateIssueToBOMLine> issuesToPickingOrderMap)
+	{
+		final PickingCandidateId pickingCandidateId = pickingCandidate.getId();
+		final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder = pickingCandidateId != null
+				? issuesToPickingOrderMap.get(pickingCandidateId)
+				: ImmutableList.of();
+
+		return pickingCandidate.toBuilder()
+				.issuesToPickingOrder(issuesToPickingOrder)
+				.build();
+	}
+
+	private ImmutableListMultimap<PickingCandidateId, PickingCandidateIssueToBOMLine> retrieveIssuesToOrder(final Collection<PickingCandidateId> pickingCandidateIds)
+	{
+		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate_IssueToOrder.class)
+				.addInArrayFilter(I_M_Picking_Candidate_IssueToOrder.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateIds)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						record -> PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()),
+						record -> toPickingCandidateIssueToBOMLine(record)));
+	}
+
+	private PickingCandidateIssueToBOMLine toPickingCandidateIssueToBOMLine(final I_M_Picking_Candidate_IssueToOrder record)
+	{
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
+
+		return PickingCandidateIssueToBOMLine.builder()
+				.issueToOrderBOMLineId(PPOrderBOMLineId.ofRepoId(record.getPP_Order_BOMLine_ID()))
+				.issueFromHUId(HuId.ofRepoId(record.getM_HU_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.qtyToIssue(Quantity.of(record.getQtyToIssue(), uom))
+				.build();
+	}
+
+	private void saveIssuesToBOMLine(
+			@NonNull final PickingCandidateId pickingCandidateId,
+			@NonNull ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	{
+		final HashMap<PickingCandidateIssueToBOMLineKey, I_M_Picking_Candidate_IssueToOrder> existingRecordsByKey = streamIssuesToBOMLineRecords(pickingCandidateId)
+				.collect(GuavaCollectors.toHashMapByKey(PickingCandidateIssueToBOMLineKey::of));
+
+		for (final PickingCandidateIssueToBOMLine issue : issuesToPickingOrder)
+		{
+			final PickingCandidateIssueToBOMLineKey key = PickingCandidateIssueToBOMLineKey.of(issue);
+			final I_M_Picking_Candidate_IssueToOrder existingRecord = existingRecordsByKey.remove(key);
+
+			final I_M_Picking_Candidate_IssueToOrder record;
+			if (existingRecord != null)
+			{
+				record = existingRecord;
+			}
+			else
+			{
+				record = newInstance(I_M_Picking_Candidate_IssueToOrder.class);
+			}
+
+			record.setIsActive(true);
+			record.setM_Picking_Candidate_ID(pickingCandidateId.getRepoId());
+			record.setPP_Order_BOMLine_ID(issue.getIssueToOrderBOMLineId().getRepoId());
+			record.setM_HU_ID(issue.getIssueFromHUId().getRepoId());
+			record.setM_Product_ID(issue.getProductId().getRepoId());
+			record.setQtyToIssue(issue.getQtyToIssue().toBigDecimal());
+			record.setC_UOM_ID(issue.getQtyToIssue().getUomId().getRepoId());
+			saveRecord(record);
+		}
+
+		deleteAll(existingRecordsByKey.values());
+	}
+
+	private Stream<I_M_Picking_Candidate_IssueToOrder> streamIssuesToBOMLineRecords(final PickingCandidateId pickingCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate_IssueToOrder.class)
+				.addEqualsFilter(I_M_Picking_Candidate_IssueToOrder.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateId)
+				.create()
+				.stream();
+	}
+
+	private void deleteIssuesToBOMLine(@NonNull final Collection<PickingCandidateId> pickingCandidateIds)
+	{
+		if (pickingCandidateIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_Picking_Candidate_IssueToOrder.class)
+				.addInArrayFilter(I_M_Picking_Candidate_IssueToOrder.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateIds)
+				.create()
+				.delete();
+	}
 }

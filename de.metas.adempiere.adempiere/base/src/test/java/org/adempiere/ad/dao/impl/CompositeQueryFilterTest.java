@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,8 +34,8 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for {@link CompositeQueryFilter}
@@ -43,7 +45,7 @@ import org.junit.Test;
  */
 public class CompositeQueryFilterTest
 {
-	public static interface I_ModelClass
+	public interface I_ModelClass
 	{
 		String Table_Name = "ModelClass";
 
@@ -123,7 +125,7 @@ public class CompositeQueryFilterTest
 
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		ctx = new Properties();
@@ -159,7 +161,7 @@ public class CompositeQueryFilterTest
 	public void addFilter_Duplicate()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummyNonSqlQueryFilter<I_ModelClass> filterToAdd = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummyNonSqlQueryFilter<I_ModelClass> filterToAdd = new DummyNonSqlQueryFilter<>();
 
 		filters.addFilter(filterToAdd);
 		Assert.assertEquals("Invalid getFilters(): " + filters, Collections.singletonList(filterToAdd), filters.getFilters());
@@ -169,13 +171,14 @@ public class CompositeQueryFilterTest
 		Assert.assertEquals("Invalid getFilters(): " + filters, Collections.singletonList(filterToAdd), filters.getFilters());
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void addFilter_NULL()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final IQueryFilter<I_ModelClass> filterToAdd = null;
-		filters.addFilter(filterToAdd); // expect exception here
+		assertThatThrownBy(() -> filters.addFilter(null))
+				.isInstanceOf(NullPointerException.class)
+				.hasMessageContaining("filter");
 	}
 
 	@Test
@@ -194,23 +197,25 @@ public class CompositeQueryFilterTest
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final List<IQueryFilter<I_ModelClass>> filtersToAdd = new ArrayList<IQueryFilter<I_ModelClass>>();
+		final List<IQueryFilter<I_ModelClass>> filtersToAdd = new ArrayList<>();
 		filters.addFilters(filtersToAdd); // shall do nothing
 
 		assertEmpty(filters);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void addFilters_ListWithOneNullValue()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final List<IQueryFilter<I_ModelClass>> filtersToAdd = new ArrayList<IQueryFilter<I_ModelClass>>();
-		filtersToAdd.add(new DummyNonSqlQueryFilter<I_ModelClass>());
-		filtersToAdd.add(null);
-		filtersToAdd.add(new DummyNonSqlQueryFilter<I_ModelClass>());
+		final List<IQueryFilter<I_ModelClass>> filtersAndNulls = new ArrayList<>();
+		filtersAndNulls.add(new DummyNonSqlQueryFilter<I_ModelClass>());
+		filtersAndNulls.add(null);
+		filtersAndNulls.add(new DummyNonSqlQueryFilter<I_ModelClass>());
 
-		filters.addFilters(filtersToAdd); // expect exception here
+		assertThatThrownBy(() -> filters.addFilters(filtersAndNulls))
+				.isInstanceOf(NullPointerException.class)
+				.hasMessageContaining("filter");
 	}
 
 	@Test
@@ -249,7 +254,7 @@ public class CompositeQueryFilterTest
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final DummyNonSqlQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummyNonSqlQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.addFilter(nonSqlFilter);
 
 		assertDefaults(filter);
@@ -263,8 +268,8 @@ public class CompositeQueryFilterTest
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 
 		filter.setJoinAnd(); // just to be sure
 		filter.addFilter(sqlFilter);
@@ -280,8 +285,8 @@ public class CompositeQueryFilterTest
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 
 		filter.setJoinAnd(); // just to be sure
 		filter.addFilter(nonSqlFilter);
@@ -298,8 +303,8 @@ public class CompositeQueryFilterTest
 		//
 		// Included Filter
 		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinAnd(); // just to be sure
 		includedFilter.addFilter(includedSqlFilter);
 		includedFilter.addFilter(includedNonSqlFilter);
@@ -307,8 +312,8 @@ public class CompositeQueryFilterTest
 		//
 		// Filter
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinAnd(); // just to be sure
 		filter.addFilter(sqlFilter);
 		filter.addFilter(nonSqlFilter);
@@ -328,8 +333,8 @@ public class CompositeQueryFilterTest
 		//
 		// Included Filter
 		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinOr();
 		includedFilter.addFilter(includedSqlFilter);
 		includedFilter.addFilter(includedNonSqlFilter);
@@ -337,8 +342,8 @@ public class CompositeQueryFilterTest
 		//
 		// Filter
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinAnd(); // just to be sure
 		filter.addFilter(sqlFilter);
 		filter.addFilter(nonSqlFilter);
@@ -357,8 +362,8 @@ public class CompositeQueryFilterTest
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
-		final IQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final IQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 
 		filter.setJoinOr(); // just to be sure
 		filter.addFilter(sqlFilter);
@@ -374,8 +379,8 @@ public class CompositeQueryFilterTest
 		//
 		// Included Filter
 		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinAnd();
 		includedFilter.addFilter(includedSqlFilter);
 		includedFilter.addFilter(includedNonSqlFilter);
@@ -383,8 +388,8 @@ public class CompositeQueryFilterTest
 		//
 		// Filter
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinOr();
 		filter.addFilter(sqlFilter);
 		filter.addFilter(nonSqlFilter);
@@ -400,14 +405,14 @@ public class CompositeQueryFilterTest
 		//
 		// Included Filter
 		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		includedFilter.setJoinAnd();
 		includedFilter.addFilter(includedSqlFilter);
 
 		//
 		// Filter
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
 		filter.setJoinOr();
 		filter.addFilter(sqlFilter);
 		filter.addFilter(includedFilter);
@@ -422,8 +427,8 @@ public class CompositeQueryFilterTest
 		//
 		// Included Filter
 		final CompositeQueryFilter<I_ModelClass> includedFilter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> includedNonSqlFilter = new DummyNonSqlQueryFilter<>();
 		includedFilter.setJoinOr();
 		includedFilter.addFilter(includedSqlFilter);
 		includedFilter.addFilter(includedNonSqlFilter);
@@ -431,8 +436,8 @@ public class CompositeQueryFilterTest
 		//
 		// Filter
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<I_ModelClass>();
-		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> sqlFilter = new DummySqlQueryFilter<>();
+		final IQueryFilter<I_ModelClass> nonSqlFilter = new DummyNonSqlQueryFilter<>();
 		filter.setJoinOr();
 		filter.addFilter(sqlFilter);
 		filter.addFilter(nonSqlFilter);
@@ -442,11 +447,14 @@ public class CompositeQueryFilterTest
 		Assert.assertEquals("Invalid NonSqlFilter: " + filter, Arrays.asList(sqlFilter, nonSqlFilter, includedFilter), filter.getNonSqlFilters());
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void filter_mayNotIncludeItself()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		filter.addFilter(filter);
+
+		assertThatThrownBy(() -> filter.addFilter(filter))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("Attempt to add a filter to itself");
 	}
 
 	@Test
@@ -455,7 +463,7 @@ public class CompositeQueryFilterTest
 		//
 		// Included Filter
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
-		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<I_ModelClass>();
+		final DummySqlQueryFilter<I_ModelClass> includedSqlFilter = new DummySqlQueryFilter<>();
 		filter.addFilter(includedSqlFilter);
 
 		//
@@ -483,7 +491,7 @@ public class CompositeQueryFilterTest
 			return Collections.emptyList();
 		}
 
-		final List<T> result = new ArrayList<T>();
+		final List<T> result = new ArrayList<>();
 		for (final List<T> list : lists)
 		{
 			result.addAll(list);

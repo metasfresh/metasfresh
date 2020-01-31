@@ -1,6 +1,8 @@
 package org.adempiere.mm.attributes.countryattribute.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
@@ -12,12 +14,12 @@ import org.adempiere.mm.attributes.AttributeId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +40,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.product.ProductId;
@@ -47,7 +48,7 @@ import de.metas.util.Services;
 
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link ICountryAware}.
- * 
+ *
  * @author tsa
  *
  */
@@ -118,9 +119,10 @@ public class CountryAwareAttributeUpdater
 		//
 		// Create Attribute Set Instance
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		// Check if our attribute was already set in the ASI
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (ai != null)
 		{
 			// In case it was, just leave it as it is
@@ -130,7 +132,7 @@ public class CountryAwareAttributeUpdater
 		//
 		// Get M_AttributeValue
 		final IContextAware ctx = InterfaceWrapperHelper.getContextAware(sourceModel);
-		final I_M_AttributeValue attributeValue = countryAwareAttributeService.getCreateAttributeValue(ctx, countryAware);
+		final AttributeListValue attributeValue = countryAwareAttributeService.getCreateAttributeValue(ctx, countryAware);
 		if (attributeValue == null)
 		{
 			// No attribute and sys config set to "Ignore". Nothing to do.
@@ -139,7 +141,7 @@ public class CountryAwareAttributeUpdater
 
 		//
 		// Create/Update the Attribute Instance
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue);
 	}
 
 	private boolean isAttrDocumentRelevant(final I_M_Attribute attribute)

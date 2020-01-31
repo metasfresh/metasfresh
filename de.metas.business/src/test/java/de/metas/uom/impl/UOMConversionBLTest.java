@@ -28,7 +28,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Ini;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;

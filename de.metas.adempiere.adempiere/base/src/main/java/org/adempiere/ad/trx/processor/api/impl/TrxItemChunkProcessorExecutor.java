@@ -319,7 +319,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		// Completing chunk failed
 		if (completeError != null)
 		{
-			logger.debug("Processor failed to complete current chunk => cancel chunk");
+			logger.debug("Processor failed to complete current chunk -> cancel chunk");
 
 			final boolean processItemFailed = false; // it's the completion that failed, not processeItem
 			cancelChunk(processItemFailed);
@@ -330,7 +330,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 		// Completing chunk success
 		else
 		{
-			logger.debug("Processor succeeded to complete the chunk => commit transaction");
+			logger.debug("Processor succeeded to complete the chunk -> commit transaction");
 			try
 			{
 				commitChunkTrx();
@@ -457,7 +457,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 	 */
 	private void commitChunkTrx() throws DBException
 	{
-		Check.assumeNotNull(chunkTrx, "chunkTrx shall NOT be null");
+		Check.assumeNotNull(chunkTrx, "chunkTrx shall NOT be null; this=", this);
 
 		//
 		// Case: Locally created transaction => commit it

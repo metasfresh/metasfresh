@@ -1,5 +1,7 @@
 package de.metas.material.planning.pporder.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -27,24 +29,16 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.LiberoConfiguration;
-import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.util.Services;
@@ -55,9 +49,6 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { LiberoConfiguration.class, LiberoTestConfiguration.class, MaterialPlanningConfiguration.class })
-@ActiveProfiles("test")
 public class PPOrderBOMBLTest
 {
 	private MRPTestHelper helper;
@@ -69,20 +60,20 @@ public class PPOrderBOMBLTest
 
 	private IPPOrderBOMDAO ppOrderBOMDAO;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		// NOTE: after this, model validators will be also registered
 		helper = new MRPTestHelper();
 
-		this.ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	}
 
 	/**
 	 * Tests {@link PPOrderBOMBL#getQtyMultiplier(I_PP_Order_BOMLine, I_PP_Product_BOMLine)}.
 	 */
 	@Test
-	@Ignore // gh #523: test doesn't work right now, and we might drop it in future
+	@Disabled("gh #523: test doesn't work right now, and we might drop it in future")
 	public void qualityMultiplierTest()
 	{
 		// Mocking the AB Alicesalat 250g case from db
@@ -164,55 +155,44 @@ public class PPOrderBOMBLTest
 		//
 		// Test: Carrot
 		{
+			final I_PP_Order_BOMLine ppOrderBOMLine_Carrot = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pCarrot);
+			assertUOM(uomKillogram, ppOrderBOMLine_Carrot);
+
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Carrot).getFinishedGoodQtyMultiplier(); // lineCarrot
+			
 			// qty ordered = 100, qty batch = 44 (percentaje) -> 0,44 per one stuck
 			// one stuck = 0,25 kg -> the qty shall be 0,44 * 0,25 = 0,11
-			BigDecimal expectedQty = new BigDecimal("0.11");
-			final I_C_UOM expectedUOM = uomKillogram;
-
-			final I_PP_Order_BOMLine ppOrderBOMLine_Carrot = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pCarrot);
-			assertUOM(expectedUOM, ppOrderBOMLine_Carrot);
-
-			BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Carrot)); // lineCarrot
-			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
+			assertThat(multipliedQty).isEqualByComparingTo("0.11");
 		}
 
 		//
 		// Test: Frisee
 		{
-			final BigDecimal expectedQty = new BigDecimal("0.09");
-			final I_C_UOM expectedUOM = uomKillogram;
-
 			final I_PP_Order_BOMLine ppOrderBOMLine_Frisee = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFrisee);
-			assertUOM(expectedUOM, ppOrderBOMLine_Frisee);
+			assertUOM(uomKillogram, ppOrderBOMLine_Frisee);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Frisee)); // lineFrisee
-			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Frisee).getFinishedGoodQtyMultiplier(); // lineFrisee
+			assertThat(multipliedQty).isEqualByComparingTo("0.09");
 		}
 
 		//
 		// Test: Radisli
 		{
-			final BigDecimal expectedQty = new BigDecimal("0.05");
-			final I_C_UOM expectedUOM = uomKillogram;
-
 			final I_PP_Order_BOMLine ppOrderBOMLine_Radiesli = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pRadiesli);
-			assertUOM(expectedUOM, ppOrderBOMLine_Radiesli);
+			assertUOM(uomKillogram, ppOrderBOMLine_Radiesli);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Radiesli)); // lineRadisli
-			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Radiesli).getFinishedGoodQtyMultiplier(); // lineRadisli
+			assertThat(multipliedQty).isEqualByComparingTo("0.05");
 		}
 
 		//
 		// Test: Folie
 		{
-			final BigDecimal expectedQty = new BigDecimal("260");
-			final I_C_UOM expectedUOM = uomMillimeter;
-
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-			assertUOM(expectedUOM, ppOrderBOMLine_Folie);
+			assertUOM(uomMillimeter, ppOrderBOMLine_Folie);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Folie)); // lineFolie
-			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Folie).getFinishedGoodQtyMultiplier(); // lineFolie
+			assertThat(multipliedQty).isEqualByComparingTo("260");
 		}
 	}
 
@@ -227,6 +207,8 @@ public class PPOrderBOMBLTest
 
 	private final void assertUOM(final I_C_UOM expectedUOM, final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		Assert.assertEquals("Invalid Order BOMLine UOM: " + ppOrderBOMLine, expectedUOM, ppOrderBOMLine.getC_UOM());
+		assertThat(ppOrderBOMLine.getC_UOM())
+			.as("BOM line's UOM: "+ppOrderBOMLine)
+			.isEqualTo(expectedUOM);
 	}
 }

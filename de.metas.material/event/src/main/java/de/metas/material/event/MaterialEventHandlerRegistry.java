@@ -4,14 +4,15 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
+import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -43,7 +44,7 @@ public class MaterialEventHandlerRegistry
 {
 	private static final Logger logger = LogManager.getLogger(MaterialEventHandlerRegistry.class);
 
-	private final ImmutableMultimap<Class, MaterialEventHandler> eventType2Handler;
+	private final ImmutableListMultimap<Class, MaterialEventHandler> eventType2Handler;
 	private final EventLogUserService eventLogUserService;
 
 	public MaterialEventHandlerRegistry(
@@ -55,33 +56,41 @@ public class MaterialEventHandlerRegistry
 		logger.info("Registered {}", eventType2Handler);
 	}
 
-	private ImmutableMultimap<Class, MaterialEventHandler> createEventHandlerMapping(
+	private static ImmutableListMultimap<Class, MaterialEventHandler> createEventHandlerMapping(
 			@NonNull final Optional<Collection<MaterialEventHandler>> handlers)
 	{
-		final ImmutableMultimap.Builder<Class, MaterialEventHandler> builder = ImmutableMultimap.builder();
+		final ImmutableListMultimap.Builder<Class, MaterialEventHandler> builder = ImmutableListMultimap.builder();
+
 		for (final MaterialEventHandler handler : handlers.orElse(ImmutableList.of()))
 		{
 			@SuppressWarnings("unchecked")
-			final Collection<Class<? extends MaterialEventHandler>> handeledEventType = handler.getHandeledEventType();
+			final Collection<Class<? extends MaterialEventHandler>> handeledEventTypes = handler.getHandeledEventType();
 
-			handeledEventType.forEach(type -> builder.put(type, handler));
+			for (final Class<? extends MaterialEventHandler> handeledEventType : handeledEventTypes)
+			{
+				builder.put(handeledEventType, handler);
+			}
 		}
+
 		return builder.build();
 	}
 
 	public final void onEvent(@NonNull final MaterialEvent event)
 	{
-		final ImmutableCollection<MaterialEventHandler> handlersForEventClass = eventType2Handler.get(event.getClass());
+		final ImmutableList<MaterialEventHandler> handlersForEventClass = eventType2Handler.get(event.getClass());
 
-		handlersForEventClass.forEach(handler -> {
+		for (final MaterialEventHandler handler : handlersForEventClass)
+		{
+			try (final MDCCloseable eventHandlerMDC = MDC.putCloseable("MaterialEventHandlerClass", handler.getClass().getName()))
+			{
+				@SuppressWarnings("unchecked")
+				final InvokeHandlerAndLogRequest request = InvokeHandlerAndLogRequest.builder()
+						.handlerClass(handler.getClass())
+						.invokaction(() -> handler.handleEvent(event))
+						.build();
 
-			@SuppressWarnings("unchecked")
-			final InvokeHandlerandLogRequest request = InvokeHandlerandLogRequest.builder()
-					.handlerClass(handler.getClass())
-					.invokaction(() -> handler.handleEvent(event))
-					.build();
-
-			eventLogUserService.invokeHandlerAndLog(request);
-		});
+				eventLogUserService.invokeHandlerAndLog(request);
+			}
+		}
 	}
 }

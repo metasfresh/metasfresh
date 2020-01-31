@@ -27,6 +27,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -40,6 +41,7 @@ import org.compiere.model.I_M_Product_Category;
 
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,12 +62,10 @@ public interface IProductDAO extends ISingletonService
 	I_M_Product_Category retrieveDefaultProductCategory(Properties ctx);
 
 	/**
-	 *
-	 *
 	 * @param productId
 	 * @param orgId
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
-	 *         or if there is no pendant in the given <code>org</code>.
+	 * or if there is no pendant in the given <code>org</code>.
 	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
@@ -80,18 +80,25 @@ public interface IProductDAO extends ISingletonService
 
 	I_M_Product retrieveProductByValue(String value);
 
+	@Nullable
 	ProductId retrieveProductIdByValue(String value);
 
 	ProductId retrieveProductIdBy(ProductQuery query);
 
+	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
+
 	@Value
 	public static class ProductQuery
 	{
-		/** Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given. */
+		/**
+		 * Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given.
+		 */
 		String value;
 
-		/** Applied if not empty. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given. */
-		String externalId;
+		/**
+		 * Applied if not {@code null}. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given.
+		 */
+		ExternalId externalId;
 
 		OrgId orgId;
 
@@ -101,13 +108,13 @@ public interface IProductDAO extends ISingletonService
 		@Builder
 		private ProductQuery(
 				@Nullable final String value,
-				@Nullable final String externalId,
+				@Nullable final ExternalId externalId,
 				@NonNull final OrgId orgId,
 				@Nullable final Boolean includeAnyOrg,
 				@Nullable final Boolean outOfTrx)
 		{
-			final boolean valueIsSet = isEmpty(value, true);
-			final boolean externalIdIsSet = isEmpty(externalId, true);
+			final boolean valueIsSet = !isEmpty(value, true);
+			final boolean externalIdIsSet = externalId != null;
 			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
 
 			this.value = value;
@@ -120,7 +127,9 @@ public interface IProductDAO extends ISingletonService
 
 	Stream<I_M_Product> streamAllProducts();
 
-	/** @return product category or null */
+	/**
+	 * @return product category or null
+	 */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
@@ -148,4 +157,6 @@ public interface IProductDAO extends ISingletonService
 	void deleteProductByResourceId(ResourceId resourceId);
 
 	I_M_Product createProduct(CreateProductRequest request);
+
+	void updateProduct(UpdateProductRequest request);
 }

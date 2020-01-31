@@ -54,7 +54,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test //extends AbstractICTestSupport
+public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test // extends AbstractICTestSupport
 {
 	private IContextAware context;
 
@@ -102,19 +102,21 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test //extends AbstractIC
 	}
 
 	@Test
-	public void test1()
+	public void test1_noCatchWeight()
 	{
-		final StockQtyAndUOMQty qtys_100 = StockQtyAndUOMQtys.create(new BigDecimal("100"), productId, new BigDecimal("1000"), icUomId);
+		final StockQtyAndUOMQty qtys_100 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("100"), productId);
 
 		final I_M_InOutLine inoutLine01 = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_100)
+				.stockQtyAndMaybeCatchQty(qtys_100)
+				.uomId(icUomId)
 				.inDispute(false)
 				.qualityNote(qualityNotices("note 1", "note 2", "note 3"))
 				.createInOutLine(I_M_InOutLine.class);
 		invoiceCandidateInOutLine(invoiceCandidateRecord, inoutLine01);
 
 		final I_M_InOutLine inoutLine02 = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_100)
+				.stockQtyAndMaybeCatchQty(qtys_100)
+				.uomId(icUomId)
 				.inDispute(true)
 				.qualityNote(qualityNotices("note 4", "note 5"))
 				.createInOutLine(I_M_InOutLine.class);
@@ -137,20 +139,23 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test //extends AbstractIC
 		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), icUomId);
 
 		final I_M_InOutLine inoutLine01 = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_10)
+				.stockQtyAndMaybeCatchQty(qtys_10)
 				.inDispute(false)
+				.uomId(icUomId)
 				.createInOutLine(I_M_InOutLine.class);
 		invoiceCandidateInOutLine(invoiceCandidateRecord, inoutLine01);
 
 		final I_M_InOutLine inoutLine02 = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_10)
+				.stockQtyAndMaybeCatchQty(qtys_10)
 				.inDispute(false)
+				.uomId(icUomId)
 				.createInOutLine(I_M_InOutLine.class);
 		invoiceCandidateInOutLine(invoiceCandidateRecord, inoutLine02);
 
 		final I_M_InOutLine inoutLine03 = new InOutLineExpectation<>(null, context)
-				.qtys(qtys_10)
+				.stockQtyAndMaybeCatchQty(qtys_10)
 				.inDispute(true)
+				.uomId(icUomId)
 				.createInOutLine(I_M_InOutLine.class);
 		invoiceCandidateInOutLine(invoiceCandidateRecord, inoutLine03);
 

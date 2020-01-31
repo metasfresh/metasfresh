@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1758677625L;
+	private static final long serialVersionUID = 143178414L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
       /** if (M_HU_PI_Item_Product_ID == 0)
         {
 			setIsAllowAnyProduct (false); // N
+			setIsDefaultForProduct (false); // N
 			setIsInfiniteCapacity (false); // N
 			setM_HU_PI_Item_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
@@ -168,6 +169,29 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return false;
 	}
 
+	/** Set Standard-Produkt.
+		@param IsDefaultForProduct Standard-Produkt	  */
+	@Override
+	public void setIsDefaultForProduct (boolean IsDefaultForProduct)
+	{
+		set_Value (COLUMNNAME_IsDefaultForProduct, Boolean.valueOf(IsDefaultForProduct));
+	}
+
+	/** Get Standard-Produkt.
+		@return Standard-Produkt	  */
+	@Override
+	public boolean isDefaultForProduct () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDefaultForProduct);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Unbestimmte Kapazität.
 		@param IsInfiniteCapacity Unbestimmte Kapazität	  */
 	@Override
@@ -189,6 +213,43 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+	}
+
+	@Override
+	public void setM_HU_PackagingCode_LU_Fallback(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class, M_HU_PackagingCode_LU_Fallback);
+	}
+
+	/** Set LU Fallback-Verpackungscode.
+		@param M_HU_PackagingCode_LU_Fallback_ID 
+		Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	  */
+	@Override
+	public void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID)
+	{
+		if (M_HU_PackagingCode_LU_Fallback_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID, Integer.valueOf(M_HU_PackagingCode_LU_Fallback_ID));
+	}
+
+	/** Get LU Fallback-Verpackungscode.
+		@return Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	  */
+	@Override
+	public int getM_HU_PackagingCode_LU_Fallback_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -310,20 +371,23 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return bd;
 	}
 
-	/** Set TU-UPC.
-		@param UPC_TU TU-UPC	  */
+	/** Set UPC.
+		@param UPC 
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
 	@Override
-	public void setUPC_TU (java.lang.String UPC_TU)
+	public void setUPC (java.lang.String UPC)
 	{
-		set_Value (COLUMNNAME_UPC_TU, UPC_TU);
+		set_Value (COLUMNNAME_UPC, UPC);
 	}
 
-	/** Get TU-UPC.
-		@return TU-UPC	  */
+	/** Get UPC.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
 	@Override
-	public java.lang.String getUPC_TU () 
+	public java.lang.String getUPC () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC);
 	}
 
 	/** Set Gültig ab.

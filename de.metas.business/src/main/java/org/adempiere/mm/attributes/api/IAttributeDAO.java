@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -47,6 +48,8 @@ import de.metas.util.ISingletonService;
 
 public interface IAttributeDAO extends ISingletonService
 {
+	String CACHEKEY_ATTRIBUTE_VALUE = I_M_AttributeValue.Table_Name;
+
 	void save(I_M_AttributeSetInstance asi);
 
 	void save(I_M_AttributeInstance ai);
@@ -83,7 +86,11 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	I_M_AttributeSetInstance retrieveNoAttributeSetInstance();
 
-	List<I_M_AttributeValue> retrieveAttributeValues(I_M_Attribute attribute);
+	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
+
+	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
+
+	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
 
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
 
@@ -95,14 +102,19 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
-	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
+	/**
+	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
+	 *
+	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
+	 */
+	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);
 
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
 	 *
 	 * @param soTrx if NULL, retrieve all attribute values.
 	 */
-	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
+	List<AttributeListValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
@@ -116,11 +128,15 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_Attribute retrieveAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
-	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 
-	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
+	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
 
-	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, AttributeValueId attributeValueId);
+
+	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
+
+	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
@@ -149,6 +165,12 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return substitutes (M_AttributeValue.Value).
 	 */
 	Set<String> retrieveAttributeValueSubstitutes(I_M_Attribute attribute, String value);
+
+	AttributeListValue createAttributeValue(AttributeListValueCreateRequest request);
+
+	AttributeListValue changeAttributeValue(AttributeListValueChangeRequest request);
+
+	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
 
 	AttributeId retrieveAttributeIdByValue(String value);
 
@@ -192,7 +214,7 @@ public interface IAttributeDAO extends ISingletonService
 	}
 
 	/**
-	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
+	 * @return true if given attribute is expected to have a huge amount of attribute values
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 

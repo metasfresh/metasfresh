@@ -28,15 +28,18 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -110,19 +113,23 @@ public class M_InOutLine
 		// * create link between invoice candidate and our inout line
 		for (final I_C_Invoice_Candidate icRecord : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId))
 		{
-			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, inOutLine);
-			iciol.setC_Invoice_Candidate(icRecord);
-			invoiceCandBL.updateICIOLAssociationFromIOL(iciol, inOutLine);
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			{
+				final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, inOutLine);
+				iciol.setC_Invoice_Candidate(icRecord);
+				invoiceCandBL.updateICIOLAssociationFromIOL(iciol, inOutLine);
 
-			// TODO: QtyInvoiced shall be set! It's not so critical, atm is used on on Sales side (check call hierarchy of getQtyInvoiced())
-			// NOTE: when we will set it, because there can be more then one IC for one inoutLine we need to calculate this Qtys proportionally.
+				// TODO: QtyInvoiced shall be set! It's not so critical, atm is used on on Sales side (check call hierarchy of getQtyInvoiced())
+				// NOTE: when we will set it, because there can be more then one IC for one inoutLine we need to calculate this Qtys proportionally.
 
-			//
-			// (also) calculate qualityDiscountPercent taken from inoutLines (06502)
-			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
-			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
+				//
+				// (also) calculate qualityDiscountPercent taken from inoutLines (06502)
+				Services.get(IInvoiceCandidateHandlerBL.class).setDeliveredData(icRecord);
+				final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+				invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-			InterfaceWrapperHelper.saveRecord(icRecord);
+				InterfaceWrapperHelper.saveRecord(icRecord);
+			}
 		}
 
 		// invalidate the candidates related to the inOutLine's order line..i'm not 100% if it's necessary, but we might need to e.g. update the

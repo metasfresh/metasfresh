@@ -52,13 +52,15 @@ class C_OLCand_HandlerDAO
 		//
 		// Only which are for our data source
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
+		final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
+				false/* the record might be deactivated if that case simply never happens on a particular machting */,
+				trxName);
 		queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_DataDestination_ID, dataSource.getAD_InputDataSource_ID());
 
 		//
 		// Only those which were not already created
 		final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
 				.create();
 		queryBuilder.addNotInSubQueryFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, I_C_OLCand.COLUMNNAME_Record_ID, existingICsQuery);
 

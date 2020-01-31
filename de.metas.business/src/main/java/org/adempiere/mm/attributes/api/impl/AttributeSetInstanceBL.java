@@ -12,20 +12,23 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
@@ -34,13 +37,14 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 	@Override
 	public String buildDescription(@Nullable final I_M_AttributeSetInstance asi)
 	{
@@ -102,25 +106,31 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public I_M_AttributeInstance getCreateAttributeInstance(final I_M_AttributeSetInstance asi, final I_M_AttributeValue attributeValue)
+	public I_M_AttributeInstance getCreateAttributeInstance(
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final AttributeListValue attributeValue)
 	{
-		Check.assumeNotNull(attributeValue, "attributeValue not null");
-
 		// services
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final AttributeId attributeId = attributeValue.getAttributeId();
 
-		// M_Attribute_ID
-		final AttributeId attributeId = AttributeId.ofRepoId(attributeValue.getM_Attribute_ID());
+		if (asiId.isNone())
+		{
+			throw new AdempiereException("Given 'asiId' may not be 'none'")
+					.appendParametersToMessage()
+					.setParameter("asiId", asiId)
+					.setParameter("attributeValue", attributeValue);
+		}
 
 		//
 		// Get/Create/Update Attribute Instance
-		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (attributeInstance == null)
 		{
-			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
+			attributeInstance = newInstance(I_M_AttributeInstance.class);
 		}
-		attributeInstance.setM_AttributeSetInstance(asi);
-		attributeInstance.setM_AttributeValue(attributeValue);
+		attributeInstance.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		attributeInstance.setM_AttributeValue_ID(attributeValue.getId().getRepoId());
 		attributeInstance.setValue(attributeValue.getValue());
 		attributeInstance.setM_Attribute_ID(attributeId.getRepoId());
 		save(attributeInstance);
@@ -129,66 +139,82 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public I_M_AttributeInstance getCreateAttributeInstance(@NonNull final I_M_AttributeSetInstance asi, @NonNull final AttributeId attributeId)
+	public I_M_AttributeInstance getCreateAttributeInstance(
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final AttributeId attributeId)
 	{
+		if (asiId.isNone())
+		{
+			throw new AdempiereException("Given 'asiId' may not be 'none'")
+					.appendParametersToMessage()
+					.setParameter("asiId", asiId)
+					.setParameter("attributeId", attributeId);
+		}
+
 		// Check if already exists
-		final I_M_AttributeInstance instanceExisting = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
+		final I_M_AttributeInstance instanceExisting = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
 		if (instanceExisting != null)
 		{
 			return instanceExisting;
 		}
 
 		// Create New
-		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class, asi);
+		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class);
 		instanceNew.setM_Attribute_ID(attributeId.getRepoId());
-		instanceNew.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+		instanceNew.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		save(instanceNew);
 		return instanceNew;
 	}
 
 	@Override
 	public void setAttributeInstanceValue(
-			@NonNull final I_M_AttributeSetInstance asi,
-			@NonNull final I_M_Attribute attribute,
-			@NonNull final Object value)
+			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final String attributeValue,
+			@Nullable final Object value)
 	{
-		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
-		if (attributeInstance == null)
-		{
-			attributeInstance = getCreateAttributeInstance(asi, attributeId);
-		}
+		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeValue);
+		final I_M_AttributeInstance attributeInstance = getCreateAttributeInstance(asiId, AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID()));
 
-		final String attributeValueType = attribute.getAttributeValueType();
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
-		{
-			attributeInstance.setValueDate(Env.parseTimestamp(value.toString()));
-		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
-		{
-			attributeInstance.setValueNumber(NumberUtils.asBigDecimal(value.toString(), null));
-		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType)
-				|| X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
-		{
-			attributeInstance.setValue(value.toString());
-		}
-		else
-		{
-			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + attributeValueType + ", @M_Attribute_ID@=" + attribute);
-		}
-
-		save(attributeInstance);
+		setAttributeInstanceValue(attributeRecord, attributeInstance, value);
 	}
 
 	@Override
 	public void setAttributeInstanceValue(
-			@NonNull final I_M_AttributeSetInstance asi,
+			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final AttributeId attributeId,
-			@NonNull final Object value)
+			@Nullable final Object value)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
-		setAttributeInstanceValue(asi, attribute, value);
+
+		final I_M_Attribute attributeRecord = attributeDAO.getAttributeById(attributeId);
+		final I_M_AttributeInstance attributeInstance = getCreateAttributeInstance(asiId, attributeId);
+
+		setAttributeInstanceValue(attributeRecord, attributeInstance, value);
+	}
+
+	private void setAttributeInstanceValue(
+			@NonNull final I_M_Attribute attributeRecord,
+			@NonNull final I_M_AttributeInstance attributeInstance,
+			@Nullable final Object value)
+	{
+		final String attributeValueType = attributeRecord.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			attributeInstance.setValueDate(value == null ? null : Env.parseTimestamp(value.toString()));
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			attributeInstance.setValueNumber(value == null ? null : NumberUtils.asBigDecimal(value.toString(), null));
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType)
+				|| X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			attributeInstance.setValue(value == null ? null : value.toString());
+		}
+		else
+		{
+			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + attributeValueType + ", @M_Attribute_ID@=" + attributeRecord.getM_Attribute_ID());
+		}
+		save(attributeInstance);
 	}
 
 	@Override
@@ -281,7 +307,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@NonNull final IAttributeSet attributeSet)
 	{
 		final I_M_AttributeInstance attributeInstance = newInstance(I_M_AttributeInstance.class);
-		attributeInstance.setM_Attribute(attribute);
+		attributeInstance.setM_Attribute_ID(attribute.getM_Attribute_ID());
 
 		final String attributeValueType = attributeSet.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
@@ -302,8 +328,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			final String stringValue = attributeSet.getValueAsString(attribute);
 			attributeInstance.setValue(stringValue);
 
-			final I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, stringValue);
-			attributeInstance.setM_AttributeValue(attributeValue);
+			final AttributeListValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, stringValue);
+			attributeInstance.setM_AttributeValue_ID(attributeValue != null ? attributeValue.getId().getRepoId() : -1);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
@@ -345,5 +371,34 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		return attributesService.isStorageRelevant(attributeId);
+	}
+
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return attributeDAO.getImmutableAttributeSetById(asiId);
+	}
+
+	@Override
+	public void syncAttributesToASIAware(@NonNull final IAttributeSet attributeSet, @NonNull final IAttributeSetInstanceAware asiAware)
+	{
+		final AttributeSetInstanceId oldAsiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId;
+		if (oldAsiId.isRegular())
+		{
+			final I_M_AttributeSetInstance asiCopy = ASICopy.newInstance(oldAsiId).copy();
+			asiId = AttributeSetInstanceId.ofRepoId(asiCopy.getM_AttributeSetInstance_ID());
+		}
+		else
+		{
+			final I_M_AttributeSetInstance asiNew = createASI(ProductId.ofRepoId(asiAware.getM_Product_ID()));
+			asiId = AttributeSetInstanceId.ofRepoId(asiNew.getM_AttributeSetInstance_ID());
+		}
+
+		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
+		{
+			setAttributeInstanceValue(asiId, attributeRecord.getValue(), attributeSet.getValue(attributeRecord));
+		}
+		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}
 }

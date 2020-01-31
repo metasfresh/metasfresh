@@ -40,18 +40,21 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
  * <p>
  * <b>Hint:</b> use {@link org.adempiere.ad.dao.IQueryBL#createCompositeQueryFilter(Class)} to obtain an instance.
  *
- * @author tsa
- *
  * @param <T> model class type
+ * @author tsa
  */
-/* package */class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
+@EqualsAndHashCode(of = { "filters", "and", "_defaultAccept" })
+		/* package */class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
 {
 	/* package */static final String DEFAULT_SQL_TRUE = "1=1";
 	/* package */static final String DEFAULT_SQL_FALSE = "1=0";
@@ -229,7 +232,7 @@ import lombok.NonNull;
 				else
 				{
 					sqlFilters = null;
-					nonSqlFilters = Collections.<IQueryFilter<T>> singletonList(compositeFilter);
+					nonSqlFilters = Collections.<IQueryFilter<T>>singletonList(compositeFilter);
 				}
 			}
 			//
@@ -484,7 +487,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addEqualsFilter(final String columnName, final Object value)
+	public ICompositeQueryFilter<T> addEqualsFilter(final String columnName, @Nullable final Object value)
 	{
 		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(columnName, value);
 		return addFilter(filter);
@@ -716,7 +719,7 @@ import lombok.NonNull;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(columnName, subQueryColumnName)
@@ -729,7 +732,7 @@ import lombok.NonNull;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(columnName, subQueryColumnName)
@@ -743,7 +746,7 @@ import lombok.NonNull;
 			final ModelColumn<ST, ?> subQueryColumn,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
@@ -758,7 +761,7 @@ import lombok.NonNull;
 			final ModelColumn<ST, ?> subQueryColumn,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
@@ -780,7 +783,7 @@ import lombok.NonNull;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(columnName, subQueryColumnName, modifier)

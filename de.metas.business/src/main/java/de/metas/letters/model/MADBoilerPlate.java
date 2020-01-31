@@ -76,6 +76,7 @@ import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequest;
+import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
@@ -301,7 +302,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			final int parent_table_id, final int parent_record_id,
 			final BoilerPlateContext context)
 	{
-		final Integer C_BPartner_ID = context.getC_BPartner_ID();
+
+		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
+ 		final Integer C_BPartner_ID = context.getC_BPartner_ID();
 		if (C_BPartner_ID != null && C_BPartner_ID > 0)
 		{
 			rq.setC_BPartner_ID(C_BPartner_ID);
@@ -319,7 +323,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			return;
 		}
 		//
-		if (parent_table_id == Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name))
+		if (parent_table_id == tableDAO.retrieveTableId(I_C_BPartner.Table_Name))
 		{
 			rq.setC_BPartner_ID(parent_record_id);
 		}
@@ -335,7 +339,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setA_Asset_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_Order.Table_ID)
+		else if (parent_table_id == getTableId(I_C_Order.class))
 		{
 			rq.setC_Order_ID(parent_record_id);
 		}
@@ -347,7 +351,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setM_Product_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_Payment.Table_ID)
+		else if (parent_table_id == tableDAO.retrieveTableId(I_C_Payment.Table_Name))
 		{
 			rq.setC_Payment_ID(parent_record_id);
 		}
@@ -355,11 +359,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setM_InOut_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_M_RMA.Table_ID)
+		else if (parent_table_id == tableDAO.retrieveTableId(I_M_RMA.Table_Name))
 		{
 			rq.setM_RMA_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_Campaign.Table_ID)
+		else if (parent_table_id == tableDAO.retrieveTableId(I_C_Campaign.Table_Name))
 		{
 			rq.setC_Campaign_ID(parent_record_id);
 		}
@@ -457,7 +461,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	}
 
 	/**
-	 *
 	 * @return all snippets, ordered by name
 	 */
 	public static SortedMap<String, String> getAllSnippetsMap()
@@ -563,8 +566,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * @param ctx
 	 * @param text
 	 * @param AD_Language
-	 * @param isEmbeded will this text be embeded (i.e. shoud we strip html, head, body tags?
-	 * @param attrs variables map. If null, no variable replacement will be made
+	 * @param isEmbeded   will this text be embeded (i.e. shoud we strip html, head, body tags?
+	 * @param attrs       variables map. If null, no variable replacement will be made
 	 * @param trxName
 	 * @return
 	 */
@@ -691,7 +694,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	}
 
 	/**
-	 *
 	 * @param AD_Language
 	 * @param isEmbeded
 	 * @param attrs
@@ -707,8 +709,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * Get Parsed Text
 	 *
 	 * @param AD_Language
-	 * @param attrs variables map. If null, no variable repacement will be made
-	 * @param isEmbeded will this text be embeded (i.e. shoud we strip html, head, body tags?
+	 * @param attrs       variables map. If null, no variable repacement will be made
+	 * @param isEmbeded   will this text be embeded (i.e. shoud we strip html, head, body tags?
 	 * @return parsed text
 	 */
 	public String getTextSnippetParsed(final boolean isEmbeded, final BoilerPlateContext context)
@@ -807,7 +809,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public void rebuildReferences()
 	{
 		DB.executeUpdateEx("DELETE FROM " + I_AD_BoilerPlate_Ref.Table_Name
-				+ " WHERE " + I_AD_BoilerPlate_Ref.COLUMNNAME_AD_BoilerPlate_ID + "=?",
+						+ " WHERE " + I_AD_BoilerPlate_Ref.COLUMNNAME_AD_BoilerPlate_ID + "=?",
 				new Object[] { getAD_BoilerPlate_ID() },
 				get_TrxName());
 		for (final String refName : parseNeededReferences())
@@ -1032,7 +1034,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	@ToString
 	public static final class BoilerPlateContext
 	{
-		public static final Builder builder()
+		public static Builder builder()
 		{
 			return new Builder(ImmutableMap.of());
 		}
@@ -1049,7 +1051,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		private static final String VAR_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 		private static final String VAR_AD_Org_ID = "AD_Org_ID";
 		private static final String VAR_AD_Language = "AD_Language";
-		/** Source document. Usually it's of type {@link SourceDocument} */
+		/**
+		 * Source document. Usually it's of type {@link SourceDocument}
+		 */
 		private static final String VAR_SourceDocument = SourceDocument.NAME;
 
 		private final Map<String, Object> attributes;
@@ -1263,7 +1267,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 	}
 
-	public static interface SourceDocument
+	public interface SourceDocument
 	{
 		String NAME = "__SourceDocument";
 

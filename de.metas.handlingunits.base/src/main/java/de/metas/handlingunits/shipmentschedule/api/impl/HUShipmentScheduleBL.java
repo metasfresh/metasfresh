@@ -1,5 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -21,6 +23,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -45,12 +48,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -97,6 +100,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -107,6 +111,24 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
+
+	@Override
+	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
+	{
+		return Services.get(IShipmentSchedulePA.class).getById(id, I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerLocationId(shipmentSchedule);
+	}
+
+	@Override
+	public LocatorId getDefaultLocatorId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getDefaultLocatorId(shipmentSchedule);
+	}
 
 	@Override
 	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
@@ -123,15 +145,17 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		return addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU, huContext);
+		final boolean anonymousHuPickedOnTheFly = false;
+		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, anonymousHuPickedOnTheFly);
 	}
 
 	@Override
-	public ShipmentScheduleWithHU addQtyPicked(
+	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,
-			@NonNull final IHUContext huContext)
+			@NonNull final IHUContext huContext,
+			final boolean anonymousHuPickedOnTheFly)
 	{
 		// Services
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
@@ -145,6 +169,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Create ShipmentSchedule Qty Picked record
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
 		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
+
+		// mark this as an 'anonymousOnTheFly` pick
+		schedQtyPicked.setIsAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
 
 		// Set HU specific stuff
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
@@ -186,7 +213,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * This method updates the given <code>hu</code>'s <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> from the given <code>sched</code>'s effective values.
-	 *
+	 * <p>
 	 * NOTE:
 	 * * this method is NOT saving the <code>hu</code>
 	 * * these changes will be propagated to the HU's children by a model interceptor.
@@ -307,7 +334,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU#createShipmentHeader(I_M_ShipmentSchedule)}
-	 *
 	 */
 	@Override
 	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final LocalDate movementDate)
@@ -426,11 +452,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
-	public HUPIItemProductId getPackingMaterialId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	public HUPIItemProductId getEffectivePackingMaterialId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule huShipmentSchedule = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		final HUPIItemProductId pip = HUPIItemProductId.ofRepoIdOrNull(huShipmentSchedule.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId pip = HUPIItemProductId.ofRepoIdOrNull(
+				firstGreaterThanZero(
+						huShipmentSchedule.getM_HU_PI_Item_Product_Override_ID(),
+						huShipmentSchedule.getM_HU_PI_Item_Product_ID()));
 		if (pip != null)
 		{
 			return pip;
@@ -456,7 +485,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final HUPIItemProductId packingMaterialId = getPackingMaterialId(shipmentSchedule);
+		final HUPIItemProductId packingMaterialId = getEffectivePackingMaterialId(shipmentSchedule);
 		if (packingMaterialId == null)
 		{
 			return null;
@@ -544,10 +573,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
-		final I_C_UOM cuUOM = shipmentScheduleBL.getUomOfProduct(schedule);
+		final UomId cuUOMId = shipmentScheduleBL.getUomIdOfProduct(schedule);
 		final ProductId cuProductId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(schedule);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(schedule);
 		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(schedule);
 		final LocatorId locatorId = shipmentScheduleEffectiveValuesBL.getDefaultLocatorId(schedule);
 
@@ -557,10 +586,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
-				bpartner,
+				cuUOMId,
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
 		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Planning);
@@ -645,35 +674,86 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void updateHURelatedValuesFromOrderLine(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
-		{
-			return;
-		}
-
 		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse);
-		updateTuQuantitiesFromOrderLine(shipmentScheduleToUse);
+		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
+		{
+			shipmentScheduleToUse.setM_HU_PI_Item_Product_ID(-1);
+			shipmentScheduleToUse.setPackDescription(null);
+			return;
+
+		}
+		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
+
+		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
+		updateHUQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
+		updatePackingRelatedQtys(shipmentScheduleToUse);
 	}
 
 	private void updatePackingInstructionsFromOrderLine(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-
-		final I_M_HU_PI_Item_Product hupip = orderLine.getM_HU_PI_Item_Product();
-		final I_M_HU_PI_Item_Product piItemProduct_Effective = hupip;
+		final I_M_HU_PI_Item_Product piItemProduct_Effective = orderLine.getM_HU_PI_Item_Product();
 
 		shipmentSchedule.setM_HU_PI_Item_Product_Calculated(piItemProduct_Effective);
 		shipmentSchedule.setM_HU_PI_Item_Product(piItemProduct_Effective);
+
+		if (shipmentSchedule.getM_HU_PI_Item_Product_Override_ID() <= 0)
+		{
+			shipmentSchedule.setPackDescription(orderLine.getPackDescription());
+		}
 	}
 
-	private void updateTuQuantitiesFromOrderLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private void updateHUQuantitiesFromOrderLine(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 		final BigDecimal qtyTU_Effective = orderLine.getQtyEnteredTU();
 
 		shipmentSchedule.setQtyTU_Calculated(qtyTU_Effective);
+		getEffectivePackingMaterialId(shipmentSchedule);
+
 		shipmentSchedule.setQtyOrdered_TU(qtyTU_Effective);
+
+		final I_M_HU_LUTU_Configuration lutuConfiguration = //
+				deriveM_HU_LUTU_Configuration(shipmentSchedule);
+
+		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+		final int qtyOrderedLU = //
+				lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
+		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
+	}
+
+	private void updatePackingRelatedQtys(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final ShipmentScheduleHUPackingAware packingAware = new ShipmentScheduleHUPackingAware(shipmentSchedule);
+		final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
+		final BigDecimal qtyTUCalculated = shipmentSchedule.getQtyTU_Calculated();
+
+		if (!qtyTUCalculated.equals(shipmentSchedule.getQtyOrdered_TU()))
+		{
+			// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
+			final int qtyTU = packingAware.getQtyTU().intValueExact();
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
+		}
+
+		final int hupipCalculatedID = shipmentSchedule.getM_HU_PI_Item_Product_Calculated_ID();
+		final int currentHUPIPID = shipmentSchedule.getM_HU_PI_Item_Product_ID();
+
+		if (hupipCalculatedID != currentHUPIPID)
+		{
+			final BigDecimal qtyTU = packingAware.getQtyTU();
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU.intValueExact());
+
+			shipmentSchedule.setQtyOrdered_Override(packingAware.getQty());
+		}
+	}
+
+	@Override
+	public void closeShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule);
 	}
 }

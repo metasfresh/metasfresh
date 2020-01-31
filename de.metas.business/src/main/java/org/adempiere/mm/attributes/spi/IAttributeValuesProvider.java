@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.spi;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_M_Attribute;
@@ -86,7 +87,7 @@ public interface IAttributeValuesProvider
 	 */
 	NamePair getAttributeValueOrNull(final Evaluatee evalCtx, Object valueKey);
 
-	int getM_AttributeValue_ID(final Object valueKey);
+	AttributeValueId getAttributeValueIdOrNull(final Object valueKey);
 
 	/**
 	 * Value to be used for "nulls".
@@ -100,7 +101,7 @@ public interface IAttributeValuesProvider
 	/**
 	 * @return true if he have a high volume values list
 	 */
-	public boolean isHighVolume();
+	boolean isHighVolume();
 
 	//
 	// Caching

@@ -24,6 +24,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.impexp.processing.product.MProductImportTableSqlUpdater;
 import de.metas.pricing.PriceListId;
@@ -74,17 +75,18 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		MProductImportTableSqlUpdater.builder()
-				.whereClause(whereClause)
-				.ctx(getCtx())
-				.tableName(getImportTableName())
-				.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
-				.updateIPharmaProduct();
+		.selection(selection)
+		.ctx(getCtx())
+		.tableName(getImportTableName())
+		.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
+		.updateIPharmaProduct();
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Pharma_Product importRecord, final boolean isInsertOnly) 
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Pharma_Product importRecord, final boolean isInsertOnly)
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 
@@ -134,20 +136,20 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 	}
 
 	@Override
-	protected void afterImport(final IMutable<Object> state)
+	protected void afterImport()
 	{
 		final List<I_M_PriceList_Version> versions = retrieveLatestPriceListVersion();
 		versions.stream()
-				.filter(plv -> plv.getM_Pricelist_Version_Base_ID() > 0)
-				.forEach(plv -> {
+		.filter(plv -> plv.getM_Pricelist_Version_Base_ID() > 0)
+		.forEach(plv -> {
 
-					final MProductPriceCloningCommand productPriceCloning = MProductPriceCloningCommand.builder()
-							.source_PriceList_Version_ID(plv.getM_Pricelist_Version_Base_ID())
-							.target_PriceList_Version_ID(plv.getM_PriceList_Version_ID())
-							.build();
+			final MProductPriceCloningCommand productPriceCloning = MProductPriceCloningCommand.builder()
+					.source_PriceList_Version_ID(plv.getM_Pricelist_Version_Base_ID())
+					.target_PriceList_Version_ID(plv.getM_PriceList_Version_ID())
+					.build();
 
-					productPriceCloning.cloneProductPrice();
-				});
+			productPriceCloning.cloneProductPrice();
+		});
 
 		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCopied + " = 'N' ";
 		MProductImportTableSqlUpdater.dbUpdateIsPriceCopiedToYes(whereClause, I_I_Pharma_Product.COLUMNNAME_IsPriceCopied);

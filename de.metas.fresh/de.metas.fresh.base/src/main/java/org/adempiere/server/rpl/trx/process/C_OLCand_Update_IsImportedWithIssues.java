@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -42,7 +43,6 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.SpringContextHolder;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
@@ -65,7 +65,7 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 	// services
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 	private final IReplicationIssueSolverBL replicationIssueSolverBL = Services.get(IReplicationIssueSolverBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	protected void prepare()
@@ -110,7 +110,7 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 		if (!validateReplicationTrx(candidatesUpdatedDuringValidation))
 		{
 			// In case one of the candidates with the given EXP_ReplicationTrx_ID, do not solve issues
-			return " @Updated@ # " + candidatesUpdatedDuringValidation.getValue();
+			return "@Invalid@ @Record@ - @Updated@ # " + candidatesUpdatedDuringValidation.getValue();
 		}
 
 		// the validation was OK
@@ -118,13 +118,11 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 		final IReplicationIssueSolverParams replicationIssueSolverParams = replicationIssueSolverBL.createParams(params);
 		final IReplicationTrxLinesProcessorResult result = replicationIssueSolverBL.solveReplicationIssues(rplTrx, issueAwareType, issueSolver, replicationIssueSolverParams);
 
+		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
+				.addSetColumnValue(I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
+
 		// task 08770: each individual line was solved. Now we can flag all OLCands as cleared, so they can all be processed at once.
-		final IQueryBuilder<I_C_OLCand> queryBuilder = createOLCandQueryBuilder();
-		queryBuilder
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false)
-				.execute();
+		createOLCandQueryBuilder().create().update(updater);
 
 		return "@Updated@ #" + result.getReplicationIssueAwareCount();
 	}
@@ -171,7 +169,7 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 
 	private IQueryBuilder<I_C_OLCand> createOLCandQueryBuilder()
 	{
-		final IQueryBuilder<I_C_OLCand> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
+		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class, getCtx(), get_TrxName())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_EXP_ReplicationTrx_ID, p_EXP_ReplicationTrx_ID);

@@ -6,6 +6,7 @@
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<relativePath>../metasfresh-parent</relativePath>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
@@ -28,7 +29,7 @@
 
 		<servicemix.java.version>1.7</servicemix.java.version>
 
-		<poi.version>3.12</poi.version>
+		<poi.version>3.15</poi.version>
 		<zxing.version>2.3.0</zxing.version>
 
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
@@ -57,7 +58,7 @@
 		
 		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
 		<woodstox.version>5.1.0</woodstox.version>
-		
+
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -162,7 +163,9 @@
 		<module>de.metas.shipper.gateway.spi</module>
 		<module>de.metas.shipper.gateway.go</module>
 		<module>de.metas.shipper.gateway.derkurier</module>
-		<!-- commented out because we don't include it in any distribution 
+		<module>de.metas.shipper.gateway.dhl</module>
+		<module>de.metas.shipper.gateway.dpd</module>
+		<!-- commented out because we don't include it in any distribution
 		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
 		-->
 
@@ -190,15 +193,27 @@
 
 		<module>vertical-healthcare_ch</module>
 
-    </modules>
+	</modules>
 
 	<dependencyManagement>
 		<dependencies>
 
 			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.10</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.mchange</groupId>
+				<artifactId>c3p0</artifactId>
+				<version>0.9.5.5</version>
+			</dependency>
+
+			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>42.2.5</version>
+				<version>42.2.9</version>
 			</dependency>
 
 			<dependency>
@@ -673,14 +688,6 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
-
-			<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>2.2.2</version>
-			</plugin>
-
 		</plugins>
 
 	</build>

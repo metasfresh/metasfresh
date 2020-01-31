@@ -15,10 +15,11 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
@@ -39,9 +40,6 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -65,27 +63,23 @@ import mockit.Verifications;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class DemandCandiateHandlerTest
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Mocked
 	private PostMaterialEventService postMaterialEventService;
-
 	private DemandCandiateHandler demandCandidateHandler;
-
-	@Mocked
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+
+		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -151,39 +145,41 @@ public class DemandCandiateHandlerTest
 	{
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
-			times = 1;
-			result = new BigDecimal(quantity);
-		}}; // @formatter:on
+		Mockito.doReturn(new BigDecimal(quantity))
+				.when(availableToPromiseRepository)
+				.retrieveAvailableStockQtySum(query);
+//		// @formatter:off
+//		new Expectations()
+//		{{
+//			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
+//			times = 1;
+//			result = new BigDecimal(quantity);
+//		}}; // @formatter:on
 	}
 
 	private void assertDemandEventWasFiredWithQuantity(@NonNull final String expectedQty)
 	{
-		// @formatter:off
-		new Verifications()
-		{{
-			MaterialEvent event;
-			postMaterialEventService.postEventAfterNextCommit(event = withCapture());
+		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
+		Mockito.verify(postMaterialEventService)
+				.postEventAfterNextCommit(eventCaptor.capture());
 
-			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
-			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
-			final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
-			assertThat(supplyRequiredDescriptor).isNotNull();
+		final MaterialEvent event = eventCaptor.getValue();
 
-			final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
-			assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
-			assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-			assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
-		}}; // @formatter:on
+		assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
+		final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
+		assertThat(supplyRequiredDescriptor).isNotNull();
+
+		final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
+		assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
 	}
 
 	@Test
 	public void decrease_stock()
 	{
-		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_DECREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_DECREASE);
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
 
@@ -191,7 +187,7 @@ public class DemandCandiateHandlerTest
 		assertThat(allRecords).hasSize(2);
 
 		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
-		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_DECREASE);
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE);
 		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
 
 		final I_MD_Candidate stockCandidate = allRecords.get(1);
@@ -199,11 +195,13 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
-		// @formatter:off verify that no event was fired
-		new Verifications()
-		{{
-			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
-		}}; // @formatter:on
+		Mockito.verify(postMaterialEventService, Mockito.times(0))
+				.postEventNow(Mockito.any());
+//		// @formatter:off verify that no event was fired
+//		new Verifications()
+//		{{
+//			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
+//		}}; // @formatter:on
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)

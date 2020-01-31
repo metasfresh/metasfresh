@@ -26,6 +26,7 @@ import java.time.Duration;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.eevolution.model.I_PP_Cost_Collector;
 
@@ -39,7 +40,13 @@ public interface IPPCostCollectorDAO extends ISingletonService
 
 	List<I_PP_Cost_Collector> getByParent(I_PP_Cost_Collector parentCostCollector);
 
-	I_PP_Cost_Collector getById(int costCollectorId);
+	I_PP_Cost_Collector getById(PPCostCollectorId costCollectorId);
+
+	<T extends I_PP_Cost_Collector> T getById(PPCostCollectorId costCollectorId, Class<T> modelClass);
+
+	List<I_PP_Cost_Collector> getByIds(Set<PPCostCollectorId> costCollectorIds);
+
+	<T extends I_PP_Cost_Collector> List<T> getByIds(Set<PPCostCollectorId> costCollectorIds, Class<T> modelClass);
 
 	List<I_PP_Cost_Collector> getByOrderId(PPOrderId ppOrderId);
 

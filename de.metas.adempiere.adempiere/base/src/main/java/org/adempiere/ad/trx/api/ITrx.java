@@ -26,11 +26,14 @@ import java.sql.Connection;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.DBException;
 
 import com.google.common.base.Supplier;
+
+import lombok.NonNull;
 
 /**
  * Transaction interface
@@ -211,6 +214,28 @@ public interface ITrx
 	<T> T getProperty(String name, Function<ITrx, T> valueInitializer);
 
 	/**
+	 * Gets custom transaction property.
+	 * If the property does not exist it will call <code>valueInitializer</code>.
+	 * After transaction is committed the <code>afterCommitValueProcessor</code> will be called.
+	 * 
+	 * @param propertyName
+	 * @param valueInitializer used to create the new value in case it does not already exist.
+	 * @param afterCommitValueProcessor called after transaction is committed
+	 * @return property's value or null
+	 */
+	default <T> T getPropertyAndProcessAfterCommit(
+			@NonNull final String propertyName,
+			@NonNull final Supplier<T> valueInitializer,
+			@NonNull final Consumer<T> afterCommitValueProcessor)
+	{
+		return getProperty(propertyName, () -> {
+			final T value = valueInitializer.get();
+			runAfterCommit(() -> afterCommitValueProcessor.accept(value));
+			return value;
+		});
+	}
+
+	/**
 	 * Change property using the value remapping function and then returns it.
 	 * If the remapping function returns null then the property will be removed.
 	 * 
@@ -219,4 +244,9 @@ public interface ITrx
 	 * @return new value or null in case the remapping function returned null
 	 */
 	<T> T setAndGetProperty(String name, Function<T, T> valueRemappingFunction);
+
+	default void runAfterCommit(@NonNull final Runnable runnable)
+	{
+		getTrxListenerManager().runAfterCommit(runnable);
+	}
 }

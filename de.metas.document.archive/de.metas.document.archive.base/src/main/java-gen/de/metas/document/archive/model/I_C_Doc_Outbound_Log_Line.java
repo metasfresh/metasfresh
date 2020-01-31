@@ -84,8 +84,6 @@ public interface I_C_Doc_Outbound_Log_Line
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_Client>(I_C_Doc_Outbound_Log_Line.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -95,7 +93,7 @@ public interface I_C_Doc_Outbound_Log_Line
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -105,15 +103,11 @@ public interface I_C_Doc_Outbound_Log_Line
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_Org>(I_C_Doc_Outbound_Log_Line.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -140,10 +134,6 @@ public interface I_C_Doc_Outbound_Log_Line
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
     /** Column definition for AD_Table_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_Table>(I_C_Doc_Outbound_Log_Line.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
@@ -169,10 +159,6 @@ public interface I_C_Doc_Outbound_Log_Line
 	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
     /** Column definition for AD_User_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_AD_User>(I_C_Doc_Outbound_Log_Line.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
@@ -197,10 +183,6 @@ public interface I_C_Doc_Outbound_Log_Line
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_C_BPartner>(I_C_Doc_Outbound_Log_Line.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -276,10 +258,6 @@ public interface I_C_Doc_Outbound_Log_Line
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log_Line, org.compiere.model.I_C_DocType>(I_C_Doc_Outbound_Log_Line.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);

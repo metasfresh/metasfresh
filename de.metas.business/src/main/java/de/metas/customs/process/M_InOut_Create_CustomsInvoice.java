@@ -1,44 +1,21 @@
 package de.metas.customs.process;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.function.Function;
-
 import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.currency.ICurrencyBL;
 import de.metas.customs.CustomsInvoice;
-import de.metas.customs.CustomsInvoiceRequest;
 import de.metas.customs.CustomsInvoiceService;
-import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.impl.PlainDocumentLocation;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.money.CurrencyId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.ProductId;
 import de.metas.user.UserId;
-import de.metas.util.Services;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -65,8 +42,8 @@ import lombok.NonNull;
 
 public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final CustomsInvoiceService customsInvoiceService = SpringContextHolder.instance.getBean(CustomsInvoiceService.class);
-	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = SpringContextHolder.instance.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
+
+	public final CustomsInvoiceService customsInvoiceService = SpringContextHolder.instance.getBean(CustomsInvoiceService.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private BPartnerId p_BPartnerId;
@@ -88,107 +65,25 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final ImmutableList<InOutId> selectedShipments = context.getSelectedModels(I_M_InOut.class).stream()
-				.map(shipmentRecord -> InOutId.ofRepoId(shipmentRecord.getM_InOut_ID()))
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean foundAtLeastOneUnregisteredShipment = shipmentLinesForCustomsInvoiceRepo.foundAtLeastOneUnregisteredShipment(selectedShipments);
-
-		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnregisteredShipment);
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+		final IQueryFilter<I_M_InOut> queryFilter = getProcessInfo()
+				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		final List<InOutAndLineId> linesToExport = retrieveLinesToExport();
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(p_BPartnerId, p_C_BPartner_Location_ID);
 
-		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
-				.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						this::getProductId, // keyFunction,
-						Function.identity()));// valueFunction
+		final CustomsInvoice customsInvoice = customsInvoiceService.generateNewCustomsInvoice(bpartnerLocationId, p_ContactId, queryFilter);
 
-		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(p_BPartnerId, p_C_BPartner_Location_ID);
-
-		final CurrencyId currencyId = currencyBL.getBaseCurrencyId(Env.getClientId(), Env.getOrgId());
-
-		final LocalDate invoiceDate = Env.getLocalDate();
-
-		final DocTypeId docTypeId = customsInvoiceService.retrieveCustomsInvoiceDocTypeId();
-
-		final String documentNo = customsInvoiceService.reserveDocumentNo(docTypeId);
-
-		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
-				.bpartnerId(p_BPartnerId)
-				.bpartnerLocationId(bpartnerAndLocationId)
-				.contactId(p_ContactId)
-				.build();
-
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
-
-		final String bpartnerAddress = documentLocation.getBPartnerAddress();
-
-		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
-				.bpartnerAndLocationId(bpartnerAndLocationId)
-				.bpartnerAddress(bpartnerAddress)
-				.userId(p_ContactId)
-				.currencyId(currencyId)
-				.linesToExportMap(linesToExportMap)
-				.invoiceDate(invoiceDate)
-				.documentNo(documentNo)
-				.docTypeId(docTypeId)
-				.build();
-
-		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(customsInvoiceRequest);
-
-		CustomsInvoiceUserNotificationsProducer.newInstance()
-				.notifyGenerated(customsInvoice);
-
-		if (p_IsComplete)
+		if (p_IsComplete && !Check.isEmpty(customsInvoice.getLines()))
 		{
 			customsInvoiceService.completeCustomsInvoice(customsInvoice);
 		}
 
-		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
-				.map(InOutAndLineId::getInOutId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice.getId());
-
-		customsInvoiceService.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
-
 		return MSG_OK;
-
-	}
-
-	private ProductId getProductId(final InOutAndLineId inoutAndLineId)
-	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-		final InOutLineId shipmentLineId = inoutAndLineId.getInOutLineId();
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(shipmentLineId, I_M_InOutLine.class);
-
-		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
-	}
-
-	private List<InOutAndLineId> retrieveLinesToExport()
-	{
-		final IQueryFilter<I_M_InOut> queryFilter = getProcessInfo()
-				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
-
-		final ImmutableList<InOutId> selectedShipments = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOut.class)
-				.filter(queryFilter)
-				.create()
-				.listIds(InOutId::ofRepoId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
-		List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
-
-		return shipmentLinesToExport;
 
 	}
 

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Note;
@@ -52,7 +53,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -69,8 +72,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
+import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
@@ -160,6 +165,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 	}
 
@@ -341,7 +347,6 @@ public class InvoiceCandBLCreateInvoicesTest
 	@Test
 	public void test_PriceEnteredInvoiceCandidates()
 	{
-
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
 
 		final Properties ctx = Env.getCtx();
@@ -350,9 +355,11 @@ public class InvoiceCandBLCreateInvoicesTest
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
 		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
+		POJOWrapper.setInstanceName(ic1, "ic1");
 		ic1.setDescription("IC1 - normal");
 
 		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
+		POJOWrapper.setInstanceName(ic2, "ic2");
 		ic2.setDescription("IC2 - partial qty");
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
 
@@ -373,14 +380,15 @@ public class InvoiceCandBLCreateInvoicesTest
 
 		// change discount
 		ic1.setDiscount_Override(BigDecimal.valueOf(20));
-		final BigDecimal priceActual_OverrideComputed1 = orderLineBL.subtractDiscount(ic1.getPriceEntered(), ic1.getDiscount_Override(), precision1.toInt());
+
+		final BigDecimal priceActual_OverrideComputed1 = Percent.of(ic1.getDiscount_Override()).subtractFromBase(ic1.getPriceEntered(), precision1.toInt());
 		discount_override1 = ic1.getDiscount_Override();
 
 		// change priceEntered
 		ic2.setPriceEntered_Override(BigDecimal.valueOf(5));
 		InterfaceWrapperHelper.save(ic2);
-		final BigDecimal priceActual_OverrideComputed2 = orderLineBL.subtractDiscount(ic2.getPriceEntered_Override(), ic2.getDiscount(), precision2.toInt());
 
+		final BigDecimal priceActual_OverrideComputed2 = Percent.of(ic2.getDiscount()).subtractFromBase(ic2.getPriceEntered_Override(), precision2.toInt());
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
 
 		//

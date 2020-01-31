@@ -68,12 +68,16 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.PostingException;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
@@ -386,6 +390,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			public boolean doCatch(final Throwable e)
 			{
 				final PostingException postingException = newPostingException(e);
+				this.postingException = postingException;
 
 				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, getAD_Client_ID(), getAD_Org_ID());
 				if (createNote)
@@ -420,7 +425,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				|| m_DocStatus.equals(IDocument.STATUS_Voided)
 				|| m_DocStatus.equals(IDocument.STATUS_Reversed))
 		{
-			
+			// This is THE valid case
 		}
 		else
 		{
@@ -611,15 +616,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setDetailMessage("No fact");
 			}
 
-			//
-			// p_Status = STATUS_PostPrepared;
-
 			// check accounts
-			if (!fact.checkAccounts())
+			final BooleanWithReason checkAccountsResult = fact.checkAccounts();
+			if (checkAccountsResult.isFalse())
 			{
 				throw newPostingException()
 						.setAcctSchema(acctSchema)
 						.setPostingStatus(PostingStatus.InvalidAccount)
+						.setDetailMessage(checkAccountsResult.getReason())
 						.setFact(fact);
 			}
 
@@ -638,7 +642,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 
 			// Balance source amounts
-			if (!fact.isSourceBalanced())
+			if (fact.isSingleCurrency() && !fact.isSourceBalanced())
 			{
 				fact.balanceSource();
 				if (!fact.isSourceBalanced())
@@ -749,11 +753,23 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		sql.append(" WHERE ").append(keyColumnName).append("=").append(recordId);
 		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		fireDocumentChanged();
+
 		if (updateCount != 1)
 		{
 			throw newPostingException()
 					.setDetailMessage("Unable to unlock");
 		}
+	}
+
+	private void fireDocumentChanged()
+	{
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.fromTableNameAndRecordId(get_TableName(), get_ID()),
+				ModelCacheInvalidationTiming.CHANGE);
+
 	}
 
 	/**************************************************************************

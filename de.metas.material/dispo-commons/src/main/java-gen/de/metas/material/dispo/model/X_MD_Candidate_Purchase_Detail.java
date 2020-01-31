@@ -15,7 +15,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1791956323L;
+	private static final long serialVersionUID = 1931443601L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Purchase_Detail (Properties ctx, int MD_Candidate_Purchase_Detail_ID, String trxName)
@@ -44,18 +44,6 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Vendor() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Vendor_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Vendor(org.compiere.model.I_C_BPartner C_BPartner_Vendor)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Vendor_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Vendor);
-	}
-
 	/** Set C_BPartner_Vendor_ID.
 		@param C_BPartner_Vendor_ID C_BPartner_Vendor_ID	  */
 	@Override
@@ -79,7 +67,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLinePO() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLinePO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -161,7 +149,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate() throws RuntimeException
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_MD_Candidate_ID, de.metas.material.dispo.model.I_MD_Candidate.class);
 	}
@@ -258,7 +246,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
 	}

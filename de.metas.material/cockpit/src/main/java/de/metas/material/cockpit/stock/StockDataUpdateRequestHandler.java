@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -84,11 +83,11 @@ public class StockDataUpdateRequestHandler
 		}
 
 		final I_MD_Stock newDataRecord = newInstance(I_MD_Stock.class);
-		InterfaceWrapperHelper.setValue(newDataRecord, I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId());
+		InterfaceWrapperHelper.setValue(newDataRecord, I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId().getRepoId());
 
 		newDataRecord.setAD_Org_ID(identifier.getOrgId().getRepoId());
-		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
-		newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
+		newDataRecord.setM_Product_ID(identifier.getProductId().getRepoId());
+		newDataRecord.setAttributesKey(identifier.getStorageAttributesKey().getAsString());
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId().getRepoId());
 
 		return newDataRecord;
@@ -96,21 +95,18 @@ public class StockDataUpdateRequestHandler
 
 	private IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)
 	{
-		final ProductDescriptor productDescriptor = identifier.getProductDescriptor();
-
-		final AttributesKey attributesKey = productDescriptor.getStorageAttributesKey();
+		final AttributesKey attributesKey = identifier.getStorageAttributesKey();
 		attributesKey.assertNotAllOrOther();
 
-		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Stock.COLUMN_AD_Client_ID, identifier.getClientId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_AD_Org_ID, identifier.getOrgId())
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productDescriptor.getProductId())
+				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, identifier.getProductId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, identifier.getWarehouseId());
-
-		return queryBuilder.create();
+				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, identifier.getWarehouseId())
+				.create();
 	}
 
 	private void fireStockChangedEvent(
@@ -141,7 +137,7 @@ public class StockDataUpdateRequestHandler
 		final StockChangeDetails details = StockChangeDetails
 				.builder()
 				.transactionId(stockChangeSourceInfo.getTransactionId())
-				.resetStockAdPinstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
+				.resetStockPInstanceId(stockChangeSourceInfo.getResetStockAdPinstanceId())
 				.stockId(dataRecord.getMD_Stock_ID())
 				.build();
 

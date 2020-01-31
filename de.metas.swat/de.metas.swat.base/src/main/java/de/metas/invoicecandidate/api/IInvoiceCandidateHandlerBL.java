@@ -51,9 +51,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	/**
 	 * Creates and returns a new instance of the ICreator SPI implementation defined in the classname column of the given creatorRecord.
-	 *
-	 * @param creatorRecord
-	 * @return
 	 */
 	IInvoiceCandidateHandler mkInstance(I_C_ILCandHandler creatorRecord);
 
@@ -63,9 +60,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * Each created invoice candidate has a reference to the {@link I_C_ILCandGenerator} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
 	 *
 	 * Note: this method does not return the created candidates because there might be too many of them.
-	 *
-	 * @param ctx
-	 * @param handlers see {@link IInvoiceCandBL#createMissingCandidates(org.compiere.model.I_AD_PInstance, List, String)}
 	 */
 	void createMissingCandidates(List<I_C_ILCandHandler> handlers);
 

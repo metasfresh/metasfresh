@@ -5,6 +5,7 @@ import java.util.List;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,12 +31,13 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 
 public interface ShipperGatewayClient
 {
+	@NonNull
 	String getShipperGatewayId();
 
 	/**
 	 * Create a delivery order on the remote endpoint. The remote order is drafted and can still be changed.
 	 *
-	 * @deprecated it seems as if we don't need this.
+	 * @deprecated we don't need this.
 	 */
 	@Deprecated
 	DeliveryOrder createDeliveryOrder(DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException;
@@ -43,9 +45,9 @@ public interface ShipperGatewayClient
 	/**
 	 * Effectively place the given order on the remote endpoint.
 	 */
-	DeliveryOrder completeDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
+	@NonNull
+	DeliveryOrder completeDeliveryOrder(@NonNull DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 
-	DeliveryOrder voidDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
-
-	List<PackageLabels> getPackageLabelsList(DeliveryOrder deliveryOrder) throws ShipperGatewayException;;
+	@NonNull
+	List<PackageLabels> getPackageLabelsList(@NonNull DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 }

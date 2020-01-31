@@ -4,6 +4,8 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -35,21 +37,20 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class HUDescriptor
 {
-	BigDecimal quantity;
-
-	BigDecimal quantityDelta;
-
 	ProductDescriptor productDescriptor;
-
 	int huId;
+
+	BigDecimal quantity;
+	BigDecimal quantityDelta;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private HUDescriptor(
-			@JsonProperty("huId") final int huId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("huId") final int huId,
 			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
 			@JsonProperty("quantityDelta") @NonNull final BigDecimal quantityDelta)
 	{

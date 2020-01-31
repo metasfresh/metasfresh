@@ -1,5 +1,7 @@
 package de.metas.edi.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.edi
@@ -34,10 +36,8 @@ import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
 /**
- * EDI-Exports a single document.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * EDI-Exports a single EDI document. Locally and synchronously, i.e. without an async-workpackage.
+ * If there is a validation error, then it updates the record with the error message(s) as well.
  */
 public class EDIExport extends JavaProcess
 {
@@ -55,7 +55,6 @@ public class EDIExport extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-
 		final IExport<? extends I_EDI_Document> export = ediDocumentBL.createExport(
 				getCtx(),
 				getClientID(),
@@ -70,6 +69,11 @@ public class EDIExport extends JavaProcess
 
 		final String errorTitle = buildAndTrlTitle(export.getTableIdentifier(), export.getDocument());
 		final String errorMessage = ediDocumentBL.buildFeedback(feedback);
+
+		final I_EDI_Document document = export.getDocument();
+		document.setEDIErrorMsg(errorMessage);
+		saveRecord(document);
+
 		throw new AdempiereException(errorTitle + "\n" + errorMessage).markAsUserValidationError();
 	}
 

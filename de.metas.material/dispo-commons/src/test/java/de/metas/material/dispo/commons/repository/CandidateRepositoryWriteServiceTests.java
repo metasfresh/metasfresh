@@ -24,9 +24,9 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -74,16 +74,14 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class CandidateRepositoryWriteServiceTests
 {
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	private RepositoryTestHelper repositoryTestHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

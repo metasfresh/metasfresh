@@ -59,9 +59,9 @@ class UnClosePickingCandidateCommand
 	 */
 	public void perform()
 	{
-		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
+		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getProcessingStatus()))
 		{
-			throw new AdempiereException("Invalid picking candidate status. Expected CLosed but it was " + pickingCandidate.getStatus())
+			throw new AdempiereException("Invalid picking candidate status. Expected CLosed but it was " + pickingCandidate.getProcessingStatus())
 					.setParameter("pickingCandidate", pickingCandidate);
 		}
 

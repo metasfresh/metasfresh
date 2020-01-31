@@ -1,17 +1,5 @@
 package de.metas.shipper.gateway.commons.async;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -25,7 +13,19 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -80,7 +80,6 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	public DeliveryOrderWorkpackageProcessor()
 	{
 		shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
-
 	}
 
 	@Override
@@ -145,7 +144,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
 		final String fileExtWithDot = MimeType.getExtensionByType(packageLabel.getContentType());
-		final String fileName = packageLabel.getType().toString() + fileExtWithDot;
+		final String fileName = CoalesceUtil.firstNotEmptyTrimmed(packageLabel.getFileName(), packageLabel.getType().toString()) + fileExtWithDot;
 		final byte[] labelData = packageLabel.getLabelData();
 
 		final Properties ctx = Env.getCtx();

@@ -15,7 +15,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -417387767L;
+	private static final long serialVersionUID = -1170046469L;
 
     /** Standard Constructor */
     public X_RV_Printing_Bericht_List_Per_Print_Job (Properties ctx, int RV_Printing_Bericht_List_Per_Print_Job_ID, String trxName)
@@ -42,7 +42,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
     }
 
 	@Override
-	public org.compiere.model.I_AD_Archive getAD_Archive() throws RuntimeException
+	public org.compiere.model.I_AD_Archive getAD_Archive()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Archive_ID, org.compiere.model.I_AD_Archive.class);
 	}
@@ -76,18 +76,6 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
 	}
 
 	/** Set Ansprechpartner.
@@ -132,7 +120,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -185,7 +173,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
 	}
@@ -219,7 +207,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	}
 
 	@Override
-	public de.metas.printing.model.I_C_Print_Job getC_Print_Job() throws RuntimeException
+	public de.metas.printing.model.I_C_Print_Job getC_Print_Job()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Print_Job_ID, de.metas.printing.model.I_C_Print_Job.class);
 	}

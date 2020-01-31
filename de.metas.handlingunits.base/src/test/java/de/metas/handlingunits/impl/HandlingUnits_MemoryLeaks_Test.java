@@ -58,15 +58,7 @@ public class HandlingUnits_MemoryLeaks_Test extends AbstractHUTest
 	@Override
 	protected HUTestHelper createHUTestHelper()
 	{
-		return new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				// no transaction by default
-				return ITrx.TRXNAME_None;
-			}
-		};
+		return HUTestHelper.newInstanceOutOfTrx();
 	}
 
 	@Override

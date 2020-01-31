@@ -46,11 +46,11 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -60,6 +60,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.DocStatus;
@@ -78,10 +79,10 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
@@ -89,6 +90,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ImmutableMapEntry;
@@ -101,7 +103,8 @@ import lombok.NonNull;
  */
 public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 {
-	//
+	private static final Logger logger = LogManager.getLogger(M_InOutLine_Handler.class);
+
 	// Services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 
@@ -767,9 +770,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
 
-			final I_AD_User billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None);
+			final User billBPContact = bPartnerBL
+					.retrieveContactOrNull(RetrieveContactRequest.builder()
+							.bpartnerId(billBPLocationId.getBpartnerId())
+							.bPartnerLocationId(billBPLocationId)
+							.build());
 			billBPContactId = billBPContact != null
-					? BPartnerContactId.ofRepoIdOrNull(billBPContact.getC_BPartner_ID(), billBPContact.getAD_User_ID())
+					? BPartnerContactId.of(billBPLocationId.getBpartnerId(), billBPContact.getId())
 					: null;
 		}
 
@@ -777,7 +784,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Bill_User_ID isn't mandatory in C_Order, and isn't considered a must in OLHandler either
 		// Check.assumeNotNull(billBPContactId, "billBPContact not null");
 
-		//
 		// Set BPartner / Location / Contact
 		ic.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
 		ic.setBill_Location_ID(billBPLocationId.getRepoId());
@@ -791,7 +797,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return calculatePriceAndTax(ic, inoutLine);
 	}
 
-	public static PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine inoutLine)
+	public static PriceAndTax calculatePriceAndTax(
+			final I_C_Invoice_Candidate ic,
+			final org.compiere.model.I_M_InOutLine inoutLine)
 	{
 		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
 
@@ -824,37 +832,43 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.build();
 	}
 
-	private static IPricingResult calculatePricingResult(final org.compiere.model.I_M_InOutLine fromInOutLine)
+	private static IPricingResult calculatePricingResult(@NonNull final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final IPricingContext pricingCtx = inOutBL.createPricingCtx(fromInOutLine);
-		return inOutBL.getProductPrice(pricingCtx);
+		return inOutBL.getProductPrice(fromInOutLine);
 	}
 
-	public static PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine fromInOutLine)
+	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		try
 		{
-			final PriceAndTax priceAndTax = calculatePriceAndTax(ic, fromInOutLine);
-			IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndTax);
+			final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord, fromInOutLine);
+			IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			return priceAndTax;
 		}
 		catch (final ProductNotOnPriceListException e)
 		{
-			final boolean askForDeleteRegeneration = true; // ask for re-generation
-			setError(ic, e, askForDeleteRegeneration);
+			final boolean askForDeleteRegeneration = true; // ask user for re-generation in the error-message
+			setError(icRecord, e, askForDeleteRegeneration);
 			return null;
 		}
 		catch (final Exception e)
 		{
 			final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
-			setError(ic, e, askForDeleteRegeneration);
+			setError(icRecord, e, askForDeleteRegeneration);
 			return null;
 		}
 	}
 
-	private static final void setError(final I_C_Invoice_Candidate ic, final Exception ex, final boolean askForDeleteRegeneration)
+	private static final void setError(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final Exception ex,
+			final boolean askForDeleteRegeneration)
 	{
+
+		logger.debug("Set IsInDispute=true, because an error occured");
 		ic.setIsInDispute(true); // 07193 - Mark's request
 
 		final I_AD_Note note = null; // we don't have a note

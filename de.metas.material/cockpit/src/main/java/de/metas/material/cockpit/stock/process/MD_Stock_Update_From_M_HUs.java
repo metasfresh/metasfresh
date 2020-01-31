@@ -16,7 +16,7 @@ import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -58,12 +58,11 @@ import lombok.NonNull;
 public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class);
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = retrieveHuData();
 
@@ -89,7 +88,8 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 	private void createAndHandleDataUpdateRequests(
 			@NonNull final List<I_MD_Stock_From_HUs_V> huBasedDataRecords)
 	{
-		final StockChangeSourceInfo info = StockChangeSourceInfo.ofResetStockAdPinstanceId(getProcessInfo().getPinstanceId().getRepoId());
+		final ResetStockPInstanceId resetStockPInstanceId = ResetStockPInstanceId.ofPInstanceId(getProcessInfo().getPinstanceId());
+		final StockChangeSourceInfo info = StockChangeSourceInfo.ofResetStockPInstanceId(resetStockPInstanceId);
 
 		for (final I_MD_Stock_From_HUs_V huBasedDataRecord : huBasedDataRecords)
 		{
@@ -105,7 +105,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 			@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord,
 			@NonNull final StockChangeSourceInfo stockDataUpdateRequestSourceInfo)
 	{
-		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
+		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
 		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHandChange(), huBasedDataRecord.getC_UOM());
@@ -119,21 +119,14 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		return dataUpdateRequest;
 	}
 
-	private static StockDataRecordIdentifier createDataRecordIdentifier(
-			@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord)
+	private static StockDataRecordIdentifier toStockDataRecordIdentifier(@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord)
 	{
-		final ProductDescriptor productDescriptor = ProductDescriptor
-				.forProductAndAttributes(
-						huBasedDataRecord.getM_Product_ID(),
-						AttributesKey.ofString(huBasedDataRecord.getAttributesKey()));
-
-		final StockDataRecordIdentifier recordIdentifier = StockDataRecordIdentifier
-				.builder()
+		return StockDataRecordIdentifier.builder()
 				.clientId(ClientId.ofRepoId(huBasedDataRecord.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(huBasedDataRecord.getAD_Org_ID()))
-				.productDescriptor(productDescriptor)
 				.warehouseId(WarehouseId.ofRepoId(huBasedDataRecord.getM_Warehouse_ID()))
+				.productId(ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID()))
+				.storageAttributesKey(AttributesKey.ofString(huBasedDataRecord.getAttributesKey()))
 				.build();
-		return recordIdentifier;
 	}
 }

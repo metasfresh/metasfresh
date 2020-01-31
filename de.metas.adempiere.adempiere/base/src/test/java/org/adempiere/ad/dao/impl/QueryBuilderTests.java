@@ -22,6 +22,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -30,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -39,12 +39,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.process.PInstanceId;
-import de.metas.util.collections.CollectionUtils;
 
 public class QueryBuilderTests
 {
@@ -58,36 +56,38 @@ public class QueryBuilderTests
 	/**
 	 * Sets up two POJOs with different AD_Client_IDs.
 	 */
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
 
 		ctx = new Properties();
+		ctx.setProperty("#AD_Client_ID", "99");
 
 		products = new ArrayList<>();
 
-		ctx.setProperty("#AD_Client_ID", "99");
-		product0 = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
-		product0.setIsActive(true);
-		InterfaceWrapperHelper.save(product0);
+		product0 = createProduct(true);
 		products.add(product0);
 
 		ctx.setProperty("#AD_Client_ID", "100");
-		product1_NotActive = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
-		product1_NotActive.setIsActive(false);
-		InterfaceWrapperHelper.save(product1_NotActive);
+		product1_NotActive = createProduct(false);
 		products.add(product1_NotActive);
 
 		ctx.setProperty("#AD_Client_ID", "100");
-		product2 = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
-		product2.setIsActive(true);
-		InterfaceWrapperHelper.save(product2);
+		product2 = createProduct(true);
 		products.add(product2);
 
 		assertThat(product0.getAD_Client_ID(), is(99));
 		assertThat(product1_NotActive.getAD_Client_ID(), is(100));
 		assertThat(product2.getAD_Client_ID(), is(100));
+	}
+
+	private I_M_Product createProduct(final boolean active)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
+		product.setIsActive(active);
+		InterfaceWrapperHelper.save(product);
+		return product;
 	}
 
 	@Test
@@ -277,55 +277,60 @@ public class QueryBuilderTests
 	@Test
 	public void test_Explode_OR_Joins_To_SQL_Unions_FirstLevel()
 	{
+		final I_M_Product product0 = createProduct(true);
+		final I_M_Product product1 = createProduct(true);
+		final I_M_Product product2 = createProduct(true);
+		final I_M_Product product3 = createProduct(true);
+		final I_M_Product product4 = createProduct(true);
+
 		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setJoinOr()
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions);
-
-		// Add the same filter, several times
-		final int filtersCount = 10;
-		for (int i = 1; i <= filtersCount; i++)
-		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID());
-		}
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+				.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product1.getM_Product_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product2.getM_Product_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product3.getM_Product_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product4.getM_Product_ID());
 
 		//
 		// Create the query and check it
 		final POJOQuery<I_M_Product> query = (POJOQuery<I_M_Product>)queryBuilder.create();
-		Assert.assertEquals("Query unions count for " + query, filtersCount - 1, query.getUnions().size());
+		assertThat(query.getUnions()).hasSize(5 - 1);
 
 		//
 		// Execute the query and check the result
 		final List<I_M_Product> result = query.list();
-		final I_M_Product productActual = CollectionUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
-		Assert.assertEquals("Retrieved product", product0.getM_Product_ID(), productActual.getM_Product_ID());
+		assertThat(result).containsExactly(product0, product1, product2, product3, product4);
 	}
 
 	@Test
 	public void test_Explode_OR_Joins_To_SQL_Unions_SecondLevel()
 	{
+		final I_M_Product product0 = createProduct(true);
+		final I_M_Product product1 = createProduct(true);
+		final I_M_Product product2 = createProduct(true);
+		final I_M_Product product3 = createProduct(true);
+		final I_M_Product product4 = createProduct(true);
+
 		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setJoinAnd()
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions);
-
-		final ICompositeQueryFilter<I_M_Product> compositeFilter = queryBuilder.addCompositeQueryFilter()
-				.setJoinOr();
-
-		// Add the same filter, several times
-		final int filtersCount = 10;
-		for (int i = 1; i <= filtersCount; i++)
-		{
-			compositeFilter.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID());
-		}
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+				.filter(new CompositeQueryFilter<>(I_M_Product.class)
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID())
+						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product1.getM_Product_ID())
+						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product2.getM_Product_ID())
+						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product3.getM_Product_ID())
+						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product4.getM_Product_ID()));
 
 		//
 		// Create the query and check it
 		final POJOQuery<I_M_Product> query = (POJOQuery<I_M_Product>)queryBuilder.create();
-		Assert.assertEquals("Query unions count for " + query, filtersCount - 1, query.getUnions().size());
+		assertThat(query.getUnions()).hasSize(5 - 1);
 
 		//
 		// Execute the query and check the result
 		final List<I_M_Product> result = query.list();
-		final I_M_Product productActual = CollectionUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
-		Assert.assertEquals("Retrieved product", product0.getM_Product_ID(), productActual.getM_Product_ID());
+		assertThat(result).containsExactly(product0, product1, product2, product3, product4);
 	}
 }

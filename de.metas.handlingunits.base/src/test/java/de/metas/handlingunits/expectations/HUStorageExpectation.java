@@ -13,18 +13,19 @@ package de.metas.handlingunits.expectations;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.IMutable;
@@ -32,14 +33,17 @@ import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -48,7 +52,7 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 		return new HUStorageExpectation<>(null);
 	}
 
-	private I_M_Product _product;
+	private ProductId _productId;
 	private BigDecimal _qty;
 	private I_C_UOM _uom;
 	private Integer _tuIndex;
@@ -62,20 +66,27 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 	public HUStorageExpectation<ParentExpectationType> assertExpected(final I_M_HU hu)
 	{
 		final ErrorMessage message = null;
-		return assertExpected(message, hu);
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		return assertExpected(message, huId);
 	}
 
-	public HUStorageExpectation<ParentExpectationType> assertExpected(final ErrorMessage message, final I_M_HU hu)
+	public HUStorageExpectation<ParentExpectationType> assertExpected(final HuId huId)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		final ErrorMessage message = null;
+		return assertExpected(message, huId);
+	}
 
+	public HUStorageExpectation<ParentExpectationType> assertExpected(
+			@Nullable final ErrorMessage message,
+			@NonNull final HuId huId)
+	{
 		//
 		// Retrieve the HU Storage
-		Check.assumeNotNull(_product, "_product not null");
+		Check.assumeNotNull(_productId, "_productId not null");
 		final I_M_HU_Storage huStorage = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Storage.class, hu)
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_Product_ID, _product.getM_Product_ID())
+				.createQueryBuilder(I_M_HU_Storage.class)
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, _productId)
 				.create()
 				.firstOnly(I_M_HU_Storage.class);
 
@@ -104,13 +115,13 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 			final I_M_HU tuHU = tuHUs.get(_tuIndex);
 			messageToUse = messageToUse.addContextInfo("TU", tuHU);
 			_tuIndex = null;
-			return assertExpected(messageToUse, tuHU);
+			return assertExpected(messageToUse, HuId.ofRepoId(tuHU.getM_HU_ID()));
 		}
 
-		if (_product != null)
+		if (_productId != null)
 		{
-			final I_M_Product storageProduct = Services.get(IProductDAO.class).getById(storage.getM_Product_ID());
-			assertModelEquals(messageToUse.expect("Product"), _product, storageProduct);
+			final ProductId storageProductId = ProductId.ofRepoId(storage.getM_Product_ID());
+			assertEquals(messageToUse.expect("Product"), _productId, storageProductId);
 		}
 		if (_qty != null)
 		{
@@ -133,13 +144,20 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 
 	public HUStorageExpectation<ParentExpectationType> product(final I_M_Product product)
 	{
-		this._product = product;
+		return product(ProductId.ofRepoId(product.getM_Product_ID()));
+	}
+
+	public HUStorageExpectation<ParentExpectationType> product(final ProductId productId)
+	{
+		this._productId = productId;
 		return this;
 	}
 
-	public I_M_Product getProduct()
+	public HUStorageExpectation<ParentExpectationType> qty(final Quantity qty)
 	{
-		return _product;
+		qty(qty.toBigDecimal());
+		uom(qty.getUOM());
+		return this;
 	}
 
 	public HUStorageExpectation<ParentExpectationType> qty(final BigDecimal qty)

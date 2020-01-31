@@ -56,13 +56,9 @@ import lombok.NonNull;
 public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
-
 	private final AvailableToPromiseRepository availableToPromiseRepository;
-
 	private final PostMaterialEventService materialEventService;
-
 	private final StockCandidateService stockCandidateService;
-
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	public DemandCandiateHandler(
@@ -84,8 +80,9 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		return ImmutableList.of(
 				CandidateType.DEMAND,
-				CandidateType.UNRELATED_DECREASE,
-				CandidateType.INVENTORY_DOWN);
+				CandidateType.UNEXPECTED_DECREASE,
+				CandidateType.INVENTORY_DOWN,
+				CandidateType.ATTRIBUTES_CHANGED_FROM);
 	}
 
 	/**

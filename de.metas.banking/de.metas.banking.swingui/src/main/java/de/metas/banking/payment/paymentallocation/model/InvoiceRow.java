@@ -27,21 +27,20 @@ import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
-import de.metas.banking.payment.paymentallocation.service.IPayableDocument;
-import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
+import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
-import de.metas.currency.Currency;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -189,7 +188,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	{
 		return currencyISOCode != null ? currencyISOCode.toThreeLetterCode() : null;
 	}
-	
+
 	@Override
 	public CurrencyCode getCurrencyISOCode()
 	{
@@ -498,22 +497,22 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	}
 
 	@Override
-	public IPayableDocument copyAsPayableDocument()
+	public PayableDocument copyAsPayableDocument()
 	{
 		final IInvoiceRow invoiceRow = this;
-		final ITableRecordReference reference;
-		final PayableDocumentType type;
+		final InvoiceId invoiceId;
+		final OrderId prepayOrderId;
 		final boolean creditMemo;
 		if (invoiceRow.getC_Invoice_ID() > 0)
 		{
-			type = PayableDocumentType.Invoice;
-			reference = new TableRecordReference(I_C_Invoice.Table_Name, invoiceRow.getC_Invoice_ID());
+			invoiceId = InvoiceId.ofRepoId(invoiceRow.getC_Invoice_ID());
+			prepayOrderId = null;
 			creditMemo = invoiceRow.isCreditMemo();
 		}
 		else if (invoiceRow.getC_Order_ID() > 0)
 		{
-			type = PayableDocumentType.PrepaidOrder;
-			reference = new TableRecordReference(I_C_Order.Table_Name, invoiceRow.getC_Order_ID());
+			invoiceId = null;
+			prepayOrderId = OrderId.ofRepoId(invoiceRow.getC_Order_ID());
 			creditMemo = false;
 		}
 		else
@@ -522,20 +521,22 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		}
 
 		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		final Currency currency = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode());
+		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode()).getId();
 
 		return PayableDocument.builder()
-				.setC_BPartner_ID(invoiceRow.getC_BPartner_ID())
-				.setC_Currency_ID(currency.getId().getRepoId())
-				.setIsSOTrx(invoiceRow.isCustomerDocument())
-				.setReference(type, reference)
-				.setCreditMemo(creditMemo)
-				.setDocumentNo(invoiceRow.getDocumentNo())
+				.invoiceId(invoiceId)
+				.prepayOrderId(prepayOrderId)
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(invoiceRow.getC_BPartner_ID()))
+				.isSOTrx(invoiceRow.isCustomerDocument())
+				.creditMemo(creditMemo)
+				.documentNo(invoiceRow.getDocumentNo())
 				//
-				.setOpenAmt(invoiceRow.getOpenAmtConv_APAdjusted())
-				.setAmountToAllocate(invoiceRow.getAppliedAmt_APAdjusted())
-				.setDiscountAmt(invoiceRow.getDiscount_APAdjusted())
-				.setWriteOffAmt(invoiceRow.getWriteOffAmt_APAdjusted())
+				.openAmt(Money.of(invoiceRow.getOpenAmtConv_APAdjusted(), currencyId))
+				.amountsToAllocate(AllocationAmounts.builder()
+						.payAmt(Money.of(invoiceRow.getAppliedAmt_APAdjusted(), currencyId))
+						.discountAmt(Money.of(invoiceRow.getDiscount_APAdjusted(), currencyId))
+						.writeOffAmt(Money.of(invoiceRow.getWriteOffAmt_APAdjusted(), currencyId))
+						.build())
 				//
 				.build();
 	}

@@ -1,5 +1,7 @@
 package de.metas.edi.model.validator;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+
 /*
  * #%L
  * de.metas.edi
@@ -23,8 +25,8 @@ package de.metas.edi.model.validator;
  */
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -33,11 +35,13 @@ import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
 
-@Validator(I_C_Invoice_Candidate.class)
+@Interceptor(I_C_Invoice_Candidate.class)
+@Component
 public class C_Invoice_Candidate
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID })
-	public void setIsEDIRecipient(final I_C_Invoice_Candidate invoiceCandidate)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID })
+	public void setIsEDIInvoicRecipient(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -51,12 +55,13 @@ public class C_Invoice_Candidate
 
 		// Make sure the IsEDIRecipient flag is up to date in the invoice candidate
 		// It shall always be the same as in the bill BPartner
-		final boolean isEDIRecipient = ediBPartner.isEdiRecipient();
-		invoiceCandidate.setIsEdiRecipient(isEDIRecipient);
+		final boolean isEDIRecipient = ediBPartner.isEdiInvoicRecipient();
+		invoiceCandidate.setIsEdiInvoicRecipient(isEDIRecipient);
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW }, //
+			ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID })
 	public void setIsEDIEnabled(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		Services.get(IEDIInvoiceCandBL.class).setEdiEnabled(invoiceCandidate);

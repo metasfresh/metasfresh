@@ -62,7 +62,7 @@ public class CampaignPricingRule implements IPricingRule
 			return false;
 		}
 
-		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		if (!bpartnersRepo.isCampaignPriceAllowed(bpartnerId))
 		{
 			logger.debug("Not applying because the partner is not allowed to receive campaign prices");
 			return false;
@@ -110,6 +110,7 @@ public class CampaignPricingRule implements IPricingRule
 		return CampaignPriceQuery.builder()
 				.bpartnerId(pricingCtx.getBPartnerId())
 				.bpGroupId(bpartnersRepo.getBPGroupIdByBPartnerId(pricingCtx.getBPartnerId()))
+				.pricingSystemId(pricingCtx.getPricingSystemId())
 				.productId(pricingCtx.getProductId())
 				.countryId(pricingCtx.getCountryId())
 				.currencyId(pricingCtx.getCurrencyId())
@@ -123,8 +124,11 @@ public class CampaignPricingRule implements IPricingRule
 		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
 		result.setPriceStd(campaignPrice.getPriceStd().toBigDecimal());
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
+		result.setPriceUomId(campaignPrice.getPriceUomId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
+		result.setInvoicableQtyBasedOn(campaignPrice.getInvoicableQtyBasedOn());
+		result.setCampaignPrice(true);
 	}
 
 	private static CurrencyPrecision extractPrecisionFromPrice(final Money amt)

@@ -63,6 +63,9 @@ public class PhonecallSchedule
 
 	UserId salesRepId;
 
+	@Nullable
+	String description;
+
 	public PhonecallSchemaId getPhonecallSchemaId()
 	{
 		return getSchemaVersionLineId().getVersionId().getPhonecallSchemaId();

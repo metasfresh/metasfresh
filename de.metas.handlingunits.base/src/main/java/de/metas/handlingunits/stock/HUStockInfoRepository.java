@@ -64,12 +64,12 @@ public class HUStockInfoRepository
 
 			if (singleQuery.getProductId() != null)
 			{
-				filter.addEqualsFilter(I_M_HU_Stock_Detail_V.COLUMN_M_Product_ID, singleQuery.getProductId());
+				filter.addEqualsFilter(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Product_ID, singleQuery.getProductId());
 			}
 
 			if (singleQuery.getAttributeId() != null)
 			{
-				filter.addEqualsFilter(I_M_HU_Stock_Detail_V.COLUMN_M_Attribute_ID, singleQuery.getAttributeId());
+				filter.addEqualsFilter(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Attribute_ID, singleQuery.getAttributeId());
 			}
 
 			if (AttributeValue.DONT_FILTER.equals(singleQuery.getAttributeValue()))

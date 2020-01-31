@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1437708546L;
+	private static final long serialVersionUID = 757740166L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -73,16 +73,16 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerLocationName);
 	}
 
-	/** Set BPartner name.
-		@param BPartnerName BPartner name	  */
+	/** Set Name Geschäftspartner.
+		@param BPartnerName Name Geschäftspartner	  */
 	@Override
 	public void setBPartnerName (java.lang.String BPartnerName)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerName, BPartnerName);
 	}
 
-	/** Get BPartner name.
-		@return BPartner name	  */
+	/** Get Name Geschäftspartner.
+		@return Name Geschäftspartner	  */
 	@Override
 	public java.lang.String getBPartnerName () 
 	{
@@ -368,8 +368,8 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_PrepayOrder = "PR";
 	/** Provisionskorrektur = CC */
 	public static final String DOCSUBTYPE_Provisionskorrektur = "CC";
-	/** Provisionsberechnung = CA */
-	public static final String DOCSUBTYPE_Provisionsberechnung = "CA";
+	/** CommissionSettlement = CA */
+	public static final String DOCSUBTYPE_CommissionSettlement = "CA";
 	/** FlatFee = FF */
 	public static final String DOCSUBTYPE_FlatFee = "FF";
 	/** HoldingFee = HF */
@@ -422,6 +422,10 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_SingleHUInventory = "ISH";
 	/** NAR = NAR */
 	public static final String DOCSUBTYPE_NAR = "NAR";
+	/** Cashbook = CB */
+	public static final String DOCSUBTYPE_Cashbook = "CB";
+	/** Bankstatement = BS */
+	public static final String DOCSUBTYPE_Bankstatement = "BS";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type
@@ -727,23 +731,54 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return ii.intValue();
 	}
 
-	/** Set Order Document No.
-		@param OrderDocumentNo 
-		Document Number of the Order
-	  */
+	/** Set Auftragsnr..
+		@param OrderDocumentNo Auftragsnr.	  */
 	@Override
 	public void setOrderDocumentNo (java.lang.String OrderDocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_OrderDocumentNo, OrderDocumentNo);
 	}
 
-	/** Get Order Document No.
-		@return Document Number of the Order
-	  */
+	/** Get Auftragsnr..
+		@return Auftragsnr.	  */
 	@Override
 	public java.lang.String getOrderDocumentNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_OrderDocumentNo);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPickFrom_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class, PickFrom_Order);
+	}
+
+	/** Set Pick From Order.
+		@param PickFrom_Order_ID Pick From Order	  */
+	@Override
+	public void setPickFrom_Order_ID (int PickFrom_Order_ID)
+	{
+		if (PickFrom_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Order_ID, Integer.valueOf(PickFrom_Order_ID));
+	}
+
+	/** Get Pick From Order.
+		@return Pick From Order	  */
+	@Override
+	public int getPickFrom_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickFrom_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Bereitstellungsdatum.

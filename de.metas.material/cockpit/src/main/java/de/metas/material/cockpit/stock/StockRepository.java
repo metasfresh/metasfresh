@@ -2,14 +2,13 @@ package de.metas.material.cockpit.stock;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -25,7 +24,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
 import de.metas.material.cockpit.model.I_T_MD_Stock_WarehouseAndProduct;
-import de.metas.material.commons.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -220,22 +220,23 @@ public class StockRepository
 
 	public Stream<StockDataItem> streamStockDataItems(@NonNull final StockDataMultiQuery multiQuery)
 	{
-		final Optional<IQuery<I_MD_Stock>> query = multiQuery
+		final IQuery<I_MD_Stock> query = multiQuery
 				.getStockDataQueries()
 				.stream()
-				.map(this::createStockDatItemQuery)
-				.reduce(IQuery.unionDistict());
+				.map(this::createStockDataItemQuery)
+				.reduce(IQuery.unionDistict())
+				.orElse(null);
 
-		if (!query.isPresent())
+		if (query == null)
 		{
 			return Stream.empty();
 		}
-		return query.get()
+		return query
 				.iterateAndStream()
 				.map(this::recordToStockDataItem);
 	}
 
-	private IQuery<I_MD_Stock> createStockDatItemQuery(@NonNull final StockDataQuery query)
+	private IQuery<I_MD_Stock> createStockDataItemQuery(@NonNull final StockDataQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock.class);
@@ -247,9 +248,13 @@ public class StockRepository
 			queryBuilder.addInArrayFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, query.getWarehouseIds());
 		}
 
-		final AttributesKeyQueryHelper<I_MD_Stock> helper = AttributesKeyQueryHelper.createFor(I_MD_Stock.COLUMN_AttributesKey);
-		final ICompositeQueryFilter<I_MD_Stock> attributesKeysFilter = helper.createORFilterForStorageAttributesKeys(ImmutableList.of(query.getStorageAttributesKey()));
-		queryBuilder.filter(attributesKeysFilter);
+		//
+		// Storage Attributes Key
+		{
+			final AttributesKeyQueryHelper<I_MD_Stock> helper = AttributesKeyQueryHelper.createFor(I_MD_Stock.COLUMN_AttributesKey);
+			final IQueryFilter<I_MD_Stock> attributesKeysFilter = helper.createFilter(ImmutableList.of(AttributesKeyPatterns.ofAttributeKey(query.getStorageAttributesKey())));
+			queryBuilder.filter(attributesKeysFilter);
+		}
 
 		return queryBuilder.create();
 	}

@@ -15,6 +15,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_I_Flatrate_Term;
 import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 
 /*
@@ -75,8 +76,10 @@ public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_F
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
 		final String sqlImportWhereClause = ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
-				+ "\n " + getWhereClause();
+				+ "\n " + selection.toSqlWhereClause("i");
 		FlatrateTermImportTableSqlUpdater.updateFlatrateTermImportTable(sqlImportWhereClause);
 	}
 

@@ -5,6 +5,7 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -32,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -45,6 +47,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -56,14 +59,17 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -74,11 +80,14 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -87,12 +96,18 @@ import lombok.NonNull;
 
 public class FlatrateDAO implements IFlatrateDAO
 {
-
 	private static final String MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = "DataEntry_Error_InvoiceCand_Processed";
 	private static final Logger logger = LogManager.getLogger(FlatrateDAO.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public I_C_Flatrate_Term getById(final int flatrateTermId)
+	{
+		Check.assumeGreaterThanZero(flatrateTermId, "flatrateTermId");
+		return load(flatrateTermId, I_C_Flatrate_Term.class);
+	}
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
@@ -114,7 +129,18 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	@Cached
+	public List<I_C_Flatrate_Term> retrieveTerms(@NonNull final TermsQuery query)
+	{
+		final ImmutableList<Integer> bPartnerIds = query.getBillPartnerIds().stream().map(BPartnerId::getRepoId).collect(ImmutableList.toImmutableList());
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(query.getDateOrdered());
+		final int m_Product_Category_ID = ProductCategoryId.toRepoId(query.getProductCategoryId());
+		final int m_Product_ID = ProductId.toRepoId(query.getProductId());
+		final int c_Charge_ID = ChargeId.toRepoId(query.getChargeId());
+
+		return retrieveTerms(Env.getCtx(), bPartnerIds, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, ITrx.TRXNAME_None);
+	}
+
+	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(
 			final @CacheCtx Properties ctx,
 			final int bill_BPartner_ID,
@@ -124,36 +150,64 @@ public class FlatrateDAO implements IFlatrateDAO
 			final int c_Charge_ID,
 			final @CacheTrx String trxName)
 	{
-		final IQueryBuilder<I_C_Flatrate_Matching> matchingQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter();
-		if (m_Product_Category_ID > 0)
+		return retrieveTerms(ctx, ImmutableList.of(bill_BPartner_ID), dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
+	}
+
+	@Cached
+	public List<I_C_Flatrate_Term> retrieveTerms(
+			final @CacheCtx Properties ctx,
+			final ImmutableList<Integer> bPartnerIds,
+			final Timestamp dateOrdered,
+			final int m_Product_Category_ID,
+			final int m_Product_ID,
+			final int c_Charge_ID,
+			final @CacheTrx String trxName)
+	{
+		final boolean filterByProductCategory = m_Product_Category_ID > 0;
+		final boolean filterByCharge = c_Charge_ID > 0;
+		final boolean filterByProduct = m_Product_ID > 0;
+
+		boolean filterByMatchingRecord = filterByProductCategory || filterByProduct || filterByCharge;
+		final IQueryBuilder<I_C_Flatrate_Conditions> fcQueryBuilder;
+		if (filterByMatchingRecord)
 		{
-			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			final IQueryBuilder<I_C_Flatrate_Matching> matchingQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+					.addOnlyActiveRecordsFilter();
+			if (filterByProductCategory)
+			{
+				matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			}
+			if (filterByProduct)
+			{
+				matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
+			}
+			if (filterByCharge)
+			{
+				matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			}
+			fcQueryBuilder = matchingQueryBuilder
+					.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class);
 		}
-		if (m_Product_ID > 0)
+		else
 		{
-			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
-		}
-		if (c_Charge_ID > 0)
-		{
-			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			fcQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class);
 		}
 
-		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder
-				.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class)
+		fcQueryBuilder
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
 				.create();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bill_BPartner_ID)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerIds)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOrdered)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateOrdered)
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, fcQuery)
-				.orderBy().addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, fcQueryBuilder.create())
+				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.create()
 				.list();
 	}
@@ -343,7 +397,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=? ");
 		params.add(dataEntryType);
 
-		if (uomId != null)
+		if (uomId != null && UomId.toRepoId(uomId) > 0)
 		{
 			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=? ");
 			params.add(uomId);
@@ -571,7 +625,13 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Term retrieveNonSimTermOrNull(final I_C_Invoice_Candidate ic)
+	public List<I_C_Flatrate_Term> retrieveTerms(@NonNull final Collection<FlatrateTermId> flatrateTermIds)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(flatrateTermIds, I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public I_C_Flatrate_Term retrieveNonSimTermOrNull(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final List<I_C_Flatrate_Term> terms = retrieveTerms(ic);
 
@@ -880,11 +940,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
-				.fetchInvoiceCandidates(
-						getCtx(contract),
-						I_C_Flatrate_Term.Table_Name,
-						contract.getC_Flatrate_Term_ID(),
-						getTrxName(contract));
+				.retrieveReferencing(TableRecordReference.of(contract));
 
 		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
 				.stream()

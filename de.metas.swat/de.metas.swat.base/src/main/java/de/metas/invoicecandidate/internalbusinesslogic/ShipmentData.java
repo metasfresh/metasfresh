@@ -58,7 +58,7 @@ public class ShipmentData
 
 	Quantity qtyCatch;
 
-	List<ShippedQtyItem> shippedQtyItems;
+	List<DeliveredQtyItem> deliveredQtyItems;
 
 	@Builder
 	@JsonCreator
@@ -67,14 +67,14 @@ public class ShipmentData
 			@JsonProperty("qtyInStockUom") @NonNull Quantity qtyInStockUom,
 			@JsonProperty("qtyNominal") @NonNull Quantity qtyNominal,
 			@JsonProperty("qtyCatch") @Nullable Quantity qtyCatch,
-			@JsonProperty("shippedQtyItems") @Singular List<ShippedQtyItem> shippedQtyItems)
+			@JsonProperty("deliveredQtyItems") @Singular List<DeliveredQtyItem> deliveredQtyItems)
 	{
 		this.productId = productId;
-		this.empty = shippedQtyItems.isEmpty();
+		this.empty = deliveredQtyItems.isEmpty();
 		this.qtyInStockUom = qtyInStockUom;
 		this.qtyNominal = qtyNominal;
 		this.qtyCatch = qtyCatch;
-		this.shippedQtyItems = shippedQtyItems;
+		this.deliveredQtyItems = deliveredQtyItems;
 	}
 
 	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)

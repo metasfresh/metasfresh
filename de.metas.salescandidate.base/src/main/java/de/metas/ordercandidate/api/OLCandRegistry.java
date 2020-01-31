@@ -1,9 +1,11 @@
 package de.metas.ordercandidate.api;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,7 @@ import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.NullOLCandListener;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -60,7 +63,12 @@ public class OLCandRegistry
 				? new CompositeOLCandGroupingProvider(groupingValuesProviders)
 				: NullOLCandGroupingProvider.instance;
 
-		final List<IOLCandValidator> validators = optionalValidators.orElse(ImmutableList.of());
+		// sort validators by their SeqNo because the default validator sets UOMs that the PIIP validator then uses.
+		final List<IOLCandValidator> validators = optionalValidators
+				.orElse(ImmutableList.of())
+				.stream()
+				.sorted(Comparator.comparing(IOLCandValidator::getSeqNo))
+				.collect(ImmutableList.toImmutableList());
 		this.validators = !validators.isEmpty()
 				? new CompositeOLCandValidator(validators)
 				: NullOLCandValidator.instance;
@@ -132,10 +140,17 @@ public class OLCandRegistry
 	{
 		public static final transient NullOLCandValidator instance = new NullOLCandValidator();
 
+		/** @return {@code 0} */
 		@Override
-		public boolean validate(final I_C_OLCand olCand)
+		public int getSeqNo()
 		{
-			return true;
+			return 0;
+		}
+
+		@Override
+		public void validate(final I_C_OLCand olCand)
+		{
+			// nothing to do
 		}
 	}
 
@@ -143,23 +158,41 @@ public class OLCandRegistry
 	{
 		private final ImmutableList<IOLCandValidator> validators;
 
-		private CompositeOLCandValidator(final List<IOLCandValidator> validators)
+		private CompositeOLCandValidator(@NonNull final List<IOLCandValidator> validators)
 		{
 			this.validators = ImmutableList.copyOf(validators);
 		}
 
+		/** @return {@code 0}. Actually, it doesn't matte for this validator. */
 		@Override
-		public boolean validate(final I_C_OLCand olCand)
+		public int getSeqNo()
+		{
+			return 0;
+		}
+
+		/**
+		 * Change {@link I_C_OLCand#COLUMN_IsError IsError} and {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg} accordingly, but <b>do not</b> save.
+		 */
+		@Override
+		public void validate(@NonNull final I_C_OLCand olCand)
 		{
 			for (final IOLCandValidator olCandValdiator : validators)
 			{
-				if (!olCandValdiator.validate(olCand))
+				try
 				{
-					return false;
+					olCandValdiator.validate(olCand);
+				}
+				catch (final Exception e)
+				{
+					final AdempiereException me = AdempiereException
+							.wrapIfNeeded(e)
+							.appendParametersToMessage()
+							.setParameter("OLCandValidator", olCandValdiator.getClass().getSimpleName());
+					olCand.setIsError(true);
+					olCand.setErrorMsg(me.getLocalizedMessage());
+					break;
 				}
 			}
-			return true;
 		}
 	}
-
 }

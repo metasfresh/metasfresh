@@ -92,8 +92,8 @@ public class C_Flatrate_Term
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_M_Product_ID, flatrateTerm.getM_Product_ID())
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, flatrateTerm.getBill_BPartner_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, flatrateTerm.getM_Product_ID())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, flatrateTerm.getBill_BPartner_ID())
 				.filter(dateToInvoiceEffectiveFilter)
 				.create();
 	}
