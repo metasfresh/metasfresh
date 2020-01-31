@@ -37,7 +37,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -142,6 +141,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
@@ -193,11 +193,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// task 08927
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(Boolean.class);
 
-	/** @task 08451 */
-	private static final LocalDate DATE_TO_INVOICE_MAX_DATE = LocalDate.of(9999, Month.DECEMBER, 31); // NOTE: not using LocalDate.MAX because we want to convert it to Timestamp
+	/**
+	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
+	 * @task 08451 */
+	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
 
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -221,17 +224,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void set_DateToInvoice_DefaultImpl(final I_C_Invoice_Candidate ic)
 	{
-		final LocalDate dateToInvoice = computeDateToInvoice(ic);
-		ic.setDateToInvoice(TimeUtil.asTimestamp(dateToInvoice));
+		final Timestamp dateToInvoice = computeDateToInvoice(ic);
+		ic.setDateToInvoice(dateToInvoice);
 	}
 
-	private LocalDate computeDateToInvoice(final I_C_Invoice_Candidate ic)
+	private Timestamp computeDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		switch (invoiceRule)
 		{
 			case Immediate:
-				return TimeUtil.asLocalDate(ic.getDateOrdered());
+				return ic.getDateOrdered();
 
 			case AfterDelivery:
 				return computedateToInvoiceBasedOnDeliveryDate(ic);
@@ -257,7 +260,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					{
 						final InvoiceScheduleRepository invoiceScheduleRepository = SpringContextHolder.instance.getBean(InvoiceScheduleRepository.class);
 						final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(ic.getC_InvoiceSchedule());
-						return invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
+						final LocalDate nextDateToInvoice = invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
+						return TimeUtil.asTimestamp(nextDateToInvoice, orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID())));
 					}
 				}
 			default:
@@ -265,10 +269,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private LocalDate computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate ic)
+	private Timestamp computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// if there is no delivery yet, then we set the date to the far future
-		final LocalDate deliveryDate = TimeUtil.asLocalDate(ic.getDeliveryDate());
+		final Timestamp deliveryDate = ic.getDeliveryDate();
 		return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
 	}
 
@@ -305,8 +309,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (invoiceSched.isAmount())
 		{
-			final Timestamp dateToday = getToday();
-
+			final LocalDate dateToday = getToday();
 			final BigDecimal actualAmt = invoiceCandDAO.retrieveInvoicableAmount(partner, dateToday);
 
 			if (actualAmt.compareTo(invoiceSched.getAmt()) < 0)
@@ -838,9 +841,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// flagged via field color
 		// ignore candidates that can't be invoiced yet
-		final Timestamp dateToInvoice = getDateToInvoice(ic);
+		final LocalDate dateToInvoice = getDateToInvoice(ic);
 		if (!ignoreInvoiceSchedule
-				&& (dateToInvoice == null || dateToInvoice.after(getToday())))
+				&& (dateToInvoice == null || dateToInvoice.isAfter(getToday())))
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
@@ -1026,7 +1029,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public Timestamp getDateToInvoice(final I_C_Invoice_Candidate ic)
+	public LocalDate getDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
+	}
+
+	/** For class-internal use */
+	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
 		if (dateToInvoiceOverride != null)
@@ -1784,13 +1793,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public Timestamp getToday()
+	public LocalDate getToday()
 	{
 		// NOTE: use login date if available
 		final Properties ctx = Env.getCtx();
-		final Timestamp today = Env.getDate(ctx);
-		return today;
-		// return SystemTime.asDayTimestamp();
+		return Env.getLocalDate(ctx);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -25,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Properties;
 import java.util.Set;
 
@@ -302,25 +304,48 @@ import lombok.NonNull;
 			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
 		}
 
+		// Note: we set dateInvoiced and updateDateAcct *before* enqueuing, because they are always relevant for aggregation (no matter which aggregation rules we choose)
+		// That means that they may cause ICs to end up in the same package or in different packages.
+		// If nothing else, to change this after enqueuing would lead to trouble with IInvoiceCandidatesChangesChecker, if the change has effects of that aggregation.
+
+		//
+		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
+		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
+		// This is critical because we assume that dateInvoiced is *implicitly* part of the aggregation key, so different values would fail the invoicing
+		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final LocalDate paramDateInvoiced = invoicingParams.getDateInvoiced();
+		if (paramDateInvoiced != null)
+		{
+			invoiceCandDAO.updateDateInvoiced(paramDateInvoiced, selectionId);
+		}
+
+		//
+		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
+		// task 08628: same as for dateInvoiced
+		final LocalDate paramDateAcct = coalesce(invoicingParams.getDateAcct(), paramDateInvoiced);
+		if (paramDateAcct != null)
+		{
+			invoiceCandDAO.updateDateAcct(paramDateAcct, selectionId);
+		}
+
 		//
 		// Update POReference (task 07978)
-		final String poReference = getInvoicingParams().getPOReference();
+		final String poReference = invoicingParams.getPOReference();
 		if (!Check.isEmpty(poReference, true))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
 		}
 
 		// issue https://github.com/metasfresh/metasfresh/issues/3809
-		if (getInvoicingParams().isSupplementMissingPaymentTermIds())
+		if (invoicingParams.isSupplementMissingPaymentTermIds())
 		{
 			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
 	}
 
+	/** NOTE: we designed this method for the case of enqueuing a big number of invoice candidates. */
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
-		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
-
 		return () -> {
 			final Properties ctx = getCtx();
 			trxManager.assertThreadInheritedTrxExists();
