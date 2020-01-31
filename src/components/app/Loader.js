@@ -1,24 +1,23 @@
-import React, { Component } from 'react';
+import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import PropTypes from 'prop-types';
 
 /**
- * @file Class based component.
+ * @file Fnct component.
  * @module Loader
- * @extends Component
  */
-class Loader extends Component {
-  constructor(props) {
-    super(props);
-  }
+const Loader = props => {
+  const { loaderType } = props;
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  render() {
-    return (
-      <div className="order-list-loader text-center">
+  return (
+    <div
+      className={
+        loaderType
+          ? 'd-flex justify-content-center'
+          : 'order-list-loader text-center'
+      }
+    >
+      {!loaderType && (
         <ReactCSSTransitionGroup
           transitionName="rotate"
           transitionEnterTimeout={1000}
@@ -28,9 +27,22 @@ class Loader extends Component {
             <i className="meta-icon-settings" />
           </div>
         </ReactCSSTransitionGroup>
-      </div>
-    );
-  }
-}
+      )}
+      {loaderType && loaderType === 'bootstrap' && (
+        <div className="spinner-border text-success" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default Loader;
+
+Loader.propTypes = {
+  loaderType: PropTypes.string,
+};
+
+Loader.defaultProps = {
+  loaderType: null,
+};

@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
 import MasterWidget from './widget/MasterWidget';
+import Loader from './app/Loader';
 
 /**
  * @file Class based component.
@@ -50,10 +51,14 @@ class Process extends Component {
    * @todo Write the documentation
    */
   render() {
-    const { data, layout, type } = this.props;
+    const { data, layout, type, disabled } = this.props;
     return (
       <div key="window" className="window-wrapper process-wrapper">
-        {layout && layout.elements && this.renderElements(layout, data, type)}
+        {disabled && <Loader loaderType="bootstrap" />}
+        {!disabled &&
+          layout &&
+          layout.elements &&
+          this.renderElements(layout, data, type)}
       </div>
     );
   }
