@@ -11,6 +11,7 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -58,18 +59,19 @@ public class InvoiceCandidateFixtureHelper
 
 	public static void createRequiredMasterdata()
 	{
-		final I_C_UOM stockUomRecord = newInstance(I_C_UOM.class);
+		final I_C_UOM stockUomRecord = BusinessTestHelper.createUOM("STOCK_UOM");
 		stockUomRecord.setC_UOM_ID(STOCK_UOM_ID.getRepoId());
 		saveRecord(stockUomRecord);
 
-		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("PRODUCT", stockUomRecord);
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
-		productRecord.setC_UOM_ID(STOCK_UOM_ID.getRepoId());
 		saveRecord(productRecord);
 
-		final I_C_UOM icUOMRecord = newInstance(I_C_UOM.class);
+		final I_C_UOM icUOMRecord = BusinessTestHelper.createUOM("DELIVERY_UOM");
 		icUOMRecord.setC_UOM_ID(DELIVERY_UOM_ID.getRepoId());
 		saveRecord(icUOMRecord);
+
+		BusinessTestHelper.createUOMConversion(productRecord, stockUomRecord, icUOMRecord, new BigDecimal("2"), new BigDecimal("0.5"));
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());

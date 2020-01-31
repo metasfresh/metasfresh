@@ -25,11 +25,14 @@ package de.metas.invoicecandidate.modelvalidator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_BPartner;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Validator(I_C_BPartner.class)
 public class C_BPartner
@@ -38,29 +41,31 @@ public class C_BPartner
 	/**
 	 * If <code>C_InvoiceSchedule_ID</code> changes, then this MV calls {@link IInvoiceCandDAO#invalidateCandsForBPartnerInvoiceRule(org.compiere.model.I_C_BPartner)} to invalidate those ICs that
 	 * might be concerned by the change.
-	 *
-	 * @param bPartner
-	 * @throws Exception
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_InvoiceSchedule_ID })
-	public void onInvoiceRuleChange(final I_C_BPartner bPartner) throws Exception
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,//
+			ifColumnsChanged = I_C_BPartner.COLUMNNAME_C_InvoiceSchedule_ID)
+	public void onInvoiceRuleChange(@NonNull final I_C_BPartner bPartnerRecord) throws Exception
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		try (final MDCCloseable bPartnerRecordMDC = TableRecordMDC.putTableRecordReference(bPartnerRecord))
+		{
+			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		final BPartnerId bpartnerid = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
-		invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(bpartnerid);
+			final BPartnerId bpartnerid = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
+			invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(bpartnerid);
+		}
 	}
 
 	/**
 	 * Invalidate all invoice candidates of given partner, in case the header/line aggregation definitions were changed.
-	 *
-	 * @param bpartner
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			I_C_BPartner.COLUMNNAME_PO_Invoice_Aggregation_ID, I_C_BPartner.COLUMNNAME_PO_InvoiceLine_Aggregation_ID, I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID, I_C_BPartner.COLUMNNAME_SO_InvoiceLine_Aggregation_ID })
-	public void onInvoiceAggregationChanged(final I_C_BPartner bpartner)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,//
+			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_PO_Invoice_Aggregation_ID, I_C_BPartner.COLUMNNAME_PO_InvoiceLine_Aggregation_ID, I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID, I_C_BPartner.COLUMNNAME_SO_InvoiceLine_Aggregation_ID })
+	public void onInvoiceAggregationChanged(@NonNull final I_C_BPartner bPartnerRecord)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		invoiceCandDAO.invalidateCandsForBPartner(bpartner);
+		try (final MDCCloseable bPartnerRecordMDC = TableRecordMDC.putTableRecordReference(bPartnerRecord))
+		{
+			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+			invoiceCandDAO.invalidateCandsForBPartner(bPartnerRecord);
+		}
 	}
 }

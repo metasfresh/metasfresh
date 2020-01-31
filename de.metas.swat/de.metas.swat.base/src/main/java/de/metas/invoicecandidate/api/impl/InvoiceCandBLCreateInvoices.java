@@ -917,7 +917,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	/**
-	 *
 	 * @param affectedCands the invoice candidates for which an invoice line creation has failed. Note that an aggregator can create one {@link IInvoiceLineRW} from multiple candidates.
 	 */
 	private List<I_AD_Note> createNoticesAndMarkICs(

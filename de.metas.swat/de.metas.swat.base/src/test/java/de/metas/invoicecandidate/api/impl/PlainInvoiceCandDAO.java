@@ -99,7 +99,7 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 
 			totalAmt = totalAmt.add(netAmtToInvoiceConv);
 
-			logger.debug("netAmtToInvoice=" + netAmtToInvoice + ", netAmtToInvoiceConv=" + netAmtToInvoiceConv + " => total=" + totalAmt + " (ic=" + ic + ")");
+			logger.debug("netAmtToInvoice=" + netAmtToInvoice + ", netAmtToInvoiceConv=" + netAmtToInvoiceConv + " -> total=" + totalAmt + " (ic=" + ic + ")");
 		}
 
 		return totalAmt;
