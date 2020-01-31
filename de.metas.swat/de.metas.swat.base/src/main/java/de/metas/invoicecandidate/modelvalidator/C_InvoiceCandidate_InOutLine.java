@@ -53,7 +53,7 @@ public class C_InvoiceCandidate_InOutLine
 	public void updateInvoiceCandidate(I_C_InvoiceCandidate_InOutLine icIlaRecord)
 	{
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icIlaRecord.getC_Invoice_Candidate_ID());
-		try (final MDCCloseable icMDC = TableRecordMDC.withTableRecordReference(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId);)
+		try (final MDCCloseable icMDC = TableRecordMDC.putTableRecordReference(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId);)
 		{
 			// load the invoice candidate with all relevant data
 			final InvoiceCandidate invoiceCandidate = invoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(icIlaRecord.getC_Invoice_Candidate_ID()));

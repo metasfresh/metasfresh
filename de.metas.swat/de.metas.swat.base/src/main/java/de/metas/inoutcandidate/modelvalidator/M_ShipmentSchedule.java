@@ -201,7 +201,7 @@ public class M_ShipmentSchedule
 				.build();
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.invalidateStorageSegment(storageSegment);
+		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(storageSegment);
 	}
 
 	/**
@@ -233,7 +233,7 @@ public class M_ShipmentSchedule
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the sched itself is invalidated
+		invalidSchedulesService.flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the sched itself is invalidated
 		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(schedule);
 	}
 
@@ -255,7 +255,7 @@ public class M_ShipmentSchedule
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.invalidateForHeaderAggregationKeys(headerAggregationKeys);
+		invalidSchedulesInvalidator.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
 	}
 
 	/**

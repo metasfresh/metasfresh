@@ -160,14 +160,6 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(scheduleRecord);
-		if (qtyToDeliver.signum() <= 0)
-		{
-			throw new AdempiereException("M_ShipmentSchedule_ID=" + scheduleRecord.getM_ShipmentSchedule_ID() + " was enqueued, but now it doesn not have any quantity to deliver anymore.")
-					.appendParametersToMessage()
-					.setParameter("qtyToDeliver", qtyToDeliver)
-					.setParameter("M_ShipmentSchedule", scheduleRecord)
-					.markAsUserValidationError();
-		}
 
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
 		if (pickAvailableHUsOnTheFly)
@@ -175,14 +167,6 @@ public class ShipmentScheduleWithHUService
 			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
-				if (qtyToDeliver.signum() <= 0)
-				{
-					throw new AdempiereException("M_ShipmentSchedule_ID=" + scheduleRecord.getM_ShipmentSchedule_ID() + " was enqueued for shipping, but now it has no quantity to deliver anymore.")
-							.appendParametersToMessage()
-							.setParameter("qtyToDeliver", qtyToDeliver)
-							.setParameter("M_ShipmentSchedule", scheduleRecord)
-							.markAsUserValidationError();
-				}
 				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
 			}
 			else
@@ -255,12 +239,21 @@ public class ShipmentScheduleWithHUService
 			@NonNull final Quantity qtyToDeliver,
 			@NonNull final IHUContext huContext)
 	{
+		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
+
+		if (qtyToDeliver.signum() <= 0)
+		{
+			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do");
+			return ImmutableList.of();
+		}
+
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(scheduleRecord, true/* considerAttributes */);
 
 		final boolean isHuStorageQuery = storageQuery instanceof HUStorageQuery;
 		if (!isHuStorageQuery)
 		{
+			loggableWithLogger.addLog("pickHUsOnTheFly - ShipmentSchedule's storageQuery is not a HUStorageQuery; nothing to do");
 			return ImmutableList.of();
 		}
 
@@ -292,9 +285,7 @@ public class ShipmentScheduleWithHUService
 			}
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
-
-			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-			loggable.addLog("QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			// split a part out of the current HU
 			final HUsToNewCUsRequest request = HUsToNewCUsRequest
@@ -312,7 +303,7 @@ public class ShipmentScheduleWithHUService
 			for (final I_M_HU newHURecord : newHURecords)
 			{
 				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
-				loggable.addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
+				loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
 				Quantity catchQtyOverride = null;
 				if (firstHU)
@@ -335,7 +326,6 @@ public class ShipmentScheduleWithHUService
 						huContext,
 						anonymousTuPickedOnTheFly));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
-
 			}
 
 			if (remainingQtyToAllocate.signum() <= 0)

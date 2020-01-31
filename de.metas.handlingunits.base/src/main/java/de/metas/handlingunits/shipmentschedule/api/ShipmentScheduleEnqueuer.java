@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -38,8 +40,12 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
@@ -55,6 +61,8 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -67,15 +75,15 @@ import lombok.Value;
  *
  * TODO there is duplicated code from <code>de.metas.invoicecandidate.api.impl.InvoiceCandidateEnqueuer</code>. Please deduplicate it when there is time. my favorite solution would be to create a
  * "locking item-chump-processor" to do all the magic.
- *
- *
- * @author ts
- *
  */
 public class ShipmentScheduleEnqueuer
 {
+
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEnqueuer.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
@@ -94,14 +102,8 @@ public class ShipmentScheduleEnqueuer
 	 * Creates async work packages for shipment schedule found by given filter.
 	 *
 	 * This method will group the shipment schedules by header aggregation key and it will enqueue a working package for each header aggregation key.
-	 *
-	 * @param ctx
-	 * @param adPInstanceId
-	 * @param useQtyPickedRecords
-	 * @param adPinstanceId may be 0.
-	 * @param completeShipments
 	 */
-	public Result createWorkpackages(final ShipmentScheduleWorkPackageParameters workPackageParameters)
+	public Result createWorkpackages(@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters)
 	{
 		final String trxNameInitial = getTrxNameInitial();
 
@@ -115,11 +117,9 @@ public class ShipmentScheduleEnqueuer
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-
 				final ILock mainLock = acquireLock(adPInstanceId, queryFilters);
 				try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(localTrxName))
 				{
-
 					final Result result0 = createWorkpackages0(
 							PlainContextAware.newWithTrxName(_ctx, localTrxName),
 							workPackageParameters,
@@ -145,16 +145,15 @@ public class ShipmentScheduleEnqueuer
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 
-		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = queryBuilder
-				.create()
+		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
+		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = query
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_M_ShipmentSchedule.class);
 
 		if (!shipmentSchedules.hasNext())
 		{
-			// TODO: the the query which was used to understand why there were no results
-			throw new AdempiereException("@NoSelection@");
+			throw new AdempiereException("@NoSelection@").appendParametersToMessage().setParameter("query", query);
 		}
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
@@ -173,10 +172,13 @@ public class ShipmentScheduleEnqueuer
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
+			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule))
+			{
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
-			if (invalidSchedulesService.isInvalid(shipmentScheduleId))
+				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
 			{
+					logger.debug("shipmentScheduleId={} is flagged for recompute; won't enqueue the current workpackage");
 				doEnqueueCurrentPackage = false;
 			}
 
@@ -197,6 +199,7 @@ public class ShipmentScheduleEnqueuer
 			{
 				workpackageBuilder = blockBuilder
 						.newWorkpackage()
+							.setUserInChargeId(Env.getAD_User_ID())
 						.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 						.bindToTrxName(localCtx.getTrxName());
 
@@ -220,6 +223,7 @@ public class ShipmentScheduleEnqueuer
 			// Enqueue shipmentSchedule to current workpackage
 			workpackageBuilder.addElement(shipmentSchedule);
 		}
+		}
 
 		//
 		// Close last workpackage (if any, and if there was no error)
@@ -229,7 +233,7 @@ public class ShipmentScheduleEnqueuer
 	}
 
 	private void handleAllSchedsAdded(
-			IWorkPackageBuilder workpackageBuilder,
+			@Nullable final IWorkPackageBuilder workpackageBuilder,
 			String lastHeaderAggregationKey,
 			boolean noSchedsAreToRecompute,
 			Result result)
@@ -247,7 +251,8 @@ public class ShipmentScheduleEnqueuer
 		}
 		else
 		{
-			Loggables.addLog(Services.get(IMsgBL.class).parseTranslation(
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					msgBL.parseTranslation(
 					_ctx,
 					"@Skip@ @" + I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey + "@=" + lastHeaderAggregationKey + ": "
 							+ "@" + I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute + "@ = @Yes@"));
@@ -329,7 +334,7 @@ public class ShipmentScheduleEnqueuer
 
 		@NonNull
 		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
-		
+
 		@NonNull
 		private M_ShipmentSchedule_QuantityTypeToUse quantityType;
 		private boolean completeShipments;
