@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { merge } from 'lodash';
@@ -11,8 +11,9 @@ import {
 import TableCell from './TableCell';
 import { shouldRenderColumn } from '../../utils/tableHelpers';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
+import _ from 'lodash';
 
-class TableItem extends PureComponent {
+class TableItem extends Component {
   constructor(props) {
     super(props);
 
@@ -38,7 +39,22 @@ class TableItem extends PureComponent {
       editedCells: {},
       multilineText,
       multilineTextLines,
+      [this.props.rowId]: this.props,
     };
+  }
+
+  shouldComponentUpdate(nextProps) {
+    if (
+      !_.isEqual(
+        _.omit(nextProps, 'dataHash'),
+        _.omit(this.state[nextProps.rowId], 'dataHash')
+      ) &&
+      nextProps.selected[0] === this.props.rowId
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   componentDidUpdate(prevProps) {
