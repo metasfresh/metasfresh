@@ -93,6 +93,27 @@ class BankStatementPaymentBLTest
 	class ExistingPayments
 	{
 		@Test
+		void vendorOneMatchingPaymentExists_DifferentInvoiceOnBSL()
+		{
+			// TODO tbp: check with mark in a followup task about this usecase.
+			//   here is a draft of the data required to test
+			//   outgoing payment:
+			// 		there is invoice for vendor: no. 1111
+			// 		payment is allocated completely against invoice
+			// 		amount 169.09 (same as BSL)
+			// 		curency ok
+			// 		bpartner ok
+			// 		NOT reconciled!
+			//	 ====================
+			// 	 BankStatementLine:
+			// 		same bpartner as Invoice 1111
+			//		amount = 169.09 (same as payment)
+			// 		reference = 2222 (this invoice number is different from the one on the payment!!!!!!!!)
+			//	 ====================
+			// 	 => outcome: should not auto-link the payment, since the invoices are wrong
+		}
+
+		@Test
 		void OneMatchingPaymentExists_SoItIsLinked()
 		{
 			//
