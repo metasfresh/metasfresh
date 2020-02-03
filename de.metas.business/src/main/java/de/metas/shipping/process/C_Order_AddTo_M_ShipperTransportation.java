@@ -1,4 +1,4 @@
-package de.metas.order.process;
+package de.metas.shipping.process;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
