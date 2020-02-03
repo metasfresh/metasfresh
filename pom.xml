@@ -6,6 +6,7 @@
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<relativePath>../metasfresh-parent</relativePath>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
@@ -197,6 +198,12 @@
 	<dependencyManagement>
 		<dependencies>
 
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.10</version>
+			</dependency>
+			
 			<dependency>
 				<groupId>com.mchange</groupId>
 				<artifactId>c3p0</artifactId>

@@ -26,7 +26,7 @@ public class M_InOut
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
 	public void updateEdiStatus(final I_M_InOut document)
 	{
-		try (final MDCCloseable inOutMDC = TableRecordMDC.withTableRecordReference(document))
+		try (final MDCCloseable inOutMDC = TableRecordMDC.putTableRecordReference(document))
 		{
 			if (Services.get(IHUInOutBL.class).isCustomerReturn(document))
 			{

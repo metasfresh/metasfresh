@@ -25,6 +25,8 @@ package de.metas.report.server;
  * #L%
  */
 
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Jasper report output type
@@ -68,5 +70,20 @@ public enum OutputType
 	public String getFileExtension()
 	{
 		return fileExtension;
+	}
+
+	/**
+	 * @return {@link OutputType} for the given file extension.
+	 */
+	public static Optional<OutputType> getOutputTypeByFileExtension(final String fileExtension )
+	{
+		return Stream.of( values() )
+				.filter( v -> v.getFileExtension().equalsIgnoreCase(fileExtension) )
+				.findFirst();
+	}
+
+	public static OutputType getDefault()
+	{
+		return OutputType.PDF;
 	}
 }

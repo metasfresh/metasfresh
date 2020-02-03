@@ -46,6 +46,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
@@ -112,6 +113,7 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -238,12 +240,17 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		config_StandardDocTypes();
 		config_Pricing();
 
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
-		InterfaceWrapperHelper.save(org);
-		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+		final I_AD_Org orgRecord = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
+		InterfaceWrapperHelper.save(orgRecord);
+		orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+
+		final I_AD_OrgInfo orgInfoRecord = newInstance(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		saveRecord(orgInfoRecord);
 
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, trxName);
-		warehouse.setAD_Org_ID(org.getAD_Org_ID());
+		warehouse.setAD_Org_ID(orgRecord.getAD_Org_ID());
 		InterfaceWrapperHelper.save(warehouse);
 		warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
@@ -476,6 +483,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	public final C_Invoice_Candidate_Builder createInvoiceCandidate()
 	{
 		return new C_Invoice_Candidate_Builder(this)
+				.setOrgId(orgId)
 				// Set defaults (backward compatibility with existing tests)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")

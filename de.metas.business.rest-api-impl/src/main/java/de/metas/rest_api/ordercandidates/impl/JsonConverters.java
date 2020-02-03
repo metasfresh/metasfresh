@@ -4,6 +4,8 @@ import static de.metas.util.Check.isEmpty;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -225,8 +227,8 @@ class JsonConverters
 	}
 
 	private final JsonResponseBPartnerLocationAndContact toJson(
-			final BPartnerInfo bpartnerInfo,
-			final MasterdataProvider masterdataProvider)
+			@Nullable final BPartnerInfo bpartnerInfo,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		if (bpartnerInfo == null)
 		{
@@ -267,8 +269,8 @@ class JsonConverters
 				//
 				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
-				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
-				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo(), masterdataProvider))
+				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
+				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))

@@ -184,7 +184,7 @@ class OLCandOrderFactory
 
 		// if the olc has no value set, we are not falling back here!
 		// 05617
-		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
+		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo().orElse(null);
 		if (dropShipBPartner != null)
 		{
 			order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
@@ -198,7 +198,7 @@ class OLCandOrderFactory
 			order.setIsDropShip(false);
 		}
 
-		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
+		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo().orElse(null);
 		if (handOverBPartner != null)
 		{
 			order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
