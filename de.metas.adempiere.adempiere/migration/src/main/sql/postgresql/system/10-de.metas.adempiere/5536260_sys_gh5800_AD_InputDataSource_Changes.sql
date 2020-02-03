@@ -360,9 +360,9 @@ UPDATE AD_UI_Element SET SeqNo=70,Updated=TO_TIMESTAMP('2019-11-19 11:46:47','YY
 
 
 
-
-
-
+--# sort out a duplicated name that we have on a bunch of older systems
+UPDATE AD_InputDataSource SET Name='OrderCandidatesRestController' WHERE internalname='SOURCE.de.metas.ordercandidate.rest.OrderCandidatesRestController';
+UPDATE AD_InputDataSource SET Name='OrderCandidatesRestControllerImpl' WHERE internalname='SOURCE.de.metas.ordercandidate.rest.OrderCandidatesRestControllerImpl';
 
 
 

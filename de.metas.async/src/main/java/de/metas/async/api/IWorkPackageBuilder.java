@@ -56,7 +56,7 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
-	 * 
+	 *
 	 * @return parent builder
 	 */
 	IWorkPackageBlockBuilder end();
@@ -67,7 +67,7 @@ public interface IWorkPackageBuilder
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.
 	 */
 	IWorkPackageParamsBuilder parameters();
-	
+
 	default IWorkPackageBuilder parameter(final String parameterName, final Object parameterValue)
 	{
 		parameters().setParameter(parameterName, parameterValue);
@@ -91,10 +91,8 @@ public interface IWorkPackageBuilder
 	/**
 	 * Sets workpackage's user in charge.
 	 * This will be the user which will be notified in case the workpackage processing fails.
-	 * 
-	 * @param userInChargeId
 	 */
-	IWorkPackageBuilder setUserInChargeId(final int userInChargeId);
+	IWorkPackageBuilder setUserInChargeId(int userInChargeId);
 
 	/**
 	 * Adds given model to workpackage elements.
@@ -115,7 +113,7 @@ public interface IWorkPackageBuilder
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
-	 * 
+	 *
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 *
 	 * @param trxName
@@ -125,7 +123,7 @@ public interface IWorkPackageBuilder
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
-	 * 
+	 *
 	 * If there is no thread inherited transaction, the workpackage will be marked as ready immediately, on build.
 	 */
 	default IWorkPackageBuilder bindToThreadInheritedTrx()

@@ -50,6 +50,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -78,6 +79,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -101,7 +103,8 @@ import lombok.NonNull;
  */
 public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 {
-	//
+	private static final Logger logger = LogManager.getLogger(M_InOutLine_Handler.class);
+
 	// Services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 
@@ -794,7 +797,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return calculatePriceAndTax(ic, inoutLine);
 	}
 
-	public static PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine inoutLine)
+	public static PriceAndTax calculatePriceAndTax(
+			final I_C_Invoice_Candidate ic,
+			final org.compiere.model.I_M_InOutLine inoutLine)
 	{
 		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
 
@@ -827,36 +832,43 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.build();
 	}
 
-	private static IPricingResult calculatePricingResult(final org.compiere.model.I_M_InOutLine fromInOutLine)
+	private static IPricingResult calculatePricingResult(@NonNull final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		return inOutBL.getProductPrice(fromInOutLine);
 	}
 
-	public static PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine fromInOutLine)
+	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		try
 		{
-			final PriceAndTax priceAndTax = calculatePriceAndTax(ic, fromInOutLine);
-			IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndTax);
+			final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord, fromInOutLine);
+			IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			return priceAndTax;
 		}
 		catch (final ProductNotOnPriceListException e)
 		{
-			final boolean askForDeleteRegeneration = true; // ask for re-generation
-			setError(ic, e, askForDeleteRegeneration);
+			final boolean askForDeleteRegeneration = true; // ask user for re-generation in the error-message
+			setError(icRecord, e, askForDeleteRegeneration);
 			return null;
 		}
 		catch (final Exception e)
 		{
 			final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
-			setError(ic, e, askForDeleteRegeneration);
+			setError(icRecord, e, askForDeleteRegeneration);
 			return null;
 		}
 	}
 
-	private static final void setError(final I_C_Invoice_Candidate ic, final Exception ex, final boolean askForDeleteRegeneration)
+	private static final void setError(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final Exception ex,
+			final boolean askForDeleteRegeneration)
 	{
+
+		logger.debug("Set IsInDispute=true, because an error occured");
 		ic.setIsInDispute(true); // 07193 - Mark's request
 
 		final I_AD_Note note = null; // we don't have a note

@@ -54,47 +54,36 @@ public class NewManualInvoiceCandidate
 	private ExternalId externalHeaderId;
 	private ExternalId externalLineId;
 
-	@NonNull
-	private String poReference;
+	String poReference;
 
-	@NonNull
-	private BPartnerInfo billPartnerInfo;
+	BPartnerInfo billPartnerInfo;
 
-	@NonNull
-	private ProductId productId;
+	ProductId productId;
 
-	@NonNull
-	private InvoiceRule invoiceRuleOverride;
+	InvoiceRule invoiceRuleOverride;
 
-	@NonNull
-	private SOTrx soTrx;
+	SOTrx soTrx;
 
-	private LocalDate dateOrdered;
+	LocalDate dateOrdered;
 
-	private LocalDate presetDateInvoiced;
+	LocalDate presetDateInvoiced;
 
-	@NonNull
-	private StockQtyAndUOMQty qtyOrdered;
+	StockQtyAndUOMQty qtyOrdered;
 
-	@NonNull
-	private StockQtyAndUOMQty qtyDelivered;
+	StockQtyAndUOMQty qtyDelivered;
 
-	private UomId invoicingUomId;
+	UomId invoicingUomId;
 
 	/** If given, then productId and currencyId have to match! */
-	@Nullable
-	private ProductPrice priceEnteredOverride;
+	ProductPrice priceEnteredOverride;
 
-	@Nullable
-	private Percent discountOverride;
+	Percent discountOverride;
 
-	@Nullable
-	private DocTypeId invoiceDocTypeId;
+	DocTypeId invoiceDocTypeId;
 
-	private String lineDescription;
+	String lineDescription;
 
-	@Nullable
-	private List<InvoiceDetailItem> invoiceDetailItems;
+	List<InvoiceDetailItem> invoiceDetailItems;
 
 	private NewManualInvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -102,21 +91,21 @@ public class NewManualInvoiceCandidate
 			@NonNull final ExternalId externalHeaderId,
 			@NonNull final ExternalId externalLineId,
 
-			String poReference,
+			@Nullable final String poReference,
 			@NonNull final BPartnerInfo billPartnerInfo,
 			@NonNull final ProductId productId,
-			InvoiceRule invoiceRuleOverride,
+			@Nullable final InvoiceRule invoiceRuleOverride,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateOrdered,
-			LocalDate presetDateInvoiced,
+			@Nullable final LocalDate presetDateInvoiced,
 			@NonNull final StockQtyAndUOMQty qtyOrdered,
 			@NonNull final StockQtyAndUOMQty qtyDelivered,
 			@NonNull final UomId invoicingUomId,
-			ProductPrice priceEnteredOverride,
-			Percent discountOverride,
-			DocTypeId invoiceDocTypeId,
-			String lineDescription,
-			final List<InvoiceDetailItem> invoiceDetailItems)
+			@Nullable final ProductPrice priceEnteredOverride,
+			@Nullable final Percent discountOverride,
+			@Nullable final DocTypeId invoiceDocTypeId,
+			@Nullable final String lineDescription,
+			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
 

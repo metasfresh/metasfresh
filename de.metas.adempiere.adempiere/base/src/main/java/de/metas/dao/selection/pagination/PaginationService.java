@@ -77,7 +77,7 @@ public class PaginationService
 
 		final int actualPageSize = items.size();
 
-		logger.debug("Loaded next page: bufferSize={}, offset={} => {} records",
+		logger.debug("Loaded next page: bufferSize={}, offset={} -> {} records",
 				currentPageSize, currentPageDescriptor.getOffset(), actualPageSize);
 
 		// True when buffer contains as much data as was required. If this flag is false then it's a good indicator that we are on last page.
