@@ -60,14 +60,6 @@ public interface IBankStatementBL extends ISingletonService
 	 */
 	void handleAfterComplete(I_C_BankStatement bankStatement);
 
-	/**
-	 * If no payment exists and a bpartner is set, create a new Payment or use an existing Payment if paymentIdToSet param is not null,
-	 * and link the payment to the BankStatementLine.
-	 *
-	 * @param paymentIdToSet - if not null, don't create a new payment but link this one to the BankStatementLine
-	 * @return the current paymentId of the line if it has a payment, null if the line does not have a payment
-	 */
-	Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(@NonNull de.metas.banking.model.I_C_BankStatementLine line, @Nullable PaymentId paymentIdToSet);
 
 	/**
 	 * Handles:

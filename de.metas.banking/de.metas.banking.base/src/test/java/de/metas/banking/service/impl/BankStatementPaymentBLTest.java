@@ -31,6 +31,7 @@ import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.validator.C_BankStatement;
 import de.metas.banking.model.validator.C_BankStatementLine;
 import de.metas.banking.model.validator.C_BankStatementLine_Ref;
+import de.metas.banking.payment.impl.BankStatmentPaymentBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.engine.DocStatus;
@@ -57,9 +58,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class BankStatementBLTest
+class BankStatementPaymentBLTest
 {
-
 	private final Timestamp statementDate = SystemTime.asTimestamp();
 	private final String metasfreshIban = "123456";
 
@@ -135,8 +135,8 @@ class BankStatementBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatementBL testBankStatementBL = new BankStatementBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			final BankStatmentPaymentBL testBankStatementPaymentBL = new BankStatmentPaymentBL();
+			testBankStatementPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
 
 			//
 			// Checks
@@ -206,7 +206,7 @@ class BankStatementBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatementBL testBankStatementBL = new BankStatementBL();
+			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
 			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
 
 			//
@@ -258,7 +258,7 @@ class BankStatementBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatementBL testBankStatementBL = new BankStatementBL();
+			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
 			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
 
 			//
@@ -302,7 +302,7 @@ class BankStatementBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatementBL testBankStatementBL = new BankStatementBL();
+			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
 			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
 
 			//

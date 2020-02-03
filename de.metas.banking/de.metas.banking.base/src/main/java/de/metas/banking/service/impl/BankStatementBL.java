@@ -22,23 +22,22 @@ package de.metas.banking.service.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.api.BankAccountId;
-import de.metas.banking.api.IBPBankAccountDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.money.Money;
-import de.metas.payment.PaymentId;
-import de.metas.payment.TenderType;
-import de.metas.payment.api.DefaultPaymentBuilder;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
-import lombok.NonNull;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListener;
+import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -53,23 +52,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.IBankStatementDAO;
-import de.metas.banking.service.IBankStatementListener;
-import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyBL;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -106,140 +90,16 @@ public class BankStatementBL implements IBankStatementBL
 	public void handleAfterComplete(final I_C_BankStatement bankStatement)
 	{
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
 		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
-			findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(line);
+			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(line);
 			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
 		}
-	}
-
-	@VisibleForTesting
-	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(final I_C_BankStatementLine line)
-	{
-		final boolean manualActionRequired = findAndLinkPaymentToBankStatementLineIfPossible(line);
-
-		if (!manualActionRequired)
-		{
-			setOrCreateAndLinkPaymentToBankStatementLine(line, null);
-		}
-	}
-
-	@Override
-	public Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(@NonNull final I_C_BankStatementLine line, @Nullable final PaymentId paymentIdToSet)
-	{
-		// a payment is already linked
-		if (line.getC_Payment_ID() > 0)
-		{
-			return Optional.of(PaymentId.ofRepoId(line.getC_Payment_ID()));
-		}
-
-		if (paymentIdToSet != null)
-		{
-			line.setC_Payment_ID(paymentIdToSet.getRepoId());
-			InterfaceWrapperHelper.save(line);
-			return Optional.of(paymentIdToSet);
-		}
-
-		if (line.getC_BPartner_ID() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
-		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
-		final LocalDate statementLineDate = TimeUtil.asLocalDate(line.getStatementLineDate());
-
-		final Optional<BankAccountId> bankAccountIdOptional = Services.get(IBPBankAccountDAO.class).retrieveFirstIdByBPartnerAndCurrency(bpartnerId, currencyId);
-		if (!bankAccountIdOptional.isPresent())
-		{
-			return Optional.empty();
-		}
-
-		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
-		final BigDecimal payAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
-
-		final PaymentId createdPaymentId = createAndCompletePayment(bankAccountIdOptional.get(), statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
-		line.setC_Payment_ID(createdPaymentId.getRepoId());
-		InterfaceWrapperHelper.save(line);
-		return Optional.of(createdPaymentId);
-	}
-
-	/**
-	 * @return true if the automatic flow should STOP as manual action is required; false if the automatic flow should continue
-	 */
-	private boolean findAndLinkPaymentToBankStatementLineIfPossible(final I_C_BankStatementLine line)
-	{
-		// a payment is already linked
-		if (line.getC_Payment_ID() > 0)
-		{
-			return true;
-		}
-		if (line.getC_BPartner_ID() <= 0)
-		{
-			return true;
-		}
-
-		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
-		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
-
-		final Money money = Money.of(expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()));
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
-		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, bPartnerId, money);
-
-		// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
-		// The user must fix this case manually by choosing the correct Payment
-		if (possiblePayments.size() > 1)
-		{
-			return true;
-		}
-
-		if (possiblePayments.size() == 1)
-		{
-			line.setC_Payment_ID(possiblePayments.iterator().next().getRepoId());
-			InterfaceWrapperHelper.save(line);
-		}
-		return false;
-	}
-
-	private PaymentId createAndCompletePayment(
-			@NonNull final BankAccountId bankAccountId,
-			@NonNull final LocalDate dateAcct,
-			@NonNull final BigDecimal payAmt,
-			final boolean isReceipt,
-			@NonNull final OrgId adOrgId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final CurrencyId currencyId)
-	{
-		final DefaultPaymentBuilder paymentBuilder;
-
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-		if (isReceipt)
-		{
-			paymentBuilder = paymentBL.newInboundReceiptBuilder();
-		}
-		else
-		{
-			paymentBuilder = paymentBL.newOutboundPaymentBuilder();
-		}
-
-		final I_C_Payment payment = paymentBuilder
-				.adOrgId(adOrgId)
-				.bpartnerId(bpartnerId)
-				.bpBankAccountId(bankAccountId)
-				.currencyId(currencyId)
-				.payAmt(payAmt)
-				.dateAcct(dateAcct)
-				.dateTrx(dateAcct)
-				.description("Automatically created when BankStatement was completed.")
-				.tenderType(TenderType.DirectDeposit)
-				.createAndProcess();
-
-		return PaymentId.ofRepoId(payment.getC_Payment_ID());
 	}
 
 	private void reconcilePaymentsFromBankStatementLine_Ref(final IBankStatementDAO bankStatementDAO, final I_C_BankStatementLine line)
@@ -295,7 +155,7 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public void recalculateStatementLineAmounts(org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	public void recalculateStatementLineAmounts(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
 	{
 		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(bankStatementLine, I_C_BankStatementLine.class);
 		if (!bsl.isMultiplePaymentOrInvoice())
