@@ -41,17 +41,17 @@ const createInitialProps = function(basicFixtures = filtersFixtures.data1, addit
 
   return {
     ...basicFixtures,
-    ...additionalProps,
     resetInitialValues: jest.fn(),
     updateDocList: jest.fn(),
+    ...additionalProps,
     filterData: filtersToMap(filterData),
     filtersActive: filtersToMap(filtersActive),
     initialValuesNulled: Immutable.Map(initialValuesNulled),
   };
 };
 
-describe("Filters tests", () => {
-  it("renders without errors", () => {
+describe('Filters tests', () => {
+  it('renders without errors', () => {
     const dummyProps = createInitialProps();
     const initialState = createStore({ 
       windowHandler: {
@@ -75,7 +75,7 @@ describe("Filters tests", () => {
     expect(html).toContain(': Date');
   });
 
-  it("renders active filters caption", () => {
+  it('renders active filters caption', () => {
     const dummyProps = createInitialProps(undefined, { filtersActive: filtersFixtures.filtersActive1 });
     const initialState = createStore({ 
       windowHandler: {
@@ -99,7 +99,7 @@ describe("Filters tests", () => {
     expect(html).toContain('Akontozahlung, Completed');
   });
 
-  it("opens dropdown and filter details", () => {
+  it('opens dropdown and filter details', () => {
     const dummyProps = createInitialProps();
     const initialState = createStore({
       windowHandler: {
@@ -131,7 +131,7 @@ describe("Filters tests", () => {
   // as the widgets need an architecture overhaul, and filters should be moved to redux state
   describe('Temporary bloated filter tests', () => {
     // https://github.com/metasfresh/me03/issues/3649
-    it("clears list filters and applies without error", () => {
+    it('clears list filters and applies without error', () => {
       const dummyProps = createInitialProps(undefined, { filtersActive: filtersFixtures.filtersActive1 });
       const initialState = createStore({
         windowHandler: {
@@ -168,6 +168,69 @@ describe("Filters tests", () => {
 
       wrapper.update();
       expect(wrapper.find('.filters-overlay').length).toBe(0);
+    });
+
+    it('supports `false` values for checkbox widgets', () => {
+      const updateDocListListener = jest.fn();
+      const dummyProps = createInitialProps(
+        filtersFixtures.data2,
+        {
+          filtersActive: filtersFixtures.filtersActive2,
+          updateDocList: updateDocListListener,
+        }
+      );
+      const initialState = createStore({
+        windowHandler: {
+          allowShortcut: true,
+          modal: {
+            visible: false,
+          },
+        }
+      });
+      const store = mockStore(initialState)
+      const wrapper = mount(
+        <ShortcutProvider hotkeys={{}} keymap={{}} >
+          <Provider store={store}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
+
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      expect(wrapper.find('.filters-overlay').length).toBe(1);
+      expect(wrapper.find('.filter-option-default').length).toBe(0);
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+      expect(wrapper.find('.form-field-Processed .input-checkbox-tick.checked').length).toBe(1);
+
+      wrapper.find('.form-field-Processed input[type="checkbox"]').simulate('change', { target: { checked: false } })
+      wrapper.update();
+
+      expect(wrapper.find('.form-field-Processed .input-checkbox-tick.input-state-false').length).toBe(1);
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
+      wrapper.find('.filter-widget .filter-btn-wrapper .applyBtn').simulate('click');
+      wrapper.update();
+
+      const filterResult = Immutable.Map(
+        {
+          default: {
+            defaultVal: false,
+            filterId: 'default',
+            parameters: [
+              {
+                parameterName: 'Processed',
+                value: false,
+                valueTo: '',
+                defaultValue: null,
+                defaultValueTo: null,
+              },
+            ]
+          },
+        }
+      );
+
+      expect(updateDocListListener).toBeCalledWith(filterResult);
     });
   });
 });
