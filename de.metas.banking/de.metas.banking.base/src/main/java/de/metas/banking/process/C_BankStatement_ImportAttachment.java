@@ -31,7 +31,6 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.impexp.DataImportRequest;
-import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.process.IProcessPrecondition;
@@ -42,12 +41,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.api.Params;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_I_BankStatement;
-import org.compiere.util.DB;
 
 public class C_BankStatement_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
@@ -82,13 +79,6 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 			return ProcessPreconditionsResolution.reject(iMsgBL.getTranslatableMsgText(BANK_STATEMENT_MUST_BE_IN_PROGRESS_MSG));
 		}
 
-		// TODO tbp:
-		// check bpbank account,
-		//
-		// name ,
-		//
-		// statement date
-
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -98,7 +88,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
 
-		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
+		dataImportService.importData(DataImportRequest.builder()
 				.data(data)
 				.dataImportConfigId(HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID)
 				.clientId(getClientId())
