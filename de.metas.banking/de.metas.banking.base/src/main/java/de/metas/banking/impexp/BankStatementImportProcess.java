@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -79,9 +80,12 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
-		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt("C_BP_BankAccount_ID", -1);
+		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, -1);
+		final String bankStatementName = getParameters().getParameterAsString(I_I_BankStatement.COLUMNNAME_Name);
+		final Timestamp bankStatementDate = getParameters().getParameterAsTimestamp(I_I_BankStatement.COLUMNNAME_StatementDate);
+
 		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, selection);
-		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection);
+		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, bankStatementName, bankStatementDate);
 	}
 
 	@Override
@@ -163,14 +167,12 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	private int retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
-
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, importRecord.getC_BP_BankAccount_ID())
 				.create()
 				.firstId();
-
 	}
 
 	private void createUpdateBankStatementLine(final I_I_BankStatement importRecord)
@@ -202,6 +204,12 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		bankStatementLine.setImportedBillPartnerName(importRecord.getBill_BPartner_Name());
 		bankStatementLine.setImportedBillPartnerIBAN(importRecord.getIBAN_To());
 		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
+		 // TODO tbp: @teo: currently the bpartner is not set ot the line.
+		// 			what would have happened is that the bpartner would be set by interceptors, if C_BP_BankAccount_ID were set,
+		//			which in our case is not
+		// 		what should we do? should i set bpartner here? if possible?
+		// 		bankStatementLine.setC_BPartner_ID(importRecord.getC_BPartner_ID());
+		// 		??????
 		bankStatementLine.setReferenceNo(importRecord.getReferenceNo());
 		bankStatementLine.setDescription(importRecord.getLineDescription());
 		bankStatementLine.setStatementLineDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(), importRecord.getStatementDate()));

@@ -2,6 +2,7 @@ package de.metas.banking.impexp;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_BankStatement;
@@ -15,6 +16,8 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,14 +48,13 @@ public class BankStatementImportTableSqlUpdater
 	public void updateBPBankAccount(final int bankAccountId, final ImportRecordsSelection selection)
 	{
 		updateBankAccount(bankAccountId, selection);
-
 	}
 
-	public void updateBankStatementImportTable(@NonNull final ImportRecordsSelection selection)
+	public void updateBankStatementImportTable(@NonNull final ImportRecordsSelection selection, @Nullable final String bankStatementName, @Nullable final Timestamp bankStatementDate)
 	{
 		updateBankAccountTo(selection);
-		updateStatementDate(selection);
-		updateName(selection);
+		updateStatementDate(selection, bankStatementDate);
+		updateName(selection, bankStatementName);
 		updateCurrency(selection);
 		updateAmount(selection);
 		updateValutaDate(selection);
@@ -68,9 +70,22 @@ public class BankStatementImportTableSqlUpdater
 
 	}
 
-	private void updateName(final ImportRecordsSelection selection)
+	private void updateName(final ImportRecordsSelection selection, @Nullable final String bankStatementName)
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE ")
+		StringBuilder sql;
+		if (bankStatementName != null)
+		{
+			sql = new StringBuilder("UPDATE ")
+					.append(I_I_BankStatement.Table_Name + " i ")
+					.append(" SET Name = "
+							+ "'" + bankStatementName + "'")
+					.append(" WHERE NAME IS NULL ")
+					.append(" AND i.I_IsImported<>'Y' ")
+					.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
+
+		sql = new StringBuilder("UPDATE ")
 				.append(I_I_BankStatement.Table_Name + " i ")
 				.append(" SET Name =  COALESCE ("
 						+ I_I_BankStatement.COLUMNNAME_StatementDate + ", "
@@ -79,11 +94,24 @@ public class BankStatementImportTableSqlUpdater
 				.append(" AND i.I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
-	private void updateStatementDate(final ImportRecordsSelection selection)
+	private void updateStatementDate(final ImportRecordsSelection selection, @Nullable final Timestamp bankStatementDate)
 	{
+		if (bankStatementDate != null)
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE ")
+					.append(I_I_BankStatement.Table_Name + " i ")
+					.append(" SET "
+							+ I_I_BankStatement.COLUMNNAME_StatementDate
+							+ " = '" + bankStatementDate.toString() + "':: timestamp without time zone")
+					.append(" WHERE StatementDate IS NULL ")
+					.append(" AND i.I_IsImported<>'Y' ")
+					.append(selection.toSqlWhereClause("i"));
+
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
+
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(I_I_BankStatement.Table_Name + " i ")
 				.append(" SET "
@@ -166,7 +194,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "AND i.BankAccountNo IS NULL "
 				+ "AND i.I_isImported<>'Y' "
 				+ "OR i.I_isImported IS NULL")
-		.append(selection.toSqlWhereClause("i"));
+				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
