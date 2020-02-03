@@ -34,12 +34,12 @@ import org.compiere.model.I_C_Order;
 
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.order.PurchaseOrderToShipperTransportationRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;

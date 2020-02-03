@@ -1,4 +1,4 @@
-package de.metas.order;
+package de.metas.shipping;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;

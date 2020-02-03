@@ -5,12 +5,12 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.order.PurchaseOrderToShipperTransportationService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;

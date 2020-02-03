@@ -1,4 +1,4 @@
-package de.metas.order;
+package de.metas.shipping;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.OrderId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
