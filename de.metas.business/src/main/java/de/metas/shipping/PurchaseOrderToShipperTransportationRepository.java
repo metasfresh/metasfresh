@@ -1,12 +1,12 @@
 package de.metas.shipping;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Repository;
 
@@ -67,7 +67,7 @@ public class PurchaseOrderToShipperTransportationRepository
 
 		final Timestamp deliverydate = purchaseOrder.getDatePromised();
 
-		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
+		final I_M_Package mpackage = newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(shipperTransportation.getM_Shipper_ID());
 		mpackage.setShipDate(deliverydate);
 		mpackage.setC_BPartner_ID(purchaseOrder.getC_BPartner_ID());

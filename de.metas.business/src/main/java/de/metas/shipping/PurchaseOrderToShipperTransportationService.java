@@ -38,7 +38,7 @@ public class PurchaseOrderToShipperTransportationService
 {
 	private final PurchaseOrderToShipperTransportationRepository repo;
 
-	private PurchaseOrderToShipperTransportationService(@NonNull final PurchaseOrderToShipperTransportationRepository repo)
+	public PurchaseOrderToShipperTransportationService(@NonNull final PurchaseOrderToShipperTransportationRepository repo)
 	{
 		this.repo = repo;
 	}
