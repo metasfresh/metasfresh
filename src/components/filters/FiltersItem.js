@@ -268,7 +268,7 @@ class FiltersItem extends PureComponent {
         // if there's no value but param exists in the updated parameters,
         // remove the parameter from active filter.
         // Otherwise just update it's value
-        if (value) {
+        if (value !== null && value !== '') {
           parametersArray.push({
             ...param,
             value: parseDateToReadable(param.widgetType, activeValue),
