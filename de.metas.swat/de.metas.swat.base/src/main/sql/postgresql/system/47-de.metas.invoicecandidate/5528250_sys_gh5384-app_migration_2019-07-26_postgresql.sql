@@ -945,6 +945,7 @@ UPDATE AD_Element_Trl SET Description='Maßeinheit für die der jeweilige Preis 
 /* DDL */  select update_ad_element_on_ad_element_trl_update(542464,'de_DE') 
 ;
 
+/*
 -- 2019-07-29T09:51:42.411Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET ColumnName=NULL, Name='Preiseinheit', Description='Maßeinheit für die der jeweilige Preis gilt.', Help=NULL WHERE AD_Element_ID=542464
@@ -954,7 +955,7 @@ UPDATE AD_Column SET ColumnName=NULL, Name='Preiseinheit', Description='Maßeinh
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET ColumnName=NULL, Name='Preiseinheit', Description='Maßeinheit für die der jeweilige Preis gilt.', Help=NULL WHERE AD_Element_ID=542464 AND IsCentrallyMaintained='Y'
 ;
-
+*/
 -- 2019-07-29T09:51:42.413Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET Name='Preiseinheit', Description='Maßeinheit für die der jeweilige Preis gilt.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=542464) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 542464)
@@ -1005,6 +1006,7 @@ UPDATE AD_Element_Trl SET Description='Maßeinheit auf die sich der Preis bezieh
 /* DDL */  select update_ad_element_on_ad_element_trl_update(542464,'de_DE') 
 ;
 
+/*
 -- 2019-07-29T09:52:08.543Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET ColumnName=NULL, Name='Preiseinheit', Description='Maßeinheit auf die sich der Preis bezieht', Help=NULL WHERE AD_Element_ID=542464
@@ -1014,6 +1016,7 @@ UPDATE AD_Column SET ColumnName=NULL, Name='Preiseinheit', Description='Maßeinh
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET ColumnName=NULL, Name='Preiseinheit', Description='Maßeinheit auf die sich der Preis bezieht', Help=NULL WHERE AD_Element_ID=542464 AND IsCentrallyMaintained='Y'
 ;
+*/
 
 -- 2019-07-29T09:52:08.546Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
