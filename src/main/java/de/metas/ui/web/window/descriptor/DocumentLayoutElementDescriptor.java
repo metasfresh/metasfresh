@@ -357,7 +357,7 @@ public final class DocumentLayoutElementDescriptor
 				if (field.isRegularField()
 						&& !TranslatableStrings.isBlank(field.getCaption()))
 				{
-					field.setEmptyText(field.getCaption());
+					field.setEmptyFieldText(field.getCaption());
 				}
 			}
 		}
