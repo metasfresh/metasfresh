@@ -47,7 +47,7 @@
                         <updatePolicy>daily</updatePolicy>
                         <checksumPolicy>warn</checksumPolicy>
                     </releases>
-                    <url>https://repo.metasfresh.com/content/groups/mvn-3rdparty-all/</url>
+                    <url>https://repo.metasfresh.com/repository/mvn-3rdparty-all/</url>
                 </repository>
             </repositories>
         </profile>
