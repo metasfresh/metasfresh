@@ -96,9 +96,6 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	@Override
 	protected String doIt() throws Exception
 	{
-
-		DB.executeUpdateEx("Delete from I_BankStatement where true;", ITrx.TRXNAME_ThreadInherited);
-
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
 
 		final DataImportResult result = dataImportService.importData(DataImportRequest.builder()
