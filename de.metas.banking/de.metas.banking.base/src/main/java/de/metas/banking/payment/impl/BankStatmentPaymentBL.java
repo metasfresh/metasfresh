@@ -10,12 +10,12 @@ package de.metas.banking.payment.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -60,13 +61,15 @@ import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
 
 	private static final transient Logger logger = LogManager.getLogger(BankStatmentPaymentBL.class);
 
 	@Override
-	public void setC_Payment(IBankStatementLineOrRef lineOrRef, I_C_Payment payment)
+	public void setC_Payment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final I_C_Payment payment)
 	{
 		if (payment == null)
 		{
@@ -187,7 +190,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			retString += " - @OverUnderAmt@=" + payment.getOverUnderAmt();
 		}
 		return retString;
-	}	// createPayment - Import
+	}    // createPayment - Import
 
 	/**
 	 * Create Payment for BankStatement
@@ -328,27 +331,27 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 							clientId,
 							orgId);
 					discountAmt = currencyConversionBL.convert(
-							discountAmt, 
+							discountAmt,
 							refLineCurrencyId,
-							bslCurrencyId, 
-							dateConv, 
-							conversionTypeId, 
+							bslCurrencyId,
+							dateConv,
+							conversionTypeId,
 							clientId,
 							orgId);
 					writeOffAmt = currencyConversionBL.convert(
-							writeOffAmt, 
+							writeOffAmt,
 							refLineCurrencyId,
-							bslCurrencyId, 
-							dateConv, 
-							conversionTypeId, 
+							bslCurrencyId,
+							dateConv,
+							conversionTypeId,
 							clientId,
 							orgId);
 					overUnderAmt = currencyConversionBL.convert(
-							overUnderAmt, 
+							overUnderAmt,
 							refLineCurrencyId,
-							bslCurrencyId, 
-							dateConv, 
-							conversionTypeId, 
+							bslCurrencyId,
+							dateConv,
+							conversionTypeId,
 							clientId,
 							orgId);
 				}
@@ -377,7 +380,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			retString += " - @OverUnderAmt@=" + payment.getOverUnderAmt();
 		}
 		return retString;
-	}	// createPayment
+	}    // createPayment
 
 	/**
 	 * @param ref
@@ -432,22 +435,23 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			retString += " - @OverUnderAmt@=" + payment.getOverUnderAmt();
 		}
 		return retString;
-	}	// createPayment
+	}    // createPayment
 
 	// CHANGED - add discount/overunder/writeoff
+
 	/**
 	 * Create actual Payment.
 	 *
-	 * @param C_Invoice_ID invoice
-	 * @param C_BPartner_ID partner ignored when invoice exists
-	 * @param C_Currency_ID currency
-	 * @param StmtAmt statement amount may be <code>null</code>. If is is <code>null</code> and <code>TrxAmt</code> is also null, then the invoice's open ampount is used as pay amount
-	 * @param TrxAmt maybe be <code>null</code>. If set, then it is used as the payment's payAmt. If <code>null</code>, then <code>StmAmt</code> is used instead
+	 * @param C_Invoice_ID        invoice
+	 * @param C_BPartner_ID       partner ignored when invoice exists
+	 * @param C_Currency_ID       currency
+	 * @param StmtAmt             statement amount may be <code>null</code>. If is is <code>null</code> and <code>TrxAmt</code> is also null, then the invoice's open ampount is used as pay amount
+	 * @param TrxAmt              maybe be <code>null</code>. If set, then it is used as the payment's payAmt. If <code>null</code>, then <code>StmAmt</code> is used instead
 	 * @param C_BP_BankAccount_ID bank account
-	 * @param DateTrx transaction date
-	 * @param DateAcct accounting date
-	 * @param Description description
-	 * @param AD_Org_ID org
+	 * @param DateTrx             transaction date
+	 * @param DateAcct            accounting date
+	 * @param Description         description
+	 * @param AD_Org_ID           org
 	 * @return payment
 	 */
 	private MPayment createPayment(final Properties ctx,
@@ -527,7 +531,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			payment.setIsReceiptAndUpdateDocType(invoice.isSOTrx());
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-			if (PayAmt.signum() != 0)	// explicit Amount
+			if (PayAmt.signum() != 0)    // explicit Amount
 			{
 				payment.setC_Currency_ID(C_Currency_ID);
 				if (invoice.isSOTrx())
@@ -562,7 +566,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		{
 			payment.setC_BPartner_ID(C_BPartner_ID);
 			payment.setC_Currency_ID(C_Currency_ID);
-			if (PayAmt.signum() < 0)	// Payment
+			if (PayAmt.signum() < 0)    // Payment
 			{
 				payment.setPayAmt(PayAmt.abs());
 				payment.setIsReceiptAndUpdateDocType(false);
@@ -592,5 +596,5 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			throw new AdempiereException(payment.getProcessMsg());
 		}
 		return payment;
-	}	// createPayment
+	}    // createPayment
 }
