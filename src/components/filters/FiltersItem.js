@@ -361,9 +361,8 @@ class FiltersItem extends PureComponent {
 
     if (
       (filter &&
-        filter.parametersLayoutType === 'singleOverlayField' &&
-        !filter.parameters[0].value) ||
-      activeFilter === null
+        filter.parametersLayoutType === 'singleOverlayField' && !filter.parameters[0].value) ||
+      (filter.parameters && activeFilter === null)
     ) {
       return this.handleClear();
     }
