@@ -410,7 +410,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public Set<I_M_ShipmentSchedule> retrieveForInOutLine(@NonNull final I_M_InOutLine inoutLine)
+	public Set<I_M_ShipmentSchedule> retrieveForInOutLine(@NonNull final org.compiere.model.I_M_InOutLine inoutLine)
 	{
 		final Map<Integer, I_M_ShipmentSchedule> schedules = new LinkedHashMap<>();
 

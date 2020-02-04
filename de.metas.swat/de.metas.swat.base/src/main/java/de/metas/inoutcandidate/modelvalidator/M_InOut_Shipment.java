@@ -26,11 +26,15 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut_Shipment
@@ -38,16 +42,19 @@ public class M_InOut_Shipment
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_COMPLETE })
-	public void invalidateShipmentSchedsForLines(final I_M_InOut shipment)
+	public void invalidateShipmentSchedsForLines(final I_M_InOut inoutRecord)
 	{
-		// Only if it's a shipment
-		if (!shipment.isSOTrx())
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			return;
+			// Only if it's a shipment
+			if (!inoutRecord.isSOTrx())
+			{
+				return;
+			}
+			// we only need to invalidate for the respective lines, because basically we only need to shift the qty from QtyPicked to QtyDelivered.
+			// No other shipment schedule will have anything more or less after that.
+			Services.get(IShipmentScheduleInvalidateBL.class).invalidateJustForLines(inoutRecord);
 		}
-		// we only need to invalidate for the respective lines, because basically we only need to shift the qty from QtyPicked to QtyDelivered.
-		// No other shipment schedule will have anything more or less after that.
-		Services.get(IShipmentScheduleInvalidateBL.class).invalidateJustForLines(shipment);
 	}
 
 	/**
@@ -56,25 +63,49 @@ public class M_InOut_Shipment
 	 * @param shipment
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void onDelete(final I_M_InOut shipment)
+	public void onDelete(final I_M_InOut inoutRecord)
 	{
-		// Only if it's a shipment
-		if (!shipment.isSOTrx())
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			return;
-		}
+			if (!inoutRecord.isSOTrx())
+			{
+				return;
+			}
 
-		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
-		shipmentScheduleInvalidateBL.invalidateJustForLines(shipment); // make sure that at least the lines themselves are invalidated
-		shipmentScheduleInvalidateBL.notifySegmentsChangedForShipment(shipment);
+			final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+			shipmentScheduleInvalidateBL.invalidateJustForLines(inoutRecord); // make sure that at least the lines themselves are invalidated
+			shipmentScheduleInvalidateBL.notifySegmentsChangedForShipment(inoutRecord);
+		}
 	}
 
 	@ModelChange(//
 			timings = ModelValidator.TYPE_AFTER_CHANGE, // note: on AFTER_NEW, there can't be any M_ShipmentSchedule_QtyPicked records to update yet, so we don't have to fire
 			ifColumnsChanged = I_M_InOut.COLUMNNAME_Processed)
-	public void updateM_ShipmentSchedule_QtyPicked_Processed(final I_M_InOut shipment)
+	public void updateM_ShipmentSchedule_QtyPicked_Processed(final I_M_InOut inoutRecord)
 	{
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-		shipmentScheduleAllocDAO.updateM_ShipmentSchedule_QtyPicked_ProcessedForShipment(shipment);
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			if (!inoutRecord.isSOTrx())
+			{
+				return;
+			}
+
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			shipmentScheduleAllocDAO.updateM_ShipmentSchedule_QtyPicked_ProcessedForShipment(inoutRecord);
+		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void closePartiallyShipped_ShipmentSchedules(@NonNull final I_M_InOut inoutRecord)
+	{
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			if (!inoutRecord.isSOTrx())
+			{
+				return;
+			}
+
+			Services.get(IShipmentScheduleBL.class).closePartiallyShipped_ShipmentSchedules(inoutRecord);
+		}
 	}
 }
