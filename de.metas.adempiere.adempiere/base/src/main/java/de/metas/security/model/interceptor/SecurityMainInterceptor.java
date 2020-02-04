@@ -72,7 +72,7 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 		// Trigger permissions cache reset if any of permissions table was changed
 		{
 			// TableNames which shall trigger a full permissions reset
-			ImmutableSet.<String> builder()
+			ImmutableSet.<String>builder()
 					.add(I_AD_Role.Table_Name) // role table itself
 					.addAll(Services.get(IUserRolePermissionsDAO.class).getRoleDependentTableNames()) // all role dependent table name
 					.build()

@@ -37,8 +37,9 @@ public class AD_Document_Action_Access
 {
 	public static final transient AD_Document_Action_Access instance = new AD_Document_Action_Access();
 
-	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE})
-	public void afterNew(final I_AD_Document_Action_Access documentActionAccess) {
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
+	public void afterNew(final I_AD_Document_Action_Access documentActionAccess)
+	{
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.allRecordsForTable(I_AD_Ref_List.Table_Name), ModelCacheInvalidationTiming.NEW);
