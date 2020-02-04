@@ -49,7 +49,8 @@ import org.compiere.model.I_I_BankStatement;
 public class C_BankStatement_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
 	// TODO tbp: @teo how to not hardcode this?
-	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540008);
+	// 		or read by the internal name (which is modifiable?): `Bank_Statement_Import`
+	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
 	private AttachmentEntryId p_AD_AttachmentEntry_ID;
 
