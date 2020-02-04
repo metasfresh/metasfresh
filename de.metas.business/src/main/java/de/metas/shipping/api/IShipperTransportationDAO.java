@@ -25,19 +25,22 @@ package de.metas.shipping.api;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.shipping.model.ShipperTransportationId;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_M_Package;
 
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
+
+	I_M_ShipperTransportation getById(ShipperTransportationId shipperItransportationId);
+
 	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
 	/**
