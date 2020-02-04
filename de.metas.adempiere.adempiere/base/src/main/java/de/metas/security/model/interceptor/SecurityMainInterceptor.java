@@ -59,6 +59,7 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 		// Role and included roles
 		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role.instance, client);
 		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role_Included.instance, client);
+		engine.addModelValidator(AD_Document_Action_Access.instance, client);
 
 		// Source tables
 		engine.addModelValidator(de.metas.security.model.interceptor.AD_Org.instance, client);
