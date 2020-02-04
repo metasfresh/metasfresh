@@ -1,9 +1,13 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Collection;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -24,8 +28,10 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
@@ -78,6 +84,7 @@ public class ProductsToPickRowsDataFactoryTest
 	private ProductId productId;
 	private I_C_UOM uomKg;
 	private LocatorId locatorId;
+	private static final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(3);
 
 	@BeforeEach
 	public void beforeEachTest()
@@ -120,6 +127,42 @@ public class ProductsToPickRowsDataFactoryTest
 				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(testHelper::locatorLookupById)
+				.build();
+	}
+
+	@Builder(builderMethodName = "preparePackageableRow", builderClassName = "PackageableRowBuilder")
+	private PackageableRow createPackageableRow(
+			@NonNull final Quantity qtyOrdered,
+			final int qtyPickedNotDelivered,
+			final int qtyDelivered,
+			final int qtyPickedPlanned,
+			@Nullable final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	{
+		return PackageableRow.builder()
+				.orderId(OrderId.ofRepoId(1))
+				.orderDocumentNo("1234")
+				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
+				.packageable(Packageable.builder()
+						.shipmentScheduleId(shipmentScheduleId)
+						//
+						.qtyOrdered(qtyOrdered)
+						.qtyToDeliver(qtyOrdered)
+						.qtyDelivered(Quantity.of(qtyDelivered, uomKg))
+						.qtyPickedNotDelivered(Quantity.of(qtyPickedNotDelivered, uomKg))
+						.qtyPickedPlanned(Quantity.of(qtyPickedPlanned, uomKg))
+						.qtyPickedAndDelivered(Quantity.of(0, uomKg))
+						//
+						.customerId(customerAndLocationId.getBpartnerId())
+						.customerLocationId(customerAndLocationId)
+						//
+						.warehouseId(locatorId.getWarehouseId())
+						//
+						.bestBeforePolicy(Optional.ofNullable(bestBeforePolicy))
+						//
+						.productId(productId)
+						.asiId(AttributeSetInstanceId.NONE)
+						//
+						.build())
 				.build();
 	}
 
@@ -245,36 +288,30 @@ public class ProductsToPickRowsDataFactoryTest
 		assertThat(row4.getExpiringDate()).isNull();
 	}
 
-	@Builder(builderMethodName = "preparePackageableRow", builderClassName = "PackageableRowBuilder")
-	private PackageableRow createPackageableRow(
-			@NonNull final Quantity qtyOrdered,
-			@Nullable final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	@Test
+	public void test_AlreadyExistingPickingCandidate()
 	{
-		return PackageableRow.builder()
-				.orderId(OrderId.ofRepoId(1))
-				.orderDocumentNo("1234")
-				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
-				.packageable(Packageable.builder()
-						.shipmentScheduleId(ShipmentScheduleId.ofRepoId(3))
-						//
-						.qtyOrdered(qtyOrdered)
-						.qtyToDeliver(qtyOrdered)
-						.qtyDelivered(Quantity.of(0, uomKg))
-						.qtyPickedNotDelivered(Quantity.of(0, uomKg))
-						.qtyPickedPlanned(Quantity.of(0, uomKg))
-						.qtyPickedAndDelivered(Quantity.of(0, uomKg))
-						//
-						.customerId(customerAndLocationId.getBpartnerId())
-						.customerLocationId(customerAndLocationId)
-						//
-						.warehouseId(locatorId.getWarehouseId())
-						//
-						.bestBeforePolicy(Optional.ofNullable(bestBeforePolicy))
-						//
-						.productId(productId)
-						.asiId(AttributeSetInstanceId.NONE)
-						//
-						.build())
+		final I_M_Picking_Candidate pickingCandidateRecord = newInstance(I_M_Picking_Candidate.class);
+		pickingCandidateRecord.setStatus(PickingCandidateStatus.Draft.getCode());
+		pickingCandidateRecord.setQtyPicked(new BigDecimal("5"));
+		pickingCandidateRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
+		saveRecord(pickingCandidateRecord);
+
+		final PackageableRow packageableRow = preparePackageableRow()
+				.qtyOrdered(Quantity.of(5, uomKg))
+				.qtyDelivered(0)
+				.qtyPickedNotDelivered(0)
+				.qtyPickedPlanned(5)
+				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 				.build();
+
+		final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = createProductsToPickRowsDataFactory();
+		final Collection<ProductsToPickRow> rows = productsToPickRowsDataFactory.create(packageableRow).getTopLevelRows();
+
+		assertThat(rows).hasSize(1);
+
+		final ProductsToPickRow row = rows.iterator().next();
+
+		assertThat(row.getQtyEffective()).isEqualTo(Quantity.of(5, uomKg));
 	}
 }

@@ -2,12 +2,15 @@ package de.metas.ui.web.process.adprocess;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.model.*;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -34,16 +37,13 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentSaveStatus;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+
+import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 
 /*
  * #%L
@@ -323,7 +323,7 @@ import lombok.NonNull;
 				.setPInstanceId(PInstanceId.ofRepoId(getInstanceId().toInt()))
 				.setTitle(caption.translate(context.getAdLanguage()))
 				.setPrintPreview(true)
-				.setJRDesiredOutputType(OutputType.PDF)
+				.setJRDesiredOutputType( getTargetOutputType() )
 				//
 				// Execute the process/report
 				.buildAndPrepareExecution()
@@ -378,5 +378,33 @@ import lombok.NonNull;
 			writeLock.unlock();
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
+	}
+
+	/**
+	 *  Try to get the target output type from the specific process param {@link de.metas.report.server.ReportConstants#REPORT_PARAM_REPORT_FORMAT},
+	 *  if the parameter is missing, the default output type is returned.
+	 *  @see OutputType#getDefault()
+	 */
+	private OutputType getTargetOutputType()
+	{
+		final IDocumentFieldView formatField = parameters.getFieldViewOrNull(REPORT_PARAM_REPORT_FORMAT);
+
+		if ( formatField != null )
+		{
+			final LookupValue outputTypeParamValue = formatField.getValueAs(LookupValue.class);
+
+			if (outputTypeParamValue != null)
+			{
+				final Optional<OutputType> targetOutputType =
+						OutputType.getOutputTypeByFileExtension( String.valueOf( formatField.getValueAs(LookupValue.class).getId() ) );
+
+				if ( targetOutputType.isPresent() )
+				{
+					return targetOutputType.get();
+				}
+			}
+		}
+
+		return OutputType.getDefault();
 	}
 }
