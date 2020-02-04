@@ -48,9 +48,13 @@ import org.compiere.model.I_I_BankStatement;
 
 public class C_BankStatement_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
-	// TODO tbp: @teo how to not hardcode this?
-	// 		or read by the internal name (which is modifiable?): `Bank_Statement_Import`
+	/*
+	Having DataImportConfigId hardcoded is fine.
+	We could use a sysconfig, but what shall we store there? the ID? the InternalName? (internal name is editable by user). That won't change/fix anything.
+	If you have a better suggestion, please ping me.
+	 */
 	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
+
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
 	private AttachmentEntryId p_AD_AttachmentEntry_ID;
 
