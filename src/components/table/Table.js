@@ -1024,6 +1024,7 @@ class Table extends Component {
       <TableItem
         {...item}
         {...{
+          page: this.props.page,
           entity,
           cols,
           windowId,
