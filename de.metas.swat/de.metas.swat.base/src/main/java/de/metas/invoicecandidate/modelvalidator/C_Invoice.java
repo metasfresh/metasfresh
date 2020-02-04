@@ -57,7 +57,7 @@ public class C_Invoice
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
 	{
 		try (final MDCCloseable invoiceRecordMDC = TableRecordMDC.putTableRecordReference(invoice))

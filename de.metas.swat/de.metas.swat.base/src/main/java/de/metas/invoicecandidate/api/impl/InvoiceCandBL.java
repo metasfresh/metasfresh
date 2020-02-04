@@ -1891,27 +1891,40 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closePartiallyInvoiced_InvoiceCandidates(@NonNull final I_C_Invoice invoice)
 	{
-		if (!isCloseIfPartiallyInvoiced(OrgId.ofRepoId(invoice.getAD_Org_ID())))
-		{
-			return;
-		}
-
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
+		if (invoiceBL.isReversal(invoice))
 		{
-			try (final MDCCloseable ilRecordMDC = TableRecordMDC.putTableRecordReference(il))
+			logger.debug("C_Invoice is a reversal; => not closing any invoice candidates");
+			return;
+		}
+
+		if (!isCloseIfPartiallyInvoiced(OrgId.ofRepoId(invoice.getAD_Org_ID())))
+		{
+			logger.debug("isCloseIfPartiallyShipped=false for AD_Org_ID={}; => not closing any invoice candidates", invoice.getAD_Org_ID());
+			return;
+		}
+
+		for (final I_C_InvoiceLine ilRecord : invoiceDAO.retrieveLines(invoice))
+		{
+			try (final MDCCloseable ilRecordMDC = TableRecordMDC.putTableRecordReference(ilRecord))
 			{
-				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(il))
+				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(ilRecord))
 				{
 					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
 					{
-						if (candidate.getQtyToInvoice().compareTo(candidate.getQtyOrdered()) < 0)
+						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
-							logger.debug("qtyToInvoice={} is < qtyOrdered={}; isCloseIfPartiallyInvoiced=true; -> close invoice candidate",
-									candidate.getQtyToInvoice(), candidate.getQtyOrdered());
+							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
 							closeInvoiceCandidate(candidate);
+						}
+						else
+						{
+							logger.debug("invoiceLine.qtyInvoiced={} is >= invoiceCandidate.qtyOrdered={}; -> not closing invoice candidate",
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
 						}
 					}
 				}

@@ -77,6 +77,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -644,13 +645,27 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void closePartiallyShipped_ShipmentSchedules(@NonNull final I_M_InOut inoutRecord)
 	{
-		if (!isCloseIfPartiallyShipped(OrgId.ofRepoId(inoutRecord.getAD_Org_ID())))
+		if (!inoutRecord.isSOTrx())
 		{
+			logger.debug("M_InOut.isSOTrx=false; => not closing any shipment schedules");
 			return;
 		}
 
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
+
+		if (inOutBL.isReversal(inoutRecord))
+		{
+			logger.debug("M_InOut is a reversal; => not closing any shipment schedules");
+			return;
+		}
+		if (!isCloseIfPartiallyShipped(OrgId.ofRepoId(inoutRecord.getAD_Org_ID())))
+		{
+			logger.debug("isCloseIfPartiallyShipped=false for AD_Org_ID={}; => not closing any shipment schedules\"", inoutRecord.getAD_Org_ID());
+			return;
+		}
+
 
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
@@ -660,11 +675,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				{
 					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
 					{
-						if (shipmentScheduleRecord.getQtyToDeliver().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
+						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
 						{
-							logger.debug("qtyToDeliver={} is < qtyOrdered={}; isCloseIfPartiallyShipped=true; -> closing shipment schedule",
-									shipmentScheduleRecord.getQtyToDeliver(), shipmentScheduleRecord.getQtyOrdered());
+							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
+									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
 							closeShipmentSchedule(shipmentScheduleRecord);
+						}
+						else
+						{
+							logger.debug("inoutLine.MovementQty={} is >= shipmentSchedule.qtyOrdered={}; -> not closing shipment schedule",
+									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
 						}
 					}
 				}

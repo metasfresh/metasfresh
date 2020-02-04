@@ -95,16 +95,11 @@ public class M_InOut_Shipment
 		}
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void closePartiallyShipped_ShipmentSchedules(@NonNull final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			if (!inoutRecord.isSOTrx())
-			{
-				return;
-			}
-
 			Services.get(IShipmentScheduleBL.class).closePartiallyShipped_ShipmentSchedules(inoutRecord);
 		}
 	}
