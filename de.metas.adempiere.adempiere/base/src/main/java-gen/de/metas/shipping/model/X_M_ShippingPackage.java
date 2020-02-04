@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /** Generated Model - DO NOT CHANGE */
 package de.metas.shipping.model;
 
@@ -37,7 +15,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -243393471L;
+	private static final long serialVersionUID = -1310228163L;
 
     /** Standard Constructor */
     public X_M_ShippingPackage (Properties ctx, int M_ShippingPackage_ID, String trxName)
@@ -46,6 +24,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
       /** if (M_ShippingPackage_ID == 0)
         {
 			setC_BPartner_Location_ID (0);
+			setIsToBeFetched (false); // N
 			setM_Package_ID (0);
 			setM_ShipperTransportation_ID (0);
 			setM_ShippingPackage_ID (0);
@@ -154,6 +133,29 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Abholung.
+		@param IsToBeFetched Abholung	  */
+	@Override
+	public void setIsToBeFetched (boolean IsToBeFetched)
+	{
+		set_Value (COLUMNNAME_IsToBeFetched, Boolean.valueOf(IsToBeFetched));
+	}
+
+	/** Get Abholung.
+		@return Abholung	  */
+	@Override
+	public boolean isToBeFetched () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsToBeFetched);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -348,7 +350,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -357,7 +359,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
