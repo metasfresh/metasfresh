@@ -38,6 +38,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -142,7 +143,7 @@ public final class ProductsToPickRowsDataFactory
 	{
 		final ImmutableList<ProductsToPickRow> rows = packageableRow.getPackageables()
 				.stream()
-				.map(AllocablePackageable::of)
+				.map(this::toAllocablePackageable)
 				.flatMap(this::createRowsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
@@ -150,6 +151,30 @@ public final class ProductsToPickRowsDataFactory
 				.pickingCandidateService(pickingCandidateService)
 				.rows(rows)
 				.orderBy(DocumentQueryOrderBy.byFieldName(ProductsToPickRow.FIELD_Locator))
+				.build();
+	}
+
+	private AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
+	{
+		final Quantity qtyToAllocateTarget = packageable.getQtyOrdered()
+				.subtract(packageable.getQtyDelivered())
+				.subtract(packageable.getQtyPickedNotDelivered())
+				// IMPORTANT: don't subtract the Qty PickedPlanned
+				// because we will also allocate existing DRAFT picking candidates
+				// .subtract(packageable.getQtyPickedPlanned())
+				.toZeroIfNegative();
+
+		return AllocablePackageable.builder()
+				.customerId(packageable.getCustomerId())
+				.productId(packageable.getProductId())
+				.asiId(packageable.getAsiId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.bestBeforePolicy(packageable.getBestBeforePolicy())
+				.warehouseId(packageable.getWarehouseId())
+				.salesOrderLineIdOrNull(packageable.getSalesOrderLineIdOrNull())
+				.shipperId(packageable.getShipperId())
+				.pickFromOrderId(packageable.getPickFromOrderId())
+				.qtyToAllocateTarget(qtyToAllocateTarget)
 				.build();
 	}
 
