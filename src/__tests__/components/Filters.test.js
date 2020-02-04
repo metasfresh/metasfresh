@@ -232,5 +232,56 @@ describe('Filters tests', () => {
 
       expect(updateDocListListener).toBeCalledWith(filterResult);
     });
+
+    it('supports filters without parameters', () => {
+      const updateDocListListener = jest.fn();
+      const dummyProps = createInitialProps(
+        filtersFixtures.data3,
+        {
+          updateDocList: updateDocListListener,
+        }
+      );
+      const initialState = createStore({
+        windowHandler: {
+          allowShortcut: true,
+          modal: {
+            visible: false,
+          },
+        }
+      });
+      const store = mockStore(initialState)
+      const wrapper = mount(
+        <ShortcutProvider hotkeys={{}} keymap={{}} >
+          <Provider store={store}>
+            <div className="document-lists-wrapper">
+              <Filters {...dummyProps} />
+            </div>
+          </Provider>
+        </ShortcutProvider>
+      );
+      wrapper.find('.filters-not-frequent .btn-filter').simulate('click');
+      expect(wrapper.find('.filters-overlay').length).toBe(1);
+
+      wrapper.find('.filters-overlay .filter-option-userquery-540024').simulate('click');
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
+
+      wrapper.find('.filter-widget .filter-btn-wrapper .applyBtn').simulate('click');
+      wrapper.update();
+
+      const filterResult = Immutable.Map(
+        {
+          'userquery-540024': {
+            filterId: 'userquery-540024',
+            caption: 'Abrechnung_offen_normal',
+            frequent: false,
+            inlineRenderMode: 'button',
+            parametersLayoutType: 'panel',
+            debugProperties: {},
+          },
+        }
+      );
+
+      expect(updateDocListListener).toBeCalledWith(filterResult);
+    });
   });
 });

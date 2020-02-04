@@ -720,5 +720,43 @@
         }
       ]
     }
-  ]
+  ],
+  "data3": {
+    "filterData": [
+      {
+        "filterId": "default-date",
+        "caption": "Shipmentdate",
+        "frequent": true,
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Shipmentdate",
+            "parameterName": "DeliveryDate",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "filterId": "userquery-540024",
+        "caption": "Abrechnung_offen_normal",
+        "frequent": false,
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "debugProperties": {}
+      }
+    ],
+    "filtersActive": {},
+    "initialValuesNulled": {},
+    "windowType": "540165",
+    "viewId": "540165-JG"
+  }
 }
