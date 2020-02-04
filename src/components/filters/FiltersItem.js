@@ -363,7 +363,7 @@ class FiltersItem extends PureComponent {
       (filter &&
         filter.parametersLayoutType === 'singleOverlayField' &&
         !filter.parameters[0].value) ||
-      activeFilter === null
+      (filter.parameters && activeFilter === null)
     ) {
       return this.handleClear();
     }
