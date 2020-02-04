@@ -204,12 +204,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		bankStatementLine.setImportedBillPartnerName(importRecord.getBill_BPartner_Name());
 		bankStatementLine.setImportedBillPartnerIBAN(importRecord.getIBAN_To());
 		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
-		 // TODO tbp: @teo: currently the bpartner is not set ot the line.
-		// 			what would have happened is that the bpartner would be set by interceptors, if C_BP_BankAccount_ID were set,
-		//			which in our case is not
-		// 		what should we do? should i set bpartner here? if possible?
-		// 		bankStatementLine.setC_BPartner_ID(importRecord.getC_BPartner_ID());
-		// 		??????
+		bankStatementLine.setC_BPartner_ID(importRecord.getC_BPartner_ID());
 		bankStatementLine.setReferenceNo(importRecord.getReferenceNo());
 		bankStatementLine.setDescription(importRecord.getLineDescription());
 		bankStatementLine.setStatementLineDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(), importRecord.getStatementDate()));
