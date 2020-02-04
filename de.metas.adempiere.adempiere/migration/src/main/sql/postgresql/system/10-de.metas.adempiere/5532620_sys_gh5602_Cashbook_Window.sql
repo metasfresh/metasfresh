@@ -675,7 +675,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-10-01T13:14:53.292Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5213,589292,1002655,0,542036,0,TO_TIMESTAMP('2019-10-01 16:14:53','YYYY-MM-DD HH24:MI:SS'),100,'Dies ist ein manueller Vorgang',1,'D','Das Selektionsfeld "Manuell" zeigt an, ob dieser Vorang manuell durchgeführt wird.',0,'Y','Y','Y','N','N','N','Y','Y','Manuell',90,80,1,1,TO_TIMESTAMP('2019-10-01 16:14:53','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5213,589292,1474,0,542036,0,TO_TIMESTAMP('2019-10-01 16:14:53','YYYY-MM-DD HH24:MI:SS'),100,'Dies ist ein manueller Vorgang',1,'D','Das Selektionsfeld "Manuell" zeigt an, ob dieser Vorang manuell durchgeführt wird.',0,'Y','Y','Y','N','N','N','Y','Y','Manuell',90,80,1,1,TO_TIMESTAMP('2019-10-01 16:14:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-10-01T13:14:53.294Z
@@ -685,7 +685,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-10-01T13:14:53.299Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002655) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1474) 
 ;
 
 -- 2019-10-01T13:14:53.301Z
@@ -1413,7 +1413,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-10-01T13:14:59.564Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,4939,589307,1002557,0,542037,0,TO_TIMESTAMP('2019-10-01 16:14:59','YYYY-MM-DD HH24:MI:SS'),100,'Zusätzliche Kosten',14,'@ChargeAmt@!0','D','Kosten gibt die Art der zusätzlichen Kosten an (Abwicklung, Fracht, Bankgebühren, ...)',0,'Y','N','N','N','N','N','N','Y','Kosten',190,190,1,1,TO_TIMESTAMP('2019-10-01 16:14:59','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,4939,589307,968,0,542037,0,TO_TIMESTAMP('2019-10-01 16:14:59','YYYY-MM-DD HH24:MI:SS'),100,'Zusätzliche Kosten',14,'@ChargeAmt@!0','D','Kosten gibt die Art der zusätzlichen Kosten an (Abwicklung, Fracht, Bankgebühren, ...)',0,'Y','N','N','N','N','N','N','Y','Kosten',190,190,1,1,TO_TIMESTAMP('2019-10-01 16:14:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-10-01T13:14:59.565Z
@@ -1423,7 +1423,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-10-01T13:14:59.569Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002557) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(968) 
 ;
 
 -- 2019-10-01T13:14:59.570Z
@@ -1623,7 +1623,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-10-01T13:15:00.636Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5216,589313,1002928,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100,'Accounting Date',14,'D','The Accounting Date indicates the date to be used on the General Ledger account entries generated from this document. It is also used for any currency conversion.',0,'Y','Y','Y','N','N','N','N','Y','Buchungsdatum',110,110,1,1,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5216,589313,263,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100,'Accounting Date',14,'D','The Accounting Date indicates the date to be used on the General Ledger account entries generated from this document. It is also used for any currency conversion.',0,'Y','Y','Y','N','N','N','N','Y','Buchungsdatum',110,110,1,1,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-10-01T13:15:00.638Z
@@ -1633,7 +1633,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-10-01T13:15:00.640Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002928) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(263) 
 ;
 
 -- 2019-10-01T13:15:00.643Z
@@ -1728,7 +1728,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-10-01T13:15:01.117Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5219,589316,1002299,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100,'Einzelne Zeile in dem Dokument',11,'D','Indicates the unique line for a document.  It will also control the display order of the lines within a document.',0,'Y','Y','Y','N','N','N','N','N','Zeile Nr.',40,40,1,1,1,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5219,589316,439,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100,'Einzelne Zeile in dem Dokument',11,'D','Indicates the unique line for a document.  It will also control the display order of the lines within a document.',0,'Y','Y','Y','N','N','N','N','N','Zeile Nr.',40,40,1,1,1,TO_TIMESTAMP('2019-10-01 16:15:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-10-01T13:15:01.121Z
@@ -1738,7 +1738,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-10-01T13:15:01.128Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002299) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(439) 
 ;
 
 -- 2019-10-01T13:15:01.132Z
@@ -1798,7 +1798,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-10-01T13:15:01.356Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5221,589318,1002332,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:01','YYYY-MM-DD HH24:MI:SS'),100,'Betrag einer Transaktion',26,'D','"Bewegungs-Betrag" gibt den Betrag für einen einzelnen Vorgang an.',0,'Y','Y','Y','N','N','N','N','N','Bewegungs Betrag',160,160,1,1,TO_TIMESTAMP('2019-10-01 16:15:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,5221,589318,1136,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:01','YYYY-MM-DD HH24:MI:SS'),100,'Betrag einer Transaktion',26,'D','"Bewegungs-Betrag" gibt den Betrag für einen einzelnen Vorgang an.',0,'Y','Y','Y','N','N','N','N','N','Bewegungs Betrag',160,160,1,1,TO_TIMESTAMP('2019-10-01 16:15:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-10-01T13:15:01.359Z
@@ -1808,7 +1808,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-10-01T13:15:01.367Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002332) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1136) 
 ;
 
 -- 2019-10-01T13:15:01.371Z
@@ -2533,7 +2533,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-10-01T13:15:04.055Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,12463,589339,1002836,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:03','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ',1,'D','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.',0,'Y','N','N','N','N','N','N','N','Verarbeitet',390,0,1,1,TO_TIMESTAMP('2019-10-01 16:15:03','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,12463,589339,1047,0,542037,0,TO_TIMESTAMP('2019-10-01 16:15:03','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ',1,'D','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.',0,'Y','N','N','N','N','N','N','N','Verarbeitet',390,0,1,1,TO_TIMESTAMP('2019-10-01 16:15:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-10-01T13:15:04.056Z
@@ -2543,7 +2543,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-10-01T13:15:04.059Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002836) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1047) 
 ;
 
 -- 2019-10-01T13:15:04.060Z
