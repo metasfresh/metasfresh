@@ -25,14 +25,13 @@ import {
   setSorting,
 } from '../../actions/ListActions';
 import {
-  connectWS,
-  disconnectWS,
   updateRawModal,
   indicatorState,
   selectTableItems,
   deselectTableItems,
   removeSelectedTableItems,
 } from '../../actions/WindowActions';
+import { connectWS, disconnectWS } from '../../utils/websockets';
 import { parseToDisplay, getRowsData } from '../../utils/documentListHelper';
 import { getSelectionDirect } from '../../reducers/windowHandler';
 import {
@@ -258,7 +257,6 @@ export class DocumentList extends Component {
               filtersActive,
             } = this.state;
             const toRows = data.result;
-
             const { rows, removedRows } = mergeRows({
               toRows,
               fromRows: [...response.data],

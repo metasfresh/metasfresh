@@ -89,7 +89,7 @@
     "merge": "^1.2.1",
     "moment-locales-webpack-plugin": "1.1.2",
     "moment-timezone-data-webpack-plugin": "1.1.0",
-    "nock": "10.0.6",
+    "nock": "11.7.2",
     "nyc": "14.1.0",
     "postcss-color-function": "2.0.1",
     "postcss-import": "11.1.0",

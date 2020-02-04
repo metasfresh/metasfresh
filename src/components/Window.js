@@ -608,8 +608,8 @@ class Window extends PureComponent {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { sections, tabs } = this.props.layout;
     const {
+      layout: { sections, tabs },
       handleDropFile,
       handleRejectDropped,
       handleDragStart,
@@ -653,7 +653,7 @@ class Window extends PureComponent {
  * @prop {bool} allowShortcut
  * @prop {shape|array} data
  * @prop {string} dataId
- * @prop {bool} modal
+ * @prop {object} modal
  * @prop {string} tabId
  * @prop {string} rowId
  * @prop {bool} isAdvanced
@@ -671,7 +671,7 @@ Window.propTypes = {
   allowShortcut: PropTypes.bool,
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   dataId: PropTypes.string,
-  modal: PropTypes.bool,
+  modal: PropTypes.object,
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   isAdvanced: PropTypes.bool,

@@ -6,6 +6,8 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 
+import { patchRequest } from '../../api';
+import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
   changeKPIItem,
   changeTargetIndicatorsItem,
@@ -16,8 +18,6 @@ import {
   addDashboardWidget,
   removeDashboardWidget,
 } from '../../actions/BoardActions';
-import { patchRequest } from '../../actions/GenericActions';
-import { connectWS, disconnectWS } from '../../actions/WindowActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawChart from '../charts/RawChart';
 import RawList from '../widget/List/RawList';

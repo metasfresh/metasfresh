@@ -3,13 +3,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cx from 'classnames';
 
+import { initLayout, patchRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
-import {
-  completeRequest,
-  createInstance,
-  patchRequest,
-} from '../../actions/GenericActions';
-import { initLayout } from '../../api';
+import { completeRequest, createInstance } from '../../actions/GenericActions';
 import { parseToDisplay } from '../../utils/documentListHelper';
 import RawWidget from '../widget/RawWidget';
 

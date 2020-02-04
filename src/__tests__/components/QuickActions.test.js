@@ -37,19 +37,19 @@ const createDummyProps = function(props) {
 describe('QuickActions standalone component', () => {
   describe('rendering tests:', () => {
     beforeEach(() => {
-      nock('http://api.test.url')
+      nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('rest/api/documentView/540485/540485-a/quickActions')
+        .get('/documentView/540485/540485-a/quickActions')
         .reply(200, { data: { actions: [] }} );
 
-      nock('http://api.test.url')
+      nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('rest/api/documentView/540485/540485-b/quickActions')
+        .get('/documentView/540485/540485-b/quickActions')
         .reply(200, { data: fixtures.data1.actions } );
 
-      nock('http://api.test.url')
+      nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('rest/api/documentView/540485/540485-a/quickActions')
+        .get('/documentView/540485/540485-a/quickActions')
         .reply(200, { data: fixtures.data2.actions } );
     });
 

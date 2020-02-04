@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { List } from 'immutable';
 
 import { addNotification } from '../../actions/AppActions';
-import { patchRequest } from '../../actions/GenericActions';
+import { patchRequest } from '../../api';
 import {
   completeLetter,
   createLetter,

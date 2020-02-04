@@ -1,6 +1,6 @@
 import * as types from '../constants/ListTypes';
 
-const initialState = {
+export const initialState = {
   sorting: {
     sort: '',
     windowType: null,

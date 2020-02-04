@@ -17,12 +17,12 @@ describe('Attributes component', () => {
   });
 
   beforeEach(() => {
-    nock('http://api.test.url')
+    nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .post('/address')
       .reply(200, fixtures.data1.instanceData);
 
-    nock('http://api.test.url')
+    nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .get(`/address/${fixtures.data1.instanceData.id}/layout`)
       .reply(200, fixtures.data1.layout);

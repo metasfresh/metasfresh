@@ -12,10 +12,11 @@ import {
   handleProcessResponse,
   fetchChangeLog,
   patch,
-  startProcess,
 } from '../../actions/WindowActions';
+import { startProcess } from '../../api';
 import { getSelectionInstant } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
+
 import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
 import Window from '../Window';

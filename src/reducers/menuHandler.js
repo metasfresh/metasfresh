@@ -1,6 +1,6 @@
 import * as types from '../constants/MenuTypes';
 
-const initialState = {
+export const initialState = {
   breadcrumb: [],
 };
 

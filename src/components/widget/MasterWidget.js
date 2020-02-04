@@ -4,7 +4,9 @@ import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
 
 import * as windowActions from '../../actions/WindowActions';
+import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
+
 import RawWidget from './RawWidget';
 
 function isNumberField(widgetType) {
@@ -229,9 +231,8 @@ class MasterWidget extends Component {
   handleZoomInto = field => {
     const { dataId, windowType, tabId, rowId } = this.props;
 
-    windowActions
-      .getZoomIntoWindow('window', windowType, dataId, tabId, rowId, field)
-      .then(res => {
+    getZoomIntoWindow('window', windowType, dataId, tabId, rowId, field).then(
+      res => {
         const url = `/window/${res.data.documentPath.windowId}/${
           res.data.documentPath.documentId
         }`;
@@ -241,7 +242,8 @@ class MasterWidget extends Component {
           /*eslint-disable */
           window.open(url, '_blank');
           /*eslint-enable */
-      });
+      }
+    );
   };
 
   /**

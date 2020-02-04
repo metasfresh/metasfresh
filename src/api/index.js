@@ -1,4 +1,15 @@
-import { initLayout, getAttributesInstance, topActionsRequest } from './window';
+import { getData, patchRequest } from './global';
+import {
+  initLayout,
+  getAttributesInstance,
+  topActionsRequest,
+  getZoomIntoWindow,
+  discardNewRow,
+  discardNewDocument,
+  getTab,
+  startProcess,
+  getProcessData,
+} from './window';
 import {
   getViewLayout,
   getViewRowsByIds,
@@ -28,9 +39,17 @@ import {
 } from './login';
 
 export {
+  getData,
+  patchRequest,
   initLayout,
   getAttributesInstance,
   topActionsRequest,
+  getZoomIntoWindow,
+  discardNewRow,
+  discardNewDocument,
+  getTab,
+  startProcess,
+  getProcessData,
   getViewLayout,
   getViewRowsByIds,
   browseViewRequest,

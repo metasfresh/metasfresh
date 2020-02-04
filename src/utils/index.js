@@ -17,6 +17,33 @@ export const getQueryString = query =>
     }, {})
   );
 
+export function createPatchRequestPayload(property, value) {
+  if (Array.isArray(property) && Array.isArray(value)) {
+    return property.map((item, index) => ({
+      op: 'replace',
+      path: item,
+      value: value[index],
+    }));
+  } else if (Array.isArray(property) && value !== undefined) {
+    return property.map(item => ({
+      op: 'replace',
+      path: item.field,
+      value,
+    }));
+  } else if (property && value !== undefined) {
+    return [
+      {
+        op: 'replace',
+        path: property,
+        value,
+      },
+    ];
+  } else {
+    // never return undefined; backend does not support it
+    return [];
+  }
+}
+
 export const arePropTypesIdentical = (nextProps, currentProps) => {
   for (const key of Object.keys(nextProps)) {
     const nextType = typeof nextProps[key];

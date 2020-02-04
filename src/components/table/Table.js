@@ -12,19 +12,11 @@ import uuid from 'uuid/v4';
 import { deleteRequest } from '../../actions/GenericActions';
 import {
   deleteLocal,
-  getZoomIntoWindow,
   openModal,
   selectTableItems,
   deselectTableItems,
 } from '../../actions/WindowActions';
-import Prompt from '../app/Prompt';
-import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
-import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
-import TableContextMenu from './TableContextMenu';
-import TableFilter from './TableFilter';
-import TableHeader from './TableHeader';
-import TableItem from './TableItem';
-import TablePagination from './TablePagination';
+import { getZoomIntoWindow } from '../../api';
 import {
   getSizeClass,
   handleCopy,
@@ -37,6 +29,15 @@ import {
   mapIncluded,
   collapsedMap,
 } from '../../utils/documentListHelper';
+
+import Prompt from '../app/Prompt';
+import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
+import TableContextMenu from './TableContextMenu';
+import TableFilter from './TableFilter';
+import TableHeader from './TableHeader';
+import TableItem from './TableItem';
+import TablePagination from './TablePagination';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
