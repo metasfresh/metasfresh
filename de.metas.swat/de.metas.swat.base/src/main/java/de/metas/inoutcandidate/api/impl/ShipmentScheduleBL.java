@@ -47,6 +47,8 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -58,8 +60,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -72,6 +77,8 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -86,10 +93,12 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -114,9 +123,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final String MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = "ShipmentScheduleAlreadyProcessed";
 
+	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
+
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
-
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
@@ -507,17 +517,27 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
 		{
-			final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);
-			final I_M_ShipmentSchedule record = recordsById.get(shipmentScheduleId);
-			if (record == null)
+			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
 			{
-				// shall not happen
-				logger.warn("No record found for {}. Skip applying user changes: {}", shipmentScheduleId, userChange);
-				continue;
-			}
 
-			updateRecord(record, userChange);
-			shipmentSchedulesRepo.save(record);
+				final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);
+				final I_M_ShipmentSchedule record = recordsById.get(shipmentScheduleId);
+				if (record == null)
+				{
+					// shall not happen
+					logger.warn("No record found for {}. Skip applying user changes: {}", shipmentScheduleId, userChange);
+					continue;
+				}
+				if (record.isProcessed())
+				{
+					// shall not happen
+					logger.warn("Record already processed {}. Skip applying user changes: {}", shipmentScheduleId, userChange);
+					continue;
+				}
+
+				updateRecord(record, userChange);
+				shipmentSchedulesRepo.save(record);
+			}
 		}
 	}
 
@@ -620,5 +640,63 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public IAttributeSetInstanceAware toAttributeSetInstanceAware(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return InterfaceWrapperHelper.create(shipmentSchedule, IAttributeSetInstanceAware.class);
+	}
+
+	@Override
+	public void closePartiallyShipped_ShipmentSchedules(@NonNull final I_M_InOut inoutRecord)
+	{
+		if (!inoutRecord.isSOTrx())
+		{
+			logger.debug("M_InOut.isSOTrx=false; => not closing any shipment schedules");
+			return;
+		}
+
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
+
+		if (inOutBL.isReversal(inoutRecord))
+		{
+			logger.debug("M_InOut is a reversal; => not closing any shipment schedules");
+			return;
+		}
+		if (!isCloseIfPartiallyShipped(OrgId.ofRepoId(inoutRecord.getAD_Org_ID())))
+		{
+			logger.debug("isCloseIfPartiallyShipped=false for AD_Org_ID={}; => not closing any shipment schedules\"", inoutRecord.getAD_Org_ID());
+			return;
+		}
+
+
+		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
+		{
+			try (final MDCCloseable iolrecordMDC = TableRecordMDC.putTableRecordReference(iolrecord))
+			{
+				for (final I_M_ShipmentSchedule shipmentScheduleRecord : shipmentScheduleDAO.retrieveForInOutLine(iolrecord))
+				{
+					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
+					{
+						if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) < 0)
+						{
+							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
+									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
+							closeShipmentSchedule(shipmentScheduleRecord);
+						}
+						else
+						{
+							logger.debug("inoutLine.MovementQty={} is >= shipmentSchedule.qtyOrdered={}; -> not closing shipment schedule",
+									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private boolean isCloseIfPartiallyShipped(@NonNull final OrgId orgId)
+	{
+		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
+
+		return isCloseIfPartiallyInvoiced;
 	}
 }
