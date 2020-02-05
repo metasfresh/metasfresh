@@ -208,7 +208,6 @@ public class POTrlRepository
 
 		//
 		// If AutoUpdateTrl then copy the changed fields from record to each translation.
-		// Also flag all as IsTranslated='Y'.
 		final ClientId clientId = ClientId.ofRepoId(po.getAD_Client_ID());
 		if (isAutoUpdateTrl(clientId, tableName))
 		{
@@ -217,8 +216,7 @@ public class POTrlRepository
 				final String sqlValue = convertValueToSql(po.get_Value(columnName));
 				sqlSet.append(columnName).append("=").append(sqlValue).append(", ");
 			}
-
-			sqlSet.append("IsTranslated='Y'");
+			sqlSet.deleteCharAt(sqlSet.lastIndexOf(","));
 		}
 		//
 		// Case: flag all translations as IsTranslated='N',
@@ -255,9 +253,16 @@ public class POTrlRepository
 		}
 
 		//
+		final String trlWhereChecks =
+				" AND ( trl.isTranslated = 'N' "
+						+ " OR "
+						+ " exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )";
 		// Execute update
-		final StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append("_Trl SET ").append(sqlSet)
-				.append(" WHERE ").append(keyColumn).append("=").append(po.get_ID());
+		final StringBuilder sql = new StringBuilder()
+				.append("UPDATE ").append(tableName).append("_Trl trl SET ")
+				.append(sqlSet)
+				.append(" WHERE ").append(keyColumn).append("=").append(po.get_ID()).append(trlWhereChecks);
+
 		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} translation records for {}", updatedCount, po);
 
