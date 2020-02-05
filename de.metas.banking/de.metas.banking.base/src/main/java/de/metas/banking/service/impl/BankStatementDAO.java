@@ -54,6 +54,7 @@ import de.metas.util.Services;
 public class BankStatementDAO implements IBankStatementDAO
 {
 	@Override
+	@Deprecated
 	public de.metas.banking.model.I_C_BankStatement getById(int id)
 	{
 		return load(id, de.metas.banking.model.I_C_BankStatement.class);

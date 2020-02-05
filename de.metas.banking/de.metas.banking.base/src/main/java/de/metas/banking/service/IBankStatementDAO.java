@@ -58,6 +58,10 @@ public interface IBankStatementDAO extends ISingletonService
 	 */
 	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
+	/**
+	 * @deprecated Please use {@link #getById(BankStatementId)}
+	 */
+	@Deprecated
 	de.metas.banking.model.I_C_BankStatement getById(int id);
 
 	de.metas.banking.model.I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
@@ -45,7 +46,6 @@ import org.adempiere.util.api.Params;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_I_BankStatement;
-import org.compiere.util.TimeUtil;
 
 public class C_BankStatement_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
@@ -55,6 +55,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	If you have a better suggestion, please ping me.
 	 */
 	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
 	private AttachmentEntryId p_AD_AttachmentEntry_ID;
@@ -78,7 +79,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final I_C_BankStatement selectedBankStatement = context.getSelectedModel(I_C_BankStatement.class);
+		final I_C_BankStatement selectedBankStatement = bankStatementDAO.getById(BankStatementId.ofRepoId(context.getSingleSelectedRecordId()));
 		final DocStatus docStatus = DocStatus.ofCode(selectedBankStatement.getDocStatus());
 		if (!docStatus.isDraftedOrInProgress())
 		{
@@ -108,7 +109,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 
 	private Params computeImportProcessParams()
 	{
-		final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(getRecord_ID());
+		final I_C_BankStatement bankStatement = bankStatementDAO.getById(BankStatementId.ofRepoId(getRecord_ID()));
 		final ImmutableMap<String, Object> paramsMap = ImmutableMap.<String, Object>builder()
 				.put(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, bankStatement.getC_BP_BankAccount_ID())
 				.put(I_I_BankStatement.COLUMNNAME_StatementDate, bankStatement.getStatementDate())

@@ -104,7 +104,7 @@ public class BankStatementImportTableSqlUpdater
 					.append(I_I_BankStatement.Table_Name + " i ")
 					.append(" SET "
 							+ I_I_BankStatement.COLUMNNAME_StatementDate
-							+ " = '" + DB.TO_DATE(bankStatementDate))
+							+ " = " + DB.TO_DATE(bankStatementDate))
 					.append(" WHERE StatementDate IS NULL ")
 					.append(" AND i.I_IsImported<>'Y' ")
 					.append(selection.toSqlWhereClause("i"));
