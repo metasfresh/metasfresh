@@ -86,6 +86,12 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
+	public void save(final @NonNull Object po)
+	{
+		InterfaceWrapperHelper.save(po);
+	}
+
+	@Override
 	public <T extends I_C_BankStatementLine> List<T> retrieveLines(final I_C_BankStatement bankStatement, final Class<T> clazz)
 	{
 		return retrieveLinesQuery(bankStatement)

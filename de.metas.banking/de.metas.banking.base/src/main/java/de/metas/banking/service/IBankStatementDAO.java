@@ -74,4 +74,6 @@ public interface IBankStatementDAO extends ISingletonService
 
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
+
+	void save(@NonNull final Object po);
 }

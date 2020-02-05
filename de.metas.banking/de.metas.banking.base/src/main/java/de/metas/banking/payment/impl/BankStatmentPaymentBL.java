@@ -75,6 +75,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
 
 	private static final transient Logger logger = LogManager.getLogger(BankStatmentPaymentBL.class);
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
 	public void setC_Payment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final I_C_Payment payment)
@@ -161,7 +162,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		if (possiblePayments.size() == 1)
 		{
 			line.setC_Payment_ID(possiblePayments.iterator().next().getRepoId());
-			InterfaceWrapperHelper.save(line);
+			bankStatementDAO.save(line);
 		}
 		return false;
 	}
@@ -182,7 +183,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			final I_C_Payment payment = paymentDAO.getById(paymentIdToSet);
 			setC_Payment(line, payment);
 
-			InterfaceWrapperHelper.save(line);
+			bankStatementDAO.save(line);
 			paymentDAO.save(payment);
 			return Optional.of(paymentIdToSet);
 		}
@@ -209,7 +210,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		final I_C_Payment createdPayment = createAndCompletePayment(bankAccountIdOptional.get(), statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
 		setC_Payment(line, createdPayment);
 
-		InterfaceWrapperHelper.save(line);
+		bankStatementDAO.save(line);
 		return Optional.of(PaymentId.ofRepoId(createdPayment.getC_Payment_ID()));
 	}
 
@@ -392,7 +393,6 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			BigDecimal writeOffAmt = bsl.getWriteOffAmt();
 			BigDecimal overUnderAmt = bsl.getOverUnderAmt();
 
-			final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 			final List<I_C_BankStatementLine_Ref> refLines = bankStatementDAO.retrieveLineReferences(bsl);
 
 			//
@@ -557,7 +557,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		}
 		// update statement
 		ref.setC_Payment(payment);
-		InterfaceWrapperHelper.save(ref);
+		bankStatementDAO.save(ref);
 		//
 		String retString = "@C_Payment_ID@ = " + payment.getDocumentNo();
 		if (payment.getOverUnderAmt().signum() != 0)
