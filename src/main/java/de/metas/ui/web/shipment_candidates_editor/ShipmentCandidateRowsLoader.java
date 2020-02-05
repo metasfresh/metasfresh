@@ -178,6 +178,8 @@ final class ShipmentCandidateRowsLoader
 				.asiIdInitial(asiId)
 				.asi(toLookupValue(asiId))
 				//
+				.processed(record.isProcessed())
+				//
 				.build();
 	}
 

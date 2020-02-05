@@ -84,7 +84,7 @@ public class ViewsRepository implements IViewsRepository
 	private final IViewsIndexStorage defaultViewsIndexStorage = new DefaultViewsRepositoryStorage();
 
 	/**
-	 * 
+	 *
 	 * @param neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
 	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
 	 */
@@ -247,7 +247,7 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public IView createView(@NonNull final CreateViewRequest request)
 	{
 		logger.trace("Creating new view from {}", request);
 
