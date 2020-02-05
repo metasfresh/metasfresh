@@ -41,6 +41,7 @@ public class AD_Document_Action_Access
 	public void afterNewChangedOrDeleted(final I_AD_Document_Action_Access documentActionAccess)
 	{
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		//Calling with NEW as we don't need any model cache invalidation.
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.allRecordsForTable(I_AD_Ref_List.Table_Name), ModelCacheInvalidationTiming.NEW);
 	}
