@@ -55,6 +55,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.collections.IteratorUtils;
@@ -309,12 +310,6 @@ public interface IQuery<T>
 			this.sqlFunction = sqlFunction;
 			this.useOrderByClause = useOrderByClause;
 		}
-
-		@Override
-		public String toString()
-		{
-			return sqlFunction;
-		}
 	}
 
 	/**
@@ -334,6 +329,8 @@ public interface IQuery<T>
 		final String columnName = column.getColumnName();
 		return aggregate(columnName, aggregateType, returnType);
 	}
+
+	List<Money> sumMoney(@NonNull String amountColumnName, @NonNull String currencyIdColumnName);
 
 	/**
 	 * @return maximum int of <code>columnName</code> or ZERO
@@ -358,7 +355,7 @@ public interface IQuery<T>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
 	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *              page size.
+	 *            page size.
 	 * @return this
 	 */
 	IQuery<T> setLimit(int limit);
@@ -368,8 +365,8 @@ public interface IQuery<T>
 	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit  integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *               page size.
+	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 *            page size.
 	 * @param offset integer greater than zero or {@link #NO_LIMIT}
 	 * @return this
 	 */
@@ -454,7 +451,7 @@ public interface IQuery<T>
 	 * Selects DISTINCT given column and return the result as a list.
 	 *
 	 * @param columnName
-	 * @param valueType  value type
+	 * @param valueType value type
 	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
