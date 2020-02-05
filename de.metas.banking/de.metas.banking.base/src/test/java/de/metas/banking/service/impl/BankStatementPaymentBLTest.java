@@ -96,6 +96,7 @@ class BankStatementPaymentBLTest
 		void vendorOneMatchingPaymentExists_DifferentInvoiceOnBSL()
 		{
 			// TODO tbp: check with mark in a followup task about this usecase.
+			// 	 the followup task is: https://github.com/metasfresh/metasfresh/issues/6128
 			//   here is a draft of the data required to test
 			//   outgoing payment:
 			// 		there is invoice for vendor: no. 1111
