@@ -4412,5 +4412,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return SelectionSize.ofSize(1);
 		}
 
+		@Override
+		public <T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass)
+		{
+			return gridTab.createCurrentRecordsQueryFilter(recordClass);
+		}
+
 	}
 }	// GridTab
