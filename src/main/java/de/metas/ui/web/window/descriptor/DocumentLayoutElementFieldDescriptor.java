@@ -104,7 +104,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	@Getter
 	private final Optional<Duration> lookupSearchStartDelay;
 
-	private final ITranslatableString emptyText;
+	private final ITranslatableString listNullItemCaption;
+	private final ITranslatableString emptyFieldText;
 
 	@Getter
 	private final List<JSONDeviceDescriptor> devices;
@@ -127,7 +128,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		}
 
 		publicField = builder.publicField;
-		emptyText = TranslatableStrings.copyOfNullable(builder.emptyText);
+		listNullItemCaption = TranslatableStrings.copyOfNullable(builder.listNullItemCaption);
+		emptyFieldText = TranslatableStrings.copyOfNullable(builder.emptyFieldText);
 		devices = builder.getDevices();
 
 		lookupSource = builder.lookupSource;
@@ -170,9 +172,14 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		return Objects.equals(field, other.field); // only the field name shall be matched
 	}
 
-	public String getEmptyText(final String adLanguage)
+	public String getListNullItemCaption(final String adLanguage)
 	{
-		return emptyText.translate(adLanguage);
+		return listNullItemCaption.translate(adLanguage);
+	}
+
+	public String getEmptyFieldText(final String adLanguage)
+	{
+		return emptyFieldText.translate(adLanguage);
 	}
 
 	public static final class Builder
@@ -191,7 +198,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private FieldType fieldType;
 		private String tooltipIconName;
 
-		private ITranslatableString emptyText = HARDCODED_FIELD_EMPTY_TEXT;
+		private ITranslatableString listNullItemCaption = HARDCODED_FIELD_EMPTY_TEXT;
+		private ITranslatableString emptyFieldText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
 		private List<JSONDeviceDescriptor> _devices;
 
@@ -334,10 +342,15 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return consumed;
 		}
 
-		public Builder setEmptyText(final ITranslatableString emptyText)
+		public Builder setListNullItemCaption(@NonNull final ITranslatableString listNullItemCaption)
 		{
-			Check.assumeNotNull(emptyText, "Parameter emptyText is not null");
-			this.emptyText = emptyText;
+			this.listNullItemCaption = listNullItemCaption;
+			return this;
+		}
+
+		public Builder setEmptyFieldText(ITranslatableString emptyFieldText)
+		{
+			this.emptyFieldText = emptyFieldText;
 			return this;
 		}
 

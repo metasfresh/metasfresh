@@ -151,7 +151,7 @@ public final class JSONDocumentLayoutElementField
 	@JsonProperty(value = "field", required = true)
 	@Getter
 	private final String field;
-	
+
 	@JsonProperty(value = "caption", required = true)
 	private final String caption;
 
@@ -163,9 +163,15 @@ public final class JSONDocumentLayoutElementField
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String tooltipIconName;
 
+	/** Null Item's caption */
 	@JsonProperty("emptyText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
+
+	/** Text to be displayed when the field is empty */
+	@JsonProperty("clearValueText")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String clearValueText;
 
 	@JsonProperty("devices")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -207,7 +213,8 @@ public final class JSONDocumentLayoutElementField
 		caption = fieldDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		tooltipIconName = fieldDescriptor.getTooltipIconName();
-		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAdLanguage());
+		emptyText = fieldDescriptor.getListNullItemCaption(jsonOpts.getAdLanguage());
+		clearValueText = fieldDescriptor.getEmptyFieldText(jsonOpts.getAdLanguage());
 		devices = fieldDescriptor.getDevices();
 
 		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
@@ -249,6 +256,7 @@ public final class JSONDocumentLayoutElementField
 			@JsonProperty("type") final JSONFieldType type,
 			@JsonProperty("tooltipIconName") final String tooltipIconName,
 			@JsonProperty("emptyText") final String emptyText,
+			@JsonProperty("clearValueText") final String clearValueText,
 			@JsonProperty("devices") final List<JSONDeviceDescriptor> devices,
 			@JsonProperty("newRecordWindowId") final String newRecordWindowId,
 			@JsonProperty("newRecordCaption") final String newRecordCaption,
@@ -264,6 +272,7 @@ public final class JSONDocumentLayoutElementField
 		this.type = type;
 		this.tooltipIconName = tooltipIconName;
 		this.emptyText = emptyText;
+		this.clearValueText = clearValueText;
 		this.devices = devices == null ? ImmutableList.of() : ImmutableList.copyOf(devices);
 
 		this.newRecordWindowId = newRecordWindowId;
@@ -287,6 +296,7 @@ public final class JSONDocumentLayoutElementField
 				.add("type", type)
 				.add("source", source)
 				.add("emptyText", emptyText)
+				.add("clearValueText", clearValueText)
 				.add("actions", devices.isEmpty() ? null : devices)
 				.add("newRecordWindowId", newRecordWindowId)
 				.add("supportZoomInto", supportZoomInto)
