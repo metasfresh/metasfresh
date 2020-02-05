@@ -1,12 +1,6 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.bpartner.BPartnerId;
@@ -22,6 +16,10 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.time.SystemTime;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -33,12 +31,12 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,10 +45,8 @@ import de.metas.util.time.SystemTime;
 
 public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	@Autowired
-	private PaymentAllocationRepository paymentAllocationRepo;
-	@Autowired
-	private IViewsRepository viewsFactory;
+	private final PaymentAllocationRepository paymentAllocationRepo = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
+	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
