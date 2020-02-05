@@ -235,4 +235,10 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.create()
 				.listIds(PaymentId::ofRepoId);
 	}
+
+	@Override
+	public void save(final I_C_Payment payment)
+	{
+		InterfaceWrapperHelper.save(payment);
+	}
 }

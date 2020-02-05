@@ -101,4 +101,6 @@ public interface IPaymentDAO extends ISingletonService
 	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 
 	ImmutableSet<PaymentId> retrieveAllMatchingPayments(boolean isReceipt, @NonNull BPartnerId bPartnerId, @NonNull final Money money);
+
+	void save(I_C_Payment payment);
 }

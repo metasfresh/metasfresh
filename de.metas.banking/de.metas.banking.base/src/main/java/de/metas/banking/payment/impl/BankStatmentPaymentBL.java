@@ -177,11 +177,13 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 
 		if (paymentIdToSet != null)
 		{
-			final I_C_Payment payment = Services.get(IPaymentDAO.class).getById(paymentIdToSet);
+			final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+
+			final I_C_Payment payment = paymentDAO.getById(paymentIdToSet);
 			setC_Payment(line, payment);
 
 			InterfaceWrapperHelper.save(line);
-			InterfaceWrapperHelper.save(payment);
+			paymentDAO.save(payment);
 			return Optional.of(paymentIdToSet);
 		}
 
