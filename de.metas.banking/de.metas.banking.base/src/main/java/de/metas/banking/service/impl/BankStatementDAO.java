@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.payment.PaymentId;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
@@ -86,9 +87,21 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void save(final @NonNull Object po)
+	public void save(final @NonNull I_C_BankStatement bankStatement)
 	{
-		InterfaceWrapperHelper.save(po);
+		InterfaceWrapperHelper.save(bankStatement);
+	}
+
+	@Override
+	public void save(final @NonNull I_C_BankStatementLine bankStatementLine)
+	{
+		InterfaceWrapperHelper.save(bankStatementLine);
+	}
+
+	@Override
+	public void save(final @NonNull I_C_BankStatementLine_Ref lineOrRef)
+	{
+		InterfaceWrapperHelper.save(lineOrRef);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package de.metas.banking.service;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -75,5 +76,9 @@ public interface IBankStatementDAO extends ISingletonService
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 
-	void save(@NonNull final Object po);
+	void save(@NonNull final I_C_BankStatement bankStatement);
+
+	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
+
+	void save(@NonNull final I_C_BankStatementLine_Ref lineOrRef);
 }

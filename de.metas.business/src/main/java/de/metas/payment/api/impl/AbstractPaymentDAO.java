@@ -237,8 +237,8 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public void save(@NonNull final Object po)
+	public void save(final @NonNull I_C_Payment payment)
 	{
-		InterfaceWrapperHelper.save(po);
+		InterfaceWrapperHelper.save(payment);
 	}
 }
