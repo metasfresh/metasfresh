@@ -8,6 +8,7 @@
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<relativePath>../metasfresh-parent</relativePath>
 	</parent>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
