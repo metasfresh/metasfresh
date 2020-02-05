@@ -5,11 +5,14 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -96,4 +99,5 @@ public interface IProcessPreconditionsContext
 		return ImmutableSet.of();
 	}
 
+	<T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass);
 }
