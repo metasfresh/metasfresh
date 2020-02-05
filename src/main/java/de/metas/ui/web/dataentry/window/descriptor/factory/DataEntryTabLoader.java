@@ -285,12 +285,12 @@ public class DataEntryTabLoader
 
 		final DocumentLayoutElementFieldDescriptor.Builder dataField = DocumentLayoutElementFieldDescriptor
 				.builder(fieldName)
-				.setEmptyText(TranslatableStrings.empty());
+				.setEmptyFieldText(TranslatableStrings.empty());
 		element.addField(dataField);
 
 		final DocumentLayoutElementFieldDescriptor.Builder infoField = DocumentLayoutElementFieldDescriptor
 				.builder(createInfoFieldName(field))
-				.setEmptyText(TranslatableStrings.empty())
+				.setEmptyFieldText(TranslatableStrings.empty())
 				.setFieldType(DocumentLayoutElementFieldDescriptor.FieldType.Tooltip)
 				.setTooltipIconName(X_AD_UI_ElementField.TOOLTIPICONNAME_Text)
 				.setLookupSourceAsText();
