@@ -385,7 +385,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
 						.append(selection.toSqlWhereClause("i"));
 
-		executeUpdate("Set User by ContactName", sql);
+		executeUpdate("Set Name by CompanyName", sql);
 	}
 
 	private void dbUpdateAdUserIdsFromContactNames(final ImportRecordsSelection selection)
