@@ -1,5 +1,46 @@
 package org.adempiere.invoice.service.impl;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_InOutLine;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Stream;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -27,49 +68,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_InOutLine;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.IDocument;
-import de.metas.invoice.InvoiceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
  *
  * @author ts
- *
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
@@ -130,6 +132,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
+	{
+		final org.compiere.model.I_C_Invoice invoice = getByIdInTrx(invoiceId);
+		final BigDecimal openAmt = retrieveOpenAmt(invoice);
+
+		final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		return Amount.of(openAmt, currencyCode);
+	}
+
+	@Override
+	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
 		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
@@ -169,8 +183,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 	}
 
 	@Override
