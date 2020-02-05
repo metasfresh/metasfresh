@@ -1,14 +1,22 @@
 package de.metas.business;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
@@ -153,8 +161,18 @@ public final class BusinessTestHelper
 				.build());
 	}
 
+	public static CurrencyId getEURCurrencyId()
+	{
+		final String currencyCodeEur = "EUR";
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeEur);
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(currencyCode).getId();
+		assertNotNull(currencyId);
+
+		return currencyId;
+	}
+
 	/**
-	 *
 	 * @param name
 	 * @param uom
 	 * @param weightKg product weight (Kg); mainly used for packing materials
@@ -207,6 +225,17 @@ public final class BusinessTestHelper
 		bpl.setIsBillTo(true);
 		save(bpl);
 		return bpl;
+	}
+
+	public static I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)
+	{
+		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
+		bpBankAccount.setIBAN(iban);
+		bpBankAccount.setC_BPartner_ID(bPartnerId.getRepoId());
+		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
+		saveRecord(bpBankAccount);
+
+		return bpBankAccount;
 	}
 
 	/**

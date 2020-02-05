@@ -141,6 +141,7 @@ public interface IQuery<T>
 
 	int firstId();
 
+	@Nullable
 	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return idMapper.apply(firstId());
@@ -154,6 +155,7 @@ public interface IQuery<T>
 	 */
 	int firstIdOnly() throws DBException;
 
+	@NonNull
 	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return idMapper.apply(firstIdOnly());
@@ -164,6 +166,7 @@ public interface IQuery<T>
 	/**
 	 * @return first record or null
 	 */
+	@Nullable
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
 	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
