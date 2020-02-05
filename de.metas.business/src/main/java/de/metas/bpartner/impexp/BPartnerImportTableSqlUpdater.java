@@ -74,6 +74,8 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateCbPartnerIdsFromC_BPartner_GlobalId(selection);
 		dbUpdateCbPartnerIdsFromValue(selection);
 
+		updateNames(selection);
+
 		dbUpdateAdUserIdsFromAD_User_ExternalIds(selection);
 		dbUpdateAdUserIdsFromExisting(selection);
 		dbUpdateAdUserIdsFromContactNames(selection);
@@ -369,6 +371,21 @@ public class BPartnerImportTableSqlUpdater
 						.append(selection.toSqlWhereClause("i"));
 
 		executeUpdate("Set BPartner by GlobalId", sql);
+	}
+
+	private void updateNames(final ImportRecordsSelection selection)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE "
+				+ I_I_BPartner.Table_Name
+				+ " i SET "
+				+ I_I_BPartner.COLUMNNAME_Name
+				+ " = i." + I_I_BPartner.COLUMNNAME_Companyname
+				+ " WHERE i." + I_I_BPartner.COLUMNNAME_Name
+				+ " IS NULL "
+				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+						.append(selection.toSqlWhereClause("i"));
+
+		executeUpdate("Set User by ContactName", sql);
 	}
 
 	private void dbUpdateAdUserIdsFromContactNames(final ImportRecordsSelection selection)
