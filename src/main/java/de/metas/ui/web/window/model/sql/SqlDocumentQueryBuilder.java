@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -414,8 +415,12 @@ public class SqlDocumentQueryBuilder
 			// Composed primary key
 			else
 			{
-				sqlWhereClauseBuilder.appendIfNotEmpty("\n /* key */ AND ");
-				sqlWhereClauseBuilder.append("(");
+				final boolean parenthesesRequired = !sqlWhereClauseBuilder.isEmpty();
+
+				if (parenthesesRequired)
+				{
+					sqlWhereClauseBuilder.append(" AND ( ");
+				}
 
 				boolean firstRecord = true;
 				final boolean appendParentheses = recordIds.size() > 1;
@@ -432,10 +437,14 @@ public class SqlDocumentQueryBuilder
 					}
 
 					final Map<String, Object> keyColumnName2value = extractComposedKey(recordId, keyFields);
-					keyColumnName2value.forEach((keyColumnName, value) -> {
-						sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-						sqlWhereClauseBuilder.append(" ").append(keyColumnName).append("=").append(sqlParams.placeholder(value));
-					});
+
+					final String composedPKCheck =
+							keyColumnName2value.entrySet()
+							.stream()
+							.map( entry -> " " + entry.getKey() + "=" + sqlParams.placeholder(entry.getValue()))
+							.collect(Collectors.joining("\n AND "));
+
+					sqlWhereClauseBuilder.append(composedPKCheck);
 
 					if (appendParentheses)
 					{
@@ -443,6 +452,11 @@ public class SqlDocumentQueryBuilder
 					}
 
 					firstRecord = false;
+				}
+
+				if (parenthesesRequired)
+				{
+					sqlWhereClauseBuilder.append(")");
 				}
 			}
 		}
