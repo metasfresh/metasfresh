@@ -2,7 +2,7 @@ package de.metas.banking.impexp;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_BankStatement;
@@ -50,7 +50,7 @@ public class BankStatementImportTableSqlUpdater
 		updateBankAccount(bankAccountId, selection);
 	}
 
-	public void updateBankStatementImportTable(@NonNull final ImportRecordsSelection selection, @Nullable final String bankStatementName, @Nullable final Timestamp bankStatementDate)
+	public void updateBankStatementImportTable(@NonNull final ImportRecordsSelection selection, @Nullable final String bankStatementName, @Nullable final LocalDate bankStatementDate)
 	{
 		updateBankAccountTo(selection);
 		updateStatementDate(selection, bankStatementDate);
@@ -96,7 +96,7 @@ public class BankStatementImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void updateStatementDate(final ImportRecordsSelection selection, @Nullable final Timestamp bankStatementDate)
+	private void updateStatementDate(final ImportRecordsSelection selection, @Nullable final LocalDate bankStatementDate)
 	{
 		if (bankStatementDate != null)
 		{
@@ -104,7 +104,7 @@ public class BankStatementImportTableSqlUpdater
 					.append(I_I_BankStatement.Table_Name + " i ")
 					.append(" SET "
 							+ I_I_BankStatement.COLUMNNAME_StatementDate
-							+ " = '" + bankStatementDate.toString() + "':: timestamp without time zone")
+							+ " = '" + DB.TO_DATE(bankStatementDate))
 					.append(" WHERE StatementDate IS NULL ")
 					.append(" AND i.I_IsImported<>'Y' ")
 					.append(selection.toSqlWhereClause("i"));

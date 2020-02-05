@@ -1,23 +1,5 @@
 package de.metas.banking.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_I_BankStatement;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_I_BankStatement;
-
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
@@ -28,6 +10,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_I_BankStatement;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -82,7 +81,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, -1);
 		final String bankStatementName = getParameters().getParameterAsString(I_I_BankStatement.COLUMNNAME_Name);
-		final Timestamp bankStatementDate = getParameters().getParameterAsTimestamp(I_I_BankStatement.COLUMNNAME_StatementDate);
+		final LocalDate bankStatementDate = getParameters().getParameterAsLocalDate(I_I_BankStatement.COLUMNNAME_StatementDate);
 
 		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, selection);
 		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, bankStatementName, bankStatementDate);
