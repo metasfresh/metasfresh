@@ -32,9 +32,11 @@ import org.compiere.util.Env;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IQueryBL extends ISingletonService
 {
-	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, String trxName);
+	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, @Nullable String trxName);
 
 	/**
 	 * @param next identifier of the next page, as taken from the previous page's {@link QueryResultPage#getNextPageDescriptor()}.
@@ -48,25 +50,33 @@ public interface IQueryBL extends ISingletonService
 
 	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
 
-	/** @return query builder using current context and thread inherited transaction */
+	/**
+	 * @return query builder using current context and thread inherited transaction
+	 */
 	default IQueryBuilder<Object> createQueryBuilder(String modelTableName)
 	{
 		return createQueryBuilder(modelTableName, Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	/** @return query builder using current context and thread inherited transaction */
+	/**
+	 * @return query builder using current context and thread inherited transaction
+	 */
 	default <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass)
 	{
 		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	/** @return query builder using current context and out of transaction */
+	/**
+	 * @return query builder using current context and out of transaction
+	 */
 	default <T> IQueryBuilder<T> createQueryBuilderOutOfTrx(Class<T> modelClass)
 	{
 		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_None);
 	}
 
-	/** @return query builder using current context and out of transaction */
+	/**
+	 * @return query builder using current context and out of transaction
+	 */
 	default IQueryBuilder<Object> createQueryBuilderOutOfTrx(String modelTableName)
 	{
 		return createQueryBuilder(modelTableName, Env.getCtx(), ITrx.TRXNAME_None);
@@ -76,14 +86,13 @@ public interface IQueryBL extends ISingletonService
 	 * Create a query builder to query for a class like <code>IProductAware</code> (but also regular model interfaces like I_C_Order are supported), for which the framework can't deduct the table name.
 	 *
 	 * @param modelClass
-	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>. In case this is null, the tableName will be fetched from <code>modelClass</code>.
+	 * @param tableName       name of the table in question, which can't be deducted from the given <code>modelClass</code>. In case this is null, the tableName will be fetched from <code>modelClass</code>.
 	 * @param contextProvider
 	 * @return query builder
 	 */
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider);
 
 	/**
-	 *
 	 * @return
 	 * @deprecated Please use {@link #createQueryOrderByBuilder(Class)}
 	 */
@@ -95,14 +104,12 @@ public interface IQueryBL extends ISingletonService
 	IQueryOrderBy createSqlQueryOrderBy(String orderBy);
 
 	/**
-	 *
 	 * @param modelClass the model class. Assumes that the table name can be obtained from the model class via {@link InterfaceWrapperHelper#getTableName(Class)}.
 	 * @return
 	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(Class<T> modelClass);
 
 	/**
-	 *
 	 * @param tableName name of the table in question. <b>Can</b> be null
 	 * @return
 	 */

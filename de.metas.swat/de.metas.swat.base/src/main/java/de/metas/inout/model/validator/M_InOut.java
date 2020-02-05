@@ -8,6 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.document.IDocumentLocationBL;
 import de.metas.event.IEventBusFactory;
@@ -19,6 +20,7 @@ import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.logging.TableRecordMDC;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
 import de.metas.util.Services;
 
@@ -36,16 +38,22 @@ public class M_InOut
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, I_M_InOut.COLUMNNAME_AD_User_ID })
-	public void updateBPartnerAddress(final I_M_InOut doc)
+	public void updateBPartnerAddress(final I_M_InOut inoutRecord)
 	{
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(doc);
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			Services.get(IDocumentLocationBL.class).setBPartnerAddress(inoutRecord);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_M_InOut.COLUMNNAME_DropShip_BPartner_ID, I_M_InOut.COLUMNNAME_DropShip_Location_ID, I_M_InOut.COLUMNNAME_DropShip_User_ID })
-	public void updateDeliveryToAddress(final I_M_InOut doc)
+	public void updateDeliveryToAddress(final I_M_InOut inoutRecord)
 	{
-		Services.get(IDocumentLocationBL.class).setDeliveryToAddress(doc);
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			Services.get(IDocumentLocationBL.class).setDeliveryToAddress(inoutRecord);
+		}
 	}
 
 	/**
@@ -57,10 +65,13 @@ public class M_InOut
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE
 	})
-	public void reverseMovements(final I_M_InOut inout)
+	public void reverseMovements(final I_M_InOut inoutRecord)
 	{
-		final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
-		inoutMovementBL.reverseMovements(inout);
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
+			inoutMovementBL.reverseMovements(inoutRecord);
+		}
 	}
 
 	/**
@@ -70,24 +81,27 @@ public class M_InOut
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE
 	})
-	public void removeMatchInvAssignments(final I_M_InOut inout)
+	public void removeMatchInvAssignments(final I_M_InOut inoutRecord)
 	{
-		Services.get(IInOutBL.class).deleteMatchInvs(inout); // task 08531
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			Services.get(IInOutBL.class).deleteMatchInvs(inoutRecord); // task 08531
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void addInoutToBalance(final I_M_InOut inout)
+	public void addInoutToBalance(final I_M_InOut inoutRecord)
 	{
-
-		final boolean isReversal = Services.get(IInOutBL.class).isReversal(inout);
-
-		// do nothing in case of reversal
-		if (!isReversal)
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			final IMaterialBalanceDetailBL materialBalanceDetailBL = Services.get(IMaterialBalanceDetailBL.class);
+			final boolean isReversal = Services.get(IInOutBL.class).isReversal(inoutRecord);
 
-			materialBalanceDetailBL.addInOutToBalance(inout);
-
+			// do nothing in case of reversal
+			if (!isReversal)
+			{
+				final IMaterialBalanceDetailBL materialBalanceDetailBL = Services.get(IMaterialBalanceDetailBL.class);
+				materialBalanceDetailBL.addInOutToBalance(inoutRecord);
+			}
 		}
 	}
 
@@ -98,40 +112,45 @@ public class M_InOut
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
 			ModelValidator.TIMING_AFTER_CLOSE
 	})
-	public void removeInoutFromBalance(final I_M_InOut inout)
+	public void removeInoutFromBalance(final I_M_InOut inoutRecord)
 	{
-		final IMaterialBalanceDetailDAO materialBalanceDetailDAO = Services.get(IMaterialBalanceDetailDAO.class);
-
-		materialBalanceDetailDAO.removeInOutFromBalance(inout);
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			final IMaterialBalanceDetailDAO materialBalanceDetailDAO = Services.get(IMaterialBalanceDetailDAO.class);
+			materialBalanceDetailDAO.removeInOutFromBalance(inoutRecord);
+		}
 	}
 
 	/**
 	 * After an inout is completed, check if it contains lines with quality discount percent.
 	 * In case it does, create a request for each line that has a discount percent and fill it with the information from the line and the inout.
-	 * 
-	 * @param inOut
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void onComplete_QualityIssues(final I_M_InOut inOut)
+	@DocValidate(timings =  ModelValidator.TIMING_AFTER_COMPLETE )
+	public void onComplete_QualityIssues(final I_M_InOut inoutRecord)
 	{
-		// retrieve all lines with issues (quality discount percent)
-		final List<Integer> linesWithQualityIssues = Services.get(IInOutDAO.class).retrieveLineIdsWithQualityDiscount(inOut);
-
-		if (linesWithQualityIssues.isEmpty())
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			// nothing to do
-			return;
-		}
+			// retrieve all lines with issues (quality discount percent)
+			final List<Integer> linesWithQualityIssues = Services.get(IInOutDAO.class).retrieveLineIdsWithQualityDiscount(inoutRecord);
 
-		// In case there are lines with issues, trigger the request creation for them.
-		// Note: The request creation will be done async
-		C_Request_CreateFromInout_Async.createWorkpackage(linesWithQualityIssues);
+			if (linesWithQualityIssues.isEmpty())
+			{
+				// nothing to do
+				return;
+			}
+
+			// In case there are lines with issues, trigger the request creation for them.
+			// Note: The request creation will be done async
+			C_Request_CreateFromInout_Async.createWorkpackage(linesWithQualityIssues);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
-	public void cacheResetShipmentStatistics(final I_M_InOut inOut)
+	public void cacheResetShipmentStatistics(final I_M_InOut inoutRecord)
 	{
-		Services.get(IInOutBL.class).invalidateStatistics(inOut);
-
+		try (final MDCCloseable inoutRecordMDC = TableRecordMDC.putTableRecordReference(inoutRecord))
+		{
+			Services.get(IInOutBL.class).invalidateStatistics(inoutRecord);
+		}
 	}
 }

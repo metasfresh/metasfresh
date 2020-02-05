@@ -193,12 +193,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 								updateInvalid(icRecord);
 								if (!icRecord.isError())
 								{
+									logger.debug("Updated invoice canddiate");
 									result.addInvoiceCandidate(icRecord);
 								}
 								else
 								{
 									Loggables.withLogger(logger, Level.DEBUG)
-											.addLog("Error processing invoice; ic.errorMessage={}; ic={}", icRecord.getErrorMsg(), icRecord);
+											.addLog("Error updating invoice candidate; ic.errorMessage={}; icRecord={}", icRecord.getErrorMsg(), icRecord);
 									result.incrementErrorsCount();
 								}
 							}

@@ -195,7 +195,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
-	 * @task 08451 */
+	 *
+	 * @task 08451
+	 */
 	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
 
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
@@ -1889,35 +1891,58 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public boolean isCloseIfPartiallyInvoiced()
+	public void closePartiallyInvoiced_InvoiceCandidates(@NonNull final I_C_Invoice invoice)
 	{
-		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
-				.getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false);
-
-		return isCloseIfPartiallyInvoiced;
-	}
-
-	@Override
-	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
-	{
-		if (!isCloseIfPartiallyInvoiced())
-		{
-			return;
-		}
-
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
+		if (invoiceBL.isReversal(invoice))
 		{
-			for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(il))
+			logger.debug("C_Invoice is a reversal; => not closing any invoice candidates");
+			return;
+		}
+
+		if (!isCloseIfPartiallyInvoiced(OrgId.ofRepoId(invoice.getAD_Org_ID())))
+		{
+			logger.debug("isCloseIfPartiallyShipped=false for AD_Org_ID={}; => not closing any invoice candidates", invoice.getAD_Org_ID());
+			return;
+		}
+
+		for (final I_C_InvoiceLine ilRecord : invoiceDAO.retrieveLines(invoice))
+		{
+			try (final MDCCloseable ilRecordMDC = TableRecordMDC.putTableRecordReference(ilRecord))
 			{
-				if (candidate.getQtyToInvoice().compareTo(candidate.getQtyOrdered()) < 0)
+				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(ilRecord))
 				{
-					closeInvoiceCandidate(candidate);
+					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
+					{
+						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
+						{
+							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+							closeInvoiceCandidate(candidate);
+						}
+						else
+						{
+							logger.debug("invoiceLine.qtyInvoiced={} is >= invoiceCandidate.qtyOrdered={}; -> not closing invoice candidate",
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+						}
+					}
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean isCloseIfPartiallyInvoiced(@NonNull final OrgId orgId)
+	{
+		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
+				.getBooleanValue(
+						SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false,
+						ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
+
+		return isCloseIfPartiallyInvoiced;
 	}
 
 	@Override

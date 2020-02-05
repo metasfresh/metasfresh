@@ -20,7 +20,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.annotation.Nullable;
 
@@ -34,15 +36,19 @@ import lombok.NonNull;
 
 /**
  * General Database Constants and Utilities
- *
+ * <p>
  * Based on work by Jorg Janke
  */
 public class Database
 {
-	/** PostgreSQL ID */
+	/**
+	 * PostgreSQL ID
+	 */
 	public static final String DB_POSTGRESQL = "PostgreSQL";
 
-	/** Connection Timeout in seconds */
+	/**
+	 * Connection Timeout in seconds
+	 */
 	public static int CONNECTION_TIMEOUT = 10;
 
 	public static AdempiereDatabase newAdempiereDatabase(final String type)
@@ -69,13 +75,29 @@ public class Database
 	}
 
 	/**
+	 * Create SQL TO Date String from LocalDate (without time zone)
+	 *
+	 * @param localDate Date to be converted
+	 * @return 'YYYY-MM-DD'::timestamp without time zone
+	 */
+	@NonNull
+	public static String TO_DATE(@NonNull final LocalDate localDate)
+	{
+		return " "
+				+ "'"
+				+ localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+				+ "'"
+				+ "::timestamp without time zone"
+				+ " ";
+	}
+
+	/**
 	 * Create SQL TO Date String from Timestamp
 	 *
-	 * @param time Date to be converted; if {@code null}, then the current time is returned.
+	 * @param time    Date to be converted; if {@code null}, then the current time is returned.
 	 * @param dayOnly true if time set to 00:00:00
-	 *
-	 * @return TO_DATE('2001-01-30 18:10:20',''YYYY-MM-DD HH24:MI:SS')
-	 *         or TO_DATE('2001-01-30',''YYYY-MM-DD')
+	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ')
+	 * or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
 	public static String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
 	{
@@ -98,7 +120,7 @@ public class Database
 		}
 		else
 		{
-			dateString.append(myDate.substring(0, myDate.indexOf('.')));	// cut off miliseconds
+			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
 			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
 		}
 		return dateString.toString();
@@ -107,10 +129,8 @@ public class Database
 	/**
 	 * Create SQL for formatted Date, Number
 	 *
-	 * @param columnName the column name in the SQL
+	 * @param columnName  the column name in the SQL
 	 * @param displayType Display Type
-	 *
-	 * 
 	 * @see #TO_CHAR(String, int, String)
 	 */
 	public static String TO_CHAR(final String columnName, final int displayType)
@@ -126,12 +146,11 @@ public class Database
 	/**
 	 * Create SQL for formatted Date, Number.
 	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
-	 * @param AD_Language 6 character language setting (from Env.LANG_*)
+	 * @param columnName    the column name in the SQL
+	 * @param displayType   Display Type
+	 * @param AD_Language   6 character language setting (from Env.LANG_*)
 	 * @param formatPattern formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
-	 *            implementation method can ignore it silently.
-	 *
+	 *                      implementation method can ignore it silently.
 	 * @return SQL code
 	 */
 	public static String TO_CHAR(
@@ -168,7 +187,7 @@ public class Database
 	 * @see http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE
 	 */
 	@VisibleForTesting
-	/* package */static final String convertDecimalPatternToPG(final String formatPattern)
+	/* package */ static final String convertDecimalPatternToPG(final String formatPattern)
 	{
 		if (formatPattern == null || formatPattern.isEmpty())
 		{
@@ -205,7 +224,7 @@ public class Database
 	/**
 	 * Return number as string for INSERT statements with correct precision
 	 *
-	 * @param number number
+	 * @param number      number
 	 * @param displayType display Type
 	 * @return number as string
 	 */
