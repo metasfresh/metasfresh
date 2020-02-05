@@ -95,6 +95,9 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.ZonedDateTime, widgetSize = WidgetSize.Small, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
+	// for now we decided to not show it for space/layout-reasons; that the whole thing is grayed out is probably a sufficient queue to the user
+	private boolean processed;
+
 	//
 	//
 	//
@@ -134,7 +137,8 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@Nullable final LookupValue catchUOM,
 			//
 			@NonNull final AttributeSetInstanceId asiIdInitial,
-			@NonNull final LookupValue asi)
+			@NonNull final LookupValue asi,
+			@NonNull final Boolean processed)
 	{
 		this.salesOrder = salesOrder;
 		this.salesOrderLineNo = salesOrderLineNo;
@@ -164,6 +168,8 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ShipmentCandidateRow.class);
 		fieldNameAndJsonValues = buildFieldNameAndJsonValues(catchWeight);
+
+		this.processed = processed;
 	}
 
 	@Override
@@ -175,7 +181,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@Override
 	public boolean isProcessed()
 	{
-		return false;
+		return processed;
 	}
 
 	@Override
