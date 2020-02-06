@@ -671,7 +671,7 @@ Window.propTypes = {
   allowShortcut: PropTypes.bool,
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   dataId: PropTypes.string,
-  modal: PropTypes.object,
+  modal: PropTypes.bool,
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   isAdvanced: PropTypes.bool,
