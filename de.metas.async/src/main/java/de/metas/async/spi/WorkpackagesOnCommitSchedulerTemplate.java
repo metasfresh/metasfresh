@@ -253,18 +253,18 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			this.ctx = ctx;
 		}
 
-		private final void assertNotProcessed()
+		private void assertNotProcessed()
 		{
 			Check.assume(!processed, "Not processed: {}", this);
 		}
 
-		private final void markAsProcessed()
+		private void markAsProcessed()
 		{
 			assertNotProcessed();
 			this.processed = true;
 		}
 
-		public final Collector addItem(final ItemType item)
+		public Collector addItem(final ItemType item)
 		{
 			assertNotProcessed();
 
@@ -276,7 +276,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return this;
 		}
 
-		public final Collector setParameter(final String parameterName, final Object parameterValue)
+		public Collector setParameter(final String parameterName, final Object parameterValue)
 		{
 			assertNotProcessed();
 			Check.assumeNotEmpty(parameterName, "parameterName not empty");
@@ -291,26 +291,26 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return this;
 		}
 
-		public final <ParameterType> ParameterType getParameter(final String parameterName)
+		public <ParameterType> ParameterType getParameter(final String parameterName)
 		{
 			@SuppressWarnings("unchecked")
 			final ParameterType parameterValue = (ParameterType)parameters.get(parameterName);
 			return parameterValue;
 		}
 
-		public final Collector setCreateOneWorkpackagePerModel(final boolean createOneWorkpackagePerModel)
+		public Collector setCreateOneWorkpackagePerModel(final boolean createOneWorkpackagePerModel)
 		{
 			assertNotProcessed();
 			this.createOneWorkpackagePerModel = createOneWorkpackagePerModel;
 			return this;
 		}
 
-		private final boolean isCreateOneWorkpackagePerModel()
+		private boolean isCreateOneWorkpackagePerModel()
 		{
 			return createOneWorkpackagePerModel;
 		}
 
-		public final void createAndSubmitWorkpackage()
+		public void createAndSubmitWorkpackage()
 		{
 			markAsProcessed();
 
@@ -337,20 +337,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			}
 		}
 
-		private final void createAndSubmitWorkpackage(final IWorkPackageBlockBuilder blockBuilder, final Collection<Object> modelsToEnqueue)
+		private void createAndSubmitWorkpackage(final IWorkPackageBlockBuilder blockBuilder, final Collection<Object> modelsToEnqueue)
 		{
-			blockBuilder
-					.newWorkpackage()
-					//
-					// Workpackage Parameters
-					.parameters()
-					.setParameters(parameters)
-					.end()
-					//
-					// Workpackage elements
+			blockBuilder.newWorkpackage()
+					.parameters(parameters)
 					.addElements(modelsToEnqueue)
-					//
-					// Build & enqueue
 					.build();
 		}
 	}
