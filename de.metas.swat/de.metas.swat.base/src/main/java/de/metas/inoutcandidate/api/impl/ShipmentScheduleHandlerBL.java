@@ -46,6 +46,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -62,6 +64,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -78,6 +81,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	private static final String MSG_RECORD_CREATION_VETOED_1P = "de.metas.inoutCandidate.RECORD_CREATION_VETOED";
 
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleHandlerBL.class);
+
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private final Map<String, ShipmentScheduleHandler> tableName2Handler = new HashMap<>();
 
@@ -132,7 +140,6 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	@VisibleForTesting
 	public I_M_IolCandHandler retrieveHandlerRecordOrNull(final String className)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_M_IolCandHandler.class)
 				.addOnlyActiveRecordsFilter()
@@ -164,69 +171,94 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		for (final String tableName : tableName2Handler.keySet())
 		{
 			final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
-			final String handlerClassName = handler.getClass().getName();
-
-			final I_M_IolCandHandler handlerRecord = className2HandlerRecord.getOrLoad(
-					handlerClassName,
-					() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
-
-			final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
-			while (missingCandidateModels.hasNext())
+			try (final MDCCloseable handlerMDC = MDC.putCloseable("ShipmentScheduleHandler.className", handler.getClass().getName()))
 			{
-				final Object model = missingCandidateModels.next();
-				final List<ModelWithoutShipmentScheduleVetoer> vetoListeners = new ArrayList<>();
-
-				for (final ModelWithoutShipmentScheduleVetoer l : tableName2Listeners.get(tableName))
-				{
-					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model);
-					if (listenerResult == OnMissingCandidate.I_VETO)
-					{
-						Loggables.withLogger(logger, Level.DEBUG)
-								.addLog("IInOutCandHandlerListener {} doesn't want us to create a shipment schedule", l);
-						vetoListeners.add(l);
-					}
-				}
-
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-				if (vetoListeners.isEmpty())
-				{
-					// There was no listener forbidding us to create one or more I_M_ShipmentSchedules for 'model'
-					final List<I_M_ShipmentSchedule> candidatesForModel = handler.createCandidatesFor(model);
-
-					for (final I_M_ShipmentSchedule newSched : candidatesForModel)
-					{
-						newSched.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
-						saveRecord(newSched);
-
-						result.add(ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID()));
-					}
-
-					saveHandlerLog(handlerRecord, model,
-							msgBL.getMsg(ctx, MSG_RECORDS_CREATED_1P,
-									new Object[] {
-											candidatesForModel.size(),
-											msgBL.translate(ctx, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID) }));
-				}
-				else
-				{
-					final StringBuilder vetoNames = new StringBuilder();
-					for (final ModelWithoutShipmentScheduleVetoer vetoListener : vetoListeners)
-					{
-						if (vetoNames.length() > 0)
-						{
-							vetoNames.append(", ");
-						}
-						vetoNames.append(vetoListener.getClass().getName());
-					}
-
-					saveHandlerLog(handlerRecord, model,
-							msgBL.getMsg(ctx, MSG_RECORD_CREATION_VETOED_1P,
-									new Object[] {
-											msgBL.translate(ctx, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID),
-											vetoNames }));
-				}
+				result.addAll(invokeHandler(ctx, handler));
 			}
 		}
+		return result;
+	}
+
+	private LinkedHashSet<ShipmentScheduleId> invokeHandler(
+			@NonNull final Properties ctx,
+			@NonNull final ShipmentScheduleHandler handler)
+	{
+		final String handlerClassName = handler.getClass().getName();
+
+		final I_M_IolCandHandler handlerRecord = className2HandlerRecord.getOrLoad(
+				handlerClassName,
+				() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
+
+		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
+
+		final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+		while (missingCandidateModels.hasNext())
+		{
+			final Object model = missingCandidateModels.next();
+			try (final MDCCloseable modelMDC = TableRecordMDC.putTableRecordReference(model))
+			{
+				result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
+			}
+		}
+		return result;
+	}
+
+	private LinkedHashSet<ShipmentScheduleId> invokeHandlerForModel(
+			@NonNull final Properties ctx,
+			@NonNull final ShipmentScheduleHandler handler,
+			@NonNull final I_M_IolCandHandler handlerRecord,
+			@NonNull final Object model)
+	{
+		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
+
+		final List<ModelWithoutShipmentScheduleVetoer> vetoListeners = new ArrayList<>();
+
+		for (final ModelWithoutShipmentScheduleVetoer l : tableName2Listeners.get(handler.getSourceTable()))
+		{
+			final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model);
+			if (listenerResult == OnMissingCandidate.I_VETO)
+			{
+				Loggables.withLogger(logger, Level.DEBUG)
+						.addLog("IInOutCandHandlerListener {} doesn't want us to create a shipment schedule", l);
+				vetoListeners.add(l);
+			}
+		}
+
+		if (vetoListeners.isEmpty())
+		{
+			// There was no listener forbidding us to create one or more I_M_ShipmentSchedules for 'model'
+			final List<I_M_ShipmentSchedule> candidatesForModel = handler.createCandidatesFor(model);
+			for (final I_M_ShipmentSchedule newSched : candidatesForModel)
+			{
+				newSched.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
+				saveRecord(newSched);
+
+				result.add(ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID()));
+			}
+
+			saveHandlerLog(handlerRecord, model,
+					msgBL.getMsg(ctx, MSG_RECORDS_CREATED_1P,
+							new Object[] {
+									candidatesForModel.size(), msgBL.translate(ctx, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID) }));
+		}
+		else
+		{
+			final StringBuilder vetoNames = new StringBuilder();
+			for (final ModelWithoutShipmentScheduleVetoer vetoListener : vetoListeners)
+			{
+				if (vetoNames.length() > 0)
+				{
+					vetoNames.append(", ");
+				}
+				vetoNames.append(vetoListener.getClass().getName());
+			}
+
+			saveHandlerLog(handlerRecord, model,
+					msgBL.getMsg(ctx, MSG_RECORD_CREATION_VETOED_1P,
+							new Object[] {
+									msgBL.translate(ctx, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID), vetoNames }));
+		}
+
 		return result;
 	}
 
@@ -246,13 +278,16 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		final String trxName = getTrxName(handlerRecord);
 
 		final I_M_IolCandHandler_Log logRecord = create(ctx, I_M_IolCandHandler_Log.class, trxName);
-
-		logRecord.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(handlerRecord.getTableName()));
+		logRecord.setAD_Table_ID(tableDAO.retrieveTableId(handlerRecord.getTableName()));
 		logRecord.setRecord_ID(getId(referencedModel));
 		logRecord.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
 		logRecord.setStatus(status);
 
-		saveRecord(logRecord);
+		try (final MDCCloseable logRecordMDC = TableRecordMDC.putTableRecordReference(logRecord))
+		{
+			saveRecord(logRecord);
+			logger.debug(status);
+		}
 	}
 
 	@Override
@@ -264,7 +299,6 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	@Override
 	public ShipmentScheduleHandler getHandlerFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
 		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);

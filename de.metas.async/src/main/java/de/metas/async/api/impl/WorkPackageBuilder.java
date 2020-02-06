@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -46,6 +47,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -113,41 +115,42 @@ import lombok.NonNull;
 			final I_C_Queue_WorkPackage workpackage = workpackageQueue.enqueueWorkPackage(
 					queueBlock,
 					workpackagePriority);
-
-			// Set the Async batch if provided
-			// TODO: optimize this and set everything in one shot and then save it.
-			if (asyncBatchSet)
+			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
 			{
-				workpackage.setC_Async_Batch(asyncBatch);
-				Services.get(IQueueDAO.class).save(asyncBatch);
+				// Set the Async batch if provided
+				// TODO: optimize this and set everything in one shot and then save it.
+				if (asyncBatchSet)
+				{
+					workpackage.setC_Async_Batch(asyncBatch);
+					Services.get(IQueueDAO.class).save(asyncBatch);
+				}
+
+				if (userInChargeId > 0)
+				{
+					workpackage.setAD_User_InCharge_ID(userInChargeId);
+				}
+
+				// Create workpackage parameters
+				if (_parametersBuilder != null)
+				{
+					_parametersBuilder.setC_Queue_WorkPackage(workpackage);
+					_parametersBuilder.build();
+				}
+
+				createWorkpackageElements(workpackageQueue, workpackage);
+
+				//
+				// Lock enqueued workpackage elements
+				if (elementsLocker != null)
+				{
+					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
+				}
+
+				//
+				// Actually mark the workpackage as ready for processing
+				// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
+				workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
 			}
-
-			if (userInChargeId > 0)
-			{
-				workpackage.setAD_User_InCharge_ID(userInChargeId);
-			}
-
-			// Create workpackage parameters
-			if (_parametersBuilder != null)
-			{
-				_parametersBuilder.setC_Queue_WorkPackage(workpackage);
-				_parametersBuilder.build();
-			}
-
-			createWorkpackageElements(workpackageQueue, workpackage);
-
-			//
-			// Lock enqueued workpackage elements
-			if (elementsLocker != null)
-			{
-				_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
-			}
-
-			//
-			// Actually mark the workpackage as ready for processing
-			// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
-			workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
-
 			return workpackage;
 		}
 	}
