@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import { getKPIData, getTargetIndicatorsData } from '../../actions/AppActions';
 import Loader from '../app/Loader';
 import BarChart from './BarChartComponent';
@@ -249,5 +249,21 @@ class RawChart extends Component {
       : this.renderNoData(chartData);
   }
 }
+
+RawChart.propTypes = {
+  isMaximized: PropTypes.bool,
+  index: PropTypes.number,
+  id: PropTypes.number,
+  chartType: PropTypes.string,
+  noData: PropTypes.any,
+  pollInterval: PropTypes.any,
+  caption: PropTypes.string,
+  fields: PropTypes.any,
+  groupBy: PropTypes.string,
+  height: PropTypes.string,
+  handleChartOptions: PropTypes.func,
+  editmode: PropTypes.any,
+  chartTitle: PropTypes.string,
+};
 
 export default connect()(RawChart);

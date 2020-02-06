@@ -2,7 +2,7 @@
  * Filter element displayed inline for frequent filters
  **/
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import RawWidget from '../widget/RawWidget';
 
 import { parseDateToReadable } from './Filters';
@@ -138,5 +138,18 @@ class InlineFilterItem extends Component {
     );
   }
 }
+
+InlineFilterItem.propTypes = {
+  active: PropTypes.bool,
+  data: PropTypes.object,
+  parentFilter: PropTypes.object,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  viewId: PropTypes.number,
+  id: PropTypes.number,
+  applyFilters: PropTypes.func,
+  clearFilters: PropTypes.func,
+  windowType: PropTypes.string,
+};
 
 export default InlineFilterItem;

@@ -122,15 +122,24 @@ export const getRoutes = (store, auth, plugins) => {
   };
 
   const pluginRoutes = getPluginsRoutes(plugins);
+  const DocListRoute = nextState => (
+    <DocList
+      query={nextState.location.query}
+      windowType={nextState.params.windowType}
+    />
+  );
+  const BoardRoute = nextState => (
+    <Board
+      query={nextState.location.query}
+      boardId={nextState.params.boardId}
+    />
+  );
+
   const childRoutes = [
     {
       path: '/window/:windowType',
-      component: nextState => (
-        <DocList
-          query={nextState.location.query}
-          windowType={nextState.params.windowType}
-        />
-      ),
+      // eslint-disable-next-line react/display-name
+      component: DocListRoute,
     },
     {
       path: '/window/:windowType/:docId',
@@ -144,12 +153,8 @@ export const getRoutes = (store, auth, plugins) => {
     },
     {
       path: '/board/:boardId',
-      component: nextState => (
-        <Board
-          query={nextState.location.query}
-          boardId={nextState.params.boardId}
-        />
-      ),
+      // eslint-disable-next-line react/display-name
+      component: BoardRoute,
     },
     {
       path: '/inbox',

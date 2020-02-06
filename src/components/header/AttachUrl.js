@@ -1,7 +1,7 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import { addNotification, createUrlAttachment } from '../../actions/AppActions';
 
 class AttachUrl extends Component {
@@ -140,5 +140,13 @@ class AttachUrl extends Component {
     /* eslint-enable max-len */
   }
 }
+
+AttachUrl.propTypes = {
+  windowId: PropTypes.any,
+  documentId: PropTypes.any,
+  handleClose: PropTypes.func,
+  dispatch: PropTypes.func,
+  fetchAttachments: PropTypes.any,
+};
 
 export default connect()(AttachUrl);

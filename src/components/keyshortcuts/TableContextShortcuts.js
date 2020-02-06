@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { Shortcut } from '../keyshortcuts';
 import { arePropTypesIdentical } from '../../utils';
 
@@ -35,3 +35,8 @@ export default class TableContextShortcuts extends Component {
     ];
   }
 }
+
+TableContextShortcuts.propTypes = {
+  handleToggleExpand: PropTypes.func,
+  handleToggleQuickInput: PropTypes.func,
+};

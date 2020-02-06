@@ -20,6 +20,11 @@ class InboxAll extends Component {
     dispatch: PropTypes.func.isRequired,
     inbox: PropTypes.object.isRequired,
     pluginModal: PropTypes.object,
+    modal: PropTypes.any,
+    rawModal: PropTypes.any,
+    processStatus: PropTypes.any,
+    indicator: PropTypes.any,
+    includedView: PropTypes.any,
   };
 
   render() {

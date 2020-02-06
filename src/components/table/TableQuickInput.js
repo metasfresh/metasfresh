@@ -298,6 +298,9 @@ TableQuickInput.propTypes = {
   dispatch: PropTypes.func.isRequired,
   closeBatchEntry: PropTypes.func,
   forceHeight: PropTypes.number,
+  docType: PropTypes.any,
+  docId: PropTypes.string,
+  tabId: PropTypes.string,
 };
 
 export default connect()(TableQuickInput);

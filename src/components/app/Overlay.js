@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import { toggleOverlay } from '../../actions/WindowActions';
 import QRCode from './QRCode';
 
@@ -39,6 +39,12 @@ class Overlay extends Component {
     );
   }
 }
+
+Overlay.propTypes = {
+  toggleOverlay: PropTypes.func,
+  data: PropTypes.object,
+  showOverlay: PropTypes.bool,
+};
 
 export default connect(
   null,

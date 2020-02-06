@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import Loader from '../app/Loader';
 
 class Indicator extends Component {
@@ -38,5 +38,14 @@ class Indicator extends Component {
     );
   }
 }
+
+Indicator.propTypes = {
+  value: PropTypes.any,
+  caption: PropTypes.string,
+  loader: PropTypes.any,
+  fullWidth: PropTypes.bool,
+  editmode: PropTypes.bool,
+  framework: PropTypes.any,
+};
 
 export default Indicator;

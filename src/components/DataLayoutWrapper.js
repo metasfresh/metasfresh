@@ -1,7 +1,6 @@
 import React, { cloneElement, Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
 import { patchViewAttributes } from '../actions/ViewAttributesActions';
 import { parseToDisplay } from '../utils/documentListHelper';
 
@@ -122,6 +121,10 @@ class DataLayoutWrapper extends Component {
 
 DataLayoutWrapper.propTypes = {
   onRowEdited: PropTypes.func,
+  windowType: PropTypes.string,
+  viewId: PropTypes.number,
+  children: PropTypes.node,
+  className: PropTypes.string,
 };
 
 export default connect()(DataLayoutWrapper);

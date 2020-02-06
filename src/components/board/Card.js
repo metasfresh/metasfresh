@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
-
+import PropTypes from 'prop-types';
 import ItemTypes from '../../constants/ItemTypes';
 import Avatar from '../app/Avatar';
 
@@ -58,6 +58,13 @@ const TargetIndicator = props => {
   const { index, laneId, parentIndex, parentLaneId } = props;
   if (laneId !== parentLaneId || index !== parentIndex) return false;
   return <div className="lane-card-placeholder" />;
+};
+
+TargetIndicator.propTypes = {
+  index: PropTypes.number,
+  laneId: PropTypes.number,
+  parentIndex: PropTypes.number,
+  parentLaneId: PropTypes.number,
 };
 
 class Card extends Component {
@@ -138,6 +145,24 @@ class Card extends Component {
     );
   }
 }
+
+Card.propTypes = {
+  index: PropTypes.number,
+  laneId: PropTypes.number,
+  parentIndex: PropTypes.number,
+  parentLaneId: PropTypes.number,
+  caption: PropTypes.string,
+  description: PropTypes.string,
+  users: PropTypes.any,
+  connectDragSource: PropTypes.func,
+  connectDropTarget: PropTypes.func,
+  onDelete: PropTypes.func,
+  cardId: PropTypes.number,
+  documentPath: PropTypes.string,
+  onCaptionClick: PropTypes.func,
+  targetIndicator: PropTypes.any,
+  placeholder: PropTypes.string,
+};
 
 export default DragSource(ItemTypes.CARD, cardSource, collect)(
   DropTarget(ItemTypes.CARD, cardTarget, connect)(Card)

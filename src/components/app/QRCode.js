@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { BrowserQRCodeSvgWriter } from '@zxing/library';
 import currentDevice from 'current-device';
@@ -43,5 +44,10 @@ class QRCode extends Component {
     );
   }
 }
+
+QRCode.propTypes = {
+  data: PropTypes.object,
+  toggleOverlay: PropTypes.func,
+};
 
 export default onClickOutside(QRCode);

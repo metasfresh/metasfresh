@@ -27,6 +27,7 @@ class NotificationHandler extends Component {
 
 NotificationHandler.propTypes = {
   notifications: PropTypes.object.isRequired,
+  children: PropTypes.element,
 };
 
 function mapStateToProps(state) {

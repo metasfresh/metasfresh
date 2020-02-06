@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { getRequest } from '../../actions/GenericActions';
 import Indicator from '../charts/Indicator';
 import ChartWidget from './ChartWidget';
@@ -74,5 +74,9 @@ class Sidenav extends Component {
     );
   }
 }
+
+Sidenav.propTypes = {
+  moveCard: PropTypes.func,
+};
 
 export default Sidenav;

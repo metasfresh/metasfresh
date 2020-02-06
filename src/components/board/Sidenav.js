@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 import React, { Component } from 'react';
 import InfiniteScroll from 'react-infinite-scroller';
 import onClickOutside from 'react-onclickoutside';
-
+import PropTypes from 'prop-types';
 import { createView, getLayout, getView } from '../../actions/BoardActions';
 import Loader from '../app/Loader';
 import Card from './Card';
@@ -143,5 +143,12 @@ class Sidenav extends Component {
     );
   }
 }
+
+Sidenav.propTypes = {
+  boardId: PropTypes.number,
+  viewId: PropTypes.number,
+  setViewId: PropTypes.func,
+  onClickOutside: PropTypes.func,
+};
 
 export default onClickOutside(Sidenav);

@@ -469,6 +469,7 @@ export class DraggableWrapper extends Component {
 
 DraggableWrapper.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  editmode: PropTypes.bool,
 };
 
 export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));

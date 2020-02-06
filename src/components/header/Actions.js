@@ -397,4 +397,16 @@ const mapStateToProps = (state, props) => {
   return result;
 };
 
+Actions.propTypes = {
+  entity: PropTypes.any,
+  docId: PropTypes.any,
+  notfound: PropTypes.bool,
+  activeTab: PropTypes.any,
+  activeTabSelected: PropTypes.array,
+  rowId: PropTypes.any,
+  closeSubheader: PropTypes.func,
+  openModal: PropTypes.func,
+  openModalRow: PropTypes.func,
+};
+
 export default connect(mapStateToProps)(Actions);

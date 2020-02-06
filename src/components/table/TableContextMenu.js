@@ -205,6 +205,21 @@ class TableContextMenu extends Component {
 TableContextMenu.propTypes = {
   dispatch: PropTypes.func.isRequired,
   onOpenNewTab: PropTypes.func,
+  x: PropTypes.number,
+  y: PropTypes.number,
+  fieldName: PropTypes.string,
+  supportZoomInto: PropTypes.bool,
+  supportFieldEdit: PropTypes.bool,
+  docId: PropTypes.string,
+  tabId: PropTypes.string,
+  windowId: PropTypes.string,
+  selected: PropTypes.string,
+  blur: PropTypes.any,
+  mainTable: PropTypes.any,
+  handleAdvancedEdit: PropTypes.func,
+  handleDelete: PropTypes.func,
+  handleFieldEdit: PropTypes.func,
+  handleZoomInto: PropTypes.func,
 };
 
 export default connect()(TableContextMenu);

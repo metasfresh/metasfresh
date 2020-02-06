@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { Shortcut } from '../keyshortcuts';
 import { arePropTypesIdentical } from '../../utils';
 
@@ -91,3 +91,11 @@ export default class DocumentListContextShortcuts extends Component {
     ];
   }
 }
+
+DocumentListContextShortcuts.propTypes = {
+  handleOpenNewTab: PropTypes.func,
+  handleDelete: PropTypes.func,
+  handleAdvancedEdit: PropTypes.func,
+  getAllLeafs: PropTypes.any,
+  handleIndent: PropTypes.func,
+};

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { Shortcut } from '../keyshortcuts';
 
 export default class PaginationContextShortcuts extends Component {
@@ -76,3 +76,12 @@ export default class PaginationContextShortcuts extends Component {
     ];
   }
 }
+
+PaginationContextShortcuts.propTypes = {
+  handleFirstPage: PropTypes.func,
+  handleLastPage: PropTypes.func,
+  handleNextPage: PropTypes.func,
+  handlePrevPage: PropTypes.func,
+  pages: PropTypes.number,
+  handleSelectAll: PropTypes.func,
+};

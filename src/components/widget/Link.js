@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 class Link extends Component {
   constructor(props) {
@@ -39,5 +40,13 @@ class Link extends Component {
     );
   }
 }
+
+Link.propTypes = {
+  getClassNames: PropTypes.func,
+  isEdited: PropTypes.bool,
+  widgetProperties: PropTypes.any,
+  icon: PropTypes.any,
+  widgetData: PropTypes.any,
+};
 
 export default Link;

@@ -83,6 +83,7 @@ Login.propTypes = {
   redirect: PropTypes.string,
   splat: PropTypes.string,
   token: PropTypes.string,
+  auth: PropTypes.object,
 };
 
 export default connect()(Login);
