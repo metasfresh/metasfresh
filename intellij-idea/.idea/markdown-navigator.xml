@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="MarkdownProjectSettings" wasCopied="false">
-    <PreviewSettings splitEditorLayout="SPLIT" splitEditorPreview="PREVIEW" useGrayscaleRendering="false" zoomFactor="1.0" maxImageWidth="0" showGitHubPageIfSynced="false" allowBrowsingInPreview="false" synchronizePreviewPosition="true" highlightPreviewType="NONE" highlightFadeOut="5" highlightOnTyping="true" synchronizeSourcePosition="true" verticallyAlignSourceAndPreviewSyncPosition="true" showSearchHighlightsInPreview="false" showSelectionInPreview="true" openRemoteLinks="true" replaceUnicodeEmoji="false" lastLayoutSetsDefault="false">
+    <PreviewSettings splitEditorLayout="SPLIT" splitEditorPreview="PREVIEW" useGrayscaleRendering="false" zoomFactor="1.0" maxImageWidth="0" showGitHubPageIfSynced="false" allowBrowsingInPreview="false" synchronizePreviewPosition="true" highlightPreviewType="NONE" highlightFadeOut="5" highlightOnTyping="true" synchronizeSourcePosition="true" verticallyAlignSourceAndPreviewSyncPosition="true" showSearchHighlightsInPreview="false" showSelectionInPreview="true" openRemoteLinks="false" replaceUnicodeEmoji="false" lastLayoutSetsDefault="false">
       <PanelProvider>
         <provider providerId="com.vladsch.idea.multimarkdown.editor.swing.html.panel" providerName="Default - Swing" />
       </PanelProvider>
@@ -12,7 +12,7 @@
         <option name="ANCHORLINKS" value="true" />
         <option name="ASIDE" value="false" />
         <option name="ATXHEADERSPACE" value="true" />
-        <option name="AUTOLINKS" value="false" />
+        <option name="AUTOLINKS" value="true" />
         <option name="DEFINITIONS" value="false" />
         <option name="DEFINITION_BREAK_DOUBLE_BLANK_LINE" value="false" />
         <option name="FENCED_CODE_BLOCKS" value="true" />
@@ -51,13 +51,13 @@
         <option name="GITLAB_MERMAID_EXT" value="false" />
         <option name="HEADER_ID_NON_ASCII_TO_LOWERCASE" value="false" />
         <option name="HEADER_ID_NO_DUPED_DASHES" value="false" />
-        <option name="JEKYLL_FRONT_MATTER" value="true" />
+        <option name="JEKYLL_FRONT_MATTER" value="false" />
         <option name="MACROS_EXT" value="false" />
         <option name="NO_TEXT_ATTRIBUTES" value="false" />
         <option name="PARSE_HTML_ANCHOR_ID" value="false" />
         <option name="PLANTUML_FENCED_CODE" value="false" />
         <option name="PUML_FENCED_CODE" value="false" />
-        <option name="SIM_TOC_BLANK_LINE_SPACER" value="true" />
+        <option name="SIM_TOC_BLANK_LINE_SPACER" value="false" />
       </ParserOptions>
     </ParserSettings>
     <HtmlSettings headerTopEnabled="false" headerBottomEnabled="false" bodyTopEnabled="false" bodyBottomEnabled="false" embedUrlContent="false" addPageHeader="true" embedImages="false" embedHttpImages="false" imageUriSerials="false" addDocTypeHtml="true" noParaTags="false" plantUmlConversion="0" mathConversion="0">

@@ -3,8 +3,6 @@
     <module2copyright>
       <element module="All" copyright="metasfresh" />
     </module2copyright>
-    <LanguageOptions name="JAVA">
-      <option name="fileLocation" value="3" />
-    </LanguageOptions>
+    <LanguageOptions name="JAVA" />
   </settings>
 </component>
