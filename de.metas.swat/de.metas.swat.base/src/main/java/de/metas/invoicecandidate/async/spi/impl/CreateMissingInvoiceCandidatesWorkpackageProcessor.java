@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -17,6 +18,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lock.exceptions.LockFailedException;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -33,11 +35,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -71,7 +73,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		{
 			//
 			// Check if *we* shall create the invoice candidates
-			final Properties ctx = InterfaceWrapperHelper.getCtx(model);
+			final Properties ctx = extractCtxFromItem(model);
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			final List<IInvoiceCandidateHandler> handlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, tableName);
 			boolean isCreateCandidates = false;
@@ -83,6 +85,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 					break;
 				}
 			}
+			
 			if (!isCreateCandidates)
 			{
 				return false;
@@ -104,7 +107,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(final Collector collector, final Object item)
+		protected TableRecordReference extractModelToEnqueueFromItem(final Collector collector, final Object item)
 		{
 			return TableRecordReference.of(item);
 		}
