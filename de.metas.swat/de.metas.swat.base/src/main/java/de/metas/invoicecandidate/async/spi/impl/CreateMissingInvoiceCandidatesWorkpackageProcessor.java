@@ -123,8 +123,12 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 			for (final Object model : models)
 			{
-				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
-				Loggables.addLog("Created " + invoiceCandidates.size() + " invoice candidate for " + model);
+				try (final MDCCloseable c = TableRecordMDC.putTableRecordReference(model))
+				{
+					final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
+					Loggables.addLog("Created {} invoice candidate for {}", invoiceCandidates.size(), model);
+				}
+
 			}
 		}
 		catch (final LockFailedException e)
