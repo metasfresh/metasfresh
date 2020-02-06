@@ -1,7 +1,11 @@
 /**
- * 
+ *
  */
 package de.metas.tourplanning.api.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -20,7 +24,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.TimeUtil;
 
@@ -34,23 +38,36 @@ import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
+import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import de.metas.util.time.generator.BusinessDayShifter;
+import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import de.metas.util.time.generator.DateSequenceGenerator;
 import de.metas.util.time.generator.Frequency;
 import de.metas.util.time.generator.FrequencyType;
 import de.metas.util.time.generator.IDateShifter;
-import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import lombok.NonNull;
 
 /**
  * @author cg
- * 
+ *
  */
 public class TourDAO implements ITourDAO
 {
+
+	@Override
+	public I_M_Tour getById(@NonNull final TourId tourId)
+	{
+		final I_M_Tour tour = load(tourId.getRepoId(), I_M_Tour.class);
+		if (tour == null)
+		{
+			throw new AdempiereException("@NotFound@: " + tourId);
+		}
+		return tour;
+	}
+
 	@Override
 	public List<I_M_Tour> retriveAllTours(final Properties ctx)
 	{
@@ -234,8 +251,8 @@ public class TourDAO implements ITourDAO
 	public List<I_M_TourVersionLine> retrieveTourVersionLines(final I_M_TourVersion tourVersion)
 	{
 		Check.assumeNotNull(tourVersion, "tourVersion not null");
-		final Properties ctx = InterfaceWrapperHelper.getCtx(tourVersion);
-		final String trxName = InterfaceWrapperHelper.getTrxName(tourVersion);
+		final Properties ctx = getCtx(tourVersion);
+		final String trxName = getTrxName(tourVersion);
 		final int tourVersionId = tourVersion.getM_TourVersion_ID();
 
 		final List<I_M_TourVersionLine> tourVersionLines = retrieveTourVersionLines(ctx, tourVersionId, trxName);

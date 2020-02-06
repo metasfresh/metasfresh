@@ -49,6 +49,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -396,21 +397,19 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @return the value of the SYS_Config if found, false by default
 	 */
-	boolean isCloseIfPartiallyInvoiced();
+	boolean isCloseIfPartiallyInvoiced(OrgId orgId);
 
 	/**
 	 * If the invoice candidates linked to an invoice have Processed_Override on true, the flag must be unset in case of invoice reversal
-	 *
-	 * @param invoice
 	 */
 	void candidates_unProcess(I_C_Invoice invoice);
 
 	/**
 	 * Close linked invoice candidates if they were partially invoiced
-	 * Note: This behavior is determined by the value of the sys config "C_Invoice_Candidate_Close_PartiallyInvoice".
-	 * The candidates will be closed only if the sys config is set to 'Y'
+	 * Note: This behavior is determined by the value of the sys config {@code C_Invoice_Candidate_Close_PartiallyInvoice}.
+	 * The candidates will be closed only if the sys config is set to 'Y'.
 	 *
-	 * @param invoice
+	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced()
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 

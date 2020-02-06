@@ -1,5 +1,7 @@
 package de.metas.shipping.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,25 +27,37 @@ package de.metas.shipping.api.impl;
 import java.util.List;
 import java.util.Properties;
 
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Package;
 
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ShipperTransportationDAO implements IShipperTransportationDAO
 {
+
+	@Override
+	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
+	{
+		final I_M_ShipperTransportation shipperTransportation = load(shipperItransportationId.getRepoId(), I_M_ShipperTransportation.class);
+		if (shipperTransportation == null)
+		{
+			throw new AdempiereException("@NotFound@: " + shipperItransportationId);
+		}
+		return shipperTransportation;
+	}
+
 	@Override
 	public List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull final ShipperTransportationId shipperTransportationId)
 	{
@@ -61,7 +75,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Drafted) // Drafts
-				;
+		;
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_ShipperTransportation.COLUMNNAME_DocumentNo);
@@ -100,6 +114,6 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	@Override
 	public I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId)
 	{
-		return InterfaceWrapperHelper.load(shipperTransportationId, I_M_ShipperTransportation.class);
+		return load(shipperTransportationId, I_M_ShipperTransportation.class);
 	}
 }
