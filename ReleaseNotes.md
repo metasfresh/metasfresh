@@ -5,8 +5,8 @@ This file contains the tasks/issues which we implement in metasfresh, in a chron
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
- * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
+ * The metasfresh website is at [metasfresh.com/en](https://metasfresh.com/en) (English), [metasfresh.com](https://metasfresh.com/) (German)
+ * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
 
 Here come the actual release notes:
 
