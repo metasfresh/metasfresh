@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.banking.model.I_C_Payment_Request;
@@ -16,6 +18,8 @@ import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.AddressInfo;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.payment.esr.ESRStringUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;
@@ -48,6 +52,9 @@ import lombok.NonNull;
 @Component
 public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 {
+
+	private static final Logger logger = LogManager.getLogger(ESRInfoProviderImpl.class);
+
 	@Override
 	public ESRPaymentInfo provideCustomPayload(@NonNull final InvoiceToExport invoiceWithoutEsrInfo)
 	{
@@ -64,28 +71,38 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 				.create()
 				.firstOnly(I_C_Payment_Request.class);
 
-		if (paymentRequestRecord.getC_BP_BankAccount_ID() <= 0)
+		if (paymentRequestRecord == null)
 		{
+			logger.debug("C_Invoice_ID has no C_Payment_Request; -> returning null");
 			return null;
 		}
-
-		final I_C_BP_BankAccount esrBankAccount = create(paymentRequestRecord.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
-		if (!esrBankAccount.isEsrAccount())
+		try (final MDCCloseable paymentRequestRecordMDC = TableRecordMDC.putTableRecordReference(paymentRequestRecord))
 		{
-			return null;
+			if (paymentRequestRecord.getC_BP_BankAccount_ID() <= 0)
+			{
+				logger.debug("C_Payment_Request for C_Invoice_ID has C_BP_BankAccount_ID={}; -> returning null", paymentRequestRecord.getC_BP_BankAccount_ID());
+				return null;
+			}
+
+			final I_C_BP_BankAccount esrBankAccount = create(paymentRequestRecord.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+			if (!esrBankAccount.isEsrAccount())
+			{
+				logger.debug("C_BP_BankAccount.isErsAccount=N; -> returning null", paymentRequestRecord.getC_BP_BankAccount_ID());
+				return null;
+			}
+
+			final I_C_Bank esrBank = create(esrBankAccount.getC_Bank(), I_C_Bank.class);
+
+			final ESRPaymentInfo esrPaymentInfo = ESRPaymentInfo.builder()
+					.referenceNumber(ESRStringUtil.formatReferenceNumber(paymentRequestRecord.getReference()))
+					.codingLine(paymentRequestRecord.getFullPaymentString())
+					.companyName(companyName)
+					.addressInfo(createAddressInfo(esrBank))
+					.participantNumber(esrBankAccount.getESR_RenderedAccountNo())
+					.build();
+
+			return esrPaymentInfo;
 		}
-
-		final I_C_Bank esrBank = create(esrBankAccount.getC_Bank(), I_C_Bank.class);
-
-		final ESRPaymentInfo esrPaymentInfo = ESRPaymentInfo.builder()
-				.referenceNumber(ESRStringUtil.formatReferenceNumber(paymentRequestRecord.getReference()))
-				.codingLine(paymentRequestRecord.getFullPaymentString())
-				.companyName(companyName)
-				.addressInfo(createAddressInfo(esrBank))
-				.participantNumber(esrBankAccount.getESR_RenderedAccountNo())
-				.build();
-
-		return esrPaymentInfo;
 	}
 
 	private AddressInfo createAddressInfo(@Nullable final I_C_Bank esrBank)
