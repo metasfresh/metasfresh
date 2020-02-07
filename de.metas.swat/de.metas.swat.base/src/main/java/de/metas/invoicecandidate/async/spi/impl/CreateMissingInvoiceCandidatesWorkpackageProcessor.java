@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.async.api.IQueueDAO;
@@ -19,6 +20,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.TableRecordMDC;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -85,7 +87,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 					break;
 				}
 			}
-			
+
 			if (!isCreateCandidates)
 			{
 				return false;
@@ -95,22 +97,29 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		};
 
 		@Override
-		protected Properties extractCtxFromItem(final Object item)
+		protected Properties extractCtxFromItem(final Object model)
 		{
-			return InterfaceWrapperHelper.getCtx(item);
+			return InterfaceWrapperHelper.getCtx(model);
 		}
 
 		@Override
-		protected String extractTrxNameFromItem(final Object item)
+		protected String extractTrxNameFromItem(final Object model)
 		{
-			return InterfaceWrapperHelper.getTrxName(item);
+			return InterfaceWrapperHelper.getTrxName(model);
 		}
 
 		@Override
-		protected TableRecordReference extractModelToEnqueueFromItem(final Collector collector, final Object item)
+		protected TableRecordReference extractModelToEnqueueFromItem(final Collector collector, final Object model)
 		{
-			return TableRecordReference.of(item);
+			return TableRecordReference.of(model);
 		}
+
+		@Override
+		protected UserId extractUserInChargeOrNull(final Object model)
+		{
+			final Properties ctx = extractCtxFromItem(model);
+			return Env.getLoggedUserIdIfExists(ctx).orElse(null);
+		};
 	};
 
 	// services
