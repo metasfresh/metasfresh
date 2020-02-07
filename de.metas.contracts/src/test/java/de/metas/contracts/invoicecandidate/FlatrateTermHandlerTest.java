@@ -16,9 +16,10 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
@@ -46,30 +47,29 @@ import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
-import mockit.Expectations;
-import mockit.Mocked;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
+	private IProductAcctDAO productAcctDAO;
+	private ITaxBL taxBL;
+
 	private OrgId orgId;
 	private ActivityId activityId;
-
-	@Mocked
-	protected IProductAcctDAO productAcctDAO;
-	@Mocked
-	protected ITaxBL taxBL;
 	private UomId uomId;
 
-	@BeforeClass
+	@BeforeAll
 	public static void configure()
 	{
 		Adempiere.enableUnitTestMode();
 		Check.setDefaultExClass(AdempiereException.class);
 	}
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
+		productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		taxBL = Mockito.mock(ITaxBL.class);
+
 		final I_AD_Org org = newInstance(I_AD_Org.class);
 		save(org);
 		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
@@ -107,42 +107,25 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		// 07442
-		// @formatter:off
-		new Expectations()
-		{{
-				productAcctDAO.retrieveActivityForAcct(
-						clientId,
-						orgId,
-						productId1);
-				minTimes = 0;
-				result = activityId;
+		Mockito.when(productAcctDAO.retrieveActivityForAcct(
+				clientId,
+				orgId,
+				productId1))
+				.thenReturn(activityId);
 
-				productAcctDAO.retrieveActivityForAcct(
-						withNotEqual(clientId),
-						withNotEqual(orgId),
-						withNotEqual(productId1));
-				minTimes = 0;
-				result = null;
-
-				final Properties ctx = Env.getCtx();
-
-				final TaxCategoryId taxCategoryId = null;
-
-				taxBL.getTax(
-						ctx
-						, term1
-						, taxCategoryId
-						, term1.getM_Product_ID()
-						, term1.getStartDate()
-						, OrgId.ofRepoId(term1.getAD_Org_ID())
-						, (WarehouseId)null
-						, CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
-						, SOTrx.SALES.toBoolean());
-				minTimes = 0;
-				result = 3;
-		}};
-		// @formatter:on
+		final Properties ctx = Env.getCtx();
+		final TaxCategoryId taxCategoryId = null;
+		Mockito.when(taxBL.getTax(
+				ctx,
+				term1,
+				taxCategoryId,
+				term1.getM_Product_ID(),
+				term1.getStartDate(),
+				OrgId.ofRepoId(term1.getAD_Org_ID()),
+				(WarehouseId)null,
+				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
+				SOTrx.SALES.toBoolean()))
+				.thenReturn(3);
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));

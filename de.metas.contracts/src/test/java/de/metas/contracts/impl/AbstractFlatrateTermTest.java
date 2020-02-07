@@ -6,6 +6,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -16,12 +19,15 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
 import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_Tax;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_AD_User;
@@ -45,6 +51,7 @@ import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -106,13 +113,15 @@ public abstract class AbstractFlatrateTermTest
 	@Getter
 	private I_AD_User user;
 
-	@BeforeClass
+	private TaxCategoryId taxCategoryId;
+
+	@BeforeAll
 	public final static void staticInit()
 	{
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
-	@Before
+	@BeforeEach
 	public final void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -140,6 +149,7 @@ public abstract class AbstractFlatrateTermTest
 		createWarehouse();
 		createDocType();
 		createCountryAndCountryArea();
+		createTaxes();
 
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 	}
@@ -252,6 +262,21 @@ public abstract class AbstractFlatrateTermTest
 		save(countryArea);
 	}
 
+	private void createTaxes()
+	{
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		taxCategoryId = TaxCategoryId.ofRepoId(taxCategory.getC_TaxCategory_ID());
+
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(TimeUtil.asTimestamp(LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay().atZone(ZoneId.systemDefault())));
+		tax.setC_Country_ID(country.getC_Country_ID());
+		tax.setTo_Country_ID(country.getC_Country_ID());
+		tax.setSOPOType(X_C_Tax.SOPOTYPE_SalesTax);
+		saveRecord(tax);
+	}
+
 	protected int prepareBPartner()
 	{
 		bpartner = FlatrateTermDataFactory.bpartnerNew()
@@ -342,6 +367,7 @@ public abstract class AbstractFlatrateTermTest
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);
 		contract.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
+		contract.setC_TaxCategory_ID(taxCategoryId.getRepoId());
 		contract.setIsTaxIncluded(true);
 		contract.setC_OrderLine_Term(orderLine);
 		save(contract);

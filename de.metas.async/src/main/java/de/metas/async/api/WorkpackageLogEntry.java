@@ -2,9 +2,12 @@ package de.metas.async.api;
 
 import java.time.Instant;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.ClientId;
 
 import de.metas.async.QueueWorkPackageId;
+import de.metas.error.AdIssueId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +39,7 @@ import lombok.Value;
 @Builder
 public class WorkpackageLogEntry
 {
+	@Nullable
 	String message;
 
 	@NonNull
@@ -49,4 +53,7 @@ public class WorkpackageLogEntry
 
 	@NonNull
 	UserId userId;
+
+	@Nullable
+	AdIssueId adIssueId;
 }
