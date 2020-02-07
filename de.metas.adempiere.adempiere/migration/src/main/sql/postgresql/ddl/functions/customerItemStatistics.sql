@@ -34,7 +34,7 @@ SELECT
 --avg(cost.CurrentCostPrice) * sum(il.qtyInvoiced) as DB,
  
  getCostPrice( p.M_Product_ID, p.AD_Client_ID) *  sum(il.qtyInvoiced) as DB,
- ( avg(cost.CurrentCostPrice) * 100 ) / COALESCE(sum(il.qtyInvoiced), 1) as DB_Percent
+ (  getCostPrice( p.M_Product_ID, p.AD_Client_ID) * 100 ) / COALESCE(sum(il.qtyInvoiced), 1) as DB_Percent
  
  
 
@@ -42,18 +42,18 @@ FROM
 	M_Product p
 	JOIN C_InvoiceLine il on p.M_Product_ID = il.M_Product_ID
 	JOIN C_Invoice i on il.C_Invoice_ID = i.C_Invoice_ID 
-	LEFT JOIN 
-	( M_Cost cost on p.M_Product_ID = cost.M_Product_ID
-	) 
+	
 WHERE 1=1
-    AND i.C_Bpartner_ID = p_C_BPartner_ID 
+        AND CASE WHEN p_C_BPartner_ID IS NOT NULL THEN i.C_Bpartner_ID = p_C_BPartner_ID  ELSE 1=1 END
 	AND CASE WHEN p_dateFrom IS NOT NULL THEN i.DateInvoiced >= p_dateFrom ELSE 1=1 END
 	AND CASE WHEN p_dateTo IS NOT NULL THEN i.DateInvoiced <= p_dateTo ELSE 1=1 END
 	AND CASE WHEN p_M_Product_ID IS NOT NULL THEN p.M_Product_ID = p_M_Product_ID ELSE 1=1 END
 
-	GROUP BY p.M_Product_ID, p.C_UOM_ID
+	GROUP BY i.C_BPartner_ID, p.M_Product_ID, p.C_UOM_ID
+	ORDER BY i.C_BPartner_ID
 
 $BODY$
   LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
+

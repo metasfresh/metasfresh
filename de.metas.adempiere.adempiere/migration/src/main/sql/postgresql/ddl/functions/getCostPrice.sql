@@ -6,25 +6,26 @@ RETURNS numeric AS
 
 $BODY$
 DECLARE
-	v_result CostPrice;
+	v_CostPrice numeric;
 BEGIN
-	v_result := 
+	v_CostPrice := 
 	
 	(
 		SELECT sum(cost.CurrentCostPrice)
 		FROM M_Cost cost
-		JOIN M_Product p pn cost.M_Product_ID = p.M_Product_ID
-		JOIN M_CostElement ce on cost.M_CostElement_ID = ce.M_Cost_Element_ID
+		JOIN M_Product p on cost.M_Product_ID = p.M_Product_ID
+		JOIN M_CostElement ce on cost.M_CostElement_ID = ce.M_CostElement_ID
 		
 		WHERE p.M_Product_ID = p_M_Product_ID
-		and ce.CostingMethod = (select 
+		and ce.CostingMethod = (select s.CostingMethod
 								from AD_ClientInfo i 
-								join C_AcctSchema s on )
-		and 
-	)
-	end if;
+								join C_AcctSchema s on  i.C_AcctSchema1_ID = s.C_AcctSchema_ID
+								)
+
+	);
 	
-	return v_result CostPrice;
+	
+	return v_CostPrice ;
 END;
 
 $BODY$
