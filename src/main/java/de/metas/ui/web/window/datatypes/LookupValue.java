@@ -10,6 +10,7 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.ValidationInformation;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
