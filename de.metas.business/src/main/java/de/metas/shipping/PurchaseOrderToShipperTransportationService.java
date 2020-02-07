@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
@@ -47,6 +48,7 @@ public class PurchaseOrderToShipperTransportationService
 	{
 		final ImmutableList<OrderId> validPurchaseOrdersIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.filter(queryFilter)
 				.create()
 				.listIds(OrderId::ofRepoId)
