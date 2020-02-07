@@ -2,9 +2,14 @@ package de.metas.shipping.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.cache.CacheMgt;
+import de.metas.shipping.MPackageId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShippingPackage;
 
 /*
@@ -33,10 +38,42 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 @Component
 public class M_ShippingPackage
 {
+	final MPackageRepository packageRepo = SpringContextHolder.instance.getBean(MPackageRepository.class);
+
 	@Init
 	public void setupCaching()
 	{
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ShippingPackage.Table_Name);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_ShippingPackage.COLUMNNAME_C_Order_ID)
+	public void closePackageOnOrderDelete(final I_M_ShippingPackage shippingPackage)
+	{
+		final int orderRecordId = shippingPackage.getC_Order_ID();
+
+		if (orderRecordId > 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		final MPackageId mPackageId = MPackageId.ofRepoId(shippingPackage.getM_Package_ID());
+		packageRepo.closeMPackage(mPackageId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void closePackageOnDelete(final I_M_ShippingPackage shippingPackage)
+	{
+		final int orderRecordId = shippingPackage.getC_Order_ID();
+
+		if (orderRecordId <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		final MPackageId mPackageId = MPackageId.ofRepoId(shippingPackage.getM_Package_ID());
+		packageRepo.closeMPackage(mPackageId);
 	}
 }
