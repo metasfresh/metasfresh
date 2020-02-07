@@ -137,10 +137,14 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	private void assertInvoiceCandidates(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
-		candidates.forEach(invoiceCand -> {
-			assertThat(invoiceCand.getQtyToInvoice()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit());
-			assertThat(invoiceCand.getPriceActual()).isEqualTo(flatrateTerm.getPriceActual());
-		});
+		assertThat(candidates).isNotEmpty();
+		candidates.forEach(invoiceCand -> assertInvoiceCandidate(invoiceCand, flatrateTerm));
+	}
+
+	private void assertInvoiceCandidate(I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
+	{
+		assertThat(invoiceCand.getQtyEntered()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit());
+		assertThat(invoiceCand.getPriceActual()).isEqualTo(flatrateTerm.getPriceActual());
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm)
