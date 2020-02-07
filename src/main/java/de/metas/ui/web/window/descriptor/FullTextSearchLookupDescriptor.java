@@ -146,7 +146,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 				.collect(ImmutableList.toImmutableList());
 		logger.trace("Record IDs: {}", recordIds);
 
-		final LookupValuesList lookupValues = databaseLookup.findByIds(recordIds);
+		final LookupValuesList lookupValues = databaseLookup.findByIdsOrdered(recordIds);
 		logger.trace("Lookup values: {}", lookupValues);
 
 		return lookupValues;

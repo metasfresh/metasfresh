@@ -163,12 +163,12 @@ public final class JSONDocumentLayoutElementField
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String tooltipIconName;
 
-	/** Null Item's caption */
+	/** Text to be displayed when the field is empty */
 	@JsonProperty("emptyText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
 
-	/** Text to be displayed when the field is empty */
+	/** Null Item's caption */
 	@JsonProperty("clearValueText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String clearValueText;
@@ -213,8 +213,8 @@ public final class JSONDocumentLayoutElementField
 		caption = fieldDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		tooltipIconName = fieldDescriptor.getTooltipIconName();
-		emptyText = fieldDescriptor.getListNullItemCaption(jsonOpts.getAdLanguage());
-		clearValueText = fieldDescriptor.getEmptyFieldText(jsonOpts.getAdLanguage());
+		emptyText = fieldDescriptor.getEmptyFieldText(jsonOpts.getAdLanguage());
+		clearValueText = fieldDescriptor.getListNullItemCaption(jsonOpts.getAdLanguage());
 		devices = fieldDescriptor.getDevices();
 
 		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);

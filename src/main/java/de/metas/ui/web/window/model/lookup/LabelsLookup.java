@@ -113,7 +113,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			return LookupValuesList.EMPTY;
 		}
 
-		return labelsValuesLookupDataSource.findByIds(existingItems);
+		return labelsValuesLookupDataSource.findByIdsOrdered(existingItems);
 	}
 
 	public IQueryBuilder<Object> retrieveExistingValuesRecordQuery(final int linkId)
