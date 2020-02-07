@@ -66,7 +66,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public BigDecimal convertQty(
@@ -423,6 +422,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
+		final IProductBL productBL = Services.get(IProductBL.class); // don't extract this to a field, because ProductBL itself already has IUOMConversionBL as a field
 		final UomId toUomId = productBL.getStockUOMId(productId);
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
