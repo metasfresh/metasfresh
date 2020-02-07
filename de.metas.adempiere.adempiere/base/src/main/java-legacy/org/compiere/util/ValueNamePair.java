@@ -24,6 +24,7 @@ import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.compiere.model.ValidationInformation;
 
 /**
  * (String) Value Name Pair
@@ -41,7 +42,7 @@ public final class ValueNamePair extends NamePair
 	/**
 	 * The Validation Message
 	 */
-	private final String m_validationMessage;
+	private final ValidationInformation m_validationInformation;
 
 	public static final ValueNamePair of(
 			@JsonProperty("v") final String value,
@@ -67,13 +68,13 @@ public final class ValueNamePair extends NamePair
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name,
 			@JsonProperty("description") final String description,
-			@Nullable @JsonProperty("validationMsg") final String validationMsg)
+			@Nullable @JsonProperty("validationInformation") final ValidationInformation validationInformation)
 	{
 		if (Objects.equals(value, EMPTY.getValue()) && Objects.equals(name, EMPTY.getName()))
 		{
 			return EMPTY;
 		}
-		return new ValueNamePair(value, name, description, validationMsg);
+		return new ValueNamePair(value, name, description, validationInformation);
 	}
 
 	/**
@@ -86,14 +87,14 @@ public final class ValueNamePair extends NamePair
 	{
 		super(name, help);
 		m_value = value == null ? "" : value;
-		m_validationMessage = null;
+		m_validationInformation = null;
 	}   // ValueNamePair
 
-	public ValueNamePair(final String value, final String name, final String help, @Nullable final String validationMsg)
+	public ValueNamePair(final String value, final String name, final String help, @Nullable final ValidationInformation validationInformation)
 	{
 		super(name, help);
 		m_value = value == null ? "" : value;
-		m_validationMessage = validationMsg;
+		m_validationInformation = validationInformation;
 	}   // ValueNamePair
 
 	/**
@@ -118,10 +119,10 @@ public final class ValueNamePair extends NamePair
 	 * @return Validation Message
 	 */
 
-	@JsonProperty("validationMsg")
-	public final String getValidationMessage()
+	@JsonProperty("validationInformation")
+	public final ValidationInformation getValidationInformation()
 	{
-		return m_validationMessage;
+		return m_validationInformation;
 	}
 
 	/**

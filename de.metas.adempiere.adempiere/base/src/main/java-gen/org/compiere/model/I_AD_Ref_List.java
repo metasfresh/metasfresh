@@ -1,29 +1,26 @@
 package org.compiere.model;
 
-/**
- * Generated Interface for AD_Ref_List
- *
- * @author Adempiere (generated)
+
+/** Generated Interface for AD_Ref_List
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_AD_Ref_List
+public interface I_AD_Ref_List 
 {
 
-	/**
-	 * TableName=AD_Ref_List
-	 */
-	public static final String Table_Name = "AD_Ref_List";
+    /** TableName=AD_Ref_List */
+    public static final String Table_Name = "AD_Ref_List";
 
-	/** AD_Table_ID=104 */
-	//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=104 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-	//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-	/** AccessLevel = 4 - System
-	 */
-	//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+    /** AccessLevel = 4 - System
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
 
-	/** Load Meta Data */
+    /** Load Meta Data */
 
 	/**
 	 * Get Mandant.
@@ -35,10 +32,37 @@ public interface I_AD_Ref_List
 	 */
 	public int getAD_Client_ID();
 
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
 	/**
-	 * Column name AD_Client_ID
+	 * Set Meldung.
+	 * System Message
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
 	 */
-	public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public void setAD_Message_ID (int AD_Message_ID);
+
+	/**
+	 * Get Meldung.
+	 * System Message
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Message_ID();
+
+	public org.compiere.model.I_AD_Message getAD_Message();
+
+	public void setAD_Message(org.compiere.model.I_AD_Message AD_Message);
+
+    /** Column definition for AD_Message_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, org.compiere.model.I_AD_Message> COLUMN_AD_Message_ID = new org.adempiere.model.ModelColumn<I_AD_Ref_List, org.compiere.model.I_AD_Message>(I_AD_Ref_List.class, "AD_Message_ID", org.compiere.model.I_AD_Message.class);
+    /** Column name AD_Message_ID */
+    public static final String COLUMNNAME_AD_Message_ID = "AD_Message_ID";
 
 	/**
 	 * Set Sektion.
@@ -48,7 +72,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Sektion.
@@ -60,10 +84,8 @@ public interface I_AD_Ref_List
 	 */
 	public int getAD_Org_ID();
 
-	/**
-	 * Column name AD_Org_ID
-	 */
-	public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Referenzliste.
@@ -73,7 +95,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Ref_List_ID(int AD_Ref_List_ID);
+	public void setAD_Ref_List_ID (int AD_Ref_List_ID);
 
 	/**
 	 * Get Referenzliste.
@@ -85,14 +107,10 @@ public interface I_AD_Ref_List
 	 */
 	public int getAD_Ref_List_ID();
 
-	/**
-	 * Column definition for AD_Ref_List_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_AD_Ref_List_ID = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "AD_Ref_List_ID", null);
-	/**
-	 * Column name AD_Ref_List_ID
-	 */
-	public static final String COLUMNNAME_AD_Ref_List_ID = "AD_Ref_List_ID";
+    /** Column definition for AD_Ref_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_AD_Ref_List_ID = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "AD_Ref_List_ID", null);
+    /** Column name AD_Ref_List_ID */
+    public static final String COLUMNNAME_AD_Ref_List_ID = "AD_Ref_List_ID";
 
 	/**
 	 * Set Referenz.
@@ -102,7 +120,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_ID(int AD_Reference_ID);
+	public void setAD_Reference_ID (int AD_Reference_ID);
 
 	/**
 	 * Get Referenz.
@@ -118,14 +136,10 @@ public interface I_AD_Ref_List
 
 	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference);
 
-	/**
-	 * Column definition for AD_Reference_ID
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_ID = new org.adempiere.model.ModelColumn<I_AD_Ref_List, org.compiere.model.I_AD_Reference>(I_AD_Ref_List.class, "AD_Reference_ID", org.compiere.model.I_AD_Reference.class);
-	/**
-	 * Column name AD_Reference_ID
-	 */
-	public static final String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
+    /** Column definition for AD_Reference_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_ID = new org.adempiere.model.ModelColumn<I_AD_Ref_List, org.compiere.model.I_AD_Reference>(I_AD_Ref_List.class, "AD_Reference_ID", org.compiere.model.I_AD_Reference.class);
+    /** Column name AD_Reference_ID */
+    public static final String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
 	 * Get Erstellt.
@@ -137,14 +151,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.sql.Timestamp getCreated();
 
-	/**
-	 * Column definition for Created
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Created", null);
-	/**
-	 * Column name Created
-	 */
-	public static final String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -156,10 +166,8 @@ public interface I_AD_Ref_List
 	 */
 	public int getCreatedBy();
 
-	/**
-	 * Column name CreatedBy
-	 */
-	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Beschreibung.
@@ -168,7 +176,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription(java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Beschreibung.
@@ -179,30 +187,26 @@ public interface I_AD_Ref_List
 	 */
 	public java.lang.String getDescription();
 
-	/**
-	 * Column definition for Description
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Description", null);
-	/**
-	 * Column name Description
-	 */
-	public static final String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Entitäts-Art.
 	 * Dictionary Entity Type;
-	 * Determines ownership and synchronization
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEntityType(java.lang.String EntityType);
+	public void setEntityType (java.lang.String EntityType);
 
 	/**
 	 * Get Entitäts-Art.
 	 * Dictionary Entity Type;
-	 * Determines ownership and synchronization
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -210,14 +214,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.lang.String getEntityType();
 
-	/**
-	 * Column definition for EntityType
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "EntityType", null);
-	/**
-	 * Column name EntityType
-	 */
-	public static final String COLUMNNAME_EntityType = "EntityType";
+    /** Column definition for EntityType */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "EntityType", null);
+    /** Column name EntityType */
+    public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set Aktiv.
@@ -227,7 +227,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -239,14 +239,10 @@ public interface I_AD_Ref_List
 	 */
 	public boolean isActive();
 
-	/**
-	 * Column definition for IsActive
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "IsActive", null);
-	/**
-	 * Column name IsActive
-	 */
-	public static final String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Name.
@@ -255,7 +251,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName(java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -266,14 +262,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.lang.String getName();
 
-	/**
-	 * Column definition for Name
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Name", null);
-	/**
-	 * Column name Name
-	 */
-	public static final String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Get Aktualisiert.
@@ -285,14 +277,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.sql.Timestamp getUpdated();
 
-	/**
-	 * Column definition for Updated
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Updated", null);
-	/**
-	 * Column name Updated
-	 */
-	public static final String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -304,37 +292,8 @@ public interface I_AD_Ref_List
 	 */
 	public int getUpdatedBy();
 
-	/**
-	 * Column name UpdatedBy
-	 */
-	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Validation Message.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValidationMessage(java.lang.String ValidationMessage);
-
-	/**
-	 * Get Validation Message.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValidationMessage();
-
-	/**
-	 * Column definition for ValidationMessage
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValidationMessage = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValidationMessage", null);
-	/**
-	 * Column name ValidationMessage
-	 */
-	public static final String COLUMNNAME_ValidationMessage = "ValidationMessage";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Gültig ab.
@@ -344,7 +303,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom(java.sql.Timestamp ValidFrom);
+	public void setValidFrom (java.sql.Timestamp ValidFrom);
 
 	/**
 	 * Get Gültig ab.
@@ -356,14 +315,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.sql.Timestamp getValidFrom();
 
-	/**
-	 * Column definition for ValidFrom
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValidFrom", null);
-	/**
-	 * Column name ValidFrom
-	 */
-	public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+    /** Column definition for ValidFrom */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValidFrom", null);
+    /** Column name ValidFrom */
+    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
 	 * Set Gültig bis.
@@ -373,7 +328,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidTo(java.sql.Timestamp ValidTo);
+	public void setValidTo (java.sql.Timestamp ValidTo);
 
 	/**
 	 * Get Gültig bis.
@@ -385,14 +340,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.sql.Timestamp getValidTo();
 
-	/**
-	 * Column definition for ValidTo
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValidTo", null);
-	/**
-	 * Column name ValidTo
-	 */
-	public static final String COLUMNNAME_ValidTo = "ValidTo";
+    /** Column definition for ValidTo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValidTo", null);
+    /** Column name ValidTo */
+    public static final String COLUMNNAME_ValidTo = "ValidTo";
 
 	/**
 	 * Set Suchschlüssel.
@@ -402,7 +353,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue(java.lang.String Value);
+	public void setValue (java.lang.String Value);
 
 	/**
 	 * Get Suchschlüssel.
@@ -414,14 +365,10 @@ public interface I_AD_Ref_List
 	 */
 	public java.lang.String getValue();
 
-	/**
-	 * Column definition for Value
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Value", null);
-	/**
-	 * Column name Value
-	 */
-	public static final String COLUMNNAME_Value = "Value";
+    /** Column definition for Value */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "Value", null);
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
 
 	/**
 	 * Set Name (technical).
@@ -430,7 +377,7 @@ public interface I_AD_Ref_List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueName(java.lang.String ValueName);
+	public void setValueName (java.lang.String ValueName);
 
 	/**
 	 * Get Name (technical).
@@ -441,12 +388,8 @@ public interface I_AD_Ref_List
 	 */
 	public java.lang.String getValueName();
 
-	/**
-	 * Column definition for ValueName
-	 */
-	public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValueName = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValueName", null);
-	/**
-	 * Column name ValueName
-	 */
-	public static final String COLUMNNAME_ValueName = "ValueName";
+    /** Column definition for ValueName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Ref_List, Object> COLUMN_ValueName = new org.adempiere.model.ModelColumn<I_AD_Ref_List, Object>(I_AD_Ref_List.class, "ValueName", null);
+    /** Column name ValueName */
+    public static final String COLUMNNAME_ValueName = "ValueName";
 }
