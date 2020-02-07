@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
@@ -66,7 +67,8 @@ public class C_Flatrate_TermTest
 	{
 		try
 		{
-			C_Flatrate_Term.INSTANCE.prohibitReactivatingUnlessAllowed(term);
+			final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(new ContractOrderService());
+			flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term);
 			fail("Expected an AdempiereExeception");
 		}
 		catch (AdempiereException ae)
@@ -84,7 +86,8 @@ public class C_Flatrate_TermTest
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement);
 		save(term);
 
-		C_Flatrate_Term.INSTANCE.prohibitReactivatingUnlessAllowed(term); // shall return with no exception
+		final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(new ContractOrderService());
+		flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term); // shall return with no exception
 	}
 
 	public void setupAllowProcurementReactivate()

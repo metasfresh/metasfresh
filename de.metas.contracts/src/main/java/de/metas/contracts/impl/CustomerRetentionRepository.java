@@ -16,7 +16,6 @@ import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.util.TimeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableSet;
@@ -62,13 +61,14 @@ public class CustomerRetentionRepository
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-
-	@Autowired
-	private ContractInvoiceService contractInvoiceService;
+	private final ContractInvoiceService contractInvoiceService;
+	
+	public CustomerRetentionRepository(@NonNull final ContractInvoiceService contractInvoiceService)
+	{
+		this.contractInvoiceService = contractInvoiceService;
+	}
 
 	public I_C_Customer_Retention createNewCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{

@@ -2,9 +2,8 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import lombok.NonNull;
 
 import java.math.BigDecimal;
 
@@ -36,16 +35,13 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.StartupListener;
-import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.M_ShipmentSchedule;
@@ -53,29 +49,40 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyService.class, ContractLibraryConfiguration.class })
+@ExtendWith(AdempiereTestWatcher.class)
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
-	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
+	private ContractChangePriceQtyService contractsRepository;
+	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
-	@Before
+	private final static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
+
+	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(M_ShipmentSchedule.INSTANCE);
+		contractsRepository = new ContractChangePriceQtyService();
+		final ContractOrderService contractOrderService = new ContractOrderService();
+
+		IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
+		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService));
+		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
+
+		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);
+		taxNotFoundRecord.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
+		saveRecord(taxNotFoundRecord);
 	}
 
 	@Test
 	public void changeQty()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
-		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		final BigDecimal newQty = BigDecimal.valueOf(5);
 		contractsRepository.changeQtyIfNeeded(contract, newQty);
 
@@ -88,7 +95,6 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	public void changeQtyAndDeliver()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
-		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		deliverFirstSubscriptionProgress(contract);
 		final BigDecimal newQty = BigDecimal.valueOf(5);
 		contractsRepository.changeQtyIfNeeded(contract, newQty);
@@ -102,7 +108,6 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	public void changePrice()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
-		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		final BigDecimal newPrice = BigDecimal.valueOf(5);
 		contractsRepository.changePriceIfNeeded(contract, newPrice);
 
@@ -141,6 +146,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		final List<I_C_SubscriptionProgress> subscriptionProgress = contractsDAO.getSubscriptionProgress(flatrateTerm);
+		assertThat(subscriptionProgress).isNotEmpty();
 
 		subscriptionProgress.stream()
 				.filter(progress -> progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Done) || progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Delivered))
