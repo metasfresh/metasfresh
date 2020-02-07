@@ -348,3 +348,54 @@ UPDATE AD_Process_Para SET DefaultValue='null',Updated=TO_TIMESTAMP('2020-02-07 
 UPDATE AD_Process_Para SET DefaultValue='null',Updated=TO_TIMESTAMP('2020-02-07 11:49:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541700
 ;
 
+
+
+
+
+-- 2020-02-07T12:58:42.076Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Value='CustomerItemStatistics',Updated=TO_TIMESTAMP('2020-02-07 14:58:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584649
+;
+
+-- 2020-02-07T12:59:00.505Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='select * from customerItemStatistics(''@DateFrom@''::date , ''@DateTo@''::date , @C_BPartner_ID/-1@, @M_Product_ID/-1@)',Updated=TO_TIMESTAMP('2020-02-07 14:59:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584649
+;
+
+-- 2020-02-07T13:04:57.854Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='''2999-12-31''',Updated=TO_TIMESTAMP('2020-02-07 15:04:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541699
+;
+
+-- 2020-02-07T13:05:03.127Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='''2999-12-31''',Updated=TO_TIMESTAMP('2020-02-07 15:05:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541700
+;
+
+-- 2020-02-07T13:05:15.743Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='''1900-12-31''',Updated=TO_TIMESTAMP('2020-02-07 15:05:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541699
+;
+
+-- 2020-02-07T13:06:34.348Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='',Updated=TO_TIMESTAMP('2020-02-07 15:06:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541699
+;
+
+-- 2020-02-07T13:07:25.284Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='select * from customerItemStatistics(''@DateFrom/1900-01-01@''::date , ''@DateTo/9999-12-31@''::date , @C_BPartner_ID/-1@, @M_Product_ID/-1@)',Updated=TO_TIMESTAMP('2020-02-07 15:07:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584649
+;
+
+-- 2020-02-07T13:08:03.845Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='',Updated=TO_TIMESTAMP('2020-02-07 15:08:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541700
+;
+
+
+
+
+
+
+
+
