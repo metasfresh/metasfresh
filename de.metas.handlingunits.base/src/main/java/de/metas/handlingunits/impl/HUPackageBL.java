@@ -1,5 +1,9 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +14,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,8 +28,8 @@ package de.metas.handlingunits.impl;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
 
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -35,7 +39,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -53,12 +56,12 @@ public class HUPackageBL implements IHUPackageBL
 		{
 			for (final I_M_Package_HU mpackageHU : mpackageHUs)
 			{
-				InterfaceWrapperHelper.delete(mpackageHU);
+				delete(mpackageHU);
 			}
 
 			// Inactive the package (mark as deleted)
 			mpackage.setIsActive(false);
-			InterfaceWrapperHelper.save(mpackage);
+			save(mpackage);
 		}
 	}
 
@@ -71,18 +74,18 @@ public class HUPackageBL implements IHUPackageBL
 		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
 		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
 
-		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
+		final I_M_Package mpackage = newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(shipperId.getRepoId());
 		mpackage.setShipDate(null);
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
-		InterfaceWrapperHelper.save(mpackage);
+		save(mpackage);
 
-		final I_M_Package_HU mpackageHU = InterfaceWrapperHelper.newInstance(I_M_Package_HU.class, mpackage);
+		final I_M_Package_HU mpackageHU = newInstance(I_M_Package_HU.class, mpackage);
 		mpackageHU.setAD_Org_ID(mpackage.getAD_Org_ID());
 		mpackageHU.setM_Package(mpackage);
 		mpackageHU.setM_HU(hu);
-		InterfaceWrapperHelper.save(mpackageHU);
+		save(mpackageHU);
 
 		return mpackage;
 	}
@@ -120,7 +123,7 @@ public class HUPackageBL implements IHUPackageBL
 			// Update M_Package
 			mpackage.setM_InOut_ID(inout.getM_InOut_ID());
 			mpackage.setProcessed(true);
-			InterfaceWrapperHelper.save(mpackage);
+			save(mpackage);
 
 			//
 			// Update Shipping Packages (i.e. the link between M_Package and M_ShipperTransportation)
@@ -134,7 +137,7 @@ public class HUPackageBL implements IHUPackageBL
 					continue;
 				}
 				shippingPackage.setM_InOut_ID(inout.getM_InOut_ID());
-				InterfaceWrapperHelper.save(shippingPackage);
+				save(shippingPackage);
 			}
 		}
 	}
@@ -168,14 +171,14 @@ public class HUPackageBL implements IHUPackageBL
 				}
 
 				shippingPackage.setM_InOut_ID(-1);
-				InterfaceWrapperHelper.save(shippingPackage);
+				save(shippingPackage);
 			}
 
 			//
 			// Update M_Package
 			mpackage.setM_InOut_ID(-1);
 			mpackage.setProcessed(false);
-			InterfaceWrapperHelper.save(mpackage);
+			save(mpackage);
 		}
 	}
 }
