@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -186,6 +186,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return false;
 	}
 
+	protected UserId extractUserInChargeOrNull(final ItemType item)
+	{
+		return null;
+	}
+
 	/** Factory which creates Scheduler instances which are collecting the items on transaction level. */
 	private final TrxOnCommitCollectorFactory<Collector, ItemType> scheduleFactory = new TrxOnCommitCollectorFactory<Collector, ItemType>()
 	{
@@ -205,9 +210,11 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		protected Collector newCollector(final ItemType firstItem)
 		{
 			final Properties ctx = WorkpackagesOnCommitSchedulerTemplate.this.extractCtxFromItem(firstItem);
-			final Collector collector = new Collector(ctx);
-			collector.setCreateOneWorkpackagePerModel(WorkpackagesOnCommitSchedulerTemplate.this.createOneWorkpackagePerModel.get());
-			return collector;
+			final UserId userIdInCharge = WorkpackagesOnCommitSchedulerTemplate.this.extractUserInChargeOrNull(firstItem);
+			return new Collector(
+					ctx,
+					WorkpackagesOnCommitSchedulerTemplate.this.createOneWorkpackagePerModel.get(),
+					userIdInCharge);
 		}
 
 		@Override
@@ -220,7 +227,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 				return; // guard against NPE
 			}
 
-			for (final Entry<String, Object> param : params.entrySet())
+			for (final Map.Entry<String, Object> param : params.entrySet())
 			{
 				collector.setParameter(param.getKey(), param.getValue());
 			}
@@ -243,14 +250,19 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		private final Properties ctx;
 		private final LinkedHashSet<Object> models = new LinkedHashSet<>();
 		private final Map<String, Object> parameters = new LinkedHashMap<>();
-		private boolean createOneWorkpackagePerModel = false;
+		private final boolean createOneWorkpackagePerModel;
+		private final UserId userIdInCharge;
 
 		private boolean processed = false;
 
-		private Collector(final Properties ctx)
+		private Collector(
+				final Properties ctx,
+				final boolean createOneWorkpackagePerModel,
+				final UserId userIdInCharge)
 		{
-			super();
 			this.ctx = ctx;
+			this.createOneWorkpackagePerModel = createOneWorkpackagePerModel;
+			this.userIdInCharge = userIdInCharge;
 		}
 
 		private void assertNotProcessed()
@@ -298,13 +310,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return parameterValue;
 		}
 
-		public Collector setCreateOneWorkpackagePerModel(final boolean createOneWorkpackagePerModel)
-		{
-			assertNotProcessed();
-			this.createOneWorkpackagePerModel = createOneWorkpackagePerModel;
-			return this;
-		}
-
 		private boolean isCreateOneWorkpackagePerModel()
 		{
 			return createOneWorkpackagePerModel;
@@ -340,6 +345,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		private void createAndSubmitWorkpackage(final IWorkPackageBlockBuilder blockBuilder, final Collection<Object> modelsToEnqueue)
 		{
 			blockBuilder.newWorkpackage()
+					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
 					.addElements(modelsToEnqueue)
 					.build();
