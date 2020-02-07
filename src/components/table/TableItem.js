@@ -46,6 +46,11 @@ class TableItem extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+    // check on saving logic
+    if (this.props.notSaved === true && nextProps.notSaved === false) {
+      return true;
+    }
+
     // page check logic
     if (nextProps.page !== nextState.currentPage) {
       nextState.currentPage = nextState.page;

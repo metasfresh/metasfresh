@@ -585,7 +585,7 @@ RawLookup.propTypes = {
   recent: PropTypes.any,
   enableAutofocus: PropTypes.func,
   resetLocalClearing: PropTypes.any,
-  align: PropTypes.bool,
+  align: PropTypes.string,
   readonly: PropTypes.bool,
   disabled: PropTypes.bool,
   tabIndex: PropTypes.number,
