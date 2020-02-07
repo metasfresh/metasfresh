@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -51,7 +51,7 @@ public class RefundInvoiceCandidateTest
 
 	private RefundTestTools refundTestTools;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

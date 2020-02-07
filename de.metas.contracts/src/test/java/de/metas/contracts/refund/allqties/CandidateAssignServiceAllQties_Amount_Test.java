@@ -13,8 +13,8 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -134,7 +134,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 
 	private RefundInvoiceCandidate savedRefundCandidate;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -238,7 +238,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate
 				.builder()
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423,  2))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(savedRefundContract)
 				.refundConfig(savedRefundConfig_0)
