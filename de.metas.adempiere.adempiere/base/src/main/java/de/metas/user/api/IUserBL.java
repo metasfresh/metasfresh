@@ -16,8 +16,6 @@ public interface IUserBL extends ISingletonService
 
 	boolean isPasswordMatching(I_AD_User user, HashableString password);
 
-	void createResetPasswordByEMailRequest(I_AD_User user);
-
 	void createResetPasswordByEMailRequest(String userId);
 
 	I_AD_User resetPassword(String passwordResetCode, String newPassword);
