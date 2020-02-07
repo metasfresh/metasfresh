@@ -213,7 +213,7 @@ TableContextMenu.propTypes = {
   docId: PropTypes.string,
   tabId: PropTypes.string,
   windowId: PropTypes.string,
-  selected: PropTypes.string,
+  selected: PropTypes.array,
   blur: PropTypes.any,
   mainTable: PropTypes.any,
   handleAdvancedEdit: PropTypes.func,
