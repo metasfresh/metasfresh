@@ -679,8 +679,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		if (shipmentSchedule.getC_OrderLine_ID() <= 0 || !HUPIItemProductId.isRegular(extractOrderLinePackingMaterialIdOrNull(shipmentSchedule)))
+		final HUPIItemProductId orderLinePackingMaterialId = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
+		if (shipmentSchedule.getC_OrderLine_ID() <= 0 || !HUPIItemProductId.isRegular(orderLinePackingMaterialId))
 		{
+			logger.debug("C_OrderLine_ID={}; orderLinePackingMaterialId={} is regular={}; -> unset M_HU_PI_Item_Product_ID and PackDescription",
+					shipmentSchedule.getC_OrderLine_ID(), HUPIItemProductId.toRepoId(orderLinePackingMaterialId), HUPIItemProductId.isRegular(orderLinePackingMaterialId));
 			shipmentScheduleToUse.setM_HU_PI_Item_Product_ID(-1);
 			shipmentScheduleToUse.setPackDescription(null);
 			return;
