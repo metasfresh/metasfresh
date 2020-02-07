@@ -62,28 +62,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<module>assemblies</module>
 	</modules>
 
-	<pluginRepositories>
-		<!-- our main repo is also our plugin repo; also see https://maven.apache.org/pom.html#Plugin_Repositories -->
-		<!-- see https://github.com/metasfresh/metasfresh-parent/issues/3 -->
-		<pluginRepository>
-			<id>metasfresh-repo</id>
-			<name>metasfresh maven repository (master branch)</name>
-			<url>https://repo.metasfresh.com/content/groups/mvn-master/</url>
-		</pluginRepository>
-	</pluginRepositories>
-
-	<distributionManagement>
-		<!-- 
-		Where to deploy build artifacts; the values are coming from the outside via cmd-line parameters.
-		Even if you can't deploy to this repo, you can still make your own builds and install them to your local repo.
-		-->
-		<repository>
-			<id>${deploy-repo-id}</id>
-			<name>${deploy-repo-name}</name>
-			<url>${deploy-repo-url}</url>
-		</repository>
-	</distributionManagement>
-
 	<dependencies>
 		<!-- Using our own artifact, see 
 			https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
