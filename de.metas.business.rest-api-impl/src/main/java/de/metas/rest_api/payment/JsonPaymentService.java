@@ -88,7 +88,7 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body("Cannot find the org-bpartner linked to orgId=" + orgId + "; orgCode=" + jsonInboundPaymentInfo.getOrgCode());
 		}
 
-		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveBankAccountByBPartnerAndCurrencyAndIBAN(orgBPartnerIdOptional.get(), currencyId, jsonInboundPaymentInfo.getTargetIBAN());
+		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveByBPartnerAndCurrencyAndIBAN(orgBPartnerIdOptional.get(), currencyId, jsonInboundPaymentInfo.getTargetIBAN());
 		if (!bankAccountIdOptional.isPresent())
 		{
 			return ResponseEntity.unprocessableEntity().body(String.format(

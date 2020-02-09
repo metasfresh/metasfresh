@@ -102,7 +102,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					.setElementsLocker(elementsLocker)
 					.bindToThreadInheritedTrx()
 					.addElements(candidateRecordReferences)
-					.setUserInChargeId(Env.getAD_User_ID())
+					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 					.build();
 		}
 	}

@@ -351,8 +351,13 @@ public class CostingService implements ICostingService
 				.map(CostDetail::getCostElementId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableList<CostDetailCreateResult> costElementResults = costDetailsRepo
-				.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId())
+		final List<CostDetail> initialDocCostDetails = costDetailsRepo.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId());
+		if (initialDocCostDetails.isEmpty())
+		{
+			throw new AdempiereException("Initial document has no cost details: " + request);
+		}
+
+		final ImmutableList<CostDetailCreateResult> costElementResults = initialDocCostDetails
 				.stream()
 				.filter(costDetail -> !costElementIdsWithExistingCostDetails.contains(costDetail.getCostElementId())) // not already created
 				.flatMap(costDetail -> createReversalCostDetailsAndStream(costDetail, request))
@@ -369,7 +374,13 @@ public class CostingService implements ICostingService
 	{
 		final CostElementId costElementId = costDetail.getCostElementId();
 		final CostElement costElement = costElementsRepo.getById(costElementId);
-		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail);
+		if (costElement == null)
+		{
+			// cost element was disabled in meantime
+			return Stream.empty();
+		}
+
+		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
 				.map(handler -> handler.createOrUpdateCost(request))
@@ -377,7 +388,10 @@ public class CostingService implements ICostingService
 				.map(Optional::get);
 	}
 
-	private final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(final CostDetailReverseRequest reversalRequest, final CostDetail costDetail)
+	private static final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(
+			@NonNull final CostDetailReverseRequest reversalRequest,
+			@NonNull final CostDetail costDetail,
+			@NonNull final CostElement costElement)
 	{
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(reversalRequest.getAcctSchemaId())
@@ -387,6 +401,7 @@ public class CostingService implements ICostingService
 				.attributeSetInstanceId(costDetail.getAttributeSetInstanceId())
 				.documentRef(reversalRequest.getReversalDocumentRef())
 				.initialDocumentRef(reversalRequest.getInitialDocumentRef())
+				.costElement(costElement)
 				.qty(costDetail.getQty().negate())
 				.amt(costDetail.getAmt().negate())
 				// .currencyConversionTypeId(currencyConversionTypeId) // N/A

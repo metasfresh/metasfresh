@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MOrderLine;
 
 import com.google.common.collect.ImmutableList;
@@ -104,7 +105,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/**
 	 * Retrieve all the SHipment Schedules that the given inout line is based on
 	 */
-	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
+	Set<I_M_ShipmentSchedule> retrieveForInOutLine(I_M_InOutLine inoutLine);
 
 	void deleteAllForReference(TableRecordReference referencedRecord);
 

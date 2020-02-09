@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,72 +29,73 @@ import java.util.Properties;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.ToString;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php?title=Auftrag_versenden_mit_Abo-Lieferung_(2009_0027_G62)'>(2009 0027 G62)</a>"
  *
  */
+@ToString
 public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {
 	public static final String MSG_OPEN_INVOICE_1P = "ShipmentSchedule_OpenInvoice_1P";
 
 	public static final String MSG_WITH_NEXT_SUBSCRIPTION = "ShipmentSchedule_WithNextSubscription";
 
-	@Override
-	public int doUpdateAfterFirstPass(
-			final Properties ctx,
-			final IShipmentSchedulesDuringUpdate candidates,
-			final String trxName)
-	{
-		int removeCount = 0;
+	private static final Logger logger = LogManager.getLogger(OnlyOneOpenInvoiceCandProcessor.class);
 
-		for (final DeliveryGroupCandidate inOut : candidates.getCandidates())
+	@Override
+	public void doUpdateAfterFirstPass(
+			final Properties ctx,
+			final IShipmentSchedulesDuringUpdate candidates)
+	{
+		for (final DeliveryGroupCandidate groupCandidate : candidates.getCandidates())
 		{
-			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
+			for (final DeliveryLineCandidate lineCandidate : groupCandidate.getLines())
 			{
-				if (inOutLine.isDiscarded())
+				if (lineCandidate.isDiscarded())
 				{
 					// this line won't be delivered anyways. Nothing to do
 					continue;
 				}
-
-				removeCount += handleOnlyOneOpenInv(ctx, candidates, inOutLine, trxName, removeCount);
+				handleOnlyOneOpenInv(ctx, candidates, lineCandidate);
 			}
 		}
-		return removeCount;
 	}
 
-	private int handleOnlyOneOpenInv(final Properties ctx,
+	private void handleOnlyOneOpenInv(final Properties ctx,
 			final IShipmentSchedulesDuringUpdate candidates,
-			final DeliveryLineCandidate inOutLine,
-			final String trxName,
-			int removeCount)
+			final DeliveryLineCandidate lineCandidate)
 	{
-		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(inOutLine.getBillBPartnerId());
-
-		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
-
-		if (creditStatus.equals(stats.getSOCreditStatus()))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
 		{
-			final BigDecimal soCreditUsed = stats.getSOCreditUsed();
+			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(lineCandidate.getBillBPartnerId());
 
-			if (soCreditUsed.signum() > 0)
+			final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
+			if (creditStatus.equals(stats.getSOCreditStatus()))
 			{
-				candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
+				final BigDecimal soCreditUsed = stats.getSOCreditUsed();
 
-				inOutLine.setDiscarded();
-				removeCount = 1;
+				if (soCreditUsed.signum() > 0)
+				{
+					logger.debug("Discard lineCandidate because of an existing open invoice");
+					candidates.addStatusInfo(lineCandidate, Services.get(IMsgBL.class).getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
+					lineCandidate.setDiscarded();
+				}
 			}
 		}
-		return removeCount;
 	}
 }

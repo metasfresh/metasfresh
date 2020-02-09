@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -23,10 +24,16 @@ import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.contracts.pricing.SubscriptionPricingRule;
+import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
@@ -194,20 +201,26 @@ public class FlatrateTermTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.contracts" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 *
-	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
-	 *
-	 * <pre>
-	&#64;RunWith(SpringRunner.class)
-	&#64;SpringBootTest(classes= StartupListener.class)
-	 * </pre>
-	 *
-	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	public final void setupModuleInterceptors_Contracts_Full()
 	{
-		Services.get(IModelInterceptorRegistry.class)
-				.addModelInterceptor(new MainValidator());
+		final ContractOrderService contractOrderService = new ContractOrderService();
+
+		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
+				new OrderGroupRepository(
+						new GroupCompensationLineCreateRequestFactory(),
+						Optional.empty() // advisors
+				),
+				new GroupTemplateRepository(Optional.empty()));
+
+		final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo = new InOutLinesWithMissingInvoiceCandidate();
+
+		final MainValidator mainInterceptor = new MainValidator(
+				contractOrderService,
+				groupChangesHandler,
+				inoutLinesWithMissingInvoiceCandidateRepo);
+
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}
 
 	private void createCILCandHandler()

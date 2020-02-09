@@ -191,7 +191,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCost);
-		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty());
+		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 
 		// Accumulate to order costs
 		// NOTE: outbound amounts are negative, so we have to negate it here in order to get a positive value
@@ -209,7 +209,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		if (request.isReversal())
 		{
 			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
-			currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
+			currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
@@ -218,7 +218,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt(), utils.getQuantityUOMConverter());
 		}
 
 		// Accumulate to order costs

@@ -77,7 +77,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
+		currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -96,7 +96,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		{
 			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-			currentCosts.addWeightedAverage(request.getAmt(), qty);
+			currentCosts.addWeightedAverage(request.getAmt(), qty, utils.getQuantityUOMConverter());
 		}
 		else
 		{
@@ -105,7 +105,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
 		utils.saveCurrentCost(currentCosts);

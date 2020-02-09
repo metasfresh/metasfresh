@@ -5,15 +5,30 @@ This file contains the tasks/issues which we implement in metasfresh, in a chron
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
- * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
+ * The metasfresh website is at [metasfresh.com/en](https://metasfresh.com/en) (English), [metasfresh.com](https://metasfresh.com/) (German)
+ * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
 
 Here come the actual release notes:
+
+# metasfresh 5.137
+## Features
+* metasfresh
+  * [#6054](https://github.com/metasfresh/metasfresh/pull/6054) only set C_OLCand.ProductDescription if different from product-name
+  * [#6077](https://github.com/metasfresh/metasfresh/issues/6077) Add grouping warehouse in Bestellkontrolle report
+  * [#6085](https://github.com/metasfresh/metasfresh/issues/6085) Presetting of Qty CU and default LU in action receipt
+  * [#6098](https://github.com/metasfresh/metasfresh/pull/6098) bump up lombok version to 1.18.10
+
+* metasfresh-edi
+  * [#8](https://github.com/metasfresh/metasfresh-edi/issues/8) EDI - add switch to disable delivery variance element
+
+* metasfresh-parent
+  * [#5](https://github.com/metasfresh/metasfresh-parent/issues/5) Generate git.properties
 
 # metasfresh 5.136
 ## Features
 * metasfresh
   * [#6045](https://github.com/metasfresh/metasfresh/issues/6045) Price Calculation as % of margin
+  * [#6106](https://github.com/metasfresh/metasfresh/issues/6106) Accounting misc fixes
 
 * metasfresh-webui-api
   * [#1340](https://github.com/metasfresh/metasfresh-webui-api/issues/1340) Implement GET /rest/api/window/{windowId}/{documentId}/{tabId}?ids=comma separated rowIds

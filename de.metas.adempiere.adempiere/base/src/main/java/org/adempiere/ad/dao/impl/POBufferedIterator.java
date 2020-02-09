@@ -181,7 +181,7 @@ import lombok.NonNull;
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("Loaded next page: bufferSize=" + bufferSize + ", offset=" + offset + " => " + bufferSizeActual + " records (fullyLoaded=" + bufferFullyLoaded + ")");
+			logger.debug("Loaded next page: bufferSize=" + bufferSize + ", offset=" + offset + " -> " + bufferSizeActual + " records (fullyLoaded=" + bufferFullyLoaded + ")");
 		}
 
 		offset += bufferSizeActual;

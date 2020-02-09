@@ -46,6 +46,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,7 +58,7 @@ import lombok.NonNull;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private I_C_Async_Batch asyncBatch = null;
 	private boolean asyncBatchSet = false;
-	private int userInChargeId;
+	private UserId userInChargeId;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
@@ -122,9 +123,9 @@ import lombok.NonNull;
 				Services.get(IQueueDAO.class).save(asyncBatch);
 			}
 
-			if (userInChargeId > 0)
+			if (userInChargeId != null)
 			{
-				workpackage.setAD_User_InCharge_ID(userInChargeId);
+				workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
 			}
 
 			// Create workpackage parameters
@@ -293,7 +294,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IWorkPackageBuilder setUserInChargeId(int userInChargeId)
+	public IWorkPackageBuilder setUserInChargeId(final UserId userInChargeId)
 	{
 		assertNotBuilt();
 		this.userInChargeId = userInChargeId;

@@ -37,7 +37,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,6 +79,7 @@ import org.compiere.model.MNote;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -133,6 +133,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -140,12 +141,14 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
@@ -191,11 +194,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// task 08927
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(Boolean.class);
 
-	/** @task 08451 */
-	private static final LocalDate DATE_TO_INVOICE_MAX_DATE = LocalDate.of(9999, Month.DECEMBER, 31); // NOTE: not using LocalDate.MAX because we want to convert it to Timestamp
+	/**
+	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
+	 *
+	 * @task 08451
+	 */
+	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
 
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -219,17 +227,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void set_DateToInvoice_DefaultImpl(final I_C_Invoice_Candidate ic)
 	{
-		final LocalDate dateToInvoice = computeDateToInvoice(ic);
-		ic.setDateToInvoice(TimeUtil.asTimestamp(dateToInvoice));
+		final Timestamp dateToInvoice = computeDateToInvoice(ic);
+		ic.setDateToInvoice(dateToInvoice);
 	}
 
-	private LocalDate computeDateToInvoice(final I_C_Invoice_Candidate ic)
+	private Timestamp computeDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		switch (invoiceRule)
 		{
 			case Immediate:
-				return TimeUtil.asLocalDate(ic.getDateOrdered());
+				return ic.getDateOrdered();
 
 			case AfterDelivery:
 				return computedateToInvoiceBasedOnDeliveryDate(ic);
@@ -255,7 +263,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					{
 						final InvoiceScheduleRepository invoiceScheduleRepository = SpringContextHolder.instance.getBean(InvoiceScheduleRepository.class);
 						final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(ic.getC_InvoiceSchedule());
-						return invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
+						final LocalDate nextDateToInvoice = invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
+						return TimeUtil.asTimestamp(nextDateToInvoice, orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID())));
 					}
 				}
 			default:
@@ -263,10 +272,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private LocalDate computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate ic)
+	private Timestamp computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// if there is no delivery yet, then we set the date to the far future
-		final LocalDate deliveryDate = TimeUtil.asLocalDate(ic.getDeliveryDate());
+		final Timestamp deliveryDate = ic.getDeliveryDate();
 		return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
 	}
 
@@ -303,8 +312,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (invoiceSched.isAmount())
 		{
-			final Timestamp dateToday = getToday();
-
+			final LocalDate dateToday = getToday();
 			final BigDecimal actualAmt = invoiceCandDAO.retrieveInvoicableAmount(partner, dateToday);
 
 			if (actualAmt.compareTo(invoiceSched.getAmt()) < 0)
@@ -836,9 +844,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// flagged via field color
 		// ignore candidates that can't be invoiced yet
-		final Timestamp dateToInvoice = getDateToInvoice(ic);
+		final LocalDate dateToInvoice = getDateToInvoice(ic);
 		if (!ignoreInvoiceSchedule
-				&& (dateToInvoice == null || dateToInvoice.after(getToday())))
+				&& (dateToInvoice == null || dateToInvoice.isAfter(getToday())))
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
@@ -1024,7 +1032,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public Timestamp getDateToInvoice(final I_C_Invoice_Candidate ic)
+	public LocalDate getDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
+	}
+
+	/** For class-internal use */
+	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
 		if (dateToInvoiceOverride != null)
@@ -1642,7 +1656,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setError(final I_C_Invoice_Candidate ic, final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
+	public void setError(
+			@NonNull final I_C_Invoice_Candidate ic,
+			final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
 	{
 		final String errorMessageToUse;
 		if (!askForDeleteRegeneration)
@@ -1780,13 +1796,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public Timestamp getToday()
+	public LocalDate getToday()
 	{
 		// NOTE: use login date if available
 		final Properties ctx = Env.getCtx();
-		final Timestamp today = Env.getDate(ctx);
-		return today;
-		// return SystemTime.asDayTimestamp();
+		return Env.getLocalDate(ctx);
 	}
 
 	@Override
@@ -1796,40 +1810,49 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx())));
+		if (pricingConditionsId == null)
 		{
 			// do nothing
 			return;
 		}
 
-		BigDecimal qty = ic.getQtyToInvoice();
-		if (qty.signum() < 0)
+		final BigDecimal qualityDiscountPercentage;
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
+		if(pricingConditions.isBreaksDiscountType())
 		{
-			final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
-
-			if (inout != null)
+			BigDecimal qty = ic.getQtyToInvoice();
+			if (qty.signum() < 0)
 			{
-				if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+				final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
+
+				if (inout != null)
 				{
-					qty = qty.negate();
+					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					{
+						qty = qty.negate();
+					}
 				}
 			}
+
+			final BigDecimal priceActual = ic.getPriceActual();
+			final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
+
+			final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
+					.attributes(attributes)
+					.product(product)
+					.qty(qty)
+					.price(priceActual)
+					.build());
+
+			qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		}
-
-		final BigDecimal priceActual = ic.getPriceActual();
-		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
-
-		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
-		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-				.attributes(attributes)
-				.product(product)
-				.qty(qty)
-				.price(priceActual)
-				.build());
-
-		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
+		else
+		{
+			qualityDiscountPercentage = null;
+		}
+		
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 
@@ -1878,35 +1901,58 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public boolean isCloseIfPartiallyInvoiced()
+	public void closePartiallyInvoiced_InvoiceCandidates(@NonNull final I_C_Invoice invoice)
 	{
-		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
-				.getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false);
-
-		return isCloseIfPartiallyInvoiced;
-	}
-
-	@Override
-	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
-	{
-		if (!isCloseIfPartiallyInvoiced())
-		{
-			return;
-		}
-
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
+		if (invoiceBL.isReversal(invoice))
 		{
-			for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(il))
+			logger.debug("C_Invoice is a reversal; => not closing any invoice candidates");
+			return;
+		}
+
+		if (!isCloseIfPartiallyInvoiced(OrgId.ofRepoId(invoice.getAD_Org_ID())))
+		{
+			logger.debug("isCloseIfPartiallyShipped=false for AD_Org_ID={}; => not closing any invoice candidates", invoice.getAD_Org_ID());
+			return;
+		}
+
+		for (final I_C_InvoiceLine ilRecord : invoiceDAO.retrieveLines(invoice))
+		{
+			try (final MDCCloseable ilRecordMDC = TableRecordMDC.putTableRecordReference(ilRecord))
 			{
-				if (candidate.getQtyToInvoice().compareTo(candidate.getQtyOrdered()) < 0)
+				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(ilRecord))
 				{
-					closeInvoiceCandidate(candidate);
+					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
+					{
+						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
+						{
+							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+							closeInvoiceCandidate(candidate);
+						}
+						else
+						{
+							logger.debug("invoiceLine.qtyInvoiced={} is >= invoiceCandidate.qtyOrdered={}; -> not closing invoice candidate",
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+						}
+					}
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean isCloseIfPartiallyInvoiced(@NonNull final OrgId orgId)
+	{
+		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
+				.getBooleanValue(
+						SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false,
+						ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
+
+		return isCloseIfPartiallyInvoiced;
 	}
 
 	@Override
@@ -1959,15 +2005,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine)
-				.stream()
-				.forEach(cand -> setCandInDispute(cand));
-	}
-
-	private void setCandInDispute(final I_C_Invoice_Candidate cand)
-	{
-		cand.setIsInDispute(true);
-		save(cand);
+		final List<I_C_Invoice_Candidate> icRecords = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine);
+		for (final I_C_Invoice_Candidate icRecord : icRecords)
+		{
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			{
+				logger.debug("Set IsInDispute=true because ic bleongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
+				icRecord.setIsInDispute(true);
+				save(icRecord);
+			}
+		}
 	}
 
 	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)
