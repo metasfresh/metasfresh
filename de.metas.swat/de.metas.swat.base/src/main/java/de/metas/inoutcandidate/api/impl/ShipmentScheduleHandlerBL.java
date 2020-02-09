@@ -43,6 +43,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
@@ -83,13 +84,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
 	@Override
-	public void registerHandler(@NonNull final Class<? extends ShipmentScheduleHandler> handlerClass)
+	public <T extends ShipmentScheduleHandler> void registerHandler(@NonNull final T handler)
 	{
-		final ShipmentScheduleHandler handler = ShipmentScheduleHandler.createNewInstance(handlerClass);
-
 		Check.errorIf(tableName2Handler.containsKey(handler.getSourceTable()),
 				"A handler was already registered for tableName={}; handlerClass={};",
-				handler.getSourceTable(), handlerClass);
+				handler.getSourceTable(), handler.getClass());
 
 		// do the actual registering
 		final ShipmentScheduleHandler oldImpl = tableName2Handler.put(handler.getSourceTable(), handler);
@@ -120,6 +119,8 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		}
 
 		handler.setM_IolCandHandler_IDOneTimeOnly(existingRecordId);
+
+		logger.info("Registered handler: {}", handler);
 	}
 
 	private final CCache<String, I_M_IolCandHandler> className2HandlerRecord = //
@@ -267,9 +268,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
 		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);
-		Check.assumeNotNull(shipmentScheduleHandler,
-				"ShipmentScheduleHandler for the given shipmentSchedule with table name {} is not null; shipmentSchedule={}",
-				tableName, sched);
+		if (shipmentScheduleHandler == null)
+		{
+			throw new AdempiereException("No shipment schedule handler defined for " + tableName + " (" + sched + ")");
+		}
 
 		return shipmentScheduleHandler;
 	}

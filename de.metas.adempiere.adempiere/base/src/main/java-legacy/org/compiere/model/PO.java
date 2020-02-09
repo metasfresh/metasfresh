@@ -5087,7 +5087,7 @@ public abstract class PO
 		try
 		{
 			m_currentChangeType = type;
-			ModelValidationEngine.get().fireModelChange(this, type.getChangeType());
+			ModelValidationEngine.get().fireModelChange(this, type);
 		}
 		finally
 		{

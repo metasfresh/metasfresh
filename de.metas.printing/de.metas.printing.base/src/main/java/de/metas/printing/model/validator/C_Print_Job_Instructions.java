@@ -43,7 +43,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
 import de.metas.notification.INotificationBL;
@@ -86,11 +85,11 @@ public class C_Print_Job_Instructions
 			return;
 		}
 
-		final I_AD_User userToPrint = jobInstructions.getAD_User_ToPrint();
+		final UserId userToPrintId = UserId.ofRepoId(jobInstructions.getAD_User_ToPrint_ID());
 		final Iterator<I_C_Print_Job_Line> lines = Services.get(IPrintingDAO.class).retrievePrintJobLines(jobInstructions);
 		for (final I_C_Print_Job_Line line : IteratorUtils.asIterable(lines))
 		{
-			logDocOutbound(line, userToPrint);
+			logDocOutbound(line, userToPrintId);
 		}
 	}
 
@@ -224,7 +223,7 @@ public class C_Print_Job_Instructions
 				});
 	}
 
-	private void logDocOutbound(final I_C_Print_Job_Line line, final I_AD_User userToPrint)
+	private void logDocOutbound(final I_C_Print_Job_Line line, @NonNull final UserId userToPrintId)
 	{
 		final Set<String> printerNames = new HashSet<>();
 		for (final I_C_Print_Job_Detail detail : Services.get(IPrintingDAO.class).retrievePrintJobDetails(line))
@@ -241,7 +240,7 @@ public class C_Print_Job_Instructions
 			final I_AD_Archive archive = queueItem.getAD_Archive();
 
 			Services.get(IArchiveEventManager.class).firePrintOut(archive,
-					userToPrint,
+					userToPrintId,
 					printerName,
 					IArchiveEventManager.COPIES_ONE,
 					IArchiveEventManager.STATUS_Success);

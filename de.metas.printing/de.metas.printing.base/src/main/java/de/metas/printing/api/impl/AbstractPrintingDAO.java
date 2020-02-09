@@ -221,7 +221,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		else
 		{
 			Check.errorIf(userToPrintId <= 0, "If the 'hostKey' param is empty, then the 'userToPrintId has to be > 0");
-			queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMN_CreatedBy, userToPrintId);
+			queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
 		}
 		return queryBuilder
 				.create()

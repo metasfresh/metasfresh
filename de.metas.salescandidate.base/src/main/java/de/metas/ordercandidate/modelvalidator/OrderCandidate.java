@@ -84,6 +84,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 			newDest.setEntityType(OrderCandidate_Constants.ENTITY_TYPE);
 			newDest.setInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 			newDest.setIsDestination(true);
+			newDest.setValue(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 			newDest.setName(msgBL.translate(Env.getCtx(), "C_Order_ID"));
 			InterfaceWrapperHelper.save(newDest);
 		}

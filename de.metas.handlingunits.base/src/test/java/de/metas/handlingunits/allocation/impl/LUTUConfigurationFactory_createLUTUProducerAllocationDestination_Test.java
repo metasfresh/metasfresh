@@ -57,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -126,7 +127,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				UomId.ofRepoId(cuUOM.getC_UOM_ID()),
 				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
@@ -174,7 +175,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		lutuFactory.createLUTUConfiguration(
 				null, // tuPIItemProduct
 				cuProductId,
-				cuUOM,
+				UomId.ofRepoId(cuUOM.getC_UOM_ID()),
 				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 	}

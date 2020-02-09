@@ -64,7 +64,8 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 	{
 		final ProcessInfo pi = getProcessInfo();
 
-		final IQueryFilter<I_M_InOut> processQueryFilter = pi.getQueryFilter();
+		// this process is supposed to run "globally" on all matching M_InOuts
+		final IQueryFilter<I_M_InOut> processQueryFilter = pi.getQueryFilterOrElseTrue();
 
 		// subquery to select only inOuts with EDI-partners
 		final IQuery<I_C_BPartner> ediRecipient = queryBL

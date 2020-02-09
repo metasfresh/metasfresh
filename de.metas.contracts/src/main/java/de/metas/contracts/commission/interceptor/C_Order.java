@@ -18,10 +18,13 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -103,7 +106,9 @@ public class C_Order
 			return;
 		}
 
-		final Optional<BPartnerId> salesPartnerId = bpartnerDAO.getBPartnerIdBySalesPartnerCode(salesPartnerCode);
+		final Optional<BPartnerId> salesPartnerId = bpartnerDAO.getBPartnerIdBySalesPartnerCode(
+				salesPartnerCode,
+				ImmutableSet.of(OrgId.ofRepoId(orderRecord.getAD_Org_ID()), OrgId.ANY));
 		if (salesPartnerId.isPresent())
 		{
 			orderRecord.setC_BPartner_SalesRep_ID(salesPartnerId.get().getRepoId());

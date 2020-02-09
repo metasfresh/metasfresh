@@ -41,6 +41,15 @@ public class TourId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "TourId");
 	}
 
+	public static int toRepoId(@Nullable final TourId tourId)
+	{
+		if (tourId == null)
+		{
+			return 0;
+		}
+		return tourId.getRepoId();
+	}
+
 	@JsonValue
 	@Override
 	public int getRepoId()

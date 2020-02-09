@@ -27,6 +27,8 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
@@ -167,4 +169,16 @@ public interface IPricingResult
 	void setCampaignPrice(boolean isCampaignPrice);
 
 	boolean isCampaignPrice();
+
+	IPricingResult setLoggableMessages(ImmutableList<String> singleMessages);
+
+	ImmutableList<String> getLoggableMessages();
+
+	void setBaseCommissionPointsPerPriceUOM(BigDecimal commissionPointsPerPriceUOM);
+
+	BigDecimal getBaseCommissionPointsPerPriceUOM();
+
+	void setTradedCommissionPercent(Percent tradedCommissionPercent);
+
+	Percent getTradedCommissionPercent();
 }

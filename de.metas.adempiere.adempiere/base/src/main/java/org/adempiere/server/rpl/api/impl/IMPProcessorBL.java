@@ -1,5 +1,7 @@
 package org.adempiere.server.rpl.api.impl;
 
+import java.nio.charset.StandardCharsets;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -39,7 +41,7 @@ import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_EXP_FormatLine;
@@ -140,8 +142,8 @@ public class IMPProcessorBL implements IIMPProcessorBL
 
 		if (!Check.isEmpty(text, true))
 		{
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-			attachmentEntryService.createNewAttachment(pLog, XMLATTACHMENT_NAME, text.getBytes());
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(pLog, XMLATTACHMENT_NAME, text.getBytes(StandardCharsets.UTF_8));
 		}
 
 		return pLog;
@@ -150,7 +152,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	@Override
 	public String getXmlMessage(@NonNull final I_IMP_ProcessorLog pLog)
 	{
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 		final AttachmentEntry entry = attachmentEntryService.getByFilenameOrNull(pLog, XMLATTACHMENT_NAME);
 		if (entry == null)
 		{
@@ -162,7 +164,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		{
 			return null;
 		}
-		final String xml = new String(data);
+		final String xml = new String(data, StandardCharsets.UTF_8);
 		if (Check.isEmpty(xml, true))
 		{
 			return null;

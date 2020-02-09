@@ -3,6 +3,7 @@ package de.metas.migration.impl;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import de.metas.migration.IScript;
 import de.metas.migration.ScriptType;
@@ -81,7 +82,7 @@ public class AnonymousScript implements IScript
 
 	private File createLocalFile()
 	{
-		final InputStream in = new ByteArrayInputStream(scriptContent.getBytes());
+		final InputStream in = new ByteArrayInputStream(scriptContent.getBytes(StandardCharsets.UTF_8));
 		return FileUtils.createLocalFile(getFileName(), in);
 	}
 }

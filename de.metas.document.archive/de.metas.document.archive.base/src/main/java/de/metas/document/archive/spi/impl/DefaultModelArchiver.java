@@ -154,6 +154,11 @@ public class DefaultModelArchiver
 			// archive.setIsDirectPrint(true);
 			archive.setC_Doc_Outbound_Config(getC_Doc_Outbound_Config_OrNull()); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
 
+			// https://github.com/metasfresh/metasfresh/issues/1240
+			// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,
+			// but it needs to be available in case the system has to create a printing queue item for this archive
+			IArchiveBL.COPIES_PER_ARCHIVE.setValue(archive, printInfo.getCopies());
+
 			//
 			// forward async batch if there is one
 			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(_record, Async_Constants.C_Async_Batch);
@@ -317,8 +322,8 @@ public class DefaultModelArchiver
 			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).orElse(-1);
 			if (adClientId != null && adClientId >= 0)
 			{
-								final I_AD_Client client = clientDAO.retriveClient(ctx, adClientId);
-					language = Language.getLanguage(client.getAD_Language());
+				final I_AD_Client client = clientDAO.retriveClient(ctx, adClientId);
+				language = Language.getLanguage(client.getAD_Language());
 				if (language != null)
 				{
 					logger.debug("Using {}'s language: {}", client, language);
@@ -412,7 +417,7 @@ public class DefaultModelArchiver
 		return printInfo;
 	}
 
-	private void createCCFile(final I_AD_Archive archive)
+	private void createCCFile(@NonNull final I_AD_Archive archive)
 	{
 		DocOutboundCCWorkpackageProcessor.scheduleOnTrxCommit(archive);
 	}

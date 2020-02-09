@@ -21,6 +21,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -50,6 +51,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 	@Nullable
 	ShipmentScheduleId getShipmentScheduleIdByOrderLineId(OrderLineId orderLineId);
 
+	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
+
 	/**
 	 * @return the shipment schedule entries that refer to given record
 	 */
@@ -71,13 +74,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	List<OlAndSched> retrieveInvalid(PInstanceId pinstanceId);
 
 	void setIsDiplayedForProduct(ProductId productId, boolean displayed);
-
-	/**
-	 * Deletes all {@link I_M_ShipmentSchedule} records whose {@link I_C_OrderLine} is not there anymore.
-	 *
-	 * It can occur that an order line for a given shipment schedule record is gone.
-	 */
-	void deleteSchedulesWithoutOrderLines();
 
 	/**
 	 * Mass update DeliveryDate_Override

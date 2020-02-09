@@ -1,11 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import java.util.Map;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -31,7 +28,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum M_ShipmentSchedule_QuantityTypeToUse
+public enum M_ShipmentSchedule_QuantityTypeToUse implements ReferenceListAwareEnum
 {
 	/** only use the shipment schedule's picked qty (which is based on the actually picked HUs). */
 	TYPE_PICKED_QTY("P"),
@@ -45,37 +42,30 @@ public enum M_ShipmentSchedule_QuantityTypeToUse
 	@Getter
 	private final String code;
 
+	private static final ValuesIndex<M_ShipmentSchedule_QuantityTypeToUse> index = ReferenceListAwareEnums.index(values());
+
 	private M_ShipmentSchedule_QuantityTypeToUse(final String code)
 	{
 		this.code = code;
 	}
 
-	public static M_ShipmentSchedule_QuantityTypeToUse forCode(@NonNull final String code)
+	public static M_ShipmentSchedule_QuantityTypeToUse ofCode(@NonNull final String code)
 	{
-		final M_ShipmentSchedule_QuantityTypeToUse type = code2type.get(code);
-
-		if (type == null)
-		{
-			throw new AdempiereException("No " + M_ShipmentSchedule_QuantityTypeToUse.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
-
-	private static final Map<String, M_ShipmentSchedule_QuantityTypeToUse> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(M_ShipmentSchedule_QuantityTypeToUse::getCode));
 
 	public boolean isUseBoth()
 	{
-		return TYPE_BOTH.equals(forCode(code));
+		return TYPE_BOTH == this;
 	}
 
 	public boolean isOnlyUsePicked()
 	{
-		return TYPE_PICKED_QTY.equals(forCode(code));
+		return TYPE_PICKED_QTY == this;
 	}
 
 	public boolean isOnlyUseToDeliver()
 	{
-		return TYPE_QTY_TO_DELIVER.equals(forCode(code));
+		return TYPE_QTY_TO_DELIVER == this;
 	}
 }

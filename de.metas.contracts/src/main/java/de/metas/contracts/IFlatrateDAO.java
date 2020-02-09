@@ -219,9 +219,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieves invoice candidates that don't have an invoice candidate allocation, but should have. Method to be used when there are already invoice candidates and a term is completed (again).
-	 *
-	 * @param dataEntry
-	 * @return
 	 */
 	List<I_C_Invoice_Candidate> updateCandidates(I_C_Flatrate_DataEntry dataEntry);
 
@@ -229,9 +226,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieve all active {@link I_C_Flatrate_Conditions} of context tenant.
-	 *
-	 * @param ctx
-	 * @return
 	 */
 	List<I_C_Flatrate_Conditions> retrieveConditions(Properties ctx);
 

@@ -546,10 +546,10 @@ public class CreateInvoiceCandidatesService
 
 	private CurrencyId lookupCurrencyId(@NonNull final JsonPrice jsonPrice)
 	{
-		final CurrencyId result = currencyService.getCurrencyId(jsonPrice.getPriceUomCode());
+		final CurrencyId result = currencyService.getCurrencyId(jsonPrice.getCurrencyCode());
 		if (result == null)
 		{
-			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier(jsonPrice.getPriceUomCode()).parentResource(jsonPrice).build();
+			throw MissingResourceException.builder().resourceName("currency").resourceIdentifier(jsonPrice.getPriceUomCode()).parentResource(jsonPrice).build();
 		}
 		return result;
 	}

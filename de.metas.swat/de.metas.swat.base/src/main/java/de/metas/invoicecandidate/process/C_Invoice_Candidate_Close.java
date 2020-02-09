@@ -70,7 +70,7 @@ public class C_Invoice_Candidate_Close extends JavaProcess implements IProcessPr
 	private Iterator<I_C_Invoice_Candidate> retrieveSelectedCandidates()
 	{
 		final ProcessInfo processInfo = getProcessInfo();
-		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = processInfo.getQueryFilter();
+		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = processInfo.getQueryFilterOrElseFalse();
 
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)

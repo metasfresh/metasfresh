@@ -29,6 +29,7 @@ import de.metas.bpartner.GLN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -68,13 +69,16 @@ public final class BPartnerComposite
 
 	private final List<BPartnerContact> contacts;
 
+	private final List<BPartnerBankAccount> bankAccounts;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private BPartnerComposite(
 			@JsonProperty("org") @Nullable final OrgId orgId,
 			@JsonProperty("bpartner") @Nullable final BPartner bpartner,
 			@JsonProperty("locations") @Singular final List<BPartnerLocation> locations,
-			@JsonProperty("contacts") @Singular final List<BPartnerContact> contacts)
+			@JsonProperty("contacts") @Singular final List<BPartnerContact> contacts,
+			@JsonProperty("bankAccounts") @Singular final List<BPartnerBankAccount> bankAccounts)
 	{
 		this.orgId = orgId;
 
@@ -84,6 +88,7 @@ public final class BPartnerComposite
 
 		this.locations = new ArrayList<>(coalesce(locations, ImmutableList.of()));
 		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
+		this.bankAccounts = new ArrayList<>(coalesce(bankAccounts, ImmutableList.of()));
 	}
 
 	public ImmutableSet<GLN> extractLocationGlns()
@@ -294,5 +299,24 @@ public final class BPartnerComposite
 		return getLocations()
 				.stream()
 				.filter(filter);
+	}
+
+	public List<BPartnerBankAccount> getBankAccounts()
+	{
+		return bankAccounts;
+	}
+
+	public void addBankAccount(@NonNull final BPartnerBankAccount bankAccount)
+	{
+		bankAccounts.add(bankAccount);
+	}
+
+	public Optional<BPartnerBankAccount> getBankAccountByIBAN(@NonNull final String iban)
+	{
+		Check.assumeNotEmpty(iban, "iban is not empty");
+
+		return bankAccounts.stream()
+				.filter(bankAccount -> iban.equals(bankAccount.getIban()))
+				.findFirst();
 	}
 }

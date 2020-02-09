@@ -33,8 +33,6 @@ import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -45,65 +43,48 @@ import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Helper class to manage the shipments (a.k.a {@link DeliveryGroupCandidate}s) that might actually be created in the end.
  */
 public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUpdate
 {
-
 	private static final Logger logger = LogManager.getLogger(ShipmentSchedulesDuringUpdate.class);
 
-	/**
-	 * List to store the shipments before it is decided if they are persisted to the database.
-	 */
-	private final List<DeliveryGroupCandidate> orderedCandidates = new ArrayList<>();
+	/** List to store the shipments before it is decided if they are persisted to the database. */
+	private final List<DeliveryGroupCandidate> deliveryGroupCandidatesOrdered = new ArrayList<>();
+	/** Used when multiple orders need to be consolidated to one shipment */
+	private final Map<ShipperKey, DeliveryGroupCandidate> deliveryGroupCandidatesByShipperKey = new HashMap<>();
+	/** Used when one shipment per order is required */
+	private final Map<OrderKey, DeliveryGroupCandidate> deliveryGroupCandidatesByOrderKey = new HashMap<>();
 
-	private final Map<DeliveryLineCandidate, StringBuilder> line2StatusInfo = new HashMap<>();
-
-	private final Map<ShipmentScheduleId, DeliveryLineCandidate> shipmentScheduleId2DeliveryLineCandidate = new HashMap<>();
-
+	private final Map<ShipmentScheduleId, DeliveryLineCandidate> deliveryLineCandidatesByShipmentScheduleId = new HashMap<>();
 	private final Set<DeliveryLineCandidate> deliveryLineCandidates = new HashSet<>();
 
-	/**
-	 * Used when multiple orders need to be consolidated to one shipment
-	 */
-	private final Map<ArrayKey, DeliveryGroupCandidate> shipperKey2Candidate = new HashMap<>();
-
-	/**
-	 * Used when one shipment per order is required
-	 */
-	private final Map<ArrayKey, DeliveryGroupCandidate> orderKey2Candidate = new HashMap<>();
+	private final Map<DeliveryLineCandidate, StringBuilder> line2StatusInfo = new HashMap<>();
 
 	@Override
 	public void addGroup(@NonNull final DeliveryGroupCandidate deliveryGroupCandidate)
 	{
-		if (orderedCandidates.contains(deliveryGroupCandidate))
+		if (deliveryGroupCandidatesOrdered.contains(deliveryGroupCandidate))
 		{
 			throw new IllegalArgumentException("Each input may be added only once");
 		}
 
-		orderedCandidates.add(deliveryGroupCandidate);
+		deliveryGroupCandidatesOrdered.add(deliveryGroupCandidate);
 
-		final ArrayKey shipperKey = createShipperKey(
+		final ShipperKey shipperKey = ShipperKey.of(
 				deliveryGroupCandidate.getShipperId(),
 				deliveryGroupCandidate.getWarehouseId(),
 				deliveryGroupCandidate.getBPartnerAddress());
-		shipperKey2Candidate.put(shipperKey, deliveryGroupCandidate);
+		deliveryGroupCandidatesByShipperKey.put(shipperKey, deliveryGroupCandidate);
 
-		final ArrayKey orderKey = createOrderKey(
+		final OrderKey orderKey = OrderKey.of(
 				deliveryGroupCandidate.getGroupId(),
 				deliveryGroupCandidate.getWarehouseId(),
 				deliveryGroupCandidate.getBPartnerAddress());
-		orderKey2Candidate.put(orderKey, deliveryGroupCandidate);
-	}
-
-	private static ArrayKey createOrderKey(
-			final DeliveryGroupCandidateGroupId groupId,
-			final WarehouseId warehouseId,
-			final String bpartnerAddress)
-	{
-		return ArrayKey.of(bpartnerAddress, warehouseId, groupId);
+		deliveryGroupCandidatesByOrderKey.put(orderKey, deliveryGroupCandidate);
 	}
 
 	@Override
@@ -111,11 +92,11 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	{
 		final DeliveryGroupCandidate inOut = deliveryLineCandidate.getGroup();
 
-		if (!orderedCandidates.contains(inOut))
+		if (!deliveryGroupCandidatesOrdered.contains(inOut))
 		{
 			throw new IllegalStateException("inOut needs to be added using 'addInOut' first"
 					+ "\n InOut: " + inOut
-					+ "\n orderedCandidates: " + orderedCandidates);
+					+ "\n orderedCandidates: " + deliveryGroupCandidatesOrdered);
 		}
 
 		if (CompleteStatus.INCOMPLETE_ORDER.equals(deliveryLineCandidate.getCompleteStatus()))
@@ -126,13 +107,13 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		//
 		// C_OrderLine_ID to M_InOutLine mapping
 		{
-			final DeliveryLineCandidate oldCandidate = shipmentScheduleId2DeliveryLineCandidate.put(deliveryLineCandidate.getShipmentScheduleId(), deliveryLineCandidate);
+			final DeliveryLineCandidate oldCandidate = deliveryLineCandidatesByShipmentScheduleId.put(deliveryLineCandidate.getShipmentScheduleId(), deliveryLineCandidate);
 			if (oldCandidate != null && !oldCandidate.equals(deliveryLineCandidate))
 			{
 				throw new IllegalArgumentException("Aa deliveryLineCandidate was already set for order line in orderLineId2InOutLine mapping"
 						+ "\n deliveryLineCandidate: " + deliveryLineCandidate
 						+ "\n old deliveryLineCandidate: " + oldCandidate
-						+ "\n shipmentScheduleId2InOutLine (after change): " + shipmentScheduleId2DeliveryLineCandidate);
+						+ "\n shipmentScheduleId2InOutLine (after change): " + deliveryLineCandidatesByShipmentScheduleId);
 			}
 		}
 
@@ -142,11 +123,11 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	public void removeLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
 		final ShipmentScheduleId shipmentScheduleId = deliveryLineCandidate.getShipmentScheduleId();
-		boolean success = shipmentScheduleId2DeliveryLineCandidate.remove(shipmentScheduleId) != null;
+		boolean success = deliveryLineCandidatesByShipmentScheduleId.remove(shipmentScheduleId) != null;
 		if (!success)
 		{
 			throw new IllegalStateException("inOutLine wasn't in shipmentScheduleId2InOutLine."
-					+ "\n shipmentScheduleId2InOutLine: " + shipmentScheduleId2DeliveryLineCandidate);
+					+ "\n shipmentScheduleId2InOutLine: " + deliveryLineCandidatesByShipmentScheduleId);
 		}
 
 		success = deliveryLineCandidates.remove(deliveryLineCandidate);
@@ -165,7 +146,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	@Override
 	public List<DeliveryGroupCandidate> getCandidates()
 	{
-		return ImmutableList.copyOf(orderedCandidates);
+		return ImmutableList.copyOf(deliveryGroupCandidatesOrdered);
 	}
 
 	/**
@@ -175,7 +156,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	@Override
 	public int size()
 	{
-		return orderedCandidates.size();
+		return deliveryGroupCandidatesOrdered.size();
 	}
 
 	/**
@@ -190,14 +171,8 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			final WarehouseId warehouseId,
 			final String bPartnerAddress)
 	{
-		final ArrayKey key = createShipperKey(shipperId, warehouseId, bPartnerAddress);
-		final DeliveryGroupCandidate inOut = shipperKey2Candidate.get(key);
-		return inOut;
-	}
-
-	private static ArrayKey createShipperKey(final Optional<ShipperId> shipperId, final WarehouseId warehouseId, final String bPartnerAddress)
-	{
-		return Util.mkKey(bPartnerAddress, warehouseId, shipperId.orElse(null));
+		final ShipperKey key = ShipperKey.of(shipperId, warehouseId, bPartnerAddress);
+		return deliveryGroupCandidatesByShipperKey.get(key);
 	}
 
 	@Override
@@ -206,12 +181,12 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			final WarehouseId warehouseId,
 			final String bpartnerAddress)
 	{
-		final ArrayKey key = createOrderKey(
+		final OrderKey key = OrderKey.of(
 				DeliveryGroupCandidateGroupId.of(tableRecordRef),
 				warehouseId,
 				bpartnerAddress);
-		final DeliveryGroupCandidate inOut = orderKey2Candidate.get(key);
-		return inOut;
+
+		return deliveryGroupCandidatesByOrderKey.get(key);
 	}
 
 	public boolean hasDeliveryLineCandidateFor(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -244,12 +219,12 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		{
 			if (!inOut.hasLines())
 			{
-				final ArrayKey key = createShipperKey(
+				final ShipperKey key = ShipperKey.of(
 						inOut.getShipperId(),
 						inOut.getWarehouseId(),
 						inOut.getBPartnerAddress());
-				shipperKey2Candidate.remove(key);
-				orderedCandidates.remove(inOut);
+				deliveryGroupCandidatesByShipperKey.remove(key);
+				deliveryGroupCandidatesOrdered.remove(inOut);
 				rmInOuts++;
 			}
 		}
@@ -333,7 +308,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	@Override
 	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return shipmentScheduleId2DeliveryLineCandidate.get(shipmentScheduleId);
+		return deliveryLineCandidatesByShipmentScheduleId.get(shipmentScheduleId);
 	}
 
 	@Override
@@ -371,5 +346,34 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	public ImmutableList<DeliveryLineCandidate> getAllLines()
 	{
 		return ImmutableList.copyOf(deliveryLineCandidates);
+	}
+
+	@Value
+	private static class ShipperKey
+	{
+		public static ShipperKey of(final Optional<ShipperId> shipperId, final WarehouseId warehouseId, final String bpartnerAddress)
+		{
+			return new ShipperKey(bpartnerAddress, warehouseId, shipperId.orElse(null));
+		}
+
+		String bpartnerAddress;
+		WarehouseId warehouseId;
+		ShipperId shipperId;
+	}
+
+	@Value
+	private static class OrderKey
+	{
+		public static OrderKey of(
+				final DeliveryGroupCandidateGroupId groupId,
+				final WarehouseId warehouseId,
+				final String bpartnerAddress)
+		{
+			return new OrderKey(bpartnerAddress, warehouseId, groupId);
+		}
+
+		String bpartnerAddress;
+		WarehouseId warehouseId;
+		DeliveryGroupCandidateGroupId groupId;
 	}
 }

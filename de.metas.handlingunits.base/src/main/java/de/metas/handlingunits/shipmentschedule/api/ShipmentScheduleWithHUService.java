@@ -1,8 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +16,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -52,9 +48,11 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -130,7 +128,7 @@ public class ShipmentScheduleWithHUService
 		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
 		final IHUContext huContext = request.getHuContext();
 
-		final I_M_ShipmentSchedule scheduleRecord = load(request.getShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule scheduleRecord = Services.get(IShipmentSchedulePA.class).getById(request.getShipmentScheduleId());
 
 		switch (quantityType)
 		{
@@ -162,10 +160,19 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(scheduleRecord);
+
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
 		if (pickAvailableHUsOnTheFly)
 		{
-			result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
+			final IProductBL productBL = Services.get(IProductBL.class);
+			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
+			{
+				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
+			}
+			else
+			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
+			}
 		}
 
 		// find out if and what what the pickHUsOnTheFly() method did for us
@@ -173,7 +180,7 @@ public class ShipmentScheduleWithHUService
 				.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver.toZero(), Quantity::add);
-		Loggables.addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("QtyToDeliver={}; Qty picked on-the-fly from available HUs: {}", qtyToDeliver, allocatedQty);
 
 		final Quantity remainingQtyToAllocate = qtyToDeliver.subtract(allocatedQty);
 		if (remainingQtyToAllocate.signum() > 0)
@@ -212,8 +219,9 @@ public class ShipmentScheduleWithHUService
 						adClientId,
 						adOrgId);
 
-		Loggables.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
-				SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
+						SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
 
 		return pickAvailableHUsOntheFly;
 	}
@@ -231,12 +239,21 @@ public class ShipmentScheduleWithHUService
 			@NonNull final Quantity qtyToDeliver,
 			@NonNull final IHUContext huContext)
 	{
+		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
+
+		if (qtyToDeliver.signum() <= 0)
+		{
+			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do");
+			return ImmutableList.of();
+		}
+
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(scheduleRecord, true/* considerAttributes */);
 
 		final boolean isHuStorageQuery = storageQuery instanceof HUStorageQuery;
 		if (!isHuStorageQuery)
 		{
+			loggableWithLogger.addLog("pickHUsOnTheFly - ShipmentSchedule's storageQuery is not a HUStorageQuery; nothing to do");
 			return ImmutableList.of();
 		}
 
@@ -268,9 +285,7 @@ public class ShipmentScheduleWithHUService
 			}
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
-
-			final ILoggable loggable = Loggables.get();
-			loggable.addLog("QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			// split a part out of the current HU
 			final HUsToNewCUsRequest request = HUsToNewCUsRequest
@@ -288,7 +303,7 @@ public class ShipmentScheduleWithHUService
 			for (final I_M_HU newHURecord : newHURecords)
 			{
 				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
-				loggable.addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
+				loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
 				Quantity catchQtyOverride = null;
 				if (firstHU)
@@ -311,7 +326,6 @@ public class ShipmentScheduleWithHUService
 						huContext,
 						anonymousTuPickedOnTheFly));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
-
 			}
 
 			if (remainingQtyToAllocate.signum() <= 0)
@@ -602,10 +616,11 @@ public class ShipmentScheduleWithHUService
 
 		//
 		// Create Allocation Request: whole Qty to Deliver
+		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				loadOutOfTrx(schedule.getM_Product_ID(), I_M_Product.class),
+				productId,
 				qtyToDeliver,
 				SystemTime.asZonedDateTime(),
 				schedule,      // reference model

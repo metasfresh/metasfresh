@@ -36,6 +36,7 @@ import org.compiere.util.Env;
 import org.hamcrest.number.BigDecimalCloseTo;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import de.metas.uom.impl.UOMTestHelper;
@@ -413,4 +414,31 @@ public class QuantityTest
 		assertThat(qty.roundToUOMPrecision()).isSameAs(qty);
 	}
 
+	@Nested
+	public class withoutSource
+	{
+		private I_C_UOM uom1;
+		private I_C_UOM uom2;
+
+		@BeforeEach
+		public void init()
+		{
+			uom1 = uomHelper.createUOM("UOM1", 2);
+			uom2 = uomHelper.createUOM("UOM2", 2);
+		}
+
+		@Test
+		public void fromWithoutSourceQty()
+		{
+			final Quantity qty = Quantity.of(123, uom1);
+			assertThat(qty.withoutSource()).isSameAs(qty);
+		}
+
+		@Test
+		public void fromWithSourceQty()
+		{
+			final Quantity qty = new Quantity(new BigDecimal("123"), uom1, new BigDecimal("456"), uom2);
+			assertThat(qty.withoutSource()).isEqualTo(Quantity.of(123, uom1));
+		}
+	}
 }

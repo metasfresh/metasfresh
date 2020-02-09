@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -78,7 +79,9 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -156,7 +159,21 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
+	public IPricingResult calculatePrice(@NonNull final IPricingContext pricingCtx)
+	{
+		final PlainStringLoggable plainStringLoggable = Loggables.newPlainStringLoggable();
+		try (IAutoCloseable c = Loggables.temporarySetLoggable(plainStringLoggable))
+		{
+			final IPricingResult result = calculatePrice0(pricingCtx);
+			return result.setLoggableMessages(plainStringLoggable.getSingleMessages());
+		}
+		catch (final ProductNotOnPriceListException e)
+		{
+			throw e.setParameter("Log", plainStringLoggable.getConcatenatedMessages()); // augment&rethrow
+		}
+	}
+
+	private IPricingResult calculatePrice0(final IPricingContext pricingCtx)
 	{
 		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
 		final PricingResult result = createInitialResult(pricingCtxToUse);
@@ -169,7 +186,9 @@ public class PricingBL implements IPricingBL
 			// in the initial result are the ones from the reference object.
 			// TODO: a new pricing rule for manual prices (if needed)
 			// Keeping the fine log anyway
-			logger.debug("The pricing engine doesn't have to calculate the price because it was already manually set in the pricing context: {}.", pricingCtxToUse);
+			final String msg = "The pricing engine doesn't have to calculate the price because it was already manually set in the pricing context";
+			Loggables.addLog(msg);
+			logger.debug(msg + ": {}.", pricingCtxToUse);
 
 			// FIXME tsa: figure out why the line below was commented out?!
 			// I think we can drop this feature all together
@@ -187,7 +206,10 @@ public class PricingBL implements IPricingBL
 		// Fail if not calculated
 		if (pricingCtxToUse.isFailIfNotCalculated() && !result.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(pricingCtxToUse)
+			throw ProductNotOnPriceListException.builder()
+					.pricingCtx(pricingCtxToUse)
+					.productId(pricingCtx.getProductId())
+					.build()
 					.setParameter("pricingResult", result);
 		}
 

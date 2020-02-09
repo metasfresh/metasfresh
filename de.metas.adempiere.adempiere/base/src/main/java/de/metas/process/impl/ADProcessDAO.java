@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -429,11 +430,11 @@ public class ADProcessDAO implements IADProcessDAO
 
 		if (wasNew)
 		{
-			Loggables.addLog("@Created@ {}", columnName);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("@Created@ {}", columnName);
 		}
 		else
 		{
-			Loggables.addLog("@Updated@ {}", columnName);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("@Updated@ {}", columnName);
 		}
 
 		//

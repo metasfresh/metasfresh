@@ -218,6 +218,7 @@ class ChangeLogUtilTest
 				locationId2Location,
 				ImmutableMap.of(), /* postalId2Postal */
 				countryId2Country,
+				ImmutableListMultimap.of(), /* bank accounts */
 				recordRef2LogEntries);
 		return relatedRecords;
 	}
@@ -230,6 +231,7 @@ class ChangeLogUtilTest
 				ImmutableMap.of(), /* locationId2Location */
 				ImmutableMap.of(), /* postalId2Postal */
 				ImmutableMap.of(), /* countryId2Country */
+				ImmutableListMultimap.of(), /* bank accounts */
 				ImmutableListMultimap.of() /* recordRef2LogEntries */);
 		return relatedRecords;
 	}

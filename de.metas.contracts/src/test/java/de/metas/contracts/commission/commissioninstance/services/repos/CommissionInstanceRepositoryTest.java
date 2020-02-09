@@ -37,9 +37,6 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Sale
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -96,7 +93,7 @@ class CommissionInstanceRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(new CommissionHierarchyFactory(), commissionConfigStagingDataService);
+		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
 		commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
 	}

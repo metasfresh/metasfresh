@@ -14,7 +14,7 @@ public class X_EDI_cctop_000_v extends org.compiere.model.PO implements I_EDI_cc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1319506923L;
+	private static final long serialVersionUID = -1437630575L;
 
     /** Standard Constructor */
     public X_EDI_cctop_000_v (Properties ctx, int EDI_cctop_000_v_ID, String trxName)
@@ -87,19 +87,16 @@ public class X_EDI_cctop_000_v extends org.compiere.model.PO implements I_EDI_cc
 		return ii.intValue();
 	}
 
-	/** Set EDI-ID des Dateiempfängers.
-		@param EdiRecipientGLN 
-		EDI-ID des Dateiempfängers
-	  */
+	/** Set EDI-ID des DESADV-Empfängers.
+		@param EdiRecipientGLN EDI-ID des DESADV-Empfängers	  */
 	@Override
 	public void setEdiRecipientGLN (java.lang.String EdiRecipientGLN)
 	{
 		set_Value (COLUMNNAME_EdiRecipientGLN, EdiRecipientGLN);
 	}
 
-	/** Get EDI-ID des Dateiempfängers.
-		@return EDI-ID des Dateiempfängers
-	  */
+	/** Get EDI-ID des DESADV-Empfängers.
+		@return EDI-ID des DESADV-Empfängers	  */
 	@Override
 	public java.lang.String getEdiRecipientGLN () 
 	{

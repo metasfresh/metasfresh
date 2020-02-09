@@ -10,12 +10,12 @@ package de.metas.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,18 +27,20 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public final class IOStreamUtils
 {
-	public static String toString(final InputStream in)
+	public static String toString(@NonNull final InputStream in)
 	{
-		return new String(toByteArray(in));
+		return new String(toByteArray(in), StandardCharsets.UTF_8);
 	}
 
-	public static byte[] toByteArray(final InputStream in) throws RuntimeException
+	public static byte[] toByteArray(@NonNull final InputStream in) throws RuntimeException
 	{
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -61,9 +63,9 @@ public final class IOStreamUtils
 
 	/**
 	 * Close given closeable stream.
-	 * 
+	 *
 	 * No errors will be thrown.
-	 * 
+	 *
 	 * @param closeable
 	 */
 	public static void close(final Closeable closeable)
@@ -85,9 +87,9 @@ public final class IOStreamUtils
 
 	/**
 	 * Close all given input streams.
-	 * 
+	 *
 	 * No errors will be thrown.
-	 * 
+	 *
 	 * @param closeables
 	 */
 	public static void close(final Closeable... closeables)
@@ -105,18 +107,13 @@ public final class IOStreamUtils
 
 	/**
 	 * Copy data from input stream to output stream.
-	 * 
+	 *
 	 * NOTE: no matter what, both streams are closed after this call.
-	 * 
-	 * @param out
-	 * @param in
+	 *
 	 * @throws RuntimeException if something fails
 	 */
-	public static void copy(final OutputStream out, final InputStream in)
+	public static void copy(@NonNull final OutputStream out, @NonNull final InputStream in)
 	{
-		Check.assumeNotNull(out, "out not null");
-		Check.assumeNotNull(in, "in not null");
-
 		try
 		{
 			final byte[] buf = new byte[4 * 1024];

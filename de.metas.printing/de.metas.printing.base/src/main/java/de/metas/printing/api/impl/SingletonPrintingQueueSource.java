@@ -10,12 +10,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,15 +34,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.SingletonIterator;
+import lombok.NonNull;
 
 /**
  * Used for creating a print job for a single printing queue item.
- * 
+ *
  * @author ad
- * 
+ *
  */
 public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 {
@@ -64,16 +64,15 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 
 	/**
 	 * Create a new instance
-	 * 
+	 *
 	 * @param item the item to create the printjob for
 	 * @param adUserPrintJobId the <b>printjob</b>-user. If the queue has {@link I_C_Printing_Queue#isPrintoutForOtherUser()} <code>= true</code>, then the print job's print-job-instruction(s) will
 	 *            not have this user-ID, but the items' reciepents' user-IDs.
 	 */
-	public SingletonPrintingQueueSource(final I_C_Printing_Queue item,
+	public SingletonPrintingQueueSource(
+			@NonNull final I_C_Printing_Queue item,
 			final int adUserPrintJobId)
 	{
-		Check.assumeNotNull(item, "item not null");
-
 		this.item = item;
 		this.adUserPrintJobId = adUserPrintJobId;
 		this.trxName = InterfaceWrapperHelper.getTrxName(item);
@@ -115,7 +114,7 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 
 	/**
 	 * Specifies if marking the items as printed shall be persisted to database (usually) or just in memory for this run (temporary).
-	 * 
+	 *
 	 * @param persistPrintedFlag true if item's printed status shall be persisted in database
 	 */
 	public void setPersistPrintedFlag(final boolean persistPrintedFlag)
@@ -124,7 +123,7 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if item's printed status will be persisted in database
 	 */
 	public boolean isPersistPrintedFlag()
@@ -163,9 +162,9 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 			temporaryPrinted = true;
 		}
 	}
-	
+
 	@Override
-	public int countItems() 
+	public int countItems()
 	{
 		return 1;
 	}

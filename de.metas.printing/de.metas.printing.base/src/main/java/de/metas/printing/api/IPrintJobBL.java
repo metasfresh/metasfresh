@@ -86,10 +86,7 @@ public interface IPrintJobBL extends ISingletonService
 	 *            <li>no hostkey is set to the instructions, meaning that any printing client which has a session with the given <code>userToPrintId</code> can do the printing.
 	 *            </ul>
 	 *            Note that even if this is <code>true</code>, it will be ignored if there is no hostkey to be obtained, see {@link IPrintPackageBL#getHostKeyOrNull(java.util.Properties)}.
-	 * @param firstLine
-	 * @param lastLine
 	 * @param copies number of copies to print (1 means one printout).
-	 * @return
 	 */
 	I_C_Print_Job_Instructions createPrintJobInstructions(int userToPrintId,
 			boolean createWithSpecificHostKey,

@@ -38,6 +38,7 @@ import de.metas.attachments.AttachmentTags;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -55,6 +56,7 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.rest_api.utils.PermissionServiceFactory;
 import de.metas.util.Check;
@@ -277,9 +279,18 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				request.getDataSource(),
 				"int-" + DATA_SOURCE_INTERNAL_NAME);
 
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg()));
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceInternalNameToUse)
+					.parentResource(request).build();
+		}
+
 		return jsonConverters
 				.fromJson(request, masterdataProvider)
-				.dataSourceId(masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg())))
+				.dataSourceId(dataSourceId)
 				.build();
 	}
 

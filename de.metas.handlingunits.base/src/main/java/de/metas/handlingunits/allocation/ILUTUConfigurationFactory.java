@@ -51,7 +51,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
 	 *            Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
 	 */
-	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, ProductId cuProductId, I_C_UOM cuUOM, BPartnerId bpartnerId, boolean noLUForVirtualTU);
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, ProductId cuProductId, UomId cuUomId, BPartnerId bpartnerId, boolean noLUForVirtualTU);
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
@@ -123,10 +123,9 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 *
 	 * @param lutuConfiguration
 	 * @param qtyCUsTotal total CU quantity
-	 * @param qtyCUsTotalUOM total CU quantity's UOM
 	 * @return how many LUs are needed or ZERO if we are dealing with infinite capacities
 	 */
-	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, BigDecimal qtyCUsTotal, I_C_UOM qtyCUsTotalUOM);
+	int calculateQtyLUForTotalQtyCUs(I_M_HU_LUTU_Configuration lutuConfiguration, Quantity qtyCUsTotal);
 
 	/**
 	 * Calculates how many CUs (in total).
@@ -141,7 +140,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 *
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
-	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);
+	Quantity convertQtyToLUTUConfigurationUOM(Quantity qty, I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{

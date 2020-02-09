@@ -30,6 +30,7 @@ import org.compiere.util.Ini;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -55,7 +56,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 {
 
 	@Param(parameterName = "QuantityType", mandatory = true)
-	private String quantityType;
+	private M_ShipmentSchedule_QuantityTypeToUse quantityType;
 
 	@Param(parameterName = "IsCompleteShipments", mandatory = true)
 	private boolean isCompleteShipments;
@@ -114,7 +115,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		// Filter only selected shipment schedules
 		if (Ini.isSwingClient())
 		{
-			final IQueryFilter<I_M_ShipmentSchedule> selectionFilter = getProcessInfo().getQueryFilter();
+			final IQueryFilter<I_M_ShipmentSchedule> selectionFilter = getProcessInfo().getQueryFilterOrElseTrue();
 			filters.addFilter(selectionFilter);
 		}
 		else

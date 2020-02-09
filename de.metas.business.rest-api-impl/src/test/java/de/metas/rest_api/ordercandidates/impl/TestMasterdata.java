@@ -157,9 +157,10 @@ final class TestMasterdata
 		saveRecord(record);
 	}
 
-	public PricingSystemId createPricingSystem()
+	public PricingSystemId createPricingSystem(@NonNull final String pricinSystemCode)
 	{
 		final I_M_PricingSystem record = newInstance(I_M_PricingSystem.class);
+		record.setValue(pricinSystemCode);
 		saveRecord(record);
 		return PricingSystemId.ofRepoId(record.getM_PricingSystem_ID());
 	}
@@ -241,6 +242,7 @@ final class TestMasterdata
 	{
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setSalesPartnerCode(salesRepCode);
+		partner.setIsSalesRep(true);
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());

@@ -90,7 +90,7 @@ public class ShipmentScheduleBLTest
 			// @formatter:off
 			@Override public void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentScheduleRecord)	{ }
 			@Override public void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName) { }
-			@Override public void registerHandler(Class<? extends ShipmentScheduleHandler> handler) { }
+			@Override public <T extends ShipmentScheduleHandler> void registerHandler(T handler) { }
 			@Override public ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched) { return null; }
 			@Override public Set<ShipmentScheduleId> createMissingCandidates(Properties ctx) { return null; }
 			@Override public IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, I_C_OrderLine salesOrderLine) { return null; }

@@ -104,7 +104,11 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				}
 			}
 		}
-		else if  (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
+		else if (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
+		{
+			addProduct(null);
+		}
+		else if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
 		{
 			addProduct(null);
 		}
@@ -129,7 +133,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 	@Override
 	protected Iterable<I_C_BPartner> getBPartners()
 	{
-		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_BPartner> selectedPartners = getProcessInfo().getQueryFilterOrElseFalse();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class, getCtx(), ITrx.TRXNAME_ThreadInherited);

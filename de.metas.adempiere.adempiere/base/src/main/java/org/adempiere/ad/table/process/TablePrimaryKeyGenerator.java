@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -172,7 +173,7 @@ class TablePrimaryKeyGenerator
 
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		Loggables.addLog(msg, msgParameters);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)

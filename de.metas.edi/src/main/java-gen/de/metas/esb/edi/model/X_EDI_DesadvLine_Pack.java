@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1364769355L;
+	private static final long serialVersionUID = -1599398591L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine_Pack (Properties ctx, int EDI_DesadvLine_Pack_ID, String trxName)
@@ -431,7 +431,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 		return bd;
 	}
 
-	/** Set Menge CU.
+	/** Set Menge CU/TU.
 		@param QtyCU 
 		Menge der CUs pro Einzelgebinde (normalerweise TU)
 	  */
@@ -441,7 +441,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 		set_Value (COLUMNNAME_QtyCU, QtyCU);
 	}
 
-	/** Get Menge CU.
+	/** Get Menge CU/TU.
 		@return Menge der CUs pro Einzelgebinde (normalerweise TU)
 	  */
 	@Override

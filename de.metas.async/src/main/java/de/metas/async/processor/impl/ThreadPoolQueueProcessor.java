@@ -34,6 +34,7 @@ import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import com.google.common.base.MoreObjects;
 
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.model.I_C_Queue_Processor;
 
 class ThreadPoolQueueProcessor extends AbstractQueueProcessor
@@ -42,9 +43,12 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 	private final ThreadPoolExecutor executor;
 	private final AtomicBoolean running;
 
-	public ThreadPoolQueueProcessor(final I_C_Queue_Processor config, final IWorkPackageQueue queue)
+	public ThreadPoolQueueProcessor(
+			final I_C_Queue_Processor config,
+			final IWorkPackageQueue queue, 
+			final IWorkpackageLogsRepository logsRepository)
 	{
-		super(queue);
+		super(queue, logsRepository);
 
 		this.name = config.getName();
 

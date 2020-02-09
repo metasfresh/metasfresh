@@ -14,7 +14,7 @@ public class X_AD_Printer_Tray extends org.compiere.model.PO implements I_AD_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1212167399L;
+	private static final long serialVersionUID = -1105264745L;
 
     /** Standard Constructor */
     public X_AD_Printer_Tray (Properties ctx, int AD_Printer_Tray_ID, String trxName)
@@ -104,9 +104,7 @@ public class X_AD_Printer_Tray extends org.compiere.model.PO implements I_AD_Pri
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -114,8 +112,7 @@ public class X_AD_Printer_Tray extends org.compiere.model.PO implements I_AD_Pri
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

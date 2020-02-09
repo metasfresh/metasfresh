@@ -36,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Optional;
 
@@ -72,7 +73,7 @@ public class TransactionResultService
 			final AttachmentEntryCreateRequest requestDataAttachment = AttachmentEntryCreateRequest
 					.fromByteArray(
 							MessageFormat.format("Request_{0}", requestLogData.getCustomerTransactionID()),
-							requestLogData.getRequestData().getBytes());
+							requestLogData.getRequestData().getBytes(StandardCharsets.UTF_8));
 			attachmentEntryService.createNewAttachment(
 					TableRecordReference.of(I_CS_Transaction_Result.Table_Name, transactionResultId),
 					requestDataAttachment);
@@ -83,7 +84,7 @@ public class TransactionResultService
 			final AttachmentEntryCreateRequest responseDataAttachment = AttachmentEntryCreateRequest
 					.fromByteArray(
 							MessageFormat.format("Response_{0}", requestLogData.getCustomerTransactionID()),
-							requestLogData.getResponseData().getBytes());
+							requestLogData.getResponseData().getBytes(StandardCharsets.UTF_8));
 			attachmentEntryService.createNewAttachment(
 					TableRecordReference.of(I_CS_Transaction_Result.Table_Name, transactionResultId),
 					responseDataAttachment);

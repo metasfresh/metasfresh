@@ -397,7 +397,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=? ");
 		params.add(dataEntryType);
 
-		if (uomId != null)
+		if (uomId != null && UomId.toRepoId(uomId) > 0)
 		{
 			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=? ");
 			params.add(uomId);

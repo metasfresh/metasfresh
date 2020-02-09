@@ -10,12 +10,12 @@ package de.metas.printing.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,9 +68,9 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * This method temporarily adds the given <code>trxName</code> to the allowed prefixes and then invokes the given <code>runnable</code>.
-	 * 
+	 *
 	 * In other words, it is just a wrapper for following code snippet:
-	 * 
+	 *
 	 * <pre>
 	 * DB.saveConstraints();
 	 * try
@@ -83,14 +83,14 @@ public interface IPrintingDAO extends ISingletonService
 	 * 	DB.restoreConstraints();
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * @param trxName
 	 * @param runnable
 	 */
 	void runWithTrxName(String trxName, Runnable runnable);
 
 	/**
-	 * 
+	 *
 	 * @param job
 	 * @return
 	 * @see #retrievePrintJobLines(I_C_Print_Job, int, int)
@@ -99,7 +99,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Retrieve {@link I_C_Print_Job_Line}s, ordered by SeqNo.
-	 * 
+	 *
 	 * @param job
 	 * @param fromSeqNo first seqno inclusive (or -1)
 	 * @param toSeqNo last seqno inclusive (or -1)
@@ -120,10 +120,10 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	int countItems(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
 
-	
+
 	/**
 	 * Retrieve the print job details for the given job line. Assumes that there is at least one, never returns an empty list.
-	 * 
+	 *
 	 * @param jobLine
 	 * @return
 	 */
@@ -131,14 +131,14 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Retrieve the print job details for the given job line. If there are none, an empty list will be returned.
-	 * 
+	 *
 	 * @param jobLine
 	 * @return
 	 */
 	List<I_C_Print_Job_Detail> retrievePrintJobDetailsIfAny(I_C_Print_Job_Line jobLine);
 
 	/**
-	 * 
+	 *
 	 * @param matching The "parent record" of the tray matching that we are looking for
 	 * @param routing the printer routing record that contains the logical printer and tray for which we search the hardware tray.
 	 * @param throwExIfNull if <code>true</code> and there is no tray matching, the method will throw an {@link AdempiereException}
@@ -151,19 +151,18 @@ public interface IPrintingDAO extends ISingletonService
 	List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(I_AD_Printer_Matching matching);
 
 	/**
-	 * Retrieves a printer config by host key or user ID. One off both has to be set.
+	 * Retrieves a printer config by host key or user ID. One of both has to be set.
 	 * If no printer config exists, the method returns <code>null</code>.
-	 * 
+	 *
 	 * @param ctx ctx and trxName to use
 	 * @param hostKey the hostKey to retrieve the config for. May be <code>null</code> or empty string.
 	 * @param userToPrintId if the given <code>hostKey</code> is <code>null</code> or empty then this parameter must be <code>> 0</code>. Used to retrieve the config by its
 	 *            {@link I_AD_Printer_Config#COLUMN_CreatedBy CreatedBy} value
-	 * @return
 	 */
 	I_AD_Printer_Config retrievePrinterConfig(IContextAware ctx, String hostKey, int userToPrintId);
 
 	/**
-	 * 
+	 *
 	 * @param hostKey
 	 * @param routing
 	 * @return {@link I_AD_Printer_Matching}; never returns null
@@ -171,7 +170,7 @@ public interface IPrintingDAO extends ISingletonService
 	I_AD_Printer_Matching retrievePrinterMatching(String hostKey, I_AD_PrinterRouting routing);
 
 	/**
-	 * 
+	 *
 	 * @param printingQueue
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.
 	 */
@@ -192,7 +191,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Ensure that the aggregation key of the given {@code recipients} printing queue item won't be updated via model interceptor when the given recipient is saved.
-	 * 
+	 *
 	 * @param recipient
 	 */
 	void setDisableAggregationKeyUpdate(I_C_Printing_Queue_Recipient recipient);
@@ -203,9 +202,9 @@ public interface IPrintingDAO extends ISingletonService
 	 * <li>logged/session user; only those instructions for logged user are fetched
 	 * <li>hostkey; if available only those instructions for hostkey are fetched or those whom does not have a hostkey set
 	 * </ul>
-	 * 
+	 *
 	 * NOTE: this method locks the returned object
-	 * 
+	 *
 	 * @param ctx
 	 * @param trxName
 	 * @return
@@ -214,14 +213,14 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Retrieve all (active and inactive) {@link I_AD_PrinterHW_MediaSize}.
-	 * 
+	 *
 	 * @param printerHW
 	 * @return
 	 */
 	List<I_AD_PrinterHW_MediaSize> retrieveMediaSizes(I_AD_PrinterHW printerHW);
 
 	/**
-	 * 
+	 *
 	 * @param hwPrinter
 	 * @param mediaSize
 	 * @param createIfNotExists if <code>true</code> then the record is created on the fly if necessary. Background is that currently we don't handle different mediasizes anyways. We just need a
@@ -244,7 +243,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Converts {@link IPrintingQueueQuery} to current database {@link IQuery} implementation.
-	 * 
+	 *
 	 * @param ctx
 	 * @param queueQuery
 	 * @param trxName
@@ -256,7 +255,7 @@ public interface IPrintingDAO extends ISingletonService
 	 * Returns all logical printers for the given org.
 	 * <p>
 	 * <b>IMPORTANT:</b> the printers are returned with internal TrxName=<code>null</code>!
-	 * 
+	 *
 	 * @param ctx
 	 * @param adOrgId
 	 * @return
@@ -272,25 +271,25 @@ public interface IPrintingDAO extends ISingletonService
 	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
-	
+
 	/**
 	 * retrieve print job lines based on printing queue
-	 * 
+	 *
 	 * @param printingQueue
 	 * @return
 	 */
 	List<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Printing_Queue printingQueue);
-	
+
 	/**
 	 * Retrieve <b>the latest</b> printing queue for the given {@code archive}.
 	 * @param archive
 	 * @return
 	 */
 	I_C_Printing_Queue retrievePrintingQueue(I_AD_Archive archive);
-	
+
 	/**
 	 * gets a list of printing package infos
-	 * 
+	 *
 	 * @param printPackage
 	 * @return
 	 */
@@ -298,16 +297,16 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * retrieve package data
-	 * 
+	 *
 	 * @param printPackage
 	 * @return
 	 */
 	I_C_PrintPackageData retrievePrintPackageData(I_C_Print_Package printPackage);
-	
+
 	/**
 	 * retrieves a printer which has the output type PDF
 	 * <ul> virtual printer because is not a real hardware printer
-	 * 
+	 *
 	 * @param ctx
 	 * @param trxName
 	 * @return

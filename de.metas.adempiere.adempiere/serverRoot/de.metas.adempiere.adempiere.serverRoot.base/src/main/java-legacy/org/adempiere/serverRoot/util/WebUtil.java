@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import javax.servlet.http.Cookie;
@@ -29,12 +30,12 @@ import de.metas.logging.LogManager;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,7 +46,7 @@ public class WebUtil
 {
 	/**	Static Logger	*/
 	private static final transient Logger log = LogManager.getLogger(WebUtil.class);
-	
+
 	/**************************************************************************
 	 *  Get Cookie Properties
 	 *
@@ -67,7 +68,7 @@ public class WebUtil
 		return new Properties();
 	}   //  getProperties
 
-	
+
 	/**
 	 *  Get String Parameter.
 	 *
@@ -96,14 +97,14 @@ public class WebUtil
 		String data = request.getParameter(parameter);
 		if (data == null || data.length() == 0)
 			return data;
-		
+
 		//	Convert
 		if (enc != null && !WebEnv.ENCODING.equals(enc))
 		{
 			try
 			{
 				String dataEnc = new String(data.getBytes(enc), WebEnv.ENCODING);
-				log.trace("Convert " + data + " (" + enc + ")-> " 
+				log.trace("Convert " + data + " (" + enc + ")-> "
 					+ dataEnc + " (" + WebEnv.ENCODING + ")");
 				data = dataEnc;
 			}
@@ -112,7 +113,7 @@ public class WebUtil
 				log.error("Convert " + data + " (" + enc + ")->" + WebEnv.ENCODING);
 			}
 		}
-		
+
 		//	Convert &#000; to character (JSTL input)
 		String inStr = data;
 		StringBuffer outStr = new StringBuffer();
@@ -243,7 +244,7 @@ public class WebUtil
 		out.close();
 	}   //  createResponse
 
-	
+
 	/**************************************************************************
 	 *  Decode Properties into String (URL encoded)
 	 *
@@ -315,7 +316,7 @@ public class WebUtil
 		}
 	//	System.out.println("String-Decoded=" + result);
 
-		ByteArrayInputStream bis = new ByteArrayInputStream(result.getBytes());
+		ByteArrayInputStream bis = new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8));
 		Properties pp = new Properties();
 		try
 		{

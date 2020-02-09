@@ -1,7 +1,6 @@
 package de.metas.serviceprovider;
 
 import de.metas.product.ProductId;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -29,12 +28,4 @@ import lombok.experimental.UtilityClass;
 public class ServiceProviderConstants
 {
 	public static final ProductId SERVICE_PRODUCT_ID = ProductId.ofRepoId(123);
-
-//	public static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
-//	public static final String COMMISSION_DOC_SUBTYPE_VALUENAME = "CommissionSettlement";
-//
-//	/**
-//	 * Please keep in sysnc with {@code AD_Ref_List_ID=542010} and various display logic expressions.
-//	 */
-//	public static final String TYPE_CONDITIONS_COMMISSION = "Commission";
 }

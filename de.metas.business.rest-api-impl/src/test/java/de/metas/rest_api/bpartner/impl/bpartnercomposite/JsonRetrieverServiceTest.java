@@ -2,7 +2,9 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.*;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_VALUE;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -27,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.common.JsonExternalId;
@@ -83,7 +86,8 @@ class JsonRetrieverServiceTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository());
+				new RecordChangeLogRepository(),
+				new CurrencyRepository());
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

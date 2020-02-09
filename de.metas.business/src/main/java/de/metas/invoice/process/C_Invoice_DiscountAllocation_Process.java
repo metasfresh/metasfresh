@@ -165,8 +165,8 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 
 	private Iterator<I_C_Invoice> createIterator()
 	{
-	// user selection..if any
-		final IQueryFilter<I_C_Invoice> userSelectionFilter = getProcessInfo().getQueryFilter();
+		// user selection..if any. if none, then process all
+		final IQueryFilter<I_C_Invoice> userSelectionFilter = getProcessInfo().getQueryFilterOrElseTrue();
 
 		//
 		// Create the selection which we might need to update
