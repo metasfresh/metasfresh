@@ -13,15 +13,9 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -31,24 +25,21 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractLibraryConfiguration.class})
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
 	}
-
 
 	@Test
 	public void extendContractWithExtendingOnePeriod_test()
@@ -138,8 +129,10 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		assertThatThrownBy(() -> { Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context); }).isInstanceOf(AdempiereException.class)
-        .hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP);
+		assertThatThrownBy(() -> {
+			Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
+		}).isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP);
 	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
@@ -149,8 +142,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		createProductAcct(productAndPricingSystem);
 		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, autoExtension);
 		return createFlatrateTerm(
-				conditions, 
-				productAndPricingSystem.getProductAndCategoryId(), 
+				conditions,
+				productAndPricingSystem.getProductAndCategoryId(),
 				startDate);
 	}
 
@@ -210,12 +203,10 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		}
 
 		return createFlatrateTerm(
-				conditions.get(0), 
+				conditions.get(0),
 				productAndPricingSystem.getProductAndCategoryId(),
 				startDate);
 	}
-
-
 
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
 	{

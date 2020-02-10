@@ -465,20 +465,23 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return pip;
 		}
 
-		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(huShipmentSchedule.getC_Order_ID(), huShipmentSchedule.getC_OrderLine_ID());
-		if (orderLineId != null)
+		// if is not set in shipment schedule, return the one form order line or null
+		final HUPIItemProductId orderLinePIPOrNull = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
+		return orderLinePIPOrNull;
+	}
+
+	private HUPIItemProductId extractOrderLinePackingMaterialIdOrNull(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
-			// if is not set, return the one form order line
-			final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-			final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
-			final HUPIItemProductId orderLinePIP = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
-			if (orderLinePIP != null)
-			{
-				return orderLinePIP;
-			}
+			return null;
 		}
 
-		return null;
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
+		final HUPIItemProductId orderLinePIP = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
+		return orderLinePIP;
 	}
 
 	@Override
@@ -676,8 +679,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
+		final HUPIItemProductId orderLinePackingMaterialId = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
+		if (shipmentSchedule.getC_OrderLine_ID() <= 0 || !HUPIItemProductId.isRegular(orderLinePackingMaterialId))
 		{
+			logger.debug("C_OrderLine_ID={}; orderLinePackingMaterialId={} is regular={}; -> unset M_HU_PI_Item_Product_ID and PackDescription",
+					shipmentSchedule.getC_OrderLine_ID(), HUPIItemProductId.toRepoId(orderLinePackingMaterialId), HUPIItemProductId.isRegular(orderLinePackingMaterialId));
 			shipmentScheduleToUse.setM_HU_PI_Item_Product_ID(-1);
 			shipmentScheduleToUse.setPackDescription(null);
 			return;

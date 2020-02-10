@@ -7,8 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -16,8 +17,6 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.util.Services;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -43,15 +42,14 @@ import mockit.Mocked;
 
 public class ShipmentScheduleSubscriptionReferenceProviderTest
 {
-
-	@Mocked
 	private IFlatrateBL flatrateBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		flatrateBL = Mockito.mock(IFlatrateBL.class);
 		Services.registerService(IFlatrateBL.class, flatrateBL);
 	}
 
@@ -61,9 +59,8 @@ public class ShipmentScheduleSubscriptionReferenceProviderTest
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		save(term);
 
-		// @formatter:off
-		new Expectations() {{ flatrateBL.getWarehouseId(term); result = WarehouseId.ofRepoId(23); }};
-		// @formatter:on
+		Mockito.when(flatrateBL.getWarehouseId(term))
+				.thenReturn(WarehouseId.ofRepoId(23));
 
 		final I_C_SubscriptionProgress subscriptionLine = newInstance(I_C_SubscriptionProgress.class);
 		subscriptionLine.setC_Flatrate_Term(term);

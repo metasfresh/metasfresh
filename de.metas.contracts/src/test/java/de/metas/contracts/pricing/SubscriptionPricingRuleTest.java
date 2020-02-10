@@ -1,17 +1,14 @@
 package de.metas.contracts.pricing;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -22,7 +19,7 @@ public class SubscriptionPricingRuleTest
 {
 	private SubscriptionPricingTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
@@ -56,7 +53,7 @@ public class SubscriptionPricingRuleTest
 				.build();
 
 		final IPricingResult result = helper.calculatePrice(pricingCtx);
-		Assert.assertThat("PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(5)));
+		assertThat(result.getPriceStd()).isEqualByComparingTo("5");
 	}
 
 	@Test
@@ -88,6 +85,6 @@ public class SubscriptionPricingRuleTest
 				.build();
 
 		final IPricingResult result = helper.calculatePrice(pricingCtx);
-		Assert.assertThat("PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(5)));
+		assertThat(result.getPriceStd()).isEqualByComparingTo("5");
 	}
 }
