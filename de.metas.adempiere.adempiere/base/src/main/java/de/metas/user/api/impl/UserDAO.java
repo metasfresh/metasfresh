@@ -58,8 +58,6 @@ public class UserDAO implements IUserDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
 
-	private static final String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
-
 	@Override
 	public I_AD_User retrieveLoginUserByUserId(final String userId)
 	{
@@ -69,9 +67,9 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true);
 
 		queryBuilder.addCompositeQueryFilter()
-		.setJoinOr()
-		.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
-		.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
+				.setJoinOr()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
 
 		final List<I_AD_User> users = queryBuilder.create().list();
 		if (users.size() > 1)

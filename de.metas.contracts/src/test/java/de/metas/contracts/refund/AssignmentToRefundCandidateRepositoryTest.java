@@ -23,8 +23,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
@@ -71,7 +71,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 	private I_C_Invoice_Candidate_Assignment assignmentRecord;
 	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

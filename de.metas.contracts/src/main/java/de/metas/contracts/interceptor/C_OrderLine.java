@@ -5,20 +5,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
+@Component
 public class C_OrderLine
 {
 	private static final ModelDynAttributeAccessor<I_C_OrderLine, Boolean> DYNATTR_SkipUpdatingGroupFlatrateConditions = new ModelDynAttributeAccessor<>("SkipUpdatingGroupFlatrateConditions", Boolean.class);
 
-	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
+	private final OrderGroupCompensationChangesHandler groupChangesHandler;
+
+	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
+	{
+		this.groupChangesHandler = groupChangesHandler;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW }, skipIfCopying = true)
 	public void setSameFlatrateConditionsForWholeCompensationGroupWhenGroupIsCreated(final I_C_OrderLine orderLine)

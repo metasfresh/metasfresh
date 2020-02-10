@@ -148,6 +148,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
@@ -1809,40 +1810,49 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx())));
+		if (pricingConditionsId == null)
 		{
 			// do nothing
 			return;
 		}
 
-		BigDecimal qty = ic.getQtyToInvoice();
-		if (qty.signum() < 0)
+		final BigDecimal qualityDiscountPercentage;
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
+		if(pricingConditions.isBreaksDiscountType())
 		{
-			final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
-
-			if (inout != null)
+			BigDecimal qty = ic.getQtyToInvoice();
+			if (qty.signum() < 0)
 			{
-				if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+				final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
+
+				if (inout != null)
 				{
-					qty = qty.negate();
+					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					{
+						qty = qty.negate();
+					}
 				}
 			}
+
+			final BigDecimal priceActual = ic.getPriceActual();
+			final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
+
+			final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
+					.attributes(attributes)
+					.product(product)
+					.qty(qty)
+					.price(priceActual)
+					.build());
+
+			qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		}
-
-		final BigDecimal priceActual = ic.getPriceActual();
-		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
-
-		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
-		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-				.attributes(attributes)
-				.product(product)
-				.qty(qty)
-				.price(priceActual)
-				.build());
-
-		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
+		else
+		{
+			qualityDiscountPercentage = null;
+		}
+		
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 

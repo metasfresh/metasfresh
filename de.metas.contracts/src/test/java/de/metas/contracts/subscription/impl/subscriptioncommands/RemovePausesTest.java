@@ -10,9 +10,9 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -37,29 +37,27 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class RemovePausesTest
 {
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private ISubscriptionDAO subscriptionDAO;
-	
+
 	private final Timestamp pauseFrom = TimeUtil.parseTimestamp("2017-09-12");
 	private final Timestamp pauseUntil = TimeUtil.parseTimestamp("2017-10-12");
 
 	private I_C_Flatrate_Term term;
 	private I_C_SubscriptionProgress middle;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -69,31 +67,31 @@ public class RemovePausesTest
 		save(term);
 
 		SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-10", 1);
-		
+
 		final I_C_SubscriptionProgress pauseStart = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-12", 2);
 		pauseStart.setEventType(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
 		pauseStart.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		save(pauseStart);
-		
+
 		middle = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-10-10", 3);
 		middle.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		save(middle);
-		
+
 		final I_C_SubscriptionProgress pauseEnd = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-10-12", 4);
 		pauseEnd.setEventType(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
 		pauseEnd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		save(pauseEnd);
-		
+
 		SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-11-10", 5);
 
 		assertThat(retrieveAllforTerm()).hasSize(5); // guard
 	}
-	
+
 	private List<I_C_SubscriptionProgress> retrieveAllforTerm()
 	{
 		return subscriptionDAO.retrieveSubscriptionProgresses(SubscriptionProgressQuery.term(term).build());
 	}
-	
+
 	@Test
 	public void removePauses_RetrievePauseRecords_FromBeforeFirstPauseRecord_UntilAfterLastPauseRecord()
 	{
