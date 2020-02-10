@@ -25,6 +25,7 @@ class CustomRouter extends PureComponent {
 CustomRouter.propTypes = {
   auth: PropTypes.object.isRequired,
   plugins: PropTypes.array,
+  history: PropTypes.any,
 };
 
 const mapStateToProps = state => ({

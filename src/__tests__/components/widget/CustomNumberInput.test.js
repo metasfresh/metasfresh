@@ -10,7 +10,6 @@ const createDummyProps = function(props) {
     onChange: jest.fn(),
     onFocus: jest.fn(),
     onKeyDown: jest.fn(),
-    handlePatch: jest.fn(),
     ...props,
   };
 };

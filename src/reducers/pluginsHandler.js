@@ -1,6 +1,6 @@
 import { handleAction } from 'redux-actions';
 
-const initialState = {
+export const initialState = {
   files: [],
   components: {},
 };

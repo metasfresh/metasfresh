@@ -1,10 +1,9 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
-import SockJs from 'sockjs-client';
 import currentDevice from 'current-device';
-import Stomp from 'stompjs/lib/stomp.min.js';
 import { Set } from 'immutable';
+import { cloneDeep } from 'lodash';
 
 import {
   ACTIVATE_TAB,
@@ -25,6 +24,7 @@ import {
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   HIDE_SPINNER,
+  INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   FETCHED_QUICK_ACTIONS,
@@ -58,6 +58,16 @@ import {
   UPDATE_ROW_STATUS,
   UPDATE_TAB_ROWS_DATA,
 } from '../constants/ActionTypes';
+
+import {
+  getData,
+  patchRequest,
+  initLayout,
+  topActionsRequest,
+  getProcessData,
+  getTab,
+  startProcess,
+} from '../api';
 import {
   addNotification,
   setNotificationProgress,
@@ -65,8 +75,7 @@ import {
   setProcessSaved,
   deleteNotification,
 } from './AppActions';
-import { getData, openFile, patchRequest } from './GenericActions';
-import { initLayout, topActionsRequest } from '../api';
+import { openFile } from './GenericActions';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import { toggleFullScreen } from '../utils';
@@ -266,7 +275,7 @@ export function updateTabRowsData(scope, tabId, data) {
   return {
     type: UPDATE_TAB_ROWS_DATA,
     payload: {
-      data,
+      data: cloneDeep(data),
       tabId,
       scope,
     },
@@ -481,6 +490,105 @@ export function deselectTableItems(ids, windowType, viewId) {
 
 // THUNK ACTIONS
 
+function initTabs(layout, windowType, docId, isModal) {
+  return async dispatch => {
+    const requests = [];
+    const tabTmp = {};
+
+    if (layout) {
+      layout.map((tab, index) => {
+        tabTmp[tab.tabId] = {};
+
+        if ((tab.tabId && index === 0) || !tab.queryOnActivate) {
+          requests.push(getTab(tab.tabId, windowType, docId));
+        }
+      });
+
+      return await Promise.all(requests).then(responses => {
+        responses.forEach(res => {
+          // needed for finding tabId
+          const rowZero = res && res[0];
+          if (rowZero) {
+            const tabId = rowZero.tabId;
+            tabTmp[tabId] = res;
+          }
+        });
+
+        dispatch(addRowData(tabTmp, getScope(isModal)));
+      });
+    }
+
+    return Promise.resolve(null);
+  };
+}
+
+export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
+  return dispatch => {
+    dispatch({
+      type: INIT_WINDOW,
+    });
+
+    if (docId === 'NEW') {
+      //New master document
+      return patchRequest({
+        entity: 'window',
+        docType: windowType,
+        docId,
+      });
+    } else {
+      if (rowId === 'NEW') {
+        //New row document
+        return patchRequest({
+          entity: 'window',
+          docType: windowType,
+          docId,
+          tabId,
+          rowId,
+        });
+      } else if (rowId) {
+        //Existing row document
+        return getData(
+          'window',
+          windowType,
+          docId,
+          tabId,
+          rowId,
+          null,
+          null,
+          isAdvanced
+        );
+      } else {
+        //Existing master document
+        return getData(
+          'window',
+          windowType,
+          docId,
+          null,
+          null,
+          null,
+          null,
+          isAdvanced
+        ).catch(e => {
+          dispatch(getWindowBreadcrumb(windowType));
+          dispatch(
+            initDataSuccess({
+              data: {},
+              docId: 'notfound',
+              includedTabsInfo: {},
+              scope: 'master',
+              saveStatus: { saved: true },
+              standardActions: Set(),
+              validStatus: {},
+            })
+          );
+
+          return { status: e.status, message: e.statusText };
+        });
+      }
+    }
+  };
+}
+
 /*
  * Main method to generate window
  */
@@ -501,9 +609,10 @@ export function createWindow(
     // to do not re-render widgets on init
     return dispatch(initWindow(windowId, docId, tabId, rowId, isAdvanced)).then(
       response => {
-        if (!response) {
-          return;
+        if (!response || !response.data) {
+          return Promise.resolve(null);
         }
+
         if (docId == 'NEW' && !isModal) {
           dispatch(setLatestNewDocument(response.data[0].id));
           // redirect immedietely
@@ -550,98 +659,20 @@ export function createWindow(
           dispatch(getWindowBreadcrumb(windowId));
         }
 
-        initLayout('window', windowId, tabId, null, null, isAdvanced)
+        return initLayout('window', windowId, tabId, null, null, isAdvanced)
           .then(response =>
             dispatch(initLayoutSuccess(response.data, getScope(isModal)))
           )
           .then(response => {
             if (!isModal) {
-              dispatch(
+              return dispatch(
                 initTabs(response.layout.tabs, windowId, docId, isModal)
               );
             }
+            return Promise.resolve(null);
           });
       }
     );
-  };
-}
-
-function initTabs(layout, windowType, docId, isModal) {
-  return dispatch => {
-    let tabTmp = {};
-
-    layout &&
-      layout.map((tab, index) => {
-        tabTmp[tab.tabId] = {};
-
-        if (index === 0 || !tab.queryOnActivate) {
-          getTab(tab.tabId, windowType, docId).then(res => {
-            tabTmp[tab.tabId] = res;
-            dispatch(addRowData(tabTmp, getScope(isModal)));
-          });
-        }
-      });
-  };
-}
-
-export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
-  return dispatch => {
-    if (docId === 'NEW') {
-      //New master document
-      return patchRequest({
-        entity: 'window',
-        docType: windowType,
-        docId,
-      });
-    } else {
-      if (rowId === 'NEW') {
-        //New row document
-        return patchRequest({
-          entity: 'window',
-          docType: windowType,
-          docId,
-          tabId,
-          rowId,
-        });
-      } else if (rowId) {
-        //Existing row document
-        return getData(
-          'window',
-          windowType,
-          docId,
-          tabId,
-          rowId,
-          null,
-          null,
-          isAdvanced
-        );
-      } else {
-        //Existing master document
-        return getData(
-          'window',
-          windowType,
-          docId,
-          null,
-          null,
-          null,
-          null,
-          isAdvanced
-        ).catch(() => {
-          dispatch(
-            initDataSuccess({
-              data: {},
-              docId: 'notfound',
-              includedTabsInfo: {},
-              scope: 'master',
-              saveStatus: { saved: true },
-              standardActions: Set(),
-              validStatus: {},
-            })
-          );
-          dispatch(getWindowBreadcrumb(windowType));
-        });
-      }
-    }
   };
 }
 
@@ -1253,198 +1284,4 @@ export function deleteLocal(tabid, rowsid, scope, response) {
     }
     dispatch(updateStatus(response.data));
   };
-}
-// END PROCESS ACTIONS
-
-// API CALLS
-
-//ZOOM INTO
-export function getZoomIntoWindow(
-  entity,
-  windowId,
-  docId,
-  tabId,
-  rowId,
-  field
-) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      windowId +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      '/field' +
-      '/' +
-      field +
-      '/zoomInto?showError=true'
-  );
-}
-
-export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
-  return axios.post(
-    config.API_URL +
-      '/window/' +
-      windowType +
-      '/' +
-      documentId +
-      '/' +
-      tabId +
-      '/' +
-      rowId +
-      '/discardChanges'
-  );
-}
-
-export function discardNewDocument({ windowType, documentId } = {}) {
-  return axios.post(
-    config.API_URL +
-      '/window/' +
-      windowType +
-      '/' +
-      documentId +
-      '/discardChanges'
-  );
-}
-
-export function getTab(tabId, windowType, docId, orderBy) {
-  return getData(
-    'window',
-    windowType,
-    docId,
-    tabId,
-    null,
-    null,
-    null,
-    null,
-    orderBy
-  ).then(
-    res =>
-      res.data &&
-      res.data.map(row => ({
-        ...row,
-        fieldsByName: parseToDisplay(row.fieldsByName),
-      }))
-  );
-}
-
-function getProcessData({
-  processId,
-  viewId,
-  type,
-  ids,
-  tabId,
-  rowId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  const payload = {
-    processId: processId,
-  };
-
-  if (viewId) {
-    payload.viewId = viewId;
-    payload.viewDocumentIds = ids;
-
-    if (childViewId) {
-      payload.childViewId = childViewId;
-      payload.childViewSelectedIds = childViewSelectedIds;
-    }
-
-    if (parentViewId) {
-      payload.parentViewId = parentViewId;
-      payload.parentViewSelectedIds =
-        parentViewSelectedIds instanceof Array
-          ? parentViewSelectedIds
-          : [parentViewSelectedIds];
-    }
-  } else {
-    payload.documentId = Array.isArray(ids) ? ids[0] : ids;
-    payload.documentType = type;
-    payload.tabId = tabId;
-    payload.rowId = rowId;
-  }
-
-  if (selectedTab) {
-    const { tabId, rowIds } = selectedTab;
-
-    if (tabId && rowIds) {
-      payload.selectedTab = {
-        tabId,
-        rowIds,
-      };
-    }
-  }
-
-  return axios.post(`${config.API_URL}/process/${processId}`, payload);
-}
-
-export function startProcess(processType, pinstanceId) {
-  return axios.get(
-    `${config.API_URL}/process/${processType}/${pinstanceId}/start`
-  );
-}
-
-export function connectWS(topic, onMessageCallback) {
-  // Avoid disconnecting and reconnecting to same topic.
-  // IMPORTANT: we assume the "onMessageCallback" is same
-  if (this.sockTopic === topic) {
-    // console.log("WS: Skip subscribing because already subscrinbed to %s", this.sockTopic);
-    return;
-  }
-
-  const subscribe = ({ tries = 3 } = {}) => {
-    if (this.sockClient.connected || tries <= 0) {
-      this.sockSubscription = this.sockClient.subscribe(topic, msg => {
-        // console.log("WS: Got event on %s: %s", topic, msg.body);
-        if (topic === this.sockTopic) {
-          onMessageCallback(JSON.parse(msg.body));
-        } else {
-          // console.warn(
-          //   "Discard event because the WS topic changed. Current WS topic is %s",
-          //   this.sockTopic
-          // );
-        }
-      });
-
-      this.sockTopic = topic;
-      // console.log("WS: Subscribed to %s (tries=%s)", this.sockTopic, tries);
-    } else {
-      // not ready yet
-      setTimeout(() => {
-        subscribe({ tries: tries - 1 });
-      }, 200);
-    }
-  };
-
-  const connect = () => {
-    this.sock = new SockJs(config.WS_URL);
-    this.sockClient = Stomp.Stomp.over(this.sock);
-    this.sockClient.debug = null;
-    this.sockClient.connect({}, subscribe);
-  };
-
-  const wasConnected = disconnectWS.call(this, connect);
-  if (!wasConnected) {
-    connect();
-  }
-}
-
-export function disconnectWS(onDisconnectCallback) {
-  const connected =
-    this.sockClient && this.sockClient.connected && this.sockSubscription;
-
-  if (connected) {
-    // console.log("WS: Unsubscribing from %s", this.sockTopic);
-    this.sockSubscription.unsubscribe();
-    this.sockClient.disconnect(onDisconnectCallback);
-    this.sockTopic = null;
-  }
-
-  return connected;
 }

@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 
+import { patchRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import {
   createEmail,
@@ -11,7 +12,6 @@ import {
   getTemplates,
   sendEmail,
 } from '../../actions/EmailActions';
-import { patchRequest } from '../../actions/GenericActions';
 import RawList from '../widget/List/RawList';
 import Attachments from './Attachments';
 import AutocompleteTo from './AutocompleteTo';

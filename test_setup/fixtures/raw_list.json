@@ -8,14 +8,12 @@
         "key": "2000835",
         "caption": "Testpreisliste Lieferanten"
       },
-      "properties": [
-        {
+      "properties": {
           "field": "PO_PricingSystem_ID",
           "source": "list",
           "emptyText": "none",
           "supportZoomInto": true
-        }
-      ],
+      },
       "mandatory": false,
       "windowType": "123",
       "rowId": "2156441",

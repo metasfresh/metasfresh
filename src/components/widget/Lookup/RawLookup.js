@@ -280,10 +280,13 @@ export class RawLookup extends Component {
       isModal,
       newRecordCaption,
       mandatory,
-      placeholder,
     } = this.props;
-    const inputValue = this.inputSearch.value;
 
+    // -- shape placeholder with the clearValueText in case this exists
+    const placeholder = mainProperty[0].clearValueText
+      ? mainProperty[0].clearValueText
+      : this.props.placeholder;
+    const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
       docId: filterWidget ? viewId : dataId,
@@ -399,13 +402,16 @@ export class RawLookup extends Component {
   };
 
   handleValueChanged() {
-    const { defaultValue, filterWidget, mandatory, placeholder } = this.props;
+    const { defaultValue, filterWidget, mandatory } = this.props;
     const { oldValue, isInputEmpty } = this.state;
 
     if (!filterWidget && !!defaultValue && this.inputSearch) {
       const init = [defaultValue];
       const inputValue = defaultValue.caption;
-
+      const clearValueText = this.props.mainProperty[0].clearValueText;
+      const placeholder = clearValueText
+        ? clearValueText
+        : this.props.placeholder;
       if (!mandatory) {
         init.push({
           caption: placeholder,
@@ -547,6 +553,12 @@ const mapStateToProps = state => ({
 });
 
 RawLookup.propTypes = {
+  item: PropTypes.object,
+  defaultValue: PropTypes.any,
+  initialFocus: PropTypes.bool,
+  autoFocus: PropTypes.bool,
+  filter: PropTypes.object,
+  handleInputEmptyStatus: PropTypes.any,
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
@@ -554,6 +566,36 @@ RawLookup.propTypes = {
   dispatch: PropTypes.func.isRequired,
   onDropdownListToggle: PropTypes.func,
   isComposed: PropTypes.bool,
+  mainProperty: PropTypes.any,
+  filterWidget: PropTypes.any,
+  lookupEmpty: PropTypes.any,
+  localClearing: PropTypes.any,
+  fireDropdownList: PropTypes.any,
+  parentElement: PropTypes.any,
+  onChange: PropTypes.func,
+  setNextProperty: PropTypes.any,
+  subentity: PropTypes.any,
+  newRecordWindowId: PropTypes.any,
+  newRecordCaption: PropTypes.any,
+  parameterName: PropTypes.string,
+  mandatory: PropTypes.bool,
+  windowType: PropTypes.string,
+  dataId: PropTypes.string,
+  tabId: PropTypes.string,
+  rowId: PropTypes.string,
+  entity: PropTypes.any,
+  subentityId: PropTypes.string,
+  viewId: PropTypes.string,
+  isModal: PropTypes.bool,
+  placeholder: PropTypes.string,
+  recent: PropTypes.any,
+  enableAutofocus: PropTypes.func,
+  resetLocalClearing: PropTypes.any,
+  align: PropTypes.string,
+  readonly: PropTypes.bool,
+  disabled: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  idValue: PropTypes.string,
 };
 
 export default connect(mapStateToProps)(RawLookup);

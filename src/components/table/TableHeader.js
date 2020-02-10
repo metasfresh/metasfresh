@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
-
 import { shouldRenderColumn } from '../../utils/tableHelpers';
+import PropTypes from 'prop-types';
 
 class TableHeader extends PureComponent {
   constructor(props) {
@@ -119,5 +119,16 @@ class TableHeader extends PureComponent {
     );
   }
 }
+
+TableHeader.propTypes = {
+  orderBy: PropTypes.array,
+  sort: PropTypes.any,
+  tabId: PropTypes.any,
+  deselect: PropTypes.any,
+  page: PropTypes.any,
+  getSizeClass: PropTypes.func,
+  cols: PropTypes.any,
+  indentSupported: PropTypes.any,
+};
 
 export default TableHeader;

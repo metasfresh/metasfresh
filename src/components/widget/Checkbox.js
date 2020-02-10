@@ -8,7 +8,7 @@ import classnames from 'classnames';
  */
 const Checkbox = props => {
   const rawWidget = useRef(null);
-  const [checkedState, setCheckedState] = useState(0);
+  const [checkedState, setCheckedState] = useState(props.widgetData[0].value);
 
   useEffect(() => {
     setCheckedState(props.widgetData[0].value);

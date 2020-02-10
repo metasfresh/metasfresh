@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 
 export default class FiltersStatic extends PureComponent {
   render() {
@@ -22,3 +23,8 @@ export default class FiltersStatic extends PureComponent {
     );
   }
 }
+
+FiltersStatic.propTypes = {
+  data: PropTypes.object,
+  clearFilters: PropTypes.func,
+};

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import { getWindowBreadcrumb } from '../../actions/MenuActions';
 import MenuOverlayItem from './MenuOverlayItem';
 
@@ -122,5 +122,27 @@ class MenuOverlayContainer extends Component {
     );
   }
 }
+
+MenuOverlayContainer.propTypes = {
+  dispatch: PropTypes.func,
+  handleRedirect: PropTypes.func,
+  handleClick: PropTypes.func,
+  handleClickOnFolder: PropTypes.func,
+  handleMenuOverlay: PropTypes.func,
+  handleNewRedirect: PropTypes.func,
+  handlePath: PropTypes.func,
+  elementId: PropTypes.any,
+  caption: PropTypes.string,
+  type: PropTypes.string,
+  children: PropTypes.any,
+  printChildren: PropTypes.any,
+  deep: PropTypes.any,
+  back: PropTypes.any,
+  openModal: PropTypes.func,
+  showBookmarks: PropTypes.bool,
+  updateData: PropTypes.bool,
+  transparentBookmarks: PropTypes.bool,
+  onKeyDown: PropTypes.func,
+};
 
 export default connect()(MenuOverlayContainer);

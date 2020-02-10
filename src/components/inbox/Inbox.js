@@ -255,7 +255,7 @@ Inbox.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
   location: PropTypes.object,
   close: PropTypes.func,
-  inbox: PropTypes.shape({}),
+  inbox: PropTypes.object,
   all: PropTypes.bool,
 };
 

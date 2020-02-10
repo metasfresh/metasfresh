@@ -107,7 +107,7 @@ export class RawList extends PureComponent {
       dropdownList = list;
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
-          caption: this.props.properties.emptyText,
+          caption: this.props.properties.clearValueText,
           key: null,
         });
       }

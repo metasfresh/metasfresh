@@ -29,6 +29,13 @@ export class Dashboard extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     pluginModal: PropTypes.object,
+    location: PropTypes.object,
+    modal: PropTypes.any,
+    indicator: PropTypes.any,
+    processStatus: PropTypes.any,
+    includedView: PropTypes.any,
+    enableTutorial: PropTypes.any,
+    rawModal: PropTypes.any,
   };
 
   componentDidUpdate() {

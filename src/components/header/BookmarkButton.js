@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { patchRequest } from '../../actions/GenericActions';
+import { patchRequest } from '../../api';
 
 /**
  * @file Class based component.

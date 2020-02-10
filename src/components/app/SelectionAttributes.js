@@ -1,7 +1,7 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import {
   getViewAttributes,
   getViewAttributesLayout,
@@ -128,5 +128,22 @@ class SelectionAttributes extends Component {
     );
   }
 }
+
+SelectionAttributes.propTypes = {
+  windowType: PropTypes.string,
+  selected: PropTypes.any,
+  viewId: PropTypes.number,
+  DLWrapperSetLayout: PropTypes.func,
+  DLWrapperSetData: PropTypes.func,
+  shouldNotUpdate: PropTypes.bool,
+  DLWrapperData: PropTypes.any,
+  DLWrapperDataId: PropTypes.number,
+  DLWrapperHandleChange: PropTypes.func,
+  DLWrapperHandlePatch: PropTypes.func,
+  setClickOutsideLock: PropTypes.func,
+  entity: PropTypes.any,
+  DLWrapperLayout: PropTypes.array,
+  supportAttribute: PropTypes.bool,
+};
 
 export default connect()(SelectionAttributes);

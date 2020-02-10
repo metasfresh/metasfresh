@@ -49,7 +49,7 @@ global.shallow = shallow;
 global.render = render;
 global.mount = mount;
 global.config = {
-  API_URL: 'http://api.test.url',
+  API_URL: 'http://api.test.url/rest/api',
   WS_URL: 'http://ws.test.url',
 };
 global.PLUGINS = [];

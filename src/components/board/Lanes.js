@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import Lane from './Lane';
 
 class Lanes extends Component {
@@ -41,5 +41,15 @@ class Lanes extends Component {
     );
   }
 }
+
+Lanes.propTypes = {
+  lanes: PropTypes.array,
+  onDrop: PropTypes.func,
+  onHover: PropTypes.func,
+  onReject: PropTypes.func,
+  onDelete: PropTypes.func,
+  targetIndicator: PropTypes.any,
+  onCaptionClick: PropTypes.func,
+};
 
 export default Lanes;

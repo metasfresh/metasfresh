@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 class Placeholder extends Component {
   constructor(props) {
@@ -16,5 +17,10 @@ class Placeholder extends Component {
     );
   }
 }
+
+Placeholder.propTypes = {
+  description: PropTypes.string,
+  entity: PropTypes.any,
+};
 
 export default Placeholder;

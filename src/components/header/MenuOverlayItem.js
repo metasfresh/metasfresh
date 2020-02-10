@@ -242,6 +242,26 @@ class MenuOverlayItem extends Component {
 MenuOverlayItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
   inputElement: PropTypes.any,
+  query: PropTypes.any,
+  handleArrowDown: PropTypes.func,
+  handleClickOnFolder: PropTypes.func,
+  handleArrowUp: PropTypes.func,
+  handleClick: PropTypes.func,
+  handleKeyDown: PropTypes.func,
+  handleMenuOverlay: PropTypes.func,
+  handleNewRedirect: PropTypes.func,
+  handleRedirect: PropTypes.func,
+  openModal: PropTypes.any,
+  back: PropTypes.any,
+  nodeId: PropTypes.string,
+  type: PropTypes.string,
+  elementId: PropTypes.string,
+  caption: PropTypes.string,
+  printChildren: PropTypes.any,
+  favorite: PropTypes.bool,
+  updateData: PropTypes.func,
+  transparentBookmarks: PropTypes.bool,
+  children: PropTypes.node,
 };
 
 export default connect()(MenuOverlayItem);

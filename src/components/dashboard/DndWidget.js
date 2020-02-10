@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 const cardSource = {
@@ -89,6 +90,20 @@ export class DndWidget extends Component {
     );
   }
 }
+
+DndWidget.propTypes = {
+  children: PropTypes.any,
+  connectDragSource: PropTypes.func,
+  connectDropTarget: PropTypes.func,
+  className: PropTypes.string,
+  transparent: PropTypes.bool,
+  removeCard: PropTypes.func,
+  entity: PropTypes.any,
+  id: PropTypes.number,
+  placeholder: PropTypes.string,
+  index: PropTypes.number,
+  isDragging: PropTypes.any,
+};
 
 export default DragSource(props => props.entity, cardSource, collect)(
   DropTarget(props => props.entity, cardTarget, connect)(DndWidget)

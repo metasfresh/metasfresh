@@ -394,7 +394,23 @@ class TableCell extends PureComponent {
 }
 
 TableCell.propTypes = {
+  tabId: PropTypes.any,
+  windowId: PropTypes.any,
+  keyProperty: PropTypes.string,
+  tabIndex: PropTypes.number,
+  listenOnKeys: PropTypes.bool,
+  listenOnKeysFalse: PropTypes.func,
+  listenOnKeysTrue: PropTypes.func,
+  closeTableField: PropTypes.func,
+  tdValue: PropTypes.any,
+  supportFieldEdit: PropTypes.bool,
+  supportZoomInto: PropTypes.bool,
+  updatedRow: PropTypes.any,
+  readonly: PropTypes.bool,
+  rowId: PropTypes.string,
+  item: PropTypes.object,
   isEditable: PropTypes.bool,
+  updateRow: PropTypes.any,
   cellExtended: PropTypes.bool,
   extendLongText: PropTypes.number,
   property: PropTypes.string,
@@ -407,6 +423,12 @@ TableCell.propTypes = {
   onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
   isGerman: PropTypes.bool,
+  entity: PropTypes.any,
+  getSizeClass: PropTypes.func,
+  mainTable: PropTypes.bool,
+  viewId: PropTypes.string,
+  modalVisible: PropTypes.bool,
+  docId: PropTypes.any,
 };
 
 export default TableCell;

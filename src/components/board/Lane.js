@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import Card from './Card';
 
 class Lane extends Component {
@@ -69,5 +69,18 @@ class Lane extends Component {
     );
   }
 }
+
+Lane.propTypes = {
+  caption: PropTypes.string,
+  cards: PropTypes.any,
+  laneId: PropTypes.number,
+  onHover: PropTypes.func,
+  onCaptionClick: PropTypes.func,
+  onReject: PropTypes.func,
+  onDelete: PropTypes.func,
+  placeholder: PropTypes.string,
+  onDrop: PropTypes.func,
+  targetIndicator: PropTypes.any,
+};
 
 export default Lane;

@@ -2,12 +2,14 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import {
-  addRowData,
-  updateMasterData,
-  getTab,
-} from '../../actions/WindowActions';
+import { addRowData, updateMasterData } from '../../actions/WindowActions';
+import { getTab } from '../../api';
 
+/*
+ * @TODO: I think this can safely be rewritten to a functional component, and probably
+ * also disconnected from the store.
+ *
+ */
 class Tab extends Component {
   constructor(props) {
     super(props);

@@ -3,6 +3,7 @@ import cx from 'classnames';
 import GoogleMapReact from 'google-map-react';
 import OSMap from 'pigeon-maps';
 import Marker from 'pigeon-marker';
+import PropTypes from 'prop-types';
 
 import MapMarker from './MapMarker';
 
@@ -101,5 +102,13 @@ class Map extends Component {
     return null;
   }
 }
+
+Map.propTypes = {
+  data: PropTypes.object,
+  mapConfig: PropTypes.object,
+  center: PropTypes.any,
+  toggleState: PropTypes.any,
+  zoom: PropTypes.any,
+};
 
 export default Map;

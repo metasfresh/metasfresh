@@ -820,17 +820,14 @@ export class RawWidget extends Component {
       case 'Switch':
         return (
           <label
-            className={
-              'input-switch ' +
-              (readonly ? 'input-disabled ' : '') +
-              (widgetData[0].mandatory && widgetData[0].value.length === 0
-                ? 'input-mandatory '
-                : '') +
-              (widgetData[0].validStatus && !widgetData[0].validStatus.valid
-                ? 'input-error '
-                : '') +
-              (rowId && !isModal ? 'input-table ' : '')
-            }
+            className={classnames('input-switch', {
+              'input-disabled': readonly,
+              'input-mandatory':
+                widgetData[0].mandatory && widgetData[0].value.length === 0,
+              'input-error':
+                widgetData[0].validStatus && !widgetData[0].validStatus.valid,
+              'input-table': rowId && !isModal,
+            })}
             tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
             onKeyDown={e => {

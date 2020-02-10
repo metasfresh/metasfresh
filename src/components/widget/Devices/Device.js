@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import SockJs from 'sockjs-client';
+import PropTypes from 'prop-types';
 
 import Stomp from 'stompjs/lib/stomp.min.js';
 
@@ -94,5 +95,11 @@ class Device extends Component {
     }
   }
 }
+
+Device.propTypes = {
+  device: PropTypes.object,
+  handleChange: PropTypes.func,
+  tabIndex: PropTypes.number,
+};
 
 export default Device;

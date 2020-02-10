@@ -53,6 +53,14 @@ export const SET_PROCESS_STATE_SAVED = 'SET_PROCESS_STATE_SAVED';
 export const SET_PROCESS_STATE_PENDING = 'SET_PROCESS_STATE_PENDING';
 
 // SCOPED ACTIONS
+
+/**
+ * @constant
+ * Window is being initialized, data requests are triggered
+ * @type {string}
+ */
+export const INIT_WINDOW = 'INIT_WINDOW';
+
 /**
  * @constant
  * @type {string} ToDo: Description for the constant.

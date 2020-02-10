@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
 import BarcodeScanner from './BarcodeScanner';
+import PropTypes from 'prop-types';
 
 import currentDevice from 'current-device';
 
 function addBarcodeScanner(WrappedComponent) {
   return class BarcodeScannerWidget extends Component {
+    static propTypes = {
+      layout: PropTypes.object,
+      closeOverlay: PropTypes.any,
+    };
+
     constructor(props) {
       super(props);
 

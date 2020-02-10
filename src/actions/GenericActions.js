@@ -2,29 +2,7 @@ import axios from 'axios';
 import { getQueryString } from '../utils';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
-
-export function getData(
-  entity,
-  docType,
-  docId,
-  tabId,
-  rowId,
-  subentity,
-  subentityId,
-  isAdvanced,
-  orderBy,
-  viewId
-) {
-  return axios.get(
-    `${config.API_URL}/${entity}/${docType}${viewId ? `/${viewId}` : ''}${
-      docId ? `/${docId}` : ''
-    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
-      subentity ? `/${subentity}` : ''
-    }${subentityId ? `/${subentityId}` : ''}/${
-      isAdvanced ? `?advanced=true` : ''
-    }${orderBy ? `?orderBy=${orderBy}` : ''}`
-  );
-}
+// @TODO: Everything should be moved to api
 
 export function createInstance(entity, docType, docId, tabId, subentity) {
   return axios.post(
@@ -37,70 +15,6 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
       docId +
       (tabId ? '/' + tabId : '') +
       (subentity ? '/' + subentity : '')
-  );
-}
-
-export function createPatchRequestPayload(property, value) {
-  if (Array.isArray(property) && Array.isArray(value)) {
-    return property.map((item, index) => ({
-      op: 'replace',
-      path: item,
-      value: value[index],
-    }));
-  } else if (Array.isArray(property) && value !== undefined) {
-    return property.map(item => ({
-      op: 'replace',
-      path: item.field,
-      value,
-    }));
-  } else if (property && value !== undefined) {
-    return [
-      {
-        op: 'replace',
-        path: property,
-        value,
-      },
-    ];
-  } else {
-    // never return undefined; backend does not support it
-    return [];
-  }
-}
-
-export function patchRequest({
-  // HOTFIX: before refactoring all calls explicity set docId to `null`
-  // instead of `undefined` so default value 'NEW' was never used!
-  docId,
-
-  docType,
-  entity,
-  isAdvanced,
-  property,
-  rowId,
-  subentity,
-  subentityId,
-  tabId,
-  value,
-  viewId,
-  isEdit,
-}) {
-  let payload =
-    docId !== 'NEW' ? createPatchRequestPayload(property, value) : [];
-
-  return axios.patch(
-    config.API_URL +
-      '/' +
-      entity +
-      (docType ? '/' + docType : '') +
-      (viewId ? '/' + viewId : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      (isAdvanced ? '?advanced=true' : '') +
-      (isEdit ? '/edit' : ''),
-    payload
   );
 }
 

@@ -1,0 +1,48 @@
+{
+  "data1": {
+    "location": {
+      "pathname": "/window/143/1000000",
+      "search": "",
+      "hash": "",
+      "action": "POP",
+      "key": "5dgjlt",
+      "query": "{}"
+    },
+    "params": {
+      "windowType": "143",
+      "docId": "1000000"
+    },
+    "route": {
+      "path": "/window/:windowType/:docId",
+      "component": "Connect",
+      "onEnter": "onEnter"
+    },
+    "router": {
+      "location": {
+        "pathname": "/window/143/1000000",
+        "search": "",
+        "hash": "",
+        "action": "POP",
+        "key": null,
+        "query": {}
+      },
+      "params": {
+        "windowType": "143",
+        "docId": "1000000"
+      },
+      "routes": []
+    }
+  },
+  "state1": {
+    "routing": {
+      "locationBeforeTransitions": {
+        "pathname": "/window/143/1000000",
+        "search": "",
+        "hash": "",
+        "action": "POP",
+        "key": "null",
+        "query": "{}"
+      }
+    }
+  }
+}

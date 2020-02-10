@@ -1,0 +1,678 @@
+{
+  "data1": [
+    {
+      "windowId": "143",
+      "id": "1000000",
+      "fieldsByName": {
+        "ID": {
+          "field": "ID",
+          "value": 1000000,
+          "widgetType": "Integer"
+        },
+        "M_Warehouse_ID": {
+          "field": "M_Warehouse_ID",
+          "value": {
+            "key": "540008",
+            "caption": "Hauptlager_StdWarehouse"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_Warehouse_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_DocTypeTarget_ID": {
+          "field": "C_DocTypeTarget_ID",
+          "value": {
+            "key": "1000030",
+            "caption": "Sales Order"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_DocTypeTarget_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DocStatus": {
+          "field": "DocStatus",
+          "value": {
+            "key": "DR",
+            "caption": "Drafted"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DocStatus"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "AD_Org_ID": {
+          "field": "AD_Org_ID",
+          "value": {
+            "key": "1000000",
+            "caption": "metasfresh AG"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Org_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DocumentNo": {
+          "field": "DocumentNo",
+          "value": "0001",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DocumentNo"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DateOrdered": {
+          "field": "DateOrdered",
+          "value": "2020-01-22",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Date",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DateOrdered"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_BPartner_ID": {
+          "field": "C_BPartner_ID",
+          "value": {
+            "key": "2156425",
+            "caption": "G0001_Test Kunde 1"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_BPartner_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Bill_BPartner_ID": {
+          "field": "Bill_BPartner_ID",
+          "value": {
+            "key": "2156425",
+            "caption": "G0001_Test Kunde 1"
+          },
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Bill_BPartner_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "POReference": {
+          "field": "POReference",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "POReference"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_BPartner_Location_ID": {
+          "field": "C_BPartner_Location_ID",
+          "value": {
+            "key": "2205175",
+            "caption": "Testadresse 3"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_BPartner_Location_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Bill_Location_ID": {
+          "field": "Bill_Location_ID",
+          "value": {
+            "key": "2205175",
+            "caption": "Testadresse 3"
+          },
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Bill_Location_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsDropShip": {
+          "field": "IsDropShip",
+          "value": false,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsDropShip"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DropShip_BPartner_ID": {
+          "field": "DropShip_BPartner_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DropShip_BPartner_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DropShip_Location_ID": {
+          "field": "DropShip_Location_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DropShip_Location_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DatePromised": {
+          "field": "DatePromised",
+          "value": "2020-01-22T23:59:59.000+01:00",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "ZonedDateTime",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DatePromised"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "PreparationDate": {
+          "field": "PreparationDate",
+          "value": "2020-01-22T23:59:59.000+01:00",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "ZonedDateTime",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "PreparationDate"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "M_PricingSystem_ID": {
+          "field": "M_PricingSystem_ID",
+          "value": {
+            "key": "2000837",
+            "caption": "Testpreisliste Kunden"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_PricingSystem_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "PaymentRule": {
+          "field": "PaymentRule",
+          "value": {
+            "key": "P",
+            "caption": "On Credit"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "PaymentRule"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "CreditpassStatus": {
+          "field": "CreditpassStatus",
+          "value": "Abfrage nicht erforderlich",
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "CreditpassStatus"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "CreditpassFlag": {
+          "field": "CreditpassFlag",
+          "value": false,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "CreditpassFlag"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "DocAction": {
+          "field": "DocAction",
+          "value": {
+            "key": "CO",
+            "caption": "Complete",
+            "description": "Generate documents and complete transaction"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Button",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DocAction"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsUseHandOver_Location": {
+          "field": "IsUseHandOver_Location",
+          "value": false,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsUseHandOver_Location"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "HandOver_Partner_ID": {
+          "field": "HandOver_Partner_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "HandOver_Partner_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "HandOver_Location_ID": {
+          "field": "HandOver_Location_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "HandOver_Location_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_Currency_ID": {
+          "field": "C_Currency_ID",
+          "value": {
+            "key": "102",
+            "caption": "EUR",
+            "description": "Euro (100 Cent)"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_Currency_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "ShipmentPermissionPharma": {
+          "field": "ShipmentPermissionPharma",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "ShipmentPermissionPharma"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "C_BPartner_SalesRep_ID": {
+          "field": "C_BPartner_SalesRep_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_BPartner_SalesRep_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "SalesPartnerCode": {
+          "field": "SalesPartnerCode",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "SalesPartnerCode"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsSalesPartnerRequired": {
+          "field": "IsSalesPartnerRequired",
+          "value": false,
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsSalesPartnerRequired"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "M_Tour_ID": {
+          "field": "M_Tour_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_Tour_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "AD_Client_ID": {
+          "field": "AD_Client_ID",
+          "value": {
+            "key": "1000000",
+            "caption": "metasfresh"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Client_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "C_PaymentTerm_ID": {
+          "field": "C_PaymentTerm_ID",
+          "value": {
+            "key": "1000009",
+            "caption": "10 days 1 %"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_PaymentTerm_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Posted": {
+          "field": "Posted",
+          "value": {
+            "key": "N",
+            "caption": "Not Posted"
+          },
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Posted"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "AD_User_ID": {
+          "field": "AD_User_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_User_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Bill_User_ID": {
+          "field": "Bill_User_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Bill_User_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DropShip_User_ID": {
+          "field": "DropShip_User_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DropShip_User_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_BPartner_Memo": {
+          "field": "C_BPartner_Memo",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "LongText",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_BPartner_Memo"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "Bill_BPartner_Memo": {
+          "field": "Bill_BPartner_Memo",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "LongText",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Bill_BPartner_Memo"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "DropShip_BPartner_Memo": {
+          "field": "DropShip_BPartner_Memo",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "LongText",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DropShip_BPartner_Memo"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "V$DocumentSummary": {
+          "field": "V$DocumentSummary",
+          "value": "0001",
+          "readonly": true,
+          "mandatory": false,
+          "displayed": false,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "V$DocumentSummary"
+          },
+          "viewEditorRenderMode": "never"
+        }
+      },
+      "validStatus": {
+        "valid": true
+      },
+      "saveStatus": {
+        "deleted": false,
+        "saved": true,
+        "hasChanges": false,
+        "error": false
+      },
+      "includedTabsInfo": {
+        "AD_Tab-187": {
+          "tabid": "AD_Tab-187",
+          "allowCreateNew": true,
+          "allowDelete": true
+        },
+        "AD_Tab-236": {
+          "tabid": "AD_Tab-236",
+          "allowCreateNew": false,
+          "allowDelete": false
+        }
+      },
+      "standardActions": [
+        "new",
+        "advancedEdit",
+        "clone",
+        "email",
+        "letter",
+        "print",
+        "delete"
+      ],
+      "websocketEndpoint": "/document/143/1000000"
+    }
+  ]
+}

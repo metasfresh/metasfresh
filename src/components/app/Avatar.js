@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { getAvatar } from '../../api';
 import defaultAvatar from '../../assets/images/default-avatar.png';
 
@@ -23,5 +23,12 @@ class Avatar extends Component {
     );
   }
 }
+
+Avatar.propTypes = {
+  size: PropTypes.string,
+  className: PropTypes.string,
+  id: PropTypes.string,
+  title: PropTypes.string,
+};
 
 export default Avatar;

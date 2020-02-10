@@ -608,8 +608,8 @@ class Window extends PureComponent {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { sections, tabs } = this.props.layout;
     const {
+      layout: { sections, tabs },
       handleDropFile,
       handleRejectDropped,
       handleDragStart,
@@ -653,7 +653,7 @@ class Window extends PureComponent {
  * @prop {bool} allowShortcut
  * @prop {shape|array} data
  * @prop {string} dataId
- * @prop {bool} modal
+ * @prop {object} modal
  * @prop {string} tabId
  * @prop {string} rowId
  * @prop {bool} isAdvanced

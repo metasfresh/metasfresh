@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import RawChart from '../charts/RawChart';
 
 export class ChartWidget extends Component {
@@ -139,5 +140,23 @@ export class ChartWidget extends Component {
     );
   }
 }
+
+ChartWidget.propTypes = {
+  text: PropTypes.string,
+  framework: PropTypes.any,
+  noData: PropTypes.any,
+  maximizeWidget: PropTypes.func,
+  index: PropTypes.number,
+  isMaximized: PropTypes.bool,
+  chartType: PropTypes.string,
+  caption: PropTypes.string,
+  fields: PropTypes.any,
+  groupBy: PropTypes.string,
+  pollInterval: PropTypes.any,
+  editmode: PropTypes.bool,
+  handleChartOptions: PropTypes.func,
+  id: PropTypes.number,
+  idMaximized: PropTypes.number,
+};
 
 export default ChartWidget;

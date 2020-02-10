@@ -5,16 +5,11 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
 
+import { getData, patchRequest } from '../api';
 import { addCard } from '../actions/BoardActions';
+import { deleteRequest, getRequest } from '../actions/GenericActions';
+import { connectWS, disconnectWS } from '../utils/websockets';
 
-import {
-  deleteRequest,
-  getData,
-  getRequest,
-  patchRequest,
-} from '../actions/GenericActions';
-
-import { connectWS, disconnectWS } from '../actions/WindowActions';
 import BlankPage from '../components/BlankPage';
 import Container from '../components/Container';
 import Lanes from '../components/board/Lanes';

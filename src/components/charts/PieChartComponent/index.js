@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { getSvg } from './svg';
 
 class PieChartComponent extends Component {
@@ -318,5 +318,18 @@ class PieChartComponent extends Component {
     );
   }
 }
+
+PieChartComponent.propTypes = {
+  data: PropTypes.any,
+  responsive: PropTypes.bool,
+  colors: PropTypes.any,
+  chartClass: PropTypes.string,
+  reRender: PropTypes.any,
+  fields: PropTypes.array,
+  groupBy: PropTypes.string,
+  height: PropTypes.any,
+  isMaximized: PropTypes.bool,
+  chartTitle: PropTypes.string,
+};
 
 export default PieChartComponent;

@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { addAttachment } from '../../actions/EmailActions';
 import FileInput from '../FileInput';
 
@@ -64,5 +64,11 @@ class Attachments extends Component {
     );
   }
 }
+
+Attachments.propTypes = {
+  attachments: PropTypes.object,
+  emailId: PropTypes.number,
+  getEmail: PropTypes.func,
+};
 
 export default Attachments;

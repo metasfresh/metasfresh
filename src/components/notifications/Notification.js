@@ -165,6 +165,7 @@ class Notification extends Component {
 
 Notification.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  item: PropTypes.object,
 };
 
 export default connect()(Notification);

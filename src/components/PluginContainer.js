@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import propTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -47,7 +47,15 @@ class PluginContainer extends Component {
   }
 }
 
-PluginContainer.contextTypes = { store: propTypes.object };
+PluginContainer.propTypes = {
+  store: PropTypes.object,
+  pluginModal: PropTypes.any,
+  dispatch: PropTypes.func,
+  modal: PropTypes.any,
+  rawModal: PropTypes.any,
+  breadcrumb: PropTypes.any,
+  component: PropTypes.node,
+};
 
 function mapStateToProps(state) {
   const { windowHandler, menuHandler } = state;
