@@ -152,6 +152,11 @@ public class DocTypeDAO implements IDocTypeDAO
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
 
+		if (query.getDefaultDocType() != null)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMN_IsDefault, query.getDefaultDocType());
+		}
+
 		if (!Check.isEmpty(query.getName(), true))
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());
