@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.metas.i18n.TranslatableStrings;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -332,9 +333,9 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return validationMsgColumnSQL;
 	}
 
-	/* package */ void setValidationMsgColumnSQL(final String validationMsgColumnSQL_BaseLang, final String validationMsgColumnSQL_Trl)
+	/* package */ void setValidationMsgColumnSQL(final String validationMsgColumnSQL_BaseLang)
 	{
-		this.validationMsgColumnSQL = TranslatableParameterizedString.of(CTXNAME_AD_Language, validationMsgColumnSQL_BaseLang, validationMsgColumnSQL_Trl);
+		this.validationMsgColumnSQL = TranslatableParameterizedString.of(CTXNAME_AD_Language, validationMsgColumnSQL_BaseLang, validationMsgColumnSQL_BaseLang);
 	}
 
 	/* package */ void setDescriptionColumnSQL(
@@ -410,6 +411,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/* package */void setFromSqlPart(final String fromSqlPart_BaseLang, final String fromSqlPart_Trl)
 	{
 		this.fromSqlPart = TranslatableParameterizedString.of(CTXNAME_AD_Language, fromSqlPart_BaseLang, fromSqlPart_Trl);
+
 	}
 
 	/**

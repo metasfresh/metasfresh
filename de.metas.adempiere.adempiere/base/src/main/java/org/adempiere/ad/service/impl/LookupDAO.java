@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -55,6 +57,7 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
+import org.compiere.model.ValidationInformation;
 import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -82,6 +85,8 @@ public class LookupDAO implements ILookupDAO
 	private static final transient Logger logger = LogManager.getLogger(LookupDAO.class);
 
 	private final static String COLUMNNAME_Value = "Value";
+	private final static String Validation_Yes_Message = "de.metas.popupinfo.yes";
+	private final static String Validation_No_Message = "de.metas.popupinfo.no";
 
 	private static final ITableRefInfo tableRefInfo_Account = TableRefInfo.builder()
 			.setIdentifier("Account - C_ValidCombination_ID")
@@ -809,16 +814,23 @@ public class LookupDAO implements ILookupDAO
 			final boolean isActive = isActive(rs) && isDisplayedInUI(rs);
 			final String name = getDisplayName(rs, isActive);
 			final String description = rs.getString(MLookupFactory.COLUMNINDEX_Description);
-
-			String validationMessage;
+			ValidationInformation validationInformation = null;
 			try
 			{
-				validationMessage = rs.getString(MLookupFactory.COLUMNINDEX_ValidationMsg);
+				String validationInformationID = rs.getString(MLookupFactory.COLUMNINDEX_ValidationInformation);
+				if (validationInformationID.length() > 0)
+				{
+					final IMsgBL msgBL = Services.get(IMsgBL.class);
+					final ITranslatableString validationInformationMessage = msgBL.getTranslatableMsgText(validationInformationID);
+					final ITranslatableString validataionInformationYesMessage = msgBL.getTranslatableMsgText(Validation_Yes_Message);
+					final ITranslatableString validataionInformationNoMessage = msgBL.getTranslatableMsgText(Validation_No_Message);
+					validationInformation = new ValidationInformation(validationInformationMessage.translate(Env.getAD_Language()),
+							validataionInformationYesMessage.translate(Env.getAD_Language()), validataionInformationNoMessage.translate(Env.getAD_Language()));
+				}
 			}
 			catch (Exception e)
 			{
-				validationMessage = null;
-				logger.info("Only used in DocAction dropdown");
+				logger.info("No AD_Message available!");
 			}
 
 			final NamePair item;
@@ -830,7 +842,7 @@ public class LookupDAO implements ILookupDAO
 			else
 			{
 				final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-				item = ValueNamePair.of(value, name, description, validationMessage);
+				item = ValueNamePair.of(value, name, description, validationInformation);
 			}
 
 			lastItemActive = isActive;
