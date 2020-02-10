@@ -32,6 +32,8 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -43,6 +45,7 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -50,6 +53,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -260,6 +264,14 @@ public final class Fact
 		return postingType;
 	}
 
+	public boolean isSingleCurrency()
+	{
+		final ImmutableList<CurrencyId> distinctCurrencyIds = CollectionUtils.extractDistinctElements(m_lines, FactLine::getCurrencyId);
+
+		final boolean lessThanTwoCurrencies = distinctCurrencyIds.size() < 2;
+		return lessThanTwoCurrencies;
+	}
+
 	/**************************************************************************
 	 * Are the lines Source Balanced
 	 *
@@ -271,13 +283,19 @@ public final class Fact
 		// Multi-Currency documents are source balanced by definition
 		// No lines -> balanced
 		if (m_lines.size() == 0 || m_doc.isMultiCurrency())
+		{
 			return true;
+		}
 		BigDecimal balance = getSourceBalance();
 		boolean retValue = balance.signum() == 0;
 		if (retValue)
+		{
 			log.trace("{}", this);
+		}
 		else
+		{
 			log.warn("NO - Diff=" + balance + " - " + toString());
+		}
 		return retValue;
 	}	// isSourceBalanced
 
@@ -289,9 +307,8 @@ public final class Fact
 	protected BigDecimal getSourceBalance()
 	{
 		BigDecimal result = BigDecimal.ZERO;
-		for (int i = 0; i < m_lines.size(); i++)
+		for (FactLine line : m_lines)
 		{
-			FactLine line = m_lines.get(i);
 			result = result.add(line.getSourceBalance());
 		}
 		// log.debug("getSourceBalance - " + result.toString());
@@ -309,7 +326,9 @@ public final class Fact
 		final AcctSchema acctSchema = getAcctSchema();
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (!acctSchemaGL.isSuspenseBalancing() || m_doc.isMultiCurrency())
+		{
 			return null;
+		}
 		BigDecimal diff = getSourceBalance();
 		log.trace("Diff=" + diff);
 
@@ -322,11 +341,15 @@ public final class Fact
 		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcctId());
 
 		// Amount
-		if (diff.signum() < 0)   // negative balance => DR
+		if (diff.signum() < 0)
+		{
 			line.setAmtSource(m_doc.getCurrencyId(), diff.abs(), BigDecimal.ZERO);
+		}
 		else
+		{
 			// positive balance => CR
 			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, diff);
+		}
 
 		// Convert
 		line.convert();
@@ -346,7 +369,9 @@ public final class Fact
 		// Multi-Currency documents are source balanced by definition
 		// No lines -> balanced
 		if (m_lines.size() == 0 || m_doc.isMultiCurrency())
+		{
 			return true;
+		}
 
 		// check all balancing segments
 		for (AcctSchemaElement ase : getAcctSchemaElements())
@@ -373,14 +398,15 @@ public final class Fact
 		{
 			HashMap<Integer, BigDecimal> map = new HashMap<>();
 			// Add up values by key
-			for (int i = 0; i < m_lines.size(); i++)
+			for (FactLine line : m_lines)
 			{
-				FactLine line = m_lines.get(i);
 				Integer key = new Integer(line.getAD_Org_ID());
 				BigDecimal bal = line.getSourceBalance();
 				BigDecimal oldBal = map.get(key);
 				if (oldBal != null)
+				{
 					bal = bal.add(oldBal);
+				}
 				map.put(key, bal);
 				// System.out.println("Add Key=" + key + ", Bal=" + bal + " <- " + line);
 			}
@@ -438,9 +464,8 @@ public final class Fact
 		{
 			HashMap<Integer, Balance> map = new HashMap<>();
 			// Add up values by key
-			for (int i = 0; i < m_lines.size(); i++)
+			for (FactLine line : m_lines)
 			{
-				FactLine line = m_lines.get(i);
 				Integer key = new Integer(line.getAD_Org_ID());
 				// BigDecimal balance = line.getSourceBalance();
 				Balance oldBalance = map.get(key);
@@ -450,8 +475,10 @@ public final class Fact
 					map.put(key, oldBalance);
 				}
 				else
+				{
 					oldBalance.add(line.getAmtSourceDr(), line.getAmtSourceCr());
-				// log.info("Key=" + key + ", Balance=" + balance + " - " + line);
+					// log.info("Key=" + key + ", Balance=" + balance + " - " + line);
+				}
 			}
 
 			// Create entry for non-zero element
@@ -517,13 +544,19 @@ public final class Fact
 	{
 		// no lines -> balanced
 		if (m_lines.size() == 0)
+		{
 			return true;
+		}
 		BigDecimal balance = getAcctBalance();
 		boolean retValue = balance.signum() == 0;
 		if (retValue)
+		{
 			log.trace(toString());
+		}
 		else
+		{
 			log.warn("NO - Diff=" + balance + " - " + toString());
+		}
 		return retValue;
 	}	// isAcctBalanced
 
@@ -535,9 +568,8 @@ public final class Fact
 	protected BigDecimal getAcctBalance()
 	{
 		BigDecimal result = BigDecimal.ZERO;
-		for (int i = 0; i < m_lines.size(); i++)
+		for (FactLine line : m_lines)
 		{
-			FactLine line = m_lines.get(i);
 			result = result.add(line.getAcctBalance());
 		}
 		// log.debug(result.toString());
@@ -603,9 +635,13 @@ public final class Fact
 			boolean isDR = diff.signum() < 0;
 			BigDecimal difference = diff.abs();
 			if (isDR)
+			{
 				drAmt = difference;
+			}
 			else
+			{
 				crAmt = difference;
+			}
 			// Switch sides
 			boolean switchIt = BSline != null
 					&& ((BSline.isDrSourceBalance() && isDR)
@@ -615,9 +651,13 @@ public final class Fact
 				drAmt = BigDecimal.ZERO;
 				crAmt = BigDecimal.ZERO;
 				if (isDR)
+				{
 					crAmt = difference.negate();
+				}
 				else
+				{
 					drAmt = difference.negate();
+				}
 			}
 			line.setAmtAcct(drAmt, crAmt);
 			add(line);
@@ -626,11 +666,17 @@ public final class Fact
 		// Adjust biggest (Balance Sheet) line amount
 		{
 			if (BSline != null)
+			{
 				line = BSline;
+			}
 			else
+			{
 				line = PLline;
+			}
 			if (line == null)
+			{
 				log.error("No Line found");
+			}
 			else
 			{
 				log.debug("Adjusting Amt=" + diff + "; Line=" + line);
@@ -644,51 +690,41 @@ public final class Fact
 
 	/**
 	 * Check Accounts of Fact Lines
-	 *
-	 * @return true if success
 	 */
-	public boolean checkAccounts()
+	BooleanWithReason checkAccounts()
 	{
 		// no lines -> nothing to distribute
 		if (m_lines.isEmpty())
 		{
-			return true;
+			return BooleanWithReason.TRUE;
 		}
 
 		// For all fact lines
-		for (int i = 0; i < m_lines.size(); i++)
+		for (final FactLine line : m_lines)
 		{
-			final FactLine line = m_lines.get(i);
-
 			final MAccount account = line.getAccount();
 			if (account == null)
 			{
-				log.warn("No Account for " + line);
-				return false;
+				return BooleanWithReason.falseBecause("No Account for " + line);
 			}
 
 			final I_C_ElementValue ev = account.getAccount();
 			if (ev == null)
 			{
-				log.warn("No Element Value for " + account + ": " + line);
-				return false;
+				return BooleanWithReason.falseBecause("No Element Value for " + account + ": " + line);
 			}
 			if (ev.isSummary())
 			{
-				log.warn("Cannot post to Summary Account " + ev
-						+ ": " + line);
-				return false;
+				return BooleanWithReason.falseBecause("Cannot post to Summary Account " + ev + ": " + line);
 			}
 			if (!ev.isActive())
 			{
-				log.warn("Cannot post to Inactive Account " + ev
-						+ ": " + line);
-				return false;
+				return BooleanWithReason.falseBecause("Cannot post to Inactive Account " + ev + ": " + line);
 			}
 
 		}	// for all lines
 
-		return true;
+		return BooleanWithReason.TRUE;
 	}	// checkAccounts
 
 	/**
@@ -849,7 +885,9 @@ public final class Fact
 		{
 			BigDecimal bd = getBalance().abs();
 			if (isReversal())
+			{
 				return bd.negate();
+			}
 			return bd;
 		}	// getPostBalance
 
@@ -1003,7 +1041,9 @@ public final class Fact
 				}
 
 				if (log.isDebugEnabled())
+				{
 					log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + toString());
+				}
 			}
 
 			//

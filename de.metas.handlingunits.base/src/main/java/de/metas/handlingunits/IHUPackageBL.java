@@ -28,7 +28,7 @@ public interface IHUPackageBL extends ISingletonService
 	 * @return
 	 * @throws HUException if <code>hu</code> or <code>shipper</code> is <code>null</code> or if <code>hu</code> has not both a <code>C_BPartner_ID</code> and a <code>C_BPartner_Location_ID</code>.
 	 */
-	de.metas.shipping.interfaces.I_M_Package createM_Package(I_M_HU hu, ShipperId shipperId);
+	I_M_Package createM_Package(I_M_HU hu, ShipperId shipperId);
 
 	/**
 	 * Update all {@link I_M_Package}s and {@link I_M_ShippingPackage}s which are linked to given <code>hu</code>.

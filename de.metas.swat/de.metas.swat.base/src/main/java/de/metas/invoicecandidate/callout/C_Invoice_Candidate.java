@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.callout;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Properties;
 
 /*
@@ -31,6 +32,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -45,6 +47,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.Group;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
 
@@ -86,16 +90,19 @@ public class C_Invoice_Candidate
 		if (ic.isManual())
 		{
 			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+			final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 			final I_C_ILCandHandler handler = handlerDAO.retrieveForTable(ctx, ManualCandidateHandler.MANUAL).get(0);
-			final Timestamp today = invoiceCandBL.getToday();
+
+			final LocalDate today = invoiceCandBL.getToday();
+			final Timestamp todayAsTimestamp = TimeUtil.asTimestamp(today, orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID())));
 
 			ic.setC_ILCandHandler(handler);
 			ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_Immediate);
 			// ic.setQtyToInvoice(BigDecimal.ONE); setting this qty is don my the update process
 			ic.setQtyDelivered(BigDecimal.ONE);
 			ic.setQtyOrdered(BigDecimal.ONE);
-			ic.setDateToInvoice(today);
-			ic.setDateToInvoice_Effective(today);
+			ic.setDateToInvoice(todayAsTimestamp);
 			// we have no source
 			ic.setAD_Table_ID(0);
 			ic.setRecord_ID(0);
@@ -144,9 +151,9 @@ public class C_Invoice_Candidate
 	}
 
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override )
-	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate ic, final ICalloutField field)
+	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate icRecord, final ICalloutField field)
 	{
-		ic.setIsInDispute(false);
+		icRecord.setIsInDispute(false);
 	}
 
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)

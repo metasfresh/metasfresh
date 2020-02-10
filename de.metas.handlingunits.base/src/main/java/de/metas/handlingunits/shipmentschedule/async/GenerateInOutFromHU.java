@@ -91,7 +91,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.setContext(ctx)
 				.newWorkpackage()
 				.bindToThreadInheritedTrx()
-				.setUserInChargeId(Env.getAD_User_ID(ctx)) // invoker
+				.setUserInChargeId(Env.getLoggedUserIdIfExists(ctx).orElse(null)) // invoker
 				.parameters()
 				.setParameter(PARAMETERNAME_AddToShipperTransportationId, addToShipperTransportationId > 0 ? addToShipperTransportationId : 0)
 				.setParameter(PARAMETERNAME_InvoiceMode, invoiceModeEffective.name())

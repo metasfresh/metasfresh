@@ -7,8 +7,12 @@ import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -47,6 +51,8 @@ import lombok.NonNull;
  */
 public class OrderLineBuilder
 {
+	private final transient Logger logger = LogManager.getLogger(getClass());
+
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final OrderFactory parent;
@@ -99,6 +105,11 @@ public class OrderLineBuilder
 
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 		save(orderLine);
+		try (final MDCCloseable orderLineMDC = TableRecordMDC.putTableRecordReference(orderLine))
+		{
+			// would be great to also have the pricing engine run in here..if there is a way for this without the need to save twice
+			logger.debug("Set C_OrderLine.QtyOrdered={} as converted from qty={} and productId={}", qtyOrdered.toBigDecimal(), qty, productId);
+		}
 		this.createdOrderLine = orderLine;
 	}
 

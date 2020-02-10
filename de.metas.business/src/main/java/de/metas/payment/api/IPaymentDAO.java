@@ -22,15 +22,14 @@ package de.metas.payment.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.compiere.model.I_C_AllocationLine;
@@ -38,11 +37,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IPaymentDAO extends ISingletonService
 {
@@ -58,25 +59,17 @@ public interface IPaymentDAO extends ISingletonService
 	BigDecimal getAvailableAmount(PaymentId paymentId);
 
 	/**
-	 * @param payment
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
-	 * @return
 	 */
 	BigDecimal getInvoiceOpenAmount(I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
 	 * Return a list of active, processed lines in {@link I_C_PaySelection}
-	 *
-	 * @param paySelection
-	 * @return
 	 */
 	List<I_C_PaySelectionLine> getProcessedLines(I_C_PaySelection paySelection);
 
 	/**
 	 * retrieve payment allocations for specific payment
-	 *
-	 * @param payment
-	 * @return
 	 */
 	List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment);
 
@@ -91,19 +84,12 @@ public interface IPaymentDAO extends ISingletonService
 
 	/**
 	 * retrieve allocated payments fro an invoice
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	List<I_C_Payment> retrievePayments(I_C_Invoice invoice);
 
 	/**
 	 * Retrieve all the payments that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either PayAmt or OverUnderAmt. These entries will produce 0 in posting
-	 *
-	 * @param ctx
-	 * @param startTime
-	 * @return
 	 */
 	List<I_C_Payment> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
 
@@ -113,4 +99,8 @@ public interface IPaymentDAO extends ISingletonService
 	 * Updates the discount and the payment based on DateTrx and the payment term policy.
 	 */
 	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
+
+	ImmutableSet<PaymentId> retrieveAllMatchingPayments(boolean isReceipt, @NonNull BPartnerId bPartnerId, @NonNull final Money money);
+
+	void save(@NonNull final I_C_Payment payment);
 }

@@ -57,11 +57,11 @@ public class CoalesceUtil
 	}
 
 	/**
-	 * @param values
 	 * @return first not null value from list
 	 */
 	@SafeVarargs
-	public <T> T coalesce(final T... values)
+	@Nullable
+	public <T> T coalesce(@Nullable final T... values)
 	{
 		if (values == null || values.length == 0)
 		{

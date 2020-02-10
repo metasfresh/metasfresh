@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1762773212L;
+	private static final long serialVersionUID = 59289758L;
 
     /** Standard Constructor */
     public X_C_Async_Batch_Type (Properties ctx, int C_Async_Batch_Type_ID, String trxName)
@@ -40,8 +24,8 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
         {
 			setC_Async_Batch_Type_ID (0);
 			setInternalName (null);
-			setNotificationType (null);
-// ABP
+			setIsSendMail (false); // N
+			setIsSendNotification (false); // N
         } */
     }
 
@@ -59,18 +43,6 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.letters.model.I_AD_BoilerPlate getAD_BoilerPlate() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_BoilerPlate_ID, de.metas.letters.model.I_AD_BoilerPlate.class);
-	}
-
-	@Override
-	public void setAD_BoilerPlate(de.metas.letters.model.I_AD_BoilerPlate AD_BoilerPlate)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_BoilerPlate_ID, de.metas.letters.model.I_AD_BoilerPlate.class, AD_BoilerPlate);
-	}
 
 	/** Set Textbaustein.
 		@param AD_BoilerPlate_ID Textbaustein	  */
@@ -117,7 +89,9 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 	}
 
 	/** Set Interner Name.
-		@param InternalName Interner Name	  */
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
 	@Override
 	public void setInternalName (java.lang.String InternalName)
 	{
@@ -125,7 +99,8 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 	}
 
 	/** Get Interner Name.
-		@return Interner Name	  */
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
 	@Override
 	public java.lang.String getInternalName () 
 	{

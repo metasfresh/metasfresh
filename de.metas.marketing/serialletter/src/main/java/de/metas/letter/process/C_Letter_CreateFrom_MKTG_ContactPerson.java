@@ -101,7 +101,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.newWorkpackage()
 				.setC_Async_Batch(asyncbatch) // set the async batch in workpackage in order to track it
 				.addElement(campaignContactPerson)
-				.setUserInChargeId(getAD_User_ID())
+				.setUserInChargeId(getUserId())
 				.build();
 	}
 }

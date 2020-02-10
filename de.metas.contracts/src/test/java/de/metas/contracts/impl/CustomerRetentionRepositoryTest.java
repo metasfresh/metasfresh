@@ -5,25 +5,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.invoice.ContractInvoiceService;
@@ -57,19 +50,17 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, CustomerRetentionRepository.class, ContractInvoiceService.class })
 public class CustomerRetentionRepositoryTest
 {
 
 	private CustomerRetentionRepository repository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		repository = Adempiere.getBean(CustomerRetentionRepository.class);
+		repository = new CustomerRetentionRepository(new ContractInvoiceService());
 
 		SystemTime.setTimeSource(new FixedTimeSource(2018, 12, 13, 0, 0, 0));
 	}
@@ -161,12 +152,12 @@ public class CustomerRetentionRepositoryTest
 		final Timestamp dateToCompare = SystemTime.asDayTimestamp();
 		boolean dateExceedsThreshold = repository.dateExceedsThreshold(contractEndDate, dateToCompare);
 
-		assertTrue(dateExceedsThreshold);
+		assertThat(dateExceedsThreshold).isTrue();
 
 		contractEndDate = TimeUtil.parseTimestamp("2017-12-14");
 		dateExceedsThreshold = repository.dateExceedsThreshold(contractEndDate, dateToCompare);
 
-		assertFalse(dateExceedsThreshold);
+		assertThat(dateExceedsThreshold).isFalse();
 	}
 
 	@Test

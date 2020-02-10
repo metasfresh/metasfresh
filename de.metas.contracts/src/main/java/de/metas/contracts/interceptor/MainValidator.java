@@ -23,12 +23,16 @@ package de.metas.contracts.interceptor;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -39,18 +43,22 @@ import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLi
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
-import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionInOutLines;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
+import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MainValidator extends AbstractModuleInterceptor
 {
@@ -58,6 +66,29 @@ public class MainValidator extends AbstractModuleInterceptor
 	public static final String MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Not_Supported";
 
 	public static final String MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Reactivate_Not_Supported";
+
+	private final ContractOrderService contractOrderService;
+	private final OrderGroupCompensationChangesHandler groupChangesHandler;
+	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
+
+	@Deprecated
+	public MainValidator()
+	{
+		this(
+				SpringContextHolder.instance.getBean(ContractOrderService.class),
+				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
+				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class));
+	}
+
+	public MainValidator(
+			@NonNull final ContractOrderService contractOrderService,
+			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
+			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo)
+	{
+		this.contractOrderService = contractOrderService;
+		this.groupChangesHandler = groupChangesHandler;
+		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
+	}
 
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
@@ -110,25 +141,38 @@ public class MainValidator extends AbstractModuleInterceptor
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
-		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
+		registerInOutLinesWithMissingInvoiceCandidateFilter();
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
 	}
 
+	/**
+	 * Make sure that no {@link I_C_Invoice_Candidate}s are created for inout lines that belong to a subscription contract.
+	 */
+	private void registerInOutLinesWithMissingInvoiceCandidateFilter()
+	{
+		final IQueryFilter<I_M_InOutLine> filter = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.contracts.model.I_M_InOutLine.COLUMNNAME_C_SubscriptionProgress_ID, null);
+
+		inoutLinesWithMissingInvoiceCandidateRepo.addAdditionalFilter(filter);
+	}
+
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addModelValidator(C_Flatrate_Conditions.INSTANCE, client);
 		engine.addModelValidator(C_SubscriptionProgress.instance, client);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance, client);
 		engine.addModelValidator(C_Flatrate_Matching.instance, client);
-		engine.addModelValidator(C_Flatrate_Term.INSTANCE, client);
+		engine.addModelValidator(new C_Flatrate_Term(contractOrderService), client);
 
 		engine.addModelValidator(new C_Invoice_Candidate(), client);
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc(), client);
 		engine.addModelValidator(new C_Order(), client);
-		engine.addModelValidator(new C_OrderLine(), client);
+		engine.addModelValidator(new C_OrderLine(groupChangesHandler), client);
 
 		// 03742
 		engine.addModelValidator(new C_Flatrate_Transition(), client);

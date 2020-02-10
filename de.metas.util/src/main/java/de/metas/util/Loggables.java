@@ -94,6 +94,11 @@ public final class Loggables
 		return new LoggableWithLogger(get(), logger, level);
 	}
 
+	public static ILoggable withWarnLoggerToo(@NonNull final Logger logger)
+	{
+		return withLogger(logger, Level.WARN);
+	}
+
 	public static PlainStringLoggable newPlainStringLoggable()
 	{
 		return new PlainStringLoggable();

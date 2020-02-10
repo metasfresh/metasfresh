@@ -948,6 +948,8 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void numbers()
 		{
+			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("0", "!", "0.00")).isFalse();
+			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("0", "=", "0.00")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10", "=", "10")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10.0", "=", "10.0")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10.0001", "=", "10.0001")).isTrue();

@@ -167,8 +167,8 @@ public class ShipmentScheduleWithHUService
 			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
-				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
-			}
+			result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
+		}
 			else
 			{
 				Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
@@ -221,7 +221,7 @@ public class ShipmentScheduleWithHUService
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
-						SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
+				SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
 
 		return pickAvailableHUsOntheFly;
 	}
@@ -286,6 +286,9 @@ public class ShipmentScheduleWithHUService
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+
+			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+			loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			// split a part out of the current HU
 			final HUsToNewCUsRequest request = HUsToNewCUsRequest

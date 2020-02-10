@@ -3,6 +3,7 @@ package org.adempiere.ad.expression.api;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.compiere.util.CtxName;
@@ -48,7 +49,7 @@ import com.google.common.collect.ImmutableMap;
 @Immutable
 public class LogicExpressionResult
 {
-	public static final LogicExpressionResult of(final Boolean value, final ILogicExpression expression, final Map<CtxName, String> parameters)
+	public static final LogicExpressionResult of(@Nullable final Boolean value, final ILogicExpression expression, @Nullable final Map<CtxName, String> parameters)
 	{
 		final String name = null;
 		return new LogicExpressionResult(name, value, expression, parameters);

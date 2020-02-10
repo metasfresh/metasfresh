@@ -91,11 +91,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		}
 
 		final IWorkPackageBuilder wpBuilder = blockBuilder.newWorkpackage()
-
-				// Workpackage Parameters
-				.parameters()
-				.setParameters(parameters)
-				.end();
+				.parameters(parameters);
 
 		// Workpackage element
 		if (request.getRecordToAttach() != null)

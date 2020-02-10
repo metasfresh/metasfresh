@@ -64,6 +64,8 @@ public class DataImportService
 				.dataImportRunService(dataImportRunService)
 				.completeDocuments(request.isCompleteDocuments())
 				//
+				.additionalParameters(request.getAdditionalParameters())
+				//
 				.clientId(request.getClientId())
 				.orgId(request.getOrgId())
 				.userId(request.getUserId())
