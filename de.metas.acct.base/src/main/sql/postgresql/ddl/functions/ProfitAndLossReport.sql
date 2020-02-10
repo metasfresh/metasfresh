@@ -1,14 +1,15 @@
 DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, IN p_compareWithPrevious1Year boolean, IN p_compareWithPrevious3Years boolean);
+DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp);
 
-CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, IN p_compareWithPrevious1Year boolean = FALSE, IN p_compareWithPrevious3Years boolean = FALSE)
+CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp)
     RETURNS TABLE
             (
-                name                    text,
-                value                   text,
-                three_years_ago_balance numeric,
-                two_years_ago_balance   numeric,
-                one_year_ago_balance    numeric,
-                current_balance         numeric
+                name            text,
+                value           text,
+                three_years_ago numeric,
+                two_years_ago   numeric,
+                one_year_ago    numeric,
+                current_period  numeric
             )
 AS
 $BODY$
@@ -29,7 +30,7 @@ $BODY$
     LANGUAGE sql
     VOLATILE;
 
-ALTER FUNCTION ProfitAndLossReport(timestamp, timestamp, boolean, boolean)
+ALTER FUNCTION ProfitAndLossReport(timestamp, timestamp)
     OWNER TO metasfresh;
 
 -- test: SELECT * FROM ProfitAndLossReport('1993-01-01'::Timestamp, '2992-01-01'::Timestamp);
