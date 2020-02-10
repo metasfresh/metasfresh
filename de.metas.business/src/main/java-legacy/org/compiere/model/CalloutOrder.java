@@ -388,15 +388,9 @@ public class CalloutOrder extends CalloutEngine
 				if (IsSOTrx)
 				{
 					DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(rs.getInt("SO_DocTypeTarget_ID"));
-
 					if (docTypeTargetId == null)
 					{
-						docTypeTargetId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
-								.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-								.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-								.adClientId(order.getAD_Client_ID())
-								.adOrgId(order.getAD_Org_ID())
-								.build());
+						docTypeTargetId = suggestDefaultSalesOrderDocTypeId(order);
 					}
 
 					if (docTypeTargetId != null)
@@ -589,6 +583,34 @@ public class CalloutOrder extends CalloutEngine
 		}
 		return NO_ERROR;
 	} // bPartner
+
+	private DocTypeId suggestDefaultSalesOrderDocTypeId(final I_C_Order order)
+	{
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
+		final int adClientId = order.getAD_Client_ID();
+		final int adOrgId = order.getAD_Org_ID();
+
+		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.defaultDocType(true)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
+		if (defaultDocTypeId != null)
+		{
+			return defaultDocTypeId;
+		}
+
+		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
+
+		return standardOrderDocTypeId;
+	}
 
 	private void checkCreditLimit(
 			@NonNull final ICalloutField calloutField,
