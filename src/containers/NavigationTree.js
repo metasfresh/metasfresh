@@ -34,7 +34,7 @@ class NavigationTree extends Component {
     document.getElementById('search-input').focus();
   };
 
-  getData = async doNotResetState => {
+  getData = async (doNotResetState) => {
     const { query } = this.state;
 
     if (doNotResetState && query) {
@@ -43,7 +43,7 @@ class NavigationTree extends Component {
       try {
         const response = await rootRequest();
 
-        await new Promise(resolve =>
+        await new Promise((resolve) =>
           this.setState(
             {
               ...this.state,
@@ -56,7 +56,7 @@ class NavigationTree extends Component {
         );
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          await new Promise(resolve =>
+          await new Promise((resolve) =>
             this.setState(
               {
                 ...this.state,
@@ -82,11 +82,11 @@ class NavigationTree extends Component {
     dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
   };
 
-  handleQuery = async event => {
+  handleQuery = async (event) => {
     event.preventDefault();
 
     if (event.target.value) {
-      await new Promise(resolve =>
+      await new Promise((resolve) =>
         this.setState(
           {
             query: event.target.value,
@@ -103,11 +103,11 @@ class NavigationTree extends Component {
     }
   };
 
-  queryRequest = async value => {
+  queryRequest = async (value) => {
     try {
       const response = await queryPathsRequest(value, '', true);
 
-      await new Promise(resolve =>
+      await new Promise((resolve) =>
         this.setState(
           {
             queriedResults: response.data.children,
@@ -117,7 +117,7 @@ class NavigationTree extends Component {
       );
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        await new Promise(resolve =>
+        await new Promise((resolve) =>
           this.setState(
             {
               queriedResults: [],
@@ -134,7 +134,7 @@ class NavigationTree extends Component {
     document.getElementById('search-input').value = '';
   };
 
-  handleClear = async event => {
+  handleClear = async (event) => {
     event.preventDefault();
 
     await this.getData();
@@ -142,7 +142,7 @@ class NavigationTree extends Component {
     this.clearValue();
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const input = document.getElementById('search-input');
     const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     let prevParentSibling = document.activeElement.previousSibling;
@@ -264,7 +264,7 @@ class NavigationTree extends Component {
     dispatch(push('/' + (type ? type : 'window') + '/' + elementId));
   };
 
-  handleNewRedirect = elementId => {
+  handleNewRedirect = (elementId) => {
     const { dispatch } = this.props;
     dispatch(push('/window/' + elementId + '/new'));
   };
@@ -272,7 +272,7 @@ class NavigationTree extends Component {
   handleDeeper = (e, nodeId) => {
     e.preventDefault();
 
-    nodePathsRequest(nodeId, 4).then(response => {
+    nodePathsRequest(nodeId, 4).then((response) => {
       this.setState(
         Object.assign({}, this.state, {
           deepNode: response.data,
@@ -280,7 +280,7 @@ class NavigationTree extends Component {
       );
     });
   };
-  handleClickBack = e => {
+  handleClickBack = (e) => {
     e.preventDefault();
 
     this.setState(

@@ -43,7 +43,7 @@ class NewEmail extends Component {
   UNSAFE_componentWillMount = () => {
     const { windowId, docId, handleCloseEmail } = this.props;
     createEmail(windowId, docId)
-      .then(res => {
+      .then((res) => {
         this.setState({
           init: true,
           ...res.data,
@@ -62,8 +62,8 @@ class NewEmail extends Component {
    * @param {*} emailId
    * @todo Write the documentation
    */
-  getEmail = emailId => {
-    getEmail(emailId).then(res => {
+  getEmail = (emailId) => {
+    getEmail(emailId).then((res) => {
       this.setState({
         init: true,
         ...res.data,
@@ -78,7 +78,7 @@ class NewEmail extends Component {
    * @todo Write the documentation
    */
   getTemplates = () => {
-    getTemplates().then(res => {
+    getTemplates().then((res) => {
       this.setState({
         templates: List(res.data.values),
       });
@@ -115,7 +115,7 @@ class NewEmail extends Component {
       docType: emailId,
       property: prop,
       value,
-    }).then(response => {
+    }).then((response) => {
       this.setState({
         ...response.data,
         cached: response.data,
@@ -145,7 +145,7 @@ class NewEmail extends Component {
    * @param {*} option
    * @todo Write the documentation
    */
-  handleTemplate = option => {
+  handleTemplate = (option) => {
     const { emailId, template } = this.state;
     if (template === option) return;
 
@@ -154,7 +154,7 @@ class NewEmail extends Component {
       docType: emailId,
       property: 'templateId',
       value: option,
-    }).then(response => {
+    }).then((response) => {
       this.setState({
         ...response.data,
         template: option,
@@ -241,7 +241,7 @@ class NewEmail extends Component {
                   <RawList
                     rank="primary"
                     list={templates}
-                    onSelect={option => this.handleTemplate(option)}
+                    onSelect={(option) => this.handleTemplate(option)}
                     selected={template}
                     isFocused={listFocused}
                     isToggled={listToggled}
@@ -275,7 +275,7 @@ class NewEmail extends Component {
                 <input
                   className="email-input email-input-msg"
                   type="text"
-                  onChange={e => this.change('subject', e.target.value)}
+                  onChange={(e) => this.change('subject', e.target.value)}
                   value={subject ? subject : ''}
                   onBlur={() => this.patch('subject', subject)}
                 />
@@ -285,7 +285,7 @@ class NewEmail extends Component {
           <div className="panel-email-body">
             <textarea
               value={message ? message : ''}
-              onChange={e => this.change('message', e.target.value)}
+              onChange={(e) => this.change('message', e.target.value)}
               onBlur={() => this.patch('message', message)}
             />
           </div>

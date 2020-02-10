@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-export const getSvg = className => {
+export const getSvg = (className) => {
   const svg = d3.select('.' + className);
 
   // put legend outside of container

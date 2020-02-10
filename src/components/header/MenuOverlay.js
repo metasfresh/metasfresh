@@ -40,7 +40,7 @@ class MenuOverlay extends Component {
     const { nodeId } = this.props;
 
     if (nodeId == 0) {
-      getRootBreadcrumb().then(response => {
+      getRootBreadcrumb().then((response) => {
         this.setState({
           data: response,
         });
@@ -51,7 +51,7 @@ class MenuOverlay extends Component {
           data: this.props.node,
         });
       } else {
-        breadcrumbRequest(nodeId).then(response => {
+        breadcrumbRequest(nodeId).then((response) => {
           this.setState({
             data: response.data,
           });
@@ -65,14 +65,14 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleClickOutside = e => this.props.onClickOutside(e);
+  handleClickOutside = (e) => this.props.onClickOutside(e);
 
   /**
    * @method handleQuery
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleQuery = e => {
+  handleQuery = (e) => {
     e.preventDefault();
 
     if (e.target.value) {
@@ -80,12 +80,12 @@ class MenuOverlay extends Component {
         query: e.target.value,
       });
       queryPathsRequest(e.target.value, 9)
-        .then(response => {
+        .then((response) => {
           this.setState({
             queriedResults: flattenLastElem(response.data),
           });
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.response && err.response.status === 404) {
             this.setState({
               queriedResults: [],
@@ -110,7 +110,7 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleClear = e => {
+  handleClear = (e) => {
     e.preventDefault();
     this.setState(
       {
@@ -154,15 +154,15 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} elementId
    */
-  handleNewRedirect = elementId => this.handleRedirect(elementId, true);
+  handleNewRedirect = (elementId) => this.handleRedirect(elementId, true);
 
   /**
    * @method handlePath
    * @summary ToDo: Describe the method.
    * @param {*} nodeId
    */
-  handlePath = nodeId => {
-    pathRequest(nodeId).then(response => {
+  handlePath = (nodeId) => {
+    pathRequest(nodeId).then((response) => {
       let pathArray = [];
       let node = response.data;
 
@@ -188,7 +188,7 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} path
    */
-  renderPath = path => {
+  renderPath = (path) => {
     return (
       <span>
         {path &&
@@ -208,19 +208,19 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} node
    */
-  renderNavigation = node => {
+  renderNavigation = (node) => {
     const { handleMenuOverlay, openModal, dispatch, siteName } = this.props;
     return (
       <div
         className="menu-overlay-container-column-wrapper js-menu-overlay"
         tabIndex={0}
-        onKeyDown={e => this.handleKeyDown(e)}
+        onKeyDown={(e) => this.handleKeyDown(e)}
       >
         <div className="menu-overlay-top-spacer" />
         <div>
           <span
             className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
-            onClick={e => {
+            onClick={(e) => {
               if (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -240,7 +240,7 @@ class MenuOverlay extends Component {
           <div>
             <span
               className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header js-browse-item"
-              onClick={e => {
+              onClick={(e) => {
                 if (e) {
                   e.preventDefault();
                   e.stopPropagation();
@@ -270,7 +270,7 @@ class MenuOverlay extends Component {
                 parent={node}
                 printChildren={true}
                 transparentBookmarks={true}
-                back={e => this.handleClickBack(e)}
+                back={(e) => this.handleClickBack(e)}
                 handleMenuOverlay={handleMenuOverlay}
                 openModal={openModal}
                 {...item}
@@ -286,7 +286,7 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} nodeData
    */
-  renderSubnavigation = nodeData => {
+  renderSubnavigation = (nodeData) => {
     const { handleMenuOverlay, openModal } = this.props;
     return (
       <div>
@@ -298,7 +298,7 @@ class MenuOverlay extends Component {
           parent={nodeData}
           printChildren={true}
           transparentBookmarks={true}
-          back={e => this.handleClickBack(e)}
+          back={(e) => this.handleClickBack(e)}
           handleMenuOverlay={handleMenuOverlay}
           openModal={openModal}
           subNavigation={true}
@@ -315,7 +315,7 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} item
    */
-  linkClick = item => {
+  linkClick = (item) => {
     const { dispatch } = this.props;
     if (item.elementId && item.type == 'newRecord') {
       this.handleNewRedirect(item.elementId);
@@ -330,7 +330,7 @@ class MenuOverlay extends Component {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { handleMenuOverlay } = this.props;
     const input = this.searchInputQuery;
 
@@ -550,7 +550,7 @@ class MenuOverlay extends Component {
                   <DebounceInput
                     debounceTimeout={250}
                     type="text"
-                    inputRef={ref => {
+                    inputRef={(ref) => {
                       this.searchInputQuery = ref;
                     }}
                     className="input-field"

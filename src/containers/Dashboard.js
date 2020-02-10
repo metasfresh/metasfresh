@@ -8,7 +8,7 @@ import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 
 // import { introHints } from '../components/intro/intro';
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
@@ -61,7 +61,7 @@ export class Dashboard extends Component {
   }
 
   toggleEditMode = () => {
-    this.setState(prevState => ({ editmode: !prevState.editmode }));
+    this.setState((prevState) => ({ editmode: !prevState.editmode }));
   };
 
   render() {

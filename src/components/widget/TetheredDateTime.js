@@ -23,7 +23,7 @@ class TetheredDateTime extends DateTime {
       },
     });
 
-  onInputKey = e => {
+  onInputKey = (e) => {
     if (
       (e.key === 'Tab' && this.props.closeOnTab) ||
       e.key === 'Enter' ||

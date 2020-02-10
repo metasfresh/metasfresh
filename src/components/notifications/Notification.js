@@ -67,7 +67,7 @@ class Notification extends Component {
     dispatch(deleteNotification(item.title));
   };
 
-  handleClosing = shouldClose => {
+  handleClosing = (shouldClose) => {
     const { item } = this.props;
 
     // This is to prevent auto-closing when notification pops-up

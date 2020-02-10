@@ -19,7 +19,7 @@ class InboxItem extends Component {
    * @param {*} target
    * @todo Write the documentation
    */
-  renderIconFromTarget = target => {
+  renderIconFromTarget = (target) => {
     switch (target) {
       case '143':
         return 'sales';
@@ -43,7 +43,7 @@ class InboxItem extends Component {
    * @param {event} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { close } = this.props;
     switch (e.key) {
       case 'ArrowDown':

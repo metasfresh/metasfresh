@@ -28,7 +28,7 @@ CustomRouter.propTypes = {
   history: PropTypes.any,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   plugins: state.pluginsHandler.files,
 });
 

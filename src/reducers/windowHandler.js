@@ -159,7 +159,7 @@ export const getSelectionData = (
 
 export const getSelectionInstant = createSelector(
   [getSelectionData],
-  items => items
+  (items) => items
 );
 
 export const getSelection = ({ state, windowId, viewId }) => {
@@ -349,7 +349,7 @@ export default function windowHandler(state = initialState, action) {
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           layout: Object.assign({}, state[action.scope].layout, {
-            tabs: state[action.scope].layout.tabs.map(tab =>
+            tabs: state[action.scope].layout.tabs.map((tab) =>
               tab.tabId === action.tabId
                 ? Object.assign({}, tab, {
                     orderBy: [
@@ -399,7 +399,7 @@ export default function windowHandler(state = initialState, action) {
     case ADD_NEW_ROW:
       const newRowData = state[action.scope].rowData.update(
         `${action.tabid}`,
-        list => list.push(action.item)
+        (list) => list.push(action.item)
       );
 
       return {
@@ -412,7 +412,7 @@ export default function windowHandler(state = initialState, action) {
     case DELETE_ROW:
       const deletedRowData = state[action.scope].rowData.update(
         `${action.tabid}`,
-        list => list.filter(item => item.rowId !== action.rowid)
+        (list) => list.filter((item) => item.rowId !== action.rowid)
       );
 
       return {
@@ -435,12 +435,12 @@ export default function windowHandler(state = initialState, action) {
 
       if (rows.length) {
         if (removed) {
-          rows = rows.filter(row => !removed[row.rowId]);
+          rows = rows.filter((row) => !removed[row.rowId]);
         }
 
         // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
         if (changed) {
-          rows = rows.map(row => {
+          rows = rows.map((row) => {
             if (changed[row.rowId]) {
               row = { ...changed[row.rowId] };
 
@@ -515,8 +515,8 @@ export default function windowHandler(state = initialState, action) {
       if (scState && scState.rowData && scRowData) {
         const updateRowFieldProperty = state[action.scope].rowData.update(
           `${tabid}`,
-          list =>
-            list.map(item =>
+          (list) =>
+            list.map((item) =>
               item.rowId === rowid
                 ? {
                     ...item,
@@ -546,8 +546,8 @@ export default function windowHandler(state = initialState, action) {
     case UPDATE_ROW_PROPERTY:
       const updateRowPropertyData = state[action.scope].rowData.update(
         `${action.tabid}`,
-        list =>
-          list.map(item =>
+        (list) =>
+          list.map((item) =>
             item.rowId === action.rowid
               ? {
                   ...item,
@@ -567,8 +567,8 @@ export default function windowHandler(state = initialState, action) {
     case UPDATE_ROW_STATUS:
       const updateRowStatusData = state[action.scope].rowData.update(
         `${action.tabid}`,
-        list =>
-          list.map(item =>
+        (list) =>
+          list.map((item) =>
             item.rowId !== action.rowid
               ? {
                   ...item,

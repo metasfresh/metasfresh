@@ -9,7 +9,7 @@ import {
 import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {
-  componentDidUpdate = prevProps => {
+  componentDidUpdate = (prevProps) => {
     const {
       selected,
       DLWrapperSetData,
@@ -45,17 +45,17 @@ class SelectionAttributes extends Component {
       DLWrapperSetLayout,
     } = this.props;
     getViewAttributesLayout(windowType, viewId, selected[0])
-      .then(response => {
+      .then((response) => {
         DLWrapperSetLayout(response.data.elements);
         return getViewAttributes(windowType, viewId, selected[0]);
       })
-      .then(response => {
+      .then((response) => {
         DLWrapperSetData(response.data.fieldsByName, response.data.id);
       })
       .catch(() => {});
   };
 
-  moveToDevice = e => {
+  moveToDevice = (e) => {
     switch (e.key) {
       case 'Shift':
         e.preventDefault();
@@ -64,7 +64,7 @@ class SelectionAttributes extends Component {
     }
   };
 
-  getTabId = item => {
+  getTabId = (item) => {
     return item && item[0].readonly ? -1 : 1;
   };
 
@@ -102,7 +102,7 @@ class SelectionAttributes extends Component {
                 windowType={windowType}
                 viewId={viewId}
                 widgetData={item.fields.map(
-                  elem => DLWrapperData[elem.field] || -1
+                  (elem) => DLWrapperData[elem.field] || -1
                 )}
                 gridAlign={item.gridAlign}
                 key={id}
@@ -113,7 +113,7 @@ class SelectionAttributes extends Component {
                 handlePatch={DLWrapperHandlePatch}
                 handleChange={DLWrapperHandleChange}
                 tabIndex={this.getTabId(
-                  item.fields.map(elem => DLWrapperData[elem.field] || -1)
+                  item.fields.map((elem) => DLWrapperData[elem.field] || -1)
                 )}
               />
             ))}

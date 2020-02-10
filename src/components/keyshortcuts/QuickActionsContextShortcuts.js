@@ -10,7 +10,7 @@ import { Shortcut } from '../keyshortcuts';
  */
 export default class QuickActionsContextShortcuts extends Component {
   handlers = {
-    QUICK_ACTION_POS: event => {
+    QUICK_ACTION_POS: (event) => {
       event.preventDefault();
 
       this.props.handleClick();
@@ -20,7 +20,7 @@ export default class QuickActionsContextShortcuts extends Component {
       }
       return false;
     },
-    QUICK_ACTION_TOGGLE: event => {
+    QUICK_ACTION_TOGGLE: (event) => {
       event.preventDefault();
 
       this.props.onClick();

@@ -64,7 +64,7 @@ class Map extends Component {
                 defaultZoom={zoom}
                 limitBounds="center"
               >
-                {data.map(location => (
+                {data.map((location) => (
                   <Marker
                     key={location.rowId}
                     anchor={[location.latitude, location.longitude]}
@@ -84,7 +84,7 @@ class Map extends Component {
                   this.handleApiLoaded(map, maps)
                 }
               >
-                {data.map(location => (
+                {data.map((location) => (
                   <MapMarker
                     lat={location.latitude}
                     lng={location.longitude}

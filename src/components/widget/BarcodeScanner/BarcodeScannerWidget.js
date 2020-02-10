@@ -28,14 +28,14 @@ function addBarcodeScanner(WrappedComponent) {
       };
     }
 
-    scanBarcode = val => {
+    scanBarcode = (val) => {
       this.setState({
         scanning: typeof val !== 'undefined' ? val : !this.state.scanning,
         codeSelected: null,
       });
     };
 
-    onBarcodeDetected = result => {
+    onBarcodeDetected = (result) => {
       this.setState({
         codeSelected: result || null,
         scanning: false,
@@ -52,7 +52,7 @@ function addBarcodeScanner(WrappedComponent) {
             <BarcodeScanner
               barcodeScannerType={barcodeScannerType}
               onDetected={this.onBarcodeDetected}
-              onClose={val => {
+              onClose={(val) => {
                 const value = typeof val !== 'undefined' ? val : false;
                 this.scanBarcode(value);
 

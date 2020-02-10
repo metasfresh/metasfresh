@@ -194,7 +194,7 @@ class MasterWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} value
    */
-  validatePrecision = value => {
+  validatePrecision = (value) => {
     const { widgetType, precision } = this.props;
     let precisionProcessed = precision;
 
@@ -228,11 +228,11 @@ class MasterWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} field
    */
-  handleZoomInto = field => {
+  handleZoomInto = (field) => {
     const { dataId, windowType, tabId, rowId } = this.props;
 
     getZoomIntoWindow('window', windowType, dataId, tabId, rowId, field).then(
-      res => {
+      (res) => {
         const url = `/window/${res.data.documentPath.windowId}/${
           res.data.documentPath.documentId
         }`;

@@ -17,11 +17,12 @@ class TableItem extends Component {
   constructor(props) {
     super(props);
 
-    const multilineText = props.cols.filter(item => item.multilineText === true)
-      .length;
+    const multilineText = props.cols.filter(
+      (item) => item.multilineText === true
+    ).length;
 
     let multilineTextLines = 0;
-    props.cols.forEach(col => {
+    props.cols.forEach((col) => {
       if (
         col.multilineTextLines &&
         col.multilineTextLines > multilineTextLines
@@ -112,10 +113,10 @@ class TableItem extends Component {
     }
   }
 
-  isAllowedFieldEdit = item =>
+  isAllowedFieldEdit = (item) =>
     item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
 
-  isEditableOnDemand = item => {
+  isEditableOnDemand = (item) => {
     const { fieldsByName } = this.props;
     const { editedCells } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
@@ -130,18 +131,18 @@ class TableItem extends Component {
     );
   };
 
-  prepareWidgetData = item => {
+  prepareWidgetData = (item) => {
     const { fieldsByName } = this.props;
-    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
+    const widgetData = item.fields.map((prop) => fieldsByName[prop.field]);
 
     return widgetData;
   };
 
-  initPropertyEditor = fieldName => {
+  initPropertyEditor = (fieldName) => {
     const { cols, fieldsByName } = this.props;
 
     if (cols && fieldsByName) {
-      cols.map(item => {
+      cols.map((item) => {
         const property = item.fields[0].field;
         if (property === fieldName) {
           const widgetData = this.prepareWidgetData(item);
@@ -291,7 +292,7 @@ class TableItem extends Component {
     // sometimes we need to modify the state of fields that are displayed
     // for instance to show/hide them
     if (ret) {
-      ret.then(resp => {
+      ret.then((resp) => {
         if (resp[0] && resp[0].fieldsByName) {
           const fields = resp[0].fieldsByName;
 
@@ -312,13 +313,13 @@ class TableItem extends Component {
     }
   };
 
-  handleClick = e => {
+  handleClick = (e) => {
     const { onClick, item } = this.props;
 
     onClick(e, item);
   };
 
-  handleClickOutside = e => {
+  handleClickOutside = (e) => {
     const { changeListenOnTrue } = this.props;
 
     this.selectedCell && this.selectedCell.clearValue(true);
@@ -327,7 +328,7 @@ class TableItem extends Component {
     changeListenOnTrue();
   };
 
-  closeTableField = e => {
+  closeTableField = (e) => {
     const { activeCell } = this.state;
 
     this.handleEditProperty(e);
@@ -423,7 +424,7 @@ class TableItem extends Component {
     } else {
       return (
         cols &&
-        cols.map(item => {
+        cols.map((item) => {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
@@ -470,7 +471,7 @@ class TableItem extends Component {
                   modalVisible,
                   isGerman,
                 }}
-                ref={c => {
+                ref={(c) => {
                   if (c && isSelected) {
                     if (focusOnFieldName === property) {
                       this.autofocusCell = c;
@@ -527,7 +528,7 @@ class TableItem extends Component {
     let res = [];
 
     elem &&
-      elem.map(item => {
+      elem.map((item) => {
         res = res.concat([item.id]);
 
         if (item.includedDocuments) {
@@ -552,7 +553,7 @@ class TableItem extends Component {
     handleRowCollapse(item, collapsed);
   };
 
-  getIconClassName = huType => {
+  getIconClassName = (huType) => {
     switch (huType) {
       case 'LU':
         return 'meta-icon-pallete';
@@ -570,7 +571,7 @@ class TableItem extends Component {
     }
   };
 
-  renderTree = huType => {
+  renderTree = (huType) => {
     const {
       indent,
       lastChild,
@@ -629,7 +630,7 @@ class TableItem extends Component {
         )}
         <div
           className="indent-icon"
-          onClick={e => this.handleIndentSelect(e, rowId, includedDocuments)}
+          onClick={(e) => this.handleIndentSelect(e, rowId, includedDocuments)}
         >
           <i className={this.getIconClassName(huType)} />
         </div>

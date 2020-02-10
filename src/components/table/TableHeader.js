@@ -19,7 +19,7 @@ class TableHeader extends PureComponent {
 
     let fields = {};
     orderBy &&
-      orderBy.map(item => {
+      orderBy.map((item) => {
         fields[item.fieldName] = item.ascending;
       });
 
@@ -84,7 +84,7 @@ class TableHeader extends PureComponent {
     );
   };
 
-  renderCols = cols => {
+  renderCols = (cols) => {
     const { getSizeClass, sort } = this.props;
 
     return (

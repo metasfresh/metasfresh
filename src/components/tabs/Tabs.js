@@ -7,7 +7,7 @@ import { Set } from 'immutable';
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
 
-const TabSingleEntry = props => (
+const TabSingleEntry = (props) => (
   // eslint-disable-next-line react/prop-types
   <div className="tab-sections">{props.children}</div>
 );
@@ -83,7 +83,7 @@ class Tabs extends Component {
   };
 
   renderNestedPills = (parentItem, maxWidth, level, nestedPills) => {
-    const pillsArray = parentItem.tabs.map(item => {
+    const pillsArray = parentItem.tabs.map((item) => {
       if (item.tabs) {
         this.renderNestedPills(item, maxWidth, level++, nestedPills);
       }
@@ -110,9 +110,9 @@ class Tabs extends Component {
         id={`tab_${item.internalName}`}
         className="nav-item"
         key={'tab-' + item.tabId}
-        onClick={e => this.handleClick(e, item.tabId)}
+        onClick={(e) => this.handleClick(e, item.tabId)}
         tabIndex={modalVisible ? -1 : tabIndex}
-        onKeyDown={e => this.handlePillKeyDown(e, item.tabId)}
+        onKeyDown={(e) => this.handlePillKeyDown(e, item.tabId)}
         style={{ maxWidth }}
         title={item.description || item.caption}
       >
@@ -127,12 +127,12 @@ class Tabs extends Component {
     );
   };
 
-  renderPills = pills => {
+  renderPills = (pills) => {
     const maxWidth = 95 / pills.length + '%';
     const { selected } = this.state;
     const nestedPills = [];
 
-    const pillsArray = pills.map(item => {
+    const pillsArray = pills.map((item) => {
       if (item.tabs && selected.has(item.tabId)) {
         this.renderNestedPills(item, maxWidth, 0, nestedPills);
       }
@@ -148,11 +148,11 @@ class Tabs extends Component {
     );
   };
 
-  renderTabs = tabs => {
+  renderTabs = (tabs) => {
     const { toggleTableFullScreen, windowId, onChange } = this.props;
     const { selected } = this.state;
 
-    return tabs.map(item => {
+    return tabs.map((item) => {
       const itemWithProps = {
         ...item,
         props: {
@@ -203,7 +203,7 @@ class Tabs extends Component {
         })}
       >
         {this.renderPills(tabs)}
-        <div className="tab-content" ref={c => (this.tabContent = c)}>
+        <div className="tab-content" ref={(c) => (this.tabContent = c)}>
           {this.renderTabs(children)}
         </div>
       </div>
@@ -225,7 +225,7 @@ Tabs.propTypes = {
   fullScreen: PropTypes.any,
 };
 
-export default connect(state => ({
+export default connect((state) => ({
   modalVisible: state.windowHandler.modal.visible,
 }))(Tabs);
 

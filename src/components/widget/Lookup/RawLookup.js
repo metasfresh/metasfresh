@@ -321,7 +321,7 @@ export class RawLookup extends Component {
       });
     }
 
-    typeaheadRequest.then(response => {
+    typeaheadRequest.then((response) => {
       let values = response.data.values || [];
       let list = null;
       const newState = {
@@ -447,7 +447,7 @@ export class RawLookup extends Component {
     }
   }
 
-  handleTemporarySelection = selected => {
+  handleTemporarySelection = (selected) => {
     this.setState({ selected });
   };
 
@@ -499,14 +499,14 @@ export class RawLookup extends Component {
                 focused: isFocused,
               }
             )}
-            ref={ref => (this.wrapper = ref)}
+            ref={(ref) => (this.wrapper = ref)}
           >
             <div className={'input-dropdown input-block'}>
               <div
                 className={'input-editable' + (align ? ' text-' + align : '')}
               >
                 <input
-                  ref={c => (this.inputSearch = c)}
+                  ref={(c) => (this.inputSearch = c)}
                   type="text"
                   className="input-field js-input-field font-weight-semibold"
                   autoComplete="new-password"
@@ -548,7 +548,7 @@ export class RawLookup extends Component {
   }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.windowHandler.filter,
 });
 

@@ -20,7 +20,7 @@ class Referenced extends Component {
   componentDidMount = () => {
     const { windowType, docId } = this.props;
 
-    referencesRequest('window', windowType, docId).then(response => {
+    referencesRequest('window', windowType, docId).then((response) => {
       this.setState(
         {
           data: response.data.groups,
@@ -39,7 +39,7 @@ class Referenced extends Component {
     dispatch(push(`/window/${type}?refType=${windowType}&refId=${docId}`));
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const active = document.activeElement;
 
     const keyHandler = (e, dir) => {
@@ -79,7 +79,7 @@ class Referenced extends Component {
     const { data } = this.state;
 
     return data && data.length ? (
-      data.map(item => {
+      data.map((item) => {
         return [
           <div
             key="caption"
@@ -116,7 +116,7 @@ class Referenced extends Component {
     return (
       <div
         onKeyDown={this.handleKeyDown}
-        ref={c => (this.referenced = c)}
+        ref={(c) => (this.referenced = c)}
         tabIndex={0}
       >
         {!data ? <Loader /> : this.renderData()}

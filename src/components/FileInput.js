@@ -28,7 +28,7 @@ export default class FileInput extends Component {
     },
   };
 
-  handleChange = event => {
+  handleChange = (event) => {
     this.setState({
       value: event.target.value.split(/(\\|\/)/g).pop(),
     });

@@ -73,7 +73,7 @@ class Window extends PureComponent {
     const { tabs, activeTab } = this.props.layout;
 
     if (tabs) {
-      const tabObject = tabs.find(tab => {
+      const tabObject = tabs.find((tab) => {
         let ret = false;
         if (tab.tabId === activeTab) {
           ret = true;
@@ -178,7 +178,7 @@ class Window extends PureComponent {
     const { rowData, newRow, tabsInfo, sort, allowShortcut } = this.props;
     const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
-    tabs.forEach(elem => {
+    tabs.forEach((elem) => {
       const {
         tabId,
         caption,
@@ -295,7 +295,7 @@ class Window extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {*} tabs
    */
-  renderTabs = tabs => {
+  renderTabs = (tabs) => {
     const {
       layout: { windowId },
       data,
@@ -405,7 +405,7 @@ class Window extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {*} c
    */
-  addRefToWidgets = c => {
+  addRefToWidgets = (c) => {
     if (c) {
       this.widgets.push(c);
     }
@@ -420,7 +420,7 @@ class Window extends PureComponent {
   renderEntryTable = (groups, extendedData) => {
     const rows = groups.reduce((rowsArray, group) => {
       const cols = [];
-      group.elementsLine.forEach(line => {
+      group.elementsLine.forEach((line) => {
         if (line && line.elements && line.elements.length) {
           cols.push(line.elements[0]);
         }
@@ -481,7 +481,7 @@ class Window extends PureComponent {
         elementsLine.length > 0 && (
           <div
             key={'elemGroups' + id}
-            ref={c => {
+            ref={(c) => {
               if (this.focused) return;
               if (isModal && shouldBeFocused && c) c.focus();
               this.focused = true;
@@ -534,13 +534,13 @@ class Window extends PureComponent {
 
     return elements.map((elem, id) => {
       const autoFocus = isFocused && id === 0;
-      const widgetData = elem.fields.map(item => data[item.field] || -1);
+      const widgetData = elem.fields.map((item) => data[item.field] || -1);
       const fieldName = elem.fields ? elem.fields[0].field : '';
       const relativeDocId = data.ID && data.ID.value;
 
       return (
         <MasterWidget
-          ref={c => {
+          ref={(c) => {
             if (c) {
               this.widgets.push(c);
             }

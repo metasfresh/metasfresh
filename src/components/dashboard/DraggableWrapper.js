@@ -53,8 +53,8 @@ export class DraggableWrapper extends Component {
       websocketEndpoint !== null &&
       prevState.websocketEndpoint !== websocketEndpoint
     ) {
-      connectWS.call(this, websocketEndpoint, msg => {
-        msg.events.map(event => {
+      connectWS.call(this, websocketEndpoint, (msg) => {
+        msg.events.map((event) => {
           switch (event.widgetType) {
             case 'TargetIndicator':
               this.getIndicators();
@@ -72,7 +72,7 @@ export class DraggableWrapper extends Component {
     disconnectWS.call(this);
   };
 
-  handleFocus = name => {
+  handleFocus = (name) => {
     this.setState({
       listFocused: name,
     });
@@ -90,16 +90,16 @@ export class DraggableWrapper extends Component {
     });
   };
 
-  openDropdown = name => {
+  openDropdown = (name) => {
     this.setState({
       listToggled: name,
     });
   };
 
-  getType = entity => (entity === 'cards' ? 'kpis' : 'targetIndicators');
+  getType = (entity) => (entity === 'cards' ? 'kpis' : 'targetIndicators');
 
   getIndicators = () => {
-    getTargetIndicatorsDashboard().then(response => {
+    getTargetIndicatorsDashboard().then((response) => {
       this.setState({
         indicators: response.data.items,
       });
@@ -107,7 +107,7 @@ export class DraggableWrapper extends Component {
   };
 
   getDashboard = () => {
-    getKPIsDashboard().then(response => {
+    getKPIsDashboard().then((response) => {
       this.setState({
         cards: response.data.items,
         websocketEndpoint: response.data.websocketEndpoint,
@@ -116,9 +116,9 @@ export class DraggableWrapper extends Component {
   };
 
   addCard = (entity, id) => {
-    const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
-    addDashboardWidget(this.getType(entity), id, tmpItemIndex).then(res => {
-      this.setState(prev =>
+    const tmpItemIndex = this.state[entity].findIndex((i) => i.id === id);
+    addDashboardWidget(this.getType(entity), id, tmpItemIndex).then((res) => {
+      this.setState((prev) =>
         update(prev, {
           [entity]: {
             [tmpItemIndex]: { $set: res.data },
@@ -129,7 +129,7 @@ export class DraggableWrapper extends Component {
   };
 
   onDrop = (entity, id) => {
-    const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
+    const tmpItemIndex = this.state[entity].findIndex((i) => i.id === id);
     patchRequest({
       entity: 'dashboard',
       property: 'position',
@@ -144,7 +144,7 @@ export class DraggableWrapper extends Component {
     const draggedItem = this.state[entity][dragIndex];
     if (draggedItem) {
       // When we are inserting added
-      this.setState(prev =>
+      this.setState((prev) =>
         update(prev, {
           [entity]: {
             $splice: [[dragIndex, 1], [hoverIndex, 0, draggedItem]],
@@ -158,7 +158,7 @@ export class DraggableWrapper extends Component {
         fetchOnDrop: true,
         kpi: { chartType: this.getType(entity) },
       };
-      this.setState(prev =>
+      this.setState((prev) =>
         update(prev, {
           [entity]:
             prev[entity].length === 0
@@ -175,7 +175,7 @@ export class DraggableWrapper extends Component {
 
   removeCard = (entity, index, id) => {
     removeDashboardWidget(this.getType(entity), id);
-    this.setState(prev =>
+    this.setState((prev) =>
       update(prev, {
         [entity]: {
           $splice: [[index, 1]],
@@ -184,7 +184,7 @@ export class DraggableWrapper extends Component {
     );
   };
 
-  maximizeWidget = id => {
+  maximizeWidget = (id) => {
     this.setState({
       idMaximized: id,
     });
@@ -347,7 +347,7 @@ export class DraggableWrapper extends Component {
                 <label>interval</label>
                 <div className="chart-options-list-wrapper">
                   <RawList
-                    onSelect={option =>
+                    onSelect={(option) =>
                       this.handleOptionSelect('interval', option)
                     }
                     tabIndex={0}
@@ -366,7 +366,9 @@ export class DraggableWrapper extends Component {
                 <label>when</label>
                 <div className="chart-options-list-wrapper">
                   <RawList
-                    onSelect={option => this.handleOptionSelect('when', option)}
+                    onSelect={(option) =>
+                      this.handleOptionSelect('when', option)
+                    }
                     list={List([
                       { caption: 'now', value: 'now' },
                       {
@@ -432,7 +434,7 @@ export class DraggableWrapper extends Component {
     });
   };
 
-  handleChange = e => {
+  handleChange = (e) => {
     this.setState({
       captionHandler: e.target.value,
     });

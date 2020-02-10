@@ -113,7 +113,7 @@ class TableFilter extends Component {
     }
   };
 
-  handleClick = action => {
+  handleClick = (action) => {
     const { openModal, docId } = this.props;
 
     if (action.disabled) {
@@ -157,7 +157,7 @@ class TableFilter extends Component {
     return <TableFilterContextShortcuts shortcutActions={shortcutActions} />;
   };
 
-  showTooltip = name => {
+  showTooltip = (name) => {
     this.setState({
       isTooltipShow: name,
     });
@@ -230,7 +230,7 @@ class TableFilter extends Component {
               </button>
             )}
             {!isBatchEntry && actions.length
-              ? actions.map(action => (
+              ? actions.map((action) => (
                   <ActionButton
                     {...{
                       openModal,

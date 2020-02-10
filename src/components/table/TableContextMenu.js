@@ -73,7 +73,7 @@ class TableContextMenu extends Component {
     const { docId, tabId, windowId, selected } = this.props;
 
     referencesRequest('window', windowId, docId, tabId, selected[0]).then(
-      response => {
+      (response) => {
         this.setState({
           references: response.data.references,
         });
@@ -122,7 +122,7 @@ class TableContextMenu extends Component {
 
     return (
       <div
-        ref={c => {
+        ref={(c) => {
           this.contextMenu = c;
           if (c) {
             c.focus();

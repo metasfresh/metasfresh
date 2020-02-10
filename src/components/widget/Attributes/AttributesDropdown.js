@@ -54,7 +54,7 @@ class AttributesDropdown extends Component {
     const { patchCallbacks } = this.state;
     const updatedCallbacks = patchCallbacks.set(id, true);
 
-    return new Promise(res => {
+    return new Promise((res) => {
       this.setState(
         {
           patchCallbacks: updatedCallbacks,
@@ -94,7 +94,7 @@ class AttributesDropdown extends Component {
 
     if (layout) {
       return layout.map((item, idx) => {
-        const widgetData = item.fields.map(elem => data[elem.field] || -1);
+        const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         return (
           <RawWidget
             entity={attributeType}

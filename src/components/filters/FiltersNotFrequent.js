@@ -48,7 +48,7 @@ class FiltersNotFrequent extends PureComponent {
    * @param {*} value
    * @todo Write the documentation
    */
-  toggleDropdown = value => {
+  toggleDropdown = (value) => {
     this.setState({
       isOpenDropdown: value,
     });
@@ -60,7 +60,7 @@ class FiltersNotFrequent extends PureComponent {
    * @param {*} index
    * @todo Write the documentation
    */
-  toggleFilter = index => {
+  toggleFilter = (index) => {
     this.setState({
       openFilterId: index,
     });
@@ -91,7 +91,7 @@ class FiltersNotFrequent extends PureComponent {
 
     const { isOpenDropdown, openFilterId } = this.state;
     const openFilter = getItemsByProperty(data, 'filterId', openFilterId)[0];
-    const activeFilters = data.filter(filter => filter.isActive);
+    const activeFilters = data.filter((filter) => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
     const captions =

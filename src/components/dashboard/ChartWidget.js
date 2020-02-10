@@ -25,7 +25,7 @@ export class ChartWidget extends Component {
     });
   };
 
-  toggleMenu = opt => {
+  toggleMenu = (opt) => {
     const { toggleWidgetMenu } = this.state;
     this.setState({
       toggleWidgetMenu: typeof opt === 'boolean' ? opt : !toggleWidgetMenu,

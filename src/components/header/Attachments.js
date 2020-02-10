@@ -39,7 +39,7 @@ class Attachments extends Component {
   fetchAttachments = () => {
     const { windowType, docId } = this.props;
 
-    attachmentsRequest('window', windowType, docId).then(response => {
+    attachmentsRequest('window', windowType, docId).then((response) => {
       this.setState({ data: response.data }, () => {
         if (this.attachments) {
           this.attachments.focus();
@@ -54,7 +54,7 @@ class Attachments extends Component {
    * @param {*} value
    * @todo Write the documentation
    */
-  toggleAttachmentDelete = value => {
+  toggleAttachmentDelete = (value) => {
     this.setState({
       attachmentHovered: value,
     });
@@ -75,7 +75,7 @@ class Attachments extends Component {
    * @param {*} event
    * @todo Write the documentation
    */
-  handleCloseAttachUrl = event => {
+  handleCloseAttachUrl = (event) => {
     event.stopPropagation();
     this.setState({ isAttachUrlOpen: false });
   };
@@ -86,7 +86,7 @@ class Attachments extends Component {
    * @param {*} id
    * @todo Write the documentation
    */
-  handleClickAttachment = id => {
+  handleClickAttachment = (id) => {
     const { windowType, docId } = this.props;
     openFile('window', windowType, docId, 'attachments', id);
   };
@@ -110,7 +110,7 @@ class Attachments extends Component {
         .then(() => {
           return attachmentsRequest('window', windowType, docId);
         })
-        .then(response => {
+        .then((response) => {
           this.setState({
             data: response.data,
           });
@@ -124,7 +124,7 @@ class Attachments extends Component {
    * @param {*} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const active = document.activeElement;
 
     const keyHandler = (e, dir) => {
@@ -205,7 +205,7 @@ class Attachments extends Component {
         {attachmentHovered === item.id && (
           <div
             className="subheader-additional-box"
-            onClick={e => {
+            onClick={(e) => {
               this.handleDeleteAttachment(e, item.id);
             }}
           >
@@ -246,7 +246,7 @@ class Attachments extends Component {
     return (
       <div
         onKeyDown={this.handleKeyDown}
-        ref={c => {
+        ref={(c) => {
           this.attachments = c;
         }}
         tabIndex={0}

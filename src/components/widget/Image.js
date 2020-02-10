@@ -10,7 +10,7 @@ import Loader from '../app/Loader';
  * @module Placeholder
  * @param {object} props
  */
-const Placeholder = props => (
+const Placeholder = (props) => (
   <div className="image-placeholder">
     <div className="placeholder-value">{props.children}</div>
   </div>
@@ -74,7 +74,7 @@ class Image extends Component {
     let fd = new FormData();
     fd.append('file', blob);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.setState(
         {
           isLoading: true,
@@ -87,14 +87,14 @@ class Image extends Component {
       .then(() => {
         return postImageAction(fd);
       })
-      .then(imageId => {
+      .then((imageId) => {
         return this.updateImagePreview(imageId);
       })
-      .then(imageId => {
+      .then((imageId) => {
         return handlePatch(data.field, imageId);
       })
       .then(() => {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           this.setState(
             {
               isLoading: false,
@@ -115,8 +115,8 @@ class Image extends Component {
    */
   updateImagePreview(id) {
     return getImageAction(id)
-      .then(blob => {
-        return new Promise(resolve => {
+      .then((blob) => {
+        return new Promise((resolve) => {
           let reader = new FileReader();
           reader.onload = function() {
             return resolve(reader.result);
@@ -124,7 +124,7 @@ class Image extends Component {
           reader.readAsDataURL(blob);
         });
       })
-      .then(imageBase64 => {
+      .then((imageBase64) => {
         this.setState({
           imageSrc: imageBase64,
         });
@@ -150,7 +150,7 @@ class Image extends Component {
     context.drawImage(this.camera, 0, 0, width, height);
 
     // upload the picture taken
-    canvas.toBlob(blob => {
+    canvas.toBlob((blob) => {
       this.uploadBlob(blob);
       this.stopUsingCamera();
     });
@@ -164,7 +164,7 @@ class Image extends Component {
   stopUsingCamera() {
     const { stream } = this.state;
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.setState(
         {
           usingCamera: false,
@@ -197,7 +197,7 @@ class Image extends Component {
               height: 300,
             },
           })
-          .then(stream => {
+          .then((stream) => {
             this.camera.srcObject = stream;
             this.camera.onloadedmetadata = () => {
               this.camera.play();
@@ -227,7 +227,7 @@ class Image extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     switch (e.key) {
       case 'Escape':
         e.preventDefault();
@@ -259,7 +259,7 @@ class Image extends Component {
     const { isLoading } = this.state;
     return (
       <div className={'camera-preview' + (isLoading ? ' loading' : '')}>
-        <video ref={c => (this.camera = c)} />
+        <video ref={(c) => (this.camera = c)} />
         {isLoading && <div className="preview-loader" />}
       </div>
     );
@@ -331,8 +331,8 @@ class Image extends Component {
               <input
                 className="input"
                 type="file"
-                onChange={e => this.handleUploadFile(e)}
-                ref={c => (this.imageInput = c)}
+                onChange={(e) => this.handleUploadFile(e)}
+                ref={(c) => (this.imageInput = c)}
               />
               <div className="text-content">
                 <i className="meta-icon-upload" />

@@ -24,7 +24,7 @@ class Prompt extends Component {
     return (
       <span
         className="btn btn-meta-outline-secondary btn-distance-3 btn-sm"
-        onClick={e => this.props.onCancelClick(e)}
+        onClick={(e) => this.props.onCancelClick(e)}
       >
         {buttons.cancel}
       </span>
@@ -41,7 +41,7 @@ class Prompt extends Component {
     return (
       <span
         className="btn btn-meta-primary btn-sm btn-submit"
-        onClick={e => this.props.onSubmitClick(e)}
+        onClick={(e) => this.props.onSubmitClick(e)}
       >
         {buttons.submit}
       </span>
@@ -63,7 +63,10 @@ class Prompt extends Component {
             <span className="panel-prompt-header-title panel-modal-header-title">
               {title}
             </span>
-            <i className="meta-icon-close-1" onClick={e => onCancelClick(e)} />
+            <i
+              className="meta-icon-close-1"
+              onClick={(e) => onCancelClick(e)}
+            />
           </div>
           <div className="panel-modal-content panel-prompt-content">
             <p>{this.props.text}</p>

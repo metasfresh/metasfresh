@@ -64,7 +64,7 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleKeyPress = e => {
+  handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       this.handleLogin();
     }
@@ -75,7 +75,7 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleOnChange = e => {
+  handleOnChange = (e) => {
     e.preventDefault();
 
     this.setState({
@@ -90,7 +90,7 @@ class LoginForm extends Component {
   handleSuccess = () => {
     const { redirect, dispatch } = this.props;
 
-    getUserLang().then(response => {
+    getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
@@ -110,7 +110,7 @@ class LoginForm extends Component {
   checkIfAlreadyLogged(err) {
     const { router } = this.context;
 
-    return localLoginRequest().then(response => {
+    return localLoginRequest().then((response) => {
       if (response.data) {
         return router.push('/');
       }
@@ -124,14 +124,14 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} response
    */
-  handleResetOk = response => {
+  handleResetOk = (response) => {
     this.setState(
       {
         handleResetSubmit: true,
         pending: true,
       },
       () => {
-        const responsePromise = new Promise(resolve => {
+        const responsePromise = new Promise((resolve) => {
           resolve(response);
         });
         this.handleLoginRequest(responsePromise);
@@ -144,7 +144,7 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} resp
    */
-  handleLoginRequest = resp => {
+  handleLoginRequest = (resp) => {
     let request = null;
 
     if (resp) {
@@ -154,7 +154,7 @@ class LoginForm extends Component {
     }
 
     request
-      .then(response => {
+      .then((response) => {
         if (response.data.loginComplete) {
           return this.handleSuccess();
         }
@@ -171,10 +171,10 @@ class LoginForm extends Component {
           pending: false,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         return this.checkIfAlreadyLogged(err);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({
           err: err.response
             ? err.response.data.message
@@ -203,7 +203,7 @@ class LoginForm extends Component {
               dispatch(loginSuccess(auth));
               this.handleSuccess();
             })
-            .catch(err => {
+            .catch((err) => {
               this.setState({
                 err: err.response
                   ? err.response.data.message
@@ -223,7 +223,7 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} option
    */
-  handleRoleSelect = option => {
+  handleRoleSelect = (option) => {
     this.setState({
       role: option,
     });
@@ -312,10 +312,10 @@ class LoginForm extends Component {
               <small>{counterpart.translate('login.selectRole.caption')}</small>
             </div>
             <RawList
-              ref={c => (this.roleSelector = c)}
+              ref={(c) => (this.roleSelector = c)}
               rank="primary"
               list={roles}
-              onSelect={option => this.handleRoleSelect(option)}
+              onSelect={(option) => this.handleRoleSelect(option)}
               selected={role}
               disabled={pending}
               autofocus={true}
@@ -345,7 +345,7 @@ class LoginForm extends Component {
                   'input-disabled': pending,
                 })}
                 disabled={pending}
-                ref={c => (this.login = c)}
+                ref={(c) => (this.login = c)}
               />
             </div>
             <div>
@@ -361,7 +361,7 @@ class LoginForm extends Component {
                   'input-disabled': pending,
                 })}
                 disabled={pending}
-                ref={c => (this.passwd = c)}
+                ref={(c) => (this.passwd = c)}
               />
             </div>
           </div>

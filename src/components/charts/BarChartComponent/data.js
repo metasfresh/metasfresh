@@ -2,26 +2,26 @@ import * as d3 from 'd3';
 
 const mapDataset = (dataset, prevData, labelField) =>
   Object.keys(dataset)
-    .filter(key => key[0] !== '_' && key !== labelField)
-    .map(key => ({
+    .filter((key) => key[0] !== '_' && key !== labelField)
+    .map((key) => ({
       key,
       value: dataset[key],
       valuePrev: prevData && prevData[key] ? prevData[key] : 0,
     }));
 
 export const isYRangeChanged = (data, prevData, fields) => {
-  const keys = fields.map(field => field.fieldName);
+  const keys = fields.map((field) => field.fieldName);
 
   const yprev =
     prevData &&
-    d3.max(prevData, d => {
-      return d3.max(keys, key => {
+    d3.max(prevData, (d) => {
+      return d3.max(keys, (key) => {
         return d[key];
       });
     });
 
-  const ynext = d3.max(data, d => {
-    return d3.max(keys, key => {
+  const ynext = d3.max(data, (d) => {
+    return d3.max(keys, (key) => {
       return d[key];
     });
   });
@@ -88,26 +88,26 @@ export const drawData = (
     .merge(groups)
     .attr(
       'transform',
-      d => 'translate(' + ranges.x0(d.data[labelField]) + ', 0)'
+      (d) => 'translate(' + ranges.x0(d.data[labelField]) + ', 0)'
     )
     .selectAll('rect')
-    .data(d => mapDataset(d.data, d.prevData, labelField));
+    .data((d) => mapDataset(d.data, d.prevData, labelField));
 
   bars
     .enter()
     .append('rect')
     .classed('bar', true)
     .merge(bars)
-    .attr('x', d => ranges.x1(d.key))
+    .attr('x', (d) => ranges.x1(d.key))
     .attr('width', ranges.x1.bandwidth())
-    .attr('y', d => {
+    .attr('y', (d) => {
       if (yChanged || reRender) {
         return dimensions.height;
       } else {
         return getY(d.valuePrev, ranges);
       }
     })
-    .attr('height', d => {
+    .attr('height', (d) => {
       if (yChanged || reRender) {
         return 0;
       } else {
@@ -116,11 +116,11 @@ export const drawData = (
     })
     .transition()
     .duration(1000)
-    .attr('y', d => {
+    .attr('y', (d) => {
       return getY(d.value, ranges);
     })
-    .attr('height', d => Math.abs(ranges.y(d.value) - ranges.y(0)))
-    .attr('fill', d => ranges.z(d.key));
+    .attr('height', (d) => Math.abs(ranges.y(d.value) - ranges.y(0)))
+    .attr('fill', (d) => ranges.z(d.key));
 };
 
 function getY(value, ranges) {

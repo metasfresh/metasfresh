@@ -56,17 +56,17 @@ class Board extends Component {
    * @summary ToDo: Describe the method
    * @param {object} event
    */
-  laneCardsChanged = event => {
+  laneCardsChanged = (event) => {
     const { board } = this.state;
     const { laneId, cardIds } = event;
-    const laneIndex = board.lanes.findIndex(lane => lane.laneId === laneId);
+    const laneIndex = board.lanes.findIndex((lane) => lane.laneId === laneId);
 
     const prom = Promise.all(
-      cardIds.map(id => getRequest('board', board.boardId, 'card', id))
+      cardIds.map((id) => getRequest('board', board.boardId, 'card', id))
     );
 
-    prom.then(res => {
-      const cards = res.map(item => item.data);
+    prom.then((res) => {
+      const cards = res.map((item) => item.data);
       this.addCards(laneIndex, cards);
     });
   };
@@ -79,14 +79,14 @@ class Board extends Component {
     const { boardId } = this.props;
 
     getData('board', boardId)
-      .then(res => {
+      .then((res) => {
         this.setState(
           {
             board: res.data,
           },
           () => {
-            connectWS.call(this, res.data.websocketEndpoint, msg => {
-              msg.events.map(event => {
+            connectWS.call(this, res.data.websocketEndpoint, (msg) => {
+              msg.events.map((event) => {
                 switch (event.changeType) {
                   case 'laneCardsChanged':
                     this.laneCardsChanged(event);
@@ -183,7 +183,7 @@ class Board extends Component {
    * @param {*} cardIndex
    */
   removeCard = (laneIndex, cardIndex) => {
-    this.setState(prev =>
+    this.setState((prev) =>
       update(prev, {
         board: {
           lanes: {
@@ -203,7 +203,7 @@ class Board extends Component {
    * @param {*} cards
    */
   addCards = (laneIndex, cards) => {
-    this.setState(prev =>
+    this.setState((prev) =>
       update(prev, {
         board: {
           lanes: {
@@ -221,7 +221,7 @@ class Board extends Component {
    * @summary ToDo: Describe the method
    * @param {*} docPath
    */
-  handleCaptionClick = docPath => {
+  handleCaptionClick = (docPath) => {
     if (!docPath) return;
 
     const url =
@@ -241,7 +241,7 @@ class Board extends Component {
   handleDelete = (laneId, cardId) => {
     const { board } = this.state;
 
-    const laneIndex = board.lanes.findIndex(l => l.laneId === laneId);
+    const laneIndex = board.lanes.findIndex((l) => l.laneId === laneId);
 
     deleteRequest(
       'board',
@@ -254,7 +254,7 @@ class Board extends Component {
     ).then(() => {
       this.removeCard(
         laneIndex,
-        board.lanes[laneIndex].cards.findIndex(c => c.cardId === cardId)
+        board.lanes[laneIndex].cards.findIndex((c) => c.cardId === cardId)
       );
     });
   };
@@ -264,7 +264,7 @@ class Board extends Component {
    * @summary ToDo: Describe the method
    * @param {*} id
    */
-  setSidenavViewId = id => {
+  setSidenavViewId = (id) => {
     this.setState({ sidenavViewId: id });
   };
 
@@ -286,7 +286,7 @@ class Board extends Component {
       >
         {sidenav && (
           <Sidenav
-            ref={c => (this.sideNav = c && c.refs && c.refs.instance)}
+            ref={(c) => (this.sideNav = c && c.refs && c.refs.instance)}
             boardId={board.boardId}
             viewId={sidenavViewId}
             onClickOutside={() => this.setState({ sidenav: false })}

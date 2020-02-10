@@ -36,7 +36,7 @@ class ActionButton extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { list, selected } = this.state;
     switch (e.key) {
       case 'ArrowDown':
@@ -66,7 +66,7 @@ class ActionButton extends Component {
    * @param {bool} up
    * @todo Write the documentation
    */
-  navigate = up => {
+  navigate = (up) => {
     const { selected, list } = this.state;
     const next = up ? selected + 1 : selected - 1;
 
@@ -114,7 +114,7 @@ class ActionButton extends Component {
       docType: windowType,
       entity: 'window',
       propertyName: fields[1].field,
-    }).then(res => {
+    }).then((res) => {
       this.setState({
         list: res.data.values,
       });
@@ -127,7 +127,7 @@ class ActionButton extends Component {
    * @param {*} status
    * @todo Write the documentation
    */
-  handleChangeStatus = status => {
+  handleChangeStatus = (status) => {
     const {
       onChange,
       docId,
@@ -153,7 +153,7 @@ class ActionButton extends Component {
    * @param {string} abrev
    * @todo Write the documentation
    */
-  getStatusClassName = abrev => {
+  getStatusClassName = (abrev) => {
     const { data } = this.props;
 
     if (data.action.value && data.action.value.key !== abrev) {
@@ -175,7 +175,7 @@ class ActionButton extends Component {
    * @param {string} abrev
    * @todo Write the documentation
    */
-  getStatusContext = abrev => {
+  getStatusContext = (abrev) => {
     if (abrev === 'DR') {
       return 'primary';
     } else if (abrev === 'CO') {
@@ -191,7 +191,7 @@ class ActionButton extends Component {
    * @param {*} list
    * @todo Write the documentation
    */
-  renderStatusList = list => {
+  renderStatusList = (list) => {
     const { selected } = this.state;
 
     return list.map((item, index) => {
@@ -233,7 +233,7 @@ class ActionButton extends Component {
         onKeyDown={this.handleKeyDown}
         className="meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler"
         tabIndex={modalVisible ? -1 : 0}
-        ref={c => (this.statusDropdown = c)}
+        ref={(c) => (this.statusDropdown = c)}
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
       >
@@ -249,7 +249,7 @@ class ActionButton extends Component {
         <ul className="dropdown-status-list">{this.renderStatusList(list)}</ul>
         <DocumentStatusContextShortcuts
           handleDocumentCompleteStatus={() => {
-            this.handleChangeStatus(list.find(elem => elem.key === 'CO'));
+            this.handleChangeStatus(list.find((elem) => elem.key === 'CO'));
           }}
         />
       </div>

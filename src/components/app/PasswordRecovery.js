@@ -80,7 +80,7 @@ class PasswordRecovery extends Component {
     });
   };
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
 
     const { token, onResetOk } = this.props;
@@ -113,8 +113,8 @@ class PasswordRecovery extends Component {
               password: form.password,
               token,
             })
-              .then(response => onResetOk(response))
-              .catch(err => {
+              .then((response) => onResetOk(response))
+              .catch((err) => {
                 this.setState({
                   err: err.data
                     ? err.data.message
@@ -139,7 +139,7 @@ class PasswordRecovery extends Component {
                 pending: false,
               });
             })
-            .catch(error => {
+            .catch((error) => {
               this.setState({ err: error.data.message, pending: false });
             });
         }
@@ -172,13 +172,13 @@ class PasswordRecovery extends Component {
           <input
             type="email"
             name="email"
-            onChange={e => this.handleChange(e, 'email')}
+            onChange={(e) => this.handleChange(e, 'email')}
             className={classnames('input-primary input-block', {
               'input-error': err,
               'input-disabled': pending,
             })}
             disabled={pending}
-            ref={c => (this.focusField = c)}
+            ref={(c) => (this.focusField = c)}
           />
         </div>
       </div>
@@ -199,14 +199,14 @@ class PasswordRecovery extends Component {
           </div>
           <input
             type="password"
-            onChange={e => this.handleChange(e, 'password')}
+            onChange={(e) => this.handleChange(e, 'password')}
             name="password"
             className={classnames('input-primary input-block', {
               'input-error': err,
               'input-disabled': pending,
             })}
             disabled={pending}
-            ref={c => (this.focusField = c)}
+            ref={(c) => (this.focusField = c)}
           />
         </div>
         <div>
@@ -220,7 +220,7 @@ class PasswordRecovery extends Component {
           <input
             type="password"
             name="re_password"
-            onChange={e => this.handleChange(e, 're_password')}
+            onChange={(e) => this.handleChange(e, 're_password')}
             className={classnames('input-primary input-block', {
               'input-disabled': pending,
             })}
@@ -272,7 +272,7 @@ class PasswordRecovery extends Component {
             <span className="user-data">{form.fullname}</span>
           </div>
         )}
-        <form ref={c => (this.form = c)} onSubmit={this.handleSubmit}>
+        <form ref={(c) => (this.form = c)} onSubmit={this.handleSubmit}>
           {!resetEmailSent && resetPassword
             ? this.renderResetPasswordForm()
             : this.renderForgottenPasswordForm()}

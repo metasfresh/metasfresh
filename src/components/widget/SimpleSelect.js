@@ -24,7 +24,7 @@ export default class SimpleSelect extends Component {
     this.toggleDropdown();
   };
 
-  handleClick = option => {
+  handleClick = (option) => {
     const { onSelect } = this.props;
 
     onSelect(option);
@@ -36,7 +36,7 @@ export default class SimpleSelect extends Component {
    * @summary toggles select dropdown
    * @param {*} option
    */
-  toggleDropdown = option => {
+  toggleDropdown = (option) => {
     this.setState({
       isDropdownOpen: option,
     });

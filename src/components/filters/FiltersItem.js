@@ -38,7 +38,7 @@ class FiltersItem extends PureComponent {
     const { active, data } = props;
     let activeFilter = null;
     if (active) {
-      activeFilter = active.find(item => item.filterId === data.filterId);
+      activeFilter = active.find((item) => item.filterId === data.filterId);
     }
 
     this.state = {
@@ -115,7 +115,7 @@ class FiltersItem extends PureComponent {
     const { data, active } = this.props;
     let activeFilter = null;
     if (active) {
-      activeFilter = active.find(item => item.filterId === data.filterId);
+      activeFilter = active.find((item) => item.filterId === data.filterId);
     }
 
     if (data.parameters) {
@@ -156,7 +156,7 @@ class FiltersItem extends PureComponent {
       parameter = [parameter];
     }
 
-    parameter = parameter.map(param => ({
+    parameter = parameter.map((param) => ({
       parameterName: param.parameterName ? param.parameterName : param,
       value,
       valueTo,
@@ -164,7 +164,7 @@ class FiltersItem extends PureComponent {
 
     const { filter, activeFilter } = this.mergeSingle(parameter, true);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.setState({ filter, activeFilter }, () => resolve(true));
     });
   };
@@ -212,7 +212,7 @@ class FiltersItem extends PureComponent {
     const paramsMap = {};
     const updatedParameters = {};
 
-    parameters.forEach(parameter => {
+    parameters.forEach((parameter) => {
       const parameterName = parameter.parameterName;
 
       // if filter has defaultValue, update local filters data to include
@@ -259,7 +259,7 @@ class FiltersItem extends PureComponent {
     // updated activeFilter parameters
     const parametersArray = [];
 
-    newActiveFilter.parameters.forEach(param => {
+    newActiveFilter.parameters.forEach((param) => {
       if (updatedParameters[param.parameterName]) {
         const { value, activeValue, activeValueTo } = paramsMap[
           param.parameterName
@@ -301,14 +301,14 @@ class FiltersItem extends PureComponent {
 
     // if there are no parameters, filter is not active anymore so null it
     if (_.size(parametersArray)) {
-      newActiveFilter.parameters = _.map(parametersArray, val => val);
+      newActiveFilter.parameters = _.map(parametersArray, (val) => val);
     } else {
       newActiveFilter = null;
     }
 
     const returnFilter = {
       ...filter,
-      parameters: filter.parameters.map(param => {
+      parameters: filter.parameters.map((param) => {
         if (paramsMap[param.parameterName]) {
           const { value, valueTo } = paramsMap[param.parameterName];
 
@@ -412,7 +412,7 @@ class FiltersItem extends PureComponent {
    * @summary shows/hides tooltip
    * @param {bool} visible
    */
-  toggleTooltip = visible => {
+  toggleTooltip = (visible) => {
     this.setState({
       isTooltipShow: visible,
     });
@@ -465,7 +465,7 @@ class FiltersItem extends PureComponent {
           <div
             className="filter-menu filter-widget"
             style={style}
-            ref={c => (this.widgetsContainer = c)}
+            ref={(c) => (this.widgetsContainer = c)}
           >
             <div className="filter-controls">
               <div>

@@ -117,7 +117,7 @@ class ShortcutProvider extends Component {
     }
   };
 
-  handleKeyDown = event => {
+  handleKeyDown = (event) => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
     const activeNode = document ? document.activeElement : null;
@@ -163,7 +163,7 @@ class ShortcutProvider extends Component {
     }
 
     const bucket = hotkeys[serializedSequence];
-    const validHandlers = bucket.filter(handler => {
+    const validHandlers = bucket.filter((handler) => {
       if (typeof handler === 'function') {
         return true;
       }
@@ -180,7 +180,7 @@ class ShortcutProvider extends Component {
     }
   };
 
-  handleKeyUp = event => {
+  handleKeyUp = (event) => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
 
@@ -191,7 +191,7 @@ class ShortcutProvider extends Component {
     const modifierKeys = ['Alt', 'Ctrl', 'Shift'];
 
     this.keySequence = this.keySequence.filter(
-      _key => _key !== key && modifierKeys.indexOf(_key) === -1
+      (_key) => _key !== key && modifierKeys.indexOf(_key) === -1
     );
 
     delete this.fired[key];
@@ -240,7 +240,7 @@ class ShortcutProvider extends Component {
     const bucket = hotkeys[key];
     let found = false;
 
-    hotkeys[key] = bucket.filter(_handler => {
+    hotkeys[key] = bucket.filter((_handler) => {
       if (_handler === handler) {
         found = true;
 

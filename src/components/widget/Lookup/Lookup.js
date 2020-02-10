@@ -20,7 +20,7 @@ class Lookup extends Component {
 
     const lookupWidgets = {};
     if (props.properties) {
-      props.properties.forEach(item => {
+      props.properties.forEach((item) => {
         lookupWidgets[`${item.field}`] = {
           dropdownOpen: false,
           tooltipOpen: false,
@@ -69,11 +69,11 @@ class Lookup extends Component {
     }
   }
 
-  getLookupWidget = name => {
+  getLookupWidget = (name) => {
     return { ...this.state.lookupWidgets[`${name}`] };
   };
 
-  getFocused = fieldName => this.getLookupWidget(fieldName).isFocused;
+  getFocused = (fieldName) => this.getLookupWidget(fieldName).isFocused;
 
   _changeWidgetProperty = (field, property, value, callback) => {
     const { lookupWidgets } = this.state;
@@ -100,7 +100,7 @@ class Lookup extends Component {
     const { widgetData } = this.props;
 
     if (widgetData) {
-      widgetData.map(item => {
+      widgetData.map((item) => {
         if (item.value) {
           this.setState({
             isInputEmpty: false,
@@ -110,7 +110,7 @@ class Lookup extends Component {
     }
   };
 
-  setNextProperty = prop => {
+  setNextProperty = (prop) => {
     const { widgetData, properties, onBlurWidget } = this.props;
 
     if (widgetData) {
@@ -228,7 +228,7 @@ class Lookup extends Component {
     }
   };
 
-  handleInputEmptyStatus = isEmpty => {
+  handleInputEmptyStatus = (isEmpty) => {
     this.setState({
       isInputEmpty: isEmpty,
     });
@@ -238,13 +238,13 @@ class Lookup extends Component {
   handleClear = () => {
     const { onChange, properties, onSelectBarcode } = this.props;
     const propsWithoutTooltips = properties.filter(
-      prop => prop.type !== 'Tooltip'
+      (prop) => prop.type !== 'Tooltip'
     );
     const onChangeResp =
       onChange && onChange(propsWithoutTooltips, null, false);
 
     if (onChangeResp && onChangeResp.then) {
-      onChangeResp.then(resp => {
+      onChangeResp.then((resp) => {
         if (resp) {
           onSelectBarcode && onSelectBarcode(null);
 
@@ -260,7 +260,7 @@ class Lookup extends Component {
     }
   };
 
-  handleListFocus = field => {
+  handleListFocus = (field) => {
     this._changeWidgetProperty(field, 'isFocused', true, () => {
       this.setState({
         isFocused: true,
@@ -269,7 +269,7 @@ class Lookup extends Component {
     });
   };
 
-  handleListBlur = field => {
+  handleListBlur = (field) => {
     this._changeWidgetProperty(field, 'isFocused', false, () => {
       this.setState({
         isFocused: false,
@@ -290,7 +290,7 @@ class Lookup extends Component {
     });
   };
 
-  renderInputControls = showBarcodeScanner => {
+  renderInputControls = (showBarcodeScanner) => {
     const { onScanBarcode } = this.props;
     const { isInputEmpty } = this.state;
 
@@ -382,7 +382,7 @@ class Lookup extends Component {
 
     return (
       <div
-        ref={c => (this.dropdown = c)}
+        ref={(c) => (this.dropdown = c)}
         className={classnames(
           'input-dropdown-container lookup-wrapper',
           `input-${classRank}`,
@@ -428,7 +428,9 @@ class Lookup extends Component {
                     widget={item}
                     data={itemByProperty}
                     isToggled={widgetTooltipToggled}
-                    onToggle={val => this.widgetTooltipToggle(item.field, val)}
+                    onToggle={(val) =>
+                      this.widgetTooltipToggle(item.field, val)
+                    }
                   />
                 </div>
               );
@@ -526,7 +528,7 @@ class Lookup extends Component {
                   )}
                 >
                   <List
-                    ref={c => {
+                    ref={(c) => {
                       if (c) {
                         this.linkedList.push(c);
                       }

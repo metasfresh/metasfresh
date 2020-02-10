@@ -16,7 +16,7 @@ const WithMobileDoubleTap = ({ children }) => {
           },
           touchAction: 'pan-x pan-y',
         }}
-        onTap={event => {
+        onTap={(event) => {
           if (event.tapCount === 2) {
             onDoubleClick(event.srcEvent);
           } else {

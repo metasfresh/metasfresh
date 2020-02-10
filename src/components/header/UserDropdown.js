@@ -29,7 +29,7 @@ class UserDropdown extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     switch (e.key) {
       case 'ArrowDown': {
         e.preventDefault();
@@ -154,7 +154,7 @@ class UserDropdown extends Component {
               // It is always returning back there due to ref action
             }
             <div
-              ref={c => c && c.focus()}
+              ref={(c) => c && c.focus()}
               tabIndex={0}
               className="js-selection-placeholder"
             />

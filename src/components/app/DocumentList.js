@@ -102,7 +102,7 @@ export class DocumentList extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    locationConfigRequest().then(resp => {
+    locationConfigRequest().then((resp) => {
       if (resp.data.provider === 'GoogleMaps') {
         this.setState({
           mapConfig: resp.data,
@@ -245,12 +245,12 @@ export class DocumentList extends Component {
     const { windowType, dispatch } = this.props;
     const { viewId } = this.state;
 
-    connectWS.call(this, `/view/${viewId}`, msg => {
+    connectWS.call(this, `/view/${viewId}`, (msg) => {
       const { fullyChanged, changedIds } = msg;
 
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
-          response => {
+          (response) => {
             const {
               data,
               pageColumnInfosByFieldName,
@@ -312,7 +312,7 @@ export class DocumentList extends Component {
    * @method updateQuickActions
    * @summary ToDo: Describe the method.
    */
-  updateQuickActions = childSelection => {
+  updateQuickActions = (childSelection) => {
     if (this.quickActionsComponent) {
       this.quickActionsComponent.updateActions(childSelection);
     }
@@ -330,7 +330,7 @@ export class DocumentList extends Component {
     const rows = getRowsData(data.result);
 
     if (selected.length === 1) {
-      const selectedRow = rows.find(row => row.id === selected[0]);
+      const selectedRow = rows.find((row) => row.id === selected[0]);
 
       this.supportAttribute = selectedRow && selectedRow.supportAttributes;
       this.setState({
@@ -348,7 +348,7 @@ export class DocumentList extends Component {
    * @method setClickOutsideLock
    * @summary ToDo: Describe the method.
    */
-  setClickOutsideLock = value => {
+  setClickOutsideLock = (value) => {
     this.setState({
       clickOutsideLock: !!value,
     });
@@ -358,11 +358,11 @@ export class DocumentList extends Component {
    * @method clearStaticFilters
    * @summary ToDo: Describe the method.
    */
-  clearStaticFilters = filterId => {
+  clearStaticFilters = (filterId) => {
     const { dispatch, windowType } = this.props;
     const { viewId } = this.state;
 
-    deleteStaticFilter(windowType, viewId, filterId).then(response => {
+    deleteStaticFilter(windowType, viewId, filterId).then((response) => {
       this.setState({ staticFilterCleared: true }, () =>
         dispatch(push(`/window/${windowType}?viewId=${response.data.viewId}`))
       );
@@ -386,7 +386,7 @@ export class DocumentList extends Component {
     const { viewId } = this.state;
 
     getViewLayout(windowType, type, viewProfileId)
-      .then(response => {
+      .then((response) => {
         this.mounted &&
           this.setState(
             {
@@ -440,7 +440,7 @@ export class DocumentList extends Component {
 
     // in case of redirect from a notification, first call will have viewId empty
     if (viewId) {
-      this.getData(viewId, page, sort, locationSearchFilter).catch(err => {
+      this.getData(viewId, page, sort, locationSearchFilter).catch((err) => {
         if (err.response && err.response.status === 404) {
           this.createView();
         }
@@ -472,7 +472,7 @@ export class DocumentList extends Component {
       refTabId,
       refRowIds,
     })
-      .then(response => {
+      .then((response) => {
         this.mounted &&
           this.setState(
             {
@@ -497,7 +497,7 @@ export class DocumentList extends Component {
    * @method filterView
    * @summary apply filters and re-fetch layout, data. Then rebuild the page
    */
-  filterView = locationAreaSearch => {
+  filterView = (locationAreaSearch) => {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
 
@@ -506,7 +506,7 @@ export class DocumentList extends Component {
       viewId,
       filtersActive.toIndexedSeq().toArray()
     )
-      .then(response => {
+      .then((response) => {
         const viewId = response.data.viewId;
 
         if (isIncluded) {
@@ -566,7 +566,7 @@ export class DocumentList extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
     })
-      .then(response => {
+      .then((response) => {
         const result = List(response.data.result);
         result.hashCode();
 
@@ -586,7 +586,7 @@ export class DocumentList extends Component {
               selected: selection,
             }));
 
-        result.map(row => {
+        result.map((row) => {
           const parsed = parseToDisplay(row.fieldsByName);
           resultById[`${row.id}`] = parsed;
           row.fieldsByName = parsed;
@@ -659,12 +659,12 @@ export class DocumentList extends Component {
       });
   };
 
-  getLocationData = resultById => {
+  getLocationData = (resultById) => {
     const { windowType } = this.props;
     const { viewId, mapConfig } = this.state;
 
     locationSearchRequest({ windowId: windowType, viewId }).then(({ data }) => {
-      const locationData = data.locations.map(location => {
+      const locationData = data.locations.map((location) => {
         const name = get(
           resultById,
           [location.rowId, 'C_BPartner_ID', 'value', 'caption'],
@@ -702,7 +702,7 @@ export class DocumentList extends Component {
    * @method handleChangePage
    * @summary ToDo: Describe the method.
    */
-  handleChangePage = index => {
+  handleChangePage = (index) => {
     const { data, sort, page, viewId } = this.state;
     let currentPage = page;
 
@@ -750,7 +750,7 @@ export class DocumentList extends Component {
    * @method handleFilterChange
    * @summary ToDo: Describe the method.
    */
-  handleFilterChange = activeFilters => {
+  handleFilterChange = (activeFilters) => {
     const locationSearchFilter = activeFilters.has(`location-area-search`);
 
     this.setState(
@@ -796,7 +796,7 @@ export class DocumentList extends Component {
    * @method setTableRowEdited
    * @summary ToDo: Describe the method.
    */
-  setTableRowEdited = val => {
+  setTableRowEdited = (val) => {
     this.setState(
       {
         rowEdited: val,
@@ -834,7 +834,7 @@ export class DocumentList extends Component {
    * @method redirectToDocument
    * @summary ToDo: Describe the method.
    */
-  redirectToDocument = id => {
+  redirectToDocument = (id) => {
     const { dispatch, isModal, windowType, isSideListShow } = this.props;
     const { page, viewId, sort } = this.state;
 
@@ -1101,7 +1101,7 @@ export class DocumentList extends Component {
               <QuickActions
                 className="header-element align-items-center"
                 processStatus={processStatus}
-                ref={c => {
+                ref={(c) => {
                   this.quickActionsComponent = c;
                 }}
                 selected={selected}
@@ -1151,7 +1151,7 @@ export class DocumentList extends Component {
             <div className="row table-row">
               <Table
                 entity="documentView"
-                ref={c => (this.table = c)}
+                ref={(c) => (this.table = c)}
                 rowData={rowDataMap}
                 cols={layout.elements}
                 collapsible={layout.collapsible}

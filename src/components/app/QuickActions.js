@@ -81,7 +81,7 @@ export class QuickActions extends Component {
     deleteQuickActions(windowType, viewId);
   };
 
-  UNSAFE_componentWillReceiveProps = nextProps => {
+  UNSAFE_componentWillReceiveProps = (nextProps) => {
     const { selected, viewId, windowType } = this.props;
 
     if (!nextProps.viewId) {
@@ -113,7 +113,7 @@ export class QuickActions extends Component {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  componentDidUpdate = prevProps => {
+  componentDidUpdate = (prevProps) => {
     const { inBackground, inModal } = this.props;
 
     if (inModal === false && prevProps.inModal === true) {
@@ -176,7 +176,7 @@ export class QuickActions extends Component {
    * @param {*} action
    * @todo Write the documentation
    */
-  handleClick = action => {
+  handleClick = (action) => {
     const { openModal, viewId, selected, childView, parentView } = this.props;
 
     if (action.disabled) {
@@ -245,7 +245,7 @@ export class QuickActions extends Component {
         childView,
         parentView
       )
-        .then(result => {
+        .then((result) => {
           const [respRel, resp] = result;
 
           if (this.mounted) {
@@ -274,7 +274,7 @@ export class QuickActions extends Component {
             );
           }
         })
-        .catch(e => {
+        .catch((e) => {
           // eslint-disable-next-line no-console
           console.error(e);
 
@@ -305,7 +305,7 @@ export class QuickActions extends Component {
    * @param {*} option
    * @todo Write the documentation
    */
-  toggleDropdown = option => {
+  toggleDropdown = (option) => {
     this.setState({
       isDropdownOpen: option,
     });
@@ -361,7 +361,7 @@ export class QuickActions extends Component {
               }
               onMouseEnter={() => this.toggleTooltip('listTooltip', true)}
               onMouseLeave={() => this.toggleTooltip('listTooltip', false)}
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
 
                 this.handleClick(actions[0]);

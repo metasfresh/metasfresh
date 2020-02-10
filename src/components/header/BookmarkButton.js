@@ -55,7 +55,7 @@ export default class BookmarkButton extends Component {
       value: !isBookmark,
       subentity: 'node',
       subentityId: nodeId,
-    }).then(response => {
+    }).then((response) => {
       this.setState({ isBookmark: !isBookmark });
 
       if (updateData) {

@@ -25,7 +25,7 @@ export default class NumberInput extends Component {
     return null;
   }
 
-  handleChange = e => {
+  handleChange = (e) => {
     const newValue = e.target.value;
 
     if (FLOAT_NUMBER_REGEX_FORMAT.test(newValue) || !newValue) {

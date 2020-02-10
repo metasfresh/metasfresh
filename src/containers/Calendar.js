@@ -18,7 +18,7 @@ export default class Calendar extends React.Component {
     };
   }
 
-  handleDateClick = params => {
+  handleDateClick = (params) => {
     if (confirm(`Would you like to add an event to ${params.dateStr}?`)) {
       this.setState({
         calendarEvents: this.state.calendarEvents.concat({

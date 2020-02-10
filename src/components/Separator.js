@@ -8,7 +8,7 @@ import classnames from 'classnames';
  * element in WebUI.
  * @module Separator
  */
-const Separator = props => {
+const Separator = (props) => {
   const { title, collapsible, sectionCollapsed, idx, onClick, tabId } = props;
 
   return (

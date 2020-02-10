@@ -11,7 +11,7 @@ let INSTANCE = null;
 
 class Translation extends Component {
   static getMessages = () => {
-    return getMessages().then(response => {
+    return getMessages().then((response) => {
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);
       }

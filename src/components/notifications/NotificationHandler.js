@@ -15,7 +15,7 @@ class NotificationHandler extends Component {
     return (
       <div>
         <div className="notification-handler">
-          {Object.keys(notifications).map(key => (
+          {Object.keys(notifications).map((key) => (
             <Notification key={key} item={notifications[key]} />
           ))}
         </div>

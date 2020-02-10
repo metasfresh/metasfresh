@@ -63,7 +63,7 @@ const filtersToMap = function(filtersArray) {
   let filtersMap = Map();
 
   if (filtersArray && filtersArray.length) {
-    filtersArray.forEach(filter => {
+    filtersArray.forEach((filter) => {
       filtersMap = filtersMap.set(filter.filterId, filter);
     });
   }
@@ -89,7 +89,7 @@ const doesSelectionExist = function({
 
   data &&
     data.result &&
-    data.result.map(item => {
+    data.result.map((item) => {
       rows = rows.concat(mapIncluded(item));
     });
 
@@ -129,14 +129,14 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
     return rows;
   }
 
-  return rows.map(row =>
+  return rows.map((row) =>
     mergeColumnInfosIntoViewRow(columnInfosByFieldName, row)
   );
 }
 
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   const fieldsByName = Object.values(row.fieldsByName)
-    .map(viewRowField =>
+    .map((viewRowField) =>
       mergeColumnInfoIntoViewRowField(
         columnInfosByFieldName[viewRowField.field],
         viewRowField
@@ -183,7 +183,7 @@ function indexRows(rows, map) {
 }
 
 function mapRows(rows, map, columnInfosByFieldName) {
-  return rows.map(row => {
+  return rows.map((row) => {
     const { id, includedDocuments } = row;
 
     if (includedDocuments) {
@@ -207,8 +207,8 @@ function mapRows(rows, map, columnInfosByFieldName) {
 export function removeRows(rowsList, changedRows) {
   const removedRows = [];
 
-  changedRows.forEach(id => {
-    const idx = rowsList.findIndex(row => row.id === id);
+  changedRows.forEach((id) => {
+    const idx = rowsList.findIndex((row) => row.id === id);
 
     if (idx !== -1) {
       rowsList = rowsList.delete(idx);
@@ -298,7 +298,7 @@ function parseDateToReadable(fieldsByName) {
 export function getRowsData(rowData) {
   let data = [];
   rowData &&
-    rowData.map(item => {
+    rowData.map((item) => {
       data = data.concat(mapIncluded(item));
     });
 
@@ -349,7 +349,7 @@ export function collapsedMap(node, isCollapsed, initialMap) {
       );
       collapsedMap = initialMap;
     } else {
-      initialMap.map(item => {
+      initialMap.map((item) => {
         collapsedMap.push(item);
         if (item.id === node.id) {
           collapsedMap = collapsedMap.concat(node.includedDocuments);

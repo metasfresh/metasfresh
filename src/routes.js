@@ -30,7 +30,7 @@ export const getRoutes = (store, auth, plugins) => {
       typeof nextState.location.query.tutorial !== 'undefined';
 
     if (!localStorage.isLogged) {
-      localLoginRequest().then(resp => {
+      localLoginRequest().then((resp) => {
         if (resp.data) {
           store.dispatch(loginSuccess(auth));
           callback(null, nextState.location.pathname);
@@ -73,7 +73,7 @@ export const getRoutes = (store, auth, plugins) => {
   };
 
   function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
-    routesArray.forEach(route => {
+    routesArray.forEach((route) => {
       const routeBreadcrumb = [
         ...currentBreadcrumb,
         {
@@ -90,9 +90,9 @@ export const getRoutes = (store, auth, plugins) => {
     });
   }
 
-  const getPluginsRoutes = plugins => {
+  const getPluginsRoutes = (plugins) => {
     if (plugins.length) {
-      const routes = plugins.map(plugin => {
+      const routes = plugins.map((plugin) => {
         if (plugin.routes && plugin.routes.length) {
           const pluginRoutes = [...plugin.routes];
           const ParentComponent = pluginRoutes[0].component;
@@ -122,13 +122,13 @@ export const getRoutes = (store, auth, plugins) => {
   };
 
   const pluginRoutes = getPluginsRoutes(plugins);
-  const DocListRoute = nextState => (
+  const DocListRoute = (nextState) => (
     <DocList
       query={nextState.location.query}
       windowType={nextState.params.windowType}
     />
   );
-  const BoardRoute = nextState => (
+  const BoardRoute = (nextState) => (
     <Board
       query={nextState.location.query}
       boardId={nextState.params.boardId}

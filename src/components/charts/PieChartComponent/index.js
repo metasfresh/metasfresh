@@ -107,7 +107,7 @@ class PieChartComponent extends Component {
     const pie = d3
       .pie()
       .sort(null)
-      .value(d => {
+      .value((d) => {
         return d[fields[0].fieldName];
       });
 
@@ -135,7 +135,7 @@ class PieChartComponent extends Component {
       .enter()
       .append('path')
       .attr('class', 'pie-path')
-      .style('fill', d => color(d.data[fields[0].fieldName]))
+      .style('fill', (d) => color(d.data[fields[0].fieldName]))
       .transition()
       .duration(1500)
       .attrTween('d', (d, i) => {
@@ -168,7 +168,7 @@ class PieChartComponent extends Component {
       .enter()
       .append('path')
       .attr('class', 'pie-path')
-      .style('fill', d => color(d.data[fields[0].fieldName]))
+      .style('fill', (d) => color(d.data[fields[0].fieldName]))
       .transition()
       .duration(1500)
       .attrTween('d', (d, i) => {

@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import Container from '../components/Container';
 import Inbox from '../components/inbox/Inbox';
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   inbox: state.appHandler.inbox,
   processStatus: state.appHandler.processStatus,
   modal: state.windowHandler.modal,

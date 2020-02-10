@@ -43,7 +43,7 @@ class MasterWindowContainer extends Component {
       // displayed in tabs. This is the only place we're updating this apart of
       // initial load (so contrary to what we used to do, we're not handling responses
       // from any user actions now, like batch entry for instance)
-      connectWS.call(this, master.websocket, async msg => {
+      connectWS.call(this, master.websocket, async (msg) => {
         const { includedTabsInfo, stale } = msg;
         const { master } = this.props;
 
@@ -57,7 +57,7 @@ class MasterWindowContainer extends Component {
 
               // check if tab is active
               if (tabId === master.layout.activeTab) {
-                staleRowIds.forEach(rowId => {
+                staleRowIds.forEach((rowId) => {
                   requests.push(
                     getData(
                       'window',
@@ -72,10 +72,10 @@ class MasterWindowContainer extends Component {
             });
 
             // wait for all the rows requests to finish
-            return await Promise.all(requests).then(res => {
+            return await Promise.all(requests).then((res) => {
               const changedTabs = {};
 
-              res.forEach(response => {
+              res.forEach((response) => {
                 const { data } = response;
                 let rowsById = null;
                 let removedRows = null;
@@ -91,7 +91,7 @@ class MasterWindowContainer extends Component {
                   const rowZero = data[0];
                   tabId = !tabId && rowZero.tabId;
 
-                  data.forEach(row => {
+                  data.forEach((row) => {
                     rowsById[row.rowId] = { ...row };
                   });
                 }
@@ -132,10 +132,10 @@ class MasterWindowContainer extends Component {
         }
 
         if (includedTabsInfo) {
-          Object.keys(includedTabsInfo).forEach(tabId => {
+          Object.keys(includedTabsInfo).forEach((tabId) => {
             const tabLayout =
               master.layout.tabs &&
-              master.layout.tabs.filter(tab => tab.tabId === tabId)[0];
+              master.layout.tabs.filter((tab) => tab.tabId === tabId)[0];
             if (
               tabLayout &&
               tabLayout.queryOnActivate &&
@@ -155,7 +155,7 @@ class MasterWindowContainer extends Component {
 
             if (includedTabsInfo[tabId]) {
               getTab(tabId, params.windowType, master.docId, sortingOrder).then(
-                tab => {
+                (tab) => {
                   addRowData({ [tabId]: tab }, 'master');
                 }
               );
@@ -174,7 +174,7 @@ class MasterWindowContainer extends Component {
     ) {
       const tabId = master.layout.activeTab;
 
-      getTab(tabId, params.windowType, master.docId).then(tab => {
+      getTab(tabId, params.windowType, master.docId).then((tab) => {
         addRowData({ [tabId]: tab }, 'master');
       });
     }
@@ -248,7 +248,7 @@ MasterWindowContainer.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   master: state.windowHandler.master,
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
