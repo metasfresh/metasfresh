@@ -1,10 +1,12 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandlerExtension;
 import de.metas.util.Services;
 
@@ -38,7 +40,11 @@ public class HUOrderLineShipmentScheduleHandlerExtension implements OrderLineShi
 	@Override
 	public void updateShipmentScheduleFromOrderLine(final I_M_ShipmentSchedule shipmentSchedule, final I_C_OrderLine orderLine)
 	{
-		shipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
+		try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule);
+				final MDCCloseable orderLineMDC = TableRecordMDC.putTableRecordReference(orderLine);)
+		{
+			shipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
+		}
 	}
 
 }
