@@ -1269,6 +1269,11 @@ public final class Env
 		return UserId.ofRepoId(getAD_User_ID(ctx));
 	}
 
+	public static Optional<UserId> getLoggedUserIdIfExists()
+	{
+		return getLoggedUserIdIfExists(getCtx());
+	}
+
 	public static Optional<UserId> getLoggedUserIdIfExists(final Properties ctx)
 	{
 		return Optional.ofNullable(UserId.ofRepoIdOrNull(getAD_User_ID(ctx)));

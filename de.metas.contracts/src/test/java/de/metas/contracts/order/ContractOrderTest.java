@@ -29,15 +29,9 @@ import java.sql.Timestamp;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IFlatrateBL;
@@ -57,10 +51,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractLibraryConfiguration.class
-})
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
@@ -69,10 +59,10 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
 		SystemTime.setTimeSource(today);
 	}
 
