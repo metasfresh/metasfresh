@@ -1,7 +1,6 @@
 package de.metas.ui.web.upload;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -12,9 +11,12 @@ import org.compiere.util.MimeType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.util.FileUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -60,7 +62,8 @@ public class WebuiImageService
 		return WebuiImageId.ofRepoId(adImage.getAD_Image_ID());
 	}
 
-	private static final String normalizeUploadFilename(final String name, final String contentType)
+	@VisibleForTesting
+	static final String normalizeUploadFilename(final String name, final String contentType)
 	{
 		final String fileExtension = MimeType.getExtensionByType(contentType);
 
@@ -69,7 +72,7 @@ public class WebuiImageService
 				|| "blob".equals(name) // HARDCODED: this happens when the image is taken from webcam
 		)
 		{
-			nameNormalized = DATE_FORMAT.format(Instant.now());
+			nameNormalized = DATE_FORMAT.format(SystemTime.asZonedDateTime());
 		}
 		else
 		{

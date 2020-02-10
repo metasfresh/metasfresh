@@ -1,18 +1,17 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-
-import org.compiere.util.Evaluatee;
-
-import com.google.common.base.Predicates;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+import org.compiere.util.Evaluatee;
+
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -61,17 +60,23 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	@Override
 	LookupValue findById(Object id);
 
-	default LookupValuesList findByIds(final Collection<? extends Object> ids)
+	/**
+	 * @return lookup values in the same order as the collection order
+	 */
+	@NonNull
+	default LookupValuesList findByIdsOrdered(@NonNull final Collection<? extends Object> ids)
 	{
 		if (ids.isEmpty())
 		{
 			return LookupValuesList.EMPTY;
 		}
 
-		return new HashSet<>(ids)
+		// TODO @teo: avoid SQL N+1 problem and also return the data ordered in the input collection order
+
+		return new LinkedHashSet<>(ids)
 				.stream()
 				.map(this::findById)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(LookupValuesList.collect());
 	}
 
@@ -79,7 +84,9 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	DocumentZoomIntoInfo getDocumentZoomInto(final int id);
 
-	/** @return optional WindowId to be used when zooming into */
+	/**
+	 * @return optional WindowId to be used when zooming into
+	 */
 	Optional<WindowId> getZoomIntoWindowId();
 
 	void cacheInvalidate();

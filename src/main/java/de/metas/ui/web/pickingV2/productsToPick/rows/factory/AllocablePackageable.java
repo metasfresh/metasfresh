@@ -9,7 +9,6 @@ import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -48,26 +47,6 @@ import lombok.ToString;
 @ToString
 final class AllocablePackageable
 {
-	public static AllocablePackageable of(@NonNull final Packageable packageable)
-	{
-		final Quantity qtyToAllocateTarget = packageable.getQtyOrdered()
-				.subtract(packageable.getQtyPickedOrDelivered())
-				.toZeroIfNegative();
-
-		return builder()
-				.customerId(packageable.getCustomerId())
-				.productId(packageable.getProductId())
-				.asiId(packageable.getAsiId())
-				.shipmentScheduleId(packageable.getShipmentScheduleId())
-				.bestBeforePolicy(packageable.getBestBeforePolicy())
-				.warehouseId(packageable.getWarehouseId())
-				.salesOrderLineIdOrNull(packageable.getSalesOrderLineIdOrNull())
-				.shipperId(packageable.getShipperId())
-				.pickFromOrderId(packageable.getPickFromOrderId())
-				.qtyToAllocateTarget(qtyToAllocateTarget)
-				.build();
-	}
-
 	private final BPartnerId customerId;
 	private final ProductId productId;
 	private final AttributeSetInstanceId asiId;
