@@ -11,7 +11,7 @@ export function connectWS(topic, onMessageCallback) {
 
   const subscribe = ({ tries = 3 } = {}) => {
     if (this.sockClient.connected || tries <= 0) {
-      this.sockSubscription = this.sockClient.subscribe(topic, msg => {
+      this.sockSubscription = this.sockClient.subscribe(topic, (msg) => {
         // console.log("WS: Got event on %s: %s", topic, msg.body);
         if (topic === this.sockTopic) {
           onMessageCallback(JSON.parse(msg.body));

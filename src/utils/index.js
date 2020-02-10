@@ -2,7 +2,7 @@ import Moment from 'moment';
 import { DATE_FORMAT } from '../constants/Constants';
 import queryString from 'query-string';
 
-export const getQueryString = query =>
+export const getQueryString = (query) =>
   queryString.stringify(
     Object.keys(query).reduce((parameters, key) => {
       const value = query[key];
@@ -25,7 +25,7 @@ export function createPatchRequestPayload(property, value) {
       value: value[index],
     }));
   } else if (Array.isArray(property) && value !== undefined) {
-    return property.map(item => ({
+    return property.map((item) => ({
       op: 'replace',
       path: item.field,
       value,
@@ -117,7 +117,7 @@ export function getItemsByProperty(arr, prop, value) {
   let ret = [];
 
   arr &&
-    arr.map(item => {
+    arr.map((item) => {
       if (item[prop] === value) {
         ret.push(item);
       }
