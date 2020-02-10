@@ -135,7 +135,7 @@
     "lodash": "4.17.15",
     "luxon": "1.21.3",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.26",
+    "moment-timezone": "0.5.27",
     "numeral": "2.0.6",
     "object-hash": "2.0.1",
     "pigeon-maps": "^0.14.0",
