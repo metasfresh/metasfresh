@@ -199,7 +199,7 @@ public class ShipmentScheduleEnqueuer
 				{
 					workpackageBuilder = blockBuilder
 							.newWorkpackage()
-							.setUserInChargeId(Env.getAD_User_ID())
+							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
 							.bindToTrxName(localCtx.getTrxName());
 

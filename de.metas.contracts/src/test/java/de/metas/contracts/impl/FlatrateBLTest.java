@@ -3,6 +3,10 @@ package de.metas.contracts.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -47,9 +51,9 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
@@ -74,8 +78,6 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
-import mockit.Expectations;
-import mockit.Mocked;
 
 public class FlatrateBLTest extends ContractsTestBase
 {
@@ -98,16 +100,11 @@ public class FlatrateBLTest extends ContractsTestBase
 	I_C_Period period5 = null;
 	I_C_Period period6 = null;
 
-	// task 07442
 	private OrgId orgId;
 	private ActivityId activityId;
 
-	@Mocked
 	protected IProductAcctDAO productAcctDAO;
-	@Mocked
 	protected ITaxBL taxBL;
-
-	// task 07442 end
 
 	@Override
 	protected void init()
@@ -122,9 +119,12 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
 		handler.setClassname(FlatrateDataEntryHandler.class.getName());
 		save(handler);
+
+		productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		taxBL = Mockito.mock(ITaxBL.class);
 	}
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -134,6 +134,11 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_Activity activity = newInstance(I_C_Activity.class);
 		save(activity);
 		activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
+	}
+	
+	private Timestamp day(final int year, final int month, final int day)
+	{
+		return TimeUtil.getDay(year, month, day);
 	}
 
 	@Test
@@ -174,8 +179,8 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_C_Flatrate_Term currentTerm = newInstance(I_C_Flatrate_Term.class);
 		currentTerm.setAD_Org_ID(orgId.getRepoId());
-		currentTerm.setStartDate(TimeUtil.getDay(2013, 1, 1));
-		currentTerm.setEndDate(TimeUtil.getDay(2014, 7, 27));
+		currentTerm.setStartDate(day(2013, 1, 1));
+		currentTerm.setEndDate(day(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem(pricingSystem);
 		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
@@ -191,7 +196,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
 		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		priceListVersion.setValidFrom(TimeUtil.getDay(2013, 1, 1));
+		priceListVersion.setValidFrom(day(2013, 1, 1));
 		priceListVersion.setIsActive(true);
 		save(priceListVersion);
 
@@ -204,7 +209,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
-		period.setStartDate(TimeUtil.getDay(2013, 1, 1));
+		period.setStartDate(day(2013, 1, 1));
 		save(period);
 
 		final I_C_Flatrate_DataEntry dataEntry = newInstance(I_C_Flatrate_DataEntry.class);
@@ -225,35 +230,27 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		new Expectations()
-		{
-			{
+		Mockito.when(
 				productAcctDAO.retrieveActivityForAcct(
 						clientId,
 						orgId,
-						ProductId.ofRepoId(product.getM_Product_ID()));
-				minTimes = 0;
-				result = activityId;
+						ProductId.ofRepoId(product.getM_Product_ID())))
+				.thenReturn(activityId);
 
-				final Properties ctx = Env.getCtx();
-
-				final TaxCategoryId taxCategoryId = null;
-				final boolean isSOTrx = true;
-
-				taxBL.getTax(
-						ctx,
-						currentTerm,
-						taxCategoryId,
-						currentTerm.getM_Product_ID(),
-						dataEntry.getDate_Reported(),
-						OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
-						(WarehouseId)null,
-						CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
-						isSOTrx);
-				minTimes = 0;
-				result = 3;
-			}
-		};
+		final Properties ctx = Env.getCtx();
+		final TaxCategoryId taxCategoryId = null;
+		final boolean isSOTrx = true;
+		Mockito.when(taxBL.getTax(
+				ctx,
+				currentTerm,
+				taxCategoryId,
+				currentTerm.getM_Product_ID(),
+				dataEntry.getDate_Reported(),
+				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
+				(WarehouseId)null,
+				CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
+				isSOTrx))
+				.thenReturn(3);
 	}
 
 	@Test
@@ -263,7 +260,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2014, 12, 31).compareTo(term.getEndDate()) == 0);
+		assertThat(term.getEndDate()).isEqualTo(day(2014, 12, 31));
 
 		// term duration: 24 months
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
@@ -272,10 +269,10 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2014, 12, 31).compareTo(term.getEndDate()) == 0);
+		assertThat(term.getEndDate()).isEqualTo(day(2014, 12, 31));
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testUpdateNoticeDateAndEndDate_endsWithCalendarYear_IncorrectTermDuration()
 	{
 		prepareForUpdateEndDate();
@@ -284,10 +281,11 @@ public class FlatrateBLTest extends ContractsTestBase
 		transition.setTermDuration(25);
 		save(transition);
 
-		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
+		assertThatThrownBy(() -> Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term))
+				.isInstanceOf(AdempiereException.class);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testUpdateNoticeDateAndEndDate_endsWithCalendarYear_YearNotInCalendar()
 	{
 		prepareForUpdateEndDate();
@@ -296,7 +294,8 @@ public class FlatrateBLTest extends ContractsTestBase
 		transition.setTermDuration(48); // the year of now + 4 years is not in calendar
 		save(transition);
 
-		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
+		assertThatThrownBy(() -> Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -312,7 +311,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2013, 8, 2).compareTo(term.getEndDate()) == 0);
+		assertThat(term.getEndDate()).isEqualTo(day(2013, 8, 2));
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_TagE);
 		transition.setTermDuration(30);
@@ -320,7 +319,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2013, 4, 1).compareTo(term.getEndDate()) == 0);
+		assertThat(term.getEndDate()).isEqualTo(day(2013, 4, 1));
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE);
 		transition.setTermDuration(2);
@@ -328,7 +327,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2015, 3, 2).compareTo(term.getEndDate()) == 0);
+		assertThat(term.getEndDate()).isEqualTo(day(2015, 3, 2));
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_WocheN);
 		transition.setTermDuration(2);
@@ -336,7 +335,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2013, 3, 16).compareTo(term.getEndDate()) == 0);
+		assertThat(term.getEndDate()).isEqualTo(day(2013, 3, 16));
 
 	}
 
@@ -351,20 +350,20 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(year1);
 
 		period1 = newInstance(I_C_Period.class);
-		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
-		period1.setEndDate(TimeUtil.getDay(2013, 5, 1));
+		period1.setStartDate(day(2013, 1, 1));
+		period1.setEndDate(day(2013, 5, 1));
 		period1.setC_Year_ID(year1.getC_Year_ID());
 		save(period1);
 
 		period2 = newInstance(I_C_Period.class);
-		period2.setStartDate(TimeUtil.getDay(2013, 5, 2));
-		period2.setEndDate(TimeUtil.getDay(2013, 10, 1));
+		period2.setStartDate(day(2013, 5, 2));
+		period2.setEndDate(day(2013, 10, 1));
 		period2.setC_Year_ID(year1.getC_Year_ID());
 		save(period2);
 
 		period3 = newInstance(I_C_Period.class);
-		period3.setStartDate(TimeUtil.getDay(2013, 10, 2));
-		period3.setEndDate(TimeUtil.getDay(2013, 12, 31));
+		period3.setStartDate(day(2013, 10, 2));
+		period3.setEndDate(day(2013, 12, 31));
 		period3.setC_Year_ID(year1.getC_Year_ID());
 		save(period3);
 
@@ -375,20 +374,20 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(year2);
 
 		period4 = newInstance(I_C_Period.class);
-		period4.setStartDate(TimeUtil.getDay(2014, 1, 1));
-		period4.setEndDate(TimeUtil.getDay(2014, 5, 1));
+		period4.setStartDate(day(2014, 1, 1));
+		period4.setEndDate(day(2014, 5, 1));
 		period4.setC_Year_ID(year2.getC_Year_ID());
 		save(period4);
 
 		period5 = newInstance(I_C_Period.class);
-		period5.setStartDate(TimeUtil.getDay(2014, 5, 2));
-		period5.setEndDate(TimeUtil.getDay(2014, 10, 1));
+		period5.setStartDate(day(2014, 5, 2));
+		period5.setEndDate(day(2014, 10, 1));
 		period5.setC_Year_ID(year2.getC_Year_ID());
 		save(period5);
 
 		period6 = newInstance(I_C_Period.class);
-		period6.setStartDate(TimeUtil.getDay(2014, 10, 2));
-		period6.setEndDate(TimeUtil.getDay(2014, 12, 31));
+		period6.setStartDate(day(2014, 10, 2));
+		period6.setEndDate(day(2014, 12, 31));
 		period6.setC_Year_ID(year2.getC_Year_ID());
 		save(period6);
 
@@ -406,7 +405,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(conditions);
 
 		term = newInstance(I_C_Flatrate_Term.class);
-		term.setStartDate(TimeUtil.getDay(2013, 3, 3));
+		term.setStartDate(day(2013, 3, 3));
 		term.setC_Flatrate_Conditions(conditions);
 		save(term);
 	}
@@ -483,8 +482,8 @@ public class FlatrateBLTest extends ContractsTestBase
 		// first term: first conditions, March 15 - April 14
 		term = newInstance(I_C_Flatrate_Term.class);
 		term.setBill_BPartner(partner);
-		term.setStartDate(TimeUtil.getDay(2017, 3, 15));
-		term.setEndDate(TimeUtil.getDay(2017, 4, 14));
+		term.setStartDate(day(2017, 3, 15));
+		term.setEndDate(day(2017, 4, 14));
 		term.setC_Flatrate_Conditions(conditions1);
 		term.setC_Flatrate_Data(flatrateData);
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
@@ -493,18 +492,18 @@ public class FlatrateBLTest extends ContractsTestBase
 		// second term: second conditions, March 14 - April 13 => Overlapping: March 15, April 14
 		overlappingTerm = newInstance(I_C_Flatrate_Term.class);
 		overlappingTerm.setBill_BPartner(partner);
-		overlappingTerm.setStartDate(TimeUtil.getDay(2017, 3, 14));
-		overlappingTerm.setEndDate(TimeUtil.getDay(2017, 4, 13));
+		overlappingTerm.setStartDate(day(2017, 3, 14));
+		overlappingTerm.setEndDate(day(2017, 4, 13));
 		overlappingTerm.setC_Flatrate_Conditions(conditions2);
 		overlappingTerm.setC_Flatrate_Data(flatrateData);
 		overlappingTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		save(overlappingTerm);
 
 		boolean hasOverlappingTerms = Services.get(IFlatrateBL.class).hasOverlappingTerms(term);
-		Assert.assertTrue("Term has overlapping terms", hasOverlappingTerms);
+		assertThat(hasOverlappingTerms).isTrue();
 
 		// test the other way around
 		hasOverlappingTerms = Services.get(IFlatrateBL.class).hasOverlappingTerms(overlappingTerm);
-		Assert.assertTrue("Term has overlapping terms", hasOverlappingTerms);
+		assertThat(hasOverlappingTerms).isTrue();
 	}
 }
