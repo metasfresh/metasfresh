@@ -163,16 +163,9 @@ public abstract class LookupValue
 		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
-			final ITranslatableString validationMsgTrl;
-			if (adLanguage == null)
-			{
-				validationMsgTrl = TranslatableStrings.anyLanguage(vnp.getValidationMessage());
-			}
-			else
-			{
-				validationMsgTrl = TranslatableStrings.singleLanguage(adLanguage, vnp.getValidationMessage());
-			}
-			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl, validationMsgTrl);
+			final ValidationInformation validationInformation = vnp.getValidationInformation();
+
+			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl, validationInformation);
 		}
 		else if (namePair instanceof KeyNamePair)
 		{
@@ -200,8 +193,8 @@ public abstract class LookupValue
 		final String id = Joiner.on("_").skipNulls().join(lookupValue1.getIdAsString(), lookupValue2.getIdAsString());
 		final ITranslatableString displayName = TranslatableStrings.join(" ", lookupValue1.getDisplayNameTrl(), lookupValue2.getDisplayNameTrl());
 		final ITranslatableString description = TranslatableStrings.join(" ", lookupValue1.getDescriptionTrl(), lookupValue2.getDescriptionTrl());
-		final ITranslatableString validationMsg = TranslatableStrings.join(" ", lookupValue1.getValidationMsgTrl(), lookupValue2.getValidationMsgTrl());
-		return StringLookupValue.of(id, displayName, description, validationMsg);
+
+		return StringLookupValue.of(id, displayName, description);
 	}
 
 	public static LookupValue cast(final Object valueObj)
@@ -213,7 +206,7 @@ public abstract class LookupValue
 	protected final ITranslatableString displayName;
 	protected final ITranslatableString description;
 	private final Boolean active;
-	protected final ITranslatableString validationMsg;
+	protected final ValidationInformation validationInformation;
 
 	private final ImmutableMap<String, Object> additionalAttributes;
 
@@ -229,7 +222,7 @@ public abstract class LookupValue
 		this.description = TranslatableStrings.nullToEmpty(description);
 		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
 		this.active = active;
-		this.validationMsg = null;
+		this.validationInformation = null;
 	}
 
 	private LookupValue(
@@ -238,14 +231,14 @@ public abstract class LookupValue
 			@Nullable final ITranslatableString description,
 			@Nullable final Map<String, Object> additionalAttributes,
 			@Nullable final Boolean active,
-			@Nullable final ITranslatableString validationMsg)
+			@Nullable final ValidationInformation validationInformation)
 	{
 		this.id = id;
 		this.displayName = TranslatableStrings.nullToEmpty(displayName);
 		this.description = TranslatableStrings.nullToEmpty(description);
 		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
 		this.active = active;
-		this.validationMsg = TranslatableStrings.nullToEmpty(validationMsg);
+		this.validationInformation = validationInformation;
 	}
 
 	@Override
@@ -258,7 +251,7 @@ public abstract class LookupValue
 				.add("description", description)
 				.add("additionalAttributes", additionalAttributes)
 				.add("active", active)
-				.add("validationMessage", validationMsg)
+				.add("validationInformation", validationInformation)
 				.toString();
 	}
 
@@ -301,9 +294,9 @@ public abstract class LookupValue
 		return displayName.translate(adLanguage);
 	}
 
-	public String getValidationMsg()
+	public ValidationInformation getValidationInformation()
 	{
-		return validationMsg.getDefaultValue();
+		return validationInformation;
 	}
 
 	public ITranslatableString getDisplayNameTrl()
@@ -314,11 +307,6 @@ public abstract class LookupValue
 	public ITranslatableString getDescriptionTrl()
 	{
 		return description;
-	}
-
-	public ITranslatableString getValidationMsgTrl()
-	{
-		return validationMsg;
 	}
 
 	public final boolean isActive()
@@ -456,9 +444,9 @@ public abstract class LookupValue
 				final String id,
 				final ITranslatableString displayName,
 				final ITranslatableString helpText,
-				final ITranslatableString validationMsg)
+				final ValidationInformation validationInformation)
 		{
-			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */, validationMsg);
+			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */, validationInformation);
 		}
 
 		public static StringLookupValue unknown(final String value)
@@ -481,14 +469,14 @@ public abstract class LookupValue
 				@Nullable final ITranslatableString description,
 				@Singular final Map<String, Object> attributes,
 				final Boolean active,
-				@Nullable final ITranslatableString validationMsg)
+				@Nullable final ValidationInformation validationInformation)
 		{
 			super(id,
 					displayName,
 					description,
 					attributes,
 					active,
-					validationMsg);
+					validationInformation);
 		}
 
 		@Override

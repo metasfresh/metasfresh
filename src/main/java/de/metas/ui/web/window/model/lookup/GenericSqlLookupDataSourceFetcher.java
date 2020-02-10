@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.compiere.model.ValidationInformation;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -61,6 +64,9 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	}
 
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
+
+	private static final String YES_TRANSLATABLE_MESSAGE_ID = "de.metas.popupinfo.yes";
+	private static final String NO_TRANSLATABLE_MESSAGE_ID = "de.metas.popupinfo.no";
 
 	private final @NonNull String lookupTableName;
 	private final @NonNull Optional<String> lookupTableNameAsOptional;
@@ -214,23 +220,32 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		final String displayName = nameAndDescriptionAndActive[0];
 		final String description = nameAndDescriptionAndActive.length >= 2 ? nameAndDescriptionAndActive[1] : null;
 		final boolean active = nameAndDescriptionAndActive.length >= 3 ? StringUtils.toBoolean(nameAndDescriptionAndActive[2]) : true;
-		final String validationMsg = nameAndDescriptionAndActive.length >= 4 ? nameAndDescriptionAndActive[3] : null;
+		final String validationInformationID = nameAndDescriptionAndActive.length >= 4 ? nameAndDescriptionAndActive[3] : null;
+
+		ValidationInformation validationInformation = null;
+
+		if (validationInformationID != null)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final ITranslatableString validationInformationMessage = msgBL.getTranslatableMsgText(validationInformationID);
+			final ITranslatableString validataionInformationYesMessage = msgBL.getTranslatableMsgText(YES_TRANSLATABLE_MESSAGE_ID);
+			final ITranslatableString validataionInformationNoMessage = msgBL.getTranslatableMsgText(NO_TRANSLATABLE_MESSAGE_ID);
+			validationInformation = new ValidationInformation(validationInformationMessage.getDefaultValue(),
+					validataionInformationYesMessage.getDefaultValue(), validataionInformationNoMessage.getDefaultValue());
+		}
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
-		final ITranslatableString validationMsgTrl;
 		if (isTranslatable)
 		{
 			final String adLanguage = evalCtx.getAD_Language();
 			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, displayName);
 			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, description);
-			validationMsgTrl = TranslatableStrings.singleLanguage(adLanguage, validationMsg);
 		}
 		else
 		{
 			displayNameTrl = TranslatableStrings.anyLanguage(displayName);
 			descriptionTrl = TranslatableStrings.anyLanguage(description);
-			validationMsgTrl = TranslatableStrings.anyLanguage(validationMsg);
 		}
 
 		//
@@ -253,7 +268,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 					.displayName(displayNameTrl)
 					.description(descriptionTrl)
 					.active(active)
-					.validationMsg(validationMsgTrl)
+					.validationInformation(validationInformation)
 					.build();
 		}
 	}

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.compiere.model.ValidationInformation;
 import org.compiere.util.NamePair;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -83,11 +84,11 @@ public final class JSONLookupValue
 			final String key,
 			final String caption,
 			@Nullable final String description,
-			@Nullable final String validationMsg)
+			@Nullable final ValidationInformation validationInformation)
 	{
 		final Map<String, Object> attributes = null;
 		final Boolean active = null;
-		return new JSONLookupValue(key, caption, description, attributes, active, validationMsg);
+		return new JSONLookupValue(key, caption, description, attributes, active, validationInformation);
 	}
 
 	public static JSONLookupValue ofLookupValue(@NonNull final LookupValue lookupValue, @NonNull final String adLanguage)
@@ -96,18 +97,17 @@ public final class JSONLookupValue
 
 		final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
 		final ITranslatableString descriptionTrl = lookupValue.getDescriptionTrl();
-		final ITranslatableString validationMsgTrl = lookupValue.getValidationMsgTrl();
 
 		// final String adLanguage = Env.getAD_Language(Env.getCtx());
 		final String displayName = displayNameTrl.translate(adLanguage);
 		final String description = descriptionTrl.translate(adLanguage);
 
-		final String validationMsg = !(validationMsgTrl == null) ? validationMsgTrl.translate(adLanguage) : null;
+		final ValidationInformation validationInformation = lookupValue.getValidationInformation();
 
 		// NOTE: for bandwidth optimization, we provide the flag only when it's false
 		final Boolean active = !lookupValue.isActive() ? Boolean.FALSE : null;
 
-		return new JSONLookupValue(id, displayName, description, lookupValue.getAttributes(), active, validationMsg);
+		return new JSONLookupValue(id, displayName, description, lookupValue.getAttributes(), active, validationInformation);
 	}
 
 	public static JSONLookupValue ofNamePair(final NamePair namePair)
@@ -156,14 +156,14 @@ public final class JSONLookupValue
 		final ITranslatableString displayName = extractCaption(map);
 		final ITranslatableString description = extractDescription(map);
 		final Boolean active = extractActive(map);
-		final ITranslatableString validationMsg = extractValidationMsg(map);
+		final ValidationInformation validationInformation = extractValidationInformation(map);
 
 		final StringLookupValueBuilder builder = StringLookupValue.builder()
 				.id(key)
 				.displayName(displayName)
 				.description(description)
 				.active(active)
-				.validationMsg(validationMsg);
+				.validationInformation(validationInformation);
 
 		@SuppressWarnings("unchecked") final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes != null && !attributes.isEmpty())
@@ -190,12 +190,11 @@ public final class JSONLookupValue
 		return description;
 	}
 
-	private static ITranslatableString extractValidationMsg(@NonNull final Map<String, Object> map)
+	private static ValidationInformation extractValidationInformation(@NonNull final Map<String, Object> map)
 	{
-		final Object validationMsgObj = map.get(PROPERTY_ValidationMsg);
-		final String validationMsgStr = validationMsgObj != null ? validationMsgObj.toString() : "";
-		final ITranslatableString validationMsg = TranslatableStrings.anyLanguage(validationMsgStr);
-		return validationMsg;
+		final Object validationInformationObj = map.get(PROPERTY_ValidationInformation);
+		final ValidationInformation validationInformation = (ValidationInformation)validationInformationObj;
+		return validationInformation;
 	}
 
 	private static Boolean extractActive(@NonNull final Map<String, Object> map)
@@ -238,11 +237,11 @@ public final class JSONLookupValue
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Boolean active;
 
-	private static final String PROPERTY_ValidationMsg = "validationMsg";
-	@JsonProperty(PROPERTY_ValidationMsg)
+	private static final String PROPERTY_ValidationInformation = "validationInformation";
+	@JsonProperty(PROPERTY_ValidationInformation)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Getter
-	private final String validationMsg;
+	private final ValidationInformation validationInformation;
 
 	@JsonCreator
 	private JSONLookupValue(
@@ -257,7 +256,7 @@ public final class JSONLookupValue
 		this.description = description;
 		this.attributes = attributes != null && !attributes.isEmpty() ? ImmutableMap.copyOf(attributes) : ImmutableMap.of();
 		this.active = active;
-		this.validationMsg = null;
+		this.validationInformation = null;
 	}
 
 	@JsonCreator
@@ -267,14 +266,14 @@ public final class JSONLookupValue
 			@JsonProperty(PROPERTY_Description) @Nullable final String description,
 			@JsonProperty(PROPERTY_Attributes) final Map<String, Object> attributes,
 			@JsonProperty(PROPERTY_Active) final Boolean active,
-			@JsonProperty(PROPERTY_ValidationMsg) @Nullable final String validationMsg)
+			@JsonProperty(PROPERTY_ValidationInformation) @Nullable final ValidationInformation validationInformation)
 	{
 		this.key = key;
 		this.caption = caption;
 		this.description = description;
 		this.attributes = attributes != null && !attributes.isEmpty() ? ImmutableMap.copyOf(attributes) : ImmutableMap.of();
 		this.active = active;
-		this.validationMsg = validationMsg;
+		this.validationInformation = validationInformation;
 	}
 
 	@Override
@@ -286,7 +285,7 @@ public final class JSONLookupValue
 				.add("caption", caption)
 				.add("attributes", attributes)
 				.add("active", active)
-				.add("validationMsg", validationMsg)
+				.add("validationInformation", validationInformation)
 				.toString();
 	}
 
@@ -318,7 +317,7 @@ public final class JSONLookupValue
 				.displayName(TranslatableStrings.constant(getCaption()))
 				.attributes(getAttributes())
 				.active(isActive())
-				.validationMsg(TranslatableStrings.constant(getValidationMsg()))
+				.validationInformation(getValidationInformation())
 				.build();
 	}
 
