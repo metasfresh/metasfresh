@@ -18,14 +18,14 @@ import {
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 class TableCell extends PureComponent {
-  static getAmountFormatByPrecision = precision =>
+  static getAmountFormatByPrecision = (precision) =>
     precision &&
     precision >= 0 &&
     precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
       ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
       : null;
 
-  static getDateFormat = fieldType => DATE_FIELD_FORMATS[fieldType];
+  static getDateFormat = (fieldType) => DATE_FIELD_FORMATS[fieldType];
 
   static createDate = (fieldValue, fieldType) => {
     if (fieldValue) {
@@ -96,7 +96,7 @@ class TableCell extends PureComponent {
       case 'object': {
         if (Array.isArray(fieldValue)) {
           return fieldValue
-            .map(value => TableCell.fieldValueToString(value, fieldType))
+            .map((value) => TableCell.fieldValueToString(value, fieldType))
             .join(' - ');
         }
 
@@ -165,7 +165,7 @@ class TableCell extends PureComponent {
     });
   };
 
-  handleBackdropLock = state => {
+  handleBackdropLock = (state) => {
     const { item } = this.props;
 
     if (
@@ -179,7 +179,7 @@ class TableCell extends PureComponent {
     }
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const {
       handleKeyDown,
       property,
@@ -193,7 +193,7 @@ class TableCell extends PureComponent {
     handleKeyDown(e, property, widgetData[0]);
   };
 
-  handleRightClick = e => {
+  handleRightClick = (e) => {
     const {
       handleRightClick,
       property,
@@ -211,7 +211,7 @@ class TableCell extends PureComponent {
     );
   };
 
-  onDoubleClick = e => {
+  onDoubleClick = (e) => {
     const {
       property,
       item,
@@ -227,7 +227,7 @@ class TableCell extends PureComponent {
     }
   };
 
-  clearValue = reset => {
+  clearValue = (reset) => {
     this.clearWidgetValue = reset == null ? true : false;
   };
 
@@ -319,7 +319,7 @@ class TableCell extends PureComponent {
     return (
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
-        ref={c => (this.cell = c)}
+        ref={(c) => (this.cell = c)}
         onDoubleClick={this.onDoubleClick}
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
@@ -383,7 +383,7 @@ class TableCell extends PureComponent {
                 widget={tooltipWidget}
                 data={tooltipData}
                 isToggled={tooltipToggled}
-                onToggle={val => this.widgetTooltipToggle(item.field, val)}
+                onToggle={(val) => this.widgetTooltipToggle(item.field, val)}
               />
             )}
           </div>

@@ -11,7 +11,7 @@ class AttachUrl extends Component {
     nameFromUrl: '',
   };
 
-  updateNameFromUrl = url => {
+  updateNameFromUrl = (url) => {
     // generate name from URL by getting part after last / and before ? or #
     this.setState({
       // TODO: handle edge cases like URL with trailing slash
@@ -41,7 +41,7 @@ class AttachUrl extends Component {
     this.updateNameFromUrl(url);
   };
 
-  handleClick = event => {
+  handleClick = (event) => {
     event.stopPropagation();
     event.persist();
 

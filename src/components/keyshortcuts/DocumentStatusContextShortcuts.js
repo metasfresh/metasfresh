@@ -4,7 +4,7 @@ import { Shortcut } from '../keyshortcuts';
 import { arePropTypesIdentical } from '../../utils';
 
 export default class DocumentStatusContextShortcuts extends Component {
-  handleShortcut = event => {
+  handleShortcut = (event) => {
     const { handleDocumentCompleteStatus } = this.props;
 
     event.preventDefault();
@@ -12,7 +12,7 @@ export default class DocumentStatusContextShortcuts extends Component {
     return handleDocumentCompleteStatus();
   };
 
-  shouldComponentUpdate = nextProps =>
+  shouldComponentUpdate = (nextProps) =>
     !arePropTypesIdentical(nextProps, this.props);
 
   render() {

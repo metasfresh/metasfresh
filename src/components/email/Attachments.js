@@ -16,7 +16,7 @@ class Attachments extends Component {
     }
   }
 
-  addAttachment = e => {
+  addAttachment = (e) => {
     const { emailId, getEmail } = this.props;
     addAttachment(emailId, e.target.files[0]).then(() => {
       getEmail(emailId);

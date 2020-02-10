@@ -6,7 +6,7 @@ const mods = [
 export default Object.entries({
   'Alt+Spacebar': 'Windows window menu',
   ...Object.assign(
-    ...mods.map(mod => ({
+    ...mods.map((mod) => ({
       [`${mod}+C`]: 'Copy',
       [`${mod}+F`]: 'Search',
       [`${mod}+H`]: 'History',

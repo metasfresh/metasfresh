@@ -5,19 +5,19 @@ import { arePropTypesIdentical } from '../../utils';
 
 export default class TableContextShortcuts extends Component {
   handlers = {
-    TOGGLE_EXPAND: event => {
+    TOGGLE_EXPAND: (event) => {
       event.preventDefault();
 
       this.props.handleToggleExpand();
     },
-    TOGGLE_QUICK_INPUT: event => {
+    TOGGLE_QUICK_INPUT: (event) => {
       event.preventDefault();
 
       this.props.handleToggleQuickInput();
     },
   };
 
-  shouldComponentUpdate = nextProps =>
+  shouldComponentUpdate = (nextProps) =>
     !arePropTypesIdentical(nextProps, this.props);
 
   render() {

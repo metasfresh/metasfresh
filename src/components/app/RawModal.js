@@ -23,7 +23,7 @@ import Indicator from './Indicator';
  * @module ModalButton
  * @param {object} props
  */
-const ModalButton = props => {
+const ModalButton = (props) => {
   const {
     name,
     onShowTooltip,
@@ -124,7 +124,7 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} type
    */
-  showTooltip = type => {
+  showTooltip = (type) => {
     this.setState({
       visibleTooltips: {
         ...this.state.visibleTooltips,
@@ -138,7 +138,7 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} type
    */
-  hideTooltip = type => {
+  hideTooltip = (type) => {
     this.setState({
       visibleTooltips: {
         ...this.state.visibleTooltips,
@@ -176,7 +176,7 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleScroll = event => {
+  handleScroll = (event) => {
     const scrollTop = event.srcElement.scrollTop;
 
     this.setState({
@@ -190,7 +190,7 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} type
    */
-  handleClose = async type => {
+  handleClose = async (type) => {
     const {
       dispatch,
       closeCallback,
@@ -202,7 +202,7 @@ class RawModal extends Component {
     const { isNew } = this.state;
 
     if (requests.length > 0) {
-      const success = await new Promise(resolve => {
+      const success = await new Promise((resolve) => {
         this.resolve = resolve;
       });
 
@@ -254,7 +254,7 @@ class RawModal extends Component {
           viewId,
           forceClose: true,
         }),
-      ].map(action => dispatch(action))
+      ].map((action) => dispatch(action))
     );
 
     if (!modalVisible) {
@@ -370,7 +370,7 @@ class RawModal extends Component {
             <Indicator />
             <div
               className="panel-modal-content js-panel-modal-content"
-              ref={c => {
+              ref={(c) => {
                 c && c.focus();
               }}
             >

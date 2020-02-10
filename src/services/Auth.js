@@ -13,7 +13,7 @@ class Auth {
     this.notificationClient.debug = null;
     this.notificationClient.connect({}, () => {
       this.notificationClient.connected &&
-        this.notificationClient.subscribe(topic.data, msg => {
+        this.notificationClient.subscribe(topic.data, (msg) => {
           cb && cb(msg);
         });
     });
@@ -24,7 +24,7 @@ class Auth {
     this.sessionClient.debug = null;
     this.sessionClient.connect({}, () => {
       this.sessionClient.connected &&
-        this.sessionClient.subscribe(topic, msg => {
+        this.sessionClient.subscribe(topic, (msg) => {
           cb && cb(msg);
         });
     });

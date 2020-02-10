@@ -41,7 +41,7 @@ const drawContainer = (svg, fields, width) => {
 };
 
 const drawRects = (legend, rangeZ) => {
-  const existingColors = legend.selectAll('rect').data(d => [d]);
+  const existingColors = legend.selectAll('rect').data((d) => [d]);
 
   return existingColors
     .enter()
@@ -50,11 +50,11 @@ const drawRects = (legend, rangeZ) => {
     .attr('x', size.offset)
     .attr('width', size.width)
     .attr('height', size.height)
-    .attr('fill', d => rangeZ(d.fieldName));
+    .attr('fill', (d) => rangeZ(d.fieldName));
 };
 
 const drawTexts = (legend, width) => {
-  const existingTexts = legend.selectAll('text').data(d => [d]);
+  const existingTexts = legend.selectAll('text').data((d) => [d]);
 
   return existingTexts
     .enter()
@@ -63,7 +63,7 @@ const drawTexts = (legend, width) => {
     .attr('x', 2 * size.offset + size.width)
     .attr('y', 10)
     .attr('dy', '0.32em')
-    .text(d => d.caption + (d.unit ? ' [' + d.unit + ']' : ''))
+    .text((d) => d.caption + (d.unit ? ' [' + d.unit + ']' : ''))
     .each(function() {
       addEllipsis(this, width / legend.size() - (size.offset + size.width));
     });

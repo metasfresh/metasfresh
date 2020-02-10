@@ -54,7 +54,7 @@ function collect(connect, monitor) {
   };
 }
 
-const TargetIndicator = props => {
+const TargetIndicator = (props) => {
   const { index, laneId, parentIndex, parentLaneId } = props;
   if (laneId !== parentLaneId || index !== parentIndex) return false;
   return <div className="lane-card-placeholder" />;

@@ -72,7 +72,7 @@ export default class EntryTable extends Component {
           const relativeDocId = data.ID && data.ID.value;
           let tooltipData = null;
           let tooltipWidget = elem.fields
-            ? elem.fields.find(field => {
+            ? elem.fields.find((field) => {
                 if (field.type === 'Tooltip') {
                   tooltipData = rowData.get(0).fieldsByName[field.field];
 

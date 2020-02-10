@@ -24,13 +24,13 @@ const setSelectedValue = function(dropdownList, selected, defaultValue) {
     }
 
     idx = dropdownList.findIndex(
-      item => item.caption === selectedOption.caption
+      (item) => item.caption === selectedOption.caption
     );
 
     if (idx === -1) {
       if (defaultValue) {
         idx = dropdownList.findIndex(
-          item => item.caption === defaultValue.caption
+          (item) => item.caption === defaultValue.caption
         );
       }
     }
@@ -237,7 +237,7 @@ export class RawList extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleClear = event => {
+  handleClear = (event) => {
     event.stopPropagation();
 
     this.props.onSelect(null);
@@ -248,7 +248,7 @@ export class RawList extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {*} selected
    */
-  handleTemporarySelection = selected => {
+  handleTemporarySelection = (selected) => {
     this.setState({
       selected,
     });
@@ -270,7 +270,7 @@ export class RawList extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const {
       onSelect,
       list,
@@ -298,7 +298,7 @@ export class RawList extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {object} event
    */
-  handleTab = e => {
+  handleTab = (e) => {
     const { isToggled, isFocused, onCloseDropdown } = this.props;
 
     if (e.key === 'Tab' && isFocused) {
@@ -389,7 +389,7 @@ export class RawList extends PureComponent {
         ]}
       >
         <div
-          ref={ref => (this.dropdown = ref)}
+          ref={(ref) => (this.dropdown = ref)}
           className={classnames('input-dropdown-container', {
             'input-disabled': readonly,
             'input-dropdown-container-static': rowId,
@@ -417,7 +417,7 @@ export class RawList extends PureComponent {
                 (!validStatus.valid && !validStatus.initialValue) &&
                 !isToggled,
             })}
-            ref={c => (this.inputContainer = c)}
+            ref={(c) => (this.inputContainer = c)}
           >
             <div
               className={classnames('input-editable input-dropdown-focused', {

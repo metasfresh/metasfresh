@@ -89,7 +89,7 @@ export default class App extends Component {
           store.dispatch(noConnection(true));
         } else if (error.response.status != 404) {
           if (localStorage.isLogged) {
-            const errorMessenger = code => {
+            const errorMessenger = (code) => {
               switch (code) {
                 case 500:
                   return 'Server error';
@@ -146,9 +146,9 @@ export default class App extends Component {
       }.bind(this)
     );
 
-    getAvailableLang().then(response => {
+    getAvailableLang().then((response) => {
       const { defaultValue, values } = response.data;
-      const valuesFlatten = values.map(item => Object.keys(item)[0]);
+      const valuesFlatten = values.map((item) => Object.keys(item)[0]);
       const lang =
         valuesFlatten.indexOf(navigator.language) > -1
           ? navigator.language
@@ -163,24 +163,24 @@ export default class App extends Component {
     store.dispatch(initHotkeys(hotkeys));
 
     if (APP_PLUGINS.length) {
-      const plugins = APP_PLUGINS.map(plugin => {
+      const plugins = APP_PLUGINS.map((plugin) => {
         const waitForChunk = () =>
           import(`@plugins/${plugin}/index.js`)
-            .then(module => module)
+            .then((module) => module)
             .catch(() => {
               // eslint-disable-next-line no-console
               console.error(`Error loading plugin ${plugin}`);
             });
 
-        return new Promise(resolve =>
-          waitForChunk().then(file => {
+        return new Promise((resolve) =>
+          waitForChunk().then((file) => {
             this.pluginsRegistry.addEntry(plugin, file);
             resolve({ name: plugin, file });
           })
         );
       });
 
-      Promise.all(plugins).then(res => {
+      Promise.all(plugins).then((res) => {
         const plugins = res.reduce((prev, current) => prev.concat(current), []);
 
         if (plugins.length) {

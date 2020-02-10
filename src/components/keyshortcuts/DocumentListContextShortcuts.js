@@ -5,21 +5,21 @@ import { arePropTypesIdentical } from '../../utils';
 
 export default class DocumentListContextShortcuts extends Component {
   handlers = {
-    OPEN_SELECTED: event => {
+    OPEN_SELECTED: (event) => {
       event.preventDefault();
 
       if (this.props.handleOpenNewTab) {
         this.props.handleOpenNewTab();
       }
     },
-    REMOVE_SELECTED: event => {
+    REMOVE_SELECTED: (event) => {
       event.preventDefault();
 
       if (this.props.handleDelete) {
         this.props.handleDelete();
       }
     },
-    ADVANCED_EDIT: event => {
+    ADVANCED_EDIT: (event) => {
       event.preventDefault();
 
       if (this.props.handleAdvancedEdit) {
@@ -30,21 +30,21 @@ export default class DocumentListContextShortcuts extends Component {
 
       return false;
     },
-    SELECT_ALL_LEAFS: event => {
+    SELECT_ALL_LEAFS: (event) => {
       event.preventDefault();
 
       if (this.props.getAllLeafs) {
         this.props.getAllLeafs();
       }
     },
-    EXPAND_INDENT: event => {
+    EXPAND_INDENT: (event) => {
       event.preventDefault();
 
       if (this.props.handleIndent) {
         this.props.handleIndent(true);
       }
     },
-    COLLAPSE_INDENT: event => {
+    COLLAPSE_INDENT: (event) => {
       event.preventDefault();
 
       if (this.props.handleIndent) {
@@ -53,7 +53,7 @@ export default class DocumentListContextShortcuts extends Component {
     },
   };
 
-  shouldComponentUpdate = nextProps =>
+  shouldComponentUpdate = (nextProps) =>
     !arePropTypesIdentical(nextProps, this.props);
 
   render() {

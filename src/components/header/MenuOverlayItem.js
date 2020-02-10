@@ -48,7 +48,7 @@ class MenuOverlayItem extends Component {
     this.renderBreadcrumb(entity, elementId);
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { back, handleMenuOverlay } = this.props;
     const overlay = document.getElementsByClassName('js-menu-overlay')[0];
 
@@ -181,7 +181,7 @@ class MenuOverlayItem extends Component {
           >
             <span
               className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
-              onClick={e => {
+              onClick={(e) => {
                 children
                   ? handleClickOnFolder(e, nodeId)
                   : this.clickedItem(e, elementId, nodeId, type);
@@ -202,7 +202,9 @@ class MenuOverlayItem extends Component {
                 : 'query-clickable-link'
             }
             onClick={
-              children ? '' : e => this.clickedItem(e, elementId, nodeId, type)
+              children
+                ? ''
+                : (e) => this.clickedItem(e, elementId, nodeId, type)
             }
           >
             {children
@@ -218,7 +220,7 @@ class MenuOverlayItem extends Component {
                           ? 'query-clickable-group'
                           : 'query-clickable-link'
                       }
-                      onClick={e =>
+                      onClick={(e) =>
                         this.clickedItem(
                           e,
                           item.elementId,

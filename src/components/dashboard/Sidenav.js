@@ -16,17 +16,17 @@ class Sidenav extends Component {
   }
 
   componentDidMount = () => {
-    getRequest('dashboard', 'kpis', 'available').then(res => {
+    getRequest('dashboard', 'kpis', 'available').then((res) => {
       this.setState({
         indicators: res.data.filter(
-          chart => chart.widgetTypes[0] === 'TargetIndicator'
+          (chart) => chart.widgetTypes[0] === 'TargetIndicator'
         ),
-        cards: res.data.filter(chart => chart.widgetTypes[0] === 'KPI'),
+        cards: res.data.filter((chart) => chart.widgetTypes[0] === 'KPI'),
       });
     });
   };
 
-  renderChartList = charts => {
+  renderChartList = (charts) => {
     const { moveCard } = this.props;
     if (!charts) return;
     return charts.map((item, i) => (

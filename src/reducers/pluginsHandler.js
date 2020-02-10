@@ -12,9 +12,9 @@ export default handleAction(
     const files = [];
     let components = {};
 
-    plugins.forEach(plugin => {
+    plugins.forEach((plugin) => {
       if (plugin.file.components) {
-        plugin.file.components.forEach(component => {
+        plugin.file.components.forEach((component) => {
           components[`${component.id}`] = plugin.name;
         });
       }

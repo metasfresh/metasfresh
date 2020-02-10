@@ -56,7 +56,7 @@ class SideList extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} index
    */
-  changeTab = index => {
+  changeTab = (index) => {
     this.setState({
       tab: index,
     });
@@ -120,7 +120,7 @@ class SideList extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} id
    */
-  toggleTooltip = id => {
+  toggleTooltip = (id) => {
     this.setState({
       tooltipOpen: id,
     });
@@ -154,7 +154,7 @@ class SideList extends Component {
 
     return (
       <div
-        ref={c => (this.panel = c)}
+        ref={(c) => (this.panel = c)}
         className="order-list-panel overlay-shadow order-list-panel-open js-not-unselect"
       >
         <div className="order-list-panel-body">
@@ -218,7 +218,7 @@ SideList.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const { listHandler } = state;
   const { sorting, pagination, viewId } = listHandler || {
     sorting: {},

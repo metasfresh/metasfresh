@@ -49,7 +49,7 @@ class DatePicker extends Component {
    * @param {*} date
    * @todo Write the documentation
    */
-  handleBlur = date => {
+  handleBlur = (date) => {
     const {
       patch,
       handleBackdropLock,
@@ -139,7 +139,7 @@ class DatePicker extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeydown = e => {
+  handleKeydown = (e) => {
     e.stopPropagation();
   };
 
@@ -172,7 +172,7 @@ class DatePicker extends Component {
       <input
         {...props}
         className="form-control"
-        ref={input => {
+        ref={(input) => {
           this.inputElement = input;
         }}
       />
@@ -188,7 +188,7 @@ class DatePicker extends Component {
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
-          ref={c => (this.picker = c)}
+          ref={(c) => (this.picker = c)}
           closeOnTab={true}
           renderDay={this.renderDay}
           renderInput={this.renderInput}

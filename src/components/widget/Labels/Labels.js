@@ -94,7 +94,7 @@ class Labels extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyUp = async event => {
+  handleKeyUp = async (event) => {
     const typeAhead = event.target.innerHTML;
 
     if (typeAhead !== this.lastTypeAhead) {
@@ -136,7 +136,7 @@ class Labels extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyDown = event => {
+  handleKeyDown = (event) => {
     const typeAhead = event.target.innerHTML;
     const { onChange, selected } = this.props;
     const { cursor } = this.state;
@@ -207,7 +207,7 @@ class Labels extends Component {
    * @param {*} suggestion
    * @todo Write the documentation
    */
-  handleTemporarySelection = suggestion => {
+  handleTemporarySelection = (suggestion) => {
     this.setState({ suggestion });
   };
 
@@ -217,7 +217,7 @@ class Labels extends Component {
    * @param {*} suggestion
    * @todo Write the documentation
    */
-  handleSuggestionAdd = suggestion => {
+  handleSuggestionAdd = (suggestion) => {
     const { onChange, selected } = this.props;
     const { cursor } = this.state;
 
@@ -241,8 +241,8 @@ class Labels extends Component {
    * @param {*} label
    * @todo Write the documentation
    */
-  handleLabelRemove = label => {
-    this.props.onChange(this.props.selected.filter(item => item !== label));
+  handleLabelRemove = (label) => {
+    this.props.onChange(this.props.selected.filter((item) => item !== label));
   };
 
   /**
@@ -251,7 +251,7 @@ class Labels extends Component {
    * @param {*} label
    * @todo Write the documentation
    */
-  handleLabelClick = label => {
+  handleLabelClick = (label) => {
     this.setState({
       cursor: this.props.selected.indexOf(label) + 1,
     });
@@ -274,9 +274,9 @@ class Labels extends Component {
    * @todo Write the documentation
    */
   unusedSuggestions = () => {
-    const selected = new Set(this.props.selected.map(item => item.key));
+    const selected = new Set(this.props.selected.map((item) => item.key));
 
-    return suggestion => !selected.has(suggestion.key);
+    return (suggestion) => !selected.has(suggestion.key);
   };
 
   /**
@@ -285,7 +285,7 @@ class Labels extends Component {
    * @param {*} suggestions
    * @todo Write the documentation
    */
-  firstVisibleSuggestion = suggestions => {
+  firstVisibleSuggestion = (suggestions) => {
     return suggestions.filter(this.unusedSuggestions())[0];
   };
 
@@ -311,7 +311,7 @@ class Labels extends Component {
 
     const labels = selected
       .sort((a, b) => a.caption.localeCompare(b.caption))
-      .map(item => (
+      .map((item) => (
         <Label
           key={item.key}
           label={item}
@@ -326,7 +326,7 @@ class Labels extends Component {
       <span
         key="input"
         className="labels-input"
-        ref={ref => {
+        ref={(ref) => {
           this.input = ref;
         }}
         contentEditable
@@ -351,7 +351,7 @@ class Labels extends Component {
         ]}
       >
         <span
-          ref={ref => {
+          ref={(ref) => {
             this.wrapper = ref;
           }}
           className={`${className} labels`}

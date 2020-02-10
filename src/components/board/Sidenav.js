@@ -27,16 +27,16 @@ class Sidenav extends Component {
     });
 
     if (viewId) {
-      getView(boardId, viewId, 0).then(res =>
+      getView(boardId, viewId, 0).then((res) =>
         this.setState({
           view: res.data,
           loading: false,
         })
       );
     } else {
-      createView(boardId).then(res => {
+      createView(boardId).then((res) => {
         setViewId(res.data.viewId);
-        getView(boardId, res.data.viewId, 0).then(res =>
+        getView(boardId, res.data.viewId, 0).then((res) =>
           this.setState({
             view: res.data,
             loading: false,
@@ -46,7 +46,7 @@ class Sidenav extends Component {
     }
   };
 
-  getCardIndex = cardId => {
+  getCardIndex = (cardId) => {
     const { view } = this.state;
     let result = -1;
 
@@ -61,12 +61,12 @@ class Sidenav extends Component {
     return result;
   };
 
-  removeCard = cardId => {
+  removeCard = (cardId) => {
     const { view } = this.state;
     if (view && view.result) {
       let cardIndex = this.getCardIndex(cardId);
       if (cardIndex >= 0) {
-        this.setState(prev =>
+        this.setState((prev) =>
           update(prev, {
             view: {
               result: { $unset: [cardIndex] },
@@ -80,7 +80,7 @@ class Sidenav extends Component {
 
   componentDidMount = () => {
     const { boardId } = this.props;
-    getLayout(boardId).then(res =>
+    getLayout(boardId).then((res) =>
       this.setState({
         emptyText: res.data.emptyResultText,
         emptyHint: res.data.emptyResultHint,
@@ -88,15 +88,15 @@ class Sidenav extends Component {
     );
   };
 
-  loadMore = page => {
+  loadMore = (page) => {
     const { boardId, viewId } = this.props;
 
     this.setState({
       loading: true,
     });
 
-    getView(boardId, viewId, page).then(res =>
-      this.setState(prev =>
+    getView(boardId, viewId, page).then((res) =>
+      this.setState((prev) =>
         update(prev, {
           view: {
             result: { $push: res.data.result },

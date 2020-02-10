@@ -25,7 +25,7 @@ class OverlayField extends Component {
    * @param {*} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
 
     switch (e.key) {
@@ -72,7 +72,7 @@ class OverlayField extends Component {
     const elements = layout.elements;
 
     return elements.map((elem, id) => {
-      const widgetData = elem.fields.map(item => data[item.field] || -1);
+      const widgetData = elem.fields.map((item) => data[item.field] || -1);
       let captionElement = null;
 
       if (elem.barcodeScannerType) {
@@ -104,7 +104,7 @@ class OverlayField extends Component {
    * @param {*} layout
    * @todo Write the documentation
    */
-  renderParameters = layout => {
+  renderParameters = (layout) => {
     const {
       windowType,
       viewId,
@@ -183,7 +183,7 @@ class OverlayField extends Component {
     return (
       <div
         className="overlay-field"
-        onKeyDown={e => this.handleKeyDown(e)}
+        onKeyDown={(e) => this.handleKeyDown(e)}
         tabIndex={-1}
       >
         {renderedContent}

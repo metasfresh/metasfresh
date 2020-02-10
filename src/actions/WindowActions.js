@@ -491,7 +491,7 @@ export function deselectTableItems(ids, windowType, viewId) {
 // THUNK ACTIONS
 
 function initTabs(layout, windowType, docId, isModal) {
-  return async dispatch => {
+  return async (dispatch) => {
     const requests = [];
     const tabTmp = {};
 
@@ -504,8 +504,8 @@ function initTabs(layout, windowType, docId, isModal) {
         }
       });
 
-      return await Promise.all(requests).then(responses => {
-        responses.forEach(res => {
+      return await Promise.all(requests).then((responses) => {
+        responses.forEach((res) => {
           // needed for finding tabId
           const rowZero = res && res[0];
           if (rowZero) {
@@ -523,7 +523,7 @@ function initTabs(layout, windowType, docId, isModal) {
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
-  return dispatch => {
+  return (dispatch) => {
     dispatch({
       type: INIT_WINDOW,
     });
@@ -568,7 +568,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
           null,
           null,
           isAdvanced
-        ).catch(e => {
+        ).catch((e) => {
           dispatch(getWindowBreadcrumb(windowType));
           dispatch(
             initDataSuccess({
@@ -600,7 +600,7 @@ export function createWindow(
   isModal = false,
   isAdvanced
 ) {
-  return dispatch => {
+  return (dispatch) => {
     if (docId == 'new') {
       docId = 'NEW';
     }
@@ -608,7 +608,7 @@ export function createWindow(
     // this chain is really important,
     // to do not re-render widgets on init
     return dispatch(initWindow(windowId, docId, tabId, rowId, isAdvanced)).then(
-      response => {
+      (response) => {
         if (!response || !response.data) {
           return Promise.resolve(null);
         }
@@ -660,10 +660,10 @@ export function createWindow(
         }
 
         return initLayout('window', windowId, tabId, null, null, isAdvanced)
-          .then(response =>
+          .then((response) =>
             dispatch(initLayoutSuccess(response.data, getScope(isModal)))
           )
-          .then(response => {
+          .then((response) => {
             if (!isModal) {
               return dispatch(
                 initTabs(response.layout.tabs, windowId, docId, isModal)
@@ -689,17 +689,17 @@ const getChangelogUrl = function(windowId, docId, tabId, rowId) {
 };
 
 export function fetchChangeLog(windowId, docId, tabId, rowId) {
-  return dispatch => {
+  return (dispatch) => {
     const parentUrl = getChangelogUrl(windowId, docId, null, rowId);
 
-    return axios.get(parentUrl).then(async response => {
+    return axios.get(parentUrl).then(async (response) => {
       const data = response.data;
       let rowData = null;
 
       if (docId && rowId) {
         if (rowId.length === 1) {
           const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
-          rowData = await axios.get(childUrl).then(resp => resp.data);
+          rowData = await axios.get(childUrl).then((resp) => resp.data);
         }
       }
 
@@ -719,13 +719,13 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
 }
 
 export function fetchTopActions(windowType, docId, tabId) {
-  return dispatch => {
+  return (dispatch) => {
     dispatch({
       type: FETCH_TOP_ACTIONS,
     });
 
     topActionsRequest(windowType, docId, tabId)
-      .then(response => {
+      .then((response) => {
         dispatch({
           type: FETCH_TOP_ACTIONS_SUCCESS,
           payload: response.data.actions,
@@ -756,7 +756,7 @@ export function patch(
   viewId,
   isEdit
 ) {
-  return async dispatch => {
+  return async (dispatch) => {
     const symbol = Symbol();
 
     const options = {
@@ -850,9 +850,9 @@ export function fireUpdateData(
   isModal,
   isAdvanced
 ) {
-  return dispatch => {
+  return (dispatch) => {
     getData(entity, windowType, id, tabId, rowId, null, null, isAdvanced).then(
-      response => {
+      (response) => {
         dispatch(
           mapDataToState(
             response.data,
@@ -869,10 +869,10 @@ export function fireUpdateData(
 }
 
 function updateData(doc, scope) {
-  return dispatch => {
-    Object.keys(doc).map(key => {
+  return (dispatch) => {
+    Object.keys(doc).map((key) => {
       if (key === 'fieldsByName') {
-        Object.keys(doc.fieldsByName).map(fieldName => {
+        Object.keys(doc.fieldsByName).map((fieldName) => {
           dispatch(
             updateDataFieldProperty(
               fieldName,
@@ -891,10 +891,10 @@ function updateData(doc, scope) {
 }
 
 function updateRow(row, scope) {
-  return dispatch => {
-    Object.keys(row).map(key => {
+  return (dispatch) => {
+    Object.keys(row).map((key) => {
       if (key === 'fieldsByName') {
-        Object.keys(row.fieldsByName).map(fieldName => {
+        Object.keys(row.fieldsByName).map((fieldName) => {
           dispatch(
             updateRowFieldProperty(
               fieldName,
@@ -913,7 +913,7 @@ function updateRow(row, scope) {
 }
 
 function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
-  return dispatch => {
+  return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
     dataArray.map((item, index) => {
@@ -948,8 +948,8 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
 }
 
 function updateStatus(responseData) {
-  return dispatch => {
-    const updateDispatch = item => {
+  return (dispatch) => {
+    const updateDispatch = (item) => {
       if (item.rowId) {
         dispatch(
           updateRowStatus('master', item.tabid, item.rowId, item.saveStatus)
@@ -965,7 +965,7 @@ function updateStatus(responseData) {
     };
 
     if (Array.isArray(responseData)) {
-      responseData.map(item => {
+      responseData.map((item) => {
         updateDispatch(item);
       });
     } else {
@@ -986,7 +986,7 @@ export function updatePropertyValue(
   isModal,
   entity
 ) {
-  return dispatch => {
+  return (dispatch) => {
     if (tabid && rowid) {
       dispatch(
         updateRowFieldProperty(property, { value }, tabid, rowid, 'master')
@@ -1014,7 +1014,7 @@ function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
 }
 
 export function attachFileAction(windowType, docId, data) {
-  return dispatch => {
+  return (dispatch) => {
     const titlePending = counterpart.translate(
       'window.attachment.title.pending'
     );
@@ -1056,7 +1056,7 @@ export function attachFileAction(windowType, docId, data) {
         )
       )
       .finally(() => dispatch(deleteNotification(titlePending)))
-      .catch(thrown => {
+      .catch((thrown) => {
         if (axios.isCancel(thrown)) {
           dispatch(
             addNotification(
@@ -1098,7 +1098,7 @@ export function createProcess({
 }) {
   let pid = null;
 
-  return async dispatch => {
+  return async (dispatch) => {
     await dispatch(setProcessPending());
 
     let response;
@@ -1175,7 +1175,7 @@ export function createProcess({
 }
 
 export function handleProcessResponse(response, type, id) {
-  return async dispatch => {
+  return async (dispatch) => {
     const { error, summary, action } = response.data;
 
     if (error) {
@@ -1278,7 +1278,7 @@ export function handleProcessResponse(response, type, id) {
 }
 
 export function deleteLocal(tabid, rowsid, scope, response) {
-  return dispatch => {
+  return (dispatch) => {
     for (let rowid of rowsid) {
       dispatch(deleteRow(tabid, rowid, scope));
     }

@@ -31,7 +31,7 @@ class Tab extends Component {
         : '';
 
       if (singleRowView) {
-        getTab(tabId, windowId, docId).then(res => {
+        getTab(tabId, windowId, docId).then((res) => {
           if (res.length) {
             dispatch(updateMasterData(res[0]));
             dispatch(addRowData({ [tabId]: res }, 'master'));
@@ -39,7 +39,7 @@ class Tab extends Component {
           }
         });
       } else {
-        getTab(tabId, windowId, docId, query).then(res => {
+        getTab(tabId, windowId, docId, query).then((res) => {
           dispatch(addRowData({ [tabId]: res }, 'master'));
           onChange && onChange();
         });

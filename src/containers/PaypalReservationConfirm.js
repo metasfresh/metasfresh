@@ -28,7 +28,7 @@ class PaypalReservationConfirm extends Component {
   };
 
   componentDidMount() {
-    this.approvePaypalReservation().catch(exchange => {
+    this.approvePaypalReservation().catch((exchange) => {
       if (exchange.response.data.status == 404) {
         this.setState({
           confirmStatus: 'error',

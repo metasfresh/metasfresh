@@ -122,7 +122,7 @@ class Actions extends Component {
     const { windowType, docId, activeTab, activeTabSelected } = this.props;
 
     try {
-      const requests = activeTabSelected.map(async rowId => {
+      const requests = activeTabSelected.map(async (rowId) => {
         const response = await rowActionsRequest({
           windowId: windowType,
           documentId: docId,
@@ -130,7 +130,7 @@ class Actions extends Component {
           rowId,
         });
 
-        const actions = response.data.actions.map(action => ({
+        const actions = response.data.actions.map((action) => ({
           ...action,
           tabId: activeTab,
           rowId,
@@ -160,7 +160,7 @@ class Actions extends Component {
     const actions = [];
 
     if (plugins.length) {
-      plugins.forEach(plugin => {
+      plugins.forEach((plugin) => {
         if (plugin.headerActions && plugin.headerActions.length) {
           actions.push(...plugin.headerActions);
         }
@@ -175,7 +175,7 @@ class Actions extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} identifier
    */
-  renderAction = identifier => (item, key) => {
+  renderAction = (identifier) => (item, key) => {
     const {
       closeSubheader,
       openModalRow,
@@ -245,7 +245,7 @@ class Actions extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} identifier
    */
-  renderPluginAction = identifier => (item, key) => {
+  renderPluginAction = (identifier) => (item, key) => {
     const { closeSubheader, dispatch } = this.props;
     let handleClick = null;
 

@@ -127,7 +127,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {object} state
    */
-  handleInboxOpen = state => {
+  handleInboxOpen = (state) => {
     this.setState({ isInboxOpen: !!state });
   };
 
@@ -144,7 +144,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {object} state
    */
-  handleUDOpen = state => {
+  handleUDOpen = (state) => {
     this.setState({ isUDOpen: !!state });
   };
 
@@ -194,7 +194,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {object} event
    */
-  handleScroll = event => {
+  handleScroll = (event) => {
     const target = event.srcElement;
     let scrollTop = target && target.body.scrollTop;
 
@@ -223,7 +223,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {bool} open
    */
-  toggleScrollScope = open => {
+  toggleScrollScope = (open) => {
     if (!open) {
       document.body.style.overflow = 'auto';
     } else {
@@ -236,7 +236,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {object} event
    */
-  toggleTooltip = tooltip => {
+  toggleTooltip = (tooltip) => {
     this.setState({ tooltipOpen: tooltip });
   };
 
@@ -352,7 +352,7 @@ class Header extends Component {
   handleClone = (windowId, docId) => {
     const { dispatch } = this.props;
 
-    duplicateRequest('window', windowId, docId).then(response => {
+    duplicateRequest('window', windowId, docId).then((response) => {
       if (response && response.data && response.data.id) {
         dispatch(push(`/window/${windowId}/${response.data.id}`));
       }
@@ -438,7 +438,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {object} event
    */
-  handleDocStatusToggle = close => {
+  handleDocStatusToggle = (close) => {
     const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
 
     if (close) {
@@ -509,7 +509,7 @@ class Header extends Component {
    * @summary ToDo: Describe the method
    * @param {*} where
    */
-  redirect = where => {
+  redirect = (where) => {
     const { dispatch } = this.props;
     dispatch(push(where));
   };
@@ -913,7 +913,7 @@ Header.propTypes = {
  * @summary ToDo: Describe the method
  * @param {object} state
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   inbox: state.appHandler.inbox,
   me: state.appHandler.me,
   pathname: state.routing.locationBeforeTransitions.pathname,

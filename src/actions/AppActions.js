@@ -34,13 +34,13 @@ export function getImageAction(id) {
   return axios({
     url: `${config.API_URL}/image/${id}?maxWidth=200&maxHeight=200`,
     responseType: 'blob',
-  }).then(response => response.data);
+  }).then((response) => response.data);
 }
 
 export function postImageAction(data) {
   return axios
     .post(`${config.API_URL}/image`, data)
-    .then(response => response.data);
+    .then((response) => response.data);
 }
 
 export function getKPIsDashboard() {
@@ -138,7 +138,7 @@ export function logoutSuccess(auth) {
 // REDUX ACTIONS
 
 export function loginSuccess(auth) {
-  return dispatch => {
+  return (dispatch) => {
     localStorage.setItem('isLogged', true);
 
     getUserSession().then(({ data }) => {
@@ -147,13 +147,13 @@ export function loginSuccess(auth) {
       initNumeralLocales(data.language['key'], data.locale);
       MomentTZ.tz.setDefault(data.timeZone);
 
-      auth.initSessionClient(data.websocketEndpoint, msg => {
+      auth.initSessionClient(data.websocketEndpoint, (msg) => {
         const me = JSON.parse(msg.body);
         dispatch(userSessionUpdate(me));
         me.language && languageSuccess(me.language['key']);
         me.locale && initNumeralLocales(me.language['key'], me.locale);
 
-        getNotifications().then(response => {
+        getNotifications().then((response) => {
           dispatch(
             getNotificationsSuccess(
               response.data.notifications,
@@ -164,8 +164,8 @@ export function loginSuccess(auth) {
       });
     });
 
-    getNotificationsEndpoint().then(topic => {
-      auth.initNotificationClient(topic, msg => {
+    getNotificationsEndpoint().then((topic) => {
+      auth.initNotificationClient(topic, (msg) => {
         const notification = JSON.parse(msg.body);
 
         if (notification.eventType === 'Read') {
@@ -205,7 +205,7 @@ export function loginSuccess(auth) {
       });
     });
 
-    getNotifications().then(response => {
+    getNotifications().then((response) => {
       dispatch(
         getNotificationsSuccess(
           response.data.notifications,
@@ -265,7 +265,7 @@ export function clearNotifications() {
 }
 
 export function updateUri(pathname, query, prop, value) {
-  return dispatch => {
+  return (dispatch) => {
     let url = pathname + '?';
 
     // add new prop or overwrite existing

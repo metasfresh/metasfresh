@@ -99,9 +99,9 @@ export function getTab(tabId, windowType, docId, orderBy) {
     null,
     orderBy
   ).then(
-    res =>
+    (res) =>
       res.data &&
-      res.data.map(row => ({
+      res.data.map((row) => ({
         ...row,
         fieldsByName: parseToDisplay(row.fieldsByName),
       }))

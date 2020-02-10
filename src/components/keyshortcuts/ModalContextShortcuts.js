@@ -10,7 +10,7 @@ import { Shortcut } from '../keyshortcuts';
  */
 class ModalContextShortcuts extends Component {
   handlers = {
-    DONE: event => {
+    DONE: (event) => {
       event.preventDefault();
 
       const { visibleFilter, done } = this.props;
@@ -25,7 +25,7 @@ class ModalContextShortcuts extends Component {
 
       return true;
     },
-    CANCEL: event => {
+    CANCEL: (event) => {
       event.preventDefault();
 
       this.props.cancel && this.props.cancel();

@@ -5,7 +5,7 @@ import { toggleOverlay } from '../../actions/WindowActions';
 import QRCode from './QRCode';
 
 class Overlay extends Component {
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { toggleOverlay } = this.props;
 
     if (e.key === 'Escape') {

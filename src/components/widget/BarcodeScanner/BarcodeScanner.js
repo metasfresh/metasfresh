@@ -40,18 +40,18 @@ export default class BarcodeScanner extends Component {
   _process = () => {
     this.reader
       .decodeFromInputVideoDevice(undefined, 'video')
-      .then(result => this._onDetected(result))
+      .then((result) => this._onDetected(result))
       .catch(() => {
         this._changeReader();
       });
   };
 
-  _onDetected = result => {
+  _onDetected = (result) => {
     this._handleStop(false);
     this.props.onDetected(result.text);
   };
 
-  _handleStop = close => {
+  _handleStop = (close) => {
     this.reader.stopStreams();
 
     close && this.props.onClose();

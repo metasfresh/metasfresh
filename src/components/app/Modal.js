@@ -275,7 +275,7 @@ class Modal extends Component {
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord('window', windowType, dataId).then(response => {
+      processNewRecord('window', windowType, dataId).then((response) => {
         dispatch(
           patch(
             'window',
@@ -340,8 +340,8 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    * @param {object} event
    */
-  handleScroll = event => {
-    this.setState(prevState => {
+  handleScroll = (event) => {
+    this.setState((prevState) => {
       const scrolled = event.target.scrollTop > 0;
 
       // return nothing if state did not change
@@ -572,7 +572,7 @@ class Modal extends Component {
           <div
             className="panel-modal-content js-panel-modal-content
                           container-fluid"
-            ref={c => {
+            ref={(c) => {
               if (c) {
                 c.focus();
               }

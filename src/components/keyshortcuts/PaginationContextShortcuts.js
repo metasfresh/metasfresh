@@ -4,7 +4,7 @@ import { Shortcut } from '../keyshortcuts';
 
 export default class PaginationContextShortcuts extends Component {
   handlers = {
-    FIRST_PAGE: event => {
+    FIRST_PAGE: (event) => {
       event.preventDefault();
 
       const activeElement = document.activeElement;
@@ -16,7 +16,7 @@ export default class PaginationContextShortcuts extends Component {
 
       return this.props.handleFirstPage();
     },
-    LAST_PAGE: event => {
+    LAST_PAGE: (event) => {
       event.preventDefault();
 
       const activeElement = document.activeElement;
@@ -27,19 +27,19 @@ export default class PaginationContextShortcuts extends Component {
 
       return this.props.handleLastPage();
     },
-    NEXT_PAGE: event => {
+    NEXT_PAGE: (event) => {
       event.preventDefault();
 
       if (this.props.pages > 1) return this.props.handleNextPage();
       return;
     },
-    PREV_PAGE: event => {
+    PREV_PAGE: (event) => {
       event.preventDefault();
 
       if (this.props.pages > 1) return this.props.handlePrevPage();
       return;
     },
-    SELECT_ALL_ROWS: event => {
+    SELECT_ALL_ROWS: (event) => {
       event.preventDefault();
 
       return this.props.handleSelectAll();

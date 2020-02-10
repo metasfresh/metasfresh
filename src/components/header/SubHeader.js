@@ -13,7 +13,7 @@ import keymap from '../../shortcuts/keymap';
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
-const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
+const simplifyName = (name) => name.toLowerCase().replace(/\s/g, '');
 
 /**
  * @file Class based component.
@@ -38,7 +38,7 @@ class SubHeader extends Component {
 
     // Main dashboard view doesn't have a windowTyep and is throwing 404
     if (windowId) {
-      elementPathRequest(entityType, this.props.windowId).then(response => {
+      elementPathRequest(entityType, this.props.windowId).then((response) => {
         this.setState({ elementPath: response.data });
       });
     }
@@ -49,7 +49,7 @@ class SubHeader extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} e
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { closeSubheader } = this.props;
 
     switch (e.key) {
@@ -112,7 +112,7 @@ class SubHeader extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} e
    */
-  handleClickOutside = event => {
+  handleClickOutside = (event) => {
     const { closeSubheader } = this.props;
     const { target } = event;
 
@@ -129,7 +129,7 @@ class SubHeader extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} value
    */
-  toggleAttachmentDelete = value => {
+  toggleAttachmentDelete = (value) => {
     this.setState({ attachmentHovered: value });
   };
 
@@ -165,9 +165,9 @@ class SubHeader extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} nodes
    */
-  handleUpdateBreadcrumb = nodes => {
+  handleUpdateBreadcrumb = (nodes) => {
     const { dispatch } = this.props;
-    nodes.map(node => dispatch(updateBreadcrumb(node)));
+    nodes.map((node) => dispatch(updateBreadcrumb(node)));
   };
 
   /**
@@ -175,7 +175,7 @@ class SubHeader extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} event
    */
-  handleDownloadSelected = event => {
+  handleDownloadSelected = (event) => {
     if (this.props.selected.length === 0) {
       event.preventDefault();
     }
@@ -327,8 +327,8 @@ class SubHeader extends Component {
         hotkey: keymap.DELETE_DOCUMENT,
       },
     ]
-      .filter(docLink => standardActions.has(docLink.action))
-      .map(docLink => {
+      .filter((docLink) => standardActions.has(docLink.action))
+      .map((docLink) => {
         return this.renderDocLink(docLink);
       });
 
@@ -511,7 +511,7 @@ class SubHeader extends Component {
         className="subheader-container overlay-shadow subheader-open js-not-unselect"
         tabIndex={0}
         onKeyDown={this.handleKeyDown}
-        ref={c => {
+        ref={(c) => {
           this.subHeader = c;
         }}
       >

@@ -13,7 +13,7 @@ import Header from './header/Header';
  * @module Container
  * @extends Component
  */
-const Container = props => {
+const Container = (props) => {
   const {
     docActionElem,
     docStatusData,
@@ -71,7 +71,7 @@ const Container = props => {
       );
 
       PluginModalComponent = parentPlugin.components.filter(
-        component => component.id === pluginModal.id
+        (component) => component.id === pluginModal.id
       )[0].component;
     }
   }
@@ -309,7 +309,7 @@ Container.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   connectionError: state.windowHandler.connectionError || false,
   pluginComponents: state.pluginsHandler.components,
 });

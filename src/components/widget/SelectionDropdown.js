@@ -107,7 +107,7 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} up
    */
-  navigate = up => {
+  navigate = (up) => {
     this.ignoreMouse = true;
     this.ignoreNextMouseEnter = true;
 
@@ -145,10 +145,10 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} char
    */
-  navigateToAlphanumeric = char => {
+  navigateToAlphanumeric = (char) => {
     const { selected, options, onChange } = this.props;
     const items = options.filter(
-      item =>
+      (item) =>
         item.caption &&
         item.caption.length &&
         item.caption[0].toUpperCase() === char.toUpperCase()
@@ -257,7 +257,7 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} children
    */
-  renderHeader = children => {
+  renderHeader = (children) => {
     return (
       <div className="input-dropdown-list-option input-dropdown-list-header">
         {children}
@@ -270,13 +270,13 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} option
    */
-  renderOption = option => {
+  renderOption = (option) => {
     const { selected } = this.props;
     const { key, caption, description } = option;
 
     return (
       <div
-        ref={ref => this.optionToRef.set(option, ref)}
+        ref={(ref) => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
         data-test-id={`${key}${caption}`}
         className={classnames(
@@ -330,7 +330,7 @@ export default class SelectionDropdown extends Component {
 
     return (
       <div
-        ref={ref => (this.wrapper = ref)}
+        ref={(ref) => (this.wrapper = ref)}
         className="input-dropdown-list"
         style={style}
       >

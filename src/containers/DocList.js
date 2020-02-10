@@ -50,7 +50,7 @@ class DocList extends Component {
    * @method componentDidUpdate
    * @summary ToDo: Describe the method.
    */
-  componentDidUpdate = prevProps => {
+  componentDidUpdate = (prevProps) => {
     const { dispatch, windowType } = this.props;
 
     if (prevProps.windowType !== windowType) {
@@ -72,7 +72,7 @@ class DocList extends Component {
    * @method setModalTitle
    * @summary ToDo: Describe the method.
    */
-  setModalTitle = title => {
+  setModalTitle = (title) => {
     this.setState({ modalTitle: title });
   };
 
@@ -80,7 +80,7 @@ class DocList extends Component {
    * @method setModalDescription
    * @summary ToDo: Describe the method.
    */
-  setModalDescription = desc => {
+  setModalDescription = (desc) => {
     this.setState({ modalDescription: desc });
   };
 
@@ -88,7 +88,7 @@ class DocList extends Component {
    * @method setNotFound
    * @summary ToDo: Describe the method.
    */
-  setNotFound = isNotFound => {
+  setNotFound = (isNotFound) => {
     this.setState({ notfound: isNotFound });
   };
 
@@ -96,7 +96,7 @@ class DocList extends Component {
    * @method handleUpdateParentSelectedIds
    * @summary ToDo: Describe the method.
    */
-  handleUpdateParentSelectedIds = childSelection => {
+  handleUpdateParentSelectedIds = (childSelection) => {
     this.masterDocumentList.updateQuickActions(childSelection);
   };
 
@@ -156,7 +156,7 @@ class DocList extends Component {
           })}
         >
           <DocumentList
-            ref={element => {
+            ref={(element) => {
               this.masterDocumentList = element ? element : null;
             }}
             type="grid"
@@ -242,7 +242,7 @@ DocList.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,

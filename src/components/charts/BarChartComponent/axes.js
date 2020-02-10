@@ -10,9 +10,9 @@ const getXAxisTickAngle = (size, width) => {
 };
 
 export const populateY0Axis = (svg, rangeY, width, data, fields) => {
-  const keys = fields.map(field => field.fieldName);
-  const minY = d3.min(data, d => {
-    return d3.min(keys, key => {
+  const keys = fields.map((field) => field.fieldName);
+  const minY = d3.min(data, (d) => {
+    return d3.min(keys, (key) => {
       return d[key];
     });
   });
@@ -47,7 +47,7 @@ export const populateXAxis = (svg, rangeX0) => {
       sizes.push(this.getBBox());
     });
 
-  const maxW = Math.max(...sizes.map(size => size.width));
+  const maxW = Math.max(...sizes.map((size) => size.width));
 
   if (maxW <= rangeX0.bandwidth()) {
     svg
@@ -60,10 +60,12 @@ export const populateXAxis = (svg, rangeX0) => {
   }
 
   const maxH = Math.max(
-    ...sizes.filter(size => size.width >= maxW).map(size => size.height)
+    ...sizes.filter((size) => size.width >= maxW).map((size) => size.height)
   );
 
-  const size = sizes.find(item => item.width === maxW && item.height === maxH);
+  const size = sizes.find(
+    (item) => item.width === maxW && item.height === maxH
+  );
   const radianAngle = getXAxisTickAngle(size, rangeX0.bandwidth());
   const angle =
     radianAngle > Math.PI / 2 ? -90 : radianAngle * (-180 / Math.PI);
@@ -81,7 +83,7 @@ export const populateXAxis = (svg, rangeX0) => {
     );
 };
 
-export const getXAxisLabelsHeight = svg => {
+export const getXAxisLabelsHeight = (svg) => {
   const heights = [];
 
   svg.selectAll('.tick').each(function() {

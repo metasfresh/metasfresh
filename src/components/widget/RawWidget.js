@@ -219,7 +219,7 @@ export class RawWidget extends Component {
     const isValue =
       widgetData[0].value !== undefined ||
       (widgetData[0].status && widgetData[0].status.value !== undefined);
-    let fieldData = widgetData.find(widget => widget.field === property);
+    let fieldData = widgetData.find((widget) => widget.field === property);
     if (!fieldData) {
       fieldData = widgetData[0];
     }
@@ -298,7 +298,7 @@ export class RawWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} value
    */
-  handleErrorPopup = value => {
+  handleErrorPopup = (value) => {
     this.setState({
       errorPopup: value,
     });
@@ -309,7 +309,7 @@ export class RawWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} warning
    */
-  clearFieldWarning = warning => {
+  clearFieldWarning = (warning) => {
     if (warning) {
       this.setState({
         clearedFieldWarning: true,
@@ -322,7 +322,7 @@ export class RawWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} show
    */
-  toggleTooltip = show => {
+  toggleTooltip = (show) => {
     this.setState({
       tooltipToggled: show,
     });
@@ -333,7 +333,7 @@ export class RawWidget extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} reason
    */
-  renderErrorPopup = reason => {
+  renderErrorPopup = (reason) => {
     return (
       <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
     );
@@ -411,7 +411,7 @@ export class RawWidget extends Component {
     }
 
     const widgetProperties = {
-      ref: c => (this.rawWidget = c),
+      ref: (c) => (this.rawWidget = c),
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
@@ -422,9 +422,10 @@ export class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e => handleChange && handleChange(widgetField, e.target.value),
-      onBlur: e => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: e =>
+      onChange: (e) =>
+        handleChange && handleChange(widgetField, e.target.value),
+      onBlur: (e) => this.handleBlur(widgetField, e.target.value, id),
+      onKeyDown: (e) =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
       title: widgetValue,
       id,
@@ -473,8 +474,8 @@ export class RawWidget extends Component {
                   tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => handleChange(widgetField, date)}
-                patch={date =>
+                onChange={(date) => handleChange(widgetField, date)}
+                patch={(date) =>
                   this.handlePatch(
                     widgetField,
                     this.generateMomentObj(date, DATE_FORMAT),
@@ -508,8 +509,8 @@ export class RawWidget extends Component {
                 tabIndex: tabIndex,
               }}
               value={widgetValue || widgetData[0].value}
-              onChange={date => handleChange(widgetField, date)}
-              patch={date =>
+              onChange={(date) => handleChange(widgetField, date)}
+              patch={(date) =>
                 this.handlePatch(
                   widgetField,
                   this.generateMomentObj(date, DATE_TIMEZONE_FORMAT),
@@ -540,8 +541,8 @@ export class RawWidget extends Component {
                 tabIndex: tabIndex,
               }}
               value={widgetValue}
-              onChange={date => handleChange(widgetField, date)}
-              patch={date =>
+              onChange={(date) => handleChange(widgetField, date)}
+              patch={(date) =>
                 this.handlePatch(
                   widgetField,
                   this.generateMomentObj(date, TIME_FORMAT),
@@ -569,8 +570,8 @@ export class RawWidget extends Component {
                 tabIndex: tabIndex,
               }}
               value={widgetValue}
-              onChange={date => handleChange(widgetField, date)}
-              patch={date =>
+              onChange={(date) => handleChange(widgetField, date)}
+              patch={(date) =>
                 this.handlePatch(
                   widgetField,
                   this.generateMomentObj(date, `x`),
@@ -754,7 +755,7 @@ export class RawWidget extends Component {
               <input
                 {...widgetProperties}
                 type="password"
-                ref={c => (this.rawWidget = c)}
+                ref={(c) => (this.rawWidget = c)}
               />
               {icon && <i className="meta-icon-edit input-icon-right" />}
             </div>
@@ -829,8 +830,8 @@ export class RawWidget extends Component {
               'input-table': rowId && !isModal,
             })}
             tabIndex={tabIndex}
-            ref={c => (this.rawWidget = c)}
-            onKeyDown={e => {
+            ref={(c) => (this.rawWidget = c)}
+            onKeyDown={(e) => {
               e.key === ' ' &&
                 this.handlePatch(widgetField, !widgetData[0].value, id);
             }}
@@ -840,7 +841,7 @@ export class RawWidget extends Component {
               checked={widgetData[0].value}
               disabled={readonly}
               tabIndex="-1"
-              onChange={e =>
+              onChange={(e) =>
                 this.handlePatch(widgetField, e.target.checked, id)
               }
             />
@@ -854,7 +855,7 @@ export class RawWidget extends Component {
               [`text-${gridAlign}`]: gridAlign,
             })}
             tabIndex={tabIndex}
-            ref={c => (this.rawWidget = c)}
+            ref={(c) => (this.rawWidget = c)}
           >
             {widgetData[0].value}
           </div>
@@ -869,7 +870,7 @@ export class RawWidget extends Component {
             }
             onClick={() => this.handlePatch(widgetField)}
             tabIndex={tabIndex}
-            ref={c => (this.rawWidget = c)}
+            ref={(c) => (this.rawWidget = c)}
           >
             {widgetData[0].value &&
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
@@ -885,7 +886,7 @@ export class RawWidget extends Component {
             }
             onClick={this.handleProcess}
             tabIndex={tabIndex}
-            ref={c => (this.rawWidget = c)}
+            ref={(c) => (this.rawWidget = c)}
           >
             {caption}
           </button>
@@ -899,10 +900,10 @@ export class RawWidget extends Component {
             dataId={dataId}
             docId={docId}
             activeTab={activeTab}
-            onChange={option => this.handlePatch(fields[1].field, option)}
+            onChange={(option) => this.handlePatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
-            ref={c => (this.rawWidget = c)}
+            ref={(c) => (this.rawWidget = c)}
           />
         );
       case 'ProductAttributes':
@@ -921,7 +922,7 @@ export class RawWidget extends Component {
             onBlur={this.handleBlur}
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
-            patch={option => this.handlePatch(widgetField, option)}
+            patch={(option) => this.handlePatch(widgetField, option)}
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
@@ -940,7 +941,7 @@ export class RawWidget extends Component {
             rowId={rowId}
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
-            patch={option => this.handlePatch(widgetField, option)}
+            patch={(option) => this.handlePatch(widgetField, option)}
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
@@ -966,7 +967,7 @@ export class RawWidget extends Component {
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={tabIndex}
-            ref={c => (this.rawWidget = c)}
+            ref={(c) => (this.rawWidget = c)}
           >
             {caption}
           </button>
@@ -990,7 +991,7 @@ export class RawWidget extends Component {
             viewId={viewId}
             selected={values}
             className={this.getClassNames()}
-            onChange={value =>
+            onChange={(value) =>
               this.handlePatch(widgetField, {
                 values: value,
               })
@@ -1061,7 +1062,7 @@ export class RawWidget extends Component {
         : null;
 
     const widgetFieldsName = fields
-      .map(field => 'form-field-' + field.field)
+      .map((field) => 'form-field-' + field.field)
       .join(' ');
 
     let labelClass;
@@ -1173,7 +1174,7 @@ export class RawWidget extends Component {
               <DevicesWidget
                 devices={fields[0].devices}
                 tabIndex={1}
-                handleChange={value =>
+                handleChange={(value) =>
                   handlePatch && handlePatch(fields[0].field, value)
                 }
               />
@@ -1188,7 +1189,7 @@ export class RawWidget extends Component {
 RawWidget.propTypes = RawWidgetPropTypes;
 RawWidget.defaultProps = RawWidgetDefaultProps;
 
-export default connect(state => ({
+export default connect((state) => ({
   modalVisible: state.windowHandler.modal.visible,
   timeZone: state.appHandler.me.timeZone,
 }))(RawWidget);

@@ -28,7 +28,7 @@ class Breadcrumb extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} page
    */
-  linkToPage = page => {
+  linkToPage = (page) => {
     const { dispatch } = this.props;
     dispatch(push('/window/' + page));
   };
@@ -49,7 +49,7 @@ class Breadcrumb extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} tooltip
    */
-  toggleTooltip = tooltip => {
+  toggleTooltip = (tooltip) => {
     this.setState({
       tooltipOpen: tooltip,
     });
@@ -60,7 +60,7 @@ class Breadcrumb extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} showTooltip
    */
-  toggleTooltipOnFirstLevel = showTooltip => {
+  toggleTooltipOnFirstLevel = (showTooltip) => {
     const breadcrumbWrapper = document.getElementsByClassName(
       'header-breadcrumb-wrapper'
     )[0];
@@ -154,7 +154,7 @@ class Breadcrumb extends Component {
                 ? 'header-item-last-level'
                 : '')
             }
-            onClick={e => this.handleClick(e, menu)}
+            onClick={(e) => this.handleClick(e, menu)}
             onMouseEnter={
               index
                 ? () =>
@@ -180,7 +180,7 @@ class Breadcrumb extends Component {
               }}
               nodeId={menu.nodeId}
               node={menu}
-              onClickOutside={e => handleMenuOverlay(e, '')}
+              onClickOutside={(e) => handleMenuOverlay(e, '')}
               disableOnClickOutside={menuOverlay !== menu.nodeId}
             />
           )}

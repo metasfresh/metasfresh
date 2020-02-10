@@ -19,7 +19,7 @@ class TablePagination extends PureComponent {
     };
   }
 
-  handleValue = e => {
+  handleValue = (e) => {
     e.preventDefault();
     this.setState({
       value: e.target.value ? e.target.value : '',
@@ -82,7 +82,7 @@ class TablePagination extends PureComponent {
     );
   };
 
-  handleSelectWholePage = value => {
+  handleSelectWholePage = (value) => {
     this.setState({
       selectedWholePage: value,
     });
@@ -102,11 +102,11 @@ class TablePagination extends PureComponent {
         <input
           type="number"
           min="1"
-          ref={c => (this.goToPage = c)}
+          ref={(c) => (this.goToPage = c)}
           max={pages}
           value={value}
-          onChange={e => this.handleValue(e)}
-          onKeyDown={e => this.handleSubmit(e, value, pages)}
+          onChange={(e) => this.handleValue(e)}
+          onKeyDown={(e) => this.handleSubmit(e, value, pages)}
         />
       </div>
     );

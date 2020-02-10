@@ -176,12 +176,12 @@ class Table extends Component {
     }
   }
 
-  showSelectedIncludedView = selected => {
+  showSelectedIncludedView = (selected) => {
     const { showIncludedViewOnSelect, openIncludedViewOnSelect } = this.props;
     const { rows } = this.state;
 
     if (openIncludedViewOnSelect && selected.length === 1) {
-      rows.forEach(item => {
+      rows.forEach((item) => {
         if (item.id === selected[0]) {
           showIncludedViewOnSelect({
             showIncludedView: item.supportIncludedViews,
@@ -195,7 +195,7 @@ class Table extends Component {
     }
   };
 
-  getIndentData = selectFirst => {
+  getIndentData = (selectFirst) => {
     const {
       rowData,
       tabId,
@@ -236,7 +236,7 @@ class Table extends Component {
             selected[0] &&
             firstRow.id !== selected[0]
           ) {
-            selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
+            selectedIndex = _.findIndex(rows, (row) => row.id === selected[0]);
           }
 
           if (!selectedIndex) {
@@ -249,7 +249,7 @@ class Table extends Component {
         let mapCollapsed = [];
 
         if (collapsible && rows && rows.length && selectFirst) {
-          rows.map(row => {
+          rows.map((row) => {
             if (row.indent.length >= expandedDepth && row.includedDocuments) {
               mapCollapsed = mapCollapsed.concat(collapsedMap(row));
               updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
@@ -307,13 +307,13 @@ class Table extends Component {
     let leafs = [];
     let leafsIds = [];
 
-    rows.map(item => {
+    rows.map((item) => {
       if (item.id == selected[0]) {
         leafs = mapIncluded(item);
       }
     });
 
-    leafs.map(item => {
+    leafs.map((item) => {
       leafsIds = leafsIds.concat(item.id);
     });
 
@@ -373,7 +373,7 @@ class Table extends Component {
     return newSelected;
   };
 
-  selectRangeProduct = ids => {
+  selectRangeProduct = (ids) => {
     const { dispatch, tabInfo, windowId, viewId } = this.props;
 
     this.setState({ selected: [...ids] });
@@ -393,7 +393,7 @@ class Table extends Component {
     const { keyProperty } = this.props;
     const { rows } = this.state;
     const property = keyProperty ? keyProperty : 'rowId';
-    const toSelect = rows.map(item => item[property]);
+    const toSelect = rows.map((item) => item[property]);
 
     this.selectRangeProduct(toSelect);
   };
@@ -426,7 +426,7 @@ class Table extends Component {
     );
   };
 
-  deselectProduct = id => {
+  deselectProduct = (id) => {
     const { dispatch, tabInfo, windowId, viewId } = this.props;
     const { selected } = this.state;
     const index = selected.indexOf(id);
@@ -441,7 +441,7 @@ class Table extends Component {
     return newSelected;
   };
 
-  deselectAllProducts = cb => {
+  deselectAllProducts = (cb) => {
     const { dispatch, tabInfo, windowId, viewId } = this.props;
 
     this.setState(
@@ -477,7 +477,7 @@ class Table extends Component {
     }
   };
 
-  handleClickOutside = event => {
+  handleClickOutside = (event) => {
     const {
       showIncludedViewOnSelect,
       viewId,
@@ -529,7 +529,7 @@ class Table extends Component {
     }
   };
 
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { keyProperty, mainTable, readonly, closeOverlays } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
 
@@ -554,10 +554,10 @@ class Table extends Component {
 
         const array =
           collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map(item => item[keyProperty])
-            : rows.map(item => item[keyProperty]);
+            ? collapsedArrayMap.map((item) => item[keyProperty])
+            : rows.map((item) => item[keyProperty]);
         const currentId = array.findIndex(
-          x => x === selected[selected.length - 1]
+          (x) => x === selected[selected.length - 1]
         );
 
         if (currentId >= array.length - 1) {
@@ -581,10 +581,10 @@ class Table extends Component {
 
         const array =
           collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map(item => item[keyProperty])
-            : rows.map(item => item[keyProperty]);
+            ? collapsedArrayMap.map((item) => item[keyProperty])
+            : rows.map((item) => item[keyProperty]);
         const currentId = array.findIndex(
-          x => x === selected[selected.length - 1]
+          (x) => x === selected[selected.length - 1]
         );
 
         if (currentId <= 0) {
@@ -656,7 +656,7 @@ class Table extends Component {
     });
   };
 
-  handleDoubleClick = id => {
+  handleDoubleClick = (id) => {
     const { isIncluded, onDoubleClick } = this.props;
 
     if (!isIncluded) {
@@ -768,16 +768,16 @@ class Table extends Component {
     });
   };
 
-  getProductRange = id => {
+  getProductRange = (id) => {
     const { keyProperty } = this.props;
     const { rows, selected } = this.state;
     let arrayIndex;
     let selectIdA;
     let selectIdB;
 
-    arrayIndex = rows.map(item => item[keyProperty]);
-    selectIdA = arrayIndex.findIndex(x => x === id);
-    selectIdB = arrayIndex.findIndex(x => x === selected[0]);
+    arrayIndex = rows.map((item) => item[keyProperty]);
+    selectIdA = arrayIndex.findIndex((x) => x === id);
+    selectIdB = arrayIndex.findIndex((x) => x === selected[0]);
 
     const selectedArr = [selectIdA, selectIdB];
 
@@ -825,7 +825,7 @@ class Table extends Component {
     });
   };
 
-  handlePromptSubmitClick = selected => {
+  handlePromptSubmitClick = (selected) => {
     const { dispatch, windowId, docId, updateDocList, tabId } = this.props;
 
     this.setState(
@@ -840,7 +840,7 @@ class Table extends Component {
           docId ? docId : null,
           docId ? tabId : null,
           selected
-        ).then(response => {
+        ).then((response) => {
           if (docId) {
             dispatch(deleteLocal(tabId, selected, 'master', response));
           } else {
@@ -851,7 +851,7 @@ class Table extends Component {
     );
   };
 
-  handleZoomInto = fieldName => {
+  handleZoomInto = (fieldName) => {
     const { entity, windowId, docId, tabId, viewId } = this.props;
     const { selected } = this.state;
 
@@ -862,7 +862,7 @@ class Table extends Component {
       entity === 'window' ? tabId : viewId,
       selected[0],
       fieldName
-    ).then(res => {
+    ).then((res) => {
       res &&
         res.data &&
         window.open(
@@ -887,14 +887,14 @@ class Table extends Component {
     });
 
     if (collapsed) {
-      this.setState(prev => ({
+      this.setState((prev) => ({
         collapsedParentsRows: update(prev.collapsedParentsRows, {
           $splice: [[prev.collapsedParentsRows.indexOf(node[keyProperty]), 1]],
         }),
       }));
     } else {
       if (collapsedParentsRows.indexOf(node[keyProperty]) > -1) return;
-      this.setState(prev => ({
+      this.setState((prev) => ({
         collapsedParentsRows: prev.collapsedParentsRows.concat(
           node[keyProperty]
         ),
@@ -902,16 +902,16 @@ class Table extends Component {
     }
 
     node.includedDocuments &&
-      node.includedDocuments.map(node => {
+      node.includedDocuments.map((node) => {
         if (collapsed) {
-          this.setState(prev => ({
+          this.setState((prev) => ({
             collapsedRows: update(prev.collapsedRows, {
               $splice: [[prev.collapsedRows.indexOf(node[keyProperty]), 1]],
             }),
           }));
         } else {
           if (collapsedRows.indexOf(node[keyProperty]) > -1) return;
-          this.setState(prev => ({
+          this.setState((prev) => ({
             collapsedRows: prev.collapsedRows.concat(node[keyProperty]),
           }));
           node.includedDocuments && this.handleRowCollapse(node, collapsed);
@@ -919,14 +919,14 @@ class Table extends Component {
       });
   };
 
-  handleShortcutIndent = expand => {
+  handleShortcutIndent = (expand) => {
     const { selected, rows, collapsedParentsRows } = this.state;
     const { keyProperty } = this.props;
 
     let node = '';
     let isCollapsed = '';
     selected.length === 1 &&
-      rows.map(item => {
+      rows.map((item) => {
         if (item.id === selected[0]) {
           if (item.includedDocuments) {
             const keyProp = item[keyProperty];
@@ -964,8 +964,8 @@ class Table extends Component {
       if (!rows || !rows.length) return;
 
       rows
-        .filter(row => row[keyProperty] === rowId)
-        .map(item => {
+        .filter((row) => row[keyProperty] === rowId)
+        .map((item) => {
           let field = item.fieldsByName[prop];
 
           if (field) {
@@ -1010,7 +1010,7 @@ class Table extends Component {
 
     this.rowRefs = {};
 
-    let renderRows = rows.filter(row => {
+    let renderRows = rows.filter((row) => {
       if (collapsedRows) {
         return collapsedRows.indexOf(row[keyProperty]) === -1;
       }
@@ -1050,7 +1050,7 @@ class Table extends Component {
           collapsedParentsRows.indexOf(item[keyProperty]) > -1
         }
         odd={i & 1}
-        ref={c => {
+        ref={(c) => {
           if (c) {
             const keyProp = item[keyProperty];
             this.rowRefs[keyProp] = c.wrappedInstance;
@@ -1156,7 +1156,7 @@ class Table extends Component {
 
     return (
       <div
-        ref={ref => (this.wrapper = ref)}
+        ref={(ref) => (this.wrapper = ref)}
         className={classnames('table-flex-wrapper', {
           'col-12': toggleState === 'grid' || toggleState == null,
           'col-6': toggleState === 'all',
@@ -1243,7 +1243,7 @@ class Table extends Component {
                 }
               )}
               onKeyDown={this.handleKeyDown}
-              ref={c => (this.table = c)}
+              ref={(c) => (this.table = c)}
               onCopy={handleCopy}
             >
               <thead>
@@ -1260,10 +1260,10 @@ class Table extends Component {
                   deselect={this.deselectAllProducts}
                 />
               </thead>
-              <tbody ref={c => (this.tbody = c)}>
+              <tbody ref={(c) => (this.tbody = c)}>
                 {this.renderTableBody()}
               </tbody>
-              <tfoot ref={c => (this.tfoot = c)} />
+              <tfoot ref={(c) => (this.tfoot = c)} />
             </table>
 
             {this.renderEmptyInfo(rowData, tabId)}
@@ -1286,7 +1286,7 @@ class Table extends Component {
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
-              handleChangePage={pages => {
+              handleChangePage={(pages) => {
                 this.deselectAllProducts();
                 handleChangePage(pages);
               }}
@@ -1352,7 +1352,7 @@ class Table extends Component {
 
 Table.propTypes = propTypes;
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   allowShortcut: state.windowHandler.allowShortcut,
   allowOutsideClick: state.windowHandler.allowOutsideClick,
   modalVisible: state.windowHandler.modal.visible,

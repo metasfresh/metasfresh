@@ -25,6 +25,11 @@
         "react/display-name": "warn"
     },
     "plugins": ["prettier", "react", "jest"],
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
     "globals": {
         "localStorage": true,
         "Promise": true,

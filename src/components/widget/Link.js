@@ -6,7 +6,7 @@ class Link extends Component {
     super(props);
   }
 
-  handleClick = url => {
+  handleClick = (url) => {
     window.open(url, '_blank');
   };
 

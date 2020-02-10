@@ -30,7 +30,7 @@ class Inbox extends Component {
    * @param {*} item
    * @todo Write the documentation
    */
-  handleClick = item => {
+  handleClick = (item) => {
     const { dispatch, close, location } = this.props;
     if (item.target) {
       switch (item.target.targetType) {
@@ -118,7 +118,7 @@ class Inbox extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     const { close } = this.props;
     const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
     switch (e.key) {
@@ -153,7 +153,7 @@ class Inbox extends Component {
     return (
       <div
         className="js-inbox-wrapper js-not-unselect"
-        onKeyDown={e => this.handleKeyDown(e)}
+        onKeyDown={(e) => this.handleKeyDown(e)}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -174,7 +174,7 @@ class Inbox extends Component {
                       item={item}
                       close={close}
                       onClick={() => this.handleClick(item)}
-                      onDelete={e => this.handleDelete(e, item)}
+                      onDelete={(e) => this.handleDelete(e, item)}
                     />
                   ))}
                 {inbox && inbox.notifications.length == 0 && (
@@ -221,7 +221,7 @@ const routerInbox = withRouter(
  * @param {*} Child
  * @todo Write the documentation
  */
-const addClickOutsideHandler = Child => {
+const addClickOutsideHandler = (Child) => {
   return class WithClickOutsideHandler extends Component {
     static propTypes = {
       close: PropTypes.func,

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
  * @file Fnct component.
  * @module Loader
  */
-const Loader = props => {
+const Loader = (props) => {
   const { loaderType } = props;
 
   return (

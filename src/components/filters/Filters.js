@@ -175,7 +175,7 @@ class Filters extends PureComponent {
         let captionsArray = ['', ''];
 
         if (filter.parameters && filter.parameters.length) {
-          filter.parameters.forEach(filterParameter => {
+          filter.parameters.forEach((filterParameter) => {
             const { value, parameterName, defaultValue } = filterParameter;
 
             if (!defaultValue) {
@@ -185,7 +185,7 @@ class Filters extends PureComponent {
 
               const parentFilter = filtersData.get(filterId);
               const filterParameter = parentFilter.parameters.find(
-                param => param.parameterName === parameterName
+                (param) => param.parameterName === parameterName
               );
               let captionName = filterParameter.caption;
               let itemCaption = filterParameter.caption;
@@ -268,21 +268,23 @@ class Filters extends PureComponent {
    * @summary ToDo: Describe the method
    * @param {array} data
    */
-  sortFilters = data => {
+  sortFilters = (data) => {
     return {
       frequentFilters: this.annotateFilters(
         data
-          .filter(filter => filter.frequent)
+          .filter((filter) => filter.frequent)
           .toIndexedSeq()
           .toArray()
       ),
       notFrequentFilters: this.annotateFilters(
         data
-          .filter(filter => !filter.frequent && !filter.static)
+          .filter((filter) => !filter.frequent && !filter.static)
           .toIndexedSeq()
           .toArray()
       ),
-      staticFilters: this.annotateFilters(data.filter(filter => filter.static))
+      staticFilters: this.annotateFilters(
+        data.filter((filter) => filter.static)
+      )
         .toIndexedSeq()
         .toArray(),
     };
@@ -293,9 +295,9 @@ class Filters extends PureComponent {
    * @summary ToDo: Describe the method
    * @param {*} filters
    */
-  isFilterValid = filters => {
+  isFilterValid = (filters) => {
     if (filters.parameters) {
-      return !filters.parameters.filter(item => item.mandatory && !item.value)
+      return !filters.parameters.filter((item) => item.mandatory && !item.value)
         .length;
     }
 
@@ -307,13 +309,13 @@ class Filters extends PureComponent {
    * @summary ToDo: Describe the method
    * @param {*} filterId
    */
-  isFilterActive = filterId => {
+  isFilterActive = (filterId) => {
     const { activeFilter } = this.state;
 
     if (activeFilter) {
       // filters with only defaultValues shouldn't be set to active
       const active = activeFilter.find(
-        item => item.filterId === filterId && !item.defaultVal
+        (item) => item.filterId === filterId && !item.defaultVal
       );
 
       return typeof active !== 'undefined';
@@ -327,7 +329,7 @@ class Filters extends PureComponent {
    * @summary ToDo: Describe the method
    * @param {*} params
    */
-  parseToPatch = params => {
+  parseToPatch = (params) => {
     return params.reduce((acc, param) => {
       if (
         // filters with only defaltValue shouldn't be sent to server
@@ -385,7 +387,7 @@ class Filters extends PureComponent {
    *  accepts them.
    * @param {object} filterToAdd
    */
-  setFilterActive = filterToAdd => {
+  setFilterActive = (filterToAdd) => {
     const { updateDocList } = this.props;
     let { filtersActive } = this.props;
     const { flatFiltersMap } = this.state;
@@ -399,7 +401,7 @@ class Filters extends PureComponent {
     if (flatFiltersMap) {
       activeFilters = activeFilters.map((filter, filterId) => {
         filter.parameters &&
-          filter.parameters.forEach(parameter => {
+          filter.parameters.forEach((parameter) => {
             const { value, valueTo, parameterName } = parameter;
             const singleFilter = flatFiltersMap[`${filterId}-${parameterName}`];
 
@@ -431,7 +433,7 @@ class Filters extends PureComponent {
    *  widgets that are bigger than filter wrapper
    * @param {*} value
    */
-  handleShow = value => {
+  handleShow = (value) => {
     this.setState({
       widgetShown: value,
     });
@@ -452,7 +454,7 @@ class Filters extends PureComponent {
         if (id === filterToClear.filterId) {
           if (propertyName && item.parameters && item.parameters.length) {
             const parametersCopy = item.parameters.filter(
-              param => param.parameterName !== propertyName
+              (param) => param.parameterName !== propertyName
             );
 
             if (parametersCopy.length > 0) {
@@ -485,15 +487,15 @@ class Filters extends PureComponent {
    * @summary I think it creates caption for active filters to show when the widget is closed - Kuba
    * @param {array} unannotatedFilters
    */
-  annotateFilters = unannotatedFilters => {
+  annotateFilters = (unannotatedFilters) => {
     const { activeFilter } = this.state;
 
-    return unannotatedFilters.map(unannotatedFilter => {
+    return unannotatedFilters.map((unannotatedFilter) => {
       const parameter =
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
       const currentFilter = activeFilter
-        ? activeFilter.find(f => f.filterId === unannotatedFilter.filterId)
+        ? activeFilter.find((f) => f.filterId === unannotatedFilter.filterId)
         : null;
       const activeParameter =
         parameter && isActive && currentFilter && currentFilter.parameters[0];
@@ -501,7 +503,7 @@ class Filters extends PureComponent {
       const filterType =
         unannotatedFilter.parameters && activeParameter
           ? unannotatedFilter.parameters.find(
-              filter => filter.parameterName === activeParameter.parameterName
+              (filter) => filter.parameterName === activeParameter.parameterName
             )
           : parameter && parameter.widgetType;
 
@@ -549,7 +551,7 @@ class Filters extends PureComponent {
     return (
       <div
         className="filter-wrapper js-not-unselect"
-        ref={c => (this.filtersWrapper = c)}
+        ref={(c) => (this.filtersWrapper = c)}
       >
         <span className="filter-caption">
           {`${counterpart.translate('window.filters.caption')}: `}
@@ -626,7 +628,7 @@ Filters.propTypes = {
   modalVisible: PropTypes.bool,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   const { allowOutsideClick, modal } = state.windowHandler;
 
   return {

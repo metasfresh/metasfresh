@@ -133,7 +133,7 @@ export default function appHandler(state = initialState, action) {
         inbox: {
           notifications: {
             $set: state.inbox.notifications.filter(
-              item => item.id !== action.notificationId
+              (item) => item.id !== action.notificationId
             ),
           },
           unreadCount: {
@@ -147,7 +147,7 @@ export default function appHandler(state = initialState, action) {
       return update(state, {
         inbox: {
           notifications: {
-            $set: state.inbox.notifications.map(item =>
+            $set: state.inbox.notifications.map((item) =>
               item.id === action.notificationId ? { ...item, read: true } : item
             ),
           },
@@ -162,7 +162,7 @@ export default function appHandler(state = initialState, action) {
       return update(state, {
         inbox: {
           notifications: {
-            $set: state.inbox.notifications.map(item => ({
+            $set: state.inbox.notifications.map((item) => ({
               ...item,
               read: true,
             })),

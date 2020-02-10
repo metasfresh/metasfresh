@@ -74,23 +74,23 @@ export function updateBreadcrumb(node) {
 }
 
 export function getRootBreadcrumb() {
-  return rootRequest(6, 10, true).then(root => ({
+  return rootRequest(6, 10, true).then((root) => ({
     nodeId: '0',
     children: root.data.children,
   }));
 }
 
 export function getWindowBreadcrumb(id) {
-  return dispatch => {
+  return (dispatch) => {
     if (!breadcrumbsRequested && breadcrumbsId !== id) {
       breadcrumbsRequested = true;
 
       elementPathRequest('window', id)
-        .then(response => {
+        .then((response) => {
           let pathData = flattenOneLine(response.data);
           return pathData;
         })
-        .then(item => {
+        .then((item) => {
           dispatch(setBreadcrumb(item.reverse()));
 
           breadcrumbsId = id;
@@ -107,16 +107,16 @@ export function getWindowBreadcrumb(id) {
 }
 
 export function getElementBreadcrumb(entity, id) {
-  return dispatch => {
+  return (dispatch) => {
     if (!breadcrumbsRequested && breadcrumbsId !== id) {
       breadcrumbsRequested = true;
 
       elementPathRequest(entity, id)
-        .then(response => {
+        .then((response) => {
           let pathData = flattenOneLine(response.data);
           return pathData;
         })
-        .then(item => {
+        .then((item) => {
           dispatch(setBreadcrumb(item.reverse()));
 
           breadcrumbsId = id;
@@ -140,7 +140,7 @@ export function flattenLastElem(node, prop = 'children') {
   let result = [];
 
   if (node[prop]) {
-    node[prop].map(child => {
+    node[prop].map((child) => {
       const flat = flattenLastElem(child);
 
       if (typeof flat === 'object') {
@@ -158,7 +158,7 @@ export function flattenLastElem(node, prop = 'children') {
 export function flattenOneLine(node) {
   let result = [];
   if (node.children) {
-    flattenOneLine(node.children[0]).map(item => {
+    flattenOneLine(node.children[0]).map((item) => {
       result.push(item);
     });
   }

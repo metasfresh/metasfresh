@@ -36,7 +36,7 @@ class Login extends Component {
     const userBrowser = BROWSER.name;
     let isSupported = false;
 
-    supportedBrowsers.map(browser => {
+    supportedBrowsers.map((browser) => {
       if (userBrowser === browser) {
         isSupported = true;
       }

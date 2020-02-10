@@ -130,7 +130,7 @@ class ListWidget extends Component {
               });
         }
 
-        request.then(res => {
+        request.then((res) => {
           let values = res.data.values || [];
           let singleOption = values && values.length === 1;
 
@@ -221,7 +221,7 @@ class ListWidget extends Component {
     }
   };
 
-  handleSelect = option => {
+  handleSelect = (option) => {
     const {
       onChange,
       lookupList,
@@ -252,7 +252,7 @@ class ListWidget extends Component {
             : option;
 
         if (promise) {
-          promise.then(patchResult => {
+          promise.then((patchResult) => {
             setNextProperty(mainPropertyField);
 
             if (
@@ -364,7 +364,7 @@ ListWidget.propTypes = {
   lastProperty: PropTypes.string,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.windowHandler.filter,
 });
 

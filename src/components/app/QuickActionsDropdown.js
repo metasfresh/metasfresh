@@ -73,7 +73,7 @@ class QuickActionsDropdown extends Component {
    * @param {*} item
    * @todo Write the documentation
    */
-  handleItem = item => {
+  handleItem = (item) => {
     document.getElementsByClassName('quick-actions-item')[item].focus();
   };
 
@@ -93,14 +93,14 @@ class QuickActionsDropdown extends Component {
               action.internalName ? action.internalName : action.processId
             }`}
             tabIndex={0}
-            ref={c => (this.item = c)}
+            ref={(c) => (this.item = c)}
             className={
               'quick-actions-item ' +
               (action.disabled ? 'quick-actions-item-disabled ' : '')
             }
             key={index}
             onClick={() => handleClick(action)}
-            onKeyDown={e => this.handleKeyDown(e, action)}
+            onKeyDown={(e) => this.handleKeyDown(e, action)}
             onMouseEnter={() => this.handleItem(index)}
           >
             {action.caption}

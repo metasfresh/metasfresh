@@ -35,7 +35,7 @@ class InlineFilterItem extends Component {
 
     if (active) {
       activeFilter = active.find(
-        item => item.filterId === parentFilter.filterId
+        (item) => item.filterId === parentFilter.filterId
       );
     }
 
@@ -45,7 +45,7 @@ class InlineFilterItem extends Component {
       activeFilter.parameters &&
       activeFilter.filterId === filter.filterId
     ) {
-      activeFilter.parameters.map(item => {
+      activeFilter.parameters.map((item) => {
         this.mergeData(
           item.parameterName,
           item.value != null ? item.value : '',
@@ -53,7 +53,7 @@ class InlineFilterItem extends Component {
         );
       });
     } else if (filter.parameters) {
-      filter.parameters.map(item => {
+      filter.parameters.map((item) => {
         this.mergeData(item.parameterName, '');
       });
     }
@@ -65,7 +65,7 @@ class InlineFilterItem extends Component {
     //
     // OVERWORKED WORKAROUND
     if (Array.isArray(property)) {
-      property.map(item => {
+      property.map((item) => {
         this.mergeData(item.parameterName, value, valueTo);
       });
     } else {
@@ -74,9 +74,9 @@ class InlineFilterItem extends Component {
   };
 
   mergeData = (property, value, valueTo) => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       filter: Object.assign({}, prevState.filter, {
-        parameters: prevState.filter.parameters.map(param => {
+        parameters: prevState.filter.parameters.map((param) => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
               value: parseDateToReadable(param.widgetType, value),

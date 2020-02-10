@@ -125,7 +125,7 @@ export default class MasterWindow extends Component {
    * @method confirm
    * @summary ToDo: Describe the method.
    */
-  confirm = e => {
+  confirm = (e) => {
     e.returnValue = '';
   };
 
@@ -168,7 +168,7 @@ export default class MasterWindow extends Component {
    * @method handleDropFile
    * @summary ToDo: Describe the method.
    */
-  handleDropFile = files => {
+  handleDropFile = (files) => {
     const file = files instanceof Array ? files[0] : files;
 
     if (!(file instanceof File)) {
@@ -211,7 +211,7 @@ export default class MasterWindow extends Component {
    * @method handleRejectDropped
    * @summary ToDo: Describe the method.
    */
-  handleRejectDropped = droppedFiles => {
+  handleRejectDropped = (droppedFiles) => {
     const { addNotification } = this.props;
 
     const dropped =
@@ -229,7 +229,7 @@ export default class MasterWindow extends Component {
    * @method setModalTitle
    * @summary ToDo: Describe the method.
    */
-  setModalTitle = title => {
+  setModalTitle = (title) => {
     this.setState({ modalTitle: title });
   };
 
@@ -237,7 +237,7 @@ export default class MasterWindow extends Component {
    * @method handleDeletedStatus
    * @summary ToDo: Describe the method.
    */
-  handleDeletedStatus = param => {
+  handleDeletedStatus = (param) => {
     this.setState({ isDeleted: param });
   };
 
@@ -256,7 +256,7 @@ export default class MasterWindow extends Component {
     const dataId = master.docId;
 
     sortTab('master', tabId, field, asc);
-    getTab(tabId, windowType, dataId, orderBy).then(res => {
+    getTab(tabId, windowType, dataId, orderBy).then((res) => {
       addRowData({ [tabId]: res }, 'master');
     });
   };

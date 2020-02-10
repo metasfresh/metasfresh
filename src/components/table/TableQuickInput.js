@@ -34,7 +34,7 @@ class TableQuickInput extends Component {
 
     if (data && layout) {
       for (let i = 0; i < layout.length; i++) {
-        const item = layout[i].fields.map(elem => data[elem.field] || -1);
+        const item = layout[i].fields.map((elem) => data[elem.field] || -1);
 
         if (!item[0].value) {
           if (editedField !== i) {
@@ -69,14 +69,14 @@ class TableQuickInput extends Component {
       },
       () => {
         createInstance('window', docType, docId, tabId, 'quickInput')
-          .then(instance => {
+          .then((instance) => {
             this.setState({
               data: parseToDisplay(instance.data.fieldsByName),
               id: instance.data.id,
               editedField: 0,
             });
           })
-          .catch(err => {
+          .catch((err) => {
             if (err.response.status === 404) {
               dispatch(
                 addNotification(
@@ -92,7 +92,7 @@ class TableQuickInput extends Component {
 
         !layout &&
           initLayout('window', docType, tabId, 'quickInput', docId).then(
-            layout => {
+            (layout) => {
               this.setState({
                 layout: layout.data.elements,
               });
@@ -103,7 +103,7 @@ class TableQuickInput extends Component {
   };
 
   handleChange = (field, value) => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       data: Object.assign({}, prevState.data, {
         [field]: Object.assign({}, prevState.data[field], {
           value,
@@ -121,7 +121,7 @@ class TableQuickInput extends Component {
         inProgress: true,
       },
       () => {
-        this.patchPromise = new Promise(resolve => {
+        this.patchPromise = new Promise((resolve) => {
           patchRequest({
             entity: 'window',
             docType,
@@ -131,13 +131,13 @@ class TableQuickInput extends Component {
             value,
             subentity: 'quickInput',
             subentityId: id,
-          }).then(response => {
+          }).then((response) => {
             const fields = response.data[0] && response.data[0].fieldsByName;
 
             fields &&
-              Object.keys(fields).map(fieldName => {
+              Object.keys(fields).map((fieldName) => {
                 this.setState(
-                  prevState => ({
+                  (prevState) => ({
                     data: Object.assign({}, prevState.data, {
                       [fieldName]: Object.assign(
                         {},
@@ -193,12 +193,12 @@ class TableQuickInput extends Component {
 
     if (data && layout) {
       return layout.map((item, idx) => {
-        const widgetData = item.fields.map(elem => data[elem.field] || -1);
+        const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         const lastFormField = idx === layout.length - 1;
 
         return (
           <RawWidget
-            ref={c => {
+            ref={(c) => {
               if (c) {
                 this.rawWidgets.push(c);
               }
@@ -233,7 +233,7 @@ class TableQuickInput extends Component {
     }
   };
 
-  onSubmit = e => {
+  onSubmit = (e) => {
     const { dispatch, docType, docId, tabId } = this.props;
     const { id, data } = this.state;
     e.preventDefault();
@@ -268,9 +268,9 @@ class TableQuickInput extends Component {
       });
   };
 
-  validateForm = data => {
+  validateForm = (data) => {
     return !Object.keys(data).filter(
-      key => data[key].mandatory && !data[key].value
+      (key) => data[key].mandatory && !data[key].value
     ).length;
   };
 
@@ -282,7 +282,7 @@ class TableQuickInput extends Component {
       <form
         onSubmit={this.onSubmit}
         className="row quick-input-container"
-        ref={c => (this.form = c)}
+        ref={(c) => (this.form = c)}
       >
         {this.renderFields(layout, data, docId, 'window', id)}
         <div className="col-sm-12 col-md-3 col-lg-2 hint">

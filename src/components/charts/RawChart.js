@@ -85,29 +85,29 @@ class RawChart extends Component {
 
     if (chartType === 'Indicator') {
       return getTargetIndicatorsData(id)
-        .then(response => {
+        .then((response) => {
           return response.data.datasets;
         })
-        .catch(err => {
+        .catch((err) => {
           throw err;
         });
     }
 
     return getKPIData(id)
-      .then(response => {
+      .then((response) => {
         return response.data.datasets;
       })
-      .catch(err => {
+      .catch((err) => {
         throw err;
       });
   }
 
   fetchData() {
     this.getData()
-      .then(chartData => {
+      .then((chartData) => {
         this.mounted && this.setState({ chartData: chartData, err: null });
       })
-      .catch(err => {
+      .catch((err) => {
         this.mounted && this.setState({ err });
       });
   }

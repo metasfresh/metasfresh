@@ -28,13 +28,13 @@ class AutocompleteTo extends Component {
     const { to } = this.props;
     let tagsUpdated = [];
 
-    to.map(item => {
+    to.map((item) => {
       tagsUpdated.push(item.caption);
     });
     return tagsUpdated;
   };
 
-  handleTagChange = tags => {
+  handleTagChange = (tags) => {
     this.setState({ tags });
   };
 
@@ -46,14 +46,14 @@ class AutocompleteTo extends Component {
       entity: 'mail',
       propertyName: 'to',
       query: value,
-    }).then(response => {
+    }).then((response) => {
       this.setState({
         suggestions: response.data.values,
       });
     });
   };
 
-  renderSuggestion = option => {
+  renderSuggestion = (option) => {
     const { tags } = this.state;
 
     return (
@@ -84,8 +84,8 @@ class AutocompleteTo extends Component {
       <Autosuggest
         ref={props.ref}
         suggestions={suggestions}
-        shouldRenderSuggestions={value => value && value.trim().length > 0}
-        getSuggestionValue={s => s.caption}
+        shouldRenderSuggestions={(value) => value && value.trim().length > 0}
+        getSuggestionValue={(s) => s.caption}
         renderSuggestion={this.renderSuggestion}
         inputProps={{ ...props, onChange: handleOnChange }}
         onSuggestionSelected={(e, { suggestion }) => {

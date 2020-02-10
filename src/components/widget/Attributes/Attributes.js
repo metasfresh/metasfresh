@@ -78,7 +78,7 @@ export default class Attributes extends Component {
       },
       () => {
         return getAttributesInstance(attributeType, templateId, source)
-          .then(response => {
+          .then((response) => {
             const { id, fieldsByName } = response.data;
 
             this.setState({
@@ -87,7 +87,7 @@ export default class Attributes extends Component {
 
             return initLayout(attributeType, id);
           })
-          .then(response => {
+          .then((response) => {
             const { elements } = response.data;
 
             this.setState({
@@ -100,7 +100,7 @@ export default class Attributes extends Component {
               dropdown: true,
             });
           })
-          .catch(error => {
+          .catch((error) => {
             // eslint-disable-next-line no-console
             console.error('Attributes handleInit error: ', error.message);
             this.setState({
@@ -117,7 +117,7 @@ export default class Attributes extends Component {
    * @param {*} option
    * @todo Write the documentation
    */
-  handleToggle = option => {
+  handleToggle = (option) => {
     const { handleBackdropLock } = this.props;
     const { loading } = this.state;
 
@@ -147,7 +147,7 @@ export default class Attributes extends Component {
    * @param {object} event
    * @todo Write the documentation
    */
-  handleKeyDown = e => {
+  handleKeyDown = (e) => {
     if (e.key === 'Escape') {
       e.preventDefault();
       this.handleCompletion();
@@ -162,7 +162,7 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleChange = (field, value) => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       data: Object.assign({}, prevState.data, {
         [field]: Object.assign({}, prevState.data[field], { value }),
       }),
@@ -189,13 +189,13 @@ export default class Attributes extends Component {
         docId: id,
         property: prop,
         value,
-      }).then(response => {
+      }).then((response) => {
         if (response.data && response.data.length) {
           const fields = response.data[0].fieldsByName;
 
-          Object.keys(fields).map(fieldName => {
+          Object.keys(fields).map((fieldName) => {
             this.setState(
-              prevState => ({
+              (prevState) => ({
                 data: {
                   ...prevState.data,
                   [fieldName]: {
@@ -228,9 +228,9 @@ export default class Attributes extends Component {
 
     if (!loading && data) {
       const mandatory = Object.keys(data).filter(
-        fieldName => data[fieldName].mandatory
+        (fieldName) => data[fieldName].mandatory
       );
-      const valid = !mandatory.filter(field => !data[field].value).length;
+      const valid = !mandatory.filter((field) => !data[field].value).length;
 
       //there are required values that are not set. just close
       if (mandatory.length && !valid) {
@@ -255,7 +255,7 @@ export default class Attributes extends Component {
     const { data } = this.state;
     const attrId = data && data.ID ? data.ID.value : -1;
 
-    completeRequest(attributeType, attrId).then(response => {
+    completeRequest(attributeType, attrId).then((response) => {
       patch(response.data);
     });
   };

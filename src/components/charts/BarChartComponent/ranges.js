@@ -5,7 +5,7 @@ export const getX0Range = (width, data, groupBy) => {
     .scaleBand()
     .range([0, width])
     .padding(0.2)
-    .domain(data.map(value => value[groupBy.fieldName]));
+    .domain(data.map((value) => value[groupBy.fieldName]));
 };
 
 export const getX1Range = (width, fields) => {
@@ -13,23 +13,23 @@ export const getX1Range = (width, fields) => {
     .scaleBand()
     .range([0, width])
     .padding(0.1)
-    .domain(fields.map(field => field.fieldName));
+    .domain(fields.map((field) => field.fieldName));
 };
 
 export const getYRange = (height, data, fields) => {
-  const keys = fields.map(field => field.fieldName);
+  const keys = fields.map((field) => field.fieldName);
 
   return d3
     .scaleLinear()
     .range([height, 0])
     .domain([
-      d3.min(data, d => {
-        return d3.min(keys, key => {
+      d3.min(data, (d) => {
+        return d3.min(keys, (key) => {
           return d[key];
         });
       }),
-      d3.max(data, d => {
-        return d3.max(keys, key => {
+      d3.max(data, (d) => {
+        return d3.max(keys, (key) => {
           return d[key];
         });
       }),
@@ -37,6 +37,6 @@ export const getYRange = (height, data, fields) => {
     .nice();
 };
 
-export const getZRange = colors => {
+export const getZRange = (colors) => {
   return d3.scaleOrdinal().range(colors);
 };

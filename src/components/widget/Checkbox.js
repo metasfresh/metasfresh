@@ -6,7 +6,7 @@ import classnames from 'classnames';
  * @file Function based component.
  * @module Checkbox
  */
-const Checkbox = props => {
+const Checkbox = (props) => {
   const rawWidget = useRef(null);
   const [checkedState, setCheckedState] = useState(props.widgetData[0].value);
 
@@ -30,7 +30,7 @@ const Checkbox = props => {
     handlePatch(widgetField, '', id);
   };
 
-  const updateCheckedState = e => {
+  const updateCheckedState = (e) => {
     setCheckedState(!checkedState);
     handlePatch(widgetField, e.target.checked, id);
   };
@@ -43,7 +43,7 @@ const Checkbox = props => {
           (widgetData[0].readonly || disabled ? 'input-disabled ' : '')
         }
         tabIndex={fullScreen ? -1 : tabIndex}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           if (e.key === ' ') {
             e.preventDefault();
             rawWidget.current && rawWidget.current.click();

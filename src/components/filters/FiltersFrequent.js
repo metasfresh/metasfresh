@@ -34,7 +34,7 @@ class FiltersFrequent extends PureComponent {
    * @param {*} index
    * @todo Write the documentation
    */
-  toggleFilter = index => {
+  toggleFilter = (index) => {
     this.setState({
       openFilterId: index,
     });
@@ -46,10 +46,10 @@ class FiltersFrequent extends PureComponent {
    * @param {*} id
    * @todo Write the documentation
    */
-  findActiveFilter = id => {
+  findActiveFilter = (id) => {
     const { active } = this.props;
 
-    return active ? active.find(item => item.filterId === id) : null;
+    return active ? active.find((item) => item.filterId === id) : null;
   };
 
   /**

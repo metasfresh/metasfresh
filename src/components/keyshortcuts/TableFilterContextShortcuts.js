@@ -19,7 +19,7 @@ class TableFilterContextShortcuts extends Component {
     const updatedKeymap = {};
     const updatedHotkeys = {};
 
-    shortcutActions.forEach(action => {
+    shortcutActions.forEach((action) => {
       updatedKeymap[action.name] = action.shortcut;
       updatedHotkeys[action.shortcut.toUpperCase()] = [];
     });
@@ -37,7 +37,7 @@ class TableFilterContextShortcuts extends Component {
     const { shortcutsExtended } = this.state;
 
     if (shortcutsExtended) {
-      return shortcutActions.map(shortcut => (
+      return shortcutActions.map((shortcut) => (
         <Shortcut
           key={shortcut.shortcut}
           name={shortcut.name}

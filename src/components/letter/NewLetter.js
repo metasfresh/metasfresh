@@ -80,7 +80,7 @@ class NewLetter extends Component {
    * @param {*} option
    * @todo Write the documentation
    */
-  handleTemplate = async option => {
+  handleTemplate = async (option) => {
     const { letterId, template } = this.state;
 
     if (template === option) {
@@ -245,7 +245,7 @@ class NewLetter extends Component {
                   <RawList
                     rank="primary"
                     list={templates}
-                    onSelect={option => this.handleTemplate(option)}
+                    onSelect={(option) => this.handleTemplate(option)}
                     selected={template}
                     isFocused={listFocused}
                     isToggled={listToggled}
