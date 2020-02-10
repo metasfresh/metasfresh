@@ -10,6 +10,24 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.138
+## Features
+* metasfresh
+  * [#6065](https://github.com/metasfresh/metasfresh/issues/6065) WebUI Window adjustment, Printing Queue
+  * [#6072](https://github.com/metasfresh/metasfresh/issues/6072) Tour in Purchase Order, Purchase Order as Transport order Lines for fetch entries
+  * [#6120](https://github.com/metasfresh/metasfresh/issues/6120) Make shipping more robust to certain use-cases
+  * [#6139](https://github.com/metasfresh/metasfresh/issues/6139) Soothe FUD regarding user login
+
+* metasfresh-parent
+  * [#38](https://github.com/metasfresh/metasfresh-parent/pull/38) Minor parent pom clienup
+
+## Fixes
+* metasfresh
+  * [#6125](https://github.com/metasfresh/metasfresh/issues/6125) Docaction Permission not taken properly for Bank Statement
+  * [#6129](https://github.com/metasfresh/metasfresh/issues/6129) Product Name change leads to update of all Translations already entered
+  * [#6130](https://github.com/metasfresh/metasfresh/issues/6130) BPartner Import bugfixes
+  * [#6137](https://github.com/metasfresh/metasfresh/pull/6137) Avoid NPE in ESRInfoProviderImpl
+
 # metasfresh 5.137
 ## Features
 * metasfresh
