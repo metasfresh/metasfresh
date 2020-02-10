@@ -92,7 +92,7 @@
     "nock": "11.7.2",
     "nyc": "14.1.0",
     "postcss-color-function": "2.0.1",
-    "postcss-import": "11.1.0",
+    "postcss-import": "12.0.1",
     "postcss-loader": "3.0.0",
     "postcss-simple-vars": "5.0.2",
     "postcss-url": "8.0.0",
