@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.Optional;
 
 import de.metas.contracts.commission.Beneficiary;
@@ -18,8 +16,10 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -51,6 +51,8 @@ public class CommissionInstanceRequestFactory
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private final CommissionTriggerFactory commissionTriggerFactory;
 
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	public CommissionInstanceRequestFactory(
 			@NonNull final CommissionConfigFactory commissionContractFactory,
 			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
@@ -61,10 +63,10 @@ public class CommissionInstanceRequestFactory
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
 
-	/** note: if the given IC is a "commission-product-IC, then there won't be requests because these IC's don't have a sales rep */
+	/** note: if the given IC is a "commission-product-IC" or a purchase-IC, then there won't be requests because these IC's don't have a sales rep */
 	public ImmutableList<CreateInstanceRequest> createRequestsForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final I_C_Invoice_Candidate icRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getById(invoiceCandidateId);
 		return createRequestFor(icRecord);
 	}
 

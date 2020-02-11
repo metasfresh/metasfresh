@@ -34,17 +34,17 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ShipmentSchedulesMDC
 {
-	public MDCCloseable withShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public MDCCloseable putShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return TableRecordMDC.withTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		return TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
 	}
 
-	public MDCCloseable withShipmentScheduleUpdateRunNo(final int runNo)
+	public MDCCloseable putShipmentScheduleUpdateRunNo(final int runNo)
 	{
 		return MDC.putCloseable("ShipmentScheduleUpdater-Run#", Integer.toString(runNo));
 	}
 
-	public MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
+	public MDCCloseable putRevalidationId(@NonNull final PInstanceId selectionId)
 	{
 		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
 	}
