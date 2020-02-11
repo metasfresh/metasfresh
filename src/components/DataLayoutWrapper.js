@@ -122,7 +122,7 @@ class DataLayoutWrapper extends Component {
 DataLayoutWrapper.propTypes = {
   onRowEdited: PropTypes.func,
   windowType: PropTypes.string,
-  viewId: PropTypes.number,
+  viewId: PropTypes.string,
   children: PropTypes.node,
   className: PropTypes.string,
 };

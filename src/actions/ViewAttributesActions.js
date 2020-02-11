@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { createPatchRequestPayload } from './GenericActions';
+import { createPatchRequestPayload } from '../utils';
 
 //
 // Handles view attributes (the panel which is displayed on the right side of a view, if view supports attributes)
@@ -9,31 +9,17 @@ import { createPatchRequestPayload } from './GenericActions';
 
 export function getViewAttributesLayout(windowId, viewId, rowId) {
   return axios.get(
-    config.API_URL +
-      '/documentView' +
-      '/' +
-      windowId +
-      '/' +
-      viewId +
-      '/' +
-      rowId +
-      '/attributes/layout'
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/layout`
   );
 }
 
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return axios.get(
-    config.API_URL +
-      '/documentView' +
-      '/' +
-      windowId +
-      '/' +
-      viewId +
-      '/' +
-      rowId +
-      '/attributes/attribute/' +
-      attribute +
-      '/dropdown'
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/dropdown`
   );
 }
 
@@ -45,18 +31,12 @@ export function getViewAttributeTypeahead(
   query
 ) {
   return axios.get(
-    config.API_URL +
-      '/documentView' +
-      '/' +
-      windowId +
-      '/' +
-      viewId +
-      '/' +
-      rowId +
-      '/attributes/attribute/' +
-      attribute +
-      '/typeahead?query=' +
-      encodeURIComponent(query)
+    `${config.API_URL}/documentView/
+      ${windowId}/
+      ${viewId}/
+      ${rowId}/attributes/attribute/
+      ${attribute}/typeahead?query=
+      ${encodeURIComponent(query)}`
   );
 }
 
