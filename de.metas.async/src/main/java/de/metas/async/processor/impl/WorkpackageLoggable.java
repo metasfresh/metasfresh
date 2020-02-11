@@ -1,7 +1,6 @@
 package de.metas.async.processor.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.service.ClientId;
@@ -10,11 +9,12 @@ import org.slf4j.Logger;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.WorkpackageLogEntry;
+import de.metas.error.LoggableWithThrowableUtil;
+import de.metas.error.LoggableWithThrowableUtil.FormattedMsgWithAdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
-import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -95,23 +95,13 @@ final class WorkpackageLoggable implements ILoggable
 		return this;
 	}
 
-	private WorkpackageLogEntry createLogEntry(final String msg, final Object... msgParameters)
+	private WorkpackageLogEntry createLogEntry(@NonNull final String msg, final Object... msgParameters)
 	{
-		String messageFormatted;
-		try
-		{
-			messageFormatted = StringUtils.formatMessage(msg, msgParameters);
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed creating log entry for msg={} and msgParametes={}. Creating a fallback one instead", msg, msgParameters);
-
-			messageFormatted = (msg != null ? msg : "")
-					+ (msgParameters != null && msgParameters.length > 0 ? " -- parameters: " + Arrays.asList(msgParameters) : "");
-		}
+		final FormattedMsgWithAdIssueId msgAndAdIssueId = LoggableWithThrowableUtil.extractMsgAndAdIssue(msg, msgParameters);
 
 		return WorkpackageLogEntry.builder()
-				.message(messageFormatted)
+				.message(msgAndAdIssueId.getFormattedMessage())
+				.adIssueId(msgAndAdIssueId.getAdIsueId().orElse(null))
 				.timestamp(SystemTime.asInstant())
 				.workpackageId(workpackageId)
 				.adClientId(adClientId)
