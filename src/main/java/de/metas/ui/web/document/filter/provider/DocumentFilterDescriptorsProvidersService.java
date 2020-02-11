@@ -62,17 +62,12 @@ public final class DocumentFilterDescriptorsProvidersService
 			@Nullable final String tableName,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		final List<DocumentFilterDescriptorsProvider> providers = new ArrayList<>();
-		for (DocumentFilterDescriptorsProviderFactory providerFactory : providerFactories)
-		{
-			final DocumentFilterDescriptorsProvider provider = providerFactory.createFiltersProvider(adTabId, tableName, fields);
-			if (NullDocumentFilterDescriptorsProvider.isNull(provider))
-			{
-				continue;
-			}
-
-			providers.add(provider);
-		}
+		final ImmutableList<DocumentFilterDescriptorsProvider> providers = providerFactories
+				.stream()
+				.filter(DocumentFilterDescriptorsProviderFactory::isActive)
+				.map(provider -> provider.createFiltersProvider(adTabId, tableName, fields))
+				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
+				.collect(ImmutableList.toImmutableList());
 
 		return CompositeDocumentFilterDescriptorsProvider.compose(providers);
 	}
