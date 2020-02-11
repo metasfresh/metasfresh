@@ -33,17 +33,17 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class TableRecordMDC
 {
-	public MDCCloseable withTableRecordReference(@NonNull final String tableName, @NonNull final RepoIdAware id)
+	public MDCCloseable putTableRecordReference(@NonNull final String tableName, @NonNull final RepoIdAware id)
 	{
-		return withTableRecordReference(TableRecordReference.of(tableName, id));
+		return putTableRecordReference(TableRecordReference.of(tableName, id));
 	}
 
-	public MDCCloseable withTableRecordReference(@NonNull final Object recordModel)
+	public MDCCloseable putTableRecordReference(@NonNull final Object recordModel)
 	{
-		return withTableRecordReference(TableRecordReference.of(recordModel));
+		return putTableRecordReference(TableRecordReference.of(recordModel));
 	}
 
-	public MDCCloseable withTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
+	public MDCCloseable putTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
 	{
 		return MDC.putCloseable(tableRecordReference.getTableName() + "_ID", Integer.toString(tableRecordReference.getRecord_ID()));
 	}

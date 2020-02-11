@@ -273,7 +273,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// * update HeaderAggregationKey
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
-			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -428,7 +428,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleUpdateRunNo(1))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(1))
 		{
 			final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
 			return generate(ctx, lines, firstRun);
@@ -440,7 +440,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleUpdateRunNo(2))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(2))
 		{
 			return generate(ctx, lines, firstRun);
 		}
@@ -460,7 +460,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -904,7 +904,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
 			final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 
