@@ -151,8 +151,8 @@ UPDATE AD_Sequence SET Name='S_Effort_Issue',Updated=TO_TIMESTAMP('2020-02-10 07
 
 -- 2020-02-10T06:24:17.218Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE S_InternalEffort_Issue_SEQ RENAME TO S_Effort_Issue_SEQ
-;
+--ALTER SEQUENCE S_InternalEffort_Issue_SEQ RENAME TO S_Effort_Issue_SEQ
+--;
 
 -- 2020-02-10T06:24:31.474Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
