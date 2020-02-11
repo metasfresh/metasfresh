@@ -39,7 +39,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
@@ -193,7 +192,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
-		return Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docBaseType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
+		return Services.get(IDocTypeDAO.class).getDocTypeId(
+				DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.adClientId(invoice.getAD_Client_ID())
+						.adOrgId(invoice.getAD_Org_ID())
+						.build())
+				.getRepoId();
 	}
 
 	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler = new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);
@@ -1295,11 +1300,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(final org.compiere.model.I_C_Invoice invoice, final String docSubType)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
-		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docbasetype, docSubType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
+		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(docbasetype)
+				.docSubType(docSubType)
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
-				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
+				copyFrom(
+						invoice, 
+						SystemTime.asTimestamp(), 
+						targetDocTypeID.getRepoId(), 
+						invoice.isSOTrx(),
 						false, // counter == false
 						true, // setOrderRef == true
 						true, // setInvoiceRef == true
