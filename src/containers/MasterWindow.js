@@ -96,7 +96,7 @@ class MasterWindowContainer extends Component {
                   });
                 }
 
-                changedTabs[tabId] = {};
+                changedTabs[tabId] = get(changedTabs, `${tabId}`, {});
 
                 if (rowsById) {
                   changedTabs[tabId].changed = {
