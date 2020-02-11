@@ -60,6 +60,8 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+	private static final String AD_PROCESS_EXECUTION_DONE_MSG = "AD_Process_Execution_Done";
+
 	private final InvoiceCandidateFacadeService invoiceCandidateFacadeService = SpringContextHolder.instance.getBean(InvoiceCandidateFacadeService.class);
 
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -94,7 +96,10 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		final Result settlementIcResult = processInvoiceCandidates(settlementIcIds);
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} settlement InvoiceCandidates; anyException={}", settlementIcResult.getCounter(), settlementIcResult.isAnyException());
 
+		String processName = getName();
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+				.contentADMessage(AD_PROCESS_EXECUTION_DONE_MSG)
+				.contentADMessageParam(processName)
 				.recipientUserId(getLoggedUserId())
 				.targetAction(TargetRecordAction.of(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId())))
 				.build();
