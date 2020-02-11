@@ -10,7 +10,8 @@ DROP FUNCTION IF EXISTS de_metas_acct.acctbalanceuntildate(p_account_id numeric,
 --
 --
 --
--- TODO this will be deleted in https://github.com/metasfresh/metasfresh/issues/6149
+-- TODO DEPRECATION WARNING
+--      this will be deleted in https://github.com/metasfresh/metasfresh/issues/6149
 --      DO NOT USE THIS ANYMORE
 --      PLEASE USE acctBalanceToDate
 --      (for reference, this one is called `UntilDate` instead of `ToDate`)
@@ -126,3 +127,9 @@ $BODY$
     LANGUAGE sql STABLE
                  COST 100;
 
+
+COMMENT ON FUNCTION de_metas_acct.acctbalanceuntildate(numeric, numeric, date, numeric, character , character) IS 'DEPRECATION WARNING'
+    ' this will be deleted in https://github.com/metasfresh/metasfresh/issues/6149 '
+    ' DO NOT USE THIS ANYMORE '
+    ' PLEASE USE acctBalanceToDate '
+    ' (for reference, this one is called `UntilDate` instead of `ToDate`)';
