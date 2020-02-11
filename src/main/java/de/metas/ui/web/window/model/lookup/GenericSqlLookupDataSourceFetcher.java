@@ -1,24 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.INamePairPredicate;
-import org.compiere.model.ValidationInformation;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -33,6 +16,18 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -220,19 +215,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		final String displayName = nameAndDescriptionAndActive[0];
 		final String description = nameAndDescriptionAndActive.length >= 2 ? nameAndDescriptionAndActive[1] : null;
 		final boolean active = nameAndDescriptionAndActive.length >= 3 ? StringUtils.toBoolean(nameAndDescriptionAndActive[2]) : true;
-		final String validationInformationID = nameAndDescriptionAndActive.length >= 4 ? nameAndDescriptionAndActive[3] : null;
-
-		ValidationInformation validationInformation = null;
-
-		if (validationInformationID != null)
-		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final ITranslatableString validationInformationMessage = msgBL.getTranslatableMsgText(validationInformationID);
-			final ITranslatableString validataionInformationYesMessage = msgBL.getTranslatableMsgText(YES_TRANSLATABLE_MESSAGE_ID);
-			final ITranslatableString validataionInformationNoMessage = msgBL.getTranslatableMsgText(NO_TRANSLATABLE_MESSAGE_ID);
-			validationInformation = new ValidationInformation(validationInformationMessage.getDefaultValue(),
-					validataionInformationYesMessage.getDefaultValue(), validataionInformationNoMessage.getDefaultValue());
-		}
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
@@ -248,8 +230,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			descriptionTrl = TranslatableStrings.anyLanguage(description);
 		}
 
-		//
-		//
 		if (id instanceof Integer)
 		{
 			final Integer idInt = (Integer)id;
@@ -268,7 +248,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 					.displayName(displayNameTrl)
 					.description(descriptionTrl)
 					.active(active)
-					.validationInformation(validationInformation)
 					.build();
 		}
 	}
