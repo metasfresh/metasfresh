@@ -1,9 +1,10 @@
--- DROP FUNCTION getCostPrice(numeric, numeric);
+-- DROP FUNCTION getCostPrice(numeric, numeric, numeric);
 
 CREATE OR REPLACE FUNCTION getCostPrice
 (
 	p_M_Product_ID numeric,
-	p_AD_Client_ID numeric
+	p_AD_Client_ID numeric,
+	p_AD_Org_ID numeric
 ) 
 RETURNS numeric 
 AS
@@ -14,7 +15,8 @@ $BODY$
 	INNER JOIN M_CostElement ce on cost.M_CostElement_ID = ce.M_CostElement_ID
 
 	WHERE cost.M_Product_ID = p_M_Product_ID
-
+	AND cost.AD_Client_ID = p_AD_Client_ID
+	AND cost.AD_Org_ID = p_AD_Org_ID
 	AND cost.C_AcctSchema_ID = (select ci.C_AcctSchema1_ID from AD_ClientInfo ci where ci.AD_Client_ID = p_AD_Client_ID)
 	AND ce.CostingMethod = acs.CostingMethod
 	--
