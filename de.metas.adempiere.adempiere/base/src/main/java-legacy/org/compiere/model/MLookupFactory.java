@@ -16,13 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import de.metas.cache.CCache;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
@@ -39,16 +41,12 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
-import de.metas.cache.CCache;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
 
 /**
  * Create MLookups
@@ -339,12 +337,13 @@ public class MLookupFactory
 	 * Get Lookup SQL for Lists
 	 *
 	 * @param AD_Reference_Value_ID
-	 * @return SELECT NULL, Value, Name, IsActive, Description, EntityType FROM AD_Ref_List
+	 * @return SELECT NULL, Value, Name, IsActive, Description, EntityType, FROM AD_Ref_List
 	 */
 	static public MLookupInfo getLookup_List(final int AD_Reference_Value_ID)
 	{
-		final String sqlFrom_BaseLang = "AD_Ref_List";
-		final String sqlFrom_Trl = "AD_Ref_List INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
+		final String sqlFrom_BaseLang = "AD_Ref_List LEFT OUTER JOIN AD_Message msg ON AD_Ref_List.AD_Message_ID=msg.AD_Message_ID";
+		final String sqlFrom_Trl = "AD_Ref_List LEFT OUTER JOIN AD_Message msg ON msg.AD_Message_ID=AD_Ref_List.AD_Message_ID"
+				+ " INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
 				+ " AND trl.AD_Language='" + MLookupInfo.CTXNAME_AD_Language.toStringWithMarkers() + "')";
 
 		final String displayColumnSQL_BaseLang;
@@ -365,7 +364,7 @@ public class MLookupFactory
 		final String descriptionColumnSQL_BaseLang = "AD_Ref_List.Description";
 		final String descriptionColumnSQL_Trl = "trl.Description";
 
-		final String validationMsgColumnSQL_BaseLang = "AD_Ref_List.AD_Message_Value";
+		final String validationMsgColumnSQL_BaseLang = "msg.value";
 
 		// SQL Select
 		final StringBuilder sqlSelect_BaseLang = new StringBuilder("SELECT ") // Key, Value

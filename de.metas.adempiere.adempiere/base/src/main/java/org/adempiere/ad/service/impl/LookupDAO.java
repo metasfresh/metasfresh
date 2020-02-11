@@ -22,15 +22,18 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -68,17 +71,13 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.UIDisplayedEntityTypes;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import lombok.Value;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class LookupDAO implements ILookupDAO
 {
@@ -815,22 +814,24 @@ public class LookupDAO implements ILookupDAO
 			final String name = getDisplayName(rs, isActive);
 			final String description = rs.getString(MLookupFactory.COLUMNINDEX_Description);
 			ValidationInformation validationInformation = null;
-			try
+
+			ResultSetMetaData metaData = rs.getMetaData();
+			if (metaData.getColumnCount() >= MLookupFactory.COLUMNINDEX_ValidationInformation)
 			{
-				String validationInformationID = rs.getString(MLookupFactory.COLUMNINDEX_ValidationInformation);
-				if (validationInformationID.length() > 0)
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+				String validationInformationValue = rs.getString(MLookupFactory.COLUMNINDEX_ValidationInformation);
+				ITranslatableString validationInformationMessage = null;
+				if (validationInformationValue != null) {
+					validationInformationMessage = msgBL.getTranslatableMsgText(validationInformationValue);
+				}
+				if (validationInformationMessage != null)
 				{
-					final IMsgBL msgBL = Services.get(IMsgBL.class);
-					final ITranslatableString validationInformationMessage = msgBL.getTranslatableMsgText(validationInformationID);
-					final ITranslatableString validataionInformationYesMessage = msgBL.getTranslatableMsgText(Validation_Yes_Message);
-					final ITranslatableString validataionInformationNoMessage = msgBL.getTranslatableMsgText(Validation_No_Message);
+					ITranslatableString validataionInformationYesMessage = msgBL.getTranslatableMsgText(Validation_Yes_Message);
+					ITranslatableString validataionInformationNoMessage = msgBL.getTranslatableMsgText(Validation_No_Message);
 					validationInformation = new ValidationInformation(validationInformationMessage.translate(Env.getAD_Language()),
 							validataionInformationYesMessage.translate(Env.getAD_Language()), validataionInformationNoMessage.translate(Env.getAD_Language()));
 				}
-			}
-			catch (Exception e)
-			{
-				logger.info("No AD_Message available!");
+
 			}
 
 			final NamePair item;

@@ -16,15 +16,14 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.compiere.model.ValidationInformation;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.Objects;
 
 /**
  * (String) Value Name Pair
@@ -39,9 +38,6 @@ public final class ValueNamePair extends NamePair
 
 	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
 
-	/**
-	 * The Validation Message
-	 */
 	private final ValidationInformation m_validationInformation;
 
 	public static final ValueNamePair of(
