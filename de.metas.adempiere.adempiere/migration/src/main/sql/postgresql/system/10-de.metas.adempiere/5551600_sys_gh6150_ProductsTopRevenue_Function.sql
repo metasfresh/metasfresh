@@ -42,7 +42,7 @@ FROM (
 	(
 		SELECT COALESCE(getTotalRevenue(p_AD_Client_ID, p_AD_Org_ID, p_DateFrom, p_DateTo),0) as totalRevenueAmt
 	) totals
-	
+ORDER BY Rang 
 LIMIT (CASE WHEN p_Limit > 0 then p_Limit ELSE 999999999999999 END)
 
 $$
