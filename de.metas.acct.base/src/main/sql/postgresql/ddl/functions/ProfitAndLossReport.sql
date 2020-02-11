@@ -6,6 +6,7 @@ CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate timestamp, IN p_en
             (
                 name            text,
                 value           text,
+                isSummary       text,
                 three_years_ago numeric,
                 two_years_ago   numeric,
                 one_year_ago    numeric,
@@ -16,6 +17,7 @@ $BODY$
 
 SELECT ev.name,
        ev.value,
+       ev.issummary::text,
        ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '3 Year'::interval, p_endDate - '3 Year'::interval) three_years_ago_balance,
        ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '2 Year'::interval, p_endDate - '2 Year'::interval) two_years_ago_balance,
        ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '1 Year'::interval, p_endDate - '1 Year'::interval) one_year_ago_balance,
