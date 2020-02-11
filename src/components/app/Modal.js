@@ -732,7 +732,7 @@ Modal.propTypes = {
   modalSaveStatus: PropTypes.any,
   modalViewId: PropTypes.any,
   modalViewDocumentIds: PropTypes.any,
-  tabId: PropTypes.number,
+  tabId: PropTypes.any,
   parentDataId: PropTypes.any,
   parentSelection: PropTypes.any,
   parentType: PropTypes.any,
