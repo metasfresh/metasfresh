@@ -1,5 +1,7 @@
 package de.metas.async.api;
 
+import java.util.Map;
+
 /*
  * #%L
  * de.metas.async
@@ -32,6 +34,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.user.UserId;
 
 public interface IWorkPackageBuilder
 {
@@ -68,6 +71,12 @@ public interface IWorkPackageBuilder
 	 */
 	IWorkPackageParamsBuilder parameters();
 
+	default IWorkPackageBuilder parameters(final Map<String, ? extends Object> parameters)
+	{
+		parameters().setParameters(parameters);
+		return this;
+	}
+
 	default IWorkPackageBuilder parameter(final String parameterName, final Object parameterValue)
 	{
 		parameters().setParameter(parameterName, parameterValue);
@@ -92,7 +101,7 @@ public interface IWorkPackageBuilder
 	 * Sets workpackage's user in charge.
 	 * This will be the user which will be notified in case the workpackage processing fails.
 	 */
-	IWorkPackageBuilder setUserInChargeId(int userInChargeId);
+	IWorkPackageBuilder setUserInChargeId(UserId userInChargeId);
 
 	/**
 	 * Adds given model to workpackage elements.
@@ -136,7 +145,7 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * @return
-	 * 		Lock aquired when enqueued elements were locked (on {@link #build()}).
+	 *         Lock aquired when enqueued elements were locked (on {@link #build()}).
 	 *         Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();

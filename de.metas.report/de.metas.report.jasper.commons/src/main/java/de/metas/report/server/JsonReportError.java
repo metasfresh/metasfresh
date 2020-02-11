@@ -1,21 +1,13 @@
-package de.metas.async.api;
+package de.metas.report.server;
 
-import java.time.Instant;
+import java.util.Map;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-
-import de.metas.async.QueueWorkPackageId;
-import de.metas.error.AdIssueId;
-import de.metas.user.UserId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.async
+ * de.metas.report.jasper.commons
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -37,23 +29,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public class WorkpackageLogEntry
+public class JsonReportError
 {
-	@Nullable
 	String message;
-
-	@NonNull
-	Instant timestamp;
-
-	@NonNull
-	QueueWorkPackageId workpackageId;
-
-	@NonNull
-	ClientId adClientId;
-
-	@NonNull
-	UserId userId;
-
-	@Nullable
-	AdIssueId adIssueId;
+	String stackTrace;
+	Map<String, String> parameters;
 }

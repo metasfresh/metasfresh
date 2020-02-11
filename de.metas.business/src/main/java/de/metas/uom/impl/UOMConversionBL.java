@@ -418,11 +418,12 @@ public class UOMConversionBL implements IUOMConversionBL
 		// No conversion
 		if (qtyToConvert == null || qtyToConvert.signum() == 0 || fromUomId == null || productId == null)
 		{
-			logger.debug("No Conversion - QtyPrice={}", qtyToConvert);
+			logger.debug("qtyToConvert={}; fromUomId={}; productId={}; -> return qtyToConvert", qtyToConvert, fromUomId, productId);
 			return qtyToConvert;
 		}
 
-		final UomId toUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final IProductBL productBL = Services.get(IProductBL.class); // don't extract this to a field, because ProductBL itself already has IUOMConversionBL as a field
+		final UomId toUomId = productBL.getStockUOMId(productId);
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
