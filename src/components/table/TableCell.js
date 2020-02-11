@@ -189,7 +189,9 @@ class TableCell extends PureComponent {
       supportFieldEdit,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
-
+    if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
+      return false; // CMD + C on Mac has to just copy
+    }
     handleKeyDown(e, property, widgetData[0]);
   };
 
