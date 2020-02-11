@@ -43,29 +43,11 @@ public interface IDocTypeDAO extends ISingletonService
 	I_C_DocType getById(DocTypeId docTypeId);
 
 	/**
-	 * @return C_DocType_ID or -1 if not found
+	 * @return C_DocType_ID or <code>null</code> if not found
 	 */
 	DocTypeId getDocTypeIdOrNull(final DocTypeQuery query);
 
-	/**
-	 * @return C_DocType_ID
-	 * @throws DocTypeNotFoundException if no document type was found
-	 */
-	@Deprecated
-	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
-
 	DocTypeId getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
-
-	/**
-	 * @param docSubType doc sub type or {@link #DOCSUBTYPE_Any}.
-	 *
-	 * @throws DocTypeNotFoundException if no document type was found
-	 */
-	@Deprecated
-	int getDocTypeId(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
-
-	@Deprecated
-	I_C_DocType getDocType(String docBaseType, String docSubType, int adClientId, int adOrgId);
 
 	Optional<I_C_DocType> retrieveDocType(DocTypeQuery docTypeQuery);
 
@@ -85,12 +67,8 @@ public interface IDocTypeDAO extends ISingletonService
 
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
-	 *
-	 * @param ctx
-	 * @param docBaseType
-	 * @return
 	 */
-	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType);
+	Optional<String> getDocBaseTypeCounter(String docBaseType);
 
 	I_C_DocType createDocType(DocTypeCreateRequest request);
 
