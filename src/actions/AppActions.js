@@ -138,81 +138,100 @@ export function logoutSuccess(auth) {
 // REDUX ACTIONS
 
 export function loginSuccess(auth) {
-  return (dispatch) => {
+  return async (dispatch) => {
     localStorage.setItem('isLogged', true);
 
-    getUserSession().then(({ data }) => {
-      dispatch(userSessionInit(data));
-      languageSuccess(data.language['key']);
-      initNumeralLocales(data.language['key'], data.locale);
-      MomentTZ.tz.setDefault(data.timeZone);
+    const requests = [];
 
-      auth.initSessionClient(data.websocketEndpoint, (msg) => {
-        const me = JSON.parse(msg.body);
-        dispatch(userSessionUpdate(me));
-        me.language && languageSuccess(me.language['key']);
-        me.locale && initNumeralLocales(me.language['key'], me.locale);
+    requests.push(
+      getUserSession()
+        .then(({ data }) => {
+          dispatch(userSessionInit(data));
+          languageSuccess(data.language['key']);
+          initNumeralLocales(data.language['key'], data.locale);
+          MomentTZ.tz.setDefault(data.timeZone);
 
-        getNotifications().then((response) => {
+          auth.initSessionClient(data.websocketEndpoint, (msg) => {
+            const me = JSON.parse(msg.body);
+            dispatch(userSessionUpdate(me));
+            me.language && languageSuccess(me.language['key']);
+            me.locale && initNumeralLocales(me.language['key'], me.locale);
+
+            getNotifications().then((response) => {
+              dispatch(
+                getNotificationsSuccess(
+                  response.data.notifications,
+                  response.data.unreadCount
+                )
+              );
+            });
+          });
+        })
+        .catch((e) => e)
+    );
+
+    requests.push(
+      getNotificationsEndpoint()
+        .then((topic) => {
+          auth.initNotificationClient(topic, (msg) => {
+            const notification = JSON.parse(msg.body);
+
+            if (notification.eventType === 'Read') {
+              dispatch(
+                readNotification(
+                  notification.notificationId,
+                  notification.unreadCount
+                )
+              );
+            } else if (notification.eventType === 'ReadAll') {
+              dispatch(readAllNotifications());
+            } else if (notification.eventType === 'Delete') {
+              dispatch(
+                removeNotification(
+                  notification.notificationId,
+                  notification.unreadCount
+                )
+              );
+            } else if (notification.eventType === 'DeleteAll') {
+              dispatch(deleteAllNotifications());
+            } else if (notification.eventType === 'New') {
+              dispatch(
+                newNotification(
+                  notification.notification,
+                  notification.unreadCount
+                )
+              );
+              const notif = notification.notification;
+              if (notif.important) {
+                dispatch(
+                  addNotification(
+                    'Important notification',
+                    notif.message,
+                    5000,
+                    'primary'
+                  )
+                );
+              }
+            }
+          });
+        })
+        .catch((e) => e)
+    );
+
+    requests.push(
+      getNotifications()
+        .then((response) => {
           dispatch(
             getNotificationsSuccess(
               response.data.notifications,
               response.data.unreadCount
             )
           );
-        });
-      });
-    });
+        })
+        .catch((e) => e)
+    );
 
-    getNotificationsEndpoint().then((topic) => {
-      auth.initNotificationClient(topic, (msg) => {
-        const notification = JSON.parse(msg.body);
-
-        if (notification.eventType === 'Read') {
-          dispatch(
-            readNotification(
-              notification.notificationId,
-              notification.unreadCount
-            )
-          );
-        } else if (notification.eventType === 'ReadAll') {
-          dispatch(readAllNotifications());
-        } else if (notification.eventType === 'Delete') {
-          dispatch(
-            removeNotification(
-              notification.notificationId,
-              notification.unreadCount
-            )
-          );
-        } else if (notification.eventType === 'DeleteAll') {
-          dispatch(deleteAllNotifications());
-        } else if (notification.eventType === 'New') {
-          dispatch(
-            newNotification(notification.notification, notification.unreadCount)
-          );
-          const notif = notification.notification;
-          if (notif.important) {
-            dispatch(
-              addNotification(
-                'Important notification',
-                notif.message,
-                5000,
-                'primary'
-              )
-            );
-          }
-        }
-      });
-    });
-
-    getNotifications().then((response) => {
-      dispatch(
-        getNotificationsSuccess(
-          response.data.notifications,
-          response.data.unreadCount
-        )
-      );
-    });
+    return await Promise.all(requests);
   };
 }
 
