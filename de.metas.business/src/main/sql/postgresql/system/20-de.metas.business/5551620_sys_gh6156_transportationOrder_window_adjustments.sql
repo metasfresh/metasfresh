@@ -30,7 +30,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=542188
 
 -- 2020-02-10T13:29:39.802Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE M_ShipperTransportation DROP COLUMN IF EXISTS BillLadingReport
+select db_alter_table('M_ShipperTransportation ', 'ALTER TABLE M_ShipperTransportation DROP COLUMN IF EXISTS BillLadingReport')
 ;
 
 -- 2020-02-10T13:29:39.833Z
@@ -65,7 +65,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=542189
 
 -- 2020-02-10T13:29:48.892Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE M_ShipperTransportation DROP COLUMN IF EXISTS CollectiveBillReport
+select db_alter_table('M_ShipperTransportation ', 'ALTER TABLE M_ShipperTransportation DROP COLUMN IF EXISTS CollectiveBillReport')
 ;
 
 -- 2020-02-10T13:29:48.897Z
