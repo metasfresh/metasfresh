@@ -5,10 +5,8 @@ import java.util.Iterator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -21,9 +19,6 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -60,12 +55,9 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	private static final String AD_PROCESS_EXECUTION_DONE_MSG = "AD_Process_Execution_Done";
-
 	private final InvoiceCandidateFacadeService invoiceCandidateFacadeService = SpringContextHolder.instance.getBean(InvoiceCandidateFacadeService.class);
 
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_CreateOrUpdateCommissionInstance.class);
 
@@ -95,15 +87,6 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		final Iterator<InvoiceCandidateId> settlementIcIds = createInvoiceCandidateIdIterator(selectedICsFilter, false/* salesOrderIcs */);
 		final Result settlementIcResult = processInvoiceCandidates(settlementIcIds);
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} settlement InvoiceCandidates; anyException={}", settlementIcResult.getCounter(), settlementIcResult.isAnyException());
-
-		String processName = getName();
-		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-				.contentADMessage(AD_PROCESS_EXECUTION_DONE_MSG)
-				.contentADMessageParam(processName)
-				.recipientUserId(getLoggedUserId())
-				.targetAction(TargetRecordAction.of(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId())))
-				.build();
-		notificationBL.send(userNotificationRequest);
 
 		return MSG_OK;
 	}

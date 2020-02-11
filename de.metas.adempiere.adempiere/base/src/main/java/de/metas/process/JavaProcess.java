@@ -317,7 +317,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		finally
 		{
 			// NOTE: at this point the thread local loggable was restored
-
 			endTrx(success);
 		}
 
@@ -967,7 +966,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return getProcessInfo().getAD_Client_ID();
 	}
-	
+
 	protected final OrgId getOrgId()
 	{
 		return getProcessInfo().getOrgId();
