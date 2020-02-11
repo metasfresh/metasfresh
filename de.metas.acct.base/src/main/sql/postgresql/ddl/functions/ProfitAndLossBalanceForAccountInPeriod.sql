@@ -53,7 +53,7 @@ LIMIT 1
     ;
 $BODY$
     LANGUAGE SQL
-    VOLATILE;
+    STABLE;
 
 ALTER FUNCTION ProfitAndLossBalanceForAccountInPeriod(numeric, timestamp, timestamp)
     OWNER TO metasfresh;
