@@ -35,7 +35,7 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-/** If a loggable {@link ILoggable#addLog(String, Object...)} last mesParameter is a throwable, this help extracts the throwable and creates an AD_Issue. */
+/** If a loggable {@link ILoggable#addLog(String, Object...)} last {@code msgParameter} is a throwable, this helper extracts the throwable and creates an AD_Issue. */
 @UtilityClass
 public class LoggableWithThrowableUtil
 {
