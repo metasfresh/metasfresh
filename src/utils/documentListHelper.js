@@ -11,6 +11,7 @@ import { TIME_REGEX_TEST } from '../constants/Constants';
 const DLpropTypes = {
   // from parent
   windowType: PropTypes.string.isRequired,
+  viewId: PropTypes.string,
 
   // from <DocList>
   updateParentSelectedIds: PropTypes.func,
