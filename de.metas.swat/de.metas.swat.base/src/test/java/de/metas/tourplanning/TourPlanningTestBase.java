@@ -41,7 +41,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -135,7 +134,7 @@ public abstract class TourPlanningTestBase
 		this.tourInstanceBL = Services.get(ITourInstanceBL.class);
 		this.tourInstanceDAO = Services.get(ITourInstanceDAO.class);
 
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo =newInstance(I_AD_OrgInfo.class);
 		orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
 		orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 		orgInfo.setTimeZone(timeZone.getId());
@@ -162,38 +161,38 @@ public abstract class TourPlanningTestBase
 
 	protected I_C_BPartner createBPartner(final String name)
 	{
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner bpartner =newInstance(I_C_BPartner.class, contextProvider);
 		bpartner.setValue(name);
 		bpartner.setName(name);
-		InterfaceWrapperHelper.save(bpartner);
+		save(bpartner);
 		return bpartner;
 	}
 
 	protected I_C_BPartner_Location createBPLocation(final I_C_BPartner bpartner)
 	{
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, contextProvider);
+		final I_C_BPartner_Location bpLocation =newInstance(I_C_BPartner_Location.class, contextProvider);
 		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		InterfaceWrapperHelper.save(bpLocation);
+		save(bpLocation);
 
 		return bpLocation;
 	}
 
 	protected final I_M_Tour createTour(final String name)
 	{
-		final I_M_Tour tour = InterfaceWrapperHelper.newInstance(I_M_Tour.class, contextProvider);
+		final I_M_Tour tour =newInstance(I_M_Tour.class, contextProvider);
 		tour.setName(name);
-		InterfaceWrapperHelper.save(tour);
+		save(tour);
 
 		return tour;
 	}
 
 	protected final I_M_TourVersion createTourVersion(final I_M_Tour tour, final LocalDate validFrom)
 	{
-		final I_M_TourVersion tourVersion = InterfaceWrapperHelper.newInstance(I_M_TourVersion.class, tour);
+		final I_M_TourVersion tourVersion =newInstance(I_M_TourVersion.class, tour);
 		tourVersion.setName(tour.getName() + "-" + validFrom);
 		tourVersion.setM_Tour(tour);
 		tourVersion.setValidFrom(TimeUtil.asTimestamp(validFrom));
-		InterfaceWrapperHelper.save(tourVersion);
+		save(tourVersion);
 
 		return tourVersion;
 	}
@@ -277,12 +276,12 @@ public abstract class TourPlanningTestBase
 		SystemTime.setTimeSource(() -> toDateTimeTimestamp(currentTime).getTime());
 	}
 
-	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours, final int bPartnerId, final int bpLocationId)
 	{
-		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
+		final I_M_DeliveryDay deliveryDay =newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setIsActive(true);
-		deliveryDay.setC_BPartner_ID(bpLocation.getC_BPartner_ID());
-		deliveryDay.setC_BPartner_Location(bpLocation);
+		deliveryDay.setC_BPartner_ID(bPartnerId);
+		deliveryDay.setC_BPartner_Location_ID(bpLocationId);
 		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
 		deliveryDay.setBufferHours(bufferHours);
 		deliveryDay.setIsManual(false);
@@ -295,7 +294,7 @@ public abstract class TourPlanningTestBase
 		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
 		assertThat(deliveryDay.getDeliveryDateTimeMax()).as("DeliveryDateTimeMax").isNotNull();
 
-		InterfaceWrapperHelper.save(deliveryDay);
+		save(deliveryDay);
 
 		return deliveryDay;
 	}
