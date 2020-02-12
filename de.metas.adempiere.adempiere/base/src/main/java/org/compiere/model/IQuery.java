@@ -156,7 +156,7 @@ public interface IQuery<T>
 	 */
 	int firstIdOnly() throws DBException;
 
-	@NonNull
+	@Nullable
 	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return idMapper.apply(firstIdOnly());
