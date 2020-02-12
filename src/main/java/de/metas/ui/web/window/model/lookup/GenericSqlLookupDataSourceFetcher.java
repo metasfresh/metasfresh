@@ -60,9 +60,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
 
-	private static final String YES_TRANSLATABLE_MESSAGE_ID = "de.metas.popupinfo.yes";
-	private static final String NO_TRANSLATABLE_MESSAGE_ID = "de.metas.popupinfo.no";
-
 	private final @NonNull String lookupTableName;
 	private final @NonNull Optional<String> lookupTableNameAsOptional;
 	private final boolean numericKey;

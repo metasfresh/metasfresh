@@ -56,6 +56,8 @@ import lombok.Singular;
 
 public abstract class LookupValue
 {
+	protected final ValidationInformation validationInformation;
+
 	public static final Object normalizeId(final Object idObj, final boolean numericKey)
 	{
 		if (idObj == null)
@@ -206,7 +208,6 @@ public abstract class LookupValue
 	protected final ITranslatableString displayName;
 	protected final ITranslatableString description;
 	private final Boolean active;
-	protected final ValidationInformation validationInformation;
 
 	private final ImmutableMap<String, Object> additionalAttributes;
 
