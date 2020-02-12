@@ -20,3 +20,18 @@ END;
 $$
     LANGUAGE plpgsql IMMUTABLE
                      COST 1;
+
+/*
+How to use:
+Pass the message you want to appear in the console, and also the timestamp returned by the function, so that you get the time difference from the previous output.
+
+DECLARE
+v_debugTime timestamp;
+
+v_debugTime := logDebug('start');
+[...]
+v_debugTime := logDebug('created temporary table', v_debugTime);
+[...]
+v_debugTime := logDebug('inserted beginningBalance', v_debugTime);
+[...]
+*/
