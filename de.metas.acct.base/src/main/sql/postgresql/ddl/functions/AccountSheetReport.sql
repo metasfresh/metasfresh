@@ -206,56 +206,56 @@ ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
 ;
 
 
-------------------------
-WITH previousBalances AS
-         (
-             SELECT (de_metas_acct.acctBalanceToDate(ev.c_elementvalue_id, fa.c_acctschema_id, (current_date - INTERVAL '1 day')::date, fa.ad_org_id)::de_metas_acct.BalanceAmt).Balance previousDayBalance,
-                    ev.c_elementvalue_id,
-                    fa.fact_acct_id
-             FROM c_elementvalue ev
-                      LEFT JOIN fact_acct fa ON ev.c_elementvalue_id = fa.account_id
-         ),
-     firstFactAcctPerAccount AS
-         (
-             SELECT DISTINCT ON (fa.account_id) fa.account_id,
-                                                fa.dateacct,
-                                                fa.fact_acct_id
-             FROM fact_acct fa
-             ORDER BY fa.account_id, fa.dateacct, fa.fact_acct_id
-         ),
-     summed_fa AS
-         (
-             SELECT fa.*,
-                    (
-                            prev.previousDayBalance
-                            + sum(acctbalance(fa.account_id, fa.amtacctdr, fa.amtacctcr)) OVER (ORDER BY fa.dateacct, fa.fact_acct_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
-                        )                                                  AS rollingBalance,
-                    acctbalance(fa.account_id, fa.amtacctdr, fa.amtacctcr) AS currentBalance
-             FROM fact_acct fa
-                      INNER JOIN firstFactAcctPerAccount ffa ON fa.fact_acct_id = ffa.fact_acct_id
-                      INNER JOIN previousBalances prev ON fa.fact_acct_id = prev.fact_acct_id
-         )
-SELECT fa.dateacct,
-       fa.documentno ::text,
-       fa.description::text,
-       fa.amtacctdr,
-       fa.amtacctcr,
-       fa.fact_acct_id,
-       fa.c_doctype_id,
-       fa.c_tax_id,
-       fa.currentBalance,
-       fa.rollingBalance
-FROM summed_fa fa;
+/*
+Performance
 
+Running on the biggest database we have available, I get these numbers:
 
+- test 1:
+    2017-04-01 -> 2018-05-31 = 13 months
+    ~2.1 million records
 
-SELECT clock_timestamp(),
-       now(),
-       pg_sleep(2),
-       clock_timestamp(),
-       now()
+select *
+FROM tbpReport(
+    '2017-04-01'::date,
+    '2018-05-31'::date,
+    1000000,
+    1000000
+)
+ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
 ;
 
+[2020-02-12 16:20:19] [00000] [2020-02-12 14:20:18.842788](0s)   [Δ=0s]: start
+[2020-02-12 16:20:19] [00000] [2020-02-12 14:20:18.849605](0s)   [Δ=0s]: created temporary table
+[2020-02-12 16:20:22] [00000] [2020-02-12 14:20:21.720887](3s)   [Δ=3s]: inserted beginningBalance
+[2020-02-12 16:20:36] [00000] [2020-02-12 14:20:35.628875](17s)  [Δ=14s]: inserted:2176571 fact_acct
+[2020-02-12 16:20:38] [00000] [2020-02-12 14:20:37.256058](18s)  [Δ=1s]: deleted rows w/o transactions. Remaining: 2176571
+[2020-02-12 16:22:06] [00000] [2020-02-12 14:22:05.357838](106s) [Δ=88s]: finished calculating rolling sum
+[2020-02-12 16:22:15] Execution: 106 seconds
+
+
+- test 2:
+    2018-04-01 -> 2018-05-31 = 2 months
+    ~300k records
+
+select *
+FROM tbpReport(
+    '2018-04-01'::date,
+    '2018-05-31'::date,
+    1000000,
+    1000000
+)
+ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
+;
+
+[2020-02-12 16:26:55] [00000] [2020-02-12 14:26:55.109815](0s) [Δ=0s]: start
+[2020-02-12 16:26:56] [00000] [2020-02-12 14:26:55.113405](0s) [Δ=0s]: created temporary table
+[2020-02-12 16:26:59] [00000] [2020-02-12 14:26:58.7422](4s) [Δ=4s]: inserted beginningBalance
+[2020-02-12 16:27:04] [00000] [2020-02-12 14:27:03.366925](8s) [Δ=4s]: inserted:299213 fact_acct
+[2020-02-12 16:27:04] [00000] [2020-02-12 14:27:03.554333](9s) [Δ=1s]: deleted rows w/o transactions. Remaining: 299213
+[2020-02-12 16:27:15] [00000] [2020-02-12 14:27:13.041447](18s) [Δ=9s]: finished calculating rolling sum
+[2020-02-12 16:27:16] Execution: 18 seconds
+*/
 
 
 
