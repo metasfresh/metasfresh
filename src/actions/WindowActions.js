@@ -490,7 +490,7 @@ export function deselectTableItems(ids, windowType, viewId) {
 
 // THUNK ACTIONS
 
-function initTabs(layout, windowType, docId, isModal) {
+export function initTabs(layout, windowType, docId, isModal) {
   return async (dispatch) => {
     const requests = [];
     const tabTmp = {};
@@ -556,7 +556,9 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
           null,
           null,
           isAdvanced
-        );
+        ).catch((e) => {
+          return e;
+        });
       } else {
         //Existing master document
         return getData(
@@ -670,7 +672,8 @@ export function createWindow(
               );
             }
             return Promise.resolve(null);
-          });
+          })
+          .catch((e) => Promise.reject(e));
       }
     );
   };

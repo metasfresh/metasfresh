@@ -24,7 +24,7 @@ describe('WindowActions synchronous', () => {
 });
 
 describe('WindowActions thunks', () => {
-  const propsData = masterWindowProps.data1;
+  const propsData = masterWindowProps.props1;
   const middlewares = [thunk];
   const mockStore = configureStore(middlewares);
 
