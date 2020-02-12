@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -59,8 +60,10 @@ import lombok.NonNull;
 public class GeoLocationDocumentService implements DocumentFilterDescriptorsProviderFactory
 {
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String MSG_FILTER_CAPTION = "LocationAreaSearch";
+	private static final String SYS_CONFIG_ENABLE_GEO_LOCATION_SEARCH = "de.metas.ui.web.document.geo_location.filter_enabled";
 
 	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_LocationId = GeoLocationDocumentDescriptor.builder()
 			.type(LocationColumnNameType.LocationId)
@@ -119,6 +122,10 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 	public boolean hasGeoLocationSupport(@NonNull final Set<String> fieldNames)
 	{
 		return getGeoLocationDocumentDescriptorOrNull(fieldNames) != null;
+	}
+
+	public boolean isActive() {
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_ENABLE_GEO_LOCATION_SEARCH, Boolean.TRUE);
 	}
 
 	@Nullable

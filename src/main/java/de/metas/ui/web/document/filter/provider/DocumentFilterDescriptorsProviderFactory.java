@@ -34,4 +34,6 @@ public interface DocumentFilterDescriptorsProviderFactory
 {
 	@Nullable
 	DocumentFilterDescriptorsProvider createFiltersProvider(AdTabId adTabId, String tableName, Collection<DocumentFieldDescriptor> fields);
+
+	default boolean isActive() { return true; }
 }
