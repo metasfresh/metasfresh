@@ -32,7 +32,7 @@ DECLARE
     LINE_TYPE_TRANSACTION      CONSTANT text = 'T';
     v_temp                              numeric;
 BEGIN
-    v_time := logDbg('start');
+    v_time := logDebug('start');
 
     --
     -- create temporary table for everything we're working on; it has no rows, only the needed columns
@@ -50,7 +50,7 @@ BEGIN
                      LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
             WHERE FALSE
         );
-    v_time := logDbg('created temporary table', v_time);
+    v_time := logDebug('created temporary table', v_time);
 
 
     --
@@ -84,7 +84,7 @@ BEGIN
            LINE_TYPE_BEGINNINGBALANCE,
            nonZero.c_elementvalue_id
     FROM nonZeroPreviousBalances nonZero;
-    v_time := logDbg('inserted beginningBalance', v_time);
+    v_time := logDebug('inserted beginningBalance', v_time);
 
 
     --
@@ -113,14 +113,14 @@ BEGIN
     SELECT *
     FROM filteredFactAcct;
     SELECT count(1) FROM tbpFilteredFactAcct INTO v_temp;
-    v_time := logDbg('inserted:' || v_temp || ' fact_acct: ', v_time);
+    v_time := logDebug('inserted:' || v_temp || ' fact_acct', v_time);
 
 
     --
     -- remove all the rows which don't have any transactions
     -- todo i believe this can be thrown out now
     DELETE FROM tbpFilteredFactAcct t WHERE t.beginningBalance = 0;
-    v_time := logDbg('deleted rows w/o transactions', v_time);
+    v_time := logDebug('deleted rows w/o transactions', v_time);
 
     --
     -- Update the current balance for each row.
@@ -153,7 +153,7 @@ BEGIN
     FROM final_fa ffa
     WHERE tbpffa.fact_acct_id = ffa.fact_acct_id;
 
-    v_time := logDbg('finished calculating rolling sum', v_time);
+    v_time := logDebug('finished calculating rolling sum', v_time);
 
     RETURN QUERY
         SELECT --
