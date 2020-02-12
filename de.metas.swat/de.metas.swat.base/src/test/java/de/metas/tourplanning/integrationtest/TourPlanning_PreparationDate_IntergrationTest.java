@@ -2,12 +2,12 @@ package de.metas.tourplanning.integrationtest;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -41,10 +41,10 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 	public void test()
 	{
 		@SuppressWarnings("unused")
-		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5);
-		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5); // => we expect this one to be used
+		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID()); // => we expect this one to be used
 		@SuppressWarnings("unused")
-		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5);
+		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 
 		final String currentTime = "07.09.2014 00:00:00.000";
 		setSystemTime(currentTime);
@@ -54,29 +54,116 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		final I_C_Order order = createOrder(
 				"08.09.2014 23:59:59.999" // date promised
 		);
-		Assert.assertEquals("Invalid order PreparationDate: " + order,
-				toDateTimeTimestamp("08.09.2014 15:00:00.000"),
-				order.getPreparationDate());
+		assertThat(order.getPreparationDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 15:00:00.000"))
+				.withFailMessage("Invalid order PreparationDate: ", order);
 
 		//
 		// Create and validate Shipment Schedule
 		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule(order, -1);
-		Assert.assertEquals("Invalid shipment schedule's DeliveryDate: " + shipmentSchedule,
-				toDateTimeTimestamp("08.09.2014 23:59:59.999"),
-				shipmentSchedule.getDeliveryDate());
-		Assert.assertEquals("Invalid shipment schedule's PreparationDate: " + shipmentSchedule,
-				toDateTimeTimestamp("08.09.2014 15:00:00.000"),
-				shipmentSchedule.getPreparationDate());
+
+		assertThat(shipmentSchedule.getDeliveryDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 23:59:59.999"))
+				.withFailMessage("Invalid shipment schedule's DeliveryDate: ", shipmentSchedule);
+
+		assertThat(shipmentSchedule.getPreparationDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 15:00:00.000"))
+				.withFailMessage("Invalid shipment schedule's PreparationDate: ", shipmentSchedule);
 
 		assertDeliveryDayAlloc(dd2, shipmentSchedule);
 	}
 
+	@Test
+	public void test_NullBPartnerAndNullLocation()
+	{
+		@SuppressWarnings("unused")
+		final I_M_DeliveryDay dd = createDeliveryDay("08.09.2014 15:00:00.000", 5, -1, -1);
+
+		final String currentTime = "07.09.2014 00:00:00.000";
+		setSystemTime(currentTime);
+
+		//
+		// Create and test Order's PreparationDate
+		final I_C_Order order = createOrder(
+				"08.09.2014 23:59:59.999" // date promised
+		);
+
+		assertThat(order.getPreparationDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 15:00:00.000"))
+				.withFailMessage("Invalid order PreparationDate: ", order);
+
+	}
+
+	@Test
+	public void test_WrongBPartnerAndNullLocation()
+	{
+		final I_C_BPartner partner2 = createBPartner("bp2");
+		@SuppressWarnings("unused")
+		final I_M_DeliveryDay dd = createDeliveryDay("08.09.2014 15:00:00.000", 5, partner2.getC_BPartner_ID(), -1);
+
+		final String currentTime = "07.09.2014 00:00:00.000";
+		setSystemTime(currentTime);
+
+		//
+		// Create and test Order's PreparationDate
+		final I_C_Order order = createOrder(
+				"08.09.2014 23:59:59.999" // date promised
+		);
+		assertThat(order.getPreparationDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 23:59:59.999"))
+				.withFailMessage("Invalid order PreparationDate: ", order);
+
+	}
+
+	@Test
+	public void test_WrongBPartnerAndWrongLocation()
+	{
+		final I_C_BPartner partner2 = createBPartner("bp2");
+		final I_C_BPartner_Location location2 = createBPLocation(partner2);
+		@SuppressWarnings("unused")
+		final I_M_DeliveryDay dd = createDeliveryDay("08.09.2014 15:00:00.000", 5, partner2.getC_BPartner_ID(), location2.getC_BPartner_Location_ID());
+
+		final String currentTime = "07.09.2014 00:00:00.000";
+		setSystemTime(currentTime);
+
+		//
+		// Create and test Order's PreparationDate
+		final I_C_Order order = createOrder(
+				"08.09.2014 23:59:59.999" // date promised
+		);
+
+		assertThat(order.getPreparationDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 23:59:59.999"))
+				.withFailMessage("Invalid order PreparationDate: ", order);
+
+	}
+
+	@Test
+	public void test_CorrectBPartnerAndNullLocation()
+	{
+		@SuppressWarnings("unused")
+		final I_M_DeliveryDay dd = createDeliveryDay("08.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), -1);
+
+		final String currentTime = "07.09.2014 00:00:00.000";
+		setSystemTime(currentTime);
+
+		//
+		// Create and test Order's PreparationDate
+		final I_C_Order order = createOrder(
+				"08.09.2014 23:59:59.999" // date promised
+		);
+		assertThat(order.getPreparationDate())
+				.isEqualTo(toDateTimeTimestamp("08.09.2014 15:00:00.000"))
+				.withFailMessage("Invalid order PreparationDate: ", order);
+
+	}
+
 	@Override
-	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours, final int bPartnerId, final int bpLocationId)
 	{
 		final I_M_DeliveryDay deliveryDay = newInstance(I_M_DeliveryDay.class, contextProvider);
-		deliveryDay.setC_BPartner(bpartner);
-		deliveryDay.setC_BPartner_Location(bpLocation);
+		deliveryDay.setC_BPartner_ID(bPartnerId);
+		deliveryDay.setC_BPartner_Location_ID(bpLocationId);
 		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
 		deliveryDay.setBufferHours(bufferHours);
 		deliveryDay.setIsManual(false);
@@ -87,7 +174,9 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		deliveryDay.setProcessed(false);
 
 		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
-		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
+		assertThat(deliveryDay.getDeliveryDateTimeMax())
+				.isNotNull()
+				.withFailMessage("DeliveryDateTimeMax shall be set");
 
 		save(deliveryDay);
 
