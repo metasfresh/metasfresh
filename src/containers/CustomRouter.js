@@ -23,7 +23,7 @@ class CustomRouter extends PureComponent {
 }
 
 CustomRouter.propTypes = {
-  auth: PropTypes.object.isRequired,
+  auth: PropTypes.object,
   plugins: PropTypes.array,
   history: PropTypes.any,
 };
