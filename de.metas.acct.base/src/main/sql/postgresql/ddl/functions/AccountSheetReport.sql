@@ -22,7 +22,7 @@ CREATE OR REPLACE FUNCTION tbpReport(p_dateFrom date, p_dateTo date, p_c_acctsch
                 c_tax_id         numeric,
                 c_taxcategory_id numeric,
                 beginningBalance numeric,
-                previousBalance  numeric
+                endingBalance    numeric
             )
 AS
 $BODY$
@@ -42,7 +42,7 @@ BEGIN
             SELECT fa.*,
                    tc.c_taxcategory_id,
                    0::numeric beginningBalance,
-                   0::numeric previousBalance,
+                   0::numeric endingBalance,
                    NULL::text lineType
             FROM c_elementvalue ev
                      INNER JOIN fact_acct fa ON ev.c_elementvalue_id = fa.account_id -- only search for accounts with at least 1 transaction
@@ -78,7 +78,7 @@ BEGIN
                  WHERE previousDayBalance != 0
              )
     INSERT
-    INTO tbpFilteredFactAcct (beginningBalance, previousBalance, lineType, account_id)
+    INTO tbpFilteredFactAcct (beginningBalance, endingBalance, lineType, account_id)
     SELECT nonZero.previousDayBalance,
            nonZero.previousDayBalance,
            LINE_TYPE_BEGINNINGBALANCE,
@@ -94,7 +94,7 @@ BEGIN
                  SELECT fa.*,
                         tc.c_taxcategory_id,
                         tbp.beginningBalance::numeric beginningBalance,
-                        tbp.previousBalance::numeric  previousBalance,
+                        tbp.endingBalance::numeric    endingBalance,
                         LINE_TYPE_TRANSACTION
                  FROM fact_acct fa
                           INNER JOIN tbpFilteredFactAcct tbp ON tbp.account_id = fa.account_id --
@@ -103,7 +103,7 @@ BEGIN
                  WHERE TRUE
                    -- AND ev.accounttype = 'A' -- no longer needed here, since we're joining with the already filtered tbpFilteredFactAcct
                    AND fa.c_acctschema_id = p_c_acctschema_id
-                   AND (fa.dateacct >= p_dateFrom AND fa.dateacct <= p_dateTo) -- todo can this be here now?(do i want to include fact_acct's which have transactions in the past if i already have  the beginning balance computed already?)
+                   AND (fa.dateacct >= p_dateFrom AND fa.dateacct <= p_dateTo)
                    AND (p_account_id IS NULL OR fa.account_id = p_account_id)
                    AND (p_c_activity_id IS NULL OR fa.c_activity_id = p_c_activity_id)
                    AND (p_c_project_id IS NULL OR fa.c_project_id = p_c_project_id)
@@ -112,15 +112,10 @@ BEGIN
     INTO tbpFilteredFactAcct
     SELECT *
     FROM filteredFactAcct;
+
     SELECT count(1) FROM tbpFilteredFactAcct INTO v_temp;
     v_time := logDebug('inserted:' || v_temp || ' fact_acct', v_time);
 
-
-    --
-    -- remove all the rows which don't have any transactions
-    -- todo i believe this can be thrown out now
-    DELETE FROM tbpFilteredFactAcct t WHERE t.beginningBalance = 0;
-    v_time := logDebug('deleted rows w/o transactions', v_time);
 
     --
     -- Update the current balance for each row.
@@ -129,7 +124,7 @@ BEGIN
              (
                  SELECT fa.fact_acct_id,
                         (
-                                fa.previousBalance
+                                fa.endingBalance
                                 + sum(acctbalance(fa.account_id, fa.amtacctdr, fa.amtacctcr))
                                   OVER
                                       (
@@ -144,12 +139,12 @@ BEGIN
          final_fa AS
              (
                  SELECT fa.*,
-                        fa.beginningBalance - fa.transactionBalance previousBalance
+                        fa.beginningBalance - fa.transactionBalance endingBalance
                  FROM beginningBalance_fa fa
              )
     UPDATE tbpFilteredFactAcct tbpffa
-    SET beginningBalance = ffa.previousBalance,
-        previousBalance  = ffa.beginningBalance
+    SET beginningBalance = ffa.endingBalance,
+        endingBalance    = ffa.beginningBalance
     FROM final_fa ffa
     WHERE tbpffa.fact_acct_id = ffa.fact_acct_id;
 
@@ -168,42 +163,11 @@ BEGIN
                t.c_tax_id,
                t.c_taxcategory_id,
                t.beginningBalance,
-               t.previousBalance
+               t.endingBalance
         FROM tbpFilteredFactAcct t;
 END;
 $BODY$
     LANGUAGE plpgsql;
-
-
---------
-SELECT --
-       account_id,
-       dateacct,
---        fact_acct_id,
---        documentno,
---        description,
-       amtacctdr,
-       amtacctcr,
---        c_doctype_id,
---        c_tax_id,
---        c_taxcategory_id,
-       beginningBalance,
-       previousBalance
-FROM tbpReport(
-        '2018-04-01'::date,
-        '2018-05-31'::date,
-        1000000,
-        1000000
-    )
---      ,
---         540003,
---         NULL,
---         NULL
---     )
-WHERE TRUE
-  AND account_id NOT IN (540003)
-ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
 
 
 /*
