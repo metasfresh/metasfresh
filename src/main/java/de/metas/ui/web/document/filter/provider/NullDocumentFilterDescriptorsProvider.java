@@ -3,6 +3,7 @@ package de.metas.ui.web.document.filter.provider;
 import java.util.Collection;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -38,12 +39,12 @@ public final class NullDocumentFilterDescriptorsProvider implements DocumentFilt
 {
 	public static final transient NullDocumentFilterDescriptorsProvider instance = new NullDocumentFilterDescriptorsProvider();
 
-	public static boolean isNull(final DocumentFilterDescriptorsProvider provider)
+	public static boolean isNull(@Nullable final DocumentFilterDescriptorsProvider provider)
 	{
 		return provider == null || provider == instance;
 	}
 
-	public static boolean isNotNull(final DocumentFilterDescriptorsProvider provider)
+	public static boolean isNotNull(@Nullable final DocumentFilterDescriptorsProvider provider)
 	{
 		return !isNull(provider);
 	}
