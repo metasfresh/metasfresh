@@ -68,7 +68,6 @@ BEGIN
                  SELECT ev.c_elementvalue_id
                  FROM c_elementvalue ev
                  WHERE TRUE
-                   AND ev.accounttype = 'A'
                    AND (p_account_id IS NULL OR ev.c_elementvalue_id = p_account_id)
                  ORDER BY ev.c_elementvalue_id
              ),
@@ -110,7 +109,7 @@ BEGIN
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
                  WHERE TRUE
-                   -- AND ev.accounttype = 'A' -- no longer needed here, since we're joining with the already filtered tbpFilteredFactAcct
+                   and fa.postingtype = 'A' -- posting type = 'Actual'
                    AND fa.c_acctschema_id = p_c_acctschema_id
                    AND (fa.dateacct >= p_dateFrom AND fa.dateacct <= p_dateTo)
                    AND (p_account_id IS NULL OR fa.account_id = p_account_id)
