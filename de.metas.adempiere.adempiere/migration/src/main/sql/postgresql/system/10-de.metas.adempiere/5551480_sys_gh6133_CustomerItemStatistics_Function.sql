@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION customerItemStatistics(
   RETURNS TABLE
 (
 
-	 partnerValue character varying,
+	 BPValue character varying,
 	 productValue character varying,
 	 description character varying,
 	 qtyInvoiced numeric,
@@ -27,7 +27,7 @@ $$
 
 
 SELECT 
-	t.partnerValue,
+	t.BPValue,
 	t.productValue,
 	t.productName,
 	t.qtyInvoiced,
@@ -39,7 +39,7 @@ SELECT
 FROM
 	(
 		SELECT 
-			bp.value as partnerValue,
+			bp.value as BPValue,
 			p.value as productValue,
 			p.name as productName,
 			sum(il.qtyInvoiced) as qtyInvoiced,
@@ -68,7 +68,7 @@ FROM
 
 			GROUP BY bp.value, p.M_Product_ID, p.C_UOM_ID
 ) t
-	ORDER BY t.partnerValue
+	ORDER BY t.BPValue
 $$
 LANGUAGE sql STABLE;
 
