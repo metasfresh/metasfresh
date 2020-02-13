@@ -1,5 +1,9 @@
-import SockJs from 'sockjs-client';
-import Stomp from 'stompjs/lib/stomp.min.js';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+
+function socketFactory() {
+  return new SockJS(config.WS_URL);
+}
 
 export function connectWS(topic, onMessageCallback) {
   // Avoid disconnecting and reconnecting to same topic.
@@ -34,10 +38,33 @@ export function connectWS(topic, onMessageCallback) {
   };
 
   const connect = () => {
-    this.sock = new SockJs(config.WS_URL);
-    this.sockClient = Stomp.Stomp.over(this.sock);
-    this.sockClient.debug = null;
-    this.sockClient.connect({}, subscribe);
+    this.sockClient = new Client({
+      brokerURL: config.WS_URL,
+      // debug: function(str) {
+      //   console.log('debug: ', str);
+      // },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    if (process.env.JEST_WORKER_ID === undefined) {
+      this.sockClient.webSocketFactory = socketFactory;
+    }
+    this.sockClient.onConnect = subscribe;
+
+    /*eslint-disable no-console */
+    this.sockClient.onStompError = function(frame) {
+      // Will be invoked in case of error encountered at Broker
+      // Bad login/passcode typically will cause an error
+      // Complaint brokers will set `message` header with a brief message. Body may contain details.
+      // Compliant brokers will terminate the connection after any error
+      console.log('Broker reported error: ' + frame.headers['message']);
+      console.log('Additional details: ' + frame.body);
+    };
+    /*eslint-enable no-console */
+
+    this.sockClient.activate({}, subscribe);
   };
 
   const wasConnected = disconnectWS.call(this, connect);
@@ -53,7 +80,7 @@ export function disconnectWS(onDisconnectCallback) {
   if (connected) {
     // console.log("WS: Unsubscribing from %s", this.sockTopic);
     this.sockSubscription.unsubscribe();
-    this.sockClient.disconnect(onDisconnectCallback);
+    this.sockClient.deactivate(onDisconnectCallback);
     this.sockTopic = null;
   }
 
