@@ -3,14 +3,13 @@ package de.metas.ui.web.picking.husToPick;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
@@ -22,7 +21,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -73,12 +71,11 @@ class HUsToPickViewFilters
 				createHUIdsFilterDescriptor());
 	}
 
-	public static Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
+	public static List<SqlDocumentFilterConverter> createFilterConverters()
 	{
-		return ImmutableMap.<String, SqlDocumentFilterConverter> builder()
-				.put(LocatorBarcode_FilterId, HUsToPickViewFilters::getLocatorBarcodeFilterSql)
-				.put(HU_IDS_FilterId, HUsToPickViewFilters::getHUIdsFilterSql)
-				.build();
+		return ImmutableList.<SqlDocumentFilterConverter> of(
+				LocatorBarcodeFilterConverter.instance,
+				HUIdsFilterConverter.instance);
 	}
 
 	private static final DocumentFilterDescriptor createLocatorBarcodeFilterDescriptor()
@@ -96,27 +93,34 @@ class HUsToPickViewFilters
 				.build();
 	}
 
-	public static String getLocatorBarcode(final DocumentFiltersList filters)
+	private static class LocatorBarcodeFilterConverter implements SqlDocumentFilterConverter
 	{
-		return filters.getParamValueAsString(LocatorBarcode_FilterId, PARAM_Barcode);
-	}
+		public static final transient LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
 
-	public static String getLocatorBarcodeFilterSql(
-			final SqlParamsCollector sqlParamsOut,
-			final DocumentFilter filter,
-			final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context)
-	{
-		if (!LocatorBarcode_FilterId.equals(filter.getFilterId()))
+		@Override
+		public boolean canConvert(final String filterId)
 		{
-			throw new AdempiereException("Invalid filterId " + filter.getFilterId() + ". Expected: " + LocatorBarcode_FilterId);
+			return Objects.equals(filterId, LocatorBarcode_FilterId);
 		}
 
-		final String barcode = filter.getParameterValueAsString(PARAM_Barcode);
-		final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByBarcode(barcode);
+		@Override
+		public String getSql(
+				final SqlParamsCollector sqlParamsOut,
+				final DocumentFilter filter,
+				final SqlOptions sqlOpts,
+				final SqlDocumentFilterConverterContext context)
+		{
+			if (!LocatorBarcode_FilterId.equals(filter.getFilterId()))
+			{
+				throw new AdempiereException("Invalid filterId " + filter.getFilterId() + ". Expected: " + LocatorBarcode_FilterId);
+			}
 
-		final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
-		return sql;
+			final String barcode = filter.getParameterValueAsString(PARAM_Barcode);
+			final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByBarcode(barcode);
+
+			final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
+			return sql;
+		}
 	}
 
 	private static final DocumentFilterDescriptor createHUIdsFilterDescriptor()
@@ -138,35 +142,45 @@ class HUsToPickViewFilters
 		return DocumentFilter.singleParameterFilter(HU_IDS_FilterId, PARAM_ConsiderAttributes, Operator.EQUAL, considerAttributes);
 	}
 
-	public static String getHUIdsFilterSql(
-			final SqlParamsCollector sqlParamsOut,
-			final DocumentFilter filter,
-			final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context)
+	private static class HUIdsFilterConverter implements SqlDocumentFilterConverter
 	{
-		if (!HU_IDS_FilterId.equals(filter.getFilterId()))
+		public static final transient HUIdsFilterConverter instance = new HUIdsFilterConverter();
+
+		@Override
+		public boolean canConvert(String filterId)
 		{
-			throw new AdempiereException("Invalid filterId " + filter.getFilterId() + ". Expected: " + HU_IDS_FilterId);
+			return Objects.equals(filterId, HU_IDS_FilterId);
 		}
 
-		final int shipmentScheduleId = context.getPropertyAsInt(PARAM_CurrentShipmentScheduleId, -1);
-		if (shipmentScheduleId <= 0)
+		@Override
+		public String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, SqlOptions sqlOpts, SqlDocumentFilterConverterContext context)
 		{
-			return "/* no shipment schedule */ 1=0";
-		}
+			if (!HU_IDS_FilterId.equals(filter.getFilterId()))
+			{
+				throw new AdempiereException("Invalid filterId " + filter.getFilterId() + ". Expected: " + HU_IDS_FilterId);
+			}
 
-		final boolean considerAttributes = filter.getParameterValueAsBoolean(PARAM_ConsiderAttributes, false);
-		final List<Integer> huIds = retrieveAvailableHuIdsForCurrentShipmentScheduleId(shipmentScheduleId, considerAttributes);
-		if (huIds.isEmpty())
-		{
-			return "/* no M_HU_IDs */ 1=0";
-		}
+			final int shipmentScheduleId = context.getPropertyAsInt(PARAM_CurrentShipmentScheduleId, -1);
+			if (shipmentScheduleId <= 0)
+			{
+				return "/* no shipment schedule */ 1=0";
+			}
 
-		final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
-		return sql;
+			final boolean considerAttributes = filter.getParameterValueAsBoolean(PARAM_ConsiderAttributes, false);
+			final List<Integer> huIds = retrieveAvailableHuIdsForCurrentShipmentScheduleId(shipmentScheduleId, considerAttributes);
+			if (huIds.isEmpty())
+			{
+				return "/* no M_HU_IDs */ 1=0";
+			}
+
+			final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
+			return sql;
+		}
 	}
 
-	private static List<Integer> retrieveAvailableHuIdsForCurrentShipmentScheduleId(final int shipmentScheduleId, final boolean considerAttributes)
+	private static List<Integer> retrieveAvailableHuIdsForCurrentShipmentScheduleId(
+			final int shipmentScheduleId,
+			final boolean considerAttributes)
 	{
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 

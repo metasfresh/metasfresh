@@ -20,6 +20,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
@@ -132,31 +133,32 @@ public class PickingSlotViewFactory implements IViewFactory
 			@NonNull final CreateViewRequest request,
 			@Nullable final Set<ShipmentScheduleId> allShipmentScheduleIds)
 	{
-		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(getFilterDescriptorsProvider());
+		final DocumentFilterList filters = request.getFiltersUnwrapped(getFilterDescriptorsProvider());
 
-		final ViewId pickingViewId = requestEffective.getParentViewId();
-		final DocumentId pickingRowId = requestEffective.getParentRowId();
+		final ViewId pickingViewId = request.getParentViewId();
+		final DocumentId pickingRowId = request.getParentRowId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
-		final ShipmentScheduleId shipmentScheduleId = extractCurrentShipmentScheduleId(requestEffective);
+		final ShipmentScheduleId currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
 
-		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(requestEffective, allShipmentScheduleIds);
+		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(filters, currentShipmentScheduleId, allShipmentScheduleIds);
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRows(query);
 
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
 				.parentViewId(pickingViewId)
 				.parentRowId(pickingRowId)
-				.currentShipmentScheduleId(shipmentScheduleId)
+				.currentShipmentScheduleId(currentShipmentScheduleId)
 				.rowsSupplier(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
-				.filters(requestEffective.getFilters().getFilters())
+				.filters(filters)
 				.build();
 	}
 
-	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(final CreateViewRequest request, final Set<ShipmentScheduleId> allShipmentScheduleIds)
+	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(
+			final DocumentFilterList filters,
+			final ShipmentScheduleId currentShipmentScheduleId,
+			final Set<ShipmentScheduleId> allShipmentScheduleIds)
 	{
-		final ShipmentScheduleId currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
-
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
 		final PickingSlotRepoQueryBuilder queryBuilder = PickingSlotRepoQuery.builder()
@@ -169,13 +171,13 @@ public class PickingSlotViewFactory implements IViewFactory
 		else
 		{
 			Check.errorUnless(allShipmentScheduleIds.contains(currentShipmentScheduleId),
-					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; shipmentScheduleId={}; allShipmentScheduleIds={}; request={}",
-					currentShipmentScheduleId, allShipmentScheduleIds, request);
+					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; shipmentScheduleId={}; allShipmentScheduleIds={}; filters={}",
+					currentShipmentScheduleId, allShipmentScheduleIds, filters);
 
 			queryBuilder.shipmentScheduleIds(allShipmentScheduleIds);
 		}
 
-		final String barcode = PickingSlotViewFilters.getPickingSlotBarcode(request.getFilters());
+		final String barcode = PickingSlotViewFilters.getPickingSlotBarcode(filters);
 		if (!Check.isEmpty(barcode, true))
 		{
 			queryBuilder.pickingSlotBarcode(barcode);

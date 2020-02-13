@@ -1,7 +1,6 @@
 package de.metas.ui.web.material.cockpit.filters;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -12,10 +11,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -65,19 +62,18 @@ public class MaterialCockpitFilters
 				ProductFilterUtil.createFilterDescriptor());
 	}
 
-	public ImmutableList<DocumentFilter> createAutoFilters()
+	public DocumentFilterList createAutoFilters()
 	{
-		return ImmutableList.of(DateFilterUtil.createFilterToday());
+		return DocumentFilterList.of(DateFilterUtil.createFilterToday());
 	}
 
-	public ImmutableList<DocumentFilter> extractDocumentFilters(@NonNull final CreateViewRequest request)
+	public DocumentFilterList extractDocumentFilters(@NonNull final CreateViewRequest request)
 	{
 		final DocumentFilterDescriptorsProvider provider = getFilterDescriptors();
-		final List<DocumentFilter> filters = request.getOrUnwrapFilters(provider);
-		return ImmutableList.copyOf(filters);
+		return request.getFiltersUnwrapped(provider);
 	}
 
-	public IQuery<I_MD_Cockpit> createQuery(@NonNull final List<DocumentFilter> filters)
+	public IQuery<I_MD_Cockpit> createQuery(@NonNull final DocumentFilterList filters)
 	{
 		final IQueryBuilder<I_MD_Cockpit> queryBuilder = createInitialQueryBuilder();
 
@@ -154,13 +150,13 @@ public class MaterialCockpitFilters
 				.endOrderBy();
 	}
 
-	public LocalDate getFilterByDate(@NonNull final List<DocumentFilter> filters)
+	public LocalDate getFilterByDate(@NonNull final DocumentFilterList filters)
 	{
 		final DateFilterVO dateFilterVO = DateFilterUtil.extractDateFilterVO(filters);
 		return dateFilterVO.getDate();
 	}
 
-	public Predicate<I_M_Product> toProductFilterPredicate(@NonNull final List<DocumentFilter> filters)
+	public Predicate<I_M_Product> toProductFilterPredicate(@NonNull final DocumentFilterList filters)
 	{
 		return ProductFilterUtil.toPredicate(filters);
 	}

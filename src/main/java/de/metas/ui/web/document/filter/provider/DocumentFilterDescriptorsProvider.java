@@ -1,7 +1,8 @@
 package de.metas.ui.web.document.filter.provider;
 
 import java.util.Collection;
-import java.util.NoSuchElementException;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 
@@ -18,11 +19,11 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,12 +49,12 @@ public interface DocumentFilterDescriptorsProvider
 	/**
 	 * @return filter descriptor
 	 */
-	default DocumentFilterDescriptor getByFilterId(final String filterId) throws NoSuchElementException
+	default DocumentFilterDescriptor getByFilterId(final String filterId)
 	{
 		final DocumentFilterDescriptor filterDescriptor = getByFilterIdOrNull(filterId);
 		if (filterDescriptor == null)
 		{
-			throw new NoSuchElementException("Filter '" + filterId + "' was not found in " + this);
+			throw new AdempiereException("Filter '" + filterId + "' was not found in " + this);
 		}
 		return filterDescriptor;
 	}

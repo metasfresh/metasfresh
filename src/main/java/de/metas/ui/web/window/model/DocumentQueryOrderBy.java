@@ -1,17 +1,12 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -56,28 +51,9 @@ public final class DocumentQueryOrderBy
 	}
 
 	/**
-	 * @param orderBysListStr Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered
-	 */
-	public static List<DocumentQueryOrderBy> parseOrderBysList(final String orderBysListStr)
-	{
-		if (Check.isEmpty(orderBysListStr, true))
-		{
-			return ImmutableList.of();
-		}
-
-		return Splitter.on(',')
-				.trimResults()
-				.omitEmptyStrings()
-				.splitToList(orderBysListStr)
-				.stream()
-				.map(orderByStr -> parseOrderBy(orderByStr))
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	/**
 	 * @param orderByStr field name with optional +/- prefix for ascending/descending. e.g. +C_BPartner_ID
 	 */
-	private static DocumentQueryOrderBy parseOrderBy(final String orderByStr)
+	static DocumentQueryOrderBy parse(final String orderByStr)
 	{
 		if (orderByStr.charAt(0) == '+')
 		{

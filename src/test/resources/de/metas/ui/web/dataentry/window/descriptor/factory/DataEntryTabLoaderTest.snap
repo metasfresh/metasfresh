@@ -1769,8 +1769,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1111_Info" : {
               "fieldName" : "1111_Info",
@@ -1821,8 +1820,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1112" : {
               "fieldName" : "1112",
@@ -1873,8 +1871,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1112_Info" : {
               "fieldName" : "1112_Info",
@@ -1925,8 +1922,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1113" : {
               "fieldName" : "1113",
@@ -1977,8 +1973,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1113_Info" : {
               "fieldName" : "1113_Info",
@@ -2029,8 +2024,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1121" : {
               "fieldName" : "1121",
@@ -2081,8 +2075,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1121_Info" : {
               "fieldName" : "1121_Info",
@@ -2133,8 +2126,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1122" : {
               "fieldName" : "1122",
@@ -2185,8 +2177,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1122_Info" : {
               "fieldName" : "1122_Info",
@@ -2237,8 +2228,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1123" : {
               "fieldName" : "1123",
@@ -2291,8 +2281,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       "numericKey" : false,
                       "cached" : true
                     },
-                    "numericKey" : true,
-                    "highVolume" : false
+                    "highVolume" : false,
+                    "numericKey" : true
                   },
                   "present" : true
                 },
@@ -2327,8 +2317,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1123_Info" : {
               "fieldName" : "1123_Info",
@@ -2379,8 +2368,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "DataEntry_SubTab_ID" : {
               "fieldName" : "DataEntry_SubTab_ID",
@@ -2430,8 +2418,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "documentLinkColumnName" : {
               "fieldName" : "documentLinkColumnName",
@@ -2482,8 +2469,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             }
           },
           "idFields" : [
@@ -2535,8 +2521,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             }
           ],
           "parentLinkField" : {
@@ -2588,8 +2573,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             },
             "dependencies" : {
               "type2name2dependencies" : { }
-            },
-            "defaultFilterField" : false
+            }
           },
           "includedEntitiesByDetailId" : { },
           "dataBinding" : {
@@ -2684,8 +2668,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1211_Info" : {
               "fieldName" : "1211_Info",
@@ -2736,8 +2719,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1212" : {
               "fieldName" : "1212",
@@ -2788,8 +2770,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1212_Info" : {
               "fieldName" : "1212_Info",
@@ -2840,8 +2821,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1213" : {
               "fieldName" : "1213",
@@ -2892,8 +2872,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1213_Info" : {
               "fieldName" : "1213_Info",
@@ -2944,8 +2923,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1221" : {
               "fieldName" : "1221",
@@ -2996,8 +2974,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1221_Info" : {
               "fieldName" : "1221_Info",
@@ -3048,8 +3025,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1222" : {
               "fieldName" : "1222",
@@ -3100,8 +3076,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1222_Info" : {
               "fieldName" : "1222_Info",
@@ -3152,8 +3127,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1223" : {
               "fieldName" : "1223",
@@ -3206,8 +3180,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       "numericKey" : false,
                       "cached" : true
                     },
-                    "numericKey" : true,
-                    "highVolume" : false
+                    "highVolume" : false,
+                    "numericKey" : true
                   },
                   "present" : true
                 },
@@ -3242,8 +3216,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "1223_Info" : {
               "fieldName" : "1223_Info",
@@ -3294,8 +3267,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "DataEntry_SubTab_ID" : {
               "fieldName" : "DataEntry_SubTab_ID",
@@ -3345,8 +3317,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             },
             "documentLinkColumnName" : {
               "fieldName" : "documentLinkColumnName",
@@ -3397,8 +3368,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             }
           },
           "idFields" : [
@@ -3450,8 +3420,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "dependencies" : {
                 "type2name2dependencies" : { }
-              },
-              "defaultFilterField" : false
+              }
             }
           ],
           "parentLinkField" : {
@@ -3503,8 +3472,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             },
             "dependencies" : {
               "type2name2dependencies" : { }
-            },
-            "defaultFilterField" : false
+            }
           },
           "includedEntitiesByDetailId" : { },
           "dataBinding" : {

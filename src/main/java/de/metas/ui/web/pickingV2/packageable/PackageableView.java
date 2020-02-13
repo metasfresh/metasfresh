@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
@@ -74,13 +74,13 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	}
 
 	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
 		return getRowsData().getStickyFilters();
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return getRowsData().getFilters();
 	}

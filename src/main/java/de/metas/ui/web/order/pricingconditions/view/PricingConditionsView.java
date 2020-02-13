@@ -27,8 +27,7 @@ import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
@@ -139,12 +138,12 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
-		return rowsData.getFilters().getFilters();
+		return rowsData.getFilters();
 	}
 
-	public PricingConditionsView filter(final DocumentFiltersList filters)
+	public PricingConditionsView filter(final DocumentFilterList filters)
 	{
 		return new PricingConditionsView(this, rowsData.filter(filters));
 	}

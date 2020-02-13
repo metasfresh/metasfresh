@@ -1,16 +1,14 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
+import java.util.Objects;
 
-import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -34,155 +32,52 @@ import lombok.EqualsAndHashCode;
  * #L%
  */
 
-@Immutable
-@EqualsAndHashCode
+@Value
 public final class ViewRowIdsOrderedSelection
 {
-	public static final Builder builder()
+	ViewId viewId;
+	long size;
+	DocumentQueryOrderByList orderBys;
+
+	int queryLimit;
+	boolean queryLimitHit;
+
+	@Builder(toBuilder = true)
+	private ViewRowIdsOrderedSelection(
+			@NonNull ViewId viewId,
+			long size,
+			@Nullable DocumentQueryOrderByList orderBys,
+			int queryLimit)
 	{
-		return new Builder();
+		this.viewId = viewId;
+		this.size = size;
+		this.orderBys = orderBys != null ? orderBys : DocumentQueryOrderByList.EMPTY;
+		this.queryLimit = queryLimit;
+
+		this.queryLimitHit = queryLimit > 0
+				&& size > 0
+				&& size >= queryLimit;
 	}
 
-	private final ViewId viewId;
-	private final long size;
-	private final ImmutableList<DocumentQueryOrderBy> orderBys;
-
-	private final int queryLimit;
-	private final boolean queryLimitHit;
-
-	private ViewRowIdsOrderedSelection(final Builder builder)
+	public static boolean equals(final ViewRowIdsOrderedSelection s1, final ViewRowIdsOrderedSelection s2)
 	{
-		super();
-		viewId = builder.getViewId();
-		size = builder.getSize();
-		orderBys = builder.getOrderBys();
-
-		queryLimit = builder.getQueryLimit();
-		queryLimitHit = builder.isQueryLimitHit();
+		return Objects.equals(s1, s2);
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("viewId", viewId)
-				.add("size", size)
-				.add("orderBys", orderBys.isEmpty() ? null : orderBys)
-				.toString();
-	}
-	
-	public Builder toBuilder()
-	{
-		return builder()
-				.setViewId(viewId)
-				.setSize(size)
-				.setOrderBys(orderBys)
-				.setQueryLimit(queryLimit);
-	}
-
-	public ViewId getViewId()
-	{
-		return viewId;
-	}
-	
 	public WindowId getWindowId()
 	{
-		return viewId.getWindowId();
+		return getViewId().getWindowId();
 	}
-	
+
 	public String getSelectionId()
 	{
-		return viewId.getViewId();
+		return getViewId().getViewId();
 	}
 
-	public long getSize()
+	public ViewRowIdsOrderedSelection withSize(final int size)
 	{
-		return size;
-	}
-
-	public ImmutableList<DocumentQueryOrderBy> getOrderBys()
-	{
-		return orderBys;
-	}
-	
-	public int getQueryLimit()
-	{
-		return queryLimit;
-	}
-	
-	public boolean isQueryLimitHit()
-	{
-		return queryLimitHit;
-	}
-
-	public static final class Builder
-	{
-		private ViewId viewId;
-		private long size = -1;
-		private List<DocumentQueryOrderBy> orderBys;
-
-		private int queryLimit;
-
-		private Builder()
-		{
-		}
-
-		public ViewRowIdsOrderedSelection build()
-		{
-			return new ViewRowIdsOrderedSelection(this);
-		}
-
-		private ViewId getViewId()
-		{
-			Check.assumeNotNull(viewId, "Parameter viewId is not null");
-			return viewId;
-		}
-
-		public Builder setViewId(final ViewId viewId)
-		{
-			this.viewId = viewId;
-			return this;
-		}
-
-		private long getSize()
-		{
-			return size;
-		}
-
-		public Builder setSize(final long size)
-		{
-			this.size = size;
-			return this;
-		}
-
-		private ImmutableList<DocumentQueryOrderBy> getOrderBys()
-		{
-			return orderBys == null ? ImmutableList.of() : ImmutableList.copyOf(orderBys);
-		}
-
-		public Builder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
-		{
-			this.orderBys = orderBys;
-			return this;
-		}
-
-		public Builder setQueryLimit(final int queryLimit)
-		{
-			this.queryLimit = queryLimit;
-			return this;
-		}
-
-		private int getQueryLimit()
-		{
-			return queryLimit;
-		}
-
-		private boolean isQueryLimitHit()
-		{
-			return queryLimit > 0
-					&& size > 0
-					&& size >= queryLimit;
-		}
+		return this.size == size
+				? this
+				: toBuilder().size(size).build();
 	}
 }

@@ -1,7 +1,6 @@
 package de.metas.ui.web.document.filter.provider.userQuery;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -51,7 +50,7 @@ public final class MQueryDocumentFilterHelper
 			@NonNull final MQuery mquery,
 			@NonNull final ITranslatableString caption)
 	{
-		final List<DocumentFilterParam> parameters = new ArrayList<>();
+		final ArrayList<DocumentFilterParam> parameters = new ArrayList<>();
 		for (int restrictionIdx = 0, restrictionsCount = mquery.getRestrictionCount(); restrictionIdx < restrictionsCount; restrictionIdx++)
 		{
 			final DocumentFilterParam param = createDocumentFilterParamFromMQueryRestriction(mquery, restrictionIdx);
@@ -110,7 +109,7 @@ public final class MQueryDocumentFilterHelper
 		}
 	}
 
-	public static final Operator fromMQueryOperator(final MQuery.Operator mqueryOperator)
+	public static Operator fromMQueryOperator(final MQuery.Operator mqueryOperator)
 	{
 		final Operator operator = MQueryOperator2Operator.get(mqueryOperator);
 		if (operator == null)

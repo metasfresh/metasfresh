@@ -408,6 +408,13 @@ public abstract class LookupValue
 
 		public static StringLookupValue of(
 				final String id,
+				final ITranslatableString displayName)
+		{
+			return new StringLookupValue(id, displayName, null/* helpText */, null/* attributes */, null/* active */);
+		}
+
+		public static StringLookupValue of(
+				final String id,
 				final ITranslatableString displayName,
 				final ITranslatableString helpText)
 		{

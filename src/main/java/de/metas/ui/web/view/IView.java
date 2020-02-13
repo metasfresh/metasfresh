@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -23,7 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
@@ -158,16 +158,16 @@ public interface IView
 	 * Sticky filters are those filters which cannot be changed by user and which shall be preserved between filterings.
 	 * Sticky filters shall never be exported to frontend.
 	 */
-	List<DocumentFilter> getStickyFilters();
+	DocumentFilterList getStickyFilters();
 
 	/**
 	 * Return the active filters for this view.<br>
 	 * Note that whenever the user changes the filter settings on the frontend, a new view is created.<br>
 	 * Therefore, if you implement a view yourself, you probably will want to give it a "static" list of filters to be returned by this method.
 	 */
-	List<DocumentFilter> getFilters();
+	DocumentFilterList getFilters();
 
-	List<DocumentQueryOrderBy> getDefaultOrderBys();
+	DocumentQueryOrderByList getDefaultOrderBys();
 
 	default TableRecordReference getTableRecordReferenceOrNull(@NonNull final DocumentId rowId)
 	{

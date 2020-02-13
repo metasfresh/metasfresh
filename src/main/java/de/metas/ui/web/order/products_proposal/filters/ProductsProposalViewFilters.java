@@ -1,17 +1,13 @@
 package de.metas.ui.web.order.products_proposal.filters;
 
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -79,18 +75,14 @@ public class ProductsProposalViewFilters
 
 	public static ProductsProposalViewFilter extractPackageableViewFilterVO(@NonNull final JSONFilterViewRequest filterViewRequest)
 	{
-		final DocumentFiltersList filters = DocumentFiltersList.ofJSONFilters(filterViewRequest.getFilters())
-				.unwrapAndCopy(getDescriptors());
-
-		return extractPackageableViewFilterVO(filters.getFilters());
+		final DocumentFilterList filters = filterViewRequest.getFiltersUnwrapped(getDescriptors());
+		return extractPackageableViewFilterVO(filters);
 	}
 
-	private static ProductsProposalViewFilter extractPackageableViewFilterVO(final List<DocumentFilter> filters)
+	private static ProductsProposalViewFilter extractPackageableViewFilterVO(final DocumentFilterList filters)
 	{
-		return filters.stream()
-				.filter(filter -> ProductsProposalViewFilter.FILTER_ID.equals(filter.getFilterId()))
+		return filters.getFilterById(ProductsProposalViewFilter.FILTER_ID)
 				.map(filter -> toProductsProposalViewFilterValue(filter))
-				.findFirst()
 				.orElse(ProductsProposalViewFilter.ANY);
 	}
 
@@ -101,7 +93,7 @@ public class ProductsProposalViewFilters
 				.build();
 	}
 
-	public static List<DocumentFilter> toDocumentFilters(final ProductsProposalViewFilter filter)
+	public static DocumentFilterList toDocumentFilters(final ProductsProposalViewFilter filter)
 	{
 		final DocumentFilter.Builder builder = DocumentFilter.builder()
 				.setFilterId(ProductsProposalViewFilter.FILTER_ID)
@@ -114,9 +106,9 @@ public class ProductsProposalViewFilters
 
 		if (!builder.hasParameters())
 		{
-			return ImmutableList.of();
+			return DocumentFilterList.EMPTY;
 		}
 
-		return ImmutableList.of(builder.build());
+		return DocumentFilterList.of(builder.build());
 	}
 }

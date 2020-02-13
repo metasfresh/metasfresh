@@ -2,16 +2,10 @@ package de.metas.ui.web.handlingunits;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -40,8 +34,8 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
 public class HUIdsFilterHelperTest
 {
 	/**

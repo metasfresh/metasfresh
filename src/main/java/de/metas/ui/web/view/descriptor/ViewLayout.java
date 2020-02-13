@@ -2,6 +2,7 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.AccessLevel;
@@ -93,7 +95,7 @@ public class ViewLayout implements ETagAware
 
 	private final ImmutableList<DocumentFilterDescriptor> filters;
 
-	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
+	private final DocumentQueryOrderByList defaultOrderBys;
 
 	private final ImmutableList<DocumentLayoutElementDescriptor> elements;
 
@@ -135,9 +137,9 @@ public class ViewLayout implements ETagAware
 
 		elements = ImmutableList.copyOf(builder.buildElements());
 
-		filters = ImmutableList.copyOf(builder.getFilters());
+		filters = builder.getFilters();
 
-		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
+		defaultOrderBys = builder.getDefaultOrderBys();
 
 		idFieldName = builder.getIdFieldName();
 		focusOnFieldName = builder.focusOnFieldName;
@@ -168,7 +170,7 @@ public class ViewLayout implements ETagAware
 			final WindowId windowId,
 			final ViewProfileId profileId,
 			final ImmutableList<DocumentFilterDescriptor> filters,
-			final ImmutableList<DocumentQueryOrderBy> defaultOrderBys,
+			@NonNull final DocumentQueryOrderByList defaultOrderBys,
 			final String allowNewCaption,
 			final boolean hasTreeSupport,
 			final boolean treeCollapsible,
@@ -277,7 +279,7 @@ public class ViewLayout implements ETagAware
 		return filters;
 	}
 
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
 		return defaultOrderBys;
 	}
@@ -408,7 +410,7 @@ public class ViewLayout implements ETagAware
 			final boolean geoLocationSupportEffective = geoLocationSupport != null ? geoLocationSupport.booleanValue() : from.geoLocationSupport;
 
 			final ImmutableList<DocumentLayoutElementDescriptor> elementsEffective = elements != null ? ImmutableList.copyOf(elements) : from.elements;
-			final ImmutableList<DocumentQueryOrderBy> defaultOrderBysEffective = defaultOrderBys != null ? ImmutableList.copyOf(defaultOrderBys) : from.defaultOrderBys;
+			final DocumentQueryOrderByList defaultOrderBysEffective = DocumentQueryOrderByList.ofList(defaultOrderBys);
 
 			// If there will be no change then return this
 			if (Objects.equals(from.windowId, windowIdEffective)
@@ -419,7 +421,7 @@ public class ViewLayout implements ETagAware
 					&& from.treeCollapsible == treeCollapsibleEffective
 					&& from.treeExpandedDepth == treeExpandedDepthEffective
 					&& Objects.equals(from.elements, elementsEffective)
-					&& Objects.equals(from.defaultOrderBys, defaultOrderBysEffective)
+					&& DocumentQueryOrderByList.equals(from.defaultOrderBys, defaultOrderBysEffective)
 					&& Objects.equals(from.geoLocationSupport, geoLocationSupportEffective))
 			{
 				return from;
@@ -532,7 +534,7 @@ public class ViewLayout implements ETagAware
 		{
 			if (defaultOrderBys == null)
 			{
-				defaultOrderBys = new ArrayList<>(from.defaultOrderBys);
+				defaultOrderBys = new ArrayList<>(from.defaultOrderBys.toList());
 			}
 			return defaultOrderBys;
 		}
@@ -551,6 +553,12 @@ public class ViewLayout implements ETagAware
 
 	}
 
+	//
+	//
+	// -----------------------------------------------------------------
+	//
+	//
+
 	public static final class Builder
 	{
 		private WindowId windowId;
@@ -561,7 +569,7 @@ public class ViewLayout implements ETagAware
 		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
 
 		private Collection<DocumentFilterDescriptor> filters = null;
-		private List<DocumentQueryOrderBy> defaultOrderBys = null;
+		private DocumentQueryOrderByList defaultOrderBys = null;
 
 		private boolean hasAttributesSupport = false;
 		private IncludedViewLayout includedViewLayout;
@@ -725,13 +733,18 @@ public class ViewLayout implements ETagAware
 			return elementBuilders;
 		}
 
-		private Collection<DocumentFilterDescriptor> getFilters()
+		private ImmutableList<DocumentFilterDescriptor> getFilters()
 		{
 			if (filters == null || filters.isEmpty())
 			{
 				return ImmutableList.of();
 			}
-			return filters;
+			else
+			{
+				return filters.stream()
+						.sorted(Comparator.comparing(DocumentFilterDescriptor::getSortNo))
+						.collect(ImmutableList.toImmutableList());
+			}
 		}
 
 		public Builder setFilters(final Collection<DocumentFilterDescriptor> filters)
@@ -750,12 +763,12 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		private List<DocumentQueryOrderBy> getDefaultOrderBys()
+		private DocumentQueryOrderByList getDefaultOrderBys()
 		{
-			return defaultOrderBys != null ? defaultOrderBys : ImmutableList.of();
+			return defaultOrderBys != null ? defaultOrderBys : DocumentQueryOrderByList.EMPTY;
 		}
 
-		public Builder setDefaultOrderBys(final List<DocumentQueryOrderBy> defaultOrderBys)
+		public Builder setDefaultOrderBys(final DocumentQueryOrderByList defaultOrderBys)
 		{
 			this.defaultOrderBys = defaultOrderBys;
 			return this;

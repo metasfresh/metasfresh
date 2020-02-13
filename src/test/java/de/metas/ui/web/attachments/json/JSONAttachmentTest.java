@@ -1,12 +1,11 @@
 package de.metas.ui.web.attachments.json;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,7 +38,7 @@ public class JSONAttachmentTest
 
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = new ObjectMapper();
@@ -54,8 +53,8 @@ public class JSONAttachmentTest
 		final String json = jsonObjectMapper.writeValueAsString(jSONAttachment);
 
 		final JSONAttachment attachment = jsonObjectMapper.readValue(json, JSONAttachment.class);
-		assertEquals(jSONAttachment.getId(), attachment.getId());
-		assertEquals(jSONAttachment.getName(), attachment.getName());
-		assertTrue(attachment.isAllowDelete());
+		assertThat(attachment.getId()).isEqualTo(jSONAttachment.getId());
+		assertThat(attachment.getName()).isEqualTo(jSONAttachment.getName());
+		assertThat(attachment.isAllowDelete()).isTrue();
 	}
 }

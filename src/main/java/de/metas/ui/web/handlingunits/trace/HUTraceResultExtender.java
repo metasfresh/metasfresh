@@ -32,7 +32,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class HUTraceResultExtender implements SqlDocumentFilterConverter
+final class HUTraceResultExtender implements SqlDocumentFilterConverter
 {
 	private static final String WHERE_IN_T_SELECTION = "(M_HU_Trace_ID IN (select T_Selection_ID from T_Selection where AD_PInstance_ID=%s))";
 
@@ -55,20 +55,29 @@ public class HUTraceResultExtender implements SqlDocumentFilterConverter
 	}
 
 	@Override
+	public boolean canConvert(final String filterId)
+	{
+		return true;
+	}
+
+	@Override
 	public String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		if (filter.getParameters() == null || filter.getParameters().isEmpty())
+		if (!filter.hasParameters())
 		{
 			return converter.getSql(sqlParamsOut, filter, sqlOpts, context); // do whatever the system usually does
 		}
-		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
-		final PInstanceId selectionId = huTraceRepository.queryToSelection(huTraceQuery);
+		else
+		{
+			final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
+			final PInstanceId selectionId = huTraceRepository.queryToSelection(huTraceQuery);
 
-		final String sqlPlaceHolder = sqlParamsOut.placeholder(selectionId);
-		return String.format(WHERE_IN_T_SELECTION, sqlPlaceHolder);
+			final String sqlPlaceHolder = sqlParamsOut.placeholder(selectionId);
+			return String.format(WHERE_IN_T_SELECTION, sqlPlaceHolder);
+		}
 	}
 }

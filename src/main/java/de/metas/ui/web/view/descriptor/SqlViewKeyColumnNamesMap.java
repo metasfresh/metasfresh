@@ -145,6 +145,13 @@ public final class SqlViewKeyColumnNamesMap
 		return getKeyColumnNamesCommaSeparated(Function.identity());
 	}
 
+	public String getKeyColumnNamesCommaSeparated(@Nullable final String sqlTableAlias)
+	{
+		return sqlTableAlias != null
+				? getKeyColumnNamesCommaSeparated(columnName -> sqlTableAlias + "." + columnName)
+				: getKeyColumnNamesCommaSeparated(Function.identity());
+	}
+
 	public String getKeyColumnNamesCommaSeparated(final Function<String, String> mapper)
 	{
 		return getKeyColumnNames()
@@ -217,7 +224,7 @@ public final class SqlViewKeyColumnNamesMap
 		return getWebuiSelectionColumnNamesCommaSeparated(Function.identity());
 	}
 
-	public String getWebuiSelectionColumnNamesCommaSeparated(final String sqlTableAlias)
+	public String getWebuiSelectionColumnNamesCommaSeparated(@NonNull final String sqlTableAlias)
 	{
 		Check.assumeNotEmpty(sqlTableAlias, "sqlTableAlias is not empty");
 		return getWebuiSelectionColumnNamesCommaSeparated(columnName -> sqlTableAlias + "." + columnName);
@@ -279,7 +286,7 @@ public final class SqlViewKeyColumnNamesMap
 		return sqlJoinCondition.toString();
 	}
 
-	public String getSqlIsNullExpression(final String sqlTableAlias)
+	public String getSqlIsNullExpression(@NonNull final String sqlTableAlias)
 	{
 		final String sqlIsNull = getKeyColumnNames()
 				.stream()

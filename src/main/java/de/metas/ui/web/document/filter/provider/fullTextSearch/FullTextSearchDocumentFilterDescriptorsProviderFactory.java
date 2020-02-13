@@ -49,12 +49,13 @@ import lombok.NonNull;
 @Component
 public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	private static final String MSG_FULL_TEXT_SEARCH_CAPTION = "Search";
-
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
 	private final Client elasticsearchClient;
+
+	private static final String MSG_FULL_TEXT_SEARCH_CAPTION = "Search";
+	private static final int SORT_NO = 30000;
 
 	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
 			@NonNull final org.elasticsearch.client.Client elasticsearchClient)
@@ -85,6 +86,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 
 		final DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
 				.setFilterId(FullTextSearchSqlDocumentFilterConverter.FILTER_ID)
+				.setSortNo(SORT_NO)
 				.setDisplayName(caption)
 				.setFrequentUsed(true)
 				.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)

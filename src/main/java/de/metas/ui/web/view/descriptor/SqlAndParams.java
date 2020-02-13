@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
@@ -38,18 +39,23 @@ import lombok.Value;
 @Value
 public final class SqlAndParams
 {
-	public static final SqlAndParams of(final String sql)
+	public static Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static SqlAndParams of(final String sql)
 	{
 		final Object[] sqlParams = null;
 		return new SqlAndParams(sql, sqlParams);
 	}
 
-	public static final SqlAndParams of(final String sql, final List<Object> sqlParams)
+	public static SqlAndParams of(final CharSequence sql, final List<Object> sqlParams)
 	{
 		return new SqlAndParams(sql, sqlParams != null && !sqlParams.isEmpty() ? sqlParams.toArray() : null);
 	}
 
-	public static final SqlAndParams of(final String sql, final Object... sqlParamsArray)
+	public static final SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
 	{
 		return new SqlAndParams(sql, sqlParamsArray);
 	}
@@ -57,33 +63,39 @@ public final class SqlAndParams
 	public static SqlAndParams and(@NonNull final Collection<SqlAndParams> sqlAndParamsCollection)
 	{
 		Check.assumeNotEmpty(sqlAndParamsCollection, "sqlAndParamsCollection is not empty");
+
 		if (sqlAndParamsCollection.size() == 1)
 		{
 			return sqlAndParamsCollection.iterator().next();
 		}
-
-		final List<Object> sqlParams = new ArrayList<>();
-		final StringBuilder sql = new StringBuilder();
-		sqlAndParamsCollection.forEach(sqlAndParams -> {
-			if (sql.length() > 0)
+		else
+		{
+			final Builder builder = builder();
+			for (final SqlAndParams sqlAndParams : sqlAndParamsCollection)
 			{
-				sql.append(" AND ");
+				if (!builder.isEmpty())
+				{
+					builder.append(" AND ");
+				}
+				builder.append("(").append(sqlAndParams).append(")");
 			}
-			sql.append("(").append(sqlAndParams.getSql()).append(")");
 
-			sqlParams.addAll(sqlAndParams.getSqlParams());
-		});
-
-		return SqlAndParams.of(sql.toString(), sqlParams);
+			return builder.build();
+		}
 	}
 
 	private final String sql;
 	private final List<Object> sqlParams;
 
-	private SqlAndParams(@NonNull final String sql, @Nullable final Object[] sqlParamsArray)
+	private SqlAndParams(@NonNull final CharSequence sql, @Nullable final Object[] sqlParamsArray)
 	{
-		this.sql = sql;
+		this.sql = sql.toString();
 		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Arrays.asList(sqlParamsArray) : ImmutableList.of();
+	}
+
+	public Builder toBuilder()
+	{
+		return builder().append(this);
 	}
 
 	public Object[] getSqlParamsArray()
@@ -91,34 +103,99 @@ public final class SqlAndParams
 		return sqlParams == null ? null : sqlParams.toArray();
 	}
 
-	public SqlAndParams append(@NonNull final String sql, final Object... sqlParams)
-	{
-		final String sqlNew = this.sql + sql;
+	//
+	//
+	// ---------------
+	//
+	//
 
-		final List<Object> sqlParamsNew;
-		if (sqlParams != null && sqlParams.length > 0)
+	public static class Builder
+	{
+		private StringBuilder sql = null;
+		private ArrayList<Object> sqlParams = null;
+
+		private Builder()
 		{
-			if (this.sqlParams.size() > 0)
+		}
+
+		/** @deprecated I think you wanted to call {@link #build()} */
+		@Deprecated
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("sql", sql)
+					.add("sqlParams", sqlParams)
+					.toString();
+		}
+
+		public SqlAndParams build()
+		{
+			final String sql = this.sql != null ? this.sql.toString() : "";
+			final Object[] sqlParamsArray = sqlParams != null ? sqlParams.toArray() : null;
+			return new SqlAndParams(sql, sqlParamsArray);
+		}
+
+		public boolean isEmpty()
+		{
+			return (sql == null || sql.length() == 0)
+					&& !hasParameters();
+		}
+
+		public boolean hasParameters()
+		{
+			return sqlParams != null && !sqlParams.isEmpty();
+		}
+
+		public int getParametersCount()
+		{
+			return sqlParams != null ? sqlParams.size() : 0;
+		}
+
+		public Builder appendIfHasParameters(@NonNull final CharSequence sql)
+		{
+			if (hasParameters())
 			{
-				sqlParamsNew = new ArrayList<>(this.sqlParams.size() + sqlParams.length);
-				sqlParamsNew.addAll(this.sqlParams);
-				sqlParamsNew.addAll(Arrays.asList(sqlParams));
+				return append(sql);
 			}
 			else
 			{
-				sqlParamsNew = Arrays.asList(sqlParams);
+				return this;
 			}
 		}
-		else
+
+		public Builder append(@NonNull final CharSequence sql, final Object... sqlParams)
 		{
-			sqlParamsNew = this.sqlParams;
+			final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
+			return append(sql, sqlParamsList);
 		}
 
-		return new SqlAndParams(sqlNew, sqlParamsNew.toArray());
-	}
+		public Builder append(@NonNull final CharSequence sql, final List<Object> sqlParams)
+		{
+			if (sql.length() > 0)
+			{
+				if (this.sql == null)
+				{
+					this.sql = new StringBuilder();
+				}
+				this.sql.append(sql);
+			}
 
-	public SqlAndParams append(@NonNull final SqlAndParams other)
-	{
-		return append(other.getSql(), other.getSqlParamsArray());
+			if (sqlParams != null && !sqlParams.isEmpty())
+			{
+				if (this.sqlParams == null)
+				{
+					this.sqlParams = new ArrayList<>();
+				}
+
+				this.sqlParams.addAll(sqlParams);
+			}
+
+			return this;
+		}
+
+		public Builder append(@NonNull final SqlAndParams other)
+		{
+			return append(other.sql, other.sqlParams);
+		}
 	}
 }

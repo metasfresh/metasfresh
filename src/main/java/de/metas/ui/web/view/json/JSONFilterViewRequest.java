@@ -9,7 +9,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -34,18 +40,24 @@ import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@lombok.Data
-public class JSONFilterViewRequest
+@EqualsAndHashCode
+@ToString
+public final class JSONFilterViewRequest
 {
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Getter
 	private final List<JSONDocumentFilter> filters;
 
 	@JsonCreator
-	private JSONFilterViewRequest( //
-			@JsonProperty("filters") final List<JSONDocumentFilter> filters //
-	)
+	private JSONFilterViewRequest(
+			@JsonProperty("filters") final List<JSONDocumentFilter> filters)
 	{
-		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
+		this.filters = filters != null ? ImmutableList.copyOf(filters) : ImmutableList.of();
+	}
+
+	public DocumentFilterList getFiltersUnwrapped(@NonNull final DocumentFilterDescriptorsProvider descriptors)
+	{
+		return JSONDocumentFilter.unwrapList(filters, descriptors);
 	}
 }

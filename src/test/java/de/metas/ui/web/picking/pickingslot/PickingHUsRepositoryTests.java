@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ListMultimap;
 
@@ -62,7 +62,7 @@ public class PickingHUsRepositoryTests
 	private final boolean RACK_SYSTEM_PICKINGSLOT_YES = true;
 	private final boolean RACK_SYSTEM_PICKINGSLOT_NO = false;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

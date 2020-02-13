@@ -1,10 +1,12 @@
 package de.metas.ui.web.test.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 
 /*
@@ -43,19 +45,20 @@ public class EnumTestUtils
 			final Function<EnumType, JSONEnumType> toJson,
 			final boolean checkAlreadyMatchedValues)
 	{
-		Assert.assertNull(toJson.apply(null));
+		assertThat(toJson.apply(null)).isNull();
 
 		final Set<JSONEnumType> jsonValuesAlreadyMatched = new HashSet<>();
 		for (final EnumType value : values)
 		{
 			final JSONEnumType jsonValue = toJson.apply(value);
-			Assert.assertNotNull("JSON shall not be null for " + value, jsonValue);
+			assertThat(jsonValue)
+					.withFailMessage("JSON shall not be null for " + value)
+					.isNotNull();
 
 			if (checkAlreadyMatchedValues && !jsonValuesAlreadyMatched.add(jsonValue))
 			{
-				Assert.fail("JSON value " + jsonValue + " was already matched");
+				fail("JSON value " + jsonValue + " was already matched");
 			}
 		}
 	}
-
 }

@@ -18,7 +18,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.packageable.PackageableView;
 import de.metas.ui.web.view.IView;
@@ -31,7 +31,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
@@ -80,7 +80,7 @@ public class PickingSlotView implements IView
 	private final ShipmentScheduleId currentShipmentScheduleId;
 	private final PickingSlotRowsCollection rows;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
-	private final List<DocumentFilter> filters;
+	private final DocumentFilterList filters;
 
 	@Builder
 	private PickingSlotView(
@@ -91,7 +91,7 @@ public class PickingSlotView implements IView
 			@NonNull final ShipmentScheduleId currentShipmentScheduleId,
 			@NonNull final Supplier<List<PickingSlotRow>> rowsSupplier,
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
-			@Nullable final List<DocumentFilter> filters)
+			@Nullable final DocumentFilterList filters)
 	{
 		this.viewId = viewId;
 		this.parentViewId = parentViewId;
@@ -100,7 +100,7 @@ public class PickingSlotView implements IView
 		this.currentShipmentScheduleId = currentShipmentScheduleId;
 		this.rows = PickingSlotRowsCollection.ofSupplier(rowsSupplier);
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
-		this.filters = filters != null ? ImmutableList.copyOf(filters) : ImmutableList.of();
+		this.filters = filters != null ? filters : DocumentFilterList.EMPTY;
 	}
 
 	@Override
@@ -168,8 +168,8 @@ public class PickingSlotView implements IView
 
 	@Override
 	public ViewResult getPage(
-			final int firstRow, 
-			final int pageLength, 
+			final int firstRow,
+			final int pageLength,
 			@NonNull final ViewRowsOrderBy orderBys)
 	{
 		final List<PickingSlotRow> pageRows = rows.getPage(firstRow, pageLength);
@@ -195,21 +195,21 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
-		return ImmutableList.of();
+		return DocumentFilterList.EMPTY;
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return filters;
 	}
 
 	@Override
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
-		return ImmutableList.of();
+		return DocumentQueryOrderByList.EMPTY;
 	}
 
 	@Override

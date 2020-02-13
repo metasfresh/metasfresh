@@ -1,11 +1,14 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
+import de.metas.ui.web.window.descriptor.sql.SqlOrderByValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.NonNull;
 
 /*
@@ -43,60 +46,82 @@ public class SqlDocumentOrderByBuilder
 	}
 
 	@FunctionalInterface
-	public static interface SqlOrderByBindings
+	public interface SqlOrderByBindings
 	{
-		IStringExpression getFieldOrderBy(String fieldName);
+		SqlOrderByValue getFieldOrderBy(String fieldName);
 	}
 
 	private final SqlOrderByBindings bindings;
+	private String joinOnTableNameOrAlias;
+	private boolean useColumnNameAlias;
 
 	private SqlDocumentOrderByBuilder(@NonNull final SqlOrderByBindings bindings)
 	{
 		this.bindings = bindings;
 	}
 
+	public SqlDocumentOrderByBuilder joinOnTableNameOrAlias(final String joinOnTableNameOrAlias)
+	{
+		this.joinOnTableNameOrAlias = joinOnTableNameOrAlias;
+		return this;
+	}
+
+	public SqlDocumentOrderByBuilder useColumnNameAlias(final boolean useColumnNameAlias)
+	{
+		this.useColumnNameAlias = useColumnNameAlias;
+		return this;
+	}
+
 	/**
 	 * @return SQL order by (e.g. Column1 ASC, Column2 DESC)
 	 */
-	public IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
+	public Optional<IStringExpression> buildSqlOrderBy(final DocumentQueryOrderByList orderBys)
 	{
 		if (orderBys.isEmpty())
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		final IStringExpression sqlOrderByFinal = orderBys
+		final IStringExpression result = orderBys
 				.stream()
-				.map(orderBy -> buildSqlOrderBy(orderBy))
+				.map(this::buildSqlOrderBy)
 				.filter(sql -> sql != null && !sql.isNullExpression())
 				.collect(IStringExpression.collectJoining(", "));
 
-		return sqlOrderByFinal;
+		return result != null && !result.isNullExpression()
+				? Optional.of(result)
+				: Optional.empty();
 	}
 
 	private final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
 	{
 		final String fieldName = orderBy.getFieldName();
-		final IStringExpression sqlExpression = bindings.getFieldOrderBy(fieldName);
+		final SqlOrderByValue sqlExpression = bindings.getFieldOrderBy(fieldName);
 		return buildSqlOrderBy(sqlExpression, orderBy.isAscending(), orderBy.isNullsLast());
 	}
 
-	/**
-	 * 
-	 * @param sqlExpression
-	 * @param ascending
-	 * @return ORDER BY SQL or empty
-	 */
-	private static final IStringExpression buildSqlOrderBy(final IStringExpression sqlExpression, final boolean ascending, final boolean nullsLast)
+	private final IStringExpression buildSqlOrderBy(
+			final SqlOrderByValue orderBy,
+			final boolean ascending,
+			final boolean nullsLast)
 	{
-		if (sqlExpression.isNullExpression())
+		if (orderBy.isNullExpression())
 		{
-			return sqlExpression;
+			return IStringExpression.NULL;
 		}
 
-		return IStringExpression.composer()
-				.append("(").append(sqlExpression).append(")")
-				.append(ascending ? " ASC" : " DESC")
+		final CompositeStringExpression.Builder sql = IStringExpression.composer();
+		if (useColumnNameAlias)
+		{
+			sql.append(orderBy.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias).toSqlStringUsingColumnAlias());
+		}
+		else
+		{
+			sql.append("(").append(orderBy.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias).toStringExpression()).append(")");
+
+		}
+
+		return sql.append(ascending ? " ASC" : " DESC")
 				.append(nullsLast ? " NULLS LAST" : " NULLS FIRST")
 				.build();
 	}

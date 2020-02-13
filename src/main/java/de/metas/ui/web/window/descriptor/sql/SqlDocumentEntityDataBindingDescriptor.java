@@ -30,10 +30,10 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -90,7 +90,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
-	private final List<DocumentQueryOrderBy> defaultOrderBys;
+	private final DocumentQueryOrderByList defaultOrderBys;
 
 	private final ImmutableMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 	private final ImmutableList<SqlDocumentFieldDataBindingDescriptor> keyFields;
@@ -118,7 +118,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlWhereClause = builder.getSqlWhereClauseExpression()
 				.caching();
 
-		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
+		defaultOrderBys = builder.getDefaultOrderBys();
 
 		sqlSelectVersionById = builder.getSqlSelectVersionById();
 	}
@@ -231,7 +231,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	}
 
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
 		return defaultOrderBys;
 	}
@@ -329,15 +329,15 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			{
 				//
 				// Value column
-				final String sqlSelectValue = sqlField.getSqlSelectValue();
-				sqlSelectValuesList.add(sqlSelectValue);
+				final SqlSelectValue sqlSelectValue = sqlField.getSqlSelectValue();
+				sqlSelectValuesList.add(sqlSelectValue.toSqlStringWithColumnNameAlias());
 
 				//
 				// Display column, if any
-				if (sqlField.isUsingDisplayColumn())
+				if (sqlField.getSqlSelectDisplayValue() != null)
 				{
-					final IStringExpression sqlSelectDisplayValue = sqlField.getSqlSelectDisplayValue();
-					sqlSelectDisplayNamesList.add(sqlSelectDisplayValue);
+					final SqlSelectDisplayValue sqlSelectDisplayValue = sqlField.getSqlSelectDisplayValue();
+					sqlSelectDisplayNamesList.add(sqlSelectDisplayValue.toStringExpressionWithColumnNameAlias());
 				}
 			}
 
@@ -398,7 +398,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return sqlWhereClauseExpr;
 		}
 
-		private List<DocumentQueryOrderBy> getDefaultOrderBys()
+		private DocumentQueryOrderByList getDefaultOrderBys()
 		{
 			// Build the ORDER BY from fields
 			return getFieldsByFieldName()
@@ -407,7 +407,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					.filter(field -> field.isDefaultOrderBy())
 					.sorted(Comparator.comparing(SqlDocumentFieldDataBindingDescriptor::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
-					.collect(GuavaCollectors.toImmutableList());
+					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
 		}
 
 		public Builder setDocumentsRepository(final DocumentsRepository documentsRepository)

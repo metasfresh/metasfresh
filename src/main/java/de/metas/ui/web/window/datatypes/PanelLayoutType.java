@@ -1,12 +1,11 @@
 package de.metas.ui.web.window.datatypes;
 
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.GuavaCollectors;
+import com.google.common.collect.Maps;
 
 /*
  * #%L
@@ -73,8 +72,5 @@ public enum PanelLayoutType
 		return type;
 	}
 
-	private static final ImmutableMap<String, PanelLayoutType> json2type = Stream.of(values())
-			.map(type -> GuavaCollectors.entry(type.toJson(), type))
-			.collect(GuavaCollectors.toImmutableMap());
-
+	private static final ImmutableMap<String, PanelLayoutType> json2type = Maps.uniqueIndex(Arrays.asList(values()), PanelLayoutType::toJson);
 }

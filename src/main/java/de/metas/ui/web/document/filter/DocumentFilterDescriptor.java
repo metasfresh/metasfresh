@@ -60,6 +60,8 @@ public final class DocumentFilterDescriptor
 
 	@Getter
 	private final String filterId;
+	@Getter
+	private final int sortNo;
 	private final ITranslatableString displayNameTrls;
 
 	/**
@@ -74,22 +76,27 @@ public final class DocumentFilterDescriptor
 
 	@Getter
 	private final PanelLayoutType parametersLayoutType;
-	private final Map<String, DocumentFilterParamDescriptor> parametersByName;
+	private final ImmutableMap<String, DocumentFilterParamDescriptor> parametersByName;
 	@Getter
-	private final List<DocumentFilterParam> internalParameters;
+	private final ImmutableList<DocumentFilterParam> internalParameters;
 	@Getter
 	private final boolean autoFilter;
 
 	@Getter
-	private BarcodeScannerType barcodeScannerType;
+	private final BarcodeScannerType barcodeScannerType;
 
 	@Getter
-	private final Map<String, Object> debugProperties;
+	private final boolean facetFilter;
+
+	@Getter
+	private final ImmutableMap<String, Object> debugProperties;
 
 	private DocumentFilterDescriptor(final Builder builder)
 	{
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
+
+		sortNo = builder.sortNo;
 
 		displayNameTrls = builder.getDisplayNameTrls();
 		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
@@ -101,6 +108,7 @@ public final class DocumentFilterDescriptor
 		parametersByName = builder.buildParameters();
 		internalParameters = ImmutableList.copyOf(builder.internalParameters);
 		autoFilter = parametersByName.values().stream().anyMatch(DocumentFilterParamDescriptor::isAutoFilter);
+		facetFilter = builder.facetFilter;
 
 		debugProperties = builder.debugProperties == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.debugProperties);
 
@@ -150,6 +158,7 @@ public final class DocumentFilterDescriptor
 	public static final class Builder
 	{
 		private String filterId;
+		private int sortNo;
 		private ITranslatableString displayNameTrls;
 		private boolean frequentUsed;
 
@@ -159,11 +168,12 @@ public final class DocumentFilterDescriptor
 		private final List<DocumentFilterParamDescriptor.Builder> parameters = new ArrayList<>();
 		private final List<DocumentFilterParam> internalParameters = new ArrayList<>();
 
+		private boolean facetFilter;
+
 		private Map<String, Object> debugProperties = null;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public DocumentFilterDescriptor build()
@@ -171,7 +181,7 @@ public final class DocumentFilterDescriptor
 			return new DocumentFilterDescriptor(this);
 		}
 
-		private Map<String, DocumentFilterParamDescriptor> buildParameters()
+		private ImmutableMap<String, DocumentFilterParamDescriptor> buildParameters()
 		{
 			final Map<String, Integer> nextParamIndexByFieldName = new HashMap<>();
 			return parameters
@@ -197,6 +207,12 @@ public final class DocumentFilterDescriptor
 		public Builder setFilterId(final String filterId)
 		{
 			this.filterId = filterId;
+			return this;
+		}
+
+		public Builder setSortNo(final int sortNo)
+		{
+			this.sortNo = sortNo;
 			return this;
 		}
 
@@ -259,6 +275,12 @@ public final class DocumentFilterDescriptor
 		private PanelLayoutType getParametersLayoutType()
 		{
 			return parametersLayoutType != null ? parametersLayoutType : PanelLayoutType.Panel;
+		}
+
+		public Builder setFacetFilter(boolean facetFilter)
+		{
+			this.facetFilter = facetFilter;
+			return this;
 		}
 
 		public boolean hasParameters()

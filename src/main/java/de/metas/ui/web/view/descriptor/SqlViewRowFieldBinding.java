@@ -3,11 +3,13 @@ package de.metas.ui.web.view.descriptor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
+import de.metas.ui.web.window.descriptor.sql.SqlOrderByValue;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectDisplayValue;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,51 +50,46 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 
 	private final String fieldName;
 	private final String columnName;
-	private final String columnSql;
 	private final boolean keyColumn;
 	private final DocumentFieldWidgetType widgetType;
-	private final boolean virtualColumn; 
+	private final boolean virtualColumn;
 
 	private final Class<?> sqlValueClass;
-	/** i.e. columnName/columnSql AS columnName */
-	private final String sqlSelectValue;
-	private final IStringExpression sqlSelectDisplayValue;
-	private final boolean usingDisplayColumn;
+	private final SqlSelectValue sqlSelectValue;
+	private final SqlSelectDisplayValue sqlSelectDisplayValue;
 
-	private final IStringExpression sqlOrderBy;
+	private final SqlOrderByValue sqlOrderBy;
 
 	private final SqlViewRowFieldLoader fieldLoader;
 
 	@Builder
 	private SqlViewRowFieldBinding(
 			@NonNull final String fieldName,
-			final String columnName,
-			final String columnSql,
+			@Nullable final String columnName,
 			final boolean keyColumn,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			final boolean virtualColumn,
 			//
-			final Class<?> sqlValueClass,
-			final String sqlSelectValue,
-			final IStringExpression sqlSelectDisplayValue,
-			final boolean usingDisplayColumn, //
+			@Nullable final Class<?> sqlValueClass,
+			@NonNull final SqlSelectValue sqlSelectValue,
+			@Nullable final SqlSelectDisplayValue sqlSelectDisplayValue,
 			//
-			final IStringExpression sqlOrderBy,
+			@Nullable final SqlOrderByValue sqlOrderBy,
 			@NonNull final SqlViewRowFieldLoader fieldLoader)
 	{
 		this.fieldName = fieldName;
 		this.columnName = columnName != null ? columnName : this.fieldName;
-		this.columnSql = columnSql != null ? columnSql : this.columnName;
 		this.keyColumn = keyColumn;
 		this.widgetType = widgetType;
 		this.virtualColumn = virtualColumn;
 
 		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
-		this.sqlSelectValue = sqlSelectValue != null ? sqlSelectValue : this.columnSql;
-		this.sqlSelectDisplayValue = sqlSelectDisplayValue != null ? sqlSelectDisplayValue : IStringExpression.NULL;
-		this.usingDisplayColumn = usingDisplayColumn;
+		this.sqlSelectValue = sqlSelectValue;
+		this.sqlSelectDisplayValue = sqlSelectDisplayValue;
 
-		this.sqlOrderBy = sqlOrderBy != null ? sqlOrderBy : ConstantStringExpression.of(this.columnSql);
+		this.sqlOrderBy = sqlOrderBy != null
+				? sqlOrderBy
+				: SqlOrderByValue.builder().sqlSelectDisplayValue(sqlSelectDisplayValue).sqlSelectValue(sqlSelectValue).columnName(columnName).build();
 		this.fieldLoader = fieldLoader;
 	}
 }

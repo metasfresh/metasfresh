@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.metas.handlingunits.HuId;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -12,7 +12,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.PagedIterator.Page;
 
 /*
@@ -41,9 +41,17 @@ public interface HUEditorViewRepository
 {
 	void invalidateCache();
 
-	ViewRowIdsOrderedSelection createSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys, SqlDocumentFilterConverterContext context);
+	ViewRowIdsOrderedSelection createSelection(
+			ViewEvaluationCtx viewEvalCtx,
+			ViewId viewId,
+			DocumentFilterList filters,
+			DocumentQueryOrderByList orderBys,
+			SqlDocumentFilterConverterContext filterConverterCtx);
 
-	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createSelectionFromSelection(
+			ViewEvaluationCtx viewEvalCtx,
+			ViewRowIdsOrderedSelection fromSelection,
+			DocumentQueryOrderByList orderBys);
 
 	void deleteSelection(ViewRowIdsOrderedSelection selection);
 
@@ -58,7 +66,7 @@ public interface HUEditorViewRepository
 	HUEditorRow retrieveForHUId(HuId huId);
 
 	Set<HuId> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter,
-			List<DocumentFilter> filters,
+			DocumentFilterList filters,
 			SqlDocumentFilterConverterContext context);
 
 	Page<HuId> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);

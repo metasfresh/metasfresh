@@ -3,7 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.element.api.AdTabId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

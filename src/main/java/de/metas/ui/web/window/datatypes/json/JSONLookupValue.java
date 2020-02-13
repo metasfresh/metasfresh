@@ -187,7 +187,7 @@ public final class JSONLookupValue
 	}
 
 	// IMPORTANT: when changing this property name, pls also check/change de.metas.handlingunits.attribute.impl.AbstractAttributeValue.extractKey(Map<String, String>, I_M_Attribute)
-	private static final String PROPERTY_Key = "key";
+	static final String PROPERTY_Key = "key";
 	@JsonProperty(PROPERTY_Key)
 	@Getter
 	private final String key;
@@ -221,12 +221,12 @@ public final class JSONLookupValue
 			@JsonProperty(PROPERTY_Key) @NonNull final String key,
 			@JsonProperty(PROPERTY_Caption) @NonNull final String caption,
 			@JsonProperty(PROPERTY_Description) @Nullable final String description,
-			@JsonProperty(PROPERTY_Attributes) final Map<String, Object> attributes,
-			@JsonProperty(PROPERTY_Active) final Boolean active)
+			@JsonProperty(PROPERTY_Attributes) @Nullable final Map<String, Object> attributes,
+			@JsonProperty(PROPERTY_Active) @Nullable final Boolean active)
 	{
 		this.key = key;
 		this.caption = caption;
-		this.description = description;
+		this.description = description != null && !description.isEmpty() ? description : null;
 		this.attributes = attributes != null && !attributes.isEmpty() ? ImmutableMap.copyOf(attributes) : ImmutableMap.of();
 		this.active = active;
 	}

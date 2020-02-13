@@ -1,8 +1,9 @@
 package de.metas.ui.web.window.datatypes;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +34,7 @@ public class DocumentIdTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = new ObjectMapper();
@@ -44,7 +45,7 @@ public class DocumentIdTest
 	{
 		final DocumentId documentId = DocumentId.of(12345);
 		final String json = jsonObjectMapper.writeValueAsString(documentId);
-		Assert.assertEquals("\"12345\"", json);
+		assertThat(json).isEqualTo("\"12345\"");
 	}
 
 	@Test
@@ -52,28 +53,27 @@ public class DocumentIdTest
 	{
 		final DocumentId documentId = DocumentId.of("12345string");
 		final String json = jsonObjectMapper.writeValueAsString(documentId);
-		Assert.assertEquals("\"12345string\"", json);
+		assertThat(json).isEqualTo("\"12345string\"");
 	}
 
 	@Test
 	public void fromJson_Int() throws Exception
 	{
 		final DocumentId documentId = jsonObjectMapper.readValue("12345", DocumentId.class);
-		Assert.assertEquals(DocumentId.of(12345), documentId);
+		assertThat(documentId).isEqualTo(DocumentId.of(12345));
 	}
 
 	@Test
 	public void fromJson_String() throws Exception
 	{
 		final DocumentId documentId = jsonObjectMapper.readValue("\"12345\"", DocumentId.class);
-		Assert.assertEquals(DocumentId.of(12345), documentId);
+		assertThat(documentId).isEqualTo(DocumentId.of(12345));
 	}
 
 	@Test
 	public void fromJson_StrictString() throws Exception
 	{
 		final DocumentId documentId = jsonObjectMapper.readValue("\"12345string\"", DocumentId.class);
-		Assert.assertEquals(DocumentId.of("12345string"), documentId);
+		assertThat(documentId).isEqualTo(DocumentId.of("12345string"));
 	}
-
 }

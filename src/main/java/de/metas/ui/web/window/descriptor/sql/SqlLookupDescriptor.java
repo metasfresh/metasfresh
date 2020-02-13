@@ -27,10 +27,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -143,18 +140,12 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.buildProvider();
 	}
 
-	public static final CtxName SQL_PARAM_KeyId = CtxNames.parse("SqlKeyId");
-
-	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
-	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
-	public static final CtxName SQL_PARAM_ShowInactive = CtxNames.ofNameAndDefaultValue("SqlShowInactive", SQL_PARAM_VALUE_ShowInactive_No);
-
 	private static final int WINDOWNO_Dummy = 99999;
 
 	private final Optional<String> tableName;
 	private final Optional<WindowId> zoomIntoWindowId;
-	private final ICachedStringExpression sqlForFetchingExpression;
-	private final ICachedStringExpression sqlForFetchingLookupByIdExpression;
+	private final SqlForFetchingLookups sqlForFetchingExpression;
+	private final SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
 	private final int entityTypeIndex;
 	private final INamePairPredicate postQueryPredicate;
 
@@ -273,25 +264,15 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return zoomIntoWindowId;
 	}
 
-	public IStringExpression getSqlForFetchingExpression()
+	public SqlForFetchingLookups getSqlForFetchingExpression()
 	{
 		return sqlForFetchingExpression;
 	}
 
-	public IStringExpression getSqlForFetchingLookupByIdExpression()
+	@Override
+	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
 	{
 		return sqlForFetchingLookupByIdExpression;
-	}
-
-	@Override
-	public IStringExpression getSqlForFetchingLookupByIdExpression(final String sqlKeyColumn)
-	{
-		return sqlForFetchingLookupByIdExpression
-				.resolvePartial(Evaluatees
-						.mapBuilder()
-						.put(SQL_PARAM_KeyId, sqlKeyColumn)
-						.put(SQL_PARAM_ShowInactive, SQL_PARAM_VALUE_ShowInactive_Yes)
-						.build());
 	}
 
 	public int getEntityTypeIndex()
@@ -357,8 +338,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private final List<IValidationRule> validationRules = new ArrayList<>();
 		private IValidationRule validationRuleEffective = NullValidationRule.instance;
 		private String sqlTableName;
-		private ICachedStringExpression sqlForFetchingExpression;
-		private ICachedStringExpression sqlForFetchingLookupByIdExpression;
+		private SqlForFetchingLookups sqlForFetchingExpression;
+		private SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
 		private int entityTypeIndex = -1;
 
 		private AdWindowId zoomIntoAdWindowId = null;
@@ -484,10 +465,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			{
 				sqlTableName = lookupInfo.getTableName();
 				zoomIntoAdWindowId = lookupInfo.getZoomAD_Window_ID_Override();
-				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy)
-						.caching();
-				sqlForFetchingLookupByIdExpression = buildSqlForFetchingById(lookupInfo)
-						.caching();
+				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy);
+				sqlForFetchingLookupByIdExpression = buildSqlForFetchingById(lookupInfo);
 
 				if (lookupInfo.isQueryHasEntityType())
 				{
@@ -537,28 +516,33 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 			//
 			// Assemble the SQLs
-			final IStringExpression sqlForFetching = IStringExpression.composer()
-					.append(sqlSelectFrom) // SELECT ... FROM ...
-					.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
-					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset.toStringWithMarkers())
-					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit.toStringWithMarkers()) // LIMIT
-					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
+			final SqlForFetchingLookups sqlForFetching = SqlForFetchingLookups.builder()
+					.sql(IStringExpression.composer()
+							.append(sqlSelectFrom) // SELECT ... FROM ...
+							.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
+							.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
+							.append("\n OFFSET ").append(SqlForFetchingLookups.PARAM_Offset.toStringWithMarkers())
+							.append("\n LIMIT ").append(SqlForFetchingLookups.PARAM_Limit.toStringWithMarkers()) // LIMIT
+							.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
+							.build()
+							.caching())
 					.build();
 
-			final IStringExpression sqlForFetchingLookupById = IStringExpression
-					.composer()
-					.append("SELECT ").append("ARRAY[").append(displayColumnSql).append(", NULL]")
-					.append("\n FROM ").append(tableName) // FROM
-					.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SQL_PARAM_KeyId)
+			final SqlForFetchingLookupById sqlForFetchingLookupById = SqlForFetchingLookupById.builder()
+					.sql(IStringExpression.composer()
+							.append("SELECT ").append("ARRAY[").append(displayColumnSql).append(", NULL]")
+							.append("\n FROM ").append(tableName) // FROM
+							.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SqlForFetchingLookupById.SQL_PARAM_KeyId)
+							.build()
+							.caching())
 					.build();
 
 			//
 			// Set the SQLs
 			{
 				sqlTableName = tableName;
-				sqlForFetchingExpression = sqlForFetching.caching();
-				sqlForFetchingLookupByIdExpression = sqlForFetchingLookupById.caching();
+				sqlForFetchingExpression = sqlForFetching;
+				sqlForFetchingLookupByIdExpression = sqlForFetchingLookupById;
 			}
 		}
 
@@ -593,7 +577,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 			// IsActive WHERE
 			sqlWhereFinal.appendIfNotEmpty("\n AND ");
-			sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
+			sqlWhereFinal.append(" /* active */ ('").append(SqlForFetchingLookupById.SQL_PARAM_ShowInactive).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
 
 			return sqlWhereFinal.build();
 		}
@@ -615,20 +599,23 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return validationRuleWhereClause;
 		}
 
-		private IStringExpression buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
+		private SqlForFetchingLookups buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
 		{
 			final String tableName = lookupInfo.getTableName();
-			return IStringExpression.composer()
-					.append(lookupInfo.getSelectSqlPart()) // SELECT .. FROM ...
-					.append("\n WHERE \n").append(sqlWhere) // WHERE
-					.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
-					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset) // OFFSET
-					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit) // LIMIT
-					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
+			return SqlForFetchingLookups.builder()
+					.sql(IStringExpression.composer()
+							.append(lookupInfo.getSelectSqlPart()) // SELECT .. FROM ...
+							.append("\n WHERE \n").append(sqlWhere) // WHERE
+							.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
+							.append("\n OFFSET ").append(SqlForFetchingLookups.PARAM_Offset) // OFFSET
+							.append("\n LIMIT ").append(SqlForFetchingLookups.PARAM_Limit) // LIMIT
+							.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
+							.build()
+							.caching())
 					.build();
 		}
 
-		private IStringExpression buildSqlForFetchingById(final MLookupInfo lookupInfo)
+		private SqlForFetchingLookupById buildSqlForFetchingById(final MLookupInfo lookupInfo)
 		{
 			final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfo.getDisplayColumnSql());
 
@@ -649,23 +636,27 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			final int displayType = lookupInfo.getDisplayType();
 			final String whereClauseSqlPart = lookupInfo.getWhereClauseSqlPart(); // assuming this is constant!
 
-			final org.adempiere.ad.expression.api.impl.CompositeStringExpression.Builder composer = IStringExpression
+			final CompositeStringExpression.Builder sqlBuilder = IStringExpression
 					.composer()
 					.append("SELECT ")
 					.append("\n ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append(",").append(lookupInfo.getActiveColumnSQL()).append("]")
 					.append("\n FROM ")
 					.append(fromSqlPart)
 					.append("\n WHERE ")
-					.append(keyColumnFQ).append("=").append(SQL_PARAM_KeyId)
+					.append(keyColumnFQ).append("=").append(SqlForFetchingLookupById.SQL_PARAM_KeyId)
 					.append(" ");
 
 			final boolean listOrButton = DisplayType.List == displayType || DisplayType.Button == displayType;
 			if (listOrButton)
 			{
 				// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
-				composer.append(" AND " + whereClauseSqlPart);
+				sqlBuilder.append(" AND " + whereClauseSqlPart);
 			}
-			return composer.build();
+
+			final ICachedStringExpression sql = sqlBuilder.build().caching();
+			return SqlForFetchingLookupById.builder()
+					.sql(sql)
+					.build();
 		}
 
 		private INamePairPredicate getPostQueryPredicate()

@@ -53,7 +53,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class HuTraceQueryCreator
+final class HuTraceQueryCreator
 {
 	private static final Map<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>> FIELD_NAME_2_UPDATE_METHOD = //
 			ImmutableMap.<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>> builder()

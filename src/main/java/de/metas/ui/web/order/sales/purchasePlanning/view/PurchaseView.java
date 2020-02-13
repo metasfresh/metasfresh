@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IViewRow;
@@ -26,7 +26,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
@@ -144,8 +144,8 @@ public class PurchaseView implements IEditableView
 
 	@Override
 	public ViewResult getPage(
-			final int firstRow, 
-			final int pageLength, 
+			final int firstRow,
+			final int pageLength,
 			@NonNull final ViewRowsOrderBy orderBys)
 	{
 		if (!orderBys.isEmpty())
@@ -180,21 +180,21 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
-		return ImmutableList.of();
+		return DocumentFilterList.EMPTY;
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
-		return ImmutableList.of();
+		return DocumentFilterList.EMPTY;
 	}
 
 	@Override
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
-		return ImmutableList.of();
+		return DocumentQueryOrderByList.EMPTY;
 	}
 
 	@Override
