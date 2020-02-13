@@ -91,7 +91,7 @@ BEGIN
            nonZero.c_elementvalue_id
     FROM nonZeroPreviousBalances nonZero;
 
-    SELECT count(1) FROM TMP_AccountSheetReport INTO v_temp;
+    GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('inserted beginningBalance: ' || v_temp || ' records', v_time);
 
 
@@ -109,7 +109,7 @@ BEGIN
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
                  WHERE TRUE
-                   and fa.postingtype = 'A' -- posting type = 'Actual'
+                   AND fa.postingtype = 'A' -- posting type = 'Actual'
                    AND fa.c_acctschema_id = p_c_acctschema_id
                    AND (fa.dateacct >= p_dateFrom AND fa.dateacct <= p_dateTo)
                    AND (p_account_id IS NULL OR fa.account_id = p_account_id)
@@ -121,7 +121,7 @@ BEGIN
     SELECT *
     FROM filteredFactAcct;
 
-    SELECT count(1) FROM TMP_AccountSheetReport INTO v_temp;
+    GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('inserted:' || v_temp || ' fact_acct', v_time);
 
 
@@ -139,7 +139,7 @@ BEGIN
                                       PARTITION BY tmp_fa.account_id
                                       ORDER BY tmp_fa.dateacct, tmp_fa.fact_acct_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
                                       )
-                            ) AS                                               beginningBalance,
+                            ) AS                                                           beginningBalance,
                         acctbalance(tmp_fa.account_id, tmp_fa.amtacctdr, tmp_fa.amtacctcr) transactionBalance
                  FROM TMP_AccountSheetReport tmp_fa
                  WHERE (tmp_fa.dateacct >= p_dateFrom AND tmp_fa.dateacct <= p_dateTo)
