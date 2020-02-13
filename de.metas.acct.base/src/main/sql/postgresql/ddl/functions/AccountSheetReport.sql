@@ -43,20 +43,22 @@ BEGIN
     --
     -- create temporary table for everything we're working on; it has no rows, only the needed columns
     DROP TABLE IF EXISTS TMP_AccountSheetReport;
-    CREATE TEMPORARY TABLE TMP_AccountSheetReport AS
-        (
-            SELECT fa.*,
-                   tc.c_taxcategory_id,
-                   0::numeric beginningBalance,
-                   0::numeric endingBalance,
-                   NULL::text lineType
-            FROM c_elementvalue ev
-                     INNER JOIN fact_acct fa ON ev.c_elementvalue_id = fa.account_id -- only search for accounts with at least 1 transaction
-                     LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
-                     LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
-            WHERE FALSE
-        );
-
+    CREATE TEMPORARY TABLE TMP_AccountSheetReport
+    (
+        fact_acct_id     numeric(10),
+        documentno       text,
+        account_id       numeric(10),
+        dateacct         timestamp,
+        amtacctdr        numeric,
+        amtacctcr        numeric,
+        description      text,
+        c_doctype_id     numeric(10),
+        c_tax_id         numeric(10),
+        c_taxcategory_id numeric(10),
+        beginningBalance numeric,
+        endingBalance    numeric,
+        lineType         text
+    );
     v_time := logDebug('created empty temporary table', v_time);
 
 
@@ -99,13 +101,21 @@ BEGIN
     -- insert the fact_acct rows into the table
     WITH filteredFactAcct AS
              (
-                 SELECT fa.*,
+                 SELECT fa.fact_acct_id,
+                        fa.documentno,
+                        fa.account_id,
+                        fa.dateacct,
+                        fa.c_tax_id,
+                        fa.amtacctdr,
+                        fa.amtacctcr,
+                        fa.description,
+                        fa.c_doctype_id,
                         tc.c_taxcategory_id,
                         tmp_fa.beginningBalance::numeric beginningBalance,
                         tmp_fa.endingBalance::numeric    endingBalance,
                         LINE_TYPE_TRANSACTION
                  FROM fact_acct fa
-                          INNER JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id --
+                          INNER JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
                  WHERE TRUE
@@ -117,9 +127,33 @@ BEGIN
                    AND (p_c_project_id IS NULL OR fa.c_project_id = p_c_project_id)
              )
     INSERT
-    INTO TMP_AccountSheetReport
-    SELECT *
-    FROM filteredFactAcct;
+    INTO TMP_AccountSheetReport(fact_acct_id,
+                                documentno,
+                                account_id,
+                                dateacct,
+                                amtacctdr,
+                                amtacctcr,
+                                description,
+                                c_doctype_id,
+                                c_tax_id,
+                                c_taxcategory_id,
+                                beginningBalance,
+                                endingBalance,
+                                lineType)
+    SELECT ffa.fact_acct_id,
+           ffa.documentno,
+           ffa.account_id,
+           ffa.dateacct,
+           ffa.amtacctdr,
+           ffa.amtacctcr,
+           ffa.description,
+           ffa.c_doctype_id,
+           ffa.c_tax_id,
+           ffa.c_taxcategory_id,
+           ffa.beginningBalance,
+           ffa.endingBalance,
+           ffa.LINE_TYPE_TRANSACTION
+    FROM filteredFactAcct ffa;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('inserted:' || v_temp || ' fact_acct', v_time);
