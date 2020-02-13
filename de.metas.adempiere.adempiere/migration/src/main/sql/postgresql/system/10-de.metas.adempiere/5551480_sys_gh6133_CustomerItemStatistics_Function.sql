@@ -16,7 +16,7 @@ CREATE OR REPLACE FUNCTION customerItemStatistics(
 	 description character varying,
 	 qtyInvoiced numeric,
 	 uomSymbol  character varying,
-	 Amount numeric,
+	 ProductRevenue numeric,
 	 ProductCosts numeric,
 	 ProductCostsPercent numeric
  
@@ -68,7 +68,7 @@ FROM
 			
 			GROUP BY bp.value, p.M_Product_ID, p.C_UOM_ID
 ) t
-	ORDER BY t.BPValue
+	ORDER BY t.BPValue, t.productValue
 $$
 LANGUAGE sql STABLE;
 
