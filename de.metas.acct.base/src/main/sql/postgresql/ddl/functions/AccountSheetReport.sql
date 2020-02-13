@@ -180,7 +180,7 @@ $BODY$
 
 
 /*
-Performance
+Performance: it's rather bad
 
 Running on the biggest database we have available, I get these numbers:
 
@@ -226,7 +226,13 @@ ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
 [2020-02-13 13:30:14] [00000] [2020-02-13 11:30:12.691999](24s) [Δ=5s]: inserted:553237 fact_acct
 [2020-02-13 13:30:34] [00000] [2020-02-13 11:30:32.451129](43s) [Δ=19s]: finished calculating rolling sum
 [2020-02-13 13:30:37] Execution: 47 s
+
+
+=====
+If you have any other ideas to make this faster, please DO tell me!!
+I have tried creating indexes just before creating the rolling sum, but they have only slowed the processing (3min -> 4 min or even more)
+
+CREATE INDEX ON TMP_AccountSheetReport (fact_acct_id);
+CREATE INDEX ON TMP_AccountSheetReport (account_id);
+
 */
-
-
-
