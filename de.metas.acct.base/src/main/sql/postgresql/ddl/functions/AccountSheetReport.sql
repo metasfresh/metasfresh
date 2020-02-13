@@ -176,7 +176,6 @@ BEGIN
                             ) AS                                                           beginningBalance,
                         acctbalance(tmp_fa.account_id, tmp_fa.amtacctdr, tmp_fa.amtacctcr) transactionBalance
                  FROM TMP_AccountSheetReport tmp_fa
-                 WHERE (tmp_fa.dateacct >= p_dateFrom AND tmp_fa.dateacct <= p_dateTo)
              ),
          final_fa AS
              (
