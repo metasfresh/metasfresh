@@ -186,7 +186,7 @@ Running on the biggest database we have available, I get these numbers:
 
 - test 1:
     2017-04-01 -> 2018-05-31 = 13 months
-    ~2.1 million records
+    ~4 million records
 
 select *
 FROM AccountSheetReport(
@@ -198,18 +198,17 @@ FROM AccountSheetReport(
 ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
 ;
 
-[2020-02-12 16:20:19] [00000] [2020-02-12 14:20:18.842788](0s)   [Δ=0s]: start
-[2020-02-12 16:20:19] [00000] [2020-02-12 14:20:18.849605](0s)   [Δ=0s]: created temporary table
-[2020-02-12 16:20:22] [00000] [2020-02-12 14:20:21.720887](3s)   [Δ=3s]: inserted beginningBalance
-[2020-02-12 16:20:36] [00000] [2020-02-12 14:20:35.628875](17s)  [Δ=14s]: inserted:2176571 fact_acct
-[2020-02-12 16:20:38] [00000] [2020-02-12 14:20:37.256058](18s)  [Δ=1s]: deleted rows w/o transactions. Remaining: 2176571
-[2020-02-12 16:22:06] [00000] [2020-02-12 14:22:05.357838](106s) [Δ=88s]: finished calculating rolling sum
-[2020-02-12 16:22:15] Execution: 106 seconds
+[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.49811](0s) [Δ=0s]: start
+[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.523303](1s) [Δ=1s]: created empty temporary table
+[2020-02-13 13:26:15] [00000] [2020-02-13 11:26:13.638375](12s) [Δ=11s]: inserted beginningBalance: 168 records
+[2020-02-13 13:26:34] [00000] [2020-02-13 11:26:32.75252](31s) [Δ=19s]: inserted:3948480 fact_acct
+[2020-02-13 13:29:12] [00000] [2020-02-13 11:29:10.731671](189s) [Δ=158s]: finished calculating rolling sum
+[2020-02-12 16:22:15] Execution: 189 seconds = 3 min
 
 
 - test 2:
     2018-04-01 -> 2018-05-31 = 2 months
-    ~300k records
+    ~500k records
 
 select *
 FROM AccountSheetReport(
@@ -221,13 +220,12 @@ FROM AccountSheetReport(
 ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
 ;
 
-[2020-02-12 16:26:55] [00000] [2020-02-12 14:26:55.109815](0s) [Δ=0s]: start
-[2020-02-12 16:26:56] [00000] [2020-02-12 14:26:55.113405](0s) [Δ=0s]: created temporary table
-[2020-02-12 16:26:59] [00000] [2020-02-12 14:26:58.7422](4s) [Δ=4s]: inserted beginningBalance
-[2020-02-12 16:27:04] [00000] [2020-02-12 14:27:03.366925](8s) [Δ=4s]: inserted:299213 fact_acct
-[2020-02-12 16:27:04] [00000] [2020-02-12 14:27:03.554333](9s) [Δ=1s]: deleted rows w/o transactions. Remaining: 299213
-[2020-02-12 16:27:15] [00000] [2020-02-12 14:27:13.041447](18s) [Δ=9s]: finished calculating rolling sum
-[2020-02-12 16:27:16] Execution: 18 seconds
+[2020-02-13 13:29:50] [00000] [2020-02-13 11:29:49.129183](0s) [Δ=0s]: start
+[2020-02-13 13:29:51] [00000] [2020-02-13 11:29:49.142257](0s) [Δ=0s]: created empty temporary table
+[2020-02-13 13:30:09] [00000] [2020-02-13 11:30:08.217192](19s) [Δ=19s]: inserted beginningBalance: 155 records
+[2020-02-13 13:30:14] [00000] [2020-02-13 11:30:12.691999](24s) [Δ=5s]: inserted:553237 fact_acct
+[2020-02-13 13:30:34] [00000] [2020-02-13 11:30:32.451129](43s) [Δ=19s]: finished calculating rolling sum
+[2020-02-13 13:30:37] Execution: 47 s
 */
 
 
