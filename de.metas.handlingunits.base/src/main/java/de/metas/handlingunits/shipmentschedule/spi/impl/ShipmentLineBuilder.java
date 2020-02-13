@@ -1,7 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -31,12 +30,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -57,10 +53,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -108,10 +101,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -465,7 +456,7 @@ import lombok.ToString;
 		// Order Line Link (retrieved from current Shipment)
 		shipmentLine.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(orderLineId));
 
-		putLineNoToShipmentLineInfo(shipmentLine);
+		optimisticallySetLineNo(shipmentLine);
 
 		//
 		// Qty Entered and UOM
@@ -537,6 +528,8 @@ import lombok.ToString;
 
 		try (final MDCCloseable shipmentLineMDC = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
+			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), shipmentLine.getLine());
+
 			//
 			// Notify candidates that we have a shipment line
 			for (final ShipmentScheduleWithHU candidate : getCandidates())
@@ -551,7 +544,7 @@ import lombok.ToString;
 		}
 	}
 
-	private void putLineNoToShipmentLineInfo(@NonNull final I_M_InOutLine shipmentLineRecord)
+	private void optimisticallySetLineNo(@NonNull final I_M_InOutLine shipmentLineRecord)
 	{
 		if (shipmentLineRecord.getC_OrderLine_ID() > 0)
 		{
@@ -559,12 +552,7 @@ import lombok.ToString;
 			final int lineNo = shipmentLineRecord.getC_OrderLine().getLine();
 
 			logger.debug("inoutLine has C_OrderLine_ID={} which has LineNo={}", shipmentLineRecord.getC_OrderLine_ID(), lineNo);
-
-			boolean okToOptimisticallySetLineNo = shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLineRecord.getM_InOutLine_ID()), lineNo);
-			if (okToOptimisticallySetLineNo)
-			{
-				shipmentLineRecord.setLine(lineNo); // if we hit a collision later, we'll unset it
-			}
+			shipmentLineRecord.setLine(lineNo); // if we hit a collision, we'll unset it later
 		}
 		else
 		{
@@ -685,88 +673,5 @@ import lombok.ToString;
 	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		this.qtyTypeToUse = qtyTypeToUse;
-	}
-
-	/** One instance is passed between {@link ShipmentLineBuilder}s to detect {@code LineNo} colisions. */
-	@ToString
-	@EqualsAndHashCode
-	@VisibleForTesting
-	public static class ShipmentLineNoInfo
-	{
-		private static final Logger logger = LogManager.getLogger(ShipmentLineBuilder.ShipmentLineNoInfo.class);
-
-		private final Map<InOutLineId, Integer> shipmentLineIdToLineNo = new HashMap<>();
-		private final Multimap<Integer, InOutLineId> lineNoToShipmentLineId = MultimapBuilder.hashKeys().arrayListValues().build();
-
-		public boolean put(@NonNull final InOutLineId shipmentLineId, @NonNull final Integer lineNo)
-		{
-			if (lineNo <= 0)
-			{
-				logger.debug("Ignoring lineNo={} is associated with shipmentLineId={}; -> ignore and return false", lineNo, shipmentLineId);
-				return false;
-			}
-			shipmentLineIdToLineNo.put(shipmentLineId, lineNo);
-			lineNoToShipmentLineId.put(lineNo, shipmentLineId);
-
-			if (lineNoToShipmentLineId.get(lineNo).size() > 1)
-			{
-				logger.debug("LineNo={} is associated with multiple shipmentLineIds={}; -> return false", lineNo, lineNoToShipmentLineId.get(lineNo));
-				return false;
-			}
-
-			logger.debug("LineNo={} is associated only with shipmentLineId={} so far; -> return true", lineNo, shipmentLineId);
-			return true;
-		}
-
-		public int getLineNoFor(@NonNull final InOutLineId shipmentLineId)
-		{
-			return coalesce(shipmentLineIdToLineNo.get(shipmentLineId), 0);
-		}
-
-		public ImmutableList<InOutLineId> getShipmentLineIdsWithLineNoCollisions()
-		{
-			final ImmutableList.Builder<InOutLineId> result = ImmutableList.builder();
-
-			for (final Entry<Integer, Collection<InOutLineId>> entry : lineNoToShipmentLineId.asMap().entrySet())
-			{
-				final Collection<InOutLineId> shipmentLineIds = entry.getValue();
-				if (shipmentLineIds.size() > 1)
-				{
-					result.addAll(shipmentLineIds);
-				}
-			}
-			return result.build();
-		}
-	}
-
-	@ToString
-	@EqualsAndHashCode
-	static class ShipmentLineNoInfoOld
-	{
-		private static final Logger logger = LogManager.getLogger(ShipmentLineBuilder.ShipmentLineNoInfo.class);
-
-		@Getter
-		private boolean foundColissions;
-
-		private final Map<InOutLineId, Integer> shipmentLineIdToLineNo = new HashMap<>();
-		private final Map<Integer, InOutLineId> lineNoToShipmentLineId = new HashMap<>();
-
-		public void put(@NonNull final InOutLineId shipmentLineId, @NonNull final Integer lineNo)
-		{
-			shipmentLineIdToLineNo.put(shipmentLineId, lineNo);
-			final InOutLineId previousShipmentLineId = lineNoToShipmentLineId.put(lineNo, shipmentLineId);
-
-			if (previousShipmentLineId != null && !previousShipmentLineId.equals(shipmentLineId))
-			{
-				logger.debug("LineNo={} is associated with previousShipmentLineId={} and shall now also be associated with shipmentLineId={}; -> set foundColissions=true",
-						lineNo, previousShipmentLineId.getRepoId(), shipmentLineId.getRepoId());
-				foundColissions = true;
-			}
-		}
-
-		public int getLineNoFor(@NonNull final InOutLineId shipmentLineId)
-		{
-			return coalesce(shipmentLineIdToLineNo.get(shipmentLineId), 0);
-		}
 	}
 }
