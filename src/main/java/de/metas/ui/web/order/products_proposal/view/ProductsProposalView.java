@@ -17,7 +17,7 @@ import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilters;
@@ -194,7 +194,7 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return ProductsProposalViewFilters.toDocumentFilters(rowsData.getFilter());
 	}

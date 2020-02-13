@@ -1,5 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.OptionalInt;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import lombok.Builder;
 import lombok.Value;
@@ -29,23 +35,64 @@ import lombok.Value;
 @Value
 public class DocumentFieldDefaultFilterDescriptor
 {
-	private final int seqNo;
+	private final boolean defaultFilter;
+	private final int defaultFilterSeqNo;
 	private final boolean rangeFilter;
 	private final boolean showFilterIncrementButtons;
-
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
 	private final Object autoFilterInitialValue;
+
+	private final boolean facetFilter;
+	private final int facetFilterSeqNo;
+	private final OptionalInt maxFacetsToFetch;
 
 	@Builder
 	public DocumentFieldDefaultFilterDescriptor(
 			final int seqNo,
+			//
+			final boolean defaultFilter,
+			final int defaultFilterSeqNo,
 			final boolean rangeFilter,
 			final boolean showFilterIncrementButtons,
-			final Object autoFilterInitialValue)
+			@Nullable final Object autoFilterInitialValue,
+			//
+			final boolean facetFilter,
+			final int facetFilterSeqNo,
+			@Nullable final OptionalInt maxFacetsToFetch)
 	{
-		this.seqNo = seqNo > 0 ? seqNo : Integer.MAX_VALUE;
-		this.rangeFilter = rangeFilter;
-		this.showFilterIncrementButtons = showFilterIncrementButtons;
-		this.autoFilterInitialValue = autoFilterInitialValue;
+		if (!defaultFilter && !facetFilter)
+		{
+			throw new AdempiereException("defaultFilter or facetFilter shall be true");
+		}
+
+		if (defaultFilter)
+		{
+			this.defaultFilter = true;
+			this.defaultFilterSeqNo = defaultFilterSeqNo > 0 ? defaultFilterSeqNo : Integer.MAX_VALUE;
+			this.rangeFilter = rangeFilter;
+			this.showFilterIncrementButtons = showFilterIncrementButtons;
+			this.autoFilterInitialValue = autoFilterInitialValue;
+		}
+		else
+		{
+			this.defaultFilter = false;
+			this.defaultFilterSeqNo = Integer.MAX_VALUE;
+			this.rangeFilter = false;
+			this.showFilterIncrementButtons = false;
+			this.autoFilterInitialValue = null;
+		}
+
+		if (facetFilter)
+		{
+			this.facetFilter = true;
+			this.facetFilterSeqNo = facetFilterSeqNo > 0 ? facetFilterSeqNo : Integer.MAX_VALUE;
+			this.maxFacetsToFetch = maxFacetsToFetch != null ? maxFacetsToFetch : OptionalInt.empty();
+		}
+		else
+		{
+			this.facetFilter = false;
+			this.facetFilterSeqNo = Integer.MAX_VALUE;
+			this.maxFacetsToFetch = OptionalInt.empty();
+		}
 	}
 }

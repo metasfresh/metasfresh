@@ -25,7 +25,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -40,7 +40,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -96,7 +96,7 @@ public class HUEditorView implements IView
 	private final HUEditorViewBuffer rowsBuffer;
 
 	private final transient DocumentFilterDescriptorsProvider filterDescriptors;
-	private final ImmutableList<DocumentFilter> filters;
+	private final DocumentFilterList filters;
 
 	private final ImmutableMap<String, Object> parameters;
 
@@ -108,7 +108,7 @@ public class HUEditorView implements IView
 		viewId = builder.getViewId();
 		referencingTableName = builder.getReferencingTableName();
 		filterDescriptors = builder.getFilterDescriptors();
-		filters = ImmutableList.copyOf(builder.getFilters());
+		filters = builder.getFilters();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
@@ -268,21 +268,21 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
 		return rowsBuffer.getStickyFilters();
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return filters;
 	}
 
 	@Override
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
-		return ImmutableList.of();
+		return DocumentQueryOrderByList.EMPTY;
 	}
 
 	@Override

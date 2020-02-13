@@ -1,12 +1,11 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import de.metas.handlingunits.HuId;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -48,7 +47,7 @@ interface HUEditorViewBuffer
 {
 	ViewId getViewId();
 
-	List<DocumentFilter> getStickyFilters();
+	DocumentFilterList getStickyFilters();
 
 	long size();
 

@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
-
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.slf4j.Logger;
 
@@ -95,7 +93,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	}
 
 	@Override
-	public OrderedDocumentsList getDocuments(@NonNull final List<DocumentQueryOrderBy> orderBys)
+	public OrderedDocumentsList getDocuments(@NonNull final DocumentQueryOrderByList orderBys)
 	{
 		final Document document = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
@@ -110,8 +108,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	@Override
 	public OrderedDocumentsList getDocumentsByIds(DocumentIdsSelection documentIds)
 	{
-		final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
-		final ImmutableMap<DocumentId, Document> loadedDocuments = getDocuments(orderBys).toImmutableMap();
+		final ImmutableMap<DocumentId, Document> loadedDocuments = getDocuments(DocumentQueryOrderByList.EMPTY).toImmutableMap();
 
 		final OrderedDocumentsList result = OrderedDocumentsList.newEmpty();
 		for (final DocumentId documentId : documentIds.toSet())

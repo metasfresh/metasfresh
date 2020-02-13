@@ -1,8 +1,10 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.Map;
+import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableMap;
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableBiMap;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import io.swagger.annotations.ApiModel;
@@ -20,11 +22,11 @@ import io.swagger.annotations.ApiModel;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,43 +34,38 @@ import io.swagger.annotations.ApiModel;
 @ApiModel("widget-type")
 public enum JSONLayoutWidgetType
 {
-	Text, LongText, Link, Password
+	Text, LongText, Link, Password,
 
-	, Date, Time, DateTime, ZonedDateTime, DateRange, Timestamp
+	Date, Time, DateTime, ZonedDateTime, DateRange, Timestamp,
 
-	, Integer, Number, Amount, Quantity, CostPrice
+	Integer, Number, Amount, Quantity, CostPrice,
 
-	//
-	, List, Lookup
-	, Labels
-	, Address, ProductAttributes
+	List, MultiValuesList, Lookup, Labels, Address, ProductAttributes,
 
-	, YesNo, Switch
+	YesNo, Switch,
 
-	, Image
-	, Color
-	, BinaryData
+	Image, Color, BinaryData,
 
-	, Button, ActionButton, ProcessButton, ZoomIntoButton
-	//
-	;
+	Button, ActionButton, ProcessButton, ZoomIntoButton;
 
-	public static JSONLayoutWidgetType fromNullable(final DocumentFieldWidgetType widgetType)
+	@Nullable
+	public static JSONLayoutWidgetType fromNullable(@Nullable final DocumentFieldWidgetType widgetType)
 	{
 		if (widgetType == null)
 		{
 			return null;
 		}
+
 		final JSONLayoutWidgetType jsonWidgetType = widgetType2json.get(widgetType);
 		if (jsonWidgetType == null)
 		{
-			throw new IllegalArgumentException("Cannot convert " + widgetType + " to " + JSONLayoutWidgetType.class);
+			throw new AdempiereException("Cannot convert " + widgetType + " to " + JSONLayoutWidgetType.class);
 		}
-		
+
 		return jsonWidgetType;
 	}
-	
-	private static final Map<DocumentFieldWidgetType, JSONLayoutWidgetType> widgetType2json = ImmutableMap.<DocumentFieldWidgetType, JSONLayoutWidgetType> builder()
+
+	private static final ImmutableBiMap<DocumentFieldWidgetType, JSONLayoutWidgetType> widgetType2json = ImmutableBiMap.<DocumentFieldWidgetType, JSONLayoutWidgetType> builder()
 			.put(DocumentFieldWidgetType.Text, JSONLayoutWidgetType.Text)
 			.put(DocumentFieldWidgetType.LongText, JSONLayoutWidgetType.LongText)
 			.put(DocumentFieldWidgetType.URL, JSONLayoutWidgetType.Link)
@@ -84,6 +81,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.Quantity, JSONLayoutWidgetType.Quantity)
 			.put(DocumentFieldWidgetType.CostPrice, JSONLayoutWidgetType.CostPrice)
 			.put(DocumentFieldWidgetType.List, JSONLayoutWidgetType.List)
+			.put(DocumentFieldWidgetType.MultiValuesList, JSONLayoutWidgetType.MultiValuesList)
 			.put(DocumentFieldWidgetType.Lookup, JSONLayoutWidgetType.Lookup)
 			.put(DocumentFieldWidgetType.Labels, JSONLayoutWidgetType.Labels)
 			.put(DocumentFieldWidgetType.Address, JSONLayoutWidgetType.Address)

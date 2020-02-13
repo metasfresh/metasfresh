@@ -368,7 +368,7 @@ public final class DocumentFieldDescriptor
 		return callouts;
 	}
 
-	public boolean isDefaultFilterField()
+	public boolean hasFileringInfo()
 	{
 		return defaultFilterInfo != null;
 	}

@@ -15,7 +15,9 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -220,6 +222,18 @@ public final class DateTimeConverters
 			else
 			{
 				return fromJsonConverer.apply(json);
+			}
+		}
+		else if (valueObj instanceof StringLookupValue)
+		{
+			final String key = ((StringLookupValue)valueObj).getIdAsString();
+			if (Check.isEmpty(key))
+			{
+				return null;
+			}
+			else
+			{
+				return fromJsonConverer.apply(key);
 			}
 		}
 		else

@@ -47,6 +47,8 @@ import de.metas.util.Services;
 final public class UserQueryDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+	
+	private static final int SORT_NO_START = 20000; 
 
 	public UserQueryDocumentFilterDescriptorsProviderFactory()
 	{
@@ -79,7 +81,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 				.setSearchFields(searchFields)
 				.build();
 
-		return new UserQueryDocumentFilterDescriptorsProvider(repository);
+		return new UserQueryDocumentFilterDescriptorsProvider(repository, SORT_NO_START);
 	}
 
 	private static UserQueryField createUserQueryField(final DocumentFieldDescriptor field)

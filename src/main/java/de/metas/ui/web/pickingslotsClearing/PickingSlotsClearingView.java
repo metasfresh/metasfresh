@@ -18,7 +18,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -40,11 +40,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 
 /*
  * #%L
@@ -79,7 +78,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	private final PackingHUsViewsCollection packingHUsViewsCollection = new PackingHUsViewsCollection();
 
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
-	private final ImmutableList<DocumentFilter> filters;
+	private final DocumentFilterList filters;
 
 	@Builder
 	private PickingSlotsClearingView(
@@ -88,7 +87,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 			@NonNull final Supplier<List<PickingSlotRow>> rows,
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
 			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors,
-			@NonNull @Singular final ImmutableList<DocumentFilter> filters)
+			@NonNull final DocumentFilterList filters)
 	{
 		this.viewId = viewId;
 		this.description = TranslatableStrings.nullToEmpty(description);
@@ -175,8 +174,8 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 
 	@Override
 	public ViewResult getPage(
-			final int firstRow, 
-			final int pageLength, 
+			final int firstRow,
+			final int pageLength,
 			@NonNull final ViewRowsOrderBy orderBys)
 	{
 		final List<PickingSlotRow> pageRows = rows.getPage(firstRow, pageLength);
@@ -226,21 +225,21 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
-		return ImmutableList.of();
+		return DocumentFilterList.EMPTY;
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return filters;
 	}
 
 	@Override
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
-		return ImmutableList.of();
+		return DocumentQueryOrderByList.EMPTY;
 	}
 
 	@Override

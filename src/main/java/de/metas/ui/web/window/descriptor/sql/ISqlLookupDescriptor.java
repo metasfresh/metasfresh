@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import org.adempiere.ad.expression.api.IStringExpression;
-
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
 /*
@@ -28,5 +26,5 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
 public interface ISqlLookupDescriptor extends LookupDescriptor
 {
-	IStringExpression getSqlForFetchingLookupByIdExpression(String sqlKeyColumn);
+	SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression();
 }

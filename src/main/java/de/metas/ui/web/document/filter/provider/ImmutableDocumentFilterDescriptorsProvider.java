@@ -4,11 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -44,7 +39,7 @@ import lombok.NonNull;
 @Immutable
 public final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
-	public static final ImmutableDocumentFilterDescriptorsProvider of(final List<DocumentFilterDescriptor> descriptors)
+	public static ImmutableDocumentFilterDescriptorsProvider of(final List<DocumentFilterDescriptor> descriptors)
 	{
 		if (descriptors == null || descriptors.isEmpty())
 		{
@@ -62,22 +57,9 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		return new ImmutableDocumentFilterDescriptorsProvider(Arrays.asList(descriptors));
 	}
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
-	}
-
-	public static final Collector<DocumentFilterDescriptor, ?, ImmutableDocumentFilterDescriptorsProvider> collector()
-	{
-		final Supplier<List<DocumentFilterDescriptor>> supplier = ArrayList::new;
-		final BiConsumer<List<DocumentFilterDescriptor>, DocumentFilterDescriptor> accumulator = List::add;
-		final BinaryOperator<List<DocumentFilterDescriptor>> combiner = (list1, list2) -> {
-			list1.addAll(list2);
-			return list1;
-		};
-		final Function<List<DocumentFilterDescriptor>, ImmutableDocumentFilterDescriptorsProvider> finisher = ImmutableDocumentFilterDescriptorsProvider::of;
-
-		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	private static final ImmutableDocumentFilterDescriptorsProvider EMPTY = new ImmutableDocumentFilterDescriptorsProvider();

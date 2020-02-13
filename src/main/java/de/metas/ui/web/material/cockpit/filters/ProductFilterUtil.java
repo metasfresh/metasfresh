@@ -1,7 +1,5 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -20,6 +18,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -101,12 +100,10 @@ public class ProductFilterUtil
 				.build();
 	}
 
-	public static ProductFilterVO extractProductFilterVO(@NonNull final Collection<DocumentFilter> filters)
+	public static ProductFilterVO extractProductFilterVO(@NonNull final DocumentFilterList filters)
 	{
-		return filters.stream()
-				.filter(filter -> ProductFilterVO.FILTER_ID.equals(filter.getFilterId()))
+		return filters.getFilterById(ProductFilterVO.FILTER_ID)
 				.map(filter -> extractProductFilterVO(filter))
-				.findFirst()
 				.orElse(ProductFilterVO.EMPTY);
 	}
 
@@ -205,7 +202,7 @@ public class ProductFilterUtil
 		return productFilter;
 	}
 
-	public static Predicate<I_M_Product> toPredicate(@NonNull final List<DocumentFilter> filters)
+	public static Predicate<I_M_Product> toPredicate(@NonNull final DocumentFilterList filters)
 	{
 		if (filters.isEmpty())
 		{

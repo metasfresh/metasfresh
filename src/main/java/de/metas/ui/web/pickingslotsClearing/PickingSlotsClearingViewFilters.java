@@ -6,8 +6,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFilters;
@@ -15,7 +15,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
-
 import lombok.experimental.UtilityClass;
 
 /*
@@ -72,12 +71,12 @@ public class PickingSlotsClearingViewFilters
 
 	}
 
-	public static String getPickingSlotBarcode(final DocumentFiltersList filters)
+	public static String getPickingSlotBarcode(final DocumentFilterList filters)
 	{
 		return PickingSlotViewFilters.getPickingSlotBarcode(filters);
 	}
 
-	public static BPartnerId getBPartnerId(final DocumentFiltersList filters)
+	public static BPartnerId getBPartnerId(final DocumentFilterList filters)
 	{
 		return BPartnerId.ofRepoIdOrNull(filters.getParamValueAsInt(FILTER_ID_BPartner, PARAM_C_BPartner_ID, -1));
 	}

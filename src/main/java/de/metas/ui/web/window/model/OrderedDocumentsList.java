@@ -2,7 +2,8 @@ package de.metas.ui.web.window.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -45,28 +46,30 @@ import lombok.ToString;
 @ToString
 public final class OrderedDocumentsList
 {
-	public static OrderedDocumentsList of(final Collection<Document> documents, final List<DocumentQueryOrderBy> orderBys)
+	public static OrderedDocumentsList of(final Collection<Document> documents, final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(documents, orderBys);
 	}
 
 	public static OrderedDocumentsList newEmpty()
 	{
-		return new OrderedDocumentsList(ImmutableList.of(), ImmutableList.of());
+		return new OrderedDocumentsList(ImmutableList.of(), DocumentQueryOrderByList.EMPTY);
 	}
 
-	public static OrderedDocumentsList newEmpty(final List<DocumentQueryOrderBy> orderBys)
+	public static OrderedDocumentsList newEmpty(final DocumentQueryOrderByList orderBys)
 	{
 		return new OrderedDocumentsList(ImmutableList.of(), orderBys);
 	}
 
 	private final ArrayList<Document> documents;
-	private final ImmutableList<DocumentQueryOrderBy> orderBys;
+	private final DocumentQueryOrderByList orderBys;
 
-	private OrderedDocumentsList(final Collection<Document> documents, final List<DocumentQueryOrderBy> orderBys)
+	private OrderedDocumentsList(
+			@Nullable final Collection<Document> documents,
+			@NonNull final DocumentQueryOrderByList orderBys)
 	{
 		this.documents = documents == null ? new ArrayList<>() : new ArrayList<>(documents);
-		this.orderBys = ImmutableList.copyOf(orderBys);
+		this.orderBys = orderBys;
 	}
 
 	public ArrayList<Document> toList()
@@ -109,7 +112,7 @@ public final class OrderedDocumentsList
 		return documents.get(index);
 	}
 
-	public ImmutableList<DocumentQueryOrderBy> getOrderBys()
+	public DocumentQueryOrderByList getOrderBys()
 	{
 		return orderBys;
 	}

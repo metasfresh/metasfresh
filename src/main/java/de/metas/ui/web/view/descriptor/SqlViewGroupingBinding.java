@@ -3,6 +3,7 @@ package de.metas.ui.web.view.descriptor;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public final class SqlViewGroupingBinding
 	@Singular("groupBy")
 	private final ImmutableSet<String> groupByFieldNames;
 	@Singular("columnSql")
-	private final ImmutableMap<String, String> columnSqlByFieldName;
+	private final ImmutableMap<String, SqlSelectValue> columnSqlByFieldName;
 
 	@NonNull
 	@Default
@@ -56,7 +57,7 @@ public final class SqlViewGroupingBinding
 		return groupByFieldNames.contains(fieldName);
 	}
 
-	public String getColumnSqlByFieldName(final String fieldName)
+	public SqlSelectValue getColumnSqlByFieldName(final String fieldName)
 	{
 		return columnSqlByFieldName.get(fieldName);
 	}

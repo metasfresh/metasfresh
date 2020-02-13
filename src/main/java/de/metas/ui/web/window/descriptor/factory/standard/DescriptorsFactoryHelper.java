@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -59,7 +61,9 @@ public final class DescriptorsFactoryHelper
 		super();
 	}
 
-	public static Class<?> getValueClass(@NonNull final DocumentFieldWidgetType widgetType, @NonNull final Optional<LookupDescriptor> lookupDescriptor)
+	public static Class<?> getValueClass(
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final Optional<LookupDescriptor> lookupDescriptor)
 	{
 		final Class<?> widgetValueClass = widgetType.getValueClassOrNull();
 
@@ -78,9 +82,14 @@ public final class DescriptorsFactoryHelper
 			{
 				return lookupValueClass;
 			}
+			else if (LookupValue.class.isAssignableFrom(lookupValueClass)
+					&& LookupValuesList.class.equals(widgetValueClass))
+			{
+				return LookupValuesList.class;
+			}
 			else
 			{
-				throw new IllegalArgumentException("WidgetType's class is not compatible with LookupDescriptor's class"
+				throw new AdempiereException("WidgetType's class is not compatible with LookupDescriptor's class"
 						+ "\n WidgetType: " + widgetType
 						+ "\n WidgetType value class: " + widgetValueClass
 						+ "\n LookupDescriptor: " + lookupDescriptor

@@ -1,14 +1,9 @@
 package de.metas.ui.web.view;
 
 import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderBys;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -39,28 +34,28 @@ import lombok.ToString;
 @ToString
 public final class ViewRowsOrderBy
 {
-	public static ViewRowsOrderBy of(final List<DocumentQueryOrderBy> orderBys, @NonNull final JSONOptions jsonOpts)
+	public static ViewRowsOrderBy of(final DocumentQueryOrderByList orderBys, @NonNull final JSONOptions jsonOpts)
 	{
 		return new ViewRowsOrderBy(orderBys, jsonOpts);
 	}
 
 	public static ViewRowsOrderBy parseString(final String orderBysListStr, @NonNull final JSONOptions jsonOpts)
 	{
-		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+		final DocumentQueryOrderByList orderBys = DocumentQueryOrderByList.parse(orderBysListStr);
 		return of(orderBys, jsonOpts);
 	}
 
 	public static ViewRowsOrderBy empty(@NonNull final JSONOptions jsonOpts)
 	{
-		return new ViewRowsOrderBy(ImmutableList.of(), jsonOpts);
+		return new ViewRowsOrderBy(DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
 
-	private final ImmutableList<DocumentQueryOrderBy> orderBys;
+	private final DocumentQueryOrderByList orderBys;
 	private final JSONOptions jsonOpts;
 
-	private ViewRowsOrderBy(final List<DocumentQueryOrderBy> orderBys, @NonNull final JSONOptions jsonOpts)
+	private ViewRowsOrderBy(final DocumentQueryOrderByList orderBys, @NonNull final JSONOptions jsonOpts)
 	{
-		this.orderBys = orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
+		this.orderBys = orderBys != null ? orderBys : DocumentQueryOrderByList.EMPTY;
 		this.jsonOpts = jsonOpts;
 	}
 
@@ -69,14 +64,14 @@ public final class ViewRowsOrderBy
 		return orderBys.isEmpty();
 	}
 
-	public ImmutableList<DocumentQueryOrderBy> toDocumentQueryOrderByList()
+	public DocumentQueryOrderByList toDocumentQueryOrderByList()
 	{
 		return orderBys;
 	}
 
-	public ViewRowsOrderBy withOrderBys(final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowsOrderBy withOrderBys(final DocumentQueryOrderByList orderBys)
 	{
-		if (Objects.equals(this.orderBys, orderBys))
+		if (DocumentQueryOrderByList.equals(this.orderBys, orderBys))
 		{
 			return this;
 		}
@@ -88,7 +83,7 @@ public final class ViewRowsOrderBy
 
 	public <T extends IViewRow> Comparator<T> toComparator()
 	{
-		return DocumentQueryOrderBys.asComparator(orderBys, jsonOpts);
+		return orderBys.toComparator(IViewRow::getFieldValueAsJsonObject, jsonOpts);
 	}
 
 	public <T extends IViewRow> Comparator<T> toComparatorOrNull()

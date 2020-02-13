@@ -1,7 +1,6 @@
 package de.metas.ui.web.picking.husToPick;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -17,6 +16,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -104,7 +104,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setParameter(HUsToPickViewFilters.PARAM_BestBeforePolicy, bestBeforePolicy)
 				//
 				.addStickyFilters(stickyFilter)
-				.setFilters(ImmutableList.of(HUsToPickViewFilters.createHUIdsFilter(true))) // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
+				.setFilters(DocumentFilterList.of(HUsToPickViewFilters.createHUIdsFilter(true))) // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
 				//
 				.build();
 	}
@@ -119,12 +119,12 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	protected Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
+	protected List<SqlDocumentFilterConverter> createFilterConverters()
 	{
-		final Map<String, SqlDocumentFilterConverter> converters = new HashMap<>();
-		converters.putAll(super.createFilterConvertersIndexedByFilterId());
-		converters.putAll(HUsToPickViewFilters.createFilterConvertersIndexedByFilterId());
-		return converters;
+		return ImmutableList.<SqlDocumentFilterConverter> builder()
+				.addAll(super.createFilterConverters())
+				.addAll(HUsToPickViewFilters.createFilterConverters())
+				.build();
 	}
 
 	@Override

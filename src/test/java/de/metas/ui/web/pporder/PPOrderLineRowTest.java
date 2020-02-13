@@ -12,8 +12,9 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,7 +26,6 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -51,11 +51,11 @@ import mockit.Mocked;
 
 public class PPOrderLineRowTest
 {
-	@Mocked
 	private IViewRowAttributesProvider viewRowAttributesProvider;
+
 	private I_C_UOM uom;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -63,6 +63,8 @@ public class PPOrderLineRowTest
 		uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("Ea");
 		save(uom);
+
+		viewRowAttributesProvider = Mockito.mock(IViewRowAttributesProvider.class);
 	}
 
 	private ProductId createProduct(final String name)

@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -21,13 +21,12 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.impl.AccessSqlStringExpression;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -42,10 +41,11 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescript
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -96,12 +96,12 @@ public class SqlDocumentQueryBuilder
 	private final SqlDocumentEntityDataBindingDescriptor entityBinding;
 
 	private transient Evaluatee _evaluationContext = null; // lazy
-	private final List<DocumentFilter> documentFilters = new ArrayList<>();
+	private DocumentFilterList documentFilters = DocumentFilterList.EMPTY;
 	private Document parentDocument;
 	private Set<DocumentId> recordIds = ImmutableSet.of();
 
 	private boolean noSorting = false;
-	private List<DocumentQueryOrderBy> orderBys;
+	private DocumentQueryOrderByList orderBys = DocumentQueryOrderByList.EMPTY;
 
 	private int firstRow;
 	private int pageLength;
@@ -315,8 +315,8 @@ public class SqlDocumentQueryBuilder
 		// ORDER BY
 		if (isSorting())
 		{
-			final IStringExpression sqlOrderBy = getSqlOrderByEffective();
-			if (sqlOrderBy != null && !sqlOrderBy.isNullExpression())
+			final IStringExpression sqlOrderBy = getSqlOrderByEffective().orElse(null);
+			if (sqlOrderBy != null)
 			{
 				sqlBuilder.append("\n ORDER BY ").append(sqlOrderBy);
 			}
@@ -428,7 +428,7 @@ public class SqlDocumentQueryBuilder
 				{
 					if (!firstRecord)
 					{
-						sqlWhereClauseBuilder.append(" OR ");
+						sqlWhereClauseBuilder.append("\n OR ");
 					}
 
 					if (appendParentheses)
@@ -437,14 +437,20 @@ public class SqlDocumentQueryBuilder
 					}
 
 					final Map<String, Object> keyColumnName2value = extractComposedKey(recordId, keyFields);
+					boolean firstKeyPart = true;
+					for (final Map.Entry<String, Object> keyPart : keyColumnName2value.entrySet())
+					{
+						if (!firstKeyPart)
+						{
+							sqlWhereClauseBuilder.append(" AND ");
+						}
 
-					final String composedPKCheck =
-							keyColumnName2value.entrySet()
-							.stream()
-							.map( entry -> " " + entry.getKey() + "=" + sqlParams.placeholder(entry.getValue()))
-							.collect(Collectors.joining("\n AND "));
+						final String keyColumnName = keyPart.getKey();
+						final Object value = keyPart.getValue();
+						sqlWhereClauseBuilder.append(" ").append(keyColumnName).append("=").append(sqlParams.placeholder(value));
 
-					sqlWhereClauseBuilder.append(composedPKCheck);
+						firstKeyPart = false;
+					}
 
 					if (appendParentheses)
 					{
@@ -501,14 +507,14 @@ public class SqlDocumentQueryBuilder
 		return ImmutablePair.of(sqlWhereClauseBuilder.build(), Collections.unmodifiableList(sqlParams.toList()));
 	}
 
-	private List<DocumentQueryOrderBy> getOrderBysEffective()
+	private DocumentQueryOrderByList getOrderBysEffective()
 	{
 		if (noSorting)
 		{
-			return ImmutableList.of();
+			return DocumentQueryOrderByList.EMPTY;
 		}
 
-		final List<DocumentQueryOrderBy> queryOrderBys = getOrderBys();
+		final DocumentQueryOrderByList queryOrderBys = getOrderBys();
 		if (queryOrderBys != null && !queryOrderBys.isEmpty())
 		{
 			return queryOrderBys;
@@ -517,27 +523,22 @@ public class SqlDocumentQueryBuilder
 		return entityBinding.getDefaultOrderBys();
 	}
 
-	private IStringExpression getSqlOrderByEffective()
+	private Optional<IStringExpression> getSqlOrderByEffective()
 	{
-		final List<DocumentQueryOrderBy> orderBys = getOrderBysEffective();
-		return SqlDocumentOrderByBuilder.newInstance(entityBinding::getFieldOrderBy).buildSqlOrderBy(orderBys);
+		final DocumentQueryOrderByList orderBys = getOrderBysEffective();
+		return SqlDocumentOrderByBuilder.newInstance(entityBinding::getFieldOrderBy)
+				.joinOnTableNameOrAlias(entityBinding.getTableAlias())
+				.buildSqlOrderBy(orderBys);
 	}
 
-	private List<DocumentFilter> getDocumentFilters()
+	private DocumentFilterList getDocumentFilters()
 	{
-		return documentFilters == null ? ImmutableList.of() : ImmutableList.copyOf(documentFilters);
+		return documentFilters;
 	}
 
-	public SqlDocumentQueryBuilder setDocumentFilters(final List<DocumentFilter> documentFilters)
+	public SqlDocumentQueryBuilder setDocumentFilters(@NonNull final DocumentFilterList documentFilters)
 	{
-		this.documentFilters.clear();
-		this.documentFilters.addAll(documentFilters);
-		return this;
-	}
-
-	public SqlDocumentQueryBuilder addDocumentFilters(final List<DocumentFilter> documentFiltersToAdd)
-	{
-		this.documentFilters.addAll(documentFiltersToAdd);
+		this.documentFilters = documentFilters;
 		return this;
 	}
 
@@ -593,12 +594,12 @@ public class SqlDocumentQueryBuilder
 		return noSorting;
 	}
 
-	private List<DocumentQueryOrderBy> getOrderBys()
+	private DocumentQueryOrderByList getOrderBys()
 	{
 		return orderBys;
 	}
 
-	public SqlDocumentQueryBuilder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
+	public SqlDocumentQueryBuilder setOrderBys(final DocumentQueryOrderByList orderBys)
 	{
 		// Don't throw exception if noSorting is true. Just do nothing.
 		// REASON: it gives us better flexibility when this builder is handled by different methods, each of them adding stuff to it
@@ -608,7 +609,7 @@ public class SqlDocumentQueryBuilder
 			return this;
 		}
 
-		this.orderBys = orderBys;
+		this.orderBys = orderBys != null ? orderBys : DocumentQueryOrderByList.EMPTY;
 		return this;
 	}
 

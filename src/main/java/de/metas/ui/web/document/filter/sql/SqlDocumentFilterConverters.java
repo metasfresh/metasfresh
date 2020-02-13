@@ -43,7 +43,7 @@ public final class SqlDocumentFilterConverters
 	 * <li>{@link SqlDefaultDocumentFilterConverter} as a fallback/default converter.
 	 * </ul>
 	 */
-	public static final SqlDocumentFilterConverter createEntityBindingEffectiveConverter(@NonNull final SqlEntityBinding entityBinding)
+	public static SqlDocumentFilterConverter createEntityBindingEffectiveConverter(@NonNull final SqlEntityBinding entityBinding)
 	{
 		final SqlDocumentFilterConvertersList converters = entityBinding.getFilterConverters();
 		final SqlDocumentFilterConverter fallBackConverter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
@@ -51,7 +51,7 @@ public final class SqlDocumentFilterConverters
 		final SqlDocumentFilterConvertersListWithFallback sqlDocumentFilterConverter = //
 				SqlDocumentFilterConvertersListWithFallback.newInstance(converters, fallBackConverter);
 
-		final SqlDocumentFilterConverterDecorator decoratorOrNull = entityBinding.getFilterConverterDecoratorOrNull();
+		final SqlDocumentFilterConverterDecorator decoratorOrNull = entityBinding.getFilterConverterDecorator().orElse(null);
 		if (decoratorOrNull == null)
 		{
 			return sqlDocumentFilterConverter;
@@ -59,12 +59,12 @@ public final class SqlDocumentFilterConverters
 		return decoratorOrNull.decorate(sqlDocumentFilterConverter);
 	}
 
-	public static final SqlDocumentFilterConvertersList.Builder listBuilder()
+	public static SqlDocumentFilterConvertersList.Builder listBuilder()
 	{
 		return SqlDocumentFilterConvertersList.builder();
 	}
 
-	public static final SqlDocumentFilterConvertersList emptyList()
+	public static SqlDocumentFilterConvertersList emptyList()
 	{
 		return SqlDocumentFilterConvertersList.EMPTY;
 	}

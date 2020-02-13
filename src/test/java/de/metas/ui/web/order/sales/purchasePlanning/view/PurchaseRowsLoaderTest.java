@@ -20,16 +20,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
@@ -69,8 +65,6 @@ import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.Purc
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -94,11 +88,8 @@ import mockit.Mocked;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class })
 public class PurchaseRowsLoaderTest
 {
-	@Mocked
 	private AvailabilityCheckService availabilityCheckService;
 
 	private I_M_Product product;
@@ -115,10 +106,12 @@ public class PurchaseRowsLoaderTest
 
 	private SalesOrder2PurchaseViewFactory salesOrder2PurchaseViewFactory;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		availabilityCheckService = Mockito.mock(AvailabilityCheckService.class);
 
 		org = newInstance(I_AD_Org.class);
 		saveRecord(org);
@@ -253,17 +246,17 @@ public class PurchaseRowsLoaderTest
 
 		//
 		// set up availabilityCheckService
-		// @formatter:off
-		new Expectations()
-		{{
+		{
 			final PurchaseCandidatesAvailabilityRequest request = loader.createAvailabilityRequest(rowsList);
-			availabilityCheckService.checkAvailability(request);
-			result = AvailabilityMultiResult.of(AvailabilityResult.builder()
+			Mockito.doReturn(AvailabilityMultiResult.of(AvailabilityResult.builder()
 					.trackingId(request.getTrackingIds().iterator().next())
 					.qty(TEN)
 					.type(Type.AVAILABLE)
-					.build());
-		}};	// @formatter:on
+					.build()))
+					//
+					.when(availabilityCheckService)
+					.checkAvailability(request);
+		}
 
 		//
 		// invoke the method under test SECOND PART

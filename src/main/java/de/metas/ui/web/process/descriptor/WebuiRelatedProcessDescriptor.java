@@ -114,13 +114,7 @@ public final class WebuiRelatedProcessDescriptor
 
 	public String getCaption(final String adLanguage)
 	{
-		final String captionOverride = getPreconditionsResolution().getCaptionOverrideOrNull(adLanguage);
-		if (captionOverride != null)
-		{
-			return captionOverride;
-		}
-
-		return processCaption.translate(adLanguage);
+		return getPreconditionsResolution().computeCaption(processCaption, adLanguage);
 	}
 
 	public String getDescription(final String adLanguage)

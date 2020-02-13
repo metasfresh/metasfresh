@@ -309,7 +309,7 @@ public final class Document
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown copy mode: " + copyMode);
-				// break;
+			// break;
 		}
 
 		if (from._parentDocument != null)
@@ -1521,7 +1521,7 @@ public final class Document
 		return includedDocuments.getDocumentById(rowId);
 	}
 
-	public OrderedDocumentsList getIncludedDocuments(final DetailId detailId, final List<DocumentQueryOrderBy> orderBys)
+	public OrderedDocumentsList getIncludedDocuments(final DetailId detailId, final DocumentQueryOrderByList orderBys)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		return includedDocuments.getDocuments(orderBys);

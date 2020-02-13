@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 
@@ -39,7 +40,7 @@ public class JSONStickyDocumentFilter
 	private final String id;
 	private final String caption;
 	
-	public static final List<JSONStickyDocumentFilter> ofStickyFiltersList(final List<DocumentFilter> filters, final String adLanguage)
+	public static final List<JSONStickyDocumentFilter> ofStickyFiltersList(final DocumentFilterList filters, final String adLanguage)
 	{
 		if (filters == null || filters.isEmpty())
 		{

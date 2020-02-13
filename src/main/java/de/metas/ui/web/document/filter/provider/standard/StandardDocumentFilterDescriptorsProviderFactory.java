@@ -1,17 +1,18 @@
 package de.metas.ui.web.document.filter.provider.standard;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Ordering;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -21,6 +22,8 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
@@ -54,16 +57,26 @@ import lombok.NonNull;
 @Component
 public class StandardDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	private static final String FILTER_ID_Default = "default";
+	// services
+	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IViewsRepository viewsRepository;
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
+	private static final int SORT_NO_DefaultDate = Integer.MIN_VALUE;
+
+	private static final String FILTER_ID_Default = "default";
 	private static final String MSG_DefaultFilterName = "default";
+	private static final int SORT_NO_Default = 10000;
 
-	// services
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private static final String FACET_FILTER_ID_PREFIX = "facet-";
+	private static final String SYSCONFIG_MAX_FACETS_TO_FETCH = "webui.document.filters.MaxFacetsToFetch";
+	private static final int SYSCONFIG_FACETS_TO_FETCH_DEFAULT = 10;
+	private static final int SORT_NO_Facets = Integer.MAX_VALUE / 10000 * 10000;
 
-	public StandardDocumentFilterDescriptorsProviderFactory()
+	public StandardDocumentFilterDescriptorsProviderFactory(@NonNull final IViewsRepository viewsRepository)
 	{
+		this.viewsRepository = viewsRepository;
 	}
 
 	/**
@@ -75,38 +88,77 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			@Nullable final String tableName_NOTUSED,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		final DocumentFilterDescriptor.Builder defaultFilter = DocumentFilterDescriptor.builder()
-				.setFilterId(FILTER_ID_Default)
-				.setDisplayName(msgBL.getTranslatableMsgText(MSG_DefaultFilterName))
-				.setFrequentUsed(false);
-		final DocumentFilterDescriptor.Builder defaultDateFilter = DocumentFilterDescriptor.builder()
-				.setFilterId(FILTER_ID_DefaultDate)
-				.setFrequentUsed(true);
+		return createFiltersProvider(fields);
+	}
 
-		final List<DocumentFieldDescriptor> filteringFields = fields.stream()
-				.filter(DocumentFieldDescriptor::isDefaultFilterField)
-				.sorted(Ordering.natural().onResultOf(field -> field.getDefaultFilterInfo().getSeqNo()))
+	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields)
+	{
+		final List<DocumentFieldDescriptor> fieldsForDefaultFiltering = fields.stream()
+				.filter(DocumentFieldDescriptor::hasFileringInfo)
+				.filter(field -> field.getDefaultFilterInfo().isDefaultFilter())
+				.sorted(Comparator.comparing(field -> field.getDefaultFilterInfo().getDefaultFilterSeqNo()))
 				.collect(ImmutableList.toImmutableList());
 
-		for (final DocumentFieldDescriptor field : filteringFields)
+		final List<DocumentFieldDescriptor> fieldsForFacetFiltering = fields.stream()
+				.filter(DocumentFieldDescriptor::hasFileringInfo)
+				.filter(field -> field.getDefaultFilterInfo().isFacetFilter())
+				.sorted(Comparator.comparing(field -> field.getDefaultFilterInfo().getFacetFilterSeqNo()))
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// Default filters
+		DocumentFilterDescriptor defaultDateFilter = null;
+		DocumentFilterDescriptor.Builder defaultFilterBuilder = null;
+		for (final DocumentFieldDescriptor field : fieldsForDefaultFiltering)
 		{
 			final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
 
-			if (!defaultDateFilter.hasParameters() && filterParam.getWidgetType().isDateOrTime())
+			if (defaultDateFilter == null && filterParam.getWidgetType().isDateOrTime())
 			{
-				defaultDateFilter.setDisplayName(filterParam.getDisplayName());
-				defaultDateFilter.addParameter(filterParam);
+				defaultDateFilter = DocumentFilterDescriptor.builder()
+						.setFilterId(FILTER_ID_DefaultDate)
+						.setSortNo(SORT_NO_DefaultDate)
+						.setFrequentUsed(true)
+						.setDisplayName(filterParam.getDisplayName())
+						.addParameter(filterParam)
+						.build();
 			}
 			else
 			{
-				defaultFilter.addParameter(filterParam);
+				if (defaultFilterBuilder == null)
+				{
+					defaultFilterBuilder = DocumentFilterDescriptor.builder()
+							.setFilterId(FILTER_ID_Default)
+							.setSortNo(SORT_NO_Default)
+							.setDisplayName(msgBL.getTranslatableMsgText(MSG_DefaultFilterName))
+							.setFrequentUsed(false);
+				}
+				defaultFilterBuilder.addParameter(filterParam);
 			}
 		}
 
-		return Stream.of(defaultDateFilter, defaultFilter)
-				.filter(filterBuilder -> filterBuilder.hasParameters())
-				.map(filterBuilder -> filterBuilder.build())
-				.collect(ImmutableDocumentFilterDescriptorsProvider.collector());
+		//
+		// Facet filters
+		final ArrayList<DocumentFilterDescriptor> facetFilters = new ArrayList<>();
+		for (DocumentFieldDescriptor field : fieldsForFacetFiltering)
+		{
+			final int sortNo = facetFilters.size() + 1;
+			final DocumentFilterDescriptor facetFilter = createFacetFilter(field, sortNo);
+			facetFilters.add(facetFilter);
+		}
+
+		final ArrayList<DocumentFilterDescriptor> descriptors = new ArrayList<>();
+		if (defaultDateFilter != null)
+		{
+			descriptors.add(defaultDateFilter);
+		}
+		if (defaultFilterBuilder != null)
+		{
+			descriptors.add(defaultFilterBuilder.build());
+		}
+		descriptors.addAll(facetFilters);
+
+		return ImmutableDocumentFilterDescriptorsProvider.of(descriptors);
 	}
 
 	private static final DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
@@ -162,4 +214,59 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		}
 	}
 
+	private DocumentFilterDescriptor createFacetFilter(@NonNull final DocumentFieldDescriptor field, final int sortNo)
+	{
+		final FacetsFilterLookupDescriptor facetsLookupDescriptor = createFacetsFilterLookupDescriptor(field);
+
+		return DocumentFilterDescriptor.builder()
+				.setFilterId(facetsLookupDescriptor.getFilterId())
+				.setSortNo(SORT_NO_Facets + sortNo)
+				.setFrequentUsed(true)
+				.setParametersLayoutType(PanelLayoutType.Panel)
+				.setDisplayName(field.getCaption())
+				.setFacetFilter(true)
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(facetsLookupDescriptor.getFieldName())
+						.setOperator(Operator.IN_ARRAY)
+						.setDisplayName(field.getCaption())
+						.setMandatory(true)
+						.setWidgetType(DocumentFieldWidgetType.MultiValuesList)
+						.setLookupDescriptor(facetsLookupDescriptor))
+				.build();
+	}
+
+	private FacetsFilterLookupDescriptor createFacetsFilterLookupDescriptor(final DocumentFieldDescriptor field)
+	{
+		final String columnName = field.getDataBinding().get().getColumnName();
+		final String filterId = FACET_FILTER_ID_PREFIX + columnName;
+
+		final DocumentFieldDefaultFilterDescriptor fieldFilteringInfo = field.getDefaultFilterInfo();
+		final DocumentFieldWidgetType fieldWidgetType = extractFilterWidgetType(field);
+		final LookupDescriptor fieldLookupDescriptor = field.getLookupDescriptorForFiltering().orElse(null);
+
+		final boolean numericKey;
+		if (fieldWidgetType.isLookup())
+		{
+			numericKey = fieldLookupDescriptor.isNumericKey();
+		}
+		else
+		{
+			numericKey = fieldWidgetType.isNumeric();
+		}
+
+		return FacetsFilterLookupDescriptor.builder()
+				.viewsRepository(viewsRepository)
+				.filterId(filterId)
+				.fieldName(columnName)
+				.fieldWidgetType(fieldWidgetType)
+				.numericKey(numericKey)
+				.maxFacetsToFetch(fieldFilteringInfo.getMaxFacetsToFetch().orElse(getMaxFacetsToFetch()))
+				.fieldLookupDescriptor(fieldLookupDescriptor)
+				.build();
+	}
+
+	private int getMaxFacetsToFetch()
+	{
+		return sysConfigs.getIntValue(SYSCONFIG_MAX_FACETS_TO_FETCH, SYSCONFIG_FACETS_TO_FETCH_DEFAULT);
+	}
 }

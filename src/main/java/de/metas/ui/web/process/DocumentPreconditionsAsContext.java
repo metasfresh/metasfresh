@@ -5,6 +5,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -115,5 +117,12 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	public SelectionSize getSelectionSize()
 	{
 		return SelectionSize.ofSize(1);
+	}
+
+	@Override
+	public <T> IQueryFilter<T> getQueryFilter(@NonNull final Class<T> recordClass)
+	{
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		return EqualsQueryFilter.of(keyColumnName, getSingleSelectedRecordId());
 	}
 }

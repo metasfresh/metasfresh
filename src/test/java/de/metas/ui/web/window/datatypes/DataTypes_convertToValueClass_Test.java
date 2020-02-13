@@ -2,8 +2,15 @@ package de.metas.ui.web.window.datatypes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import java.util.List;
+import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
@@ -59,4 +66,42 @@ public class DataTypes_convertToValueClass_Test
 		final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
 		assertThat(valueConverted).isNull();
 	}
+
+	@Test
+	public void test_From_ListOfMaps_to_LookupValuesList()
+	{
+		final String fieldName = "MyMultiValueParam";
+		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.MultiValuesList;
+		final Class<?> targetType = widgetType.getValueClass();
+		final LookupValueByIdSupplier lookupDataSource = null;
+
+		final List<Map<String, Object>> value = ImmutableList.of(
+				ImmutableMap.of("key", "k1", "caption", "value1"),
+				ImmutableMap.of("key", "k2", "caption", "value2"));
+
+		final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+
+		assertThat(valueConverted).isEqualTo(
+				LookupValuesList.fromCollection(ImmutableList.of(
+						StringLookupValue.of("k1", "value1"),
+						StringLookupValue.of("k2", "value2"))));
+	}
+
+	@Test
+	public void test_From_OneMap_to_LookupValuesList()
+	{
+		final String fieldName = "MyMultiValueParam";
+		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.MultiValuesList;
+		final Class<?> targetType = widgetType.getValueClass();
+		final LookupValueByIdSupplier lookupDataSource = null;
+
+		final ImmutableMap<String, Object> value = ImmutableMap.of("key", "k1", "caption", "value1");
+
+		final Object valueConverted = DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+
+		assertThat(valueConverted).isEqualTo(
+				LookupValuesList.fromCollection(ImmutableList.of(
+						StringLookupValue.of("k1", "value1"))));
+	}
+
 }

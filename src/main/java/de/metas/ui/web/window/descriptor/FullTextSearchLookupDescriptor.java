@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -25,6 +23,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
@@ -234,8 +233,8 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	}
 
 	@Override
-	public IStringExpression getSqlForFetchingLookupByIdExpression(final String sqlKeyColumn)
+	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
 	{
-		return sqlLookupDescriptor != null ? sqlLookupDescriptor.getSqlForFetchingLookupByIdExpression(sqlKeyColumn) : NullStringExpression.instance;
+		return sqlLookupDescriptor != null ? sqlLookupDescriptor.getSqlForFetchingLookupByIdExpression() : null;
 	}
 }

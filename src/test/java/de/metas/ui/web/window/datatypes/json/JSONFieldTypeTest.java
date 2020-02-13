@@ -1,7 +1,8 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 import de.metas.ui.web.test.util.EnumTestUtils;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
@@ -20,11 +21,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Fi
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,10 +41,9 @@ public class JSONFieldTypeTest
 	@Test
 	public void test_fromNullable()
 	{
-		Assert.assertNull(JSONFieldType.fromNullable((FieldType)null));
-		Assert.assertSame(JSONFieldType.ActionButtonStatus, JSONFieldType.fromNullable(FieldType.ActionButtonStatus));
-		Assert.assertSame(JSONFieldType.ActionButton, JSONFieldType.fromNullable(FieldType.ActionButton));
+		assertThat(JSONFieldType.fromNullable((FieldType)null)).isNull();
+		assertThat(JSONFieldType.fromNullable(FieldType.ActionButtonStatus)).isSameAs(JSONFieldType.ActionButtonStatus);
+		assertThat(JSONFieldType.fromNullable(FieldType.ActionButton)).isSameAs(JSONFieldType.ActionButton);
 	}
-
 
 }

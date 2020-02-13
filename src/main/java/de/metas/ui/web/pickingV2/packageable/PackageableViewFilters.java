@@ -1,7 +1,5 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import java.util.List;
-
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
@@ -14,6 +12,7 @@ import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -78,7 +77,6 @@ final class PackageableViewFilters
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
 
-
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
 				.setFilterId(PackageableViewFilterVO.FILTER_ID)
@@ -99,12 +97,10 @@ final class PackageableViewFilters
 				.setDisplayName(Services.get(IMsgBL.class).translatable(fieldName));
 	}
 
-	public static PackageableViewFilterVO extractPackageableViewFilterVO(final List<DocumentFilter> filters)
+	public static PackageableViewFilterVO extractPackageableViewFilterVO(final DocumentFilterList filters)
 	{
-		return filters.stream()
-				.filter(filter -> PackageableViewFilterVO.FILTER_ID.equals(filter.getFilterId()))
+		return filters.getFilterById(PackageableViewFilterVO.FILTER_ID)
 				.map(filter -> toPackageableViewFilterVO(filter))
-				.findFirst()
 				.orElse(PackageableViewFilterVO.ANY);
 	}
 

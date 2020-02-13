@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import org.adempiere.ad.expression.api.IStringExpression;
-
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
@@ -30,14 +28,13 @@ public interface SqlEntityFieldBinding
 {
 	String getColumnName();
 
-	String getColumnSql();
+	SqlSelectValue getSqlSelectValue();
 
 	DocumentFieldWidgetType getWidgetType();
 
 	Class<?> getSqlValueClass();
 
-	/** @return field's SQL expression to be used in ORDER BY constructions */
-	IStringExpression getSqlOrderBy();
+	SqlOrderByValue getSqlOrderBy();
 
 	boolean isVirtualColumn();
 }

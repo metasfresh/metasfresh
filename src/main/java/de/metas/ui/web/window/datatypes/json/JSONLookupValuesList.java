@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +10,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -19,14 +20,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -52,24 +55,30 @@ import lombok.NonNull;
  */
 
 @ApiModel(value = "lookup-values-list", description = "[ { field : value} ]")
-@SuppressWarnings("serial")
-public class JSONLookupValuesList implements Serializable
+@EqualsAndHashCode
+public class JSONLookupValuesList
 {
-	public static final JSONLookupValuesList ofLookupValuesList(@Nullable final LookupValuesList lookupValues, @NonNull final String adLanguage)
+	public static final JSONLookupValuesList ofLookupValuesList(
+			@Nullable final LookupValuesList lookupValues,
+			@NonNull final String adLanguage)
 	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
 			return EMPTY;
 		}
 
-		final ImmutableList<JSONLookupValue> values = lookupValues.getValues()
+		Stream<JSONLookupValue> jsonValues = lookupValues.getValues()
 				.stream()
-				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage))
-				.collect(GuavaCollectors.toImmutableList());
+				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage));
 
-		final Map<String, String> otherProperties = lookupValues.getDebugProperties();
+		if (!lookupValues.isOrdered())
+		{
+			jsonValues = jsonValues.sorted(Comparator.comparing(JSONLookupValue::getCaption));
+		}
 
-		return new JSONLookupValuesList(values, otherProperties);
+		final ImmutableList<JSONLookupValue> jsonValuesList = jsonValues.collect(ImmutableList.toImmutableList());
+		final ImmutableMap<String, String> otherProperties = lookupValues.getDebugProperties();
+		return new JSONLookupValuesList(jsonValuesList, otherProperties);
 	}
 
 	@JsonCreator
@@ -99,6 +108,16 @@ public class JSONLookupValuesList implements Serializable
 	{
 		@SuppressWarnings("unchecked")
 		final List<Object> values = (List<Object>)map.get("values");
+
+		//
+		// Corner case: the `map` it's just a single lookup value
+		if (values == null
+				&& map.get(JSONLookupValue.PROPERTY_Key) != null)
+		{
+			final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+			return LookupValuesList.fromNullable(lookupValue);
+		}
+
 		if (values == null || values.isEmpty())
 		{
 			return LookupValuesList.EMPTY;
@@ -113,7 +132,8 @@ public class JSONLookupValuesList implements Serializable
 				.collect(LookupValuesList.collect());
 	}
 
-	private static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();
+	@VisibleForTesting
+	static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();
 
 	@JsonProperty("values")
 	private final List<JSONLookupValue> values;
@@ -124,7 +144,8 @@ public class JSONLookupValuesList implements Serializable
 
 	private LinkedHashMap<String, String> otherProperties;
 
-	private JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final Map<String, String> otherProperties)
+	@VisibleForTesting
+	JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final Map<String, String> otherProperties)
 	{
 		this.values = values;
 		if (otherProperties != null && !otherProperties.isEmpty())

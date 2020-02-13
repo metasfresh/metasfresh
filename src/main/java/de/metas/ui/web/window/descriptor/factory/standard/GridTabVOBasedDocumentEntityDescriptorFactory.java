@@ -576,10 +576,17 @@ import lombok.NonNull;
 		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType);
 
 		return DocumentFieldDefaultFilterDescriptor.builder()
-				.seqNo(gridFieldDefaultFilterInfo.getSeqNo())
+				//
+				.defaultFilter(gridFieldDefaultFilterInfo.isDefaultFilter())
+				.defaultFilterSeqNo(gridFieldDefaultFilterInfo.getDefaultFilterSeqNo())
 				.rangeFilter(gridFieldDefaultFilterInfo.isRangeFilter())
 				.showFilterIncrementButtons(gridFieldDefaultFilterInfo.isShowFilterIncrementButtons())
 				.autoFilterInitialValue(autoFilterInitialValue)
+				//
+				.facetFilter(gridFieldDefaultFilterInfo.isFacetFilter())
+				.facetFilterSeqNo(gridFieldDefaultFilterInfo.getFacetFilterSeqNo())
+				.maxFacetsToFetch(gridFieldDefaultFilterInfo.getMaxFacetsToFetch())
+				//
 				.build();
 	}
 
@@ -766,6 +773,7 @@ import lombok.NonNull;
 
 		return DocumentFieldDefaultFilterDescriptor.builder()
 				.seqNo(Integer.MAX_VALUE)
+				.defaultFilter(true)
 				.build();
 	}
 

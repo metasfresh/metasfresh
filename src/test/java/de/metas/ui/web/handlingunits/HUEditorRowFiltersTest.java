@@ -5,17 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.reservation.HUReservationRepository;
 
 /*
  * #%L
@@ -39,12 +33,10 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, HUReservationRepository.class })
 public class HUEditorRowFiltersTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -56,7 +48,6 @@ public class HUEditorRowFiltersTest
 		final I_M_HU huRecord = newInstance(I_M_HU.class);
 		huRecord.setM_Locator_ID(20);
 		saveRecord(huRecord);
-
 
 		final HUEditorRowFilter allFilter = HUEditorRowFilter.ALL;
 		final IHUQueryBuilder huQueryBuilderPart = HUEditorRowFilters.toHUQueryBuilderPart(allFilter);
