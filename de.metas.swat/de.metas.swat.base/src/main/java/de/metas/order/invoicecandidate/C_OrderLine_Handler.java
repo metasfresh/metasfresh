@@ -156,7 +156,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int productRecordId = orderLine.getM_Product_ID();
 		ic.setM_Product_ID(productRecordId);
 
-		boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(productRecordId));
+		boolean isFreightCostProduct = productBL
+				.getProductType(ProductId.ofRepoId(productRecordId))
+				.isFreightCost();
 
 		ic.setIsFreightCost(isFreightCostProduct);
 		ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
@@ -335,6 +337,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
+		//
+		// Quantity
 		StockQtyAndUOMQty qtysDelivered = invoiceCandidateRecordService
 				.ofRecord(icRecord)
 				.computeQtysDelivered();
@@ -350,9 +354,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 						orderLine.getQtyEntered(), UomId.ofRepoId(orderLine.getC_UOM_ID()));
 			}
 		}
+
 		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
 		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
+
 		//
+		// Date
 		// Find out the first shipment/receipt
 		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(icRecord));
 		I_M_InOut firstInOut = null;

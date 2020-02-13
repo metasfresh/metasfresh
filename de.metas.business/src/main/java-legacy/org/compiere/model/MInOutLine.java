@@ -154,7 +154,7 @@ public class MInOutLine extends X_M_InOutLine
 			}
 
 			//
-			if (Services.get(IProductBL.class).isItem(productId))
+			if (Services.get(IProductBL.class).getProductType(productId).isItem())
 			{
 				if (M_Locator_ID <= 0)
 				{

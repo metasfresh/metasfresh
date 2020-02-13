@@ -1,7 +1,10 @@
 {
   "id" : 10,
   "soTrx" : "SALES",
-  "productId" : 300000,
+  "product": {
+    "id": 300000,
+    "stocked": true
+  },
   "uomId" : 110000,
   "orderedData" : {
     "qty" : {

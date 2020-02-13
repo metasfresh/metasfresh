@@ -67,7 +67,9 @@ public class C_Invoice_Line_Alloc
 		}
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(invoiceLineAlloc.getC_InvoiceLine(), I_C_InvoiceLine.class);
 
-		final boolean isFreightCost = productBL.isFreightCostProduct(ProductId.ofRepoId(invoiceLine.getM_Product_ID()));
+		final boolean isFreightCost = productBL
+				.getProductType(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
+				.isFreightCost();
 
 		if (isFreightCost)
 		{
