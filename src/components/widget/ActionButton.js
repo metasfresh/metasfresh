@@ -107,18 +107,21 @@ class ActionButton extends Component {
   fetchStatusList() {
     const { windowType, fields, dataId } = this.props;
     if (!dataId) {
-      return;
+      return Promise.resolve(null);
     }
-    dropdownRequest({
+
+    return dropdownRequest({
       docId: dataId,
       docType: windowType,
       entity: 'window',
       propertyName: fields[1].field,
-    }).then((res) => {
-      this.setState({
-        list: res.data.values,
-      });
-    });
+    })
+      .then((res) => {
+        this.setState({
+          list: res.data.values,
+        });
+      })
+      .catch((e) => e);
   }
 
   /**
