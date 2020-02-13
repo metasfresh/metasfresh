@@ -21,6 +21,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import java.io.Serializable;
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -55,6 +56,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	}
 
 	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	public final String getDescription()
 	{
 		return m_description;
@@ -101,7 +103,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	 *
 	 * @param o the Object to be compared.
 	 * @return a negative integer, zero, or a positive integer as this object
-	 * is less than, equal to, or greater than the specified object.
+	 *         is less than, equal to, or greater than the specified object.
 	 */
 	@Override
 	public final int compareTo(Object o)
@@ -114,7 +116,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	 *
 	 * @param o the Object to be compared.
 	 * @return a negative integer, zero, or a positive integer as this object
-	 * is less than, equal to, or greater than the specified object.
+	 *         is less than, equal to, or greater than the specified object.
 	 */
 	public final int compareTo(NamePair o)
 	{

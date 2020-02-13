@@ -1,39 +1,13 @@
 package org.adempiere.ad.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.UIDisplayedEntityTypes;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -60,7 +34,6 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
-import org.compiere.model.ValidationInformation;
 import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -69,23 +42,49 @@ import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairValidationInformation;
 import org.slf4j.Logger;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.Value;
 
 public class LookupDAO implements ILookupDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(LookupDAO.class);
 
 	private final static String COLUMNNAME_Value = "Value";
-	private final static String Validation_Yes_Message = "de.metas.popupinfo.yes";
-	private final static String Validation_No_Message = "de.metas.popupinfo.no";
 
 	private static final ITableRefInfo tableRefInfo_Account = TableRefInfo.builder()
 			.setIdentifier("Account - C_ValidCombination_ID")
@@ -813,26 +812,6 @@ public class LookupDAO implements ILookupDAO
 			final boolean isActive = isActive(rs) && isDisplayedInUI(rs);
 			final String name = getDisplayName(rs, isActive);
 			final String description = rs.getString(MLookupFactory.COLUMNINDEX_Description);
-			ValidationInformation validationInformation = null;
-
-			ResultSetMetaData metaData = rs.getMetaData();
-			if (metaData.getColumnCount() >= MLookupFactory.COLUMNINDEX_ValidationInformation)
-			{
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-				String validationInformationValue = rs.getString(MLookupFactory.COLUMNINDEX_ValidationInformation);
-				ITranslatableString validationInformationMessage = null;
-				if (validationInformationValue != null) {
-					validationInformationMessage = msgBL.getTranslatableMsgText(validationInformationValue);
-				}
-				if (validationInformationMessage != null)
-				{
-					ITranslatableString validataionInformationYesMessage = msgBL.getTranslatableMsgText(Validation_Yes_Message);
-					ITranslatableString validataionInformationNoMessage = msgBL.getTranslatableMsgText(Validation_No_Message);
-					validationInformation = new ValidationInformation(validationInformationMessage.translate(Env.getAD_Language()),
-							validataionInformationYesMessage.translate(Env.getAD_Language()), validataionInformationNoMessage.translate(Env.getAD_Language()));
-				}
-
-			}
 
 			final NamePair item;
 			if (numericKey)
@@ -843,6 +822,7 @@ public class LookupDAO implements ILookupDAO
 			else
 			{
 				final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
+				final ValueNamePairValidationInformation validationInformation = getValidationInformation(rs);
 				item = ValueNamePair.of(value, name, description, validationInformation);
 			}
 
@@ -883,6 +863,23 @@ public class LookupDAO implements ILookupDAO
 				name = MLookup.INACTIVE_S + name + MLookup.INACTIVE_E;
 			}
 			return name;
+		}
+
+		private ValueNamePairValidationInformation getValidationInformation(final ResultSet rs) throws SQLException
+		{
+			final ResultSetMetaData metaData = rs.getMetaData();
+			if (metaData.getColumnCount() >= MLookupFactory.COLUMNINDEX_ValidationInformation)
+			{
+				final AdMessageKey question = AdMessageKey.ofNullable(rs.getString(MLookupFactory.COLUMNINDEX_ValidationInformation));
+				if (question != null)
+				{
+					return ValueNamePairValidationInformation.builder()
+							.question(question)
+							.build();
+				}
+			}
+
+			return null;
 		}
 
 		@Override

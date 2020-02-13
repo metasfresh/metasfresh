@@ -20,41 +20,40 @@
  * #L%
  */
 
-package org.compiere.model;
+package org.compiere.util;
 
+import org.compiere.util.ValueNamePairValidationInformation.ValueNamePairValidationInformationBuilder;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import de.metas.i18n.AdMessageKey;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
+@Builder
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class ValidationInformation
+@JsonDeserialize(builder = ValueNamePairValidationInformationBuilder.class)
+public class ValueNamePairValidationInformation
 {
-	private String validationMessage;
-	private String validationQuestionMessageYES;
-	private String validationQuestionMessageNO;
+	@NonNull
+	private AdMessageKey question;
 
-	public ValidationInformation(final String validationMessage, final String validationQuestionMessageYES, final String validationQuestionMessageNO)
-	{
-		this.validationMessage = validationMessage;
-		this.validationQuestionMessageYES = validationQuestionMessageYES;
-		this.validationQuestionMessageNO = validationQuestionMessageNO;
-	}
+	@NonNull
+	@Default
+	private AdMessageKey answerYes = AdMessageKey.of("de.metas.popupinfo.yes");
 
-	public String getValidationMessage()
-	{
-		return validationMessage;
-	}
+	@NonNull
+	@Default
+	private AdMessageKey answerNo = AdMessageKey.of("de.metas.popupinfo.no");
 
-	public String getValidationQuestionMessageYES()
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class ValueNamePairValidationInformationBuilder
 	{
-		return validationQuestionMessageYES;
-	}
-
-	public String getValidationQuestionMessageNO()
-	{
-		return validationQuestionMessageNO;
 	}
 }

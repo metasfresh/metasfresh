@@ -16,14 +16,15 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.compiere.model.ValidationInformation;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * (String) Value Name Pair
@@ -32,22 +33,21 @@ import java.util.Objects;
  * @version $Id: ValueNamePair.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
  */
 @Immutable
+@SuppressWarnings("serial")
 public final class ValueNamePair extends NamePair
 {
-	private static final long serialVersionUID = -8315081335749462163L;
-
 	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
 
-	private final ValidationInformation m_validationInformation;
+	private final ValueNamePairValidationInformation m_validationInformation;
 
-	public static final ValueNamePair of(
+	public static ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name)
 	{
-		return of(value, name, null/*help*/);
+		return of(value, name, null/* help */);
 	}
 
-	public static final ValueNamePair of(
+	public static ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name,
 			@JsonProperty("description") final String description)
@@ -60,13 +60,15 @@ public final class ValueNamePair extends NamePair
 	}
 
 	@JsonCreator
-	public static final ValueNamePair of(
+	public static ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name,
 			@JsonProperty("description") final String description,
-			@Nullable @JsonProperty("validationInformation") final ValidationInformation validationInformation)
+			@JsonProperty("validationInformation") @Nullable final ValueNamePairValidationInformation validationInformation)
 	{
-		if (Objects.equals(value, EMPTY.getValue()) && Objects.equals(name, EMPTY.getName()))
+		if (Objects.equals(value, EMPTY.getValue())
+				&& Objects.equals(name, EMPTY.getName())
+				&& validationInformation == null)
 		{
 			return EMPTY;
 		}
@@ -77,7 +79,7 @@ public final class ValueNamePair extends NamePair
 	 * Construct KeyValue Pair
 	 *
 	 * @param value value
-	 * @param name  string representation
+	 * @param name string representation
 	 */
 	public ValueNamePair(final String value, final String name, final String help)
 	{
@@ -86,7 +88,11 @@ public final class ValueNamePair extends NamePair
 		m_validationInformation = null;
 	}   // ValueNamePair
 
-	public ValueNamePair(final String value, final String name, final String help, @Nullable final ValidationInformation validationInformation)
+	public ValueNamePair(
+			final String value, 
+			final String name, 
+			final String help, 
+			@Nullable final ValueNamePairValidationInformation validationInformation)
 	{
 		super(name, help);
 		m_value = value == null ? "" : value;
@@ -116,7 +122,8 @@ public final class ValueNamePair extends NamePair
 	 */
 
 	@JsonProperty("validationInformation")
-	public final ValidationInformation getValidationInformation()
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public ValueNamePairValidationInformation getValidationInformation()
 	{
 		return m_validationInformation;
 	}
@@ -145,16 +152,12 @@ public final class ValueNamePair extends NamePair
 		{
 			final ValueNamePair other = (ValueNamePair)obj;
 			return Objects.equals(this.m_value, other.m_value)
-					&& Objects.equals(this.getName(), other.getName());
+					&& Objects.equals(this.getName(), other.getName())
+					&& Objects.equals(this.m_validationInformation, other.m_validationInformation);
 		}
 		return false;
 	}    // equals
 
-	/**
-	 * Return Hashcode of value
-	 *
-	 * @return hascode
-	 */
 	@Override
 	public int hashCode()
 	{
