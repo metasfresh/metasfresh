@@ -1,6 +1,7 @@
 DROP FUNCTION IF EXISTS logDebug(msg text, previousTime timestamp);
 
-CREATE OR REPLACE FUNCTION logDebug(msg text, previousTime timestamp=now())
+CREATE OR REPLACE FUNCTION logDebug(msg text,
+                                    previousTime timestamp=now())
     RETURNS timestamp AS
 $$
 DECLARE
@@ -18,7 +19,7 @@ BEGIN
     RETURN v_now;
 END;
 $$
-    LANGUAGE plpgsql IMMUTABLE
+    LANGUAGE plpgsql VOLATILE
                      COST 1;
 
 COMMENT ON FUNCTION logDebug(msg text, previousTime timestamp) IS '
