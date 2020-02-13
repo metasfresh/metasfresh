@@ -62,30 +62,29 @@ public class ExcelExporterService
 			rs = pstmt.executeQuery();
 
 			final List<List<Object>> data = new ArrayList<>();
-			boolean isFirstRow = true;
 			final ResultSetMetaData meta = rs.getMetaData();
+
+			// always show excel header, even if there are no rows
+			final List<Object> header = new ArrayList<>();
+			for (int col = 1; col <= meta.getColumnCount(); col++)
+			{
+				final String columnName = meta.getColumnLabel(col);
+				header.add(columnName);
+			}
+			data.add(header);
+
+			// iterate over the rows (possibly none returned)
 			while (rs.next())
 			{
-				final List<Object> header = isFirstRow ? new ArrayList<>() : null;
 				final List<Object> row = new ArrayList<>();
 				for (int col = 1; col <= meta.getColumnCount(); col++)
 				{
-					if (isFirstRow)
-					{
-						final String columnName = meta.getColumnLabel(col);
-						header.add(columnName);
-					}
 
 					final Object o = rs.getObject(col);
 					row.add(o);
-				}	// for all columns
+				}    // for all columns
 
-				if (isFirstRow)
-				{
-					data.add(header);
-				}
 				data.add(row);
-				isFirstRow = false;
 			}
 
 			return data;
