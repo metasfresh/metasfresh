@@ -23,10 +23,12 @@ CREATE OR REPLACE FUNCTION AccountSheetReport(p_dateFrom date,
                 amtacctdr        numeric,
                 amtacctcr        numeric,
                 account_id       numeric,
+                AccountValue     text,
+                AccountName      text,
                 fact_acct_id     numeric,
-                c_doctype_id     numeric,
-                c_tax_id         numeric,
-                c_taxcategory_id numeric,
+                docTypeName      text,
+                taxName          text,
+                taxCategoryName  text,
                 beginningBalance numeric,
                 endingBalance    numeric
             )
@@ -48,6 +50,8 @@ BEGIN
         fact_acct_id     numeric(10),
         documentno       text,
         account_id       numeric(10),
+        AccountValue     text,
+        AccountName      text,
         dateacct         timestamp,
         amtacctdr        numeric,
         amtacctcr        numeric,
@@ -57,7 +61,10 @@ BEGIN
         c_taxcategory_id numeric(10),
         beginningBalance numeric,
         endingBalance    numeric,
-        lineType         text
+        lineType         text,
+        taxName          text,
+        taxCategoryName  text,
+        docTypeName      text
     );
     v_time := logDebug('created empty temporary table', v_time);
 
@@ -81,7 +88,7 @@ BEGIN
              ),
          nonZeroPreviousBalances AS
              (
-                 SELECT *
+                 SELECT previousDayBalance, c_elementvalue_id
                  FROM previousBalances
                  WHERE previousDayBalance != 0
              )
@@ -104,20 +111,27 @@ BEGIN
                  SELECT fa.fact_acct_id,
                         fa.documentno,
                         fa.account_id,
+                        ev.value                                      AccountValue,
+                        ev.name                                       AccountName,
                         fa.dateacct,
                         fa.c_tax_id,
+                        t.name                                        taxName,
                         fa.amtacctdr,
                         fa.amtacctcr,
                         fa.description,
                         fa.c_doctype_id,
+                        dt.name                                       docTypeName,
                         tc.c_taxcategory_id,
-                        tmp_fa.beginningBalance::numeric beginningBalance,
-                        tmp_fa.endingBalance::numeric    endingBalance,
-                        LINE_TYPE_TRANSACTION
+                        tc.name                                       taxCategoryName,
+                        coalesce(tmp_fa.beginningBalance::numeric, 0) beginningBalance,
+                        coalesce(tmp_fa.endingBalance::numeric, 0)    endingBalance,
+                        LINE_TYPE_TRANSACTION                         lineType
                  FROM fact_acct fa
-                          INNER JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id
+                          INNER JOIN c_elementvalue ev ON fa.account_id = ev.c_elementvalue_id
+                          LEFT JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
+                          LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id
                  WHERE TRUE
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
                    AND fa.c_acctschema_id = p_c_acctschema_id
@@ -130,6 +144,8 @@ BEGIN
     INTO TMP_AccountSheetReport(fact_acct_id,
                                 documentno,
                                 account_id,
+                                AccountValue,
+                                AccountName,
                                 dateacct,
                                 amtacctdr,
                                 amtacctcr,
@@ -139,10 +155,15 @@ BEGIN
                                 c_taxcategory_id,
                                 beginningBalance,
                                 endingBalance,
-                                lineType)
+                                lineType,
+                                taxName,
+                                taxCategoryName,
+                                docTypeName)
     SELECT ffa.fact_acct_id,
            ffa.documentno,
            ffa.account_id,
+           ffa.AccountValue,
+           ffa.AccountName,
            ffa.dateacct,
            ffa.amtacctdr,
            ffa.amtacctcr,
@@ -152,7 +173,10 @@ BEGIN
            ffa.c_taxcategory_id,
            ffa.beginningBalance,
            ffa.endingBalance,
-           ffa.LINE_TYPE_TRANSACTION
+           ffa.lineType,
+           ffa.taxName,
+           ffa.taxCategoryName,
+           ffa.docTypeName
     FROM filteredFactAcct ffa;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
@@ -191,6 +215,7 @@ BEGIN
 
     v_time := logDebug('finished calculating rolling sum', v_time);
 
+
     RETURN QUERY
         SELECT --
                t.dateacct,
@@ -199,10 +224,12 @@ BEGIN
                t.amtacctdr,
                t.amtacctcr,
                t.account_id,
+               t.AccountValue,
+               t.AccountName,
                t.fact_acct_id,
-               t.c_doctype_id,
-               t.c_tax_id,
-               t.c_taxcategory_id,
+               t.docTypeName,
+               t.taxName,
+               t.taxCategoryName,
                t.beginningBalance,
                t.endingBalance
         FROM TMP_AccountSheetReport t;
