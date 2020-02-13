@@ -42,8 +42,8 @@ BEGIN
 
     --
     -- create temporary table for everything we're working on; it has no rows, only the needed columns
-    DROP TABLE IF EXISTS tbpFilteredFactAcct;
-    CREATE TEMPORARY TABLE tbpFilteredFactAcct AS
+    DROP TABLE IF EXISTS TMP_AccountSheetReport;
+    CREATE TEMPORARY TABLE TMP_AccountSheetReport AS
         (
             SELECT fa.*,
                    tc.c_taxcategory_id,
@@ -85,14 +85,14 @@ BEGIN
                  WHERE previousDayBalance != 0
              )
     INSERT
-    INTO tbpFilteredFactAcct (beginningBalance, endingBalance, lineType, account_id)
+    INTO TMP_AccountSheetReport (beginningBalance, endingBalance, lineType, account_id)
     SELECT nonZero.previousDayBalance,
            nonZero.previousDayBalance,
            LINE_TYPE_BEGINNINGBALANCE,
            nonZero.c_elementvalue_id
     FROM nonZeroPreviousBalances nonZero;
 
-    SELECT count(1) FROM tbpFilteredFactAcct INTO v_temp;
+    SELECT count(1) FROM TMP_AccountSheetReport INTO v_temp;
     v_time := logDebug('inserted beginningBalance: ' || v_temp || ' records', v_time);
 
 
@@ -102,11 +102,11 @@ BEGIN
              (
                  SELECT fa.*,
                         tc.c_taxcategory_id,
-                        tbp.beginningBalance::numeric beginningBalance,
-                        tbp.endingBalance::numeric    endingBalance,
+                        tmp_fa.beginningBalance::numeric beginningBalance,
+                        tmp_fa.endingBalance::numeric    endingBalance,
                         LINE_TYPE_TRANSACTION
                  FROM fact_acct fa
-                          INNER JOIN tbpFilteredFactAcct tbp ON tbp.account_id = fa.account_id --
+                          INNER JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id --
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
                  WHERE TRUE
@@ -118,11 +118,11 @@ BEGIN
                    AND (p_c_project_id IS NULL OR fa.c_project_id = p_c_project_id)
              )
     INSERT
-    INTO tbpFilteredFactAcct
+    INTO TMP_AccountSheetReport
     SELECT *
     FROM filteredFactAcct;
 
-    SELECT count(1) FROM tbpFilteredFactAcct INTO v_temp;
+    SELECT count(1) FROM TMP_AccountSheetReport INTO v_temp;
     v_time := logDebug('inserted:' || v_temp || ' fact_acct', v_time);
 
 
@@ -131,19 +131,19 @@ BEGIN
     -- This implementation uses a rolling sum over the previous rows
     WITH beginningBalance_fa AS
              (
-                 SELECT fa.fact_acct_id,
+                 SELECT tmp_fa.fact_acct_id,
                         (
-                                fa.endingBalance
-                                + sum(acctbalance(fa.account_id, fa.amtacctdr, fa.amtacctcr))
+                                tmp_fa.endingBalance
+                                + sum(acctbalance(tmp_fa.account_id, tmp_fa.amtacctdr, tmp_fa.amtacctcr))
                                   OVER
                                       (
-                                      PARTITION BY fa.account_id
-                                      ORDER BY fa.dateacct, fa.fact_acct_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                                      PARTITION BY tmp_fa.account_id
+                                      ORDER BY tmp_fa.dateacct, tmp_fa.fact_acct_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
                                       )
                             ) AS                                               beginningBalance,
-                        acctbalance(fa.account_id, fa.amtacctdr, fa.amtacctcr) transactionBalance
-                 FROM tbpFilteredFactAcct fa
-                 WHERE (fa.dateacct >= p_dateFrom AND fa.dateacct <= p_dateTo)
+                        acctbalance(tmp_fa.account_id, tmp_fa.amtacctdr, tmp_fa.amtacctcr) transactionBalance
+                 FROM TMP_AccountSheetReport tmp_fa
+                 WHERE (tmp_fa.dateacct >= p_dateFrom AND tmp_fa.dateacct <= p_dateTo)
              ),
          final_fa AS
              (
@@ -151,11 +151,11 @@ BEGIN
                         fa.beginningBalance - fa.transactionBalance endingBalance
                  FROM beginningBalance_fa fa
              )
-    UPDATE tbpFilteredFactAcct tbpffa
+    UPDATE TMP_AccountSheetReport tmp_fa
     SET beginningBalance = ffa.endingBalance,
         endingBalance    = ffa.beginningBalance
     FROM final_fa ffa
-    WHERE tbpffa.fact_acct_id = ffa.fact_acct_id;
+    WHERE tmp_fa.fact_acct_id = ffa.fact_acct_id;
 
     v_time := logDebug('finished calculating rolling sum', v_time);
 
@@ -173,7 +173,7 @@ BEGIN
                t.c_taxcategory_id,
                t.beginningBalance,
                t.endingBalance
-        FROM tbpFilteredFactAcct t;
+        FROM TMP_AccountSheetReport t;
 END;
 $BODY$
     LANGUAGE plpgsql
