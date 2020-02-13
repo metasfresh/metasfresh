@@ -437,7 +437,7 @@ public abstract class LookupValue
 				final String id,
 				final ITranslatableString displayName)
 		{
-			return new StringLookupValue(id, displayName, null/* helpText */, null/* attributes */, null/* active */);
+			return new StringLookupValue(id, displayName, null/* helpText */, null/* attributes */, null/* active */, null/* validation message */);
 		}
 
 		public static StringLookupValue of(
