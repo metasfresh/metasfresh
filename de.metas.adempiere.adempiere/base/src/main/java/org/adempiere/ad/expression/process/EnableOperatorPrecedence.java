@@ -13,34 +13,35 @@ package org.adempiere.ad.expression.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionCompiler;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * 
@@ -80,7 +81,7 @@ public class EnableOperatorPrecedence extends JavaProcess
 		final String whereClauseColumn = I_AD_Column.COLUMNNAME_ReadOnlyLogic + " IS NOT NULL "
 				+ " OR " + I_AD_Column.COLUMNNAME_MandatoryLogic + " IS NOT NULL ";
 
-		final List<I_AD_Column> columns = new TypedSqlQuery<I_AD_Column>(getCtx(), I_AD_Column.class, whereClauseColumn, get_TrxName())
+		final List<I_AD_Column> columns = new TypedSqlQuery<>(getCtx(), I_AD_Column.class, whereClauseColumn, get_TrxName())
 				.list(I_AD_Column.class);
 
 		for (I_AD_Column column : columns)
@@ -90,7 +91,7 @@ public class EnableOperatorPrecedence extends JavaProcess
 
 		// fix fields
 		final String whereClauseField = I_AD_Field.COLUMNNAME_DisplayLogic + " IS NOT NULL ";
-		final List<I_AD_Field> fields = new TypedSqlQuery<I_AD_Field>(getCtx(), I_AD_Field.class, whereClauseField, get_TrxName()).list(I_AD_Field.class);
+		final List<I_AD_Field> fields = new TypedSqlQuery<>(getCtx(), I_AD_Field.class, whereClauseField, get_TrxName()).list(I_AD_Field.class);
 
 		for (I_AD_Field field : fields)
 		{
@@ -101,7 +102,7 @@ public class EnableOperatorPrecedence extends JavaProcess
 		final String whereClauseTab = I_AD_Tab.COLUMNNAME_DisplayLogic + " IS NOT NULL "
 				+ " OR " + I_AD_Tab.COLUMNNAME_ReadOnlyLogic + " IS NOT NULL ";
 
-		final List<I_AD_Tab> tabs = new TypedSqlQuery<I_AD_Tab>(getCtx(), I_AD_Tab.class, whereClauseTab, get_TrxName()).list(I_AD_Tab.class);
+		final List<I_AD_Tab> tabs = new TypedSqlQuery<>(getCtx(), I_AD_Tab.class, whereClauseTab, get_TrxName()).list(I_AD_Tab.class);
 
 		for (I_AD_Tab tab : tabs)
 		{
@@ -166,12 +167,13 @@ public class EnableOperatorPrecedence extends JavaProcess
 
 	private void fixColumn(I_AD_Column column)
 	{
-		final I_AD_Table table = column.getAD_Table();
+		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
 		final String readOnlyLogic = column.getReadOnlyLogic();
 		if (!Check.isEmpty(readOnlyLogic, true))
 		{
-			final String info1 = "Column " + table.getTableName() + "." + column.getColumnName() + " ReadOnlyLogic '" + readOnlyLogic;
+			final String info1 = "Column " + tableName + "." + column.getColumnName() + " ReadOnlyLogic '" + readOnlyLogic;
 			final String readOnlyLogicNew = fixExpression(readOnlyLogic, info1);
 			if (!isEquivalent(readOnlyLogic, readOnlyLogicNew))
 			{
@@ -183,7 +185,7 @@ public class EnableOperatorPrecedence extends JavaProcess
 		final String mandatoryLogic = column.getMandatoryLogic();
 		if (!Check.isEmpty(mandatoryLogic, true))
 		{
-			final String info2 = "Column " + table.getTableName() + "." + column.getColumnName() + " MandatoryLogic '" + mandatoryLogic;
+			final String info2 = "Column " + tableName + "." + column.getColumnName() + " MandatoryLogic '" + mandatoryLogic;
 			final String mandatoryLogicNew = fixExpression(column.getMandatoryLogic(), info2);
 			if (!isEquivalent(mandatoryLogic, mandatoryLogicNew))
 			{
@@ -211,6 +213,6 @@ public class EnableOperatorPrecedence extends JavaProcess
 
 	private boolean isEquivalent(String oldLogic, String newLogic)
 	{
-		return Check.equals(oldLogic.replaceAll(" ", "").replace("!=", "!"), newLogic.replaceAll(" ", ""));
+		return Objects.equals(oldLogic.replaceAll(" ", "").replace("!=", "!"), newLogic.replaceAll(" ", ""));
 	}
 }

@@ -721,7 +721,7 @@ public final class DB
 		}
 		else if (param instanceof Boolean)
 		{
-			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
+			pstmt.setString(index, StringUtils.ofBoolean((Boolean)param));
 		}
 		else if (param instanceof RepoIdAware)
 		{
@@ -730,7 +730,6 @@ public final class DB
 		else if (param instanceof ReferenceListAwareEnum)
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
-			//
 		}
 		else
 		{
