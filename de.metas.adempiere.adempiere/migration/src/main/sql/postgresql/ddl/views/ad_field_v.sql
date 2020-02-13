@@ -64,12 +64,16 @@ SELECT
 	, f.EntityType as FieldEntityType
 	, c.FormatPattern
 	, c.IsUseDocSequence
+	--
 	-- Filtering
 	, c.IsSelectionColumn
 	, c.SelectionColumnSeqNo
 	, c.IsRangeFilter
 	, c.IsShowFilterIncrementButtons
 	, c.FilterDefaultValue
+	, c.IsFacetFilter
+	, c.FacetFilterSeqNo
+	, c.MaxFacetsToFetch
 --
 FROM ad_tab t
 	JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id

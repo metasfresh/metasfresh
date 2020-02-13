@@ -1,31 +1,10 @@
 package de.metas.tourplanning.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.LocalDate;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -36,7 +15,7 @@ import de.metas.tourplanning.model.I_M_DeliveryDay;
 
 /**
  * Tests for {@link DeliveryDayDAO#retrieveDeliveryDay(org.adempiere.model.IContextAware, IDeliveryDayQueryParams)}.
- * 
+ *
  * @author tsa
  *
  */
@@ -54,9 +33,9 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	@Test
 	public void test_StandardUseCase()
 	{
-		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5);
-		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5);
-		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5);
+		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 
 		testRetrieveDeliveryDay(null, "06.09.2014 23:59:59.999");
 		testRetrieveDeliveryDay(dd1, "07.09.2014 23:59:59.999");
@@ -69,9 +48,9 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	@Test
 	public void test_M_DeliveryDay_DeliveryDate_Plus_Buffer_ExceedingTheDay()
 	{
-		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 19:00:00.000", 5);
-		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 19:00:00.000", 5);
-		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 19:00:00.000", 5);
+		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 19:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 19:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 19:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 
 		testRetrieveDeliveryDay(null, "07.09.2014 23:59:59.999");
 		testRetrieveDeliveryDay(dd1, "08.09.2014 23:59:59.999");
@@ -83,9 +62,9 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	@Test
 	public void test_M_DeliveryDay_SkipProcessed()
 	{
-		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5);
-		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5);
-		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5);
+		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 
 		testRetrieveDeliveryDay(null, "06.09.2014 23:59:59.999");
 		testRetrieveDeliveryDay(dd1, "07.09.2014 23:59:59.999");
@@ -96,7 +75,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 
 		// Make Delivery Day 2 as processed
 		dd2.setProcessed(true);
-		InterfaceWrapperHelper.save(dd2);
+		save(dd2);
 
 		// Re-test again: those who were matched to dd2 now shall be matched to dd1
 		testRetrieveDeliveryDay(null, "06.09.2014 23:59:59.999");
@@ -119,7 +98,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 
 	/**
 	 * Convenient method for calling {@link DeliveryDayDAO#retrieveDeliveryDay(org.adempiere.model.IContextAware, IDeliveryDayQueryParams)}
-	 * 
+	 *
 	 * @param deliveryDateStr
 	 * @return
 	 */
@@ -132,7 +111,9 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	private void testRetrieveDeliveryDay(final I_M_DeliveryDay deliveryDayExpected, final String deliveryDateStr)
 	{
 		final I_M_DeliveryDay deliveryDayActual = retrieveDeliveryDay(deliveryDateStr);
-		Assert.assertEquals("Invalid M_DeliveryDay for: " + deliveryDateStr, deliveryDayExpected, deliveryDayActual);
+
+		assertThat(deliveryDayActual).isEqualTo(deliveryDayExpected).withFailMessage("Invalid M_DeliveryDay for: ", deliveryDateStr);
+
 	}
 
 }

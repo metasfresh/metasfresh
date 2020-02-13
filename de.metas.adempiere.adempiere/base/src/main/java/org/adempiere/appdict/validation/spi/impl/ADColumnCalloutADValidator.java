@@ -26,6 +26,7 @@ package org.adempiere.appdict.validation.spi.impl;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,9 +35,9 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
-import org.compiere.model.I_AD_Table;
 
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ADColumnCalloutADValidator extends AbstractADValidator<I_AD_ColumnCallout>
 {
@@ -76,9 +77,9 @@ public class ADColumnCalloutADValidator extends AbstractADValidator<I_AD_ColumnC
 			final I_AD_ColumnCallout callout = InterfaceWrapperHelper.create(violation.getItem(), I_AD_ColumnCallout.class);
 
 			final I_AD_Column column = callout.getAD_Column();
-			final I_AD_Table table = column.getAD_Table();
+			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
 
-			message.append("Error on ").append(table.getTableName()).append(".").append(column.getColumnName()).append(" - ").append(callout.getClassname())
+			message.append("Error on ").append(tableName).append(".").append(column.getColumnName()).append(" - ").append(callout.getClassname())
 					.append(" (IsActive=").append(callout.isActive()).append("): ");
 		}
 		catch (Exception e)
