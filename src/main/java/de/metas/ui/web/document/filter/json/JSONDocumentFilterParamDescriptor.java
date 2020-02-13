@@ -14,6 +14,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.ToString;
@@ -66,6 +67,9 @@ import lombok.ToString;
 
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
+	@JsonProperty("multiListValue")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean multiListValue;
 
 	@JsonProperty("range")
 	private final boolean rangeParameter;
@@ -113,7 +117,17 @@ import lombok.ToString;
 			caption = param.getDisplayName(adLanguage);
 		}
 
-		widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
+		if (param.getWidgetType() == DocumentFieldWidgetType.MultiValuesList)
+		{
+			// FIXME: workaround until frontend will implement the MultiValuesList widget type,
+			widgetType = JSONLayoutWidgetType.List;
+			multiListValue = Boolean.TRUE;
+		}
+		else
+		{
+			widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
+			multiListValue = null;
+		}
 		rangeParameter = param.isRange();
 
 		defaultValue = Values.valueToJsonObject(param.getDefaultValueConverted(), options.getJsonOpts());

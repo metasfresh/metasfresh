@@ -3,16 +3,15 @@ package de.metas.ui.web.picking.pickingslot;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableListMultimap;
@@ -32,8 +31,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -61,13 +58,14 @@ public class PickingSlotViewRepositoryTests
 {
 	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(2);
 
-	@Mocked
 	private PickingHURowsRepository pickingHUsRepo;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		pickingHUsRepo = Mockito.mock(PickingHURowsRepository.class);
 	}
 
 	/**
@@ -83,21 +81,18 @@ public class PickingSlotViewRepositoryTests
 			pickingSlot.setIsPickingRackSystem(true);
 		});
 
-		// @formatter:off return an empty list
-		new Expectations() {{
-			pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.builder()
-					.shipmentScheduleId(shipmentScheduleId)
-					.onlyNotClosedOrNotRackSystem(true)
-					.build());
-			result = ImmutableListMultimap.of();
-		}};
-		// @formatter:on
+		Mockito.when(pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(
+				PickingCandidatesQuery.builder()
+						.shipmentScheduleId(shipmentScheduleId)
+						.onlyNotClosedOrNotRackSystem(true)
+						.build()))
+				.thenReturn(ImmutableListMultimap.of());
 
 		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
 		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 		final List<PickingSlotRow> pickingSlotRows = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
-		assertThat(pickingSlotRows.size(), is(1)); // even if there are no HUs, there shall still be a row for our picking slot.
+		assertThat(pickingSlotRows).hasSize(1); // even if there are no HUs, there shall still be a row for our picking slot.
 
 		final PickingSlotRow pickingSlotRow = pickingSlotRows.get(0);
 		assertThat(pickingSlotRow.getType()).isEqualTo(PickingSlotRowType.forPickingSlotRow());
@@ -131,38 +126,35 @@ public class PickingSlotViewRepositoryTests
 									.build(),
 							pickingSlotRowProcessed));
 
-			// @formatter:off return an empty list
-			new Expectations() {{ 
-				pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.builder()
-						.shipmentScheduleId(shipmentScheduleId)
-						.onlyNotClosedOrNotRackSystem(true)
-						.build());
-				result = husIndexedByPickingSlotId; 
-			}};
-			// @formatter:on
+			Mockito.when(pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(
+					PickingCandidatesQuery.builder()
+							.shipmentScheduleId(shipmentScheduleId)
+							.onlyNotClosedOrNotRackSystem(true)
+							.build()))
+					.thenReturn(husIndexedByPickingSlotId);
 		}
 
 		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
 		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
-		assertThat(rowsByShipmentScheduleId.size(), is(1));
+		assertThat(rowsByShipmentScheduleId).hasSize(1);
 		final PickingSlotRow pickingSlotRow = rowsByShipmentScheduleId.get(0);
-		assertThat(pickingSlotRow.isPickingSlotRow(), is(true));
-		assertThat(pickingSlotRow.isPickedHURow(), is(false));
-		assertThat(pickingSlotRow.isProcessed(), is(pickingSlotRowProcessed));
+		assertThat(pickingSlotRow.isPickingSlotRow()).isTrue();
+		assertThat(pickingSlotRow.isPickedHURow()).isFalse();
+		assertThat(pickingSlotRow.isProcessed()).isEqualTo(pickingSlotRowProcessed);
 
-		assertThat(pickingSlotRow.getIncludedRows().size(), is(1));
+		assertThat(pickingSlotRow.getIncludedRows()).hasSize(1);
 		final PickingSlotRow tuRow = pickingSlotRow.getIncludedRows().get(0);
-		assertThat(tuRow.isPickingSlotRow(), is(false));
-		assertThat(tuRow.isPickedHURow(), is(true));
-		assertThat(tuRow.getHuId().getRepoId(), is(100));
+		assertThat(tuRow.isPickingSlotRow()).isFalse();
+		assertThat(tuRow.isPickedHURow()).isTrue();
+		assertThat(tuRow.getHuId().getRepoId()).isEqualTo(100);
 
-		assertThat(tuRow.getIncludedRows().size(), is(1));
+		assertThat(tuRow.getIncludedRows()).hasSize(1);
 		final PickingSlotRow whuRow = tuRow.getIncludedRows().get(0);
-		assertThat(whuRow.isPickingSlotRow(), is(false));
-		assertThat(whuRow.isPickedHURow(), is(true));
-		assertThat(whuRow.getHuId().getRepoId(), is(101));
+		assertThat(whuRow.isPickingSlotRow()).isFalse();
+		assertThat(whuRow.isPickedHURow()).isTrue();
+		assertThat(whuRow.getHuId().getRepoId()).isEqualTo(101);
 	}
 
 	private ShipmentScheduleId createShipmentSchedule()

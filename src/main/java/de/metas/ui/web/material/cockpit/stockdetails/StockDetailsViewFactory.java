@@ -1,6 +1,5 @@
 package de.metas.ui.web.material.cockpit.stockdetails;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -21,6 +20,7 @@ import de.metas.handlingunits.stock.HUStockInfoRepository;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
@@ -144,11 +144,11 @@ public class StockDetailsViewFactory implements IViewFactory, IViewsIndexStorage
 
 	private StockDetailsRowsData createStockDetailsRowData(@NonNull final CreateViewRequest request)
 	{
-		final List<DocumentFilter> filters = request.getStickyFilters();
+		final DocumentFilterList filters = request.getStickyFilters();
 
 		final HUStockInfoQueryBuilder query = HUStockInfoQuery.builder();
 
-		for (final DocumentFilter filter : filters)
+		for (final DocumentFilter filter : filters.toList())
 		{
 			final HUStockInfoSingleQueryBuilder singleQuery = HUStockInfoSingleQuery.builder();
 			final int productRepoId = filter.getParameterValueAsInt(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Product_ID, -1);

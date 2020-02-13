@@ -12,7 +12,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_CopyRowToEditable;
 import de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_SaveEditableRow;
@@ -216,7 +216,7 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 				.build();
 	}
 
-	protected final DocumentFiltersList extractFilters(final CreateViewRequest request)
+	protected final DocumentFilterList extractFilters(final CreateViewRequest request)
 	{
 		return filtersFactory.extractFilters(request);
 	}

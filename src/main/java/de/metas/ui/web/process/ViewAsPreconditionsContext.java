@@ -5,6 +5,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,15 +20,17 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.SelectionSize;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.process.SelectionSize;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -79,16 +83,15 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	private final IView view;
 	private final ViewProfileId viewProfileId;
 	private final String tableName;
-	@Getter
 	private final AdWindowId adWindowId;
 
 	private final ViewRowIdsSelection viewRowIdsSelection;
 	private final ViewRowIdsSelection parentViewRowIdsSelection;
 	private final ViewRowIdsSelection childViewRowIdsSelection;
 
-	@Getter
 	private final DisplayPlace displayPlace;
 
+	@Getter(AccessLevel.NONE)
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
 	@Builder
@@ -203,6 +206,14 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		final List<?> models = view.retrieveModelsByIds(getSelectedRowIds(), modelClass);
 		return SelectedModelsList.of(models, modelClass);
+	}
+
+	@Override
+	public <T> IQueryFilter<T> getQueryFilter(@NonNull final Class<T> recordClass)
+	{
+		final String tableName = InterfaceWrapperHelper.getTableName(recordClass);
+		final String sqlWhereClause = view.getSqlWhereClause(getSelectedRowIds(), SqlOptions.usingTableName(tableName));
+		return TypedSqlQueryFilter.of(sqlWhereClause);
 	}
 
 	private static final class SelectedModelsList

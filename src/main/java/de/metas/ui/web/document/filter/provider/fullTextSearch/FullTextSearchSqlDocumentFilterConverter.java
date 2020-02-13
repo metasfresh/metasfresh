@@ -13,6 +13,7 @@ import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.jgoodies.common.base.Objects;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -49,7 +50,8 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 {
 	public static final transient FullTextSearchSqlDocumentFilterConverter instance = new FullTextSearchSqlDocumentFilterConverter();
 
-	public static final String FILTER_ID = "full-text-search";
+	static final String FILTER_ID = "full-text-search";
+
 	static final String PARAM_SearchText = "Search";
 	static final String PARAM_Context = "Context";
 
@@ -57,6 +59,12 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 
 	private FullTextSearchSqlDocumentFilterConverter()
 	{
+	}
+
+	@Override
+	public boolean canConvert(final String filterId)
+	{
+		return Objects.equals(filterId, FILTER_ID);
 	}
 
 	@Override

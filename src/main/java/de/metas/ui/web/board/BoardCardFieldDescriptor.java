@@ -3,13 +3,12 @@ package de.metas.ui.web.board;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.adempiere.ad.expression.api.IStringExpression;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-
+import de.metas.ui.web.window.descriptor.sql.SqlOrderByValue;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectDisplayValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,14 +51,14 @@ public class BoardCardFieldDescriptor
 	private final ImmutableSet<String> sqlSelectValues;
 
 	private final boolean usingDisplayColumn;
-	private final IStringExpression sqlSelectDisplayValue;
+	private final SqlSelectDisplayValue sqlSelectDisplayValue;
 
 	@NonNull
-	private final IStringExpression sqlOrderBy;
+	private final SqlOrderByValue sqlOrderBy;
 
 	/** Retrieves a particular field from given {@link ResultSet}. */
 	@FunctionalInterface
-	public static interface BoardFieldLoader
+	public interface BoardFieldLoader
 	{
 		Object retrieveValueAsJson(ResultSet rs, String adLanguage) throws SQLException;
 	}

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.ZoneId;
 
 import org.compiere.util.TimeUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 

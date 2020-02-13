@@ -1,7 +1,8 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 import de.metas.ui.web.test.util.EnumTestUtils;
 import de.metas.ui.web.window.descriptor.LayoutAlign;
@@ -19,11 +20,11 @@ import de.metas.ui.web.window.descriptor.LayoutAlign;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,11 +40,11 @@ public class JSONLayoutAlignTest
 	@Test
 	public void test_fromNullable()
 	{
-		Assert.assertNull(JSONLayoutAlign.fromNullable((LayoutAlign)null));
-		Assert.assertSame(JSONLayoutAlign.left, JSONLayoutAlign.fromNullable(LayoutAlign.Left));
-		Assert.assertSame(JSONLayoutAlign.center, JSONLayoutAlign.fromNullable(LayoutAlign.Center));
-		Assert.assertSame(JSONLayoutAlign.right, JSONLayoutAlign.fromNullable(LayoutAlign.Right));
-		Assert.assertSame(JSONLayoutAlign.justify, JSONLayoutAlign.fromNullable(LayoutAlign.Justify));
+		assertThat(JSONLayoutAlign.fromNullable((LayoutAlign)null)).isNull();
+		assertThat(JSONLayoutAlign.fromNullable(LayoutAlign.Left)).isSameAs(JSONLayoutAlign.left);
+		assertThat(JSONLayoutAlign.fromNullable(LayoutAlign.Center)).isSameAs(JSONLayoutAlign.center);
+		assertThat(JSONLayoutAlign.fromNullable(LayoutAlign.Right)).isSameAs(JSONLayoutAlign.right);
+		assertThat(JSONLayoutAlign.fromNullable(LayoutAlign.Justify)).isSameAs(JSONLayoutAlign.justify);
 	}
 
 }

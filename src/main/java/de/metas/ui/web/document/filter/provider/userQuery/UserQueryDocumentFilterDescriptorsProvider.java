@@ -1,8 +1,7 @@
 package de.metas.ui.web.document.filter.provider.userQuery;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -12,6 +11,9 @@ import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.I_AD_UserQuery;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
@@ -24,7 +26,6 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
@@ -55,11 +56,16 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
 
 	private final UserQueryRepository repository;
-	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
+	private final int sortNoStart;
 
-	public UserQueryDocumentFilterDescriptorsProvider(@NonNull UserQueryRepository repository)
+	private final Supplier<ImmutableMap<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
+
+	public UserQueryDocumentFilterDescriptorsProvider(
+			@NonNull final UserQueryRepository repository,
+			final int sortNoStart)
 	{
 		this.repository = repository;
+		this.sortNoStart = sortNoStart;
 	}
 
 	@Override
@@ -74,20 +80,27 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		return filtersSupplier.get().get(filterId);
 	}
 
-	private final Map<String, DocumentFilterDescriptor> retrieveAllByFilterId()
+	private final ImmutableMap<String, DocumentFilterDescriptor> retrieveAllByFilterId()
 	{
-		return repository.getUserQueries()
-				.stream()
-				.map(userQuery -> createFilterDescriptorOrNull(userQuery))
-				.filter(Objects::nonNull)
-				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterDescriptor::getFilterId));
+		final ArrayList<DocumentFilterDescriptor> filters = new ArrayList<>();
+		for (final IUserQuery userQuery : repository.getUserQueries())
+		{
+			final int sortNo = sortNoStart + filters.size() + 1;
+			final DocumentFilterDescriptor filter = createFilterDescriptorOrNull(userQuery, sortNo);
+			if (filter != null)
+			{
+				filters.add(filter);
+			}
+		}
+
+		return Maps.uniqueIndex(filters, DocumentFilterDescriptor::getFilterId);
 	}
 
-	private final DocumentFilterDescriptor createFilterDescriptorOrNull(@NonNull final IUserQuery userQuery)
+	private final DocumentFilterDescriptor createFilterDescriptorOrNull(@NonNull final IUserQuery userQuery, final int sortNo)
 	{
 		try
 		{
-			return createFilterDescriptor0(userQuery);
+			return createFilterDescriptor0(userQuery, sortNo);
 		}
 		catch (final RuntimeException e)
 		{
@@ -101,10 +114,13 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		}
 	}
 
-	private static final DocumentFilterDescriptor createFilterDescriptor0(@NonNull final IUserQuery userQuery)
+	private static final DocumentFilterDescriptor createFilterDescriptor0(
+			@NonNull final IUserQuery userQuery,
+			final int sortNo)
 	{
 		final DocumentFilterDescriptor.Builder filter = DocumentFilterDescriptor.builder()
 				.setFilterId("userquery-" + userQuery.getId())
+				.setSortNo(sortNo)
 				.setDisplayName(userQuery.getCaption())
 				.setFrequentUsed(false);
 

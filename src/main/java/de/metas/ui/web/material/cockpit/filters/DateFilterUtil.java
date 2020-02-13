@@ -1,12 +1,11 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import java.util.Collection;
-
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -69,12 +68,10 @@ class DateFilterUtil
 				.build();
 	}
 
-	public DateFilterVO extractDateFilterVO(final Collection<DocumentFilter> filters)
+	public DateFilterVO extractDateFilterVO(final DocumentFilterList filters)
 	{
-		return filters.stream()
-				.filter(filter -> DateFilterVO.FILTER_ID.equals(filter.getFilterId()))
+		return filters.getFilterById(DateFilterVO.FILTER_ID)
 				.map(filter -> extractDateFilterVO(filter))
-				.findFirst()
 				.orElse(DateFilterVO.EMPTY);
 	}
 

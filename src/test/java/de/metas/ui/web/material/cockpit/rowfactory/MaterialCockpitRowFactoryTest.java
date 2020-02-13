@@ -27,8 +27,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_M_Attribute;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -89,7 +89,7 @@ public class MaterialCockpitRowFactoryTest
 	private DimensionSpecGroup dimensionspecGroup_empty;
 	private AttributeListValue attr2_value2;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

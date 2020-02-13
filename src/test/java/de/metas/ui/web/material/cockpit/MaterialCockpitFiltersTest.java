@@ -6,13 +6,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 
 /*
@@ -40,7 +39,7 @@ import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 public class MaterialCockpitFiltersTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -52,7 +51,7 @@ public class MaterialCockpitFiltersTest
 		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
 		save(record);
 
-		final IQuery<I_MD_Cockpit> query = new MaterialCockpitFilters().createQuery(ImmutableList.of());
+		final IQuery<I_MD_Cockpit> query = new MaterialCockpitFilters().createQuery(DocumentFilterList.EMPTY);
 		assertThat(query).isNotNull();
 		assertThat(query.list()).isEmpty();
 	}

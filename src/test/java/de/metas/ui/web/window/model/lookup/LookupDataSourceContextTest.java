@@ -14,8 +14,8 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -44,16 +44,10 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
 public class LookupDataSourceContextTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-	}
-
-	@Override
-	public String toString()
-	{
-		return "LookupDataSourceContextTest []";
 	}
 
 	@Test

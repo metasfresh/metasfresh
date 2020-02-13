@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -33,7 +33,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 public class HUEditorRowTest
 {
-
 	@Test
 	public void testCreateHUEditorRow()
 	{

@@ -39,6 +39,7 @@ import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
@@ -120,7 +121,10 @@ public class ProductsToPickRowsDataFactoryTest
 		final HUTraceRepository huTraceRepository = new HUTraceRepository();
 		final HuId2SourceHUsService sourceHUsRepository = new HuId2SourceHUsService(huTraceRepository);
 
-		final PickingCandidateService pickingCandidateService = new PickingCandidateService(pickingCandidateRepository, sourceHUsRepository);
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidateRepository,
+				sourceHUsRepository);
 
 		return ProductsToPickRowsDataFactory.builder()
 				.bpartnersService(bpartnersService)

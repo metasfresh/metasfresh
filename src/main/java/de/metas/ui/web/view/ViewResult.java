@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,12 +48,11 @@ public final class ViewResult
 	 * Creates a view result having given loaded page
 	 */
 	public static ViewResult ofViewAndPage(
-			final IView view //
-			, final int firstRow //
-			, final int pageLength //
-			, final List<DocumentQueryOrderBy> orderBys //
-			, final List<? extends IViewRow> page //
-	)
+			final IView view,
+			final int firstRow,
+			final int pageLength,
+			final DocumentQueryOrderByList orderBys,
+			final List<? extends IViewRow> page)
 	{
 		return builder()
 				.view(view)
@@ -65,12 +64,11 @@ public final class ViewResult
 	}
 
 	public static ViewResult ofViewAndRowIds(
-			final IView view //
-			, final int firstRow //
-			, final int pageLength //
-			, final List<DocumentQueryOrderBy> orderBys //
-			, final List<DocumentId> rowIds //
-	)
+			final IView view,
+			final int firstRow,
+			final int pageLength,
+			final DocumentQueryOrderByList orderBys,
+			final List<DocumentId> rowIds)
 	{
 		return builder()
 				.view(view)
@@ -100,9 +98,9 @@ public final class ViewResult
 	private final int queryLimit;
 	private final boolean queryLimitHit;
 
-	private final ImmutableList<DocumentFilter> stickyFilters;
-	private final ImmutableList<DocumentFilter> filters;
-	private final ImmutableList<DocumentQueryOrderBy> orderBys;
+	private final DocumentFilterList stickyFilters;
+	private final DocumentFilterList filters;
+	private final DocumentQueryOrderByList orderBys;
 
 	//
 	// Page info
@@ -121,7 +119,7 @@ public final class ViewResult
 			@NonNull final IView view,
 			@NonNull final Integer firstRow,
 			@NonNull final Integer pageLength,
-			@NonNull final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final DocumentQueryOrderByList orderBys,
 			@Nullable final List<DocumentId> rowIds,
 			@Nullable final List<? extends IViewRow> rows,
 			@Nullable final List<ViewResultColumn> columnInfos)
@@ -135,9 +133,9 @@ public final class ViewResult
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
 
-		stickyFilters = ImmutableList.copyOf(view.getStickyFilters());
-		filters = ImmutableList.copyOf(view.getFilters());
-		this.orderBys = ImmutableList.copyOf(orderBys);
+		stickyFilters = view.getStickyFilters();
+		filters = view.getFilters();
+		this.orderBys = orderBys;
 
 		//
 		// Page
@@ -165,9 +163,9 @@ public final class ViewResult
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
 
-		stickyFilters = ImmutableList.copyOf(view.getStickyFilters());
-		filters = ImmutableList.copyOf(view.getFilters());
-		orderBys = ImmutableList.copyOf(view.getDefaultOrderBys());
+		stickyFilters = view.getStickyFilters();
+		filters = view.getFilters();
+		orderBys = view.getDefaultOrderBys();
 
 		//
 		// Page
@@ -243,17 +241,17 @@ public final class ViewResult
 		return pageLength;
 	}
 
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
 		return stickyFilters;
 	}
 
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return filters;
 	}
 
-	public List<DocumentQueryOrderBy> getOrderBys()
+	public DocumentQueryOrderByList getOrderBys()
 	{
 		return orderBys;
 	}

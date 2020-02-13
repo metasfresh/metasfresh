@@ -85,7 +85,7 @@ public class PackageableViewFactoryV2 implements IViewFactory
 		final DocumentFilterDescriptorsProvider filterDescriptors = getFilterDescriptorsProvider();
 
 		final PackageableRowsData rowsData = rowsRepo.newPackageableRowsData()
-				.filters(request.getOrUnwrapFilters(filterDescriptors))
+				.filters(request.getFiltersUnwrapped(filterDescriptors))
 				.stickyFilters(request.getStickyFilters())
 				.build();
 

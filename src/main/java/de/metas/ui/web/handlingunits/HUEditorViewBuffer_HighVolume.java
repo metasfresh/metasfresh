@@ -2,7 +2,6 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,14 +12,12 @@ import java.util.stream.Stream;
 import org.adempiere.util.lang.Mutables;
 import org.adempiere.util.lang.SynchronizedMutable;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
@@ -31,7 +28,7 @@ import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PagedIterator.PageFetcher;
 import lombok.NonNull;
@@ -66,28 +63,28 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	private final ViewEvaluationCtx viewEvaluationCtx;
 
 	private final HUEditorViewRepository huEditorRepo;
-	private final ImmutableList<DocumentFilter> stickyFilters;
+	private final DocumentFilterList stickyFilters;
 
 	private Supplier<ViewRowIdsOrderedSelection> defaultSelectionFactory;
 	private final SynchronizedMutable<ViewRowIdsOrderedSelection> defaultSelectionRef;
-	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	private final transient ConcurrentHashMap<DocumentQueryOrderByList, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
 	HUEditorViewBuffer_HighVolume(
 			final ViewId viewId,
 			final HUEditorViewRepository huEditorRepo,
-			final List<DocumentFilter> stickyFilters,
-			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final DocumentFilterList stickyFilters,
+			@NonNull final DocumentFilterList filters,
+			final DocumentQueryOrderByList orderBys,
 			final SqlDocumentFilterConverterContext context)
 	{
 		this.viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 
 		this.huEditorRepo = huEditorRepo;
-		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
+		this.stickyFilters = stickyFilters;
 
-		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
+		final DocumentFilterList filtersAll = stickyFilters.mergeWith(filters);
 
 		defaultSelectionFactory = () -> huEditorRepo.createSelection(getViewEvaluationCtx(), viewId, filtersAll, orderBys, context);
 		defaultSelectionRef = Mutables.synchronizedMutable(defaultSelectionFactory.get());
@@ -95,7 +92,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public DocumentFilterList getStickyFilters()
 	{
 		return stickyFilters;
 	}
@@ -105,7 +102,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return defaultSelectionRef.computeIfNull(defaultSelectionFactory);
 	}
 
-	private ViewRowIdsOrderedSelection getSelection(final List<DocumentQueryOrderBy> orderBys)
+	private ViewRowIdsOrderedSelection getSelection(final DocumentQueryOrderByList orderBys)
 	{
 		final ViewRowIdsOrderedSelection defaultSelection = getDefaultSelection();
 
@@ -114,14 +111,14 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return defaultSelection;
 		}
 
-		if (Objects.equals(defaultSelection.getOrderBys(), orderBys))
+		if (DocumentQueryOrderByList.equals(defaultSelection.getOrderBys(), orderBys))
 		{
 			return defaultSelection;
 		}
 
 		return selectionsByOrderBys.computeIfAbsent(
-				ImmutableList.copyOf(orderBys),
-				orderBysImmutable -> huEditorRepo.createSelectionFromSelection(getViewEvaluationCtx(), defaultSelection, orderBysImmutable));
+				orderBys,
+				k -> huEditorRepo.createSelectionFromSelection(getViewEvaluationCtx(), defaultSelection, orderBys));
 	}
 
 	/** @return true if selection was really changed */
@@ -234,7 +231,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		final ImmutableSet<HUEditorRowId> onlyRowIds = filter.getOnlyRowIds();
 		if (onlyRowIds.isEmpty())
 		{
-			final List<DocumentQueryOrderBy> defaultOrderBys = getDefaultSelection().getOrderBys();
+			final DocumentQueryOrderByList defaultOrderBys = getDefaultSelection().getOrderBys();
 			huEditorRowIds = streamHUIdsByPage(0, Integer.MAX_VALUE, defaultOrderBys)
 					.map(HUEditorRowId::ofTopLevelHU);
 		}
@@ -272,14 +269,14 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 				.stream();
 	}
 
-	private PageFetcher<HuId> huIdsPageFetcher(final List<DocumentQueryOrderBy> orderBys)
+	private PageFetcher<HuId> huIdsPageFetcher(final DocumentQueryOrderByList orderBys)
 	{
 		final ViewEvaluationCtx viewEvalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection selection = getSelection(orderBys);
 		return (firstRow, maxRows) -> huEditorRepo.retrieveHUIdsPage(viewEvalCtx, selection, firstRow, maxRows);
 	}
 
-	private Stream<HuId> streamHUIdsByPage(final int firstRow, final int maxRows, final List<DocumentQueryOrderBy> orderBys)
+	private Stream<HuId> streamHUIdsByPage(final int firstRow, final int maxRows, final DocumentQueryOrderByList orderBys)
 	{
 		return IteratorUtils.<HuId> newPagedIterator()
 				.firstRow(firstRow)
@@ -315,7 +312,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return huEditorRepo.buildSqlWhereClause(getDefaultSelection(), rowIds);
 	}
 
-	public static boolean isHighVolume(final List<DocumentFilter> stickyFilters)
+	public static boolean isHighVolume(final DocumentFilterList stickyFilters)
 	{
 		final HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterDataOrNull(stickyFilters);
 		if (huIdsFilterData == null)

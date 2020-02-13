@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -21,6 +21,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.NonNull;
 
 /*
@@ -58,11 +59,11 @@ public final class HUEditorViewBuilder
 	private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 	private List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = null;
 
-	private List<DocumentFilter> stickyFilters;
-	private List<DocumentFilter> filters;
+	private DocumentFilterList stickyFilters;
+	private DocumentFilterList filters;
 	private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 
-	private List<DocumentQueryOrderBy> orderBys = null;
+	private ArrayList<DocumentQueryOrderBy> orderBys = null;
 
 	private LinkedHashMap<String, Object> parameters;
 	private HUEditorViewRepository huEditorViewRepository;
@@ -201,26 +202,26 @@ public final class HUEditorViewBuilder
 		return filterDescriptors;
 	}
 
-	public HUEditorViewBuilder setStickyFilters(final List<DocumentFilter> stickyFilters)
+	public HUEditorViewBuilder setStickyFilters(final DocumentFilterList stickyFilters)
 	{
 		this.stickyFilters = stickyFilters;
 		return this;
 	}
 
-	private List<DocumentFilter> getStickyFilters()
+	private DocumentFilterList getStickyFilters()
 	{
-		return stickyFilters != null ? stickyFilters : ImmutableList.of();
+		return stickyFilters != null ? stickyFilters : DocumentFilterList.EMPTY;
 	}
 
-	public HUEditorViewBuilder setFilters(final List<DocumentFilter> filters)
+	public HUEditorViewBuilder setFilters(final DocumentFilterList filters)
 	{
 		this.filters = filters;
 		return this;
 	}
 
-	List<DocumentFilter> getFilters()
+	DocumentFilterList getFilters()
 	{
-		return filters != null ? filters : ImmutableList.of();
+		return filters != null ? filters : DocumentFilterList.EMPTY;
 	}
 
 	public HUEditorViewBuilder orderBy(@NonNull final DocumentQueryOrderBy orderBy)
@@ -233,9 +234,9 @@ public final class HUEditorViewBuilder
 		return this;
 	}
 
-	public HUEditorViewBuilder orderBys(@NonNull final List<DocumentQueryOrderBy> orderBys)
+	public HUEditorViewBuilder orderBys(@NonNull final DocumentQueryOrderByList orderBys)
 	{
-		this.orderBys = new ArrayList<>(orderBys);
+		this.orderBys = new ArrayList<>(orderBys.toList());
 		return this;
 	}
 
@@ -245,9 +246,9 @@ public final class HUEditorViewBuilder
 		return this;
 	}
 
-	private ImmutableList<DocumentQueryOrderBy> getOrderBys()
+	private DocumentQueryOrderByList getOrderBys()
 	{
-		return orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
+		return DocumentQueryOrderByList.ofList(orderBys);
 	}
 
 	public HUEditorViewBuilder setParameter(final String name, final Object value)
@@ -298,8 +299,8 @@ public final class HUEditorViewBuilder
 	HUEditorViewBuffer createRowsBuffer(@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final ViewId viewId = getViewId();
-		final List<DocumentFilter> stickyFilters = getStickyFilters();
-		final List<DocumentFilter> filters = getFilters();
+		final DocumentFilterList stickyFilters = getStickyFilters();
+		final DocumentFilterList filters = getFilters();
 
 		if (HUEditorViewBuffer_HighVolume.isHighVolume(stickyFilters))
 		{

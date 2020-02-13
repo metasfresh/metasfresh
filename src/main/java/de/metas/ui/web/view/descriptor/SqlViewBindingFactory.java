@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -191,20 +190,18 @@ public class SqlViewBindingFactory
 			@NonNull final Collection<String> availableDisplayColumnNames)
 	{
 		final String fieldName = documentField.getFieldName();
-		final boolean isDisplayColumnAvailable = documentField.isUsingDisplayColumn() && availableDisplayColumnNames.contains(fieldName);
+		final boolean isDisplayColumnAvailable = documentField.getSqlSelectDisplayValue() != null && availableDisplayColumnNames.contains(fieldName);
 
 		return SqlViewRowFieldBinding.builder()
 				.fieldName(fieldName)
 				.columnName(documentField.getColumnName())
-				.columnSql(documentField.getColumnSql())
 				.keyColumn(documentField.isKeyColumn())
 				.widgetType(documentField.getWidgetType())
 				.virtualColumn(documentField.isVirtualColumn())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())
-				.usingDisplayColumn(isDisplayColumnAvailable)
-				.sqlSelectDisplayValue(isDisplayColumnAvailable ? documentField.getSqlSelectDisplayValue() : NullStringExpression.instance)
+				.sqlSelectDisplayValue(isDisplayColumnAvailable ? documentField.getSqlSelectDisplayValue() : null)
 				//
 				.sqlOrderBy(documentField.getSqlOrderBy())
 				//

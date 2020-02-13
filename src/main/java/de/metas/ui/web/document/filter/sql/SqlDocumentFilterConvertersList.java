@@ -1,10 +1,13 @@
 package de.metas.ui.web.document.filter.sql;
 
+import java.util.Collection;
+
 import javax.annotation.concurrent.Immutable;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -42,23 +45,31 @@ import lombok.ToString;
 @EqualsAndHashCode
 public final class SqlDocumentFilterConvertersList
 {
-	/* package */static final Builder builder()
+	/* package */static Builder builder()
 	{
 		return new Builder();
 	}
 
-	/* package */static final SqlDocumentFilterConvertersList EMPTY = new SqlDocumentFilterConvertersList(ImmutableMap.of());
+	/* package */static final SqlDocumentFilterConvertersList EMPTY = new SqlDocumentFilterConvertersList(ImmutableList.of());
 
-	private final ImmutableMap<String, SqlDocumentFilterConverter> convertersByFilterId;
+	private final ImmutableList<SqlDocumentFilterConverter> converters;
 
-	private SqlDocumentFilterConvertersList(final ImmutableMap<String, SqlDocumentFilterConverter> convertersByFilterId)
+	private SqlDocumentFilterConvertersList(@NonNull final ImmutableList<SqlDocumentFilterConverter> converters)
 	{
-		this.convertersByFilterId = convertersByFilterId;
+		this.converters = converters;
 	}
 
 	public SqlDocumentFilterConverter getConverterOrDefault(final String filterId, final SqlDocumentFilterConverter defaultConverter)
 	{
-		return convertersByFilterId.getOrDefault(filterId, defaultConverter);
+		for (final SqlDocumentFilterConverter converter : converters)
+		{
+			if (converter.canConvert(filterId))
+			{
+				return converter;
+			}
+		}
+
+		return defaultConverter;
 	}
 
 	//
@@ -68,7 +79,7 @@ public final class SqlDocumentFilterConvertersList
 	//
 	public static class Builder
 	{
-		private ImmutableMap.Builder<String, SqlDocumentFilterConverter> convertersByFilterId = null;
+		private ImmutableList.Builder<SqlDocumentFilterConverter> converters = null;
 
 		private Builder()
 		{
@@ -76,28 +87,44 @@ public final class SqlDocumentFilterConvertersList
 
 		public SqlDocumentFilterConvertersList build()
 		{
-			if (convertersByFilterId == null)
+			if (converters == null)
 			{
 				return EMPTY;
 			}
 
-			final ImmutableMap<String, SqlDocumentFilterConverter> convertersByFilterId = this.convertersByFilterId.build();
-			if (convertersByFilterId.isEmpty())
+			final ImmutableList<SqlDocumentFilterConverter> converters = this.converters.build();
+			if (converters.isEmpty())
 			{
 				return EMPTY;
 			}
 
-			return new SqlDocumentFilterConvertersList(convertersByFilterId);
+			return new SqlDocumentFilterConvertersList(converters);
 		}
 
-		public Builder addConverter(final String filterId, final SqlDocumentFilterConverter converter)
+		public Builder converter(@NonNull final SqlDocumentFilterConverter converter)
 		{
-			if (convertersByFilterId == null)
+			if (converters == null)
 			{
-				convertersByFilterId = ImmutableMap.builder();
+				converters = ImmutableList.builder();
 			}
-			convertersByFilterId.put(filterId, converter);
+			converters.add(converter);
 			return this;
 		}
+
+		public Builder converters(@NonNull final Collection<SqlDocumentFilterConverter> converters)
+		{
+			if (converters.isEmpty())
+			{
+				return this;
+			}
+
+			if (this.converters == null)
+			{
+				this.converters = ImmutableList.builder();
+			}
+			this.converters.addAll(converters);
+			return this;
+		}
+
 	}
 }

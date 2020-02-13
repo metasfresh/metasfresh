@@ -1,20 +1,18 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import java.util.List;
 import java.util.Map;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,25 +44,22 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	}
 
 	@Getter
-	private final ImmutableList<DocumentFilter> stickyFilters;
+	private final DocumentFilterList stickyFilters;
 	@Getter
-	private final ImmutableList<DocumentFilter> filters;
+	private final DocumentFilterList filters;
 
 	private final ExtendedMemorizingSupplier<PackageableRowsIndex> rowsIndexSupplier;
 
 	@Builder
 	private PackageableRowsData(
-			final PackageableRowsRepository repo,
-			final List<DocumentFilter> stickyFilters,
-			final List<DocumentFilter> filters)
+			@NonNull final PackageableRowsRepository repo,
+			@NonNull final DocumentFilterList stickyFilters,
+			@NonNull final DocumentFilterList filters)
 	{
-		this.filters = ImmutableList.copyOf(filters);
-		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
+		this.filters = filters;
+		this.stickyFilters = stickyFilters;
 
-		final ImmutableList<DocumentFilter> allFilters = ImmutableList.<DocumentFilter> builder()
-				.addAll(filters)
-				.addAll(stickyFilters)
-				.build();
+		final DocumentFilterList allFilters = filters.mergeWith(stickyFilters);
 
 		rowsIndexSupplier = ExtendedMemorizingSupplier.of(() -> PackageableRowsIndex.of(repo.retrieveRows(allFilters)));
 	}

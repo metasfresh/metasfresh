@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -15,10 +16,11 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -26,6 +28,7 @@ import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayoutFactory;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -159,15 +162,8 @@ public class SqlViewFactory implements IViewFactory
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
 				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
 
-		final DocumentFiltersList filters = request.getFilters();
-		if (filters.isJson())
-		{
-			viewBuilder.setFiltersFromJSON(filters.getJsonFilters());
-		}
-		else
-		{
-			viewBuilder.setFilters(filters.getFilters());
-		}
+		final DocumentFilterList filters = request.getFiltersUnwrapped(viewDataRepository.getViewFilterDescriptors());
+		viewBuilder.setFilters(filters);
 
 		if (request.isUseAutoFilters())
 		{
@@ -258,4 +254,37 @@ public class SqlViewFactory implements IViewFactory
 				.setValue(value)
 				.build();
 	}
+
+	@Override
+	public DefaultView filterView(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			@NonNull final Supplier<IViewsRepository> viewsRepo_NOTUSED)
+	{
+		return filterView(DefaultView.cast(view), filterViewRequest);
+	}
+
+	private DefaultView filterView(
+			@NonNull final DefaultView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest)
+	{
+		final DocumentFilterDescriptorsProvider filterDescriptors = view.getViewDataRepository().getViewFilterDescriptors();
+		final DocumentFilterList newFilters = filterViewRequest.getFiltersUnwrapped(filterDescriptors);
+//		final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
+//
+//		final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
+//
+//		if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
+//		{
+//			// TODO
+//			throw new AdempiereException("TODO");
+//		}
+//		else
+		{
+			return createView(CreateViewRequest.filterViewBuilder(view)
+					.setFilters(newFilters)
+					.build());
+		}
+	}
+
 }

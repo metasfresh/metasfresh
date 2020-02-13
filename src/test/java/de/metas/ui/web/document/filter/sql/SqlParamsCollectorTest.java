@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.compiere.db.Database;
 import org.compiere.util.DisplayType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

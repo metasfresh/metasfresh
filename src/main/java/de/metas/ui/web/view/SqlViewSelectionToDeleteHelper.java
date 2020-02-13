@@ -11,6 +11,8 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection_ToDelete;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -23,12 +25,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,39 +42,41 @@ public class SqlViewSelectionToDeleteHelper
 {
 	private static final Logger logger = LogManager.getLogger(SqlViewSelectionToDeleteHelper.class);
 
-	public static void scheduleDeleteSelections(final Set<String> viewIds)
+	public static void scheduleDeleteSelections(@NonNull final Set<String> selectionIds)
 	{
-		if (viewIds.isEmpty())
+		if (selectionIds.isEmpty())
 		{
 			return;
 		}
 
 		final String sqlInsertInto = "INSERT INTO " + I_T_WEBUI_ViewSelection_ToDelete.Table_Name + "("
 				+ I_T_WEBUI_ViewSelection_ToDelete.COLUMNNAME_View_UUID
-				+ ")";
+				+ ") VALUES ";
 
-		StringBuilder sql = new StringBuilder();
-		sql.append(sqlInsertInto);
-		int counter = 0;
-		for (String viewId : viewIds)
+		SqlAndParams.Builder sqlBuilder = null;
+		for (final String selectionId : selectionIds)
 		{
-			counter++;
-			if (counter > 1)
-				sql.append(" UNION ");
-			sql.append("SELECT ");
-			sql.append(DB.TO_STRING(viewId));
-
-			if (counter >= 1000)
+			if (sqlBuilder == null)
 			{
-				DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
-				sql = new StringBuilder();
-				sql.append(sqlInsertInto);
-				counter = 0;
+				sqlBuilder = SqlAndParams.builder()
+						.append(sqlInsertInto);
+			}
+
+			sqlBuilder.appendIfHasParameters(", ").append("(?)", selectionId);
+
+			if (sqlBuilder.getParametersCount() >= 1000)
+			{
+				final SqlAndParams sql = sqlBuilder.build();
+				DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
+				sqlBuilder = null;
 			}
 		}
-		if (counter > 0)
+
+		if (sqlBuilder != null)
 		{
-			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+			final SqlAndParams sql = sqlBuilder.build();
+			DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_None);
+			sqlBuilder = null;
 		}
 
 		logger.debug("{} view selections scheduled to be deleted");
@@ -84,7 +88,7 @@ public class SqlViewSelectionToDeleteHelper
 		{
 			deleteScheduledSelections();
 		}
-		catch (Throwable ex)
+		catch (final Throwable ex)
 		{
 			logger.warn("Failed deleting scheduled view selections. Ignored", ex);
 		}

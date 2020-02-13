@@ -1,8 +1,9 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,11 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,7 +33,7 @@ public class JSONDocumentFieldTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = new ObjectMapper();
@@ -43,10 +44,10 @@ public class JSONDocumentFieldTest
 	{
 		final JSONLayoutWidgetType jsonWidgetType = null; // N/A
 		final JSONDocumentField field = new JSONDocumentField("field1", jsonWidgetType);
-		
+
 		final String json = jsonObjectMapper.writeValueAsString(field);
-		
+
 		final JSONDocumentField field2 = jsonObjectMapper.readValue(json, JSONDocumentField.class);
-		Assert.assertEquals("Field name", field.getField(), field2.getField());
+		assertThat(field2.getField()).isEqualTo(field.getField());
 	}
 }

@@ -5,11 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.assertj.core.api.AbstractCharSequenceAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
 /*
  * #%L
@@ -35,37 +39,6 @@ import org.junit.Test;
 
 public class DateTimeConvertersTest
 {
-	@Test
-	public void testDefaultFormatters()
-	{
-		final JSONDateConfig config = JSONDateConfig.DEFAULT;
-
-		assertLocalDateToJson(LocalDate.of(2019, 03, 05), config)
-				.isEqualTo("2019-03-05");
-
-		assertLocalTimeToJson(LocalTime.of(13, 14, 15, 16), config)
-				.isEqualTo("13:14");
-
-		final ZonedDateTime zonedDateTime = LocalDate.of(2019, 03, 05)
-				.atTime(3, 14, 15, 16)
-				.atZone(ZoneId.of("UTC-9"));
-		assertZonedDateTimeToJson(zonedDateTime, zonedDateTime.getZone(), config)
-				// NOTE: nanos are not considered
-				.isEqualTo("2019-03-05T03:14:15.000-09:00");
-
-		assertInstantToJson(zonedDateTime.toInstant(), zonedDateTime.getZone(), config)
-				// NOTE: nanos are not considered
-				.isEqualTo("2019-03-05T03:14:15.000-09:00");
-	}
-
-	@Test
-	public void testTimeZoneToJson()
-	{
-		assertZoneIdToJson(ZoneId.of("UTC-9")).isEqualTo("UTC-09:00");
-		assertZoneIdToJson(ZoneId.of("Europe/Berlin")).isEqualTo("Europe/Berlin");
-		assertZoneIdToJson(ZoneId.of("Europe/Bucharest")).isEqualTo("Europe/Bucharest");
-	}
-
 	private AbstractCharSequenceAssert<?, String> assertLocalDateToJson(final LocalDate localDate, final JSONDateConfig config)
 	{
 		final String json = DateTimeConverters.toJson(localDate, config);
@@ -94,6 +67,37 @@ public class DateTimeConvertersTest
 				.as("instant=" + instant + ", zoneId=" + zoneId + ", config=" + config);
 	}
 
+	@Test
+	public void testDefaultFormatters()
+	{
+		final JSONDateConfig config = JSONDateConfig.DEFAULT;
+
+		assertLocalDateToJson(LocalDate.of(2019, 03, 05), config)
+				.isEqualTo("2019-03-05");
+
+		assertLocalTimeToJson(LocalTime.of(13, 14, 15, 16), config)
+				.isEqualTo("13:14");
+
+		final ZonedDateTime zonedDateTime = LocalDate.of(2019, 03, 05)
+				.atTime(3, 14, 15, 16)
+				.atZone(ZoneId.of("UTC-9"));
+		assertZonedDateTimeToJson(zonedDateTime, zonedDateTime.getZone(), config)
+				// NOTE: nanos are not considered
+				.isEqualTo("2019-03-05T03:14:15.000-09:00");
+
+		assertInstantToJson(zonedDateTime.toInstant(), zonedDateTime.getZone(), config)
+				// NOTE: nanos are not considered
+				.isEqualTo("2019-03-05T03:14:15.000-09:00");
+	}
+
+	@Test
+	public void toJson_zoneId()
+	{
+		assertZoneIdToJson(ZoneId.of("UTC-9")).isEqualTo("UTC-09:00");
+		assertZoneIdToJson(ZoneId.of("Europe/Berlin")).isEqualTo("Europe/Berlin");
+		assertZoneIdToJson(ZoneId.of("Europe/Bucharest")).isEqualTo("Europe/Bucharest");
+	}
+
 	private AbstractCharSequenceAssert<?, String> assertZoneIdToJson(final ZoneId zoneId)
 	{
 		final String json = DateTimeConverters.toJson(zoneId);
@@ -101,4 +105,14 @@ public class DateTimeConvertersTest
 				.as("zoneId=" + zoneId);
 	}
 
+	@Nested
+	public class fromObjectToLocalDate
+	{
+		@Test
+		public void from_StringLookupValue()
+		{
+			assertThat(DateTimeConverters.fromObjectToLocalDate(StringLookupValue.of("2019-02-11", "bla bla")))
+					.isEqualTo(LocalDate.of(2019, Month.FEBRUARY, 11));
+		}
+	}
 }

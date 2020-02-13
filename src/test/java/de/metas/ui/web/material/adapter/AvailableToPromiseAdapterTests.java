@@ -2,7 +2,7 @@ package de.metas.ui.web.material.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;

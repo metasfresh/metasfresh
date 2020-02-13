@@ -1,24 +1,19 @@
 package de.metas.ui.web.view;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -27,16 +22,15 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.provider.standard.FacetFilterViewCacheMap;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -46,8 +40,9 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -57,6 +52,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PagedIterator.Page;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -84,8 +80,6 @@ import lombok.NonNull;
 /**
  * Default {@link IView} implementation.
  *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class DefaultView implements IEditableView
 {
@@ -94,35 +88,50 @@ public final class DefaultView implements IEditableView
 		return new Builder(viewDataRepository);
 	}
 
+	public static DefaultView cast(@NonNull final IView view)
+	{
+		return (DefaultView)view;
+	}
+
 	private static final Logger logger = LogManager.getLogger(DefaultView.class);
 
+	@Getter
 	private final IViewDataRepository viewDataRepository;
 
+	@Getter
 	private final ViewId viewId;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
+	@Getter
 	private final ViewId parentViewId;
+	@Getter
 	private final DocumentId parentRowId;
+	@Getter
 	private final JSONViewDataType viewType;
+	@Getter
 	private final ViewProfileId profileId;
+	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
+	@Getter
 	private final ViewEvaluationCtx viewEvaluationCtx;
-	private final ExtendedMemorizingSupplier<ViewRowIdsOrderedSelections> selectionsRef;
-	private final AtomicBoolean defaultSelectionDeleteBeforeCreate = new AtomicBoolean(false);
+	private final ViewRowIdsOrderedSelectionsHolder selectionsRef;
 
 	//
 	// Filters
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	/** Sticky filters (i.e. active filters which cannot be changed) */
-	private final ImmutableList<DocumentFilter> stickyFilters;
+	@Getter
+	private final DocumentFilterList stickyFilters;
 	/** Regular filters */
-	private final ImmutableList<DocumentFilter> filters;
-	private transient ImmutableList<DocumentFilter> _allFilters;
-	private final boolean applySecurityRestrictions;
+	@Getter
+	private final DocumentFilterList filters;
+	private transient DocumentFilterList _allFilters; // lazy
+	@Getter
+	private final FacetFilterViewCacheMap facetFiltersCacheMap = FacetFilterViewCacheMap.newInstance();
 
 	//
 	// Misc
-	private transient String _toString;
+	private transient String _toString; // lazy
 
 	//
 	// Caching
@@ -158,31 +167,22 @@ public final class DefaultView implements IEditableView
 		{
 			viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 
-			this.applySecurityRestrictions = builder.isApplySecurityRestrictions();
-			selectionsRef = ExtendedMemorizingSupplier.of(() -> {
-				if (defaultSelectionDeleteBeforeCreate.get())
-				{
-					viewDataRepository.deleteSelection(viewId);
-				}
-
-				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
-						getViewEvaluationCtx(),
-						viewId,
-						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)),
-						applySecurityRestrictions,
-						SqlDocumentFilterConverterContext.EMPTY);
-
-				return new ViewRowIdsOrderedSelections(defaultSelection);
-			});
+			selectionsRef = ViewRowIdsOrderedSelectionsHolder.builder()
+					.viewDataRepository(viewDataRepository)
+					.viewId(viewId)
+					.applySecurityRestrictions(builder.isApplySecurityRestrictions())
+					.stickyFilters(stickyFilters)
+					.filters(filters)
+					.viewEvaluationCtxSupplier(this::getViewEvaluationCtx)
+					.build();
 		}
 
 		//
 		// Cache
-		cache_rowsById = CCache.newLRUCache( //
-				viewDataRepository.getTableName() + "#rowById#viewId=" + viewId.getViewId() // cache name
-				, 100 // maxSize
-				, 2 // expireAfterMinutes
-		);
+		cache_rowsById = CCache.newLRUCache(
+				viewDataRepository.getTableName() + "#rowById#viewId=" + viewId, // cache name
+				100, // maxSize
+				2); // expireAfterMinutes
 
 		logger.debug("View created: {}", this);
 	}
@@ -190,11 +190,12 @@ public final class DefaultView implements IEditableView
 	@Override
 	public String toString()
 	{
-		if (_toString == null)
+		String toString = _toString;
+		if (toString == null)
 		{
-			final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
+			final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.getDefaultSelection();
 			// NOTE: keep it short
-			_toString = MoreObjects.toStringHelper(this)
+			toString = _toString = MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("viewId", defaultSelection.getViewId())
 					.add("tableName", viewDataRepository.getTableName())
@@ -202,49 +203,13 @@ public final class DefaultView implements IEditableView
 					.add("defaultSelection", defaultSelection)
 					.toString();
 		}
-		return _toString;
-	}
-
-	@Override
-	public ViewId getParentViewId()
-	{
-		return parentViewId;
-	}
-
-	@Override
-	public DocumentId getParentRowId()
-	{
-		return parentRowId;
-	}
-
-	@Override
-	public ViewId getViewId()
-	{
-		return viewId;
-	}
-
-	@Override
-	public JSONViewDataType getViewType()
-	{
-		return viewType;
-	}
-
-	@Override
-	public ViewProfileId getProfileId()
-	{
-		return profileId;
+		return toString;
 	}
 
 	@Override
 	public ITranslatableString getDescription()
 	{
 		return TranslatableStrings.empty();
-	}
-
-	@Override
-	public ImmutableSet<DocumentPath> getReferencingDocumentPaths()
-	{
-		return referencingDocumentPaths;
 	}
 
 	/**
@@ -259,52 +224,43 @@ public final class DefaultView implements IEditableView
 	@Override
 	public long size()
 	{
-		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
-		return defaultSelection.getSize();
+		return selectionsRef.getSize();
 	}
 
 	@Override
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public DocumentQueryOrderByList getDefaultOrderBys()
 	{
-		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
-		return defaultSelection.getOrderBys();
+		return selectionsRef.getDefaultOrderBys();
 	}
 
 	@Override
 	public int getQueryLimit()
 	{
-		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
-		return defaultSelection.getQueryLimit();
+		return selectionsRef.getQueryLimit();
 	}
 
 	@Override
 	public boolean isQueryLimitHit()
 	{
-		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
-		return defaultSelection.isQueryLimitHit();
+		return selectionsRef.isQueryLimitHit();
 	}
 
-	@Override
-	public List<DocumentFilter> getStickyFilters()
+	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
-		return stickyFilters;
+		return selectionsRef.getDefaultSelectionBeforeFacetsFiltering();
 	}
 
-	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterDescriptorsProvider getFilterDescriptors()
 	{
-		return filters;
+		return viewDataRepository.getViewFilterDescriptors();
 	}
 
-	public List<DocumentFilter> getAllFilters()
+	private DocumentFilterList getAllFilters()
 	{
-		ImmutableList<DocumentFilter> allFilters = _allFilters;
+		DocumentFilterList allFilters = _allFilters;
 		if (allFilters == null)
 		{
-			_allFilters = allFilters = ImmutableList.<DocumentFilter> builder()
-					.addAll(getFilters())
-					.addAll(getStickyFilters())
-					.build();
+			_allFilters = allFilters = getFilters().mergeWith(getStickyFilters());
 		}
 		return allFilters;
 	}
@@ -317,8 +273,7 @@ public final class DefaultView implements IEditableView
 			return; // already closed
 		}
 
-		final ViewRowIdsOrderedSelections selections = selectionsRef.forget();
-		viewDataRepository.scheduleDeleteSelections(selections.getSelectionIds());
+		selectionsRef.forgetCurrentSelections();
 
 		logger.debug("View closed with reason={}: {}", reason, this);
 	}
@@ -338,12 +293,7 @@ public final class DefaultView implements IEditableView
 	@Override
 	public void invalidateSelection()
 	{
-		defaultSelectionDeleteBeforeCreate.set(true);
-		final ViewRowIdsOrderedSelections selections = selectionsRef.forget();
-		if (selections != null)
-		{
-			viewDataRepository.scheduleDeleteSelections(selections.getSelectionIds());
-		}
+		selectionsRef.forgetCurrentSelections();
 
 		invalidateAll();
 
@@ -357,11 +307,6 @@ public final class DefaultView implements IEditableView
 		{
 			throw new IllegalStateException("View already closed: " + getViewId());
 		}
-	}
-
-	private ViewEvaluationCtx getViewEvaluationCtx()
-	{
-		return viewEvaluationCtx;
 	}
 
 	@Override
@@ -478,12 +423,9 @@ public final class DefaultView implements IEditableView
 		return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
 	}
 
-	private ViewRowIdsOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys)
+	private ViewRowIdsOrderedSelection getOrderedSelection(final DocumentQueryOrderByList orderBys)
 	{
-		return selectionsRef.get()
-				.computeIfAbsent(
-						orderBys,
-						(defaultSelection, orderBysImmutable) -> viewDataRepository.createOrderedSelectionFromSelection(getViewEvaluationCtx(), defaultSelection, orderBysImmutable));
+		return selectionsRef.getOrderedSelection(orderBys);
 	}
 
 	@Override
@@ -535,7 +477,7 @@ public final class DefaultView implements IEditableView
 			checkChangedRows();
 
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.get().getDefaultSelection();
+			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
 			return IteratorUtils.<IViewRow> newPagedIterator()
 					.firstRow(0)
@@ -602,14 +544,7 @@ public final class DefaultView implements IEditableView
 			return;
 		}
 
-		changedRowIdsToCheck.process(rowIds -> checkChangedRows(rowIds));
-	}
-
-	private ViewRowIdsOrderedSelection checkChangedRows(final Set<DocumentId> rowIds)
-	{
-		return selectionsRef
-				.get()
-				.computeDefaultSelection(defaultSelection -> viewDataRepository.removeRowIdsNotMatchingFilters(defaultSelection, getAllFilters(), rowIds));
+		changedRowIdsToCheck.process(selectionsRef::removeRowIdsNotMatchingFilters);
 	}
 
 	@Override
@@ -620,34 +555,44 @@ public final class DefaultView implements IEditableView
 		final DocumentPath documentPath = getById(rowId).getDocumentPath();
 
 		Services.get(ITrxManager.class)
-				.runInThreadInheritedTrx(() -> documentsCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
-					//
-					// Process changes and the save the document
-					document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE);
-					document.saveIfValidAndHasChanges();
-
-					//
-					// Important: before allowing the document to be stored back in documents collection,
-					// we need to make sure it's valid and saved.
-					final DocumentValidStatus validStatus = document.getValidStatus();
-					if (!validStatus.isValid())
-					{
-						throw new AdempiereException(validStatus.getReason());
-					}
-					final DocumentSaveStatus saveStatus = document.getSaveStatus();
-					if (!saveStatus.isSavedOrDeleted())
-					{
-						throw new AdempiereException(saveStatus.getReason());
-					}
-
-					//
-					return null; // nothing/not important
-				}));
+				.runInThreadInheritedTrx(
+						() -> documentsCollection.forDocumentWritable(
+								documentPath,
+								NullDocumentChangesCollector.instance,
+								document -> {
+									patchDocument(document, fieldChangeRequests);
+									return null;
+								}));
 
 		invalidateRowById(rowId);
 		ViewChangesCollector.getCurrentOrAutoflush().collectRowChanged(this, rowId);
 
 		documentsCollection.invalidateRootDocument(documentPath);
+	}
+
+	private void patchDocument(
+			@NonNull final Document document,
+			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		//
+		// Process changes and the save the document
+		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE);
+		document.saveIfValidAndHasChanges();
+
+		//
+		// Important: before allowing the document to be stored back in documents collection,
+		// we need to make sure it's valid and saved.
+		final DocumentValidStatus validStatus = document.getValidStatus();
+		if (!validStatus.isValid())
+		{
+			throw new AdempiereException(validStatus.getReason());
+		}
+
+		final DocumentSaveStatus saveStatus = document.getSaveStatus();
+		if (!saveStatus.isSavedOrDeleted())
+		{
+			throw new AdempiereException(saveStatus.getReason());
+		}
 	}
 
 	@Override
@@ -693,82 +638,6 @@ public final class DefaultView implements IEditableView
 		public synchronized void addChangedRows(@NonNull final Collection<DocumentId> rowIdsToAdd)
 		{
 			rowIds.addAll(rowIdsToAdd);
-		}
-	}
-
-	//
-	//
-	//
-	//
-	//
-
-	@FunctionalInterface
-	private interface ViewRowIdsOrderedSelectionFactory
-	{
-		ViewRowIdsOrderedSelection create(ViewRowIdsOrderedSelection defaultSelection, List<DocumentQueryOrderBy> orderBys);
-	}
-
-	//
-	//
-	//
-
-	private static final class ViewRowIdsOrderedSelections
-	{
-		private ViewRowIdsOrderedSelection defaultSelection;
-		private final HashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new HashMap<>();
-
-		public ViewRowIdsOrderedSelections(@NonNull final ViewRowIdsOrderedSelection defaultSelection)
-		{
-			this.defaultSelection = defaultSelection;
-		}
-
-		public synchronized ViewRowIdsOrderedSelection getDefaultSelection()
-		{
-			return defaultSelection;
-		}
-
-		public synchronized ViewRowIdsOrderedSelection computeDefaultSelection(@NonNull final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
-		{
-			final ViewRowIdsOrderedSelection newDefaultSelection = mapper.apply(defaultSelection);
-			if (newDefaultSelection == null)
-			{
-				throw new AdempiereException("null default selection is not allowed");
-			}
-
-			if (!defaultSelection.equals(newDefaultSelection))
-			{
-				this.defaultSelection = newDefaultSelection;
-				selectionsByOrderBys.clear();
-			}
-
-			return defaultSelection;
-		}
-
-		public synchronized ViewRowIdsOrderedSelection computeIfAbsent(final List<DocumentQueryOrderBy> orderBys, @NonNull final ViewRowIdsOrderedSelectionFactory factory)
-		{
-			if (orderBys == null || orderBys.isEmpty())
-			{
-				return defaultSelection;
-			}
-
-			if (Objects.equals(defaultSelection.getOrderBys(), orderBys))
-			{
-				return defaultSelection;
-			}
-
-			return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> factory.create(defaultSelection, orderBysImmutable));
-		}
-
-		public synchronized ImmutableSet<String> getSelectionIds()
-		{
-			final ImmutableSet.Builder<String> selectionIds = ImmutableSet.builder();
-			selectionIds.add(defaultSelection.getSelectionId());
-			for (final ViewRowIdsOrderedSelection selection : new ArrayList<>(selectionsByOrderBys.values()))
-			{
-				selectionIds.add(selection.getSelectionId());
-			}
-
-			return selectionIds.build();
 		}
 	}
 
@@ -898,7 +767,7 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public Builder addStickyFilters(final List<DocumentFilter> stickyFilters)
+		public Builder addStickyFilters(final DocumentFilterList stickyFilters)
 		{
 			if (stickyFilters == null || stickyFilters.isEmpty())
 			{
@@ -910,32 +779,21 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		private ImmutableList<DocumentFilter> getStickyFilters()
+		private DocumentFilterList getStickyFilters()
 		{
-			return _stickyFiltersById == null ? ImmutableList.of() : ImmutableList.copyOf(_stickyFiltersById.values());
+			return _stickyFiltersById == null ? DocumentFilterList.EMPTY : DocumentFilterList.ofList(_stickyFiltersById.values());
 		}
 
-		public Builder setFilters(final List<DocumentFilter> filters)
+		public Builder setFilters(final DocumentFilterList filters)
 		{
 			_filtersById.clear();
 			filters.forEach(filter -> _filtersById.put(filter.getFilterId(), filter));
 			return this;
 		}
 
-		public Builder setFiltersFromJSON(final List<JSONDocumentFilter> jsonFilters)
+		private DocumentFilterList getFilters()
 		{
-			setFilters(JSONDocumentFilter.unwrapList(jsonFilters, getViewFilterDescriptors()));
-			return this;
-		}
-
-		private ImmutableList<DocumentFilter> getFilters()
-		{
-			return _filtersById.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(_filtersById.values());
-		}
-
-		public boolean hasFilters()
-		{
-			return !_filtersById.isEmpty();
+			return _filtersById.isEmpty() ? DocumentFilterList.EMPTY : DocumentFilterList.ofList(_filtersById.values());
 		}
 
 		public Builder addFiltersIfAbsent(final Collection<DocumentFilter> filters)
@@ -950,7 +808,7 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public boolean isRefreshViewOnChangeEvents()
+		private boolean isRefreshViewOnChangeEvents()
 		{
 			return refreshViewOnChangeEvents;
 		}

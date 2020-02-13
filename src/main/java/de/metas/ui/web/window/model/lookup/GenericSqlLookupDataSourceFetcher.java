@@ -1,7 +1,19 @@
 package de.metas.ui.web.window.model.lookup;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -13,21 +25,11 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.INamePairPredicate;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /*
  * #%L
@@ -65,8 +67,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	private final boolean numericKey;
 	private final int entityTypeIndex;
 
-	private final IStringExpression sqlForFetchingExpression;
-	private final IStringExpression sqlForFetchingLookupByIdExpression;
+	private final SqlForFetchingLookups sqlForFetchingExpression;
+	private final SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
 	private final INamePairPredicate postQueryPredicate;
 
 	private final boolean isTranslatable;
@@ -168,7 +170,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	@Override
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
-		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx);
 		final String adLanguage = isTranslatable ? evalCtx.getAD_Language() : null;
 
 		try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
@@ -201,7 +203,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			throw new IllegalStateException("No ID provided in " + evalCtx);
 		}
 
-		final String sqlForFetchingLookupById = sqlForFetchingLookupByIdExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+		final String sqlForFetchingLookupById = sqlForFetchingLookupByIdExpression.evaluate(evalCtx);
 
 		final String[] nameAndDescriptionAndActive = DB.getSQLValueArrayEx(ITrx.TRXNAME_None, sqlForFetchingLookupById, id);
 		if (nameAndDescriptionAndActive == null || nameAndDescriptionAndActive.length == 0)

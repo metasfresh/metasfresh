@@ -16,7 +16,7 @@ import de.metas.picking.api.PickingSlotQuery.PickingSlotQueryBuilder;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
@@ -36,6 +36,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -106,24 +107,23 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 		request.assertNoParentViewOrRow();
 
 		final DocumentFilterDescriptorsProvider filterDescriptors = getFilterDescriptorsProvider();
-		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(filterDescriptors);
+		final DocumentFilterList filters = request.getFiltersUnwrapped(filterDescriptors);
 
 		final ViewId viewId = ViewId.random(PickingSlotsClearingViewFactory.WINDOW_ID);
 
-		final PickingSlotQuery query = createPickingSlotQuery(requestEffective);
+		final PickingSlotQuery query = createPickingSlotQuery(filters);
 
 		return PickingSlotsClearingView.builder()
 				.viewId(viewId)
 				.rows(() -> pickingSlotRepo.retrievePickingSlotsRows(query))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.filterDescriptors(filterDescriptors)
-				.filters(requestEffective.getFilters().getFilters())
+				.filters(filters)
 				.build();
 	}
 
-	private static final PickingSlotQuery createPickingSlotQuery(final CreateViewRequest request)
+	private static final PickingSlotQuery createPickingSlotQuery(@NonNull final DocumentFilterList filters)
 	{
-		final DocumentFiltersList filters = request.getFilters();
 		final PickingSlotQueryBuilder queryBuilder = PickingSlotQuery.builder();
 
 		final BPartnerId bpartnerId = PickingSlotsClearingViewFilters.getBPartnerId(filters);
