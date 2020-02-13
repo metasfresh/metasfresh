@@ -10,10 +10,10 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.ValidationInformation;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairValidationInformation;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
@@ -56,7 +56,7 @@ import lombok.Singular;
 
 public abstract class LookupValue
 {
-	protected final ValidationInformation validationInformation;
+	protected final ValueNamePairValidationInformation validationInformation;
 
 	public static final Object normalizeId(final Object idObj, final boolean numericKey)
 	{
@@ -165,7 +165,7 @@ public abstract class LookupValue
 		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
-			final ValidationInformation validationInformation = vnp.getValidationInformation();
+			final ValueNamePairValidationInformation validationInformation = vnp.getValidationInformation();
 
 			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl, validationInformation);
 		}
@@ -232,7 +232,7 @@ public abstract class LookupValue
 			@Nullable final ITranslatableString description,
 			@Nullable final Map<String, Object> additionalAttributes,
 			@Nullable final Boolean active,
-			@Nullable final ValidationInformation validationInformation)
+			@Nullable final ValueNamePairValidationInformation validationInformation)
 	{
 		this.id = id;
 		this.displayName = TranslatableStrings.nullToEmpty(displayName);
@@ -295,7 +295,7 @@ public abstract class LookupValue
 		return displayName.translate(adLanguage);
 	}
 
-	public ValidationInformation getValidationInformation()
+	public ValueNamePairValidationInformation getValidationInformation()
 	{
 		return validationInformation;
 	}
@@ -452,7 +452,7 @@ public abstract class LookupValue
 				final String id,
 				final ITranslatableString displayName,
 				final ITranslatableString helpText,
-				final ValidationInformation validationInformation)
+				final ValueNamePairValidationInformation validationInformation)
 		{
 			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */, validationInformation);
 		}
@@ -477,7 +477,7 @@ public abstract class LookupValue
 				@Nullable final ITranslatableString description,
 				@Singular final Map<String, Object> attributes,
 				final Boolean active,
-				@Nullable final ValidationInformation validationInformation)
+				@Nullable final ValueNamePairValidationInformation validationInformation)
 		{
 			super(id,
 					displayName,
