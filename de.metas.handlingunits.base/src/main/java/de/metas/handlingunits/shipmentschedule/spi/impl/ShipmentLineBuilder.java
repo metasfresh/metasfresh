@@ -162,7 +162,7 @@ import lombok.NonNull;
 	private final TreeSet<IAttributeValue> //
 	attributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
-	private ShipmentLineNoInfo shipmentLineNoInfo;
+	private final ShipmentLineNoInfo shipmentLineNoInfo;
 
 	/**
 	 *
