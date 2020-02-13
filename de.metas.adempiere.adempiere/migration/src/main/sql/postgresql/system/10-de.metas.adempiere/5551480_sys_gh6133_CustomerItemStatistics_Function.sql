@@ -34,7 +34,7 @@ SELECT
 	t.uomSymbol,
 	t.productRevenue as Amount,
 	t.costPrice * t.qtyInvoiced as ProductCosts,
-	CASE WHEN t.productRevenue > 0 THEN (t.costPrice * t.qtyInvoiced * 100 )/ t.productRevenue else 0 end as  ProductCostsPercent
+	round((CASE WHEN t.productRevenue > 0 THEN (t.costPrice * t.qtyInvoiced * 100 )/ t.productRevenue else 0 end ),2) as  ProductCostsPercent
 	
 FROM
 	(
@@ -60,12 +60,12 @@ FROM
 			
 		WHERE i.isActive = 'Y' and il.IsActive = 'Y'
 			AND i.AD_Client_ID = p_AD_Client_ID and i.AD_Org_ID = p_AD_Org_ID
+			AND i.DocStatus in ('CO', 'CL')
+			AND (p_C_BPartner_ID IS NULL OR p_C_BPartner_ID <= 0 OR i.C_BPartner_ID = p_C_BPartner_ID)
+			AND (p_M_Product_ID IS NULL OR p_M_Product_ID <= 0 OR p.M_Product_ID = p_M_Product_ID )
+			AND (p_DateFrom IS NULL OR i.DateInvoiced >= p_dateFrom)
+			AND (p_DateTo IS NULL OR i.DateInvoiced <= p_dateTo)
 			
-			AND CASE WHEN p_C_BPartner_ID > 0 THEN bp.C_Bpartner_ID = p_C_BPartner_ID  ELSE 1=1 END
-			AND CASE WHEN p_dateFrom IS NOT NULL THEN i.DateInvoiced >= p_dateFrom ELSE 1=1 END
-			AND CASE WHEN p_dateTo IS NOT NULL THEN i.DateInvoiced <= p_dateTo ELSE 1=1 END
-			AND CASE WHEN p_M_Product_ID > 0 THEN p.M_Product_ID = p_M_Product_ID ELSE 1=1 END
-
 			GROUP BY bp.value, p.M_Product_ID, p.C_UOM_ID
 ) t
 	ORDER BY t.BPValue
