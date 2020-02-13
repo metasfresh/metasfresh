@@ -650,6 +650,7 @@ class TableItem extends Component {
       includedDocuments,
       notSaved,
       caption,
+      dataKey,
     } = this.props;
 
     return (
@@ -657,7 +658,7 @@ class TableItem extends Component {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames({
+          className={classnames(`${dataKey}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,
@@ -681,6 +682,7 @@ TableItem.propTypes = {
   cols: PropTypes.array.isRequired,
   onClick: PropTypes.func.isRequired,
   item: PropTypes.object.isRequired,
+  dataKey: PropTypes.string.isRequired,
   handleSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
   indentSupported: PropTypes.bool,
