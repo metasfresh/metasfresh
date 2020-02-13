@@ -32,9 +32,9 @@ SELECT
 	t.productName,
 	t.qtyInvoiced,
 	t.uomSymbol,
-	t.Betrag as Amount,
+	t.productRevenue as Amount,
 	t.costPrice * t.qtyInvoiced as ProductCosts,
-	CASE WHEN t.betrag > 0 THEN (t.costPrice * t.qtyInvoiced * 100 )/ t.betrag else 0 end as  ProductCostsPercent
+	CASE WHEN t.productRevenue > 0 THEN (t.costPrice * t.qtyInvoiced * 100 )/ t.productRevenue else 0 end as  ProductCostsPercent
 	
 FROM
 	(
@@ -49,7 +49,7 @@ FROM
 					CASE WHEN i.IsTaxIncluded = 'Y' THEN il.LineNetAmt - il.TaxAmtInfo 
 					ELSE il.LineNetAmt
 					END 
-				)	AS Betrag, 
+				)	AS productRevenue, 
 			getCostPrice( p.M_Product_ID, p_AD_Client_ID,  p_AD_Client_ID) as costPrice
 		 
 		FROM 
