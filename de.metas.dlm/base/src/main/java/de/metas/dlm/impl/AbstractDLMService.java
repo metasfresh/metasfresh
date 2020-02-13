@@ -142,7 +142,7 @@ public abstract class AbstractDLMService implements IDLMService
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
 		
 		column.setAD_Element(element);
-		column.setAD_Table(table);
+		column.setAD_Table_ID(table.getAD_Table_ID());
 		column.setColumnName(element.getColumnName());
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());

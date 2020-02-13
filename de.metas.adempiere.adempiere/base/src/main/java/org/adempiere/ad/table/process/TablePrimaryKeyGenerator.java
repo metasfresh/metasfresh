@@ -181,7 +181,7 @@ class TablePrimaryKeyGenerator
 		return queryBL
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, table.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Column.COLUMN_IsKey, true)
 				.create()
 				.anyMatch();
@@ -192,7 +192,7 @@ class TablePrimaryKeyGenerator
 		return queryBL
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_AD_Column.COLUMN_IsParent, true)
 				.create()
 				.listDistinct(I_AD_Column.COLUMNNAME_ColumnName, String.class);
@@ -202,7 +202,7 @@ class TablePrimaryKeyGenerator
 	{
 		final I_AD_Column columnPK = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
 		columnPK.setAD_Org_ID(0);
-		columnPK.setAD_Table(table);
+		columnPK.setAD_Table_ID(table.getAD_Table_ID());
 		columnPK.setEntityType(table.getEntityType());
 
 		final I_AD_Element adElement = getOrCreateKeyColumnNameElement(table);

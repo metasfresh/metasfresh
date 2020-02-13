@@ -12,6 +12,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -113,7 +114,8 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 
 		for (final I_AD_Column recordIdColumn : recordIdColumns)
 		{
-			final I_AD_Table table = recordIdColumn.getAD_Table();
+			final AdTableId adTableId = AdTableId.ofRepoId(recordIdColumn.getAD_Table_ID());
+			final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
 			if (table.isView())
 			{
 				continue;
