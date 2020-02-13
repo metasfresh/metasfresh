@@ -50,7 +50,7 @@ FROM
 					ELSE il.LineNetAmt
 					END 
 				)	AS Betrag, 
-			getCostPrice( p.M_Product_ID, p_AD_Client_ID) as costPrice
+			getCostPrice( p.M_Product_ID, p_AD_Client_ID,  p_AD_Client_ID) as costPrice
 		 
 		FROM 
 			M_Product p
