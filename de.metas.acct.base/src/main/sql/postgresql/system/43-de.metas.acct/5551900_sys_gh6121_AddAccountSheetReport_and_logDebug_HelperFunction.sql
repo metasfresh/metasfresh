@@ -1,3 +1,44 @@
+DROP FUNCTION IF EXISTS logDebug(msg text, previousTime timestamp);
+
+CREATE OR REPLACE FUNCTION logDebug(msg text,
+                                    previousTime timestamp=now())
+    RETURNS timestamp AS
+$$
+DECLARE
+    v_now             timestamp;
+    deltaSinceLastLog text;
+    totalRuntime      text;
+BEGIN
+    v_now := clock_timestamp();
+    deltaSinceLastLog := extract(EPOCH FROM v_now::timestamp(0) - previousTime::timestamp(0));
+    totalRuntime := extract(EPOCH FROM v_now::timestamp(0) - now()::timestamp(0));
+
+    -- todo: not sure if raise notice already prints the current timestamp and v_now is a duplicate
+    RAISE NOTICE '[%](%s) [Δ=%s]: % ', v_now, totalRuntime, deltaSinceLastLog, msg;
+
+    RETURN v_now;
+END;
+$$
+    LANGUAGE plpgsql IMMUTABLE
+                     COST 1;
+
+COMMENT ON FUNCTION logDebug(msg text, previousTime timestamp) IS '
+How to use:
+Pass the message you want to appear in the console, and also the timestamp returned by the function, so that you get the time difference (Δ in seconds) from the previous output.
+
+DECLARE
+v_debugTime timestamp;
+
+v_debugTime := logDebug(''START'');
+[...]
+v_debugTime := logDebug(''created TEMPORARY TABLE'', v_debugTime);
+[...]
+v_debugTime := logDebug(''inserted beginningBalance'', v_debugTime);
+[...]
+';
+
+
+
 DROP FUNCTION IF EXISTS AccountSheetReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id numeric, p_c_project_id numeric);
 
 /*
@@ -178,58 +219,3 @@ END;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE;
-
-
-/*
-Performance
-
-Running on the biggest database we have available, I get these numbers:
-
-- test 1:
-    2017-04-01 -> 2018-05-31 = 13 months
-    ~2.1 million records
-
-select *
-FROM AccountSheetReport(
-    '2017-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-12 16:20:19] [00000] [2020-02-12 14:20:18.842788](0s)   [Δ=0s]: start
-[2020-02-12 16:20:19] [00000] [2020-02-12 14:20:18.849605](0s)   [Δ=0s]: created temporary table
-[2020-02-12 16:20:22] [00000] [2020-02-12 14:20:21.720887](3s)   [Δ=3s]: inserted beginningBalance
-[2020-02-12 16:20:36] [00000] [2020-02-12 14:20:35.628875](17s)  [Δ=14s]: inserted:2176571 fact_acct
-[2020-02-12 16:20:38] [00000] [2020-02-12 14:20:37.256058](18s)  [Δ=1s]: deleted rows w/o transactions. Remaining: 2176571
-[2020-02-12 16:22:06] [00000] [2020-02-12 14:22:05.357838](106s) [Δ=88s]: finished calculating rolling sum
-[2020-02-12 16:22:15] Execution: 106 seconds
-
-
-- test 2:
-    2018-04-01 -> 2018-05-31 = 2 months
-    ~300k records
-
-select *
-FROM AccountSheetReport(
-    '2018-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-12 16:26:55] [00000] [2020-02-12 14:26:55.109815](0s) [Δ=0s]: start
-[2020-02-12 16:26:56] [00000] [2020-02-12 14:26:55.113405](0s) [Δ=0s]: created temporary table
-[2020-02-12 16:26:59] [00000] [2020-02-12 14:26:58.7422](4s) [Δ=4s]: inserted beginningBalance
-[2020-02-12 16:27:04] [00000] [2020-02-12 14:27:03.366925](8s) [Δ=4s]: inserted:299213 fact_acct
-[2020-02-12 16:27:04] [00000] [2020-02-12 14:27:03.554333](9s) [Δ=1s]: deleted rows w/o transactions. Remaining: 299213
-[2020-02-12 16:27:15] [00000] [2020-02-12 14:27:13.041447](18s) [Δ=9s]: finished calculating rolling sum
-[2020-02-12 16:27:16] Execution: 18 seconds
-*/
-
-
-
