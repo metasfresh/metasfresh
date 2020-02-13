@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineNoInfo;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -152,7 +153,7 @@ public class ShipmentLineBuilderTest
 				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -185,7 +186,7 @@ public class ShipmentLineBuilderTest
 				zeroWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -218,7 +219,7 @@ public class ShipmentLineBuilderTest
 				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
@@ -252,7 +253,7 @@ public class ShipmentLineBuilderTest
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -287,7 +288,7 @@ public class ShipmentLineBuilderTest
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -321,7 +322,7 @@ public class ShipmentLineBuilderTest
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 

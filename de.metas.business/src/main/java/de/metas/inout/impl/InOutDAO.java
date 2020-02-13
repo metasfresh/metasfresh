@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -46,6 +47,7 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +59,7 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
@@ -67,6 +70,8 @@ import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
 {
+	private static final Logger logger = LogManager.getLogger(InOutDAO.class);
+
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
@@ -341,5 +346,21 @@ public class InOutDAO implements IInOutDAO
 
 			saveRecord(shipment);
 		}
+	}
+
+	@Override
+	public void unsetLineNos(@NonNull final ImmutableList<InOutLineId> inOutLineIdsToUnset)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryUpdater<I_M_InOutLine> updater = queryBL.createCompositeQueryUpdater(I_M_InOutLine.class)
+				.addSetColumnValue(I_M_InOutLine.COLUMNNAME_Line, 0);
+
+		final int unsetCount = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLineIdsToUnset)
+				.addCompareFilter(I_M_InOutLine.COLUMNNAME_Line, Operator.GREATER, 0)
+				.create()
+				.update(updater);
+		logger.debug("LineNo was set to 0 for {} M_InOutLine records; inOutLineIdsToUnset.size={}", unsetCount, inOutLineIdsToUnset.size());
 	}
 }
