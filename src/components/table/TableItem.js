@@ -46,6 +46,7 @@ class TableItem extends Component {
     };
   }
 
+  // TODO: This needs refactoring. The cases should be better described
   shouldComponentUpdate(nextProps, nextState) {
     // check on saving logic
     if (this.props.notSaved === true && nextProps.notSaved === false) {
@@ -67,8 +68,7 @@ class TableItem extends Component {
       !_.isEqual(
         _.omit(nextProps, 'dataHash'),
         _.omit(this.state[nextProps.rowId], 'dataHash')
-      ) &&
-      nextProps.selected[0] === this.props.rowId
+      )
     ) {
       return true;
     } else {
