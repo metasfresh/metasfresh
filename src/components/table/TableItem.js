@@ -46,6 +46,7 @@ class TableItem extends Component {
     };
   }
 
+  // TODO: This needs refactoring. The cases should be better described
   shouldComponentUpdate(nextProps, nextState) {
     // check on saving logic
     if (this.props.notSaved === true && nextProps.notSaved === false) {
@@ -67,8 +68,7 @@ class TableItem extends Component {
       !_.isEqual(
         _.omit(nextProps, 'dataHash'),
         _.omit(this.state[nextProps.rowId], 'dataHash')
-      ) &&
-      nextProps.selected[0] === this.props.rowId
+      )
     ) {
       return true;
     } else {
@@ -650,6 +650,7 @@ class TableItem extends Component {
       includedDocuments,
       notSaved,
       caption,
+      dataKey,
     } = this.props;
 
     return (
@@ -657,7 +658,7 @@ class TableItem extends Component {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames({
+          className={classnames(`${dataKey}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,
@@ -681,6 +682,7 @@ TableItem.propTypes = {
   cols: PropTypes.array.isRequired,
   onClick: PropTypes.func.isRequired,
   item: PropTypes.object.isRequired,
+  dataKey: PropTypes.string.isRequired,
   handleSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
   indentSupported: PropTypes.bool,

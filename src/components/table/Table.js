@@ -1050,7 +1050,8 @@ class Table extends Component {
           isGerman,
         }}
         dataHash={dataHash}
-        key={`${i}-${viewId}`}
+        key={`row-${i}${viewId ? `-${viewId}` : ''}`}
+        dataKey={`row-${i}${viewId ? `-${viewId}` : ''}`}
         collapsed={
           collapsedParentsRows &&
           collapsedParentsRows.indexOf(item[keyProperty]) > -1
