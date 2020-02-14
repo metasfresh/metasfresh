@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.acct.base
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS AccountSheetReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id numeric, p_c_project_id numeric);
 
 /*
@@ -244,62 +266,3 @@ END;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE;
-
-
-/*
-Performance: it's rather bad
-
-Running on the biggest database we have available, I get these numbers:
-
-- test 1:
-    2017-04-01 -> 2018-05-31 = 13 months
-    ~4 million records
-
-select *
-FROM AccountSheetReport(
-    '2017-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY AccountValue, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.49811](0s) [Δ=0s]: start
-[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.523303](1s) [Δ=1s]: created empty temporary table
-[2020-02-13 13:26:15] [00000] [2020-02-13 11:26:13.638375](12s) [Δ=11s]: inserted beginningBalance: 168 records
-[2020-02-13 13:26:34] [00000] [2020-02-13 11:26:32.75252](31s) [Δ=19s]: inserted:3948480 fact_acct
-[2020-02-13 13:29:12] [00000] [2020-02-13 11:29:10.731671](189s) [Δ=158s]: finished calculating rolling sum
-[2020-02-12 16:22:15] Execution: 189 seconds = 3 min
-
-
-- test 2:
-    2018-04-01 -> 2018-05-31 = 2 months
-    ~500k records
-
-select *
-FROM AccountSheetReport(
-    '2018-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY AccountValue, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-13 13:29:50] [00000] [2020-02-13 11:29:49.129183](0s) [Δ=0s]: start
-[2020-02-13 13:29:51] [00000] [2020-02-13 11:29:49.142257](0s) [Δ=0s]: created empty temporary table
-[2020-02-13 13:30:09] [00000] [2020-02-13 11:30:08.217192](19s) [Δ=19s]: inserted beginningBalance: 155 records
-[2020-02-13 13:30:14] [00000] [2020-02-13 11:30:12.691999](24s) [Δ=5s]: inserted:553237 fact_acct
-[2020-02-13 13:30:34] [00000] [2020-02-13 11:30:32.451129](43s) [Δ=19s]: finished calculating rolling sum
-[2020-02-13 13:30:37] Execution: 47 s
-
-
-=====
-If you have any other ideas to make this faster, please DO tell me!!
-I have tried creating indexes just before creating the rolling sum, but they have only slowed the processing (3min -> 4 min or even more)
-
-CREATE INDEX ON TMP_AccountSheetReport (fact_acct_id);
-CREATE INDEX ON TMP_AccountSheetReport (account_id);
-
-*/
