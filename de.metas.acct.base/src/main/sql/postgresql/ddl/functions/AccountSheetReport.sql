@@ -133,6 +133,7 @@ BEGIN
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
                           LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id
                  WHERE TRUE
+                   AND (fa.amtacctdr != 0 OR fa.amtacctcr != 0)
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
                    AND fa.c_acctschema_id = p_c_acctschema_id
                    AND (fa.dateacct >= p_dateFrom AND fa.dateacct <= p_dateTo)
