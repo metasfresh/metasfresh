@@ -17,6 +17,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.print.ReportCtl;
