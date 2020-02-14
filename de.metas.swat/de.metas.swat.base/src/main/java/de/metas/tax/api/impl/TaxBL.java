@@ -38,7 +38,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -56,6 +55,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.location.CountryId;
@@ -281,9 +281,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// If organization is tax exempted then we will return the Tax Exempt for that organization (03871)
 		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		log.debug("Org BP: {}", orgBPartner);
-		if (Services.get(ITaxDAO.class).retrieveIsTaxExempt(orgBPartner, billDate))
+
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
+
+		if (taxDAO.retrieveIsTaxExemptSmallBusiness(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()), billDate))
 		{
-			final int taxExemptId = getExemptTax(ctx, orgId.getRepoId());
+			final int taxExemptId = taxDAO.retrieveExemptTax(orgId).getRepoId();
 			log.debug("Org is tax exempted => C_Tax_ID={}", taxExemptId);
 			return taxExemptId;
 		}
@@ -296,7 +300,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final I_C_BPartner_Location shipBPLocation = new MBPartnerLocation(ctx, shipC_BPartner_Location_ID, null);
 
 		final I_C_Location shipToLocation = shipBPLocation.getC_Location();
-		final boolean isEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
+		final boolean isEULocation = countryAreaBL.isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
 				shipToLocation.getC_Country().getCountryCode(),
 				billDate);
@@ -473,37 +477,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 		else
 		{
-			return getExemptTax(ctx, AD_Org_ID);
+			return Services.get(ITaxDAO.class).retrieveExemptTax(OrgId.ofRepoId(AD_Org_ID)).getRepoId();
 		}
 	}
-
-	/**
-	 * Get Exempt Tax Code
-	 *
-	 * @param ctx context
-	 * @param AD_Org_ID org to find client
-	 * @return C_Tax_ID
-	 * @throws TaxNoExemptFoundException if no tax exempt found
-	 */
-	@Override
-	public int getExemptTax(Properties ctx, int AD_Org_ID)
-	{
-		final String sql = "SELECT t.C_Tax_ID "
-				+ "FROM C_Tax t"
-				+ " INNER JOIN AD_Org o ON (t.AD_Client_ID=o.AD_Client_ID) "
-				+ "WHERE t.IsTaxExempt='Y' AND o.AD_Org_ID=? "
-				+ "ORDER BY t.Rate DESC";
-		int C_Tax_ID = DB.getSQLValueEx(null, sql, AD_Org_ID);
-		log.debug("getExemptTax - TaxExempt=Y - C_Tax_ID={}", C_Tax_ID);
-		if (C_Tax_ID <= 0)
-		{
-			throw new TaxNoExemptFoundException(AD_Org_ID);
-		}
-		else
-		{
-			return C_Tax_ID;
-		}
-	}	// getExemptTax
 
 	@Override
 	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
