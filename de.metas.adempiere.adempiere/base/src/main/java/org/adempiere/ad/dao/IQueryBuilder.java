@@ -69,21 +69,12 @@ public interface IQueryBuilder<T>
 
 	Class<T> getModelClass();
 
-	/**
-	 * @return the table name or <code>null</code>, if it shall be taken from the model class (see {@link #getModelClass()}).
-	 * @TODO delete
-	 */
-	// String getTableName();
-
 	Properties getCtx();
 
 	String getTrxName();
 
 	/**
 	 * Add the given filter.
-	 *
-	 * @param filter
-	 * @return
 	 */
 	IQueryBuilder<T> filter(IQueryFilter<T> filter);
 
