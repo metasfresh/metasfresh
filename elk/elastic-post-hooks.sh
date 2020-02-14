@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 # /usr/local/bin/elastic-post-hooks.sh
+# Invoked from start.sh right after elastic started
+#
 
 echo "put customized logstash ilm policy"
 curl -s -XPUT "http://localhost:9200/_ilm/policy/logstash-policy" -H 'Content-Type: application/json' -d'{
