@@ -6,5 +6,5 @@ set c_doctype_id = (select dt.c_docType_id
 					and dt.DocSubType= 'BS' 
 					limit 1),
 	updatedBy = 99,
-	Updated=(select now())
+	Updated=('2020-02-14 09:15:32.812324+00') /*literal rsult of select now()*/
 where c_doctype_id = null;
