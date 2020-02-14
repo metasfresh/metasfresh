@@ -325,7 +325,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				{
 					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
 
-					Loggables.addLog(msg, e.getClass(), request, requestInitial);
+					Loggables.addLog(msg, e.getClass(), request, requestInitial, e);
 					logger.error(msg, e.getClass(), request, requestInitial, e);
 				}
 			}
