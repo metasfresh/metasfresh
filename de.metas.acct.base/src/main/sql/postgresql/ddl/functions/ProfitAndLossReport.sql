@@ -30,7 +30,7 @@ ORDER BY ev.name
 
 $BODY$
     LANGUAGE sql
-    VOLATILE;
+    STABLE;
 
 ALTER FUNCTION ProfitAndLossReport(timestamp, timestamp)
     OWNER TO metasfresh;
