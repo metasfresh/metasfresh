@@ -11,7 +11,8 @@ docker build --tag metasfresh-elk --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
 
 ```bash
 # run it; note that in addition to the documentation, we also have `-p 5000:5000`
-docker run --rm -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 -v ./volumes/elk/elasticsearch:/var/lib/elasticsearch metasfresh-elk
+# docker run --rm -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 -v ./volumes/elk/elasticsearch:/var/lib/elasticsearch metasfresh-elk
+docker run --rm -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 metasfresh-elk
 ```
 
 You can then run metasfresh-app and/or metasfresh-webui-api with `-Dlogstash.enabled=true -Dlogstash.hort=localhost -Dlogstash.port=5000` to have it direct log messages to localhost.

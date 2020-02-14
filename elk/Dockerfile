@@ -15,6 +15,9 @@ RUN apt update --quiet --assume-yes \
 #RUN dpkg -i apm-server-7.4.0-amd64.deb
 #RUN update-rc.d apm-server defaults
 
+COPY start.sh /usr/local/bin/start.sh
+COPY elastic-post-hooks.sh /usr/local/bin/elastic-post-hooks.sh
+
 # copy logstash config files
 COPY 01-tcp-input.conf /etc/logstash/conf.d/01-tcp-input.conf
 COPY 30-output.conf /etc/logstash/conf.d/30-output.conf
