@@ -145,7 +145,7 @@
     "pigeon-marker": "0.3.4",
     "prop-types": "15.7.2",
     "quagga": "0.12.1",
-    "query-string": "6.9.0",
+    "query-string": "6.11.0",
     "rc-hammerjs": "0.6.9",
     "react": "16.8.6",
     "react-addons-css-transition-group": "15.6.2",
