@@ -1,3 +1,95 @@
+-- 2020-02-14T10:18:33.660Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-02-14 12:18:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574092 AND AD_Language='de_CH'
+;
+
+-- 2020-02-14T10:18:33.661Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574092,'de_CH') 
+;
+
+-- 2020-02-14T10:18:39.504Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-02-14 12:18:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574092 AND AD_Language='de_DE'
+;
+
+-- 2020-02-14T10:18:39.505Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574092,'de_DE') 
+;
+
+-- 2020-02-14T10:18:39.516Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574092,'de_DE') 
+;
+
+-- 2020-02-14T10:18:46.606Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='TaxRate',Updated=TO_TIMESTAMP('2020-02-14 12:18:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574092
+;
+
+-- 2020-02-14T10:18:46.611Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='TaxRate', Name='Steuersatz', Description='Steuern und Steuersätze verwalten', Help='Das Register "Steuersatz" verwaltet die diversen Steuern und Steuersätze zu jeder Steuerkategorie. Z.B. muss eine Verkaufssteuer für jeden Bundesstaat der USA angelegt werden, in dem sie erhoben wird.' WHERE AD_Element_ID=574092
+;
+
+-- 2020-02-14T10:18:46.612Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='TaxRate', Name='Steuersatz', Description='Steuern und Steuersätze verwalten', Help='Das Register "Steuersatz" verwaltet die diversen Steuern und Steuersätze zu jeder Steuerkategorie. Z.B. muss eine Verkaufssteuer für jeden Bundesstaat der USA angelegt werden, in dem sie erhoben wird.', AD_Element_ID=574092 WHERE UPPER(ColumnName)='TAXRATE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-02-14T10:18:46.615Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='TaxRate', Name='Steuersatz', Description='Steuern und Steuersätze verwalten', Help='Das Register "Steuersatz" verwaltet die diversen Steuern und Steuersätze zu jeder Steuerkategorie. Z.B. muss eine Verkaufssteuer für jeden Bundesstaat der USA angelegt werden, in dem sie erhoben wird.' WHERE AD_Element_ID=574092 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-02-14T10:21:31.460Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='TaxCategory',Updated=TO_TIMESTAMP('2020-02-14 12:21:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574441
+;
+
+-- 2020-02-14T10:21:31.464Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='TaxCategory', Name='Steuerkategorie', Description='Steuerkategorien verwalten', Help='Das Fenster "Steuerkategorie" wird verwendet, um Steuerkategorien zu verwalten. Jedes Produkt ist einer Steuerkategorie zugeordnet, was bei Änderungen die Verwaltung der Steuern erleichtert.' WHERE AD_Element_ID=574441
+;
+
+-- 2020-02-14T10:21:31.466Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='TaxCategory', Name='Steuerkategorie', Description='Steuerkategorien verwalten', Help='Das Fenster "Steuerkategorie" wird verwendet, um Steuerkategorien zu verwalten. Jedes Produkt ist einer Steuerkategorie zugeordnet, was bei Änderungen die Verwaltung der Steuern erleichtert.', AD_Element_ID=574441 WHERE UPPER(ColumnName)='TAXCATEGORY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-02-14T10:21:31.467Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='TaxCategory', Name='Steuerkategorie', Description='Steuerkategorien verwalten', Help='Das Fenster "Steuerkategorie" wird verwendet, um Steuerkategorien zu verwalten. Jedes Produkt ist einer Steuerkategorie zugeordnet, was bei Änderungen die Verwaltung der Steuern erleichtert.' WHERE AD_Element_ID=574441 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-02-14T10:21:34.819Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-02-14 12:21:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574441 AND AD_Language='de_CH'
+;
+
+-- 2020-02-14T10:21:34.821Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574441,'de_CH') 
+;
+
+-- 2020-02-14T10:21:41.129Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-02-14 12:21:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574441 AND AD_Language='de_DE'
+;
+
+-- 2020-02-14T10:21:41.131Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574441,'de_DE') 
+;
+
+-- 2020-02-14T10:21:41.139Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574441,'de_DE') 
+;
+
+
+
 DROP FUNCTION IF EXISTS AccountSheetReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id numeric, p_c_project_id numeric);
 
 /*
@@ -248,61 +340,3 @@ $BODY$
     LANGUAGE plpgsql
     VOLATILE;
 
-
-/*
-Performance: it's rather bad
-
-Running on the biggest database we have available, I get these numbers:
-
-- test 1:
-    2017-04-01 -> 2018-05-31 = 13 months
-    ~4 million records
-
-select *
-FROM AccountSheetReport(
-    '2017-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.49811](0s) [Δ=0s]: start
-[2020-02-13 13:26:04] [00000] [2020-02-13 11:26:02.523303](1s) [Δ=1s]: created empty temporary table
-[2020-02-13 13:26:15] [00000] [2020-02-13 11:26:13.638375](12s) [Δ=11s]: inserted beginningBalance: 168 records
-[2020-02-13 13:26:34] [00000] [2020-02-13 11:26:32.75252](31s) [Δ=19s]: inserted:3948480 fact_acct
-[2020-02-13 13:29:12] [00000] [2020-02-13 11:29:10.731671](189s) [Δ=158s]: finished calculating rolling sum
-[2020-02-12 16:22:15] Execution: 189 seconds = 3 min
-
-
-- test 2:
-    2018-04-01 -> 2018-05-31 = 2 months
-    ~500k records
-
-select *
-FROM AccountSheetReport(
-    '2018-04-01'::date,
-    '2018-05-31'::date,
-    1000000,
-    1000000
-)
-ORDER BY account_id, dateacct NULLS FIRST, fact_acct_id NULLS FIRST
-;
-
-[2020-02-13 13:29:50] [00000] [2020-02-13 11:29:49.129183](0s) [Δ=0s]: start
-[2020-02-13 13:29:51] [00000] [2020-02-13 11:29:49.142257](0s) [Δ=0s]: created empty temporary table
-[2020-02-13 13:30:09] [00000] [2020-02-13 11:30:08.217192](19s) [Δ=19s]: inserted beginningBalance: 155 records
-[2020-02-13 13:30:14] [00000] [2020-02-13 11:30:12.691999](24s) [Δ=5s]: inserted:553237 fact_acct
-[2020-02-13 13:30:34] [00000] [2020-02-13 11:30:32.451129](43s) [Δ=19s]: finished calculating rolling sum
-[2020-02-13 13:30:37] Execution: 47 s
-
-
-=====
-If you have any other ideas to make this faster, please DO tell me!!
-I have tried creating indexes just before creating the rolling sum, but they have only slowed the processing (3min -> 4 min or even more)
-
-CREATE INDEX ON TMP_AccountSheetReport (fact_acct_id);
-CREATE INDEX ON TMP_AccountSheetReport (account_id);
-
-*/
