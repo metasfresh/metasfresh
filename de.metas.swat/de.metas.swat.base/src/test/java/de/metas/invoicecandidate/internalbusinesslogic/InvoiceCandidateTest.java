@@ -260,6 +260,45 @@ class InvoiceCandidateTest
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 
+	@Test
+	void sales_afterDelivery_nominalWeight_unStockedProduct()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_unStockedProduct");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("60"); // ordered qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("29"); // ordered qty in stock UOM
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void sales_afterDelivery_unStockedProduct_withQtyToInvoiceOverride()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_unStockedProduct_withQtyToInvoiceOverride");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("4"); //  qtyToInvoiceOverrideInStockUom
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("8"); // qtyToInvoiceOverrideInStockUom converted to uomId via C_UOM_Conversion
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+	}
+
+	@Test
+	void sales_afterDelivery_unStockedProduct_withImmediateAndQtyToInvoiceOverride()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_unStockedProduct_withImmediateAndQtyToInvoiceOverride");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("4"); //  qtyToInvoiceOverrideInStockUom
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("8"); // qtyToInvoiceOverrideInStockUom converted to uomId via C_UOM_Conversion
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+	}
+
 	/** Verifies that if there is no catch weight, we fall back to the nominal weight. */
 	@Test
 	void sales_afterDelivery_missing_catchWeight()
