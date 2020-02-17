@@ -14,15 +14,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -214,7 +216,8 @@ public final class ESModelIndexer implements IESModelIndexer
 		final CreateIndexRequestBuilder requestBuilder = indices.prepareCreate(indexName);
 		if (!Check.isEmpty(indexSettingsJson, true))
 		{
-			requestBuilder.setSettings(indexSettingsJson);
+			final Settings settings = Settings.builder().loadFromSource(indexSettingsJson, XContentType.JSON).build();
+			requestBuilder.setSettings(settings);
 		}
 
 		final boolean acknowledged = requestBuilder.get().isAcknowledged();
@@ -236,7 +239,7 @@ public final class ESModelIndexer implements IESModelIndexer
 				.isExists();
 	}
 
-	private final void createUpdateIndexTypeMapping()
+	private void createUpdateIndexTypeMapping()
 	{
 		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
 
@@ -251,7 +254,7 @@ public final class ESModelIndexer implements IESModelIndexer
 			appendMapping_Properties(indexTypeMappingBuilder);
 			indexTypeMappingBuilder.endObject();
 
-			mapping = indexTypeMappingBuilder.string();
+			mapping = toString(indexTypeMappingBuilder);
 		}
 		catch (final Exception ex)
 		{
@@ -266,7 +269,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		{
 			final String indexName = getIndexName();
 			final String indexType = getIndexType();
-			final PutMappingResponse putMappingResponse = indices.preparePutMapping(indexName)
+			final AcknowledgedResponse putMappingResponse = indices.preparePutMapping(indexName)
 					.setType(indexType)
 					.setSource(mapping)
 					.get();
@@ -289,8 +292,8 @@ public final class ESModelIndexer implements IESModelIndexer
 					.setParameter("mapping", mapping);
 		}
 	}
-
-	private final void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
+	
+	private void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
 	{
 		final ESModelIndexerProfile profile = getProfile();
 		final ESIndexType stringIndexType;
@@ -344,7 +347,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		builder.endObject();
 	}
 
-	private static final String toStringOrNull(final XContentBuilder builder)
+	private static String toStringOrNull(final XContentBuilder builder)
 	{
 		if (builder == null)
 		{
@@ -353,14 +356,21 @@ public final class ESModelIndexer implements IESModelIndexer
 
 		try
 		{
-			return builder.string();
+			return toString(builder);
 		}
-		catch (final IOException e)
+		catch (final Exception e)
 		{
 			e.printStackTrace();
 			return null;
 		}
 	}
+	
+	private static String toString(final XContentBuilder builder)
+	{
+        builder.close();
+        return builder.getOutputStream().toString();
+	}
+
 
 	private Stream<IndexRequestBuilder> createIndexRequestsAndStream(final Object model)
 	{
@@ -526,7 +536,7 @@ public final class ESModelIndexer implements IESModelIndexer
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private final String toFieldNameFQ(final String fieldName)
+	private String toFieldNameFQ(final String fieldName)
 	{
 		final String parentAttributeName = getParentAttributeName();
 		return parentAttributeName != null ? parentAttributeName + "." + fieldName : fieldName;

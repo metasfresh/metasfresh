@@ -62,7 +62,7 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
 	@Override
 	public long getDurationInMillis()
 	{
-		return esResponse.getTookInMillis();
+		return esResponse.getTook().millis();
 	}
 
 	private String getDurationAsString()
