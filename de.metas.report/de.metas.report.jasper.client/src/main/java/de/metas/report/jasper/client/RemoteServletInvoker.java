@@ -4,6 +4,8 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.assumeNotNull;
 
+import java.time.Duration;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
@@ -70,8 +72,8 @@ public class RemoteServletInvoker implements IReportServer
 			mgtRootUrl = reportsRootUrl.substring(0, idx) + ReportConstants.JRSERVERSERVLET_MGTSERVLET_SUFFIX;
 		}
 
-		final int connectTimeout = sysConfigs.getIntValue(SYSCONFIG_ConnectTimeout, SYSCONFIG_ConnectTimeout_DEFAULT);
-		final int readTimeout = sysConfigs.getIntValue(SYSCONFIG_ReadTimeout, SYSCONFIG_ReadTimeout_DEFAULT);
+		final Duration connectTimeout = Duration.ofMillis(sysConfigs.getIntValue(SYSCONFIG_ConnectTimeout, SYSCONFIG_ConnectTimeout_DEFAULT));
+		final Duration readTimeout = Duration.ofMillis(sysConfigs.getIntValue(SYSCONFIG_ReadTimeout, SYSCONFIG_ReadTimeout_DEFAULT));
 		restTemplate = new RestTemplateBuilder()
 				.setConnectTimeout(connectTimeout)
 				.setReadTimeout(readTimeout)
