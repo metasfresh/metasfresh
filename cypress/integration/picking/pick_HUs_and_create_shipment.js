@@ -46,22 +46,28 @@ describe('Create test data', function() {
   });
 
   it('Create first single-HU inventory doc', function() {
-    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue1 = huVal));
+    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+      Builder.createHUWithStock(f['productName'], f['productQty'], f['locatorId']).then(huVal => (huValue1 = huVal));
+    });
   });
 
   it('Create second single-HU inventory doc', function() {
-    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue2 = huVal));
+    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+      Builder.createHUWithStock(f['productName'], f['productQty'], f['locatorId']).then(huVal => (huValue2 = huVal));
+    });
   });
 
   it('Create Sales Order', function() {
-    new SalesOrder()
-      .setBPartner(businessPartnerName)
-      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(soProductQuantity))
-      .apply();
-    cy.completeDocument();
+    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
+      new SalesOrder()
+        .setBPartner(f['businessPartnerName'])
+        .addLine(new SalesOrderLine().setProduct(f['productName']).setQuantity(f['soProductQuantity']))
+        .apply();
+      cy.completeDocument();
 
-    cy.getCurrentWindowRecordId().then(id => (soRecordId = id));
-    cy.getStringFieldValue('DocumentNo').then(docNO => (soDocNumber = docNO));
+      cy.getCurrentWindowRecordId().then(id => (soRecordId = id));
+      cy.getStringFieldValue('DocumentNo').then(docNO => (soDocNumber = docNO));
+    });
   });
 });
 
