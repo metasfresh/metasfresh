@@ -18,8 +18,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.Money;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -68,7 +70,7 @@ public class Packageable
 	String warehouseName;
 	WarehouseTypeId warehouseTypeId;
 
-	String deliveryVia;
+	DeliveryViaRule deliveryViaRule;
 
 	ShipperId shipperId;
 	String shipperName;
@@ -82,7 +84,7 @@ public class Packageable
 	@Default
 	Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = Optional.empty();
 
-	String freightCostRule;
+	FreightCostRule freightCostRule;
 
 	@NonNull
 	ProductId productId;
