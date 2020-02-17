@@ -168,6 +168,7 @@ export class Builder {
     cy.selectTab('M_InventoryLine');
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
+
     return cy.getStringFieldValue('M_HU_ID').then(val => {
       cy.pressDoneButton();
       return cy.wrap(val).then(val => {

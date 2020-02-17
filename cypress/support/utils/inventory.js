@@ -118,6 +118,7 @@ export class Inventory {
       true /*typeList*/,
       true /*modal*/
     );
+  
     cy.writeIntoStringField('QtyCount', inventoryLine.quantity, true /*modal*/);
     cy.clickOnCheckBox('IsCounted', inventoryLine.isCounted, true /*modal*/);
     cy.pressDoneButton();
