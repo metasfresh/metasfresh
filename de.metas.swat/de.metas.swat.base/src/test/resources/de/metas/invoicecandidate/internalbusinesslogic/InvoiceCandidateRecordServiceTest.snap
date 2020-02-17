@@ -2,7 +2,10 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
   {
     "id": 100001,
     "soTrx": "SALES",
-    "productId": 300000,
+    "product": {
+      "id": 300000,
+      "stocked": false
+    },
     "uomId": 110000,
     "orderedData": {
       "qty": {
@@ -92,7 +95,10 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
   {
     "id": 100001,
     "soTrx": "SALES",
-    "productId": 300000,
+    "product": {
+      "id": 300000,
+      "stocked": false
+    },
     "uomId": 110000,
     "orderedData": {
       "qty": {

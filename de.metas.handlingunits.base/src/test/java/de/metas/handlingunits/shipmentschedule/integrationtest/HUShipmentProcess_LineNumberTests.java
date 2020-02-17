@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 
@@ -34,9 +35,10 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -44,6 +46,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
+import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
@@ -59,18 +62,23 @@ import de.metas.util.collections.CollectionUtils;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08715_Kennzeichen_Gebinde_ausblenden_auf_Lsch._%28Gastro%29%2C_TU_auf_LKW_Verdichtung_%28109809505901%29
  */
-public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
+public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;
+
+	private I_M_Product otherProductRecord;
 
 	@Override
 	protected void step10_createShipmentSchedules()
 	{
+		otherProductRecord = BusinessTestHelper.createProduct("otherProcuct", productUOM);
+
 		final BigDecimal qtyOrdered = new BigDecimal("100");
 
 		shipmentSchedules = Arrays.asList(
 				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered, 20/* orderLineNo */), // shipment schedule 0
-				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered, 10/* orderLineNo */) // shipment schedule 1
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered, 10/* orderLineNo */), // shipment schedule 1
+				createShipmentSchedule(/* newOrder */false, otherProductRecord, productUOM, qtyOrdered, 10/* orderLineNo */) // shipment schedule 1 - lineNo collides with 1
 		);
 	}
 
@@ -81,12 +89,14 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		// Get shipment schedules
 		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
-
+		final I_M_ShipmentSchedule shipmentSchedule3 = shipmentSchedules.get(2);
 		//
 		// Create initial TU
 		final IMutable<I_M_HU> tu = new Mutable<>();
 		final IMutable<I_M_HU> vhu1 = new Mutable<>();
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
+		final IMutable<I_M_HU> vhu3 = new Mutable<>();
+
 		//@formatter:off
 		afterPick_HUExpectations = new HUsExpectation()
 			//
@@ -111,14 +121,26 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
-					//
-					// VHU 2
-					.newIncludedVirtualHU()
+
+						//
+						// VHU 2
+						.newIncludedVirtualHU()
 						.capture(vhu2)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
 						.newVirtualHUItemExpectation()
 							.newItemStorageExpectation()
-								.product(product).uom(productUOM).qty("10")
+								.product(product).uom(productUOM).qty("20")
+								.endExpectation()
+							.endExpectation()
+						.endExpectation()
+
+
+					.newIncludedVirtualHU()
+						.capture(vhu3)
+						.huStatus(X_M_HU.HUSTATUS_Picked)
+						.newVirtualHUItemExpectation()
+							.newItemStorageExpectation()
+								.product(otherProductRecord).uom(productUOM).qty("30")
 								.endExpectation()
 							.endExpectation()
 						.endExpectation()
@@ -138,8 +160,12 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule2)
-				.noLU().tu(tu).vhu(vhu2).qtyPicked("10")
-				.endExpectation();
+				.noLU().tu(tu).vhu(vhu2).qtyPicked("20")
+				.endExpectation()
+			.newShipmentScheduleQtyPickedExpectation()
+				.shipmentSchedule(shipmentSchedule3)
+				.noLU().tu(tu).vhu(vhu3).qtyPicked("30")
+			.endExpectation();
 		//@formatter:on
 		afterPick_ShipmentScheduleQtyPickedExpectations.createM_ShipmentSchedule_QtyPickeds(helper.getContextProvider());
 	}
@@ -177,25 +203,14 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		// Retrieve generated shipment lines
 		// We expect to have 2 shipment lines, not because we have 2 shipment schedules, but because we have 2 order lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
-		assertThat(shipmentLine1.getLine()).isEqualTo(10);
-		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
-		assertThat(shipmentLine2.getLine()).isEqualTo(20);
+		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(3);
 
-		//
-		// Revalidate the ShipmentSchedule_QtyPicked expectations,
-		// but this time, also make sure the M_InOutLine_ID is set
-		//@formatter:off
-		afterAggregation_ShipmentScheduleQtyPickedExpectations
-			.shipmentScheduleQtyPickedExpectation(0)
-				.inoutLine(shipmentLine2)
-				.endExpectation()
-			.shipmentScheduleQtyPickedExpectation(1)
-				.inoutLine(shipmentLine1)
-				.endExpectation()
-			.assertExpected("after shipment generated");
-		//@formatter:on
+		assertThat(shipmentLines)
+				.extracting("Line", "MovementQty")
+				.containsOnly( // the 1st and 3rd shipment scheds' OLs had both line number 10; because they collided, they are set to 0 and only 20 remains.
+						tuple(0, new BigDecimal("20")),
+						tuple(20, new BigDecimal("10")),
+						tuple(0, new BigDecimal("30")));
 	}
 
 	@Override

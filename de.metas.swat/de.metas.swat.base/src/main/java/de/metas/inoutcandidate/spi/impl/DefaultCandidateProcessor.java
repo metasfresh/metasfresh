@@ -38,6 +38,7 @@ import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.ToString;
 
@@ -87,7 +88,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 
 					// task 08745: by default we don't allow this, to stay backwards compatible
 					final boolean allowShipSingleNonItems = sysConfigBL.getBooleanValue(AD_SYSCONFIG_DE_METAS_INOUTCANDIDATE_ALLOW_SHIP_SINGLE_NON_ITEMS, false);
-					final boolean isItemProduct = productBL.isItem(lineCandidate.getProductId());
+				final boolean isItemProduct = productBL.getProductType(ProductId.ofRepoId(lineCandidate.getProductId())).isItem();
 
 					if (!allowShipSingleNonItems && !isItemProduct)
 					{
@@ -99,7 +100,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 						boolean inOutContainsItem = false;
 						for (final DeliveryLineCandidate searchIol : groupCandidate.getLines())
 						{
-							if (productBL.isItem(searchIol.getProductId()))
+						if (productBL.getProductType(ProductId.ofRepoId(searchIol.getProductId())).isItem())
 							{
 								inOutContainsItem = true;
 								break;
