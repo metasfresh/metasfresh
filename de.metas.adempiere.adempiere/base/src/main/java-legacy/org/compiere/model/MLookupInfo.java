@@ -16,12 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -33,16 +36,11 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.RoleId;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Info Class for Lookup SQL (ValueObject)
@@ -53,6 +51,77 @@ import lombok.NonNull;
 public final class MLookupInfo implements Serializable, Cloneable
 {
 	private static final transient Logger logger = LogManager.getLogger(MLookupInfo.class);
+
+	static final long serialVersionUID = -7958664359250070233L;
+
+	/* package */static final CtxName CTXNAME_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
+
+	private final TranslatableParameterizedString sqlQuery;
+
+	private final String TableName;
+
+	private final String KeyColumn;
+
+	private TranslatableParameterizedString displayColumnSQL = TranslatableParameterizedString.EMPTY;
+	private List<ILookupDisplayColumn> displayColumns = Collections.emptyList();
+
+	private TranslatableParameterizedString descriptionColumnSQL = TranslatableParameterizedString.EMPTY;
+	private TranslatableParameterizedString validationMsgColumnSQL = TranslatableParameterizedString.EMPTY;
+
+	private TranslatableParameterizedString selectSqlPart = TranslatableParameterizedString.EMPTY;
+	private TranslatableParameterizedString fromSqlPart = TranslatableParameterizedString.EMPTY;
+	private String whereClauseSqlPart = null;
+
+	/**
+	 * SQL WHERE part (without WHERE keyword); this SQL includes context variables references
+	 */
+	private String whereClauseDynamicSqlPart = null;
+	private String orderBySqlPart = null;
+
+	/**
+	 * True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation)
+	 */
+	private boolean securityDisabled = false;
+
+	private final AdWindowId zoomSO_Window_ID;
+	private final AdWindowId zoomPO_Window_ID;
+	private final AdWindowId zoomAD_Window_ID_Override;
+	private final MQuery zoomQuery;
+
+	/**
+	 * Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?)
+	 */
+	private TranslatableParameterizedString sqlQueryDirect = TranslatableParameterizedString.EMPTY;
+	/**
+	 * Parent Flag
+	 */
+	private boolean IsParent = false;
+	/**
+	 * Key Flag
+	 */
+	private boolean IsKey = false;
+	private IValidationRule _validationRule = NullValidationRule.instance;
+	private IValidationRule _validationRuleEffective = null; // lazy
+
+	/**
+	 * WindowNo
+	 */
+	private int WindowNo;
+
+	/**
+	 * AD_Reference_ID
+	 */
+	private int DisplayType;
+	/**
+	 * CreadedBy?updatedBy
+	 */
+	private boolean IsCreadedUpdatedBy = false;
+	@Deprecated
+	public String InfoFactoryClass = null;
+	private boolean autoComplete = false;
+	private boolean queryHasEntityType = false;
+
+	private boolean translated = false;
 
 	/**************************************************************************
 	 * Constructor.
@@ -70,9 +139,9 @@ public final class MLookupInfo implements Serializable, Cloneable
 			@NonNull final String sqlQuery_Trl,
 			@NonNull final String tableName,
 			@NonNull final String keyColumn,
-			final AdWindowId zoomSO_Window_ID, 
-			final AdWindowId zoomPO_Window_ID, 
-			final AdWindowId zoomAD_Window_ID_Override, 
+			final AdWindowId zoomSO_Window_ID,
+			final AdWindowId zoomPO_Window_ID,
+			final AdWindowId zoomAD_Window_ID_Override,
 			final MQuery zoomQuery)
 	{
 		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
@@ -83,60 +152,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 		this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
 		this.zoomQuery = zoomQuery;
 	}   // MLookupInfo
-
-	static final long serialVersionUID = -7958664359250070233L;
-
-	/* package */static final CtxName CTXNAME_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
-
-	private final TranslatableParameterizedString sqlQuery;
-
-	private final String TableName;
-
-	private final String KeyColumn;
-
-	private TranslatableParameterizedString displayColumnSQL = TranslatableParameterizedString.EMPTY;
-	private List<ILookupDisplayColumn> displayColumns = Collections.emptyList();
-
-	private TranslatableParameterizedString descriptionColumnSQL = TranslatableParameterizedString.EMPTY;
-
-	private TranslatableParameterizedString selectSqlPart = TranslatableParameterizedString.EMPTY;
-	private TranslatableParameterizedString fromSqlPart = TranslatableParameterizedString.EMPTY;
-	private String whereClauseSqlPart = null;
-
-	/** SQL WHERE part (without WHERE keyword); this SQL includes context variables references */
-	private String whereClauseDynamicSqlPart = null;
-	private String orderBySqlPart = null;
-
-	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
-	private boolean securityDisabled = false;
-
-	private final AdWindowId zoomSO_Window_ID;
-	private final AdWindowId zoomPO_Window_ID;
-	private final AdWindowId zoomAD_Window_ID_Override;
-	private final MQuery zoomQuery;
-
-	/** Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?) */
-	private TranslatableParameterizedString sqlQueryDirect = TranslatableParameterizedString.EMPTY;
-	/** Parent Flag */
-	private boolean IsParent = false;
-	/** Key Flag */
-	private boolean IsKey = false;
-	private IValidationRule _validationRule = NullValidationRule.instance;
-	private IValidationRule _validationRuleEffective = null; // lazy
-
-	/** WindowNo */
-	private int WindowNo;
-
-	/** AD_Reference_ID */
-	private int DisplayType;
-	/** CreadedBy?updatedBy */
-	private boolean IsCreadedUpdatedBy = false;
-	@Deprecated
-	public String InfoFactoryClass = null;
-	private boolean autoComplete = false;
-	private boolean queryHasEntityType = false;
-
-	private boolean translated = false;
 
 	/**
 	 * String representation
@@ -151,7 +166,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 				.append("-Direct=").append(sqlQueryDirect)
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	/**
 	 * Clone
@@ -171,7 +186,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 			logger.error("Failed cloning: " + this, e);
 		}
 		return null;
-	}	// clone
+	}    // clone
 
 	public AdWindowId getZoomSO_Window_ID()
 	{
@@ -229,6 +244,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	// metas
+
 	/**
 	 * @return effective validation rule
 	 */
@@ -309,6 +325,16 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return descriptionColumnSQL;
 	}
 
+	public TranslatableParameterizedString getValidationMsgColumnSQL()
+	{
+		return validationMsgColumnSQL;
+	}
+
+	/* package */ void setValidationMsgColumnSQL(final String validationMsgColumnSQL_BaseLang)
+	{
+		this.validationMsgColumnSQL = TranslatableParameterizedString.of(CTXNAME_AD_Language, validationMsgColumnSQL_BaseLang, validationMsgColumnSQL_BaseLang);
+	}
+
 	/* package */ void setDescriptionColumnSQL(
 			final String descriptionColumnSQL_BaseLang,
 			final String descriptionColumnSQL_Trl)
@@ -382,6 +408,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/* package */void setFromSqlPart(final String fromSqlPart_BaseLang, final String fromSqlPart_Trl)
 	{
 		this.fromSqlPart = TranslatableParameterizedString.of(CTXNAME_AD_Language, fromSqlPart_BaseLang, fromSqlPart_Trl);
+
 	}
 
 	/**
@@ -417,7 +444,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	/**
-	 *
 	 * @return true if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation)
 	 */
 	public boolean isSecurityDisabled()
