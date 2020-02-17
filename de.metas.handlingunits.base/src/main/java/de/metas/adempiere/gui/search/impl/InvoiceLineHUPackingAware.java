@@ -50,6 +50,11 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 		this.invoiceLine = invoiceLine;
 	}
 
+	public static InvoiceLineHUPackingAware of( org.compiere.model.I_C_InvoiceLine invoiceLine )
+	{
+		return new InvoiceLineHUPackingAware(InterfaceWrapperHelper.create(invoiceLine, I_C_InvoiceLine.class));
+	}
+
 	@Override
 	public int getM_Product_ID()
 	{
