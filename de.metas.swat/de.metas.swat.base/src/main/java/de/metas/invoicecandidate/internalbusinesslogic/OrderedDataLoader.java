@@ -109,7 +109,7 @@ public class OrderedDataLoader
 				final ProductId olProductId = ProductId.ofRepoIdOrNull(oLine.getM_Product_ID()); // in the DB it's mandatory, but in many unit tests it's not relevant and not set
 				if (!productBL.isStocked(olProductId))
 				{
-					logger.debug("C_OrderLine has M_Product_ID={} with is not a (physical) item -> consider fully delivered",
+					logger.debug("C_OrderLine has M_Product_ID={} which is not a (physical) item -> consider fully delivered",
 							oLine.getM_Product_ID());
 				}
 
