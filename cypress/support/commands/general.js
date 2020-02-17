@@ -227,17 +227,26 @@ function performDocumentViewAction(windowId, documentViewAction) {
   cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
-  const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
-  cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
+  
+  // - removed below lines because is redundant code.. that GET call is actually done by documentViewAction ..
+  // const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
+  // cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
   documentViewAction();
-  cy.wait(`@${layoutAliasName}`, {
-    requestTimeout: 20000,
-    responseTimeout: 20000,
-  }).wait(`@${dataAliasName}`, {
-    requestTimeout: 20000,
-    responseTimeout: 20000,
-  });
+
+  cy.wait(`@${layoutAliasName}`);
+
+
+  // - Also remmoved below lines as timeout is too big
+  // cy.wait(`@${dataAliasName}`);
+
+  // cy.wait(`@${layoutAliasName}`, {
+  //   requestTimeout: 20000,
+  //   responseTimeout: 20000,
+  // }).wait(`@${dataAliasName}`, {
+  //   requestTimeout: 20000,
+  //   responseTimeout: 20000,
+  // });
 }
 
 Cypress.Commands.add('visitWindow', (windowId, recordId) => {

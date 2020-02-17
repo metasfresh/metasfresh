@@ -5,9 +5,10 @@ import { RewriteURL } from '../utils/constants';
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
 
-  if (!stringValue.match) {
+  if (stringValue && !stringValue.match) {
     return stringValue;
   }
+
   return stringValue.replace(regex, '');
 }
 
@@ -23,7 +24,7 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
-  cy.waitForSaveIndicator();
+  cy.waitForSaveIndicator(); 
 
   const path = createFieldPath(fieldName, modal);
   return cy
@@ -193,7 +194,7 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+  const expectedPatchValue = stringValue ? removeSubstringsWithCurlyBrackets(stringValue) : stringValue;
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic; // todo @TheBestPessimist: get rid of rewriteUrl parameter everywhere and just use "generic". it's useless in the way we're using it now.
   cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`);
 
@@ -202,13 +203,14 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
 
-  const path = createFieldPath(fieldName, modal);
-  cy.get(path)
-    .find('input')
-    .type('{selectall}')
-    .type(stringValue)
-    .type('{enter}');
-
+  if (stringValue) {
+    const path = createFieldPath(fieldName, modal);
+    cy.get(path)
+      .find('input')
+      .type('{selectall}')
+      .type(stringValue)
+      .type('{enter}');
+  }
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
@@ -228,7 +230,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
   cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
   const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+  const expectedPatchValue = stringValue ? removeSubstringsWithCurlyBrackets(stringValue) : stringValue;
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
@@ -236,11 +238,13 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
   cy.server();
   cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
-  const path = createFieldPath(fieldName, modal);
+  if (stringValue) {
+    const path = createFieldPath(fieldName, modal);
+    cy.get(path)
+      .find('textarea')
+      .type(`${stringValue}{enter}`);
+  }
 
-  cy.get(path)
-    .find('textarea')
-    .type(`${stringValue}{enter}`);
   if (!skipRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
@@ -260,37 +264,39 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
 
   const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
   //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
-  const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
+  const expectedPatchValue = partialValue ? removeSubstringsWithCurlyBrackets(partialValue) : partialValue;
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window';
   if (!skipRequest) {
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
-  cy.get(path).within(el => {
-    if (el.find('.lookup-widget-wrapper input').length) {
-      return (
-        cy
-          .get('input')
-          // we can't use `clear` here as sometimes it triggers request to the server
-          // and then the whole flow becomes flaky
-          .type('{selectall}')
-          .type(partialValue)
-      );
+  if (partialValue) {
+    cy.get(path).within(el => {
+      if (el.find('.lookup-widget-wrapper input').length) {
+        return (
+          cy
+            .get('input')
+            // we can't use `clear` here as sometimes it triggers request to the server
+            // and then the whole flow becomes flaky
+            .type('{selectall}')
+            .type(partialValue)
+        );
+      }
+
+      // this is extremely fiddly when selecting from a combo field such as bpartner address.
+      // it will work locally, but most of the times will fail in jenkins.
+      // Please create the tests such that adding an address in a combo field is not mandatory!
+      return cy.get('.lookup-dropdown').click();
+    });
+
+    cy.get('.input-dropdown-list').should('exist');
+    cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
+    if (!skipRequest) {
+      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
     }
-
-    // this is extremely fiddly when selecting from a combo field such as bpartner address.
-    // it will work locally, but most of the times will fail in jenkins.
-    // Please create the tests such that adding an address in a combo field is not mandatory!
-    return cy.get('.lookup-dropdown').click();
-  });
-
-  cy.get('.input-dropdown-list').should('exist');
-  cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
-  if (!skipRequest) {
-    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
+    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
   }
-  cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 });
 
 /**

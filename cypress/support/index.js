@@ -20,12 +20,17 @@ import './commands/form';
 import './commands/action';
 import './commands/test';
 
-Cypress.on('uncaught:exception', () => {
+Cypress.on('uncaught:exception', (err) => {
   //(err, runnable) => {
   // returning false here prevents Cypress from
   // failing the test
   return false;
 });
+
+// Cypress.on('fail', (err, runnable) => {
+//   console.log('Err =>', err);
+//   return false
+// });
 
 Cypress.on('emit:counterpartTranslations', messages => {
   Cypress.messages = messages;
