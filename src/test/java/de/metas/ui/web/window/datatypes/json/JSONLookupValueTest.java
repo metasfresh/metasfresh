@@ -59,7 +59,7 @@ public class JSONLookupValueTest
 		System.out.println("JSON: " + json);
 
 		final JSONLookupValue objDeserialized = jsonObjectMapper.readValue(json, JSONLookupValue.class);
-		assertThat(objDeserialized).isEqualTo(obj);
+		assertThat(objDeserialized.toStringLookupValue()).isEqualTo(obj.toStringLookupValue());
 	}
 
 }

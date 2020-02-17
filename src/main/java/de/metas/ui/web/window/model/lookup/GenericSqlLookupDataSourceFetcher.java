@@ -163,7 +163,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	}
 
 	/**
-	 *
 	 * @param evalCtx
 	 * @return lookup values list
 	 * @see #getRetrieveEntriesParameters()
@@ -230,8 +229,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			descriptionTrl = TranslatableStrings.anyLanguage(description);
 		}
 
-		//
-		//
 		if (id instanceof Integer)
 		{
 			final Integer idInt = (Integer)id;
