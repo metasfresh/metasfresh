@@ -39,10 +39,10 @@ public class RemoteServletInvoker implements IReportServer
 	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
 
 	private static final String SYSCONFIG_ConnectTimeout = "reports.remoteServletInvoker.connectTimeout";
-	private static final int SYSCONFIG_ConnectTimeout_DEFAULT = 5000; // 5 seconds
+	private static final int SYSCONFIG_ConnectTimeout_DEFAULT = 15000; // 15 seconds
 
 	private static final String SYSCONFIG_ReadTimeout = "reports.remoteServletInvoker.readTimeout";
-	private static final int SYSCONFIG_ReadTimeout_DEFAULT = 5000; // 5 seconds
+	private static final int SYSCONFIG_ReadTimeout_DEFAULT = 15000; // 15 seconds
 
 	private static final String SYSCONFIG_JRServerRetryMS = "de.metas.report.jasper.client.ServiceConnectionExceptionRetryAdvisedInMillis";
 
