@@ -36,6 +36,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
 
 import com.google.common.collect.ImmutableList;
 
@@ -130,6 +131,18 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
 
 	/**
+	 * Reopen the closed shipment schedule given as parameter
+	 */
+	void openShipmentSchedule(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
+
+	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
+
+	/** Used by a model interceptor to figure out if the given {@code shipmentSchedule}'s {@code IsClosed} value is jsut cange from {@code true} to {@code false}. */
+	boolean isJustOpened(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	/**
 	 * Creates a storage query for the given {@code shipmentSchedule}.
 	 *
 	 * @param sched
@@ -137,11 +150,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @return query
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
-
-	/**
-	 * Reopen the closed shipment schedule given as parameter
-	 */
-	void openShipmentSchedule(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule shipmentScheduleRecord);
 
@@ -169,9 +177,12 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
 
-	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
-
-	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
-
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
+
+	/**
+	 * Close linked shipment schedules if they were partially invoiced
+	 * Note: This behavior is determined by the value of the sys config {@code M_ShipmentSchedule_Close_PartiallyInvoice}.
+	 * The scheds will be closed only if the sys config is set to 'Y'
+	 */
+	void closePartiallyShipped_ShipmentSchedules(I_M_InOut inoutRecord);
 }

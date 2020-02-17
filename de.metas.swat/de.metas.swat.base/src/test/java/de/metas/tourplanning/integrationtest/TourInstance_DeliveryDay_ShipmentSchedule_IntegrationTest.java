@@ -1,5 +1,11 @@
 package de.metas.tourplanning.integrationtest;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,28 +16,25 @@ package de.metas.tourplanning.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -55,7 +58,7 @@ import de.metas.util.time.SystemTime;
  * <li>checking if tour instance is automatically created
  * <li>changing shipment schedules which were allocated to processed delivery days
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
@@ -79,21 +82,21 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		bpartner = createBPartner("bp1");
 		bpLocation = createBPLocation(bpartner);
 
-		product = InterfaceWrapperHelper.newInstance(I_M_Product.class, contextProvider);
-		InterfaceWrapperHelper.save(product);
+		product = newInstance(I_M_Product.class, contextProvider);
+		save(product);
 	}
 
 	@Test
 	public void test()
 	{
-		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5);
-		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5);
+		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 		@SuppressWarnings("unused")
-		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5);
+		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 
 		final String currentTime = "07.09.2014 00:00:00.000";
 		setSystemTime(currentTime);
-		
+
 		//
 		// Create and test Order's PreparationDate
 		final I_C_Order order = createOrder(
@@ -119,9 +122,10 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		// Make sure a generic tour instance was created because we have amounts to rollup
 		final I_M_Tour_Instance tourInstance;
 		{
-			InterfaceWrapperHelper.refresh(dd2);
+			refresh(dd2);
 			tourInstance = dd2.getM_Tour_Instance();
-			Assert.assertNotNull("tour instance shall be created for " + dd2, tourInstance);
+			assertThat(tourInstance).isNotNull().withFailMessage("tour instance shall be created for ", dd2);
+
 			assertProcessed(false, tourInstance);
 		}
 
@@ -136,9 +140,9 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		// Try to do an unrelevant change to shipment schedule
 		// => shall not update the allocation => shall be ok
 		{
-			InterfaceWrapperHelper.refresh(shipmentSchedule);
+			refresh(shipmentSchedule);
 			shipmentSchedule.setProductDescription("bla bla bla - " + UUID.randomUUID());
-			InterfaceWrapperHelper.save(shipmentSchedule); // => shall be ok, no exceptions thrown
+			save(shipmentSchedule); // => shall be ok, no exceptions thrown
 		}
 
 		//
@@ -158,12 +162,12 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		// Create and validate a second Shipment Schedule
 		final I_M_ShipmentSchedule shipmentSchedule2 = createShipmentSchedule(order2, 10);
 		assertDeliveryDayAlloc(dd1, shipmentSchedule2);
-		
+
 		SystemTime.resetTimeSource(); // cleanup
 	}
 
 	/**
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return true if the change which was performed is relevant to tour planning module (so delivery day is expected to change)
 	 */
@@ -181,8 +185,8 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 
 	protected final void performTourPlanningRelevantChangeAndExpectException(final I_M_ShipmentSchedule shipmentSchedule, final boolean exceptionExpected)
 	{
-		InterfaceWrapperHelper.refresh(shipmentSchedule);
-		
+		refresh(shipmentSchedule);
+
 		boolean exceptionExpectedActual = exceptionExpected;
 		final boolean hasRelevantChange = performTourPlanningRelevantChange(shipmentSchedule);
 		if (!hasRelevantChange)
@@ -193,7 +197,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		Exception exception = null;
 		try
 		{
-			InterfaceWrapperHelper.save(shipmentSchedule);
+			save(shipmentSchedule);
 		}
 		catch (RuntimeException e)
 		{
@@ -206,16 +210,16 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 
 		if (exceptionExpectedActual && exception == null)
 		{
-			Assert.fail("An exception was expected when saving " + shipmentSchedule);
+			fail("An exception was expected when saving " + shipmentSchedule);
 		}
 	}
 
 	@Override
-	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours, final int bPartnerId, final int bpLocationId)
 	{
-		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
-		deliveryDay.setC_BPartner(bpartner);
-		deliveryDay.setC_BPartner_Location(bpLocation);
+		final I_M_DeliveryDay deliveryDay = newInstance(I_M_DeliveryDay.class, contextProvider);
+		deliveryDay.setC_BPartner_ID(bPartnerId);
+		deliveryDay.setC_BPartner_Location_ID(bpLocationId);
 		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
 		deliveryDay.setBufferHours(bufferHours);
 		deliveryDay.setIsManual(false);
@@ -226,16 +230,17 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		deliveryDay.setProcessed(false);
 
 		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
-		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
 
-		InterfaceWrapperHelper.save(deliveryDay);
+		assertThat(deliveryDay.getDeliveryDateTimeMax()).isNotNull().withFailMessage("DeliveryDateTimeMax shall be set");
+
+		save(deliveryDay);
 
 		return deliveryDay;
 	}
 
 	private I_C_Order createOrder(final String datePromisedStr, final Timestamp preparationDateExpected)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class, contextProvider);
+		final I_C_Order order = newInstance(I_C_Order.class, contextProvider);
 		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		order.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 
@@ -243,13 +248,11 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		order.setDatePromised(toDateTimeTimestamp(datePromisedStr));
 		order.setPreparationDate(null); // to be updated
 
-		InterfaceWrapperHelper.save(order);
+		save(order);
 
 		// NOTE: we expect PreparationDate to be set by model validator
 
-		Assert.assertEquals("Invalid order PreparationDate: " + order,
-				preparationDateExpected,
-				order.getPreparationDate());
+		assertThat(order.getPreparationDate()).isEqualTo(order.getPreparationDate()).withFailMessage("Invalid order PreparationDate: ", order);
 
 		return order;
 	}
@@ -261,8 +264,8 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
-		
-		Assert.assertEquals("Invalid allocation QtyOrdered: " + alloc, qtyOrdered, alloc.getQtyOrdered());
+
+		assertThat(alloc.getQtyOrdered()).isEqualTo(qtyOrdered).withFailMessage("Invalid allocation QtyOrdered: ", alloc);
 
 		return alloc;
 	}

@@ -17,10 +17,12 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression
 {
-	public static LogicTuple of(final Object operand1, final String operator, final Object operand2)
+	public static LogicTuple of(@Nullable final Object operand1, final String operator, @Nullable final Object operand2)
 	{
 		final Boolean constantValue = null;
 		return new LogicTuple(constantValue, operand1, operator, operand2);

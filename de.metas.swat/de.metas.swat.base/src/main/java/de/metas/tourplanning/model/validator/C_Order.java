@@ -1,5 +1,8 @@
 package de.metas.tourplanning.model.validator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,12 +13,12 @@ package de.metas.tourplanning.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +34,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
@@ -52,21 +54,16 @@ public class C_Order
 
 	/**
 	 * Search for matching {@link I_M_DeliveryDay} and set order's preparation date from it.
-	 * 
+	 *
 	 * @param order
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
 			, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_PreparationDate })
 	public void setPreparationDate(final I_C_Order order)
 	{
-		if(!order.isSOTrx())
-		{
-			return; // task 09000: nothing to do, the PreparationDate is only relevant for sales orders.
-		}
-		
 		//
 		// If PreparationDate was explicitelly set by user, don't change it
-		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate)
+		if (isValueChanged(order, I_C_Order.COLUMNNAME_PreparationDate)
 				&& order.getPreparationDate() != null)
 		{
 			return;
@@ -75,9 +72,9 @@ public class C_Order
 		// task 08931: if the order is created by a user, that user needs to make sure a proper preparation date is in place
 		// Goal: motivate/educate the users to maintain proper tour planning masterdata to reduce trouble in the further stages of operative business.
 		// However, if the order is created by the system (e.g. from EDI-olCands), we allow a fallback to DatePromised
-		final boolean fallbackToDatePromised = !InterfaceWrapperHelper.isUIAction(order);
+		final boolean fallbackToDatePromised = !isUIAction(order);
 
-		Services.get(IOrderDeliveryDayBL.class).setPreparationDate(order, fallbackToDatePromised);
+		Services.get(IOrderDeliveryDayBL.class).setPreparationDateAndTour(order, fallbackToDatePromised);
 	}
 
 	/**
@@ -91,7 +88,7 @@ public class C_Order
 		{
 			return; // task 09000: nothing to do, the PreparationDate is only relevant for sales orders.
 		}
-		
+
 		//
 		// Make sure the PreparationDate is set
 		final Timestamp preparationDate = order.getPreparationDate();
@@ -113,5 +110,5 @@ public class C_Order
 //		}
 		// @formatter:on
 	}
-	
+
 }

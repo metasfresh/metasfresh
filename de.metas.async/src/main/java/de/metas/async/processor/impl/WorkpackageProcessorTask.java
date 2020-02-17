@@ -75,6 +75,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -148,7 +149,8 @@ import lombok.NonNull;
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
 				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable);
-				final MDCCloseable mdcRestorer = MDC.putCloseable("C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()));)
+				final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage);
+				final MDCCloseable queueProcessorMDC = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 

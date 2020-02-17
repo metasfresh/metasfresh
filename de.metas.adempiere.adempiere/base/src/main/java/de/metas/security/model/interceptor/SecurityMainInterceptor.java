@@ -59,6 +59,7 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 		// Role and included roles
 		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role.instance, client);
 		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role_Included.instance, client);
+		engine.addModelValidator(AD_Document_Action_Access.instance, client);
 
 		// Source tables
 		engine.addModelValidator(de.metas.security.model.interceptor.AD_Org.instance, client);
@@ -71,7 +72,7 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 		// Trigger permissions cache reset if any of permissions table was changed
 		{
 			// TableNames which shall trigger a full permissions reset
-			ImmutableSet.<String> builder()
+			ImmutableSet.<String>builder()
 					.add(I_AD_Role.Table_Name) // role table itself
 					.addAll(Services.get(IUserRolePermissionsDAO.class).getRoleDependentTableNames()) // all role dependent table name
 					.build()

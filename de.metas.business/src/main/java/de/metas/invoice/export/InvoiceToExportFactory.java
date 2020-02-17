@@ -141,7 +141,7 @@ public class InvoiceToExportFactory
 
 		return addCustomInvoicePayload(invoiceWithoutEsrInfo);
 	}
-	
+
 	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
@@ -159,7 +159,7 @@ public class InvoiceToExportFactory
 		final ESRPaymentInfo esrPaymentInfo = esrPaymentInfoProvider.provideCustomPayload(invoiceWithoutEsrInfo);
 		return invoiceWithoutEsrInfo
 				.toBuilder()
-				.customInvoicePayload(esrPaymentInfo)
+				.customInvoicePayload(esrPaymentInfo) // might be null which is OK
 				.build();
 	}
 

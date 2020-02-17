@@ -1,12 +1,9 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.math.BigDecimal;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionEvaluator;
@@ -17,11 +14,11 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.logging.LogManager;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 {
@@ -29,7 +26,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 
 	private static final transient Logger logger = LogManager.getLogger(LogicExpressionEvaluator.class);
 
-	/** Internal marker for value not found */
+	/* Internal marker for value not found */
+	@SuppressWarnings("StringOperationCanBeSimplified")
 	static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
 
 	/* package */interface BooleanValueSupplier
@@ -43,7 +41,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	}
 
 	private static final BooleanEvaluator EVALUATOR_AND = (left, right) -> {
-		Boolean leftValue = null;
+		Boolean leftValue;
 		ExpressionEvaluationException leftValueError = null;
 		try
 		{
@@ -61,14 +59,13 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 			return Boolean.FALSE;
 		}
 
-		Boolean rightValue = null;
+		Boolean rightValue;
 		try
 		{
 			rightValue = right.getValueOrNull();
 		}
 		catch (final ExpressionEvaluationException rightValueError)
 		{
-			rightValue = null;
 			if (leftValueError != null)
 			{
 				rightValueError.addSuppressed(leftValueError);
@@ -106,7 +103,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	};
 
 	private static final BooleanEvaluator EVALUATOR_OR = (left, right) -> {
-		Boolean leftValue = null;
+		Boolean leftValue;
 		ExpressionEvaluationException leftValueError = null;
 		try
 		{
@@ -124,14 +121,13 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 			return Boolean.TRUE;
 		}
 
-		Boolean rightValue = null;
+		Boolean rightValue;
 		try
 		{
 			rightValue = right.getValueOrNull();
 		}
 		catch (final ExpressionEvaluationException rightValueError)
 		{
-			rightValue = null;
 			if (leftValueError != null)
 			{
 				rightValueError.addSuppressed(leftValueError);
@@ -184,7 +180,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		return leftValue.booleanValue() != rightValue.booleanValue();
 	};
 
-	/* package */static final Map<String, BooleanEvaluator> EVALUATORS_ByOperator = ImmutableMap.<String, LogicExpressionEvaluator.BooleanEvaluator> builder()
+	/* package */static final Map<String, BooleanEvaluator> EVALUATORS_ByOperator = ImmutableMap.<String, LogicExpressionEvaluator.BooleanEvaluator>builder()
 			.put(ILogicExpression.LOGIC_OPERATOR_AND, EVALUATOR_AND)
 			.put(ILogicExpression.LOGIC_OPERATOR_OR, EVALUATOR_OR)
 			.put(ILogicExpression.LOGIC_OPERATOR_XOR, EVALUATOR_XOR)
@@ -213,6 +209,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		return result;
 	}
 
+	@Nullable
 	private Boolean evaluateOrNull(final ExpressionEvaluationContext ctx, final ILogicExpression expr)
 	{
 		logger.trace("Evaluating {}", expr);
@@ -235,12 +232,14 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				final LogicTuple tuple = (LogicTuple)expr;
 
 				final String firstEval = ctx.getValue(tuple.getOperand1());
+				//noinspection StringEquality // we're using string == string instead of string.equals(string)
 				if (firstEval == VALUE_NotFound)
 				{
 					logger.trace("tuple {} => null because first operand could not be evaluated", expr);
 					return null;
 				}
 				final String secondEval = ctx.getValue(tuple.getOperand2());
+				//noinspection StringEquality // we're using string == string instead of string.equals(string)
 				if (secondEval == VALUE_NotFound)
 				{
 					logger.trace("tuple {} => null because second operand could not be evaluated", expr);
@@ -311,47 +310,56 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	/**
 	 * Evaluate Logic Tuple
 	 *
-	 * @param value1 value
-	 * @param operand operand = ~ ^ ! > <
-	 * @param value2
+	 * @param valueObj1 value
+	 * @param operand   operands: = ~ ^ ! > <
+	 * @param valueObj2 value
 	 * @return evaluation
 	 */
-	static boolean evaluateLogicTuple(final String valueObj1, final String operand, final String valueObj2)
+	static boolean evaluateLogicTuple(@Nullable final String valueObj1, final String operand, @Nullable final String valueObj2)
 	{
 		if (valueObj1 == null || operand == null || valueObj2 == null)
 		{
 			return false;
 		}
 
+		boolean stringCaseAlreadyChecked = false;
+		final String value1Str = stripQuotes(valueObj1);
+		final String value2Str = stripQuotes(valueObj2);
+
 		//
-		// Try comparing as Strings first because it's faster then trying to convert to BigDecimal
+		// Try comparing as Strings first for Equals case (short circuit)
+		if (LogicTuple.OPERATOR_Equals.equals(operand))
 		{
-			final String value1Str = stripQuotes(valueObj1);
-			final String value2Str = stripQuotes(valueObj2);
 			if (evaluateLogicTupleForComparables(value1Str, operand, value2Str))
 			{
 				return true;
 			}
+			stringCaseAlreadyChecked = true;
 		}
 
 		//
 		// Try comparing BigDecimals
+		// If both values are numbers there's no need to retry string comparison
 		try
 		{
-			if (isPossibleNumber(valueObj1)
-					&& isPossibleNumber(valueObj2))
+			if (isPossibleNumber(value1Str)
+					&& isPossibleNumber(value2Str))
 			{
-				final BigDecimal value1BD = new BigDecimal(valueObj1);
-				final BigDecimal value2BD = new BigDecimal(valueObj2);
-				if (evaluateLogicTupleForComparables(value1BD, operand, value2BD))
-				{
-					return true;
-				}
+				final BigDecimal value1BD = new BigDecimal(value1Str);
+				final BigDecimal value2BD = new BigDecimal(value2Str);
+				return evaluateLogicTupleForComparables(value1BD, operand, value2BD);
 			}
 		}
 		catch (final Exception ex)
 		{
-			logger.trace("Failed extracting BigDecimals but going forward (valueObj1={}, valueObj2={})", valueObj1, valueObj2, ex);
+			logger.trace("Failed extracting BigDecimals but going forward (value1Str={}, value2Str={})", value1Str, value2Str, ex);
+		}
+
+		//
+		// Try comparing as Strings first because it's faster then trying to convert to BigDecimal
+		if (!stringCaseAlreadyChecked)
+		{
+			return evaluateLogicTupleForComparables(value1Str, operand, value2Str);
 		}
 
 		//
@@ -360,7 +368,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	}
 
 	@VisibleForTesting
-	static final boolean isPossibleNumber(final String valueStr)
+	static boolean isPossibleNumber(@Nullable final String valueStr)
 	{
 		if (valueStr == null || valueStr.isEmpty())
 		{
@@ -387,9 +395,14 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		return true;
 	}
 
-	private static final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)
+	@SuppressWarnings("IfCanBeSwitch")
+	private static <T> boolean evaluateLogicTupleForComparables(@Nullable final Comparable<T> value1, final String operand, @Nullable final T value2)
 	{
-		//
+		if (value1 == null || operand == null || value2 == null)
+		{
+			return false;
+		}
+
 		if (operand.equals(LogicTuple.OPERATOR_Equals))
 		{
 			return value1.compareTo(value2) == 0;
@@ -416,11 +429,11 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	/**
 	 * Strips quotes (" or ') from given string
 	 *
-	 * @param s
 	 * @return string without quotes
 	 */
+	@Nullable
 	@VisibleForTesting
-	/* package */static final String stripQuotes(final String s)
+	/* package */ static String stripQuotes(final String s)
 	{
 		if (s == null || s.isEmpty())
 		{
@@ -470,11 +483,13 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 
 			final Object operand1 = tuple.getOperand1();
 			final String operand1Resolved = ctx.getValue(operand1);
+			@SuppressWarnings("StringEquality")
 			final boolean isOperand1Resolved = operand1Resolved != VALUE_NotFound;
 			final Object newOperand1 = isOperand1Resolved ? operand1Resolved : operand1;
 
 			final Object operand2 = tuple.getOperand2();
 			final String operand2Resolved = ctx.getValue(operand2);
+			@SuppressWarnings("StringEquality")
 			final boolean isOperand2Resolved = operand2Resolved != VALUE_NotFound;
 			final Object newOperand2 = isOperand2Resolved ? operand2Resolved : operand2;
 
@@ -561,9 +576,9 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		/**
 		 * Gets parameter value from context
 		 *
-		 * @param operand
 		 * @return value or {@link #VALUE_NotFound}
 		 */
+		@Nullable
 		public String getValue(final Object operand) throws ExpressionEvaluationException
 		{
 			//
