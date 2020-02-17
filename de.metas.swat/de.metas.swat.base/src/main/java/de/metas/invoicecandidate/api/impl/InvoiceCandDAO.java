@@ -1634,22 +1634,36 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public InvoiceCandidateId getFirstInvoiceableInvoiceCandId(final OrderId orderId)
+	public InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(@NonNull final OrderId orderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_C_Invoice_Candidate> qtyToInvoiceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-				.setJoinOr()
-				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
-				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override, Operator.GREATER, BigDecimal.ZERO);
 
-		return queryBL
+		final List<I_C_Invoice_Candidate> nonFreightCostICs = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addFiltersUnboxed(qtyToInvoiceFilter)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 				.create()
-				.firstId(InvoiceCandidateId::ofRepoIdOrNull);
+				.list();
+
+		if (nonFreightCostICs.isEmpty())
+		{
+			return new InvoiceableInvoiceCandIdResult(null/* firstInvoiceableInvoiceCandId */, false/* orderHasInvoiceCandidatesToWaitFor */);
+		}
+
+		for (final I_C_Invoice_Candidate nonFreightCostIC : nonFreightCostICs)
+		{
+			if (nonFreightCostIC.getQtyToInvoice().signum() > 0 || nonFreightCostIC.getQtyToInvoice_Override().signum() > 0)
+			{
+				return new InvoiceableInvoiceCandIdResult(
+						InvoiceCandidateId.ofRepoId(nonFreightCostIC.getC_Invoice_Candidate_ID())/* firstInvoiceableInvoiceCandId */,
+						true/* orderHasInvoiceCandidatesToWaitFor */);
+			}
+		}
+
+		return new InvoiceableInvoiceCandIdResult(
+				null/* firstInvoiceableInvoiceCandId */,
+				true/* orderHasInvoiceCandidatesToWaitFor */);
 	}
 
 	@Override

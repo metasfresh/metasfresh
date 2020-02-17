@@ -327,7 +327,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(icRecord);
 
-		invoiceCandBL.setAmountAndDateForFreightCost(icRecord);
+		invoiceCandBL.setQtyAndDateForFreightCost(icRecord);
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else

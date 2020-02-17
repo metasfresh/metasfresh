@@ -124,6 +124,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO.InvoiceableInvoiceCandIdResult;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -137,7 +138,6 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -2004,51 +2004,46 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		save(cand);
 	}
 
-	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)
+	public void setQtyAndDateForFreightCost(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		if (!ic.isFreightCost())
+		if (!icRecord.isFreightCost())
 		{
-			// nothing to do
-			return;
+			return;	// nothing to do
 		}
-		final OrderId orderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 
 		if (orderId == null)
 		{
-			// nothing to do;
-			return;
+			return; // nothing to do
 		}
 
-		final InvoiceCandidateId firstInvoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
+		final InvoiceableInvoiceCandIdResult invoiceableInvoiceCandIdResult = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
 
-		if (firstInvoiceableInvoiceCandId != null)
+		final boolean hasInvoiceableICs = invoiceableInvoiceCandIdResult.getFirstInvoiceableInvoiceCandId() != null;
+		final boolean hasICsToWaitFor = invoiceableInvoiceCandIdResult.isOrderHasInvoiceCandidatesToWaitFor();
+		if (hasInvoiceableICs)
 		{
-			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(ic.getC_OrderLine_ID());
-
-			if (orderLine == null)
+			if (icRecord.getC_OrderLine_ID() <= 0)
 			{
-				// nothing to do
-				return;
+				return; // nothing to do
 			}
 
-			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(firstInvoiceableInvoiceCandId);
+			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(invoiceableInvoiceCandIdResult.getFirstInvoiceableInvoiceCandId());
 
-			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
-			ic.setQtyToInvoice(ONE);
-			ic.setQtyDelivered(ONE);
-			ic.setQtyToInvoiceInUOM(ONE);
-			set_DateToInvoice_DefaultImpl(ic);
+			logger.debug("C_Order_ID={} of this freight-cost invoice candidate has other invoicable C_Invoice_Candidate_ID={}; -> set DeliveryDate its DeliveryDate={}",
+					orderId.getRepoId(), firstInvoiceableCandRecord.getC_Invoice_Candidate_ID(), firstInvoiceableCandRecord.getDeliveryDate());
+			icRecord.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
+			set_DateToInvoice_DefaultImpl(icRecord);
 		}
-
-		else
+		else if (hasICsToWaitFor)
 		{
-			ic.setQtyToInvoice(ZERO);
-			ic.setQtyDelivered(ZERO);
-			ic.setQtyToInvoiceInUOM(ZERO);
-			set_DateToInvoice_DefaultImpl(ic);
+			logger.debug("C_Order_ID={} of this freight-cost invoice candidate has other not-yet-invoicable ICs to wait for; -> set QtyToInvoice to zero", orderId.getRepoId());
+			icRecord.setQtyToInvoice(ZERO); // ok, let's wait for those other ICs
+			icRecord.setQtyDelivered(ZERO);
+			icRecord.setQtyToInvoiceInUOM(ZERO);
+			set_DateToInvoice_DefaultImpl(icRecord);
 		}
 	}
 
