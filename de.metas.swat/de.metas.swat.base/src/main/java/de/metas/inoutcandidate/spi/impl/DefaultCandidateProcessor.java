@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,6 +37,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPassUpdater
@@ -51,7 +52,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 	@Override
 	public final int doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentSchedulesDuringUpdate candidates, 
+			final IShipmentSchedulesDuringUpdate candidates,
 			final String trxName)
 	{
 		return purgeLinesOK(ctx, candidates, trxName);
@@ -72,7 +73,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 				//
 				// check the complete and postage free status
 				final CompleteStatus completeStatus = inOutLine.getCompleteStatus();
-				
+
 				if (CompleteStatus.OK.equals(completeStatus))
 				{
 					rmInOutLines++;
@@ -87,9 +88,9 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 				final IProductBL productBL = Services.get(IProductBL.class);
 				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-				// task 08745: by default we don't allow this, to stay back wards compatible 
+				// task 08745: by default we don't allow this, to stay back wards compatible
 				final boolean allowShipSingleNonItems = sysConfigBL.getBooleanValue(AD_SYSCONFIG_DE_METAS_INOUTCANDIDATE_ALLOW_SHIP_SINGLE_NON_ITEMS, false);
-				final boolean isItemProduct = productBL.isItem(inOutLine.getProductId());
+				final boolean isItemProduct = productBL.getProductType(ProductId.ofRepoId(inOutLine.getProductId())).isItem();
 
 				if (!allowShipSingleNonItems && !isItemProduct)
 				{
@@ -101,7 +102,7 @@ public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPa
 					boolean inOutContainsItem = false;
 					for (final DeliveryLineCandidate searchIol : inOut.getLines())
 					{
-						if (productBL.isItem(searchIol.getProductId()))
+						if (productBL.getProductType(ProductId.ofRepoId(searchIol.getProductId())).isItem())
 						{
 							inOutContainsItem = true;
 							break;

@@ -3,16 +3,16 @@
     "soTrx" : "SALES",
     "product": {
       "id": 300000,
-      "stocked": true
+      "stocked": false
     },
     "uomId" : 110000,
     "orderedData" : {
       "qty" : {
-        "qty" : "20",
+        "qty" : "60",
         "uomId" : 110000
       },
       "qtyInStockUom" : {
-        "qty" : "5",
+        "qty" : "15",
         "uomId" : 100000
       }
     },
@@ -49,8 +49,8 @@
         "currencyId" : 200000
       }
     },
-    "invoicableQtyBasedOn" : "CatchWeight",
-    "invoiceRule" : "Immediate",
+    "invoicableQtyBasedOn" : "NominalWeight",
+    "invoiceRule" : "AfterDelivery",
     "qualityDiscountOverride" : null,
     "qtyToInvoiceOverrideInStockUom" : 4
   }

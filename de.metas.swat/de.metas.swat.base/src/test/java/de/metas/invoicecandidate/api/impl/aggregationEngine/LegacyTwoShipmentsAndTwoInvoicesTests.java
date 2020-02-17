@@ -65,24 +65,6 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEngineTestBase
 {
-	// /**
-	// * 06630 (Invoice Rule: "Nach Lieferung")<br>
-	// * <br>
-	// * Case 2: Two partial shipments (qtys 32 and 8), then two partial invoices
-	// */
-	// @Test
-	// public void test_2StepShipment_WithDifferentInvoicesOverall_IR_NachLieferung()
-	// {
-	// // FIXME: consider using theories
-	// test_2StepShipment_WithDifferentInvoicesOverall(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
-	// }
-
-	// @Before
-	// public void init()
-	// {
-	// registerModelInterceptors();
-	// }
-	//
 	/**
 	 * 06630 (Invoice Rule: "Nach Lieferung")<br>
 	 * <br>
@@ -97,37 +79,6 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		// FIXME: consider using theories
 		test_2StepShipment_WithDifferentInvoicesPerStep(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 	}
-
-//	 @formatter:off
-// task 08396: if the InvoiceRule is "Sofort" (I), then we do want the stuff invoiced, also if it was not yet delivered.
-// 			Leaving the code to avoid puzzlement in future
-//	/**
-//	 * 06630 (Invoice Rule: "Sofort")<br>
-//	 * <br>
-//	 * Case 1: Partial shipment existing (32)<br>
-//	 * -> partial invoice<br>
-//	 * -> create a shipment for the rest that wasn't shipped yet (8)<br>
-//	 * -> another partial invoice
-//	 */
-//	@Test
-//	public void test_2StepShipment_WithDifferentInvoicesPerStep_IR_Sofort()
-//	{
-//		// FIXME: consider using theories
-//		test_2StepShipment_WithDifferentInvoicesPerStep(X_C_Invoice_Candidate.INVOICERULE_Sofort);
-//	}
-//	 @formatter:on
-
-	// /**
-	// * 06630 (Invoice Rule: "Sofort")<br>
-	// * <br>
-	// * Case 2: Two partial shipments (qtys 32 and 8), then two partial invoices
-	// */
-	// @Test
-	// public void test_2StepShipment_WithDifferentInvoicesOverall_IR_Sofort()
-	// {
-	// // FIXME: consider using theories
-	// test_2StepShipment_WithDifferentInvoicesOverall(X_C_Invoice_Candidate.INVOICERULE_Sofort);
-	// }
 
 	@SuppressWarnings("unused")
 	private void test_2StepShipment_WithDifferentInvoicesOverall(final String invoiceRuleOverride)
