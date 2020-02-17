@@ -156,8 +156,7 @@ public final class ProductsToPickRowsDataFactory
 
 	private AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
 	{
-		final Quantity qtyToAllocateTarget = packageable.getQtyOrdered()
-				.subtract(packageable.getQtyDelivered())
+		final Quantity qtyToAllocateTarget = packageable.getQtyToDeliver()
 				.subtract(packageable.getQtyPickedNotDelivered())
 				// IMPORTANT: don't subtract the Qty PickedPlanned
 				// because we will also allocate existing DRAFT picking candidates
