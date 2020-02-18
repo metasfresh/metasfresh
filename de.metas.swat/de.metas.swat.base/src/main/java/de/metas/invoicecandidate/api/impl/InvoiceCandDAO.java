@@ -1640,6 +1640,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final List<I_C_Invoice_Candidate> nonFreightCostICs = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
