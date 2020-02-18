@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION SummaryAndBalanceListReport(p_dateFrom date,
                                                        p_dateTo date,
                                                        p_c_acctschema_id NUMERIC,
                                                        p_ad_org_id numeric,
-                                                       p_account_id NUMERIC=NULL,
-                                                       p_c_activity_id numeric=NULL)
+                                                       p_account_id NUMERIC=NULL)
     RETURNS table
             (
                 AccountValue     text,
@@ -32,7 +31,6 @@ WITH filteredElementValues AS
              FROM c_elementvalue ev
              WHERE TRUE
                AND (p_account_id IS NULL OR ev.c_elementvalue_id = p_account_id)
-               AND (p_c_activity_id IS NULL OR ev.c_activity_id = p_c_activity_id)
              ORDER BY ev.c_elementvalue_id
          ),
      balances_test AS
