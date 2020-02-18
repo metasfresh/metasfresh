@@ -51,15 +51,15 @@ group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 	<title>
 		<band height="37">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="136" y="7" width="34" height="12" uuid="361f1953-65b9-44cd-a4ca-f88639ed3d52"/>
-				<textElement>
+				<reportElement x="136" y="7" width="54" height="12" uuid="361f1953-65b9-44cd-a4ca-f88639ed3d52"/>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField>
-				<reportElement x="170" y="7" width="100" height="12" uuid="bd767a0b-27b4-41df-a7d9-247757819856"/>
+				<reportElement x="194" y="7" width="100" height="12" uuid="bd767a0b-27b4-41df-a7d9-247757819856"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
