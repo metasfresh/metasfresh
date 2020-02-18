@@ -48,6 +48,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -252,7 +253,7 @@ public class PricingBL implements IPricingBL
 
 		final LocalDate priceDate = pricingCtx.getPriceDate();
 
-		// M_PricingSystem_ID from C_BPartner if neccesary
+		// M_PricingSystem_ID from C_BPartner if necessary
 		if (pricingCtx.getPricingSystemId() == null
 				&& pricingCtx.getPriceListId() == null
 				&& pricingCtx.getPriceListVersionId() == null)
@@ -348,6 +349,15 @@ public class PricingBL implements IPricingBL
 
 			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
 			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom()));
+		}
+
+		//
+		// set currency from pricelist
+		if (pricingCtx.getPriceListId() != null && pricingCtx.getCurrencyId() == null)
+		{
+			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
+			logger.info("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
+			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		}
 	}
 
