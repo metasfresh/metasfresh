@@ -2,7 +2,7 @@
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540480,'-- GENERAL
 M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
+AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID/0@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
 AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
 AND M_HU_PI_Item_Product.ValidFrom <= ''@DateInvoiced@'' AND ( ''@DateInvoiced@'' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
 AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
@@ -21,7 +21,7 @@ AND
     (
         SELECT pp.M_HU_PI_Item_Product_ID
         from M_ProductPrice pp
-        where pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
+        where pp.M_Product_ID = @M_Product_ID/0@ AND pp.IsActive = ''Y''
         AND pp.M_PriceList_Version_ID =
         (
             SELECT M_PriceList_Version.M_PriceList_Version_ID
