@@ -1,27 +1,23 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import java.util.Optional;
-
-import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
-import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.SpringContextHolder;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
+import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.SpringContextHolder;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -47,8 +43,6 @@ import lombok.NonNull;
 
 final class OrderLineQuickInputCallout
 {
-	private final IHUPIItemProductDAO huPIItemProductsRepo = Services.get(IHUPIItemProductDAO.class);
-	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	// private final IHUOrderBL huOrderBL;
 	private final IBPartnerBL bpartnersService;
 	private final PackingItemProductFieldHelper packingItemProductFieldHelper = SpringContextHolder.instance.getBean(PackingItemProductFieldHelper.class);
