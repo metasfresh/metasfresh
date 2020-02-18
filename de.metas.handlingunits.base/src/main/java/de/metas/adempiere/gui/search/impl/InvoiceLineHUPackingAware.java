@@ -24,16 +24,15 @@ package de.metas.adempiere.gui.search.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.handlingunits.model.I_C_InvoiceLine;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.handlingunits.model.I_C_InvoiceLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -42,15 +41,12 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	private final I_C_InvoiceLine invoiceLine;
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
-	public InvoiceLineHUPackingAware(final I_C_InvoiceLine invoiceLine)
+	private InvoiceLineHUPackingAware(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		super();
-
-		Check.assumeNotNull(invoiceLine, "orderLine not null");
 		this.invoiceLine = invoiceLine;
 	}
 
-	public static InvoiceLineHUPackingAware of( org.compiere.model.I_C_InvoiceLine invoiceLine )
+	public static InvoiceLineHUPackingAware of(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine )
 	{
 		return new InvoiceLineHUPackingAware(InterfaceWrapperHelper.create(invoiceLine, I_C_InvoiceLine.class));
 	}

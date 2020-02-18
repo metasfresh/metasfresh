@@ -48,7 +48,7 @@ public class C_InvoiceLine
 	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_QtyEnteredTU, I_C_InvoiceLine.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void onQtyEnteredChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
-		final IHUPackingAware packingAware = new InvoiceLineHUPackingAware(invoiceLine);
+		final IHUPackingAware packingAware = InvoiceLineHUPackingAware.of(invoiceLine);
 		final Integer qtyPacks = packingAware.getQtyTU().intValue();
 		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
 
