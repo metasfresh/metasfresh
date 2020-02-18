@@ -92,7 +92,6 @@ class InvoiceCandBLSimpleTest
 		invoiceCandBL.setQtyAndDateForFreightCost(freightCostICRecord);
 
 		assertThat(freightCostICRecord.getQtyToInvoice()).isEqualByComparingTo(ZERO); // set to zero, in order to have freightCostICRecord wait for otherICRecord
-		assertThat(freightCostICRecord.getDateToInvoice()).isEqualTo(dateOrdered); // set accordingly to the invoice rule, even if the qtyToInvoice is now zero
 	}
 
 	@Test
@@ -124,7 +123,6 @@ class InvoiceCandBLSimpleTest
 		invoiceCandBL.setQtyAndDateForFreightCost(freightCostICRecord);
 
 		assertThat(freightCostICRecord.getQtyToInvoice()).isEqualByComparingTo(TEN); // unchanged
-		assertThat(freightCostICRecord.getDateToInvoice()).isEqualTo(dateOrdered); // set accordingly to the invoice rule
 		assertThat(freightCostICRecord.getDeliveryDate()).isEqualTo(otherICDeliveryDate); // was synched to the other IC
 	}
 
