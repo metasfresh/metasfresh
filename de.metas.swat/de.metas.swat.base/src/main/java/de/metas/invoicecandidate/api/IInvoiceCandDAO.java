@@ -30,7 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
@@ -56,8 +57,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -380,7 +381,15 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
-	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
+	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
+
+	@Value
+	public static class InvoiceableInvoiceCandIdResult
+	{
+		InvoiceCandidateId firstInvoiceableInvoiceCandId;
+
+		boolean orderHasInvoiceCandidatesToWaitFor;
+	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 }

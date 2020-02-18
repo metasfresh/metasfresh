@@ -313,8 +313,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
-		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);
-
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
 
 		// 06539 add qty overdelivery to qty delivered
@@ -327,7 +325,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(icRecord);
 
-		invoiceCandBL.setAmountAndDateForFreightCost(icRecord);
+		invoiceCandBL.setQtyAndDateForFreightCost(icRecord);
+
+		// setQtyAndDateForFreightCost might have changed the ICs delivery date, so we do setInvoiceScheduleAndDateToInvoice only now
+		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
