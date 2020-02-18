@@ -1,7 +1,7 @@
-DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate_test(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, p_IncludePostingTypeStatistical char);
+DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, p_IncludePostingTypeStatistical char);
 
-DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate_test(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1));
-DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate_test(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1), p_ExcludePostingTypeYearEnd char(1));
+DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1));
+DROP FUNCTION IF EXISTS de_metas_acct.acctBalanceToDate(p_Account_ID numeric, p_C_AcctSchema_ID numeric, p_DateAcct date, ad_org_id numeric, p_IncludePostingTypeStatistical char(1), p_ExcludePostingTypeYearEnd char(1));
 
 /*
 
@@ -15,7 +15,7 @@ CREATE TYPE de_metas_acct.BalanceAmt AS
 );
 
  */
-CREATE OR REPLACE FUNCTION de_metas_acct.acctBalanceToDate_test(p_Account_ID numeric,
+CREATE OR REPLACE FUNCTION de_metas_acct.acctBalanceToDate(p_Account_ID numeric,
                                                                 p_C_AcctSchema_ID numeric,
                                                                 p_DateAcct date,
                                                                 p_AD_Org_ID numeric(10, 0),

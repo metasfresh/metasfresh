@@ -1,10 +1,6 @@
---- backup for erpit
-CREATE INDEX fas_dateacct
-    ON fact_acct_summary (dateacct);
-DROP INDEX fas_dateacct;
--- todo @ teo observation: it seems the query runs faster without the index fas_dateacct. (27 sec avg -> 22 sec avg => >10% perf change)
--- todo extract the index drop to own migration script
---------------------------------------
+DROP FUNCTION IF EXISTS SummaryAndBalanceListReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id NUMERIC);
+DROP FUNCTION IF EXISTS SummaryAndBalanceListReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC);
+
 
 
 CREATE OR REPLACE FUNCTION SummaryAndBalanceListReport(p_dateFrom date,
@@ -19,7 +15,7 @@ CREATE OR REPLACE FUNCTION SummaryAndBalanceListReport(p_dateFrom date,
                 beginningBalance numeric,
                 debit            numeric,
                 credit           numeric,
-                endingBalancw    numeric
+                endingBalance    numeric
             )
 AS
 $$
@@ -33,17 +29,17 @@ WITH filteredElementValues AS
                AND (p_account_id IS NULL OR ev.c_elementvalue_id = p_account_id)
              ORDER BY ev.c_elementvalue_id
          ),
-     balances_test AS
+     balances AS
          (
              SELECT --
                     (de_metas_acct.acctBalanceToDate(ev.c_elementvalue_id, p_c_acctschema_id, (p_dateFrom - INTERVAL '1 day')::date, p_ad_org_id)::de_metas_acct.BalanceAmt) begining,
-                    (de_metas_acct.acctBalanceToDate(ev.c_elementvalue_id, p_c_acctschema_id, (p_dateTo - INTERVAL '1 day')::date, p_ad_org_id)::de_metas_acct.BalanceAmt)   ending,
+                    (de_metas_acct.acctBalanceToDate(ev.c_elementvalue_id, p_c_acctschema_id, (p_dateTo)::date, p_ad_org_id)::de_metas_acct.BalanceAmt)                      ending,
                     ev.c_elementvalue_id,
                     ev.AccountName,
                     ev.AccountValue
              FROM filteredElementValues ev
          ),
-     DATA AS
+     data AS
          (
              SELECT --
                     AccountValue,
@@ -52,13 +48,19 @@ WITH filteredElementValues AS
                     (ending).debit - (begining).debit   debit,
                     (ending).credit - (begining).credit credit,
                     (ending).balance                    endingBalance
-                    -- debug
---                     ,begining,
---                     ending,
---                     c_elementvalue_id
-             FROM balances_test
+             FROM balances
          )
 SELECT *
-FROM DATA
+FROM data
 $$
     LANGUAGE sql STABLE;
+
+/*
+How to run:
+
+select * from SummaryAndBalanceListReport('2018-04-01'::date,
+                                          '2018-05-31'::date,
+                                          1000000,
+                                          1000000)
+;
+ */
