@@ -559,7 +559,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
 		{
-			throw new AdempiereException(TranslatableStrings.constant("for TU-UOM's, we must have qtyItemCapacity"));// TODO: nice user message
+			throw new AdempiereException(TranslatableStrings.constant("for TU-UOMs, we must have qtyItemCapacity"));// TODO: nice user message
 		}
 		final BigDecimal qtyOrdered = orderLine.getQtyEntered().multiply(qtyItemCapacity);
 		return qtyOrdered;

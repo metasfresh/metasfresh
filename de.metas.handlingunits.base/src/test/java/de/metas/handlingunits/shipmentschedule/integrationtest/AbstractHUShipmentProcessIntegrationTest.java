@@ -36,6 +36,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
@@ -454,13 +456,17 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 	/**
 	 * Creates a new shipment schedule.
-	 *
-	 * @return shipment schedule
 	 */
 	protected final I_M_ShipmentSchedule createShipmentSchedule()
 	{
 		final BigDecimal qtyOrdered = new BigDecimal("100");
-		return createShipmentSchedule(true, product, productUOM, qtyOrdered);
+		return createShipmentSchedule(true, product, productUOM, qtyOrdered, null);
+	}
+
+	protected final I_M_ShipmentSchedule createShipmentSchedule(final int orderLineNo)
+	{
+		final BigDecimal qtyOrdered = new BigDecimal("100");
+		return createShipmentSchedule(true, product, productUOM, qtyOrdered, orderLineNo);
 	}
 
 	private I_C_Order lastOrder = null;
@@ -468,13 +474,15 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	/**
 	 * Creates a new shipment schedule.
 	 *
+	 * @param orderLineNo optional; put into {@code C_OrderLine.LineNo}
 	 * @return shipment schedule
 	 */
 	protected final I_M_ShipmentSchedule createShipmentSchedule(
 			final boolean newC_Order,
-			final I_M_Product product,
-			final I_C_UOM productUOM,
-			final BigDecimal qtyOrdered)
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM productUOM,
+			@NonNull final BigDecimal qtyOrdered,
+			@Nullable final Integer orderLineNo)
 	{
 		final I_C_Order order;
 		if (!newC_Order)
@@ -500,6 +508,10 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		orderLine.setM_Product_ID(product.getM_Product_ID());
 		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
 		orderLine.setQtyOrdered(qtyOrdered);
+		if (orderLineNo != null)
+		{
+			orderLine.setLine(orderLineNo);
+		}
 		save(orderLine);
 
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
@@ -508,7 +520,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		shipmentSchedule.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 		// Product/UOM and Qty
 		shipmentSchedule.setM_Product_ID(product.getM_Product_ID());
-		shipmentSchedule.setC_UOM_ID(productUOM.getC_UOM_ID());
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered);
 		// Warehouse
 		shipmentSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());

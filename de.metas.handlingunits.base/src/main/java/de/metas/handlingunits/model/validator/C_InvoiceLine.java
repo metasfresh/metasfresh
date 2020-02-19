@@ -48,7 +48,9 @@ public class C_InvoiceLine
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final boolean isFreightCost = productBL.isFreightCostProduct(ProductId.ofRepoId(invoiceLine.getM_Product_ID()));
+		final boolean isFreightCost = productBL
+				.getProductType(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
+				.isFreightCost();
 
 		if (isFreightCost)
 		{

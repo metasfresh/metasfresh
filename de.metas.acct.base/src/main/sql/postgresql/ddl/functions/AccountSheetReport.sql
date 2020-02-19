@@ -29,7 +29,7 @@ CREATE OR REPLACE FUNCTION AccountSheetReport(p_dateFrom date,
                 docTypeName      text,
                 documentno       text,
                 description      text,
-                fact_acct_id     numeric
+                fact_acct_id     integer
             )
 AS
 $BODY$
@@ -238,8 +238,9 @@ BEGIN
                t.docTypeName,
                t.documentno::text,
                t.description::text,
-               t.fact_acct_id
-        FROM TMP_AccountSheetReport t;
+               t.fact_acct_id::integer
+        FROM TMP_AccountSheetReport t
+        ORDER BY t.dateacct, t.fact_acct_id;
 END;
 $BODY$
     LANGUAGE plpgsql

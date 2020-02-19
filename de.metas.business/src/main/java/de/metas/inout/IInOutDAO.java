@@ -111,4 +111,6 @@ public interface IInOutDAO extends ISingletonService
 	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
 
 	void setExportedInCustomsInvoice(InOutId shipmentId);
+
+	void unsetLineNos(ImmutableList<InOutLineId> inOutLineIdsToUnset);
 }
