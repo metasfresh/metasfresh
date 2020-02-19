@@ -92,6 +92,7 @@ public class UserGroupRecordAccessServiceTest
 				.recordRef(recordRef)
 				.principal(userId)
 				.permissions(Arrays.asList(accesses))
+				.issuer(PermissionIssuer.MANUAL)
 				.build());
 
 		assertRecordAccesses(recordRef).isEqualTo(userGroupRecordAccesses(recordRef, accesses));
@@ -102,13 +103,16 @@ public class UserGroupRecordAccessServiceTest
 		return assertThat(userGroupRecordAccessService.getAccessesByRecord(recordRef));
 	}
 
-	private ImmutableSet<RecordAccess> userGroupRecordAccesses(@NonNull final TableRecordReference recordRef, final Access... accesses)
+	private ImmutableSet<RecordAccess> userGroupRecordAccesses(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final Access... accesses)
 	{
 		return Stream.of(accesses)
 				.map(access -> RecordAccess.builder()
 						.recordRef(recordRef)
 						.principal(userId)
 						.permission(access)
+						.issuer(PermissionIssuer.MANUAL)
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 

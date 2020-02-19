@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.Profiles;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
@@ -44,20 +46,28 @@ public class RecordAccessChangeEventDispatcher
 
 	public static final Topic TOPIC = Topic.remote("de.metas.security.permissions.record_access.RecordAccessChangeEvent");
 
-	private final CompositeRecordAccessHandler handlers;
+	private final CompositeRecordAccessHandler _handlers;
 	private final IEventBusFactory eventBusFactory;
 
 	public RecordAccessChangeEventDispatcher(
 			@NonNull final RecordAccessConfigService configs,
 			@NonNull final IEventBusFactory eventBusFactory)
 	{
-		this.handlers = configs.getAllHandlers();
+		this._handlers = configs.getAllHandlers();
 		this.eventBusFactory = eventBusFactory;
 	}
 
-	@PostConstruct
-	private void postConstruct()
+	@VisibleForTesting
+	public CompositeRecordAccessHandler getHandlers()
 	{
+		return _handlers;
+	}
+
+	@PostConstruct
+	@VisibleForTesting
+	public void postConstruct()
+	{
+		final CompositeRecordAccessHandler handlers = getHandlers();
 		if (handlers.isEmpty())
 		{
 			logger.warn("No handler registered so we won't subscribe to {}", TOPIC);
@@ -71,6 +81,8 @@ public class RecordAccessChangeEventDispatcher
 
 	private void onEvent(@NonNull final RecordAccessChangeEvent event)
 	{
+		final CompositeRecordAccessHandler handlers = getHandlers();
+
 		for (final RecordAccess accessGrant : event.getAccessGrants())
 		{
 			handlers.onAccessGranted(accessGrant);

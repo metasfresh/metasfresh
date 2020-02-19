@@ -92,6 +92,7 @@ public class RecordAccessService
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.permissions(request.getPermissions())
+				.issuer(request.getIssuer())
 				.build();
 
 		final HashMap<RecordAccess, I_AD_User_Record_Access> existingRecords = query(query)
@@ -117,6 +118,7 @@ public class RecordAccessService
 					.recordRef(request.getRecordRef())
 					.principal(request.getPrincipal())
 					.permission(permission)
+					.issuer(request.getIssuer())
 					.build());
 		}
 
@@ -129,6 +131,7 @@ public class RecordAccessService
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.permissions(request.isRevokeAllPermissions() ? ImmutableSet.of() : request.getPermissions())
+				.issuer(request.getIssuer())
 				.build();
 		final List<I_AD_User_Record_Access> accessRecords = query(query)
 				.create()
@@ -272,6 +275,8 @@ public class RecordAccessService
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = queryBL.createQueryBuilder(I_AD_User_Record_Access.class);
 
+		//
+		// Records
 		final ImmutableSet<TableRecordReference> recordRefs = query.getRecordRefs();
 		if (!recordRefs.isEmpty())
 		{
@@ -281,17 +286,21 @@ public class RecordAccessService
 			{
 				recordRefsFilter.addCompositeQueryFilter()
 						.setJoinAnd()
-						.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
-						.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Record_ID, recordRef.getRecord_ID());
+						.addEqualsFilter(I_AD_User_Record_Access.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+						.addEqualsFilter(I_AD_User_Record_Access.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 			}
 		}
 
+		//
+		// Permissions
 		final ImmutableSet<Access> permissions = query.getPermissions();
 		if (!permissions.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_AD_User_Record_Access.COLUMN_Access, permissions);
+			queryBuilder.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_Access, permissions);
 		}
 
+		//
+		// Principals
 		if (!query.getPrincipals().isEmpty())
 		{
 			final Set<UserId> userIds = new HashSet<>();
@@ -319,15 +328,23 @@ public class RecordAccessService
 						.setJoinOr();
 				if (!userIds.isEmpty())
 				{
-					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_User_ID, userIds);
+					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_AD_User_ID, userIds);
 				}
 				if (!userGroupIds.isEmpty())
 				{
-					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_UserGroup_ID, userGroupIds);
+					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_AD_UserGroup_ID, userGroupIds);
 				}
 			}
 		}
 
+		//
+		// Issuer
+		if (query.getIssuer() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMNNAME_PermissionIssuer, query.getIssuer().getCode());
+		}
+
+		//
 		return queryBuilder;
 	}
 
@@ -355,7 +372,7 @@ public class RecordAccessService
 
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_Record_Access.class)
-				.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_User_Record_Access_ID, repoIds)
+				.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_AD_User_Record_Access_ID, repoIds)
 				.create()
 				.delete();
 	}
@@ -384,6 +401,7 @@ public class RecordAccessService
 						.userGroupId(userGroupId)
 						.build())
 				.permission(Access.ofCode(record.getAccess()))
+				.issuer(PermissionIssuer.ofCode(record.getPermissionIssuer()))
 				.build();
 	}
 
