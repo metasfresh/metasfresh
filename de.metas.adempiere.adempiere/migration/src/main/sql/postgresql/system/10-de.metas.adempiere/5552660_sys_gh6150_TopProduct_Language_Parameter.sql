@@ -59,3 +59,32 @@ LIMIT (CASE
 
 $$
     LANGUAGE SQL STABLE;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	---------------------
+	
+	
+	
+	
+	
+	-- 2020-02-19T13:45:21.763Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='select * from ProductsTopRevenue(@AD_Client_ID@, @AD_Org_ID@, ''@DateFrom/1900-01-01@''::date , ''@DateTo/9999-12-31@''::date , @Limit/-1@, @#AD_Language@)',Updated=TO_TIMESTAMP('2020-02-19 15:45:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584651
+;
+
+-- 2020-02-19T13:45:39.474Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='select * from ProductsTopRevenue(@AD_Client_ID@, @AD_Org_ID@, ''@DateFrom/1900-01-01@''::date , ''@DateTo/9999-12-31@''::date , @Limit/-1@, ''@#AD_Language@'')',Updated=TO_TIMESTAMP('2020-02-19 15:45:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584651
+;
+
+
+	
