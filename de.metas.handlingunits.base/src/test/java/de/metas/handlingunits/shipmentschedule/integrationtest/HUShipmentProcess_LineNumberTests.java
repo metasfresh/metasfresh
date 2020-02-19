@@ -35,6 +35,7 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 
@@ -46,7 +47,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
