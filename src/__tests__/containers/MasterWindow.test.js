@@ -72,7 +72,7 @@ const createInitialState = function(state = {}) {
   return res;
 }
 
-describe.only("MasterWindowContainer", () => {
+describe("MasterWindowContainer", () => {
   describe("'integration' tests:", () => {
     it("renders without errors", async done => {
       const initialState = createInitialState();
