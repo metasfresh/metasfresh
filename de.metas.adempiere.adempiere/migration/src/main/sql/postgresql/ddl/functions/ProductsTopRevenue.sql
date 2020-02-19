@@ -36,11 +36,11 @@ SELECT ROW_NUMBER() OVER (ORDER BY t.Revenue DESC NULLS LAST, t.ProductValue) ::
 
 FROM (
          SELECT p.value                                                                              AS ProductValue,
-                trl.Name                                                                               AS Name,
+                COALESCE(trl.Name, p.Name)                                                           AS Name,
                 getProductRevenue(p.M_Product_ID, p_AD_Client_ID, p_AD_Org_ID, p_DateFrom, p_DateTo) AS Revenue,
                 getProductCurrentStock(p.M_Product_ID, p_AD_Client_ID, p_AD_Org_ID)                  AS QtyOnHandStock
          FROM M_Product p
-		 LEFT JOIN M_Product_TRL trl on p.M_Product_ID = trl.M_Product_ID and trl.ad_language = p_AD_Language
+                  LEFT JOIN M_Product_TRL trl ON p.M_Product_ID = trl.M_Product_ID AND trl.ad_language = p_AD_Language
      ) t,
      (
          SELECT COALESCE(getTotalRevenue(p_AD_Client_ID, p_AD_Org_ID, p_DateFrom, p_DateTo), 0) AS totalRevenueAmt
