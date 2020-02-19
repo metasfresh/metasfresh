@@ -174,8 +174,8 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_C_Flatrate_Term currentTerm = newInstance(I_C_Flatrate_Term.class);
 		currentTerm.setAD_Org_ID(orgId.getRepoId());
-		currentTerm.setStartDate(TimeUtil.getDay(2013, 1, 1));
-		currentTerm.setEndDate(TimeUtil.getDay(2014, 7, 27));
+		currentTerm.setStartDate(TimeUtil.parseTimestamp("2013-01-01"));
+		currentTerm.setEndDate(TimeUtil.parseTimestamp("2014-07-27"));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem(pricingSystem);
 		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
@@ -183,6 +183,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
+		priceList.setC_Currency_ID(10);
 		priceList.setC_Country_ID(country.getC_Country_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
@@ -191,7 +192,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
 		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		priceListVersion.setValidFrom(TimeUtil.getDay(2013, 1, 1));
+		priceListVersion.setValidFrom(TimeUtil.parseTimestamp("2013-01-01"));
 		priceListVersion.setIsActive(true);
 		save(priceListVersion);
 
@@ -204,7 +205,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
-		period.setStartDate(TimeUtil.getDay(2013, 1, 1));
+		period.setStartDate(TimeUtil.parseTimestamp("2013-01-01"));
 		save(period);
 
 		final I_C_Flatrate_DataEntry dataEntry = newInstance(I_C_Flatrate_DataEntry.class);
@@ -263,7 +264,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2014, 12, 31).compareTo(term.getEndDate()) == 0);
+		Assert.assertTrue("End date incorrectly calculated", TimeUtil.parseTimestamp("2014-12-31").compareTo(term.getEndDate()) == 0);
 
 		// term duration: 24 months
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
@@ -272,7 +273,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		Assert.assertTrue("End date incorrectly calculated", TimeUtil.getDay(2014, 12, 31).compareTo(term.getEndDate()) == 0);
+		Assert.assertTrue("End date incorrectly calculated", TimeUtil.parseTimestamp("2014-12-31").compareTo(term.getEndDate()) == 0);
 	}
 
 	@Test(expected = AdempiereException.class)
