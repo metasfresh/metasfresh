@@ -26,7 +26,7 @@ FROM c_elementvalue ev
 WHERE TRUE
   AND ev.accounttype IN ('E', 'R')
   AND ev.IsSummary = 'N'
-ORDER BY ev.name
+ORDER BY ev.value
     ;
 
 $BODY$
