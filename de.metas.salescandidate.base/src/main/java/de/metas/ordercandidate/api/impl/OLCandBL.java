@@ -45,9 +45,11 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
@@ -93,6 +95,7 @@ public class OLCandBL implements IOLCandBL
 	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
@@ -282,7 +285,6 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
-
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -358,6 +360,9 @@ public class OLCandBL implements IOLCandBL
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
+
+		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(dropShipLocationId);
+		pricingCtx.setCountryId(countryId);
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx);
 
