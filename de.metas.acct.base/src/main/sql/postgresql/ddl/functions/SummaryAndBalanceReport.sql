@@ -1,5 +1,6 @@
 DROP FUNCTION IF EXISTS SummaryAndBalanceReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id NUMERIC);
 DROP FUNCTION IF EXISTS SummaryAndBalanceReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC);
+DROP FUNCTION IF EXISTS SummaryAndBalanceReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_ExcludeEmptyLines text);
 
 
 
@@ -7,7 +8,8 @@ CREATE OR REPLACE FUNCTION SummaryAndBalanceReport(p_dateFrom date,
                                                    p_dateTo date,
                                                    p_c_acctschema_id NUMERIC,
                                                    p_ad_org_id numeric,
-                                                   p_account_id NUMERIC=NULL)
+                                                   p_account_id NUMERIC=NULL,
+                                                   p_ExcludeEmptyLines text = 'Y')
     RETURNS table
             (
                 AccountValue     text,
@@ -49,6 +51,17 @@ WITH filteredElementValues AS
                     (ending).credit - (begining).credit credit,
                     (ending).balance                    endingBalance
              FROM balances
+         ),
+     dataExcludingEmptyLines AS
+         (
+             SELECT AccountValue,
+                    AccountName,
+                    beginningBalance,
+                    debit,
+                    credit,
+                    endingBalance
+             FROM data
+             WHERE (p_ExcludeEmptyLines = 'N' OR (beginningBalance != 0 AND endingBalance != 0))
          )
 SELECT AccountValue,
        AccountName,
@@ -56,7 +69,7 @@ SELECT AccountValue,
        debit,
        credit,
        endingBalance
-FROM data
+FROM dataExcludingEmptyLines
 ORDER BY AccountValue
 $$
     LANGUAGE sql STABLE;
