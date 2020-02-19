@@ -1,13 +1,13 @@
-DROP FUNCTION IF EXISTS SummaryAndBalanceListReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id NUMERIC);
-DROP FUNCTION IF EXISTS SummaryAndBalanceListReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC);
+DROP FUNCTION IF EXISTS SummaryAndBalanceReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id NUMERIC);
+DROP FUNCTION IF EXISTS SummaryAndBalanceReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC);
 
 
 
-CREATE OR REPLACE FUNCTION SummaryAndBalanceListReport(p_dateFrom date,
-                                                       p_dateTo date,
-                                                       p_c_acctschema_id NUMERIC,
-                                                       p_ad_org_id numeric,
-                                                       p_account_id NUMERIC=NULL)
+CREATE OR REPLACE FUNCTION SummaryAndBalanceReport(p_dateFrom date,
+                                                   p_dateTo date,
+                                                   p_c_acctschema_id NUMERIC,
+                                                   p_ad_org_id numeric,
+                                                   p_account_id NUMERIC=NULL)
     RETURNS table
             (
                 AccountValue     text,
@@ -36,7 +36,7 @@ WITH filteredElementValues AS
                     (de_metas_acct.acctBalanceToDate(ev.c_elementvalue_id, p_c_acctschema_id, (p_dateTo)::date, p_ad_org_id)::de_metas_acct.BalanceAmt)                      ending,
                     ev.c_elementvalue_id,
                     ev.AccountName,
-                    ev.AccountValue
+                    ev.AccountValue::text
              FROM filteredElementValues ev
          ),
      data AS
@@ -50,15 +50,21 @@ WITH filteredElementValues AS
                     (ending).balance                    endingBalance
              FROM balances
          )
-SELECT *
+SELECT AccountValue,
+       AccountName,
+       beginningBalance,
+       debit,
+       credit,
+       endingBalance
 FROM data
+ORDER BY AccountValue
 $$
     LANGUAGE sql STABLE;
 
 /*
 How to run:
 
-select * from SummaryAndBalanceListReport('2018-04-01'::date,
+select * from SummaryAndBalanceReport('2018-04-01'::date,
                                           '2018-05-31'::date,
                                           1000000,
                                           1000000)
