@@ -5,8 +5,8 @@ CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate timestamp,
                                                IN p_endDate timestamp)
     RETURNS TABLE
             (
-                AccountName             text,
                 AccountValue            text,
+                AccountName             text,
                 balance_three_years_ago numeric,
                 balance_two_years_ago   numeric,
                 balance_one_year_ago    numeric,
@@ -15,12 +15,13 @@ CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate timestamp,
 AS
 $BODY$
 
-SELECT ev.name                                                                                                                        AccountName,
-       ev.value                                                                                                                       AccountValue,
-       ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '3 Year'::interval, p_endDate - '3 Year'::interval) balance_three_years_ago,
-       ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '2 Year'::interval, p_endDate - '2 Year'::interval) balance_two_years_ago,
-       ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '1 Year'::interval, p_endDate - '1 Year'::interval) balance_one_year_ago,
-       ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate, p_endDate)                                           current_balance
+SELECT--
+      ev.value                                                                                                                       AccountValue,
+      ev.name                                                                                                                        AccountName,
+      ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '3 Year'::interval, p_endDate - '3 Year'::interval) balance_three_years_ago,
+      ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '2 Year'::interval, p_endDate - '2 Year'::interval) balance_two_years_ago,
+      ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '1 Year'::interval, p_endDate - '1 Year'::interval) balance_one_year_ago,
+      ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate, p_endDate)                                           current_balance
 FROM c_elementvalue ev
 WHERE TRUE
   AND ev.accounttype IN ('E', 'R')
