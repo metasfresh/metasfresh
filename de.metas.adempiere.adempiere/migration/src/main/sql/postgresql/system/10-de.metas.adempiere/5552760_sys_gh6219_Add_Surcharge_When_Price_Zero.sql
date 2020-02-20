@@ -1,65 +1,3 @@
-﻿DROP FUNCTION IF EXISTS M_DiscountSchemaLine_TransformPrices(
-	/* dsl */ M_DiscountSchemaLine
-	, /* p_PriceList */ numeric
-	, /* p_PriceStd */ numeric
-	, /* p_PriceLimit */ numeric
-	, /* p_Source_Currency_ID */ numeric
-	, /* p_Target_Currency_ID */ numeric
-	, /* p_Conv_Client_ID */ numeric
-	, /* p_Conv_Org_ID */ numeric
-	, /* p_ApplyDiscountSchema */ boolean
-)
-;
-DROP FUNCTION IF EXISTS M_DiscountSchemaLine_ROUND
-(
-	/* p_Price */ numeric
-	, /* p_RoundingMode */ varchar
-	, /* p_C_Currency_ID */ numeric
-);
---
-DROP TYPE IF EXISTS M_DiscountSchemaLine_TransformResult;
-
-create type M_DiscountSchemaLine_TransformResult as (
-	PriceList numeric
-	, PriceStd numeric
-	, PriceLimit numeric
-	, M_DiscountSchemaLine_ID numeric
-);
-COMMENT ON TYPE M_DiscountSchemaLine_TransformResult IS 'The result of M_DiscountSchemaLine_TransformPrices';
-
-
-
---
---
-CREATE OR REPLACE FUNCTION M_DiscountSchemaLine_ROUND
-(
-	p_Price numeric
-	, p_RoundingMode varchar
-	, p_C_Currency_ID numeric
-)
-RETURNS numeric AS
-$BODY$
-BEGIN
-	return CASE p_RoundingMode
-		WHEN 'N' THEN p_Price -- No rounding
-		WHEN '0' THEN ROUND(p_Price, 0) -- Even .00
-		WHEN 'D' THEN ROUND(p_Price, 1) -- Dime .10
-		WHEN 'T' THEN ROUND(p_Price, -1)  -- Ten 10.00
-		WHEN '5' THEN ROUND(p_Price*20,0)/20 -- Nickle .05
-		WHEN 'Q' THEN ROUND(p_Price*4,0)/4 -- Quarter .25
-		WHEN '9' THEN
-			CASE  -- Whole 9 or 5
-				WHEN MOD(ROUND(p_Price),10)<=5 THEN ROUND(p_Price)+(5-MOD(ROUND(p_Price),10))
-				WHEN MOD(ROUND(p_Price),10)>5 THEN ROUND(p_Price)+(9-MOD(ROUND(p_Price),10))
-			END
-		ELSE currencyRound(p_Price, p_C_Currency_ID, 'N') -- Currency rounding
-	END;
-END;
-$BODY$
-LANGUAGE plpgsql STABLE
-COST 100;
-
-
 
 
 --
@@ -86,7 +24,7 @@ BEGIN
 	p_PriceList = coalesce(currencyConvert(p_PriceList, p_Source_Currency_ID, p_Target_Currency_ID, dsl.ConversionDate, dsl.C_ConversionType_ID, p_Conv_Client_ID, p_Conv_Org_ID), 0);
 	p_PriceStd = coalesce(currencyConvert(p_PriceStd, p_Source_Currency_ID, p_Target_Currency_ID, dsl.ConversionDate, dsl.C_ConversionType_ID, p_Conv_Client_ID, p_Conv_Org_ID), 0);
 	p_PriceLimit = coalesce(currencyConvert(p_PriceLimit, p_Source_Currency_ID, p_Target_Currency_ID, dsl.ConversionDate, dsl.C_ConversionType_ID, p_Conv_Client_ID, p_Conv_Org_ID), 0);
-	
+
 	-- Initialize the result with converted prices, just in case the discount schema line rules will not be applied
 	v_result.PriceList = p_PriceList;
 	v_result.PriceStd = p_PriceStd;
@@ -118,8 +56,8 @@ BEGIN
 		v_result.PriceStd = (case dsl.Std_Base when 'F' then dsl.Std_Fixed else v_result.PriceStd end);
 		v_result.PriceLimit = (case dsl.Limit_Base when 'F' then dsl.Limit_Fixed else v_result.PriceLimit end);
 	end if;
-	
-	
+
+
 	return v_result;
 END;
 $BODY$
@@ -128,29 +66,4 @@ COST 100;
 
 
 
---
--- Test
-/*
-select
-	(t.prices).PriceList
-	, (t.prices).PriceStd
-	, (t.prices).PriceLimit
-	, t.*
-from (
-	select
-		M_DiscountSchemaLine_TransformPrices(
-			dsl := dsl
-			, p_PriceList := 1
-			, p_PriceStd := 2
-			, p_PriceLimit := 3
-			, p_Source_Currency_ID := 318
-			, p_Target_Currency_ID := 318
-			, p_Conv_Client_ID := 1000000
-			, p_Conv_Org_ID := 1000000
-		) as prices
-		, dsl.*
-	from M_DiscountSchemaLine dsl
-) t
-;
-*/
 
