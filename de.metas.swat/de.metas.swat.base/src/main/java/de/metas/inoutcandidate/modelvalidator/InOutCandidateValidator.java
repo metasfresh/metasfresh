@@ -23,8 +23,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -135,8 +135,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 			if (isDiverseChanged || isProductTypeChanged)
 			{
 				final ProductId productId = ProductId.ofRepoId(productPO.getM_Product_ID());
-				final boolean display = Services.get(IProductBL.class)
-						.getProductType(productId).isItem();
+				final boolean display = ProductType.ofCode(productPO.getProductType()).isItem();
 
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
