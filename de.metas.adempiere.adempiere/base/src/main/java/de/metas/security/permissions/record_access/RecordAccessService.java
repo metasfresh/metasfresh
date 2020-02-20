@@ -361,6 +361,7 @@ public class RecordAccessService
 		toRecord.setAccess(from.getPermission().getCode());
 		toRecord.setAD_User_ID(UserId.toRepoId(from.getPrincipal().getUserId()));
 		toRecord.setAD_UserGroup_ID(UserGroupId.toRepoId(from.getPrincipal().getUserGroupId()));
+		toRecord.setPermissionIssuer(from.getIssuer().getCode());
 	}
 
 	private void deleteByIds(final Collection<Integer> repoIds)
