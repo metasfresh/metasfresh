@@ -1391,11 +1391,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Stream<BPartnerId> streamChildBPartnerIds(@NonNull final BPartnerId parentPartnerId)
+	public Stream<BPartnerId> streamBPartnerIdsBySalesRepBPartnerId(@NonNull final BPartnerId salesRepBPartnerId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, parentPartnerId)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(BPartnerId::ofRepoId)

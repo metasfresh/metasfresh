@@ -46,21 +46,20 @@ public class RecordAccessChangeEventDispatcher
 
 	public static final Topic TOPIC = Topic.remote("de.metas.security.permissions.record_access.RecordAccessChangeEvent");
 
-	private final CompositeRecordAccessHandler _handlers;
+	private final RecordAccessConfigService configs;
 	private final IEventBusFactory eventBusFactory;
 
 	public RecordAccessChangeEventDispatcher(
 			@NonNull final RecordAccessConfigService configs,
 			@NonNull final IEventBusFactory eventBusFactory)
 	{
-		this._handlers = configs.getAllHandlers();
+		this.configs = configs;
 		this.eventBusFactory = eventBusFactory;
 	}
 
-	@VisibleForTesting
-	public CompositeRecordAccessHandler getHandlers()
+	private CompositeRecordAccessHandler getHandlers()
 	{
-		return _handlers;
+		return configs.getAllHandlers();
 	}
 
 	@PostConstruct

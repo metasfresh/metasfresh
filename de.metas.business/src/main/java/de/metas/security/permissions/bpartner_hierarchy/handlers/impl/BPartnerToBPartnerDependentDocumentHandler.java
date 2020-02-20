@@ -66,7 +66,7 @@ public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDepen
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IBPartnerDAO.class)
-				.streamChildBPartnerIds(bpartnerId)
+				.streamBPartnerIdsBySalesRepBPartnerId(bpartnerId)
 				.map(childBPartnerId -> TableRecordReference.of(I_C_BPartner.Table_Name, childBPartnerId));
 	}
 }
