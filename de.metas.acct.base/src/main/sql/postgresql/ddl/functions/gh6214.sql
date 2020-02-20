@@ -25,6 +25,10 @@ CREATE TEMPORARY TABLE temp_gh6241
 )
 ;
 
+--
+-- Invoice Amount to Date
+SELECT invoiceopentodate()
+
 WITH invoicesAndPaymentsInPeriod AS
          (
              SELECT --
@@ -95,3 +99,19 @@ FROM invoicesAndPaymentsInPeriod
 
 SELECT *
 FROM temp_gh6241;
+;
+
+
+
+SELECT --
+--        sum((openItems).openamt),
+       *
+FROM de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) openItems
+;
+
+SELECT c_bpartner_id, count(1)
+FROM c_invoice
+GROUP BY c_bpartner_id
+ORDER BY 2 DESC
+;
+
