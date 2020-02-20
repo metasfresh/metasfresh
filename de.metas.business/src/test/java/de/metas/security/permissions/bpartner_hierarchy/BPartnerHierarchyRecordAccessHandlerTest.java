@@ -103,6 +103,7 @@ public class BPartnerHierarchyRecordAccessHandlerTest
 
 		final RecordAccessChangeEventDispatcher eventDispatcher = new RecordAccessChangeEventDispatcher(configs, eventBusFactory)
 		{
+			@Override
 			public CompositeRecordAccessHandler getHandlers()
 			{
 				return CompositeRecordAccessHandler.of(ImmutableList.of(bpHierarchyRecordAccessHandler));
