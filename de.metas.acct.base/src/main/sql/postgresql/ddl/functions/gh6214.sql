@@ -25,7 +25,11 @@ AS
 $BODY$
 DECLARE
     v_time timestamp;
+    v_temp numeric;
+
 BEGIN
+    v_time := logDebug('start');
+
     DROP TABLE IF EXISTS temp_gh6214;
     CREATE TEMPORARY TABLE temp_gh6214
     (
@@ -42,6 +46,7 @@ BEGIN
         rowid                  NUMERIC,
         ad_org_id              NUMERIC
     );
+    v_time := logDebug('created empty temporary table', v_time);
 
 
     --
@@ -120,11 +125,17 @@ BEGIN
            LIMIT 1) orgCurrencyCode
     FROM invoicesAndPaymentsInPeriod i;
 
+    GET DIAGNOSTICS v_temp = ROW_COUNT;
+    v_time := logDebug('inserted invoices and payments: ' || v_temp || ' records', v_time);
+
 
     --
     -- Update the amount to be in the base currency -- todo maybe this can be merged into the insert step
     UPDATE temp_gh6214 t
     SET amount = (SELECT currencybase(t.amount, t.c_currency_id_original, t.dateacct, p_ad_client_id, t.ad_org_id));
+
+    GET DIAGNOSTICS v_temp = ROW_COUNT;
+    v_time := logDebug('Update amount to base currency', v_time);
 
 
     --
@@ -145,6 +156,9 @@ BEGIN
     FROM correctAmounts c
     WHERE c.rowid = t.rowid;
 
+    GET DIAGNOSTICS v_temp = ROW_COUNT;
+    v_time := logDebug('Update amount by document type', v_time);
+
 
     --
     -- Update the beginning and end balances with the initial "Open Invoice Amount to Date"
@@ -156,6 +170,9 @@ BEGIN
                     sum((openItems).openamt) OpenInvoiceAmountToDate
              FROM de_metas_endcustomer_fresh_reports.OpenItems_Report((p_dateFrom - INTERVAL '1 days')::date) openItems -- dateFrom
          ) t;
+
+    GET DIAGNOSTICS v_temp = ROW_COUNT;
+    v_time := logDebug('Update beginning and end balance with "Open Invoices Amount to Date"', v_time);
 
 
     --
@@ -183,6 +200,8 @@ BEGIN
         beginningBalance = d.beginningBalance
     FROM finalData d
     WHERE t.rowid = d.rowid;
+
+    v_time := logDebug('finished calculating rolling sum', v_time);
 
 
     --
@@ -226,29 +245,62 @@ FROM gh6214(NULL,
 ORDER BY dateacct, documentno
 ;
 
+/*
+NO bpartner filtering
 
 
---------
---------
---------
---------
---------
---------
---------
+V1. perf: all updates are individual steps
 
--- SELECT docbasetype, *
--- FROM c_doctype
--- WHERE docbasetype in ('ARC', 'APC')
---
--- ARC = Credit memo (receipt)
--- APC = Credit memo (payment)
+[2020-02-21 13:50:52] [00000] [2020-02-21 11:50:51.378825](0s) [Δ=0s]: start
+[2020-02-21 13:50:52] [00000] [2020-02-21 11:50:51.384467](0s) [Δ=0s]: created empty temporary table
+[2020-02-21 13:50:52] [00000] [2020-02-21 11:50:51.976961](1s) [Δ=1s]: inserted invoices and payments: 216375 records
+[2020-02-21 13:50:58] [00000] [2020-02-21 11:50:57.366161](6s) [Δ=5s]: Update amount to base currency
+[2020-02-21 13:50:58] [00000] [2020-02-21 11:50:58.225999](7s) [Δ=1s]: Update amount by document type
+[2020-02-21 13:52:30] [00000] [2020-02-21 11:52:29.619975](99s) [Δ=92s]: Update beginning and end balances with "Open Invoices Amount to Date"
+[2020-02-21 13:52:31] [00000] [2020-02-21 11:52:31.144835](100s) [Δ=1s]: finished calculating rolling sum
+Total = 100s
 
---
--- --
--- -- generic group by for anything you may want
--- SELECT c_bpartner_id, count(1)
--- FROM c_invoice
--- GROUP BY c_bpartner_id
--- ORDER BY 2 DESC
--- ;
---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
