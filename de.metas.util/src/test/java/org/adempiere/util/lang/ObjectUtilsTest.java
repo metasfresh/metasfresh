@@ -1,9 +1,8 @@
 package org.adempiere.util.lang;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -45,7 +44,7 @@ public class ObjectUtilsTest
 		final String string = new MyObject().toString();
 
 		// actually assert that there is no stack overflow
-		assertThat(string, containsString("ExtendedReflectionToStringBuilder threw"));
+		assertThat(string).contains("ExtendedReflectionToStringBuilder threw");
 	}
 
 	public static final String toStringMockup(final Object obj)

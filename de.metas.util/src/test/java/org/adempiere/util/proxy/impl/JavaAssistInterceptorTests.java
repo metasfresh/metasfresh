@@ -1,12 +1,6 @@
 package org.adempiere.util.proxy.impl;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.Matchers.typeCompatibleWith;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +8,7 @@ import java.util.Set;
 import org.adempiere.util.proxy.AroundInvoke;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.IInvocationContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.util.ISingletonService;
 import javassist.util.proxy.Proxy;
@@ -59,17 +53,16 @@ public class JavaAssistInterceptorTests
 		javaAssistInterceptor.registerInterceptor(Cached.class, interceptordummy);
 		final Class<TestService> interceptedClass = javaAssistInterceptor.createInterceptedClass(TestService.class);
 
-		assertThat(interceptedClass, notNullValue());
-		assertThat(interceptedClass, typeCompatibleWith(TestService.class));
-		assertThat(interceptedClass, not(sameInstance(TestService.class))); // we expect a proxy class, not TestService.class itself
+		assertThat(interceptedClass).isNotNull();
+		assertThat(interceptedClass).isNotEqualTo(TestService.class); // we expect a proxy class, not TestService.class itself
 
 		final TestService interceptedInstance = interceptedClass.newInstance();
-		assertThat(interceptedInstance, instanceOf(Proxy.class));
+		assertThat(interceptedInstance).isInstanceOf(Proxy.class);
 
 		interceptedInstance.testMethod1();
 		interceptedInstance.testMethod2();
-		assertThat(interceptordummy.interceptedInvocations.contains("testMethod1"), is(true));
-		assertThat(interceptordummy.interceptedInvocations.contains("testMethod2"), is(false));
+		assertThat(interceptordummy.interceptedInvocations).contains("testMethod1");
+		assertThat(interceptordummy.interceptedInvocations).doesNotContain("testMethod2");
 	}
 
 	/**
@@ -87,12 +80,12 @@ public class JavaAssistInterceptorTests
 		javaAssistInterceptor.registerInterceptor(Cached.class, interceptordummy);
 		final Class<TestService2> interceptedClass = javaAssistInterceptor.createInterceptedClass(TestService2.class);
 
-		assertThat(interceptedClass, notNullValue());
-		assertThat(interceptedClass, typeCompatibleWith(TestService2.class));
-		assertThat(interceptedClass, sameInstance(TestService2.class));
+		assertThat(interceptedClass).isNotNull();
+		assertThat(interceptedClass).isAssignableFrom(TestService2.class);
+		assertThat(interceptedClass).isSameAs(TestService2.class);
 	}
 
-	static interface ITestService extends ISingletonService
+	interface ITestService extends ISingletonService
 	{
 		void testMethod1();
 

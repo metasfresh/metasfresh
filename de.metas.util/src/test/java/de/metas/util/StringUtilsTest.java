@@ -1,11 +1,5 @@
 package de.metas.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import org.adempiere.util.lang.IPair;
-
 /*
  * #%L
  * de.metas.util
@@ -28,8 +22,11 @@ import org.adempiere.util.lang.IPair;
  * #L%
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.adempiere.util.lang.IPair;
+import org.junit.jupiter.api.Test;
 
 import de.metas.util.StringUtils.TruncateAt;
 
@@ -57,10 +54,11 @@ public class StringUtilsTest
 		testTrunc("1234567890", 13, "1234567890");
 	}
 
-	@Test(expected = StringIndexOutOfBoundsException.class)
+	@Test
 	public void testTrunc_invalidLength()
 	{
-		testTrunc("1234567890", -10, "1234567890");
+		assertThatThrownBy(() -> testTrunc("1234567890", -10, "1234567890"))
+				.isInstanceOf(StringIndexOutOfBoundsException.class);
 	}
 
 	private final void testTrunc(final String string, final int length, final String resultExpected)
@@ -129,23 +127,25 @@ public class StringUtilsTest
 	@Test
 	public void test_quote()
 	{
-		assertThat(StringUtils.formatMessage("{0} text with ' quote", "test"), is("test text with ' quote"));
-		assertThat(StringUtils.formatMessage("text with ' quote {0}", "test"), is("text with ' quote test"));
-		assertThat(StringUtils.formatMessage("{0} text with '' doublequote", "test"), is("test text with '' doublequote"));
-		assertThat(StringUtils.formatMessage("text with '' doublequote {0}", "test"), is("text with '' doublequote test"));
+		assertThat(StringUtils.formatMessage("{0} text with ' quote", "test")).isEqualTo("test text with ' quote");
+		assertThat(StringUtils.formatMessage("text with ' quote {0}", "test")).isEqualTo("text with ' quote test");
+		assertThat(StringUtils.formatMessage("{0} text with '' doublequote", "test")).isEqualTo("test text with '' doublequote");
+		assertThat(StringUtils.formatMessage("text with '' doublequote {0}", "test")).isEqualTo("text with '' doublequote test");
 	}
 
 	@Test
 	public void test_overlayAtEnd()
 	{
-		assertThat(StringUtils.overlayAtEnd("0000000000", "123456"), is("0000123456"));
-		assertThat(StringUtils.overlayAtEnd("000a000000", "123456"), is("000a123456"));
-		assertThat(StringUtils.overlayAtEnd("000", "123456"), is("123456"));
+		assertThat(StringUtils.overlayAtEnd("0000000000", "123456")).isEqualTo("0000123456");
+		assertThat(StringUtils.overlayAtEnd("000a000000", "123456")).isEqualTo("000a123456");
+		assertThat(StringUtils.overlayAtEnd("000", "123456")).isEqualTo("123456");
 	}
 
 	private void test_isNumber(final String string, final boolean expected)
 	{
-		Assert.assertEquals("Invalid StringUtils.isNumber() return for string: " + string, expected, StringUtils.isNumber(string));
+		assertThat(StringUtils.isNumber(string))
+				.as("Invalid StringUtils.isNumber() return for string: " + string)
+				.isEqualTo(expected);
 	}
 
 	@Test

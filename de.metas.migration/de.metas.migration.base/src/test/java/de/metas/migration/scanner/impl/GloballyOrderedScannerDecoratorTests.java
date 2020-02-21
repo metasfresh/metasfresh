@@ -1,16 +1,14 @@
 package de.metas.migration.scanner.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,19 +46,19 @@ public class GloballyOrderedScannerDecoratorTests
 	public void testExtractSequenceNumber()
 	{
 		// return prefix before first '_'
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234_sys_test.sql"), is("1234"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234_sys_test.sql")).isEqualTo("1234");
 
 		// no '_' => full name
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234-sys-test.sql"), is("1234-sys-test.sql"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234-sys-test.sql")).isEqualTo("1234-sys-test.sql");
 
 		// empty => empty
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber(""), is(""));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("")).isEqualTo("");
 
 		// empty prefix (just '_') => full name
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("_sys_test.sql"), is("_sys_test.sql"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("_sys_test.sql")).isEqualTo("_sys_test.sql");
 
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5441640_sys_09848_add_table_AD_JAXRS_Endpoint.sql"), is("5441640"));
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5442050_sys_09628_add_AD_JavaClasses_and_JaxRs_Endpoints.sql"), is("5442050"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5441640_sys_09848_add_table_AD_JAXRS_Endpoint.sql")).isEqualTo("5441640");
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5442050_sys_09628_add_AD_JavaClasses_and_JaxRs_Endpoints.sql")).isEqualTo("5442050");
 	}
 
 	/**
@@ -78,10 +76,10 @@ public class GloballyOrderedScannerDecoratorTests
 
 		final GloballyOrderedScannerDecorator testee = new GloballyOrderedScannerDecorator(PlainListScriptScanner.fromScripts(ImmutableList.<IScript>of(script1, script2)));
 		final Iterator<IScript> iterator = testee.lexiographicallyOrderedScriptsSupplier.get();
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(script2));
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(script1));
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(script2);
+		assertThat(iterator.hasNext()).isTrue();
+		assertThat(iterator.next()).isEqualTo(script1);
 	}
 
 	/**
@@ -91,18 +89,11 @@ public class GloballyOrderedScannerDecoratorTests
 	@Test
 	public void testTreeSet()
 	{
-		final TreeSet<String> set = new TreeSet<String>(new Comparator<String>()
-		{
-			@Override
-			public int compare(final String o1, final String o2)
-			{
-				return o1.substring(0, 1).compareTo(o2.substring(0, 1));
-			}
-		});
+		final TreeSet<String> set = new TreeSet<>((o1, o2) -> o1.substring(0, 1).compareTo(o2.substring(0, 1)));
 
 		set.add("String1");
 		set.add("String2");
 
-		assertThat(set.size(), is(1));
+		assertThat(set).hasSize(1);
 	}
 }

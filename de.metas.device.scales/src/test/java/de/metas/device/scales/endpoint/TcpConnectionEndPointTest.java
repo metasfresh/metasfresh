@@ -1,9 +1,7 @@
 package de.metas.device.scales.endpoint;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +12,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.device.scales.impl.ICmd;
 import de.metas.device.scales.impl.sics.ISiscCmd;
@@ -58,7 +56,7 @@ public class TcpConnectionEndPointTest
 
 	private static Thread serverSocketThread;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setupEP()
 	{
 		tcpConnectionEndPoint = new TcpConnectionEndPoint();
@@ -71,10 +69,8 @@ public class TcpConnectionEndPointTest
 	/**
 	 * Create a server socket to emulate the scale.
 	 * It picks a port each time it is run, in order to prevent issued with ports that are already in use.
-	 *
-	 * @throws InterruptedException
 	 */
-	@Before
+	@BeforeEach
 	public void setUpServer() throws InterruptedException
 	{
 		exitServerSocketThread = false;
@@ -161,9 +157,9 @@ public class TcpConnectionEndPointTest
 		final String result = tcpConnectionEndPoint.sendCmd(cmd);
 		final String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
 
-		assertThat(result, is(expectedResult));
-		assertThat(serverSocketReceived.size(), is(1));
-		assertThat(serverSocketReceived.get(0), is(cmd));
+		assertThat(result).isEqualTo(expectedResult);
+		assertThat(serverSocketReceived).hasSize(1);
+		assertThat(serverSocketReceived.get(0)).isEqualTo(cmd);
 	}
 
 	@Test
@@ -174,16 +170,16 @@ public class TcpConnectionEndPointTest
 
 		String result = tcpConnectionEndPoint.sendCmd(cmd);
 		String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
-		assertThat(result, is(expectedResult));
-		assertThat(serverSocketReceived.size(), is(1));
-		assertThat(serverSocketReceived.get(0), is(cmd));
+		assertThat(result).isEqualTo(expectedResult);
+		assertThat(serverSocketReceived).hasSize(1);
+		assertThat(serverSocketReceived.get(0)).isEqualTo(cmd);
 
 		weight = 220;
 		result = tcpConnectionEndPoint.sendCmd(cmd);
 		expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
-		assertThat(result, is(expectedResult));
-		assertThat(serverSocketReceived.size(), is(2));
-		assertThat(serverSocketReceived.get(1), is(cmd));
+		assertThat(result).isEqualTo(expectedResult);
+		assertThat(serverSocketReceived).hasSize(2);
+		assertThat(serverSocketReceived.get(1)).isEqualTo(cmd);
 	}
 
 	/**
@@ -191,13 +187,15 @@ public class TcpConnectionEndPointTest
 	 *
 	 * @throws InterruptedException
 	 */
-	@After
+	@AfterEach
 	public void tearDown() throws InterruptedException
 	{
 		exitServerSocketThread = true;
 
-		assertThat(serverSocketThread, notNullValue());
+		assertThat(serverSocketThread).isNotNull();
 		serverSocketThread.join(3000); // waiting for just three seconds, we don't want the whole build to stall
-		assertThat("serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
+		assertThat(serverSocketThread.isAlive())
+				.as("serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread)
+				.isFalse();
 	}
 }

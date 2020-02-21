@@ -340,6 +340,19 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<!-- used by legacy tests -->
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- used by legacy tests -->
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 </project>

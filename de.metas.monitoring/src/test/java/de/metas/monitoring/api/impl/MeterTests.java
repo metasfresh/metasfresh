@@ -1,5 +1,7 @@
 package de.metas.monitoring.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.monitoring
@@ -13,25 +15,20 @@ package de.metas.monitoring.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.util.time.SystemTime;
-import de.metas.util.time.TimeSource;
 
 public class MeterTests
 {
@@ -43,8 +40,10 @@ public class MeterTests
 		setTime(0);
 		meter.plusOne();
 
-		assertThat(meter.getInvokeCount(), is(1L));
-		assertThat("After only one count, rate shall still be zero", meter.getInvokeRate(), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(meter.getInvokeCount()).isOne();
+		assertThat(meter.getInvokeRate())
+				.as("After only one count, rate shall still be zero")
+				.isZero();
 	}
 
 	@Test
@@ -56,10 +55,10 @@ public class MeterTests
 
 		setTime(500);
 		meter.plusOne();
-		
-		assertThat(meter.getGauge(), is(2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(new BigDecimal("2")));
+
+		assertThat(meter.getGauge()).isEqualTo(2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isEqualByComparingTo("2");
 	}
 
 	@Test
@@ -71,10 +70,10 @@ public class MeterTests
 
 		setTime(1000);
 		meter.plusOne();
-		
-		assertThat(meter.getGauge(), is(2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(BigDecimal.ONE));
+
+		assertThat(meter.getGauge()).isEqualTo(2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isOne();
 	}
 
 	@Test
@@ -86,10 +85,10 @@ public class MeterTests
 
 		setTime(2000);
 		meter.plusOne();
-		
-		assertThat(meter.getGauge(), is(2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(new BigDecimal("0.5")));
+
+		assertThat(meter.getGauge()).isEqualTo(2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isEqualByComparingTo("0.5");
 	}
 
 	@Test
@@ -101,10 +100,10 @@ public class MeterTests
 
 		setTime(1000);
 		meter.minusOne();
-		
-		assertThat(meter.getGauge(), is(-2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(BigDecimal.ONE));
+
+		assertThat(meter.getGauge()).isEqualTo(-2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isEqualByComparingTo("1");
 	}
 
 	@Test
@@ -116,13 +115,12 @@ public class MeterTests
 
 		setTime(2000);
 		meter.minusOne();
-		
-		assertThat(meter.getGauge(), is(-2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(new BigDecimal("0.5")));
+
+		assertThat(meter.getGauge()).isEqualTo(-2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isEqualByComparingTo("0.5");
 	}
-	
-	
+
 	/**
 	 * Verifies that <code>Meter</code> is tolerant aginst the time going backwards (which might be the case when {@link SystemTime} is manipulated for whatever reason).
 	 */
@@ -132,13 +130,13 @@ public class MeterTests
 		final Meter meter = new Meter();
 		setTime(1000);
 		meter.plusOne();
-		
+
 		setTime(500);
 		meter.plusOne();
-		
-		assertThat(meter.getGauge(), is(2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(new BigDecimal("2")));
+
+		assertThat(meter.getGauge()).isEqualTo(2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isEqualByComparingTo("2");
 	}
 
 	@Test
@@ -147,24 +145,17 @@ public class MeterTests
 		final Meter meter = new Meter();
 		setTime(1000);
 		meter.plusOne();
-		
+
 		setTime(1000);
 		meter.plusOne();
-		
-		assertThat(meter.getGauge(), is(2L));
-		assertThat(meter.getInvokeCount(), is(2L));
-		assertThat(meter.getInvokeRate(), comparesEqualTo(new BigDecimal(Long.MAX_VALUE)));
+
+		assertThat(meter.getGauge()).isEqualTo(2L);
+		assertThat(meter.getInvokeCount()).isEqualTo(2L);
+		assertThat(meter.getInvokeRate()).isEqualByComparingTo(new BigDecimal(Long.MAX_VALUE));
 	}
 
-	
 	private void setTime(final long millis)
 	{
-		SystemTime.setTimeSource(new TimeSource()
-		{
-			public long millis()
-			{
-				return millis;
-			}
-		});
+		SystemTime.setTimeSource(() -> millis);
 	}
 }
