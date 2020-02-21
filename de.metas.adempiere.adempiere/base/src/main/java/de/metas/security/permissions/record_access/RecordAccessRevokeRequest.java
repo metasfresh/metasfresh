@@ -40,6 +40,7 @@ public class RecordAccessRevokeRequest
 {
 	TableRecordReference recordRef;
 	Principal principal;
+	PermissionIssuer issuer;
 
 	boolean revokeAllPermissions;
 	ImmutableSet<Access> permissions;
@@ -48,12 +49,14 @@ public class RecordAccessRevokeRequest
 	private RecordAccessRevokeRequest(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull Principal principal,
+			@NonNull PermissionIssuer issuer,
 			//
 			final boolean revokeAllPermissions,
 			@Singular final Set<Access> permissions)
 	{
 		this.recordRef = recordRef;
 		this.principal = principal;
+		this.issuer = issuer;
 
 		if (revokeAllPermissions)
 		{

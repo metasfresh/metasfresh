@@ -326,6 +326,10 @@ final class EventBus implements IEventBus
 						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();
 			}
+			else
+			{
+				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
+			}
 		}
 		finally
 		{

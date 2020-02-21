@@ -7,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -37,7 +39,8 @@ import de.metas.util.Services;
  */
 
 @Component
-class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
