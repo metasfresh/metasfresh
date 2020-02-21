@@ -7,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -37,7 +39,8 @@ import de.metas.util.Services;
  */
 
 @Component
-class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 	@Override
 	public String getDocumentTableName()

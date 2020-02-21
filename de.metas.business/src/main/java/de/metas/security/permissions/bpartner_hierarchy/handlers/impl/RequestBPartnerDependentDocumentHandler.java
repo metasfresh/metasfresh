@@ -7,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_R_Request;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestDAO;
@@ -37,6 +39,7 @@ import de.metas.util.Services;
  */
 
 @Component
+@VisibleForTesting
 public class RequestBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
