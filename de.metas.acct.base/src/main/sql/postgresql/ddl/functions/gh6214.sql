@@ -63,6 +63,7 @@ BEGIN
                  FROM c_invoice i
                  WHERE TRUE
                    -- AND i.c_bpartner_id = p_c_bpartner_id -- todo
+                   todo fix bpartner, test on sp80, deploy
                    AND i.dateacct >= p_dateFrom
                    AND i.dateacct <= p_dateTo
                    AND i.issotrx = p_isSoTrx
