@@ -1,3 +1,6 @@
+-- todo new function name: BusinessPartnerOpenAmountToDate ; this is used to get the invoice open amount, instead of the big heavy call to OpenItems_Report
+
+
 -- todo name this Partner Account Sheet
 DROP FUNCTION IF EXISTS gh6214(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT);
 
@@ -20,25 +23,28 @@ CREATE OR REPLACE FUNCTION gh6214(p_c_bpartner_id numeric,
             )
 AS
 $BODY$
+BEGIN
 
-DROP TABLE IF EXISTS temp_gh6214;
-
+    DROP TABLE IF EXISTS temp_gh6214;
     CREATE TEMPORARY TABLE temp_gh6214
     (
-        beginningBalance       numeric,
-        amount                 numeric,
-        endingBalance          numeric,
+        beginningBalance       NUMERIC,
+        amount                 NUMERIC,
+        endingBalance          NUMERIC,
         dateacct               date,
-        description            text,
-        c_doctype_id           numeric,
-        documentno             text,
-        created                timestamp,
-        c_currency_id_original numeric,
-        rowid                  numeric,
-        ad_org_id              numeric
-    )
-    ;
+        description            TEXT,
+        c_doctype_id           NUMERIC,
+        documentno             TEXT,
+        created                TIMESTAMP,
+        c_currency_id_original NUMERIC,
+        orgCurrencyCode        text,
+        rowid                  NUMERIC,
+        ad_org_id              NUMERIC
+    );
 
+
+    --
+    -- insert working data
     WITH invoicesAndPaymentsInPeriod AS
              (
                  SELECT --
@@ -46,7 +52,7 @@ DROP TABLE IF EXISTS temp_gh6214;
                         i.grandtotal                           amount,
                         0                                      endingBalance,
                         i.dateacct                             dateacct,
-                        coalesce(i.poreference, i.description) description,
+                        COALESCE(i.poreference, i.description) description,
                         i.c_doctype_id                         c_doctype_id,
                         i.documentno                           documentno,
                         i.created                              created,
@@ -59,7 +65,7 @@ DROP TABLE IF EXISTS temp_gh6214;
                    AND i.dateacct <= p_dateTo
                    AND i.issotrx = p_isSoTrx
                    AND i.docstatus IN ('CO', 'CL')
-                   AND (coalesce(p_ad_org_id, 0) <= 0 OR i.ad_org_id = p_ad_org_id)
+                   AND (COALESCE(p_ad_org_id, 0) <= 0 OR i.ad_org_id = p_ad_org_id)
                  UNION ALL
                  SELECT --
                         0               beginningBalance,
@@ -79,7 +85,7 @@ DROP TABLE IF EXISTS temp_gh6214;
                    AND p.dateacct <= p_dateTo
                    AND p.isreceipt = p_isSoTrx
                    AND p.docstatus IN ('CO', 'CL')
-                   AND (coalesce(p_ad_org_id, 0) <= 0 OR p.ad_org_id = p_ad_org_id)
+                   AND (COALESCE(p_ad_org_id, 0) <= 0 OR p.ad_org_id = p_ad_org_id)
              )
     INSERT
     INTO temp_gh6214(beginningBalance,
@@ -92,27 +98,32 @@ DROP TABLE IF EXISTS temp_gh6214;
                      created,
                      c_currency_id_original,
                      rowid,
-                     ad_org_id)
+                     ad_org_id,
+                     orgCurrencyCode)
     SELECT--
-          beginningBalance,
-          amount,
-          endingBalance,
-          dateacct,
-          description,
-          c_doctype_id,
-          documentno,
-          created,
-          c_currency_id,
+          i.beginningBalance,
+          i.amount,
+          i.endingBalance,
+          i.dateacct,
+          i.description,
+          i.c_doctype_id,
+          i.documentno,
+          i.created,
+          i.c_currency_id,
           row_number() OVER (),
-          ad_org_id
-    FROM invoicesAndPaymentsInPeriod
-    ;
+          i.ad_org_id,
+          (SELECT iso_code
+           FROM c_currency c
+                    INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
+                    INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
+           LIMIT 1) orgCurrencyCode
+    FROM invoicesAndPaymentsInPeriod i;
 
 
     --
     -- Update the amount to be in the base currency -- todo maybe this can be merged into the insert step
-    UPDATE temp_gh6214
-    SET amount = (SELECT currencybase(amount, c_currency_id_original, dateacct, p_ad_client_id, ad_org_id));
+    UPDATE temp_gh6214 t
+    SET amount = (SELECT currencybase(t.amount, t.c_currency_id_original, t.dateacct, p_ad_client_id, t.ad_org_id));
 
 
     --
@@ -129,8 +140,7 @@ DROP TABLE IF EXISTS temp_gh6214;
              SELECT --
                     sum((openItems).openamt) OpenInvoiceAmountToDate
              FROM de_metas_endcustomer_fresh_reports.OpenItems_Report((p_dateFrom - INTERVAL '1 days')::date) openItems -- dateFrom
-         ) t
-    ;
+         ) t;
 
 
     --
@@ -148,44 +158,47 @@ DROP TABLE IF EXISTS temp_gh6214;
          finalData AS
              (
                  SELECT --
-                        rowid,
-                        endingBalance,
-                        endingBalance - currentAmount beginningBalance
-                 FROM endingBalanceSum
+                        ebs.rowid,
+                        ebs.endingBalance,
+                        ebs.endingBalance - ebs.currentAmount beginningBalance
+                 FROM endingBalanceSum ebs
              )
     UPDATE temp_gh6214 t
     SET endingBalance    = d.endingBalance,
         beginningBalance = d.beginningBalance
     FROM finalData d
-    WHERE t.rowid = d.rowid
-    ;
+    WHERE t.rowid = d.rowid;
+
 
     --
     -- return the data
-    SELECT --
-           beginningBalance,
-           amount,
-           endingBalance,
-           dateAcct,
-           NULL doctype,     -- todo
-           documentno,
-           description,
-           NULL org_currency -- todo
-    FROM temp_gh6214;
+    RETURN QUERY SELECT --
+                        t.beginningBalance,
+                        t.amount,
+                        t.endingBalance,
+                        t.dateAcct,
+                        NULL::TEXT      doctype, -- todo
+                        t.documentno,
+                        t.description,
+                        orgCurrencyCode currency -- todo
+                 FROM temp_gh6214 t;
 
-    $BODY$
-    LANGUAGE SQL STABLE;
+END;
+$BODY$
+    LANGUAGE plpgsql
+    VOLATILE;
 
 
-SELECT beginningBalance,
-       amount,
-       endingBalance,
-       beginningBalance + amount AS checkk,
-       dateacct,
-       doctype,
-       documentno,
-       description,
-       currency
+SELECT--
+      beginningBalance,
+      amount,
+      endingBalance,
+      beginningBalance + amount AS checkk,
+      dateacct,
+      doctype,
+      documentno,
+      description,
+      currency
 FROM gh6214(NULL,
             '1111-1-1'::date,
             '3333-1-1'::date,
@@ -219,3 +232,4 @@ ORDER BY dateacct, documentno
 -- ORDER BY 2 DESC
 -- ;
 --
+
