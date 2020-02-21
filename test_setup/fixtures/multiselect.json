@@ -1,0 +1,53 @@
+{
+  "options": [
+    {
+      "key": "1000945",
+      "caption": "820590",
+      "description": "Dieser Text wurde im Textfeld \"Beschreibung\" unter Belegart/Bestellung eingegeben."
+    },
+    {
+      "key": "1000102",
+      "caption": "0082"
+    },
+    {
+      "key": "1000310",
+      "caption": "0208"
+    },
+    {
+      "key": "1000344",
+      "caption": "0226"
+    },
+    {
+      "key": "1000406",
+      "caption": "0256"
+    },
+    {
+      "key": "1000431",
+      "caption": "0278"
+    },
+    {
+      "key": "1001076",
+      "caption": "0741"
+    },
+    {
+      "key": "1001397",
+      "caption": "1086",
+      "description": "This text was recorded in the \"Description\" line of the data entry \"Sales Order\" under DOCUMENT TYPE TRANSLATION in the menu."
+    },
+    {
+      "key": "1000016",
+      "caption": "820465"
+    }
+  ],
+  "isToggled": false,
+  "selectedItems": [
+    {
+      "key": "1000310",
+      "caption": "0208"
+    },
+    {
+      "key": "1000431",
+      "caption": "0278"
+    }
+  ]
+}
