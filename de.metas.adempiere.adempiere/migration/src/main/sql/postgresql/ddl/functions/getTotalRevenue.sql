@@ -11,23 +11,31 @@ $$
 
 SELECT sum
            (
-               currencyBase
-                   (
+                   CASE
+                       WHEN dt.DocBaseType IN ('ARC', 'APC') -- subtract credit memos
+                           THEN -1
+                       ELSE
+                           1
+                       END
+                   *
+                   currencyBase
                        (
-                           SELECT CASE
-                                      WHEN i.IsTaxIncluded = 'Y' THEN il.LineNetAmt - il.TaxAmtInfo
-                                      ELSE il.LineNetAmt
-                                      END
-                       ), -- amt
-                       i.C_Currency_ID, -- currencyFrom
-                       i.DateInvoiced, -- date
-                       p_AD_Client_ID,
-                       p_AD_Org_ID
-                   )
+                           (
+                               SELECT CASE
+                                          WHEN i.IsTaxIncluded = 'Y' THEN il.LineNetAmt - il.TaxAmtInfo
+                                          ELSE il.LineNetAmt
+                                          END
+                           ), -- amt
+                           i.C_Currency_ID, -- currencyFrom
+                           i.DateInvoiced, -- date
+                           p_AD_Client_ID,
+                           p_AD_Org_ID
+                       )
            )
 
 FROM C_InvoiceLine il
          JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
+         JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID
 
 WHERE i.isSOTrx = 'Y'
   AND il.IsActive = 'Y'
