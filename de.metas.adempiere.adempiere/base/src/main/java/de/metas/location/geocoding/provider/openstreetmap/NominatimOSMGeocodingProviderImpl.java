@@ -24,9 +24,10 @@ package de.metas.location.geocoding.provider.openstreetmap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.cache.CCache;
-import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -40,6 +41,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -59,7 +61,9 @@ public class NominatimOSMGeocodingProviderImpl implements GeocodingProvider
 	@SuppressWarnings("SpellCheckingInspection")
 	private static final String QUERY_STRING = "?street={numberAndStreet}&city={city}&postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
 
-	private final RestTemplate restTemplate = new RestTemplateBuilder().build();
+	private final RestTemplate restTemplate = new RestTemplateBuilder()
+			.messageConverters(new MappingJackson2HttpMessageConverter(JsonObjectMapperHolder.sharedJsonObjectMapper()))
+			.build();
 
 	private final CCache<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>> coordinatesCache;
 
