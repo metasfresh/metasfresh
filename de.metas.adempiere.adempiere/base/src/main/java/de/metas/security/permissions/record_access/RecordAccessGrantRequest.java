@@ -42,17 +42,20 @@ public class RecordAccessGrantRequest
 	TableRecordReference recordRef;
 	Principal principal;
 	ImmutableSet<Access> permissions;
+	PermissionIssuer issuer;
 
 	@Builder
 	private RecordAccessGrantRequest(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final Principal principal,
-			@NonNull @Singular final Set<Access> permissions)
+			@NonNull @Singular final Set<Access> permissions,
+			@NonNull final PermissionIssuer issuer)
 	{
 		Check.assumeNotEmpty(permissions, "permissions is not empty");
 
 		this.recordRef = recordRef;
 		this.principal = principal;
 		this.permissions = ImmutableSet.copyOf(permissions);
+		this.issuer = issuer;
 	}
 }
