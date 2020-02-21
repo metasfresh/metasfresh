@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS CustomersTopRevenue(NUMERIC, NUMERIC, date, date, INTEGER);
+DROP FUNCTION IF EXISTS CustomersTopRevenue(NUMERIC, NUMERIC, DATE, DATE, INTEGER);
 
 CREATE OR REPLACE FUNCTION CustomersTopRevenue(p_AD_Client_ID NUMERIC,
                                                p_AD_Org_ID NUMERIC,
@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION CustomersTopRevenue(p_AD_Client_ID NUMERIC,
 
     RETURNS TABLE
             (
-                Rang                BIGINT,
+                Rang                INTEGER,
                 BPValue             CHARACTER VARYING,
                 Name                CHARACTER VARYING,
                 Revenue             NUMERIC,
@@ -19,7 +19,7 @@ CREATE OR REPLACE FUNCTION CustomersTopRevenue(p_AD_Client_ID NUMERIC,
 AS
 $$
 
-SELECT ROW_NUMBER() OVER (ORDER BY t.Revenue DESC NULLS LAST, t.BPValue) AS Rang,
+SELECT ROW_NUMBER() OVER (ORDER BY t.Revenue DESC NULLS LAST, t.BPValue) :: integer AS Rang,
        t.BPValue,
        t.Name,
        t.Revenue,
@@ -27,7 +27,7 @@ SELECT ROW_NUMBER() OVER (ORDER BY t.Revenue DESC NULLS LAST, t.BPValue) AS Rang
        accounting.ISO_Code,
        (CASE
             WHEN totals.totalRevenueAmt != 0 THEN (t.Revenue * 100) / totals.totalRevenueAmt
-            ELSE 0 END)                                                  AS SalesPercentOfTotal
+            ELSE 0 END)                                                             AS SalesPercentOfTotal
 
 
 FROM (
