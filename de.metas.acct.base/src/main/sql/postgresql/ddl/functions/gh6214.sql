@@ -177,10 +177,15 @@ BEGIN
                         t.amount,
                         t.endingBalance,
                         t.dateAcct,
-                        NULL::TEXT      doctype, -- todo
+                        (SELECT dtt.name
+                         FROM c_doctype dt
+                                  INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
+                         WHERE dtt.ad_language = 'en_US'
+                           AND t.c_doctype_id = dt.c_doctype_id
+                        )::text         doctype,
                         t.documentno,
                         t.description,
-                        orgCurrencyCode currency -- todo
+                        orgCurrencyCode currency
                  FROM temp_gh6214 t;
 
 END;
