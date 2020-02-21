@@ -23,8 +23,9 @@ CREATE OR REPLACE FUNCTION gh6214(p_c_bpartner_id numeric,
             )
 AS
 $BODY$
+DECLARE
+    v_time timestamp;
 BEGIN
-
     DROP TABLE IF EXISTS temp_gh6214;
     CREATE TEMPORARY TABLE temp_gh6214
     (
@@ -128,7 +129,21 @@ BEGIN
 
     --
     -- Update the amount according to the document type
-    -- todo (this one  uses some case statements)
+    WITH correctAmounts AS
+             (
+                 SELECT --
+                        t.rowid,
+                        (CASE
+                             WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
+                                                                   ELSE t.amount
+                         END) amount
+                 FROM temp_gh6214 t
+                          INNER JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+             )
+    UPDATE temp_gh6214 t
+    SET amount = c.amount
+    FROM correctAmounts c
+    WHERE c.rowid = t.rowid;
 
 
     --
@@ -237,4 +252,3 @@ ORDER BY dateacct, documentno
 -- ORDER BY 2 DESC
 -- ;
 --
-
