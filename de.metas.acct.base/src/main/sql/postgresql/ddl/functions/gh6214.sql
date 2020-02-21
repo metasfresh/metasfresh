@@ -1,25 +1,21 @@
--- todo new function name: BusinessPartnerOpenAmountToDate ; this is used to get the invoice open amount, instead of the big heavy call to OpenItems_Report
+DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT);
 
-
--- todo name this Partner Account Sheet
-DROP FUNCTION IF EXISTS gh6214(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT);
-
-CREATE OR REPLACE FUNCTION gh6214(p_c_bpartner_id numeric,
-                                  p_dateFrom      date,
-                                  p_dateTo        date,
-                                  p_ad_client_id  numeric,
-                                  p_ad_org_id     numeric = NULL,
-                                  p_isSoTrx       TEXT = 'Y')
+CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric,
+                                                             p_dateFrom      date,
+                                                             p_dateTo        date,
+                                                             p_ad_client_id  numeric,
+                                                             p_ad_org_id     numeric = NULL,
+                                                             p_isSoTrx       TEXT = 'Y')
     RETURNS table
             (
+                dateAcct         DATE,
+                DocumentType     TEXT,
+                documentno       TEXT,
                 beginningBalance NUMERIC,
                 amount           NUMERIC,
                 endingBalance    NUMERIC,
-                dateAcct         DATE,
-                doctype          TEXT,
-                documentno       TEXT,
-                description      TEXT,
-                currency         TEXT
+                currencyCode     TEXT,
+                description      TEXT
             )
 AS
 $BODY$
@@ -30,8 +26,8 @@ DECLARE
 BEGIN
     v_time := logDebug('start');
 
-    DROP TABLE IF EXISTS temp_gh6214;
-    CREATE TEMPORARY TABLE temp_gh6214
+    DROP TABLE IF EXISTS temp_BusinessPartnerAccountSheetReport;
+    CREATE TEMPORARY TABLE temp_BusinessPartnerAccountSheetReport
     (
         beginningBalance       NUMERIC,
         amount                 NUMERIC,
@@ -94,18 +90,18 @@ BEGIN
                    AND (COALESCE(p_ad_org_id, 0) <= 0 OR p.ad_org_id = p_ad_org_id)
              )
     INSERT
-    INTO temp_gh6214(beginningBalance,
-                     amount,
-                     endingBalance,
-                     dateacct,
-                     description,
-                     c_doctype_id,
-                     documentno,
-                     created,
-                     c_currency_id_original,
-                     rowid,
-                     ad_org_id,
-                     orgCurrencyCode)
+    INTO temp_BusinessPartnerAccountSheetReport(beginningBalance,
+                                                amount,
+                                                endingBalance,
+                                                dateacct,
+                                                description,
+                                                c_doctype_id,
+                                                documentno,
+                                                created,
+                                                c_currency_id_original,
+                                                rowid,
+                                                ad_org_id,
+                                                orgCurrencyCode)
     SELECT--
           i.beginningBalance,
           i.amount,
@@ -130,8 +126,8 @@ BEGIN
 
 
     --
-    -- Update the amount to be in the base currency -- todo maybe this can be merged into the insert step
-    UPDATE temp_gh6214 t
+    -- Update the amount to be in the base currency
+    UPDATE temp_BusinessPartnerAccountSheetReport t
     SET amount = (SELECT currencybase(t.amount, t.c_currency_id_original, t.dateacct, p_ad_client_id, t.ad_org_id));
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
@@ -148,10 +144,10 @@ BEGIN
                              WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
                                                                    ELSE t.amount
                          END) amount
-                 FROM temp_gh6214 t
+                 FROM temp_BusinessPartnerAccountSheetReport t
                           INNER JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              )
-    UPDATE temp_gh6214 t
+    UPDATE temp_BusinessPartnerAccountSheetReport t
     SET amount = c.amount
     FROM correctAmounts c
     WHERE c.rowid = t.rowid;
@@ -162,7 +158,7 @@ BEGIN
 
     --
     -- Update the beginning and end balances with the initial "Open Invoice Amount to Date"
-    UPDATE temp_gh6214
+    UPDATE temp_BusinessPartnerAccountSheetReport
     SET beginningBalance = t.OpenInvoiceAmountToDate,
         endingBalance    = t.OpenInvoiceAmountToDate
     FROM (
@@ -185,7 +181,7 @@ BEGIN
                         -- +
                         sum(t.amount) OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
                         t.amount                                                                                                             currentAmount
-                 FROM temp_gh6214 t
+                 FROM temp_BusinessPartnerAccountSheetReport t
              ),
          finalData AS
              (
@@ -195,7 +191,7 @@ BEGIN
                         ebs.endingBalance - ebs.currentAmount beginningBalance
                  FROM endingBalanceSum ebs
              )
-    UPDATE temp_gh6214 t
+    UPDATE temp_BusinessPartnerAccountSheetReport t
     SET endingBalance    = d.endingBalance,
         beginningBalance = d.beginningBalance
     FROM finalData d
@@ -207,9 +203,6 @@ BEGIN
     --
     -- return the data
     RETURN QUERY SELECT --
-                        t.beginningBalance,
-                        t.amount,
-                        t.endingBalance,
                         t.dateAcct,
                         (SELECT dtt.name
                          FROM c_doctype dt
@@ -218,10 +211,13 @@ BEGIN
                            AND t.c_doctype_id = dt.c_doctype_id
                         )::text         doctype,
                         t.documentno,
-                        t.description,
-                        orgCurrencyCode currency
-                 FROM temp_gh6214 t;
-
+                        t.beginningBalance,
+                        t.amount,
+                        t.endingBalance,
+                        orgCurrencyCode currency,
+                        t.description
+                 FROM temp_BusinessPartnerAccountSheetReport t
+                 ORDER BY t.dateacct, t.created;
 END;
 $BODY$
     LANGUAGE plpgsql
@@ -234,14 +230,14 @@ SELECT--
       endingBalance,
       beginningBalance + amount AS checkk,
       dateacct,
-      doctype,
+      DocumentType,
       documentno,
       description,
-      currency
-FROM gh6214(NULL,
-            '1111-1-1'::date,
-            '3333-1-1'::date,
-            1000000)
+      currencyCode
+FROM BusinessPartnerAccountSheetReport(NULL,
+                                       '1111-1-1'::date,
+                                       '3333-1-1'::date,
+                                       1000000)
 ORDER BY dateacct, documentno
 ;
 
@@ -304,3 +300,5 @@ Total = 100s
 
 
 */
+
+
