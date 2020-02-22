@@ -6,16 +6,12 @@ import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_ElementValue;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 
@@ -40,20 +36,19 @@ import de.metas.impexp.processing.DBFunctionsRepository;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class })
 public class AccountImportProcess_Test
 {
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		ctx = Env.getCtx();
 
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+
+		ctx = Env.getCtx();
 	}
 
 	@Test
