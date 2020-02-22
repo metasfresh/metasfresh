@@ -3,30 +3,7 @@
  */
 package de.metas.dunning.test.integration;
 
-/*
- * #%L
- * de.metas.dunning
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,18 +12,16 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
@@ -69,12 +44,6 @@ import de.metas.util.time.SystemTime;
  * @author tsa
  *
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		DunningDocDocumentHandlerProvider.class
-})
 public class TestDunning extends DunningTestBase
 {
 	// Invoices
@@ -107,11 +76,17 @@ public class TestDunning extends DunningTestBase
 	// Candidate for level 2
 	private I_C_Dunning_Candidate candidate2_2;
 
+	@BeforeEach
+	public void init()
+	{
+		SpringContextHolder.registerJUnitBean(DocumentHandlerProvider.class, new DunningDocDocumentHandlerProvider());
+	}
+
 	@Test
 	public void testCreateInvoices()
 	{
 		prepareWriteOff();
-		assertThat("Invoice is already written off: " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1), is(false));
+		Assert.assertFalse("Invoice is already written off: " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1));
 		Assert.assertFalse("Invoice not wrote off " + invoice2, invoiceBL.isInvoiceWroteOff(invoice2));
 		Assert.assertFalse("Invoice not wrote off " + invoice3, invoiceBL.isInvoiceWroteOff(invoice3));
 		Assert.assertFalse("Invoice not wrote off " + invoice4, invoiceBL.isInvoiceWroteOff(invoice4));
@@ -256,7 +231,7 @@ public class TestDunning extends DunningTestBase
 		//
 		candidate2_2 = dao.retrieveDunningCandidate(dunningContext, invoice2, dunningLevel2);
 		Assert.assertNotNull("Candidate2_2 - not null", candidate2_2);
-		assertThat("Candidate2_2 references wrong invoice", candidate2_2.getRecord_ID(), is(invoice2.getC_Invoice_ID()));
+		assertThat(candidate2_2.getRecord_ID()).as("Candidate2_2 references wrong invoice").isEqualTo(invoice2.getC_Invoice_ID());
 		Assert.assertEquals("Candidate2_2 - processed", false, candidate2_2.isProcessed());
 		Assert.assertEquals("Candidate2_2 - invalid dunning level", dunningLevel2, candidate2_2.getC_DunningLevel());
 		Assert.assertEquals("Candidate2 - WriteOff", true, candidate2_2.isWriteOff());

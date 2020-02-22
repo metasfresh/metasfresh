@@ -1,5 +1,7 @@
 package de.metas.dunning.invoice.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.adempiere.ad.trx.api.ITrx;
 
 /*
@@ -15,15 +17,14 @@ import org.adempiere.ad.trx.api.ITrx;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Group;
@@ -33,7 +34,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -112,7 +113,7 @@ public class InvoiceSourceBLTest extends DunningTestBase
 		Assert.assertFalse("Only invoices are supported for write-off", executed);
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void writeOffDunningCandidate_InvoiceNotFound()
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
@@ -120,7 +121,8 @@ public class InvoiceSourceBLTest extends DunningTestBase
 		candidate.setRecord_ID(12345);
 		InterfaceWrapperHelper.save(candidate);
 
-		invoiceSourceBL.writeOffDunningCandidate(candidate, null);
+		assertThatThrownBy(() -> invoiceSourceBL.writeOffDunningCandidate(candidate, null))
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	public void writeOffDunningCandidate()

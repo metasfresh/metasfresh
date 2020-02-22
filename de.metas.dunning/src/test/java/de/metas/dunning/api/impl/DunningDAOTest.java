@@ -1,5 +1,8 @@
 package de.metas.dunning.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.dunning
@@ -24,11 +27,9 @@ package de.metas.dunning.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.dunning.DunningTestBase;
-import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.organization.OrgId;
 
@@ -44,26 +45,27 @@ public class DunningDAOTest extends DunningTestBase
 		final I_C_Dunning dunning_302_default_notActive = createDunning(302, true, false);
 		final I_C_Dunning dunning_302_default_active = createDunning(302, true, true);
 
-		Assert.assertEquals("Invalid Dunning for org=302", dunning_302_default_active, dao.retrieveDunningByOrg(OrgId.ofRepoId(302)));
-
-		Assert.assertNull("Invalid Dunning for org=301 - no default shall be found", dao.retrieveDunningByOrg(OrgId.ofRepoId(301)));
+		assertThat(dao.retrieveDunningByOrg(OrgId.ofRepoId(302))).isEqualTo(dunning_302_default_active);
+		assertThat(dao.retrieveDunningByOrg(OrgId.ofRepoId(301))).isNull();
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void retrieveDunningByOrg_InvalidOrgArgument()
 	{
-		dao.retrieveDunningByOrg(OrgId.ofRepoIdOrAny(-1));
+		assertThatThrownBy(() -> dao.retrieveDunningByOrg(OrgId.ofRepoIdOrAny(-1)))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@SuppressWarnings("unused")
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void retrieveDunningByOrg_MoreThenOneDefaultFound()
 	{
 		final I_C_Dunning dunning_303_default_notActive = createDunning(303, true, false);
 		final I_C_Dunning dunning_303_default_active = createDunning(303, true, true);
 		final I_C_Dunning dunning_303_default_active_2 = createDunning(303, true, true);
 
-		dao.retrieveDunningByOrg(OrgId.ofRepoId(303));
+		assertThatThrownBy(() -> dao.retrieveDunningByOrg(OrgId.ofRepoId(303)))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	private I_C_Dunning createDunning(int adOrgId, boolean isDefault, boolean isActive)

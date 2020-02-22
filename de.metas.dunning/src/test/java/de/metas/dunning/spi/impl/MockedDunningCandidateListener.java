@@ -1,5 +1,7 @@
 package de.metas.dunning.spi.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.dunning
@@ -13,22 +15,17 @@ package de.metas.dunning.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Assert;
 
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningCandidateListener;
@@ -71,7 +68,7 @@ public class MockedDunningCandidateListener implements IDunningCandidateListener
 		}
 	}
 
-	private final List<Event> events = new ArrayList<Event>();
+	private final List<Event> events = new ArrayList<>();
 	private int delayOnEventMillis = 0;
 
 	@Override
@@ -129,13 +126,20 @@ public class MockedDunningCandidateListener implements IDunningCandidateListener
 	{
 		final Event event = getEvent(eventName, candidate);
 
-		Assert.assertNotNull("Event " + eventName + " was never triggered for " + candidate, event);
-		Assert.assertThat("Event " + eventName + " shall be triggered at least once for " + candidate, event.getTriggeredCount(), greaterThanOrEqualTo(1));
+		assertThat(event)
+				.as("Event " + eventName + " was triggered for " + candidate)
+				.isNotNull();
+
+		assertThat(event.getTriggeredCount())
+				.as("Event " + eventName + " shall be triggered at least once for " + candidate)
+				.isGreaterThanOrEqualTo(1);
 	}
 
 	public void assertNotTriggered(final String eventName, final I_C_Dunning_Candidate candidate)
 	{
 		final Event event = getEvent(eventName, candidate);
-		Assert.assertNull("Event " + eventName + " was triggered for " + candidate, event);
+		assertThat(event)
+				.as("Event " + eventName + " was never triggered for " + candidate)
+				.isNull();
 	}
 }

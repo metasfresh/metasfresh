@@ -1,12 +1,13 @@
 package de.metas.document.archive.async.spi.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -48,7 +49,7 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 
 	private DocOutboundWorkpackageProcessor processor;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		processor = new DocOutboundWorkpackageProcessor();
@@ -74,10 +75,9 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 
 		final PrintInfo printInfo = createPrintInfo(dunningDoc);
 
-		Assert.assertEquals("Invalid DocumentNo", "ExpectedDocumentNo", printInfo.getName());
-		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class), printInfo.getAD_Table_ID());
-		Assert.assertEquals("Invalid Record_ID", dunningDoc.getC_DunningDoc_ID(), printInfo.getRecord_ID());
-		Assert.assertEquals("Invalid C_BPartner_ID", dunningDoc.getC_BPartner_ID(), printInfo.getC_BPartner_ID());
+		assertThat(printInfo.getName()).isEqualTo("ExpectedDocumentNo");
+		assertThat(printInfo.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class));
+		assertThat(printInfo.getRecord_ID()).isEqualTo(dunningDoc.getC_DunningDoc_ID());
+		assertThat(printInfo.getC_BPartner_ID()).isEqualTo(dunningDoc.getC_BPartner_ID());
 	}
-
 }

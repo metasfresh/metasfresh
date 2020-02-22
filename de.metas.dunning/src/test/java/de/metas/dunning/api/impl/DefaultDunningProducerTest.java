@@ -29,15 +29,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningContext;
@@ -49,12 +46,6 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		DunningDocDocumentHandlerProvider.class
-})
 public class DefaultDunningProducerTest extends DunningTestBase
 {
 	private I_C_DunningLevel dunningLevel1;
@@ -63,6 +54,8 @@ public class DefaultDunningProducerTest extends DunningTestBase
 	@Override
 	protected void createMasterData()
 	{
+		SpringContextHolder.registerJUnitBean(DocumentHandlerProvider.class, new DunningDocDocumentHandlerProvider());
+
 		final I_C_Dunning dunning = createDunning("dunning");
 		dunningLevel1 = createDunningLevel(dunning, 0, 10, 0);
 

@@ -1,5 +1,8 @@
 package de.metas.dunning.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.dunning
@@ -13,18 +16,14 @@ package de.metas.dunning.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.junit.Assert.assertThat;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -38,7 +37,8 @@ import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.DunningTestBase;
@@ -100,13 +100,13 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	public void test_isHandled()
 	{
 		final IDunnableDoc dunnableDoc = null; // not important
-		Assert.assertTrue("Shall always return true", producer.isHandled(dunnableDoc));
+		Assertions.assertTrue(producer.isHandled(dunnableDoc));
 	}
 
 	/**
 	 * Shall throw an exception because we are creating the candidate on a different client then is set in {@link IDunnableDoc}.
 	 */
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_createDunningCandidate_Wrong_AD_Client_ID()
 	{
 		final Date dunningDate = TimeUtil.getDay(2013, 02, 01);
@@ -119,7 +119,9 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 				.setAD_Client_ID(12345) // invalid AD_Client_ID
 				.create();
 
-		producer.createDunningCandidate(context, sourceDoc); // shall throw exception because of client
+		// shall throw exception because of client
+		assertThatThrownBy(() -> producer.createDunningCandidate(context, sourceDoc))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -133,17 +135,17 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 				.create();
 
 		final I_C_Dunning_Candidate candidate1 = producer.createDunningCandidate(context, sourceDoc);
-		Assert.assertNotNull("Candidate shall be generated", candidate1);
+		assertThat(candidate1).isNotNull();
 		assertDunningCandidateValid(candidate1, context, sourceDoc);
 
 		candidate1.setProcessed(true);
 		InterfaceWrapperHelper.save(candidate1);
 
 		final I_C_Dunning_Candidate candidate2 = producer.createDunningCandidate(context, sourceDoc);
-		Assert.assertNull("No candidate shall be generated because we already have a processed one: " + candidate1, candidate2);
+		assertThat(candidate2).isNull();
 	}
 
-	@Test(expected = InconsistentDunningCandidateStateException.class)
+	@Test
 	public void test_createDunningCandidate_NotProcessed_but_DunningDocProcessed()
 	{
 		final Date dunningDate = TimeUtil.getDay(2013, 02, 01);
@@ -162,7 +164,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		InterfaceWrapperHelper.save(candidate1);
 
 		// shall throw exception
-		producer.createDunningCandidate(context, sourceDoc);
+		assertThatThrownBy(() -> producer.createDunningCandidate(context, sourceDoc))
+				.isInstanceOf(InconsistentDunningCandidateStateException.class);
 	}
 
 	@Test
@@ -227,10 +230,10 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 				.create();
 
 		final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context, sourceDoc);
-		Assert.assertNotNull("Candidate shall be generated", candidate);
-		Assert.assertEquals("Candidate - Invalid Currency", currencyCHF.getRepoId(), candidate.getC_Currency_ID());
-		Assert.assertThat("Candidate - Invalid TotalAmt", candidate.getTotalAmt(), comparesEqualTo(new BigDecimal("150")));
-		Assert.assertThat("Candidate - Invalid OpenAmt", candidate.getOpenAmt(), comparesEqualTo(new BigDecimal("150")));
+		assertThat(candidate).isNotNull();
+		assertThat(candidate.getC_Currency_ID()).isEqualTo(currencyCHF.getRepoId());
+		assertThat(candidate.getTotalAmt()).isEqualByComparingTo("150");
+		assertThat(candidate.getOpenAmt()).isEqualByComparingTo("150");
 	}
 
 	@Test
@@ -349,7 +352,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 	}
 
-	@Test(expected = NotImplementedDunningException.class)
+	@Test
 	public void test_isEligible_NonSequentialDunnings()
 	{
 		dunning.setCreateLevelsSequentially(false);
@@ -374,7 +377,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		final PlainDunningContext context2 = createPlainDunningContext("2012-02-05", dunningLevel2_20);
 
 		// shall throw exception because not sequential dunnings are not supported
-		producer.createDunningCandidate(context2, sourceDoc);
+		assertThatThrownBy(() -> producer.createDunningCandidate(context2, sourceDoc))
+				.isInstanceOf(NotImplementedDunningException.class);
 	}
 
 	@Test
@@ -393,32 +397,28 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(null)
-							.create()
-					);
+							.create());
 			Assert.assertNotNull("GraceDate null - candidate shall be generated", candidate);
 		}
 		// GraceDate before context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(TimeUtil.addDays(dunningDate, -1))
-							.create()
-					);
+							.create());
 			Assert.assertNotNull("GraceDate before context DunningDate - candidate shall be generated", candidate);
 		}
 		// GraceDate equals context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(dunningDate)
-							.create()
-					);
+							.create());
 			Assert.assertNull("GraceDate equals with context DunningDate - candidate shall NOT be generated", candidate);
 		}
 		// GraceDate after context DunningDate
 		{
 			final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context,
 					builder.setGraceDate(TimeUtil.addDays(dunningDate, 1))
-							.create()
-					);
+							.create());
 			Assert.assertNull("GraceDate after context DunningDate - candidate shall NOT be generated", candidate);
 		}
 	}
@@ -476,7 +476,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertEquals("Last DunningDateEffective shall be null for an empty collection", TimeUtil.getDay(2013, 01, 04), lastDate);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_getLastDunningDateEffective_null_DunningDateEffective()
 	{
 		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
@@ -489,7 +489,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		}
 
 		// shall throw an exception because candidate's DunningDateEffective is null
-		producer.getLastDunningDateEffective(candidates);
+		assertThatThrownBy(() -> producer.getLastDunningDateEffective(candidates))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -568,7 +569,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertTrue("Shall be true for an empty collection", respected);
 	}
 
-	@Test(expected = InconsistentDunningCandidateStateException.class)
+	@Test
 	public void test_isDaysBetweenDunningsRespected_LastDunningDateEffective_NotAvailable()
 	{
 		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
@@ -584,7 +585,8 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		final int requiredDaysBetweenDunnings = 5;
 
 		// Shall throw an exception because Last Dunning Efective Date is not available
-		producer.isDaysBetweenDunningsRespected(dunningDate, requiredDaysBetweenDunnings, candidates);
+		assertThatThrownBy(() -> producer.isDaysBetweenDunningsRespected(dunningDate, requiredDaysBetweenDunnings, candidates))
+				.isInstanceOf(InconsistentDunningCandidateStateException.class);
 	}
 
 	@Test
@@ -669,7 +671,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertEquals("Invalid candidate - AD_Client_ID: " + candidate, fromDoc.getAD_Client_ID(), candidate.getAD_Client_ID());
 		Assert.assertEquals("Invalid candidate - AD_Org_ID: " + candidate, fromDoc.getAD_Org_ID(), candidate.getAD_Org_ID());
 
-		assertThat("Invalid candidate - AD_Table_ID: " + candidate,fromDoc.getTableName(), equalToIgnoringCase(MTable.getTableName(getCtx(), candidate.getAD_Table_ID())));
+		assertThat(fromDoc.getTableName()).isEqualToIgnoringCase(MTable.getTableName(getCtx(), candidate.getAD_Table_ID()));
 		Assert.assertEquals("Invalid candidate - Record_ID: " + candidate, fromDoc.getRecordId(), candidate.getRecord_ID());
 		Assert.assertEquals("Invalid candidate - C_DunningLevel: " + candidate, context.getC_DunningLevel(), candidate.getC_DunningLevel());
 		Assert.assertEquals("Invalid candidate - Processed: " + candidate, false, candidate.isProcessed());

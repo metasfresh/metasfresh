@@ -29,7 +29,7 @@ import java.util.Date;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;

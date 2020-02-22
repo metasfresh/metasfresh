@@ -1,5 +1,7 @@
 package de.metas.dunning.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.dunning
@@ -28,7 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningConfig;
@@ -119,7 +121,7 @@ public class DunningBLTest extends DunningTestBase
 
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_validateCandidate_InactiveNotAllowed()
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
@@ -128,7 +130,8 @@ public class DunningBLTest extends DunningTestBase
 		candidate.setDunningDateEffective(SystemTime.asTimestamp());
 
 		candidate.setIsActive(false);
-		dunningBL.validate(candidate);
+		assertThatThrownBy(() -> dunningBL.validate(candidate))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -141,7 +144,7 @@ public class DunningBLTest extends DunningTestBase
 		Assert.assertNotNull("Invalid summary", dunningBL.getSummary(candidate));
 	}
 
-	@Test(expected = DunningException.class)
+	@Test
 	public void test_setDunningConfigurator_AlreadyConfigured()
 	{
 		final IDunningConfig config1 = dunningBL.getDunningConfig();
@@ -150,7 +153,8 @@ public class DunningBLTest extends DunningTestBase
 		final PlainDunningConfigurator configurator = new PlainDunningConfigurator();
 
 		// this shall throw an exception because we already have a config for this dunningBL
-		dunningBL.setDunningConfigurator(configurator);
+		assertThatThrownBy(() -> dunningBL.setDunningConfigurator(configurator))
+				.isInstanceOf(DunningException.class);
 
 		// final IDunningConfig config2 = dunningBL.getDunningConfig();
 		// Assert.assertNotNull("config2 shall not be null", config2);
@@ -163,7 +167,7 @@ public class DunningBLTest extends DunningTestBase
 		// Assert.assertEquals("Configurator shall be called only once", 1, configurator.configureRequestCount);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_setDunningConfigurator_ConfiguratorReturnsNull()
 	{
 		final PlainDunningConfigurator configurator = new PlainDunningConfigurator();
@@ -172,7 +176,8 @@ public class DunningBLTest extends DunningTestBase
 		dunningBL.setDunningConfigurator(configurator);
 
 		// shall trigger an error because configurator returns null
-		dunningBL.getDunningConfig();
+		assertThatThrownBy(() -> dunningBL.getDunningConfig())
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -191,10 +196,11 @@ public class DunningBLTest extends DunningTestBase
 		assertExpired(false, null, TimeUtil.getDay(2013, 3, 10), true);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_isExpired_NullCandidate()
 	{
-		dunningBL.isExpired(null, TimeUtil.getDay(2013, 3, 10));
+		assertThatThrownBy(() -> dunningBL.isExpired(null, TimeUtil.getDay(2013, 3, 10)))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	private void assertExpired(final boolean expectedExpired, final Timestamp dunningGraceDate, final Timestamp dunningDate, final boolean processed)

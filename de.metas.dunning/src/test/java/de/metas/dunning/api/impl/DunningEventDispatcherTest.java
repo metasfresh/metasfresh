@@ -13,15 +13,14 @@ package de.metas.dunning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningBL;
@@ -102,18 +101,13 @@ public class DunningEventDispatcherTest extends DunningTestBase
 		final int threadsCount = 10;
 		final int runsPerThreadCount = 50;
 
-		final List<Thread> threads = new ArrayList<Thread>();
+		final List<Thread> threads = new ArrayList<>();
 		for (int threadNo = 1; threadNo <= threadsCount; threadNo++)
 		{
-			final Runnable runnable = new Runnable()
-			{
-				@Override
-				public void run()
+			final Runnable runnable = () -> {
+				for (int runs = 1; runs <= runsPerThreadCount; runs++)
 				{
-					for (int runs = 1; runs <= runsPerThreadCount; runs++)
-					{
-						dispatcher.fireDunningCandidateEvent(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate);
-					}
+					dispatcher.fireDunningCandidateEvent(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate);
 				}
 			};
 			final Thread thread = new Thread(runnable, "test-fireDunningCandidateEvent_MultiThread-" + threadNo);

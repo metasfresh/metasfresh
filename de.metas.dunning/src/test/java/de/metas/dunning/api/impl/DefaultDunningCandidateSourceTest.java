@@ -1,5 +1,7 @@
 package de.metas.dunning.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 /*
  * #%L
  * de.metas.dunning
@@ -13,29 +15,29 @@ package de.metas.dunning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.dunning.DunningTestBase;
 
 public class DefaultDunningCandidateSourceTest extends DunningTestBase
 {
-	private final DefaultDunningCandidateSource source = new DefaultDunningCandidateSource();
-
-	@Test(expected=AdempiereException.class)
+	@Test
 	public void setDunningContext_null()
 	{
-		source.setDunningContext(null);
+		final DefaultDunningCandidateSource source = new DefaultDunningCandidateSource();
+
+		assertThatThrownBy(() -> source.setDunningContext(null))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 }
