@@ -54,7 +54,7 @@ import de.metas.util.web.security.UserAuthTokenService;
 		UserAuthTokenRepository.class,
 		UserAuthTokenService.class })
 @ServletComponentScan(basePackageClasses = UserAuthTokenFilter.class)
-@Profile(Profiles.PROFILE_PrintService)
+@Profile(PrintServiceMain.PROFILE_PrintService_Standalone)
 public class PrintServiceMain
 {
 	/**
@@ -62,6 +62,8 @@ public class PrintServiceMain
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
+
+	static final String PROFILE_PrintService_Standalone = Profiles.PROFILE_PrintService + "-standalone";
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -75,7 +77,7 @@ public class PrintServiceMain
 		new SpringApplicationBuilder(PrintServiceMain.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(WebApplicationType.SERVLET)
-				.profiles(Profiles.PROFILE_PrintService)
+				.profiles(Profiles.PROFILE_PrintService, PROFILE_PrintService_Standalone)
 				.beanNameGenerator(new MetasfreshBeanNameGenerator())
 				.run(args);
 	}
