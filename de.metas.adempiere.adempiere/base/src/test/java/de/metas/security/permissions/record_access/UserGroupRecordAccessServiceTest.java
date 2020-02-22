@@ -11,18 +11,13 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.IterableAssert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.event.log.EventLogService;
 import de.metas.security.Principal;
@@ -55,21 +50,18 @@ import lombok.NonNull;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, EventLogService.class })
+@ExtendWith(AdempiereTestWatcher.class)
 public class UserGroupRecordAccessServiceTest
 {
 	private static final Principal userId = Principal.userId(UserId.ofRepoId(1));
 
 	private RecordAccessService userGroupRecordAccessService;
 
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new EventLogService());
 
 		userGroupRecordAccessService = new RecordAccessService(
 				new RecordAccessConfigService(Optional.<List<RecordAccessHandler>> empty()),
