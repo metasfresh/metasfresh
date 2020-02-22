@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
@@ -148,7 +148,7 @@ public class ServerBoot implements InitializingBean
 	}
 
 	@Configuration
-	public static class StaticResourceConfiguration extends WebMvcConfigurerAdapter
+	public static class StaticResourceConfiguration implements WebMvcConfigurer
 	{
 		private static final Logger LOG = LogManager.getLogger(StaticResourceConfiguration.class);
 
