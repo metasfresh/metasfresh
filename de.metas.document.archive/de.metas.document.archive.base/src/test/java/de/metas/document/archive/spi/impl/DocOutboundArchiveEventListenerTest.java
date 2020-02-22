@@ -52,8 +52,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-// @RunWith(SpringRunner.class)
-// @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, DocOutboundLogMailRecipientRegistry.class })
 public class DocOutboundArchiveEventListenerTest
 {
 	@BeforeAll
