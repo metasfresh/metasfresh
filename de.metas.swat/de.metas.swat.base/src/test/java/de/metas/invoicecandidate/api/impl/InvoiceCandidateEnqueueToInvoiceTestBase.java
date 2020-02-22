@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_User;
@@ -64,6 +65,8 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -97,6 +100,8 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 	@BeforeEach
 	public void init()
 	{
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+
 		icTestSupport = new AbstractICTestSupport();
 		icTestSupport.initStuff();
 		icTestSupport.registerModelInterceptors();

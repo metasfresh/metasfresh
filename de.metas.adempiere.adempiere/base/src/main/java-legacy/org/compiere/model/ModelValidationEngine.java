@@ -73,6 +73,10 @@ import com.google.common.collect.Multimaps;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Result;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.security.IUserLoginListener;
@@ -693,10 +697,37 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	public void fireModelChange(final PO po, final ModelChangeType changeType)
 	{
+		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBeanOrNull(PerformanceMonitoringService.class);
+		if (performanceMonitoringService == null) // workaround for the swing-client
+		{
+			fireModelChange0(po, changeType);
+			return;
+		}
+
+		final String tableName = po.get_TableName();
+		final String changeTypeStr = ModelChangeType.valueOf(changeType).toString();
+
+		final Result<Object> result = performanceMonitoringService.monitorSpan(
+				() -> fireModelChange0(po, changeType),
+				SpanMetadata
+						.builder()
+						.name(changeTypeStr + " " + tableName)
+						.type(Type.MODEL_INTERCEPTOR.getCode())
+						.subType(Type.MODEL_CHANGE.getCode())
+						.action(changeTypeStr)
+						.label("tableName", tableName)
+						.label("recordId", Integer.toString(po.get_ID()))
+						.build());
+		if (result.getException() != null)
+		{
+			throw AdempiereException.wrapIfNeeded(result.getException());
+		}
+	}
+
+	private void fireModelChange0(final PO po, final int changeType)
+	{
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType.toString()))
 		{
-			final Stopwatch stopwatch = Stopwatch.createStarted();
-
 			if (po == null || m_modelChangeListeners.isEmpty())
 			{
 				return;
@@ -1065,17 +1096,35 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public String fireDocValidate(final Object model, final int docTimingInt)
 	{
-		final DocTimingType docTiming = DocTimingType.valueOf(docTimingInt);
-		return fireDocValidate(model, docTiming);
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType.toString()))
+		{		final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
+
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		final int recordId = InterfaceWrapperHelper.getId(model);
+		final String docTimingStr = DocTimingType.valueOf(docTiming).toString();
+
+		final Result<String> result = perfMonService.monitorSpan(
+				() -> fireDocValidate0(model, docTiming),
+				SpanMetadata
+						.builder()
+						.name(docTimingStr + " " + tableName)
+						.type(Type.MODEL_INTERCEPTOR.getCode())
+						.subType(Type.DOC_VALIDATE.getCode())
+						.action(docTimingStr)
+						.label("tableName", tableName)
+						.label("recordId", Integer.toString(recordId))
+						.build());
+
+		if (result.getException() != null)
+		{
+			throw AdempiereException.wrapIfNeeded(result.getException());
+		}
+		return result.getCallableResult();
 	}
 
-	public String fireDocValidate(final Object model, final DocTimingType docTiming)
+	private String fireDocValidate0(final Object model, final int docTiming)
 	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
-		{
-
-			if (model == null)
+		if (model == null)
 			{
 				return null; // avoid InterfaceWrapperHelper from throwing an exception under any circumstances
 			}

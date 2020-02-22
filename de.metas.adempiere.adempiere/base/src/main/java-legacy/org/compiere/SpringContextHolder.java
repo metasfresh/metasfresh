@@ -98,6 +98,34 @@ public final class SpringContextHolder
 	}
 
 	/**
+	 * With this method we work around the swing-client doing things (=>logon) before a the spring client was initialized.
+	 * this method shall go together with the swing client (or earlier)
+	 *
+	 * @deprecated please use {@link #getBean(Class)} instead.
+	 */
+	@Deprecated
+	public <T> T getBeanOrNull(@NonNull final Class<T> requiredType)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			@SuppressWarnings("unchecked")
+			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			if (beanImpl != null)
+			{
+				logger.info("JUnit testingL Returning manually registered bean: {}", beanImpl);
+				return beanImpl;
+			}
+		}
+
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		if (springApplicationContext == null)
+		{
+			return null;
+		}
+		return springApplicationContext.getBean(requiredType);
+	}
+
+	/**
 	 * When running this method from within a junit test, we need to fire up spring
 	 */
 	public <T> T getBean(@NonNull final Class<T> requiredType)

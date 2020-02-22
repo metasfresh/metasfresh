@@ -45,6 +45,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
@@ -76,6 +77,9 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -141,6 +145,19 @@ import lombok.NonNull;
 
 	@Override
 	public void run()
+	{
+		final PerformanceMonitoringService transaction = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
+		transaction.monitorTransaction(
+				() -> run0(),
+				TransactionMetadata.builder()
+						.type(Type.ASYNC_WORKPACKAGE)
+						.name(queueProcessor.getName())
+						.label("queueProcessor.name", queueProcessor.getName())
+						.label("recordId", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+						.build());
+	}
+
+	private boolean run0()
 	{
 		final Properties processingCtx = createProcessingCtx();
 		final WorkpackageLoggable loggable = createLoggable(workPackage);
@@ -241,6 +258,7 @@ import lombok.NonNull;
 			afterWorkpackageProcessed(finallyReleaseElementLockIfAny);
 			loggable.flush();
 		}
+		return true;
 	}
 
 	private WorkpackageLoggable createLoggable(@NonNull final I_C_Queue_WorkPackage workPackage)

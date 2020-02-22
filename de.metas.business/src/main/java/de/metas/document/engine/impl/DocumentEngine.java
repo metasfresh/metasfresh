@@ -46,7 +46,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.util.Set;
 
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
@@ -54,8 +57,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.document.engine.IDocument;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -63,6 +66,10 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Result;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -74,7 +81,7 @@ import lombok.NonNull;
  */
 /* package */class DocumentEngine
 {
-	public static DocumentEngine ofDocument(final IDocument document)
+	public static DocumentEngine ofDocument(@NonNull final IDocument document)
 	{
 		return new DocumentEngine(document);
 	}
@@ -84,6 +91,7 @@ import lombok.NonNull;
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private final IDocument _document;
 	private String _docStatus;
@@ -180,6 +188,29 @@ import lombok.NonNull;
 	 * @return true if performed
 	 */
 	public boolean processIt(@NonNull final String processAction, @NonNull final String docAction)
+	{
+		final PerformanceMonitoringService transaction = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
+
+		final String tableName = tableDAO.retrieveTableName(getDocument().get_Table_ID());
+
+		final Result<Boolean> result = transaction.monitorSpan(
+				() -> processIt0(docAction),
+				SpanMetadata
+						.builder()
+						.name(docAction + " " + tableName)
+						.type(Type.DOC_ACTION.getCode())
+						.subType(docAction)
+						.label("recordId", Integer.toString(getDocument().get_ID()))
+						.build());
+
+		if (result.getException() != null)
+		{
+			throw AdempiereException.wrapIfNeeded(result.getException());
+		}
+		return result.getCallableResult();
+	}
+
+	public boolean processIt0(@NonNull final String processAction, @NonNull final String docAction)
 	{
 		setDocActionIntern(null);
 
@@ -518,7 +549,7 @@ import lombok.NonNull;
 		final IDocument document = getDocument();
 		if (document.get_Table_ID() == getTableId(I_C_Order.class)) // orders can be closed any time
 		{
-			
+
 		}
 		else if (!isValidDocAction(ACTION_Close))
 		{

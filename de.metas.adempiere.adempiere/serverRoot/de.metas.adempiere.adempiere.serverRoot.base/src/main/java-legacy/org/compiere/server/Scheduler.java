@@ -179,9 +179,6 @@ public class Scheduler extends AdempiereServer
 		m_summary = new StringBuffer();
 	}
 
-	/**
-	 * Work
-	 */
 	@Override
 	protected void doWork()
 	{
