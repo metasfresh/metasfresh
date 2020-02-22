@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -34,11 +33,11 @@ import de.metas.util.time.SystemTime;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -83,7 +82,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 				0,
 				ITrx.TRXNAME_ThreadInherited);
 
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(ft));
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isEqualTo(ft);
 	}
 }
