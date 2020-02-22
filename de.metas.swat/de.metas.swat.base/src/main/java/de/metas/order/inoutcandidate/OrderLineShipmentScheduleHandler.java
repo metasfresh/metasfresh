@@ -218,7 +218,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
 
 		// only display item products
-		final boolean display = productBL.isItem(productId);
+		final boolean display = productBL.getProductType(productId).isItem();
 		shipmentSchedule.setIsDisplayed(display);
 
 		final String groupingOrderLineLabel = DB

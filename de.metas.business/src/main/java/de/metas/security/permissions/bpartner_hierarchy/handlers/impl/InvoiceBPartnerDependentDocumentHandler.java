@@ -8,6 +8,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
@@ -37,7 +39,8 @@ import de.metas.util.Services;
  */
 
 @Component
-class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
 	@Override

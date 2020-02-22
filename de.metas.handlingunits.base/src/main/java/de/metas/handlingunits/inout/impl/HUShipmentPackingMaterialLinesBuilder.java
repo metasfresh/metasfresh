@@ -89,15 +89,12 @@ public class HUShipmentPackingMaterialLinesBuilder
 
 	/* package */ HUShipmentPackingMaterialLinesBuilder()
 	{
-		super();
-
 		final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a context.
 		packingMaterialsCollector = new HUPackingMaterialsCollector(huCtx);
 	}
 
-	public void setM_InOut(final I_M_InOut shipment)
+	public void setM_InOut(@NonNull final I_M_InOut shipment)
 	{
-		Check.assumeNotNull(shipment, "shipment not null");
 		Check.assume(shipment.isSOTrx(), "InOut shall be a shipment: {}", shipment);
 		assertConfigurable();
 

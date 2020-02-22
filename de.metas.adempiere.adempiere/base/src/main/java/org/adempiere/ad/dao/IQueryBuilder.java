@@ -26,14 +26,15 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
 
 /**
  * @param <T> model type
@@ -68,21 +69,12 @@ public interface IQueryBuilder<T>
 
 	Class<T> getModelClass();
 
-	/**
-	 * @return the table name or <code>null</code>, if it shall be taken from the model class (see {@link #getModelClass()}).
-	 * @TODO delete
-	 */
-	// String getTableName();
-
 	Properties getCtx();
 
 	String getTrxName();
 
 	/**
 	 * Add the given filter.
-	 *
-	 * @param filter
-	 * @return
 	 */
 	IQueryBuilder<T> filter(IQueryFilter<T> filter);
 
@@ -147,7 +139,7 @@ public interface IQueryBuilder<T>
 	 * Filters using the given string as a <b>substring</b>.
 	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
 	 *
-	 * @param substring  will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
 	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
@@ -253,9 +245,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param columnName         the key column from the "main" query
+	 * @param columnName the key column from the "main" query
 	 * @param subQueryColumnName the key column from the "sub" query
-	 * @param subQuery           the actual sub query
+	 * @param subQuery the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
@@ -263,9 +255,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param column         the key column from the "main" query
+	 * @param column the key column from the "main" query
 	 * @param subQueryColumn the key column from the "sub" query
-	 * @param subQuery       the actual sub query
+	 * @param subQuery the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
@@ -312,30 +304,39 @@ public interface IQueryBuilder<T>
 	 * final IQueryBuilder&lt;I_M_InOut&gt; inoutsQueryBuilder = ....;
 	 *
 	 * final List&lt;I_M_InOutLine&gt; inoutLines = inoutsQueryBuilder
-	 *   .andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class) // an IQueryBuilder&lt;I_M_InOutLine&gt; is returned here
+	 *   .andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class) // an IQueryBuilder&lt;I_M_InOutLine&gt; is returned here
 	 *   .create() // create IQuery&lt;I_M_InOutLine&gt;
 	 *   .list()   // list inout lines
 	 * </pre>
 	 *
-	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
-	 * @param childType              child model to be used
+	 * @param linkColumnNameInChildTable the column in child model which will be used to join the child records to current record's primary key
+	 * @param childType child model to be used
 	 * @return query build for <code>ChildType</code>
 	 */
-	<ChildType, ExtChildType extends ChildType> IQueryBuilder<ExtChildType> andCollectChildren(ModelColumn<ChildType, ?> linkColumnInChildTable, Class<ExtChildType> childType);
+	<ChildType> IQueryBuilder<ChildType> andCollectChildren(String linkColumnNameInChildTable, Class<ChildType> childType);
+
+	default <ChildType, ExtChildType extends ChildType> IQueryBuilder<ExtChildType> andCollectChildren(
+			@NonNull final ModelColumn<ChildType, ?> linkColumnInChildTable,
+			@NonNull final Class<ExtChildType> childType)
+	{
+		final String linkColumnNameInChildTable = linkColumnInChildTable.getColumnName();
+		return andCollectChildren(linkColumnNameInChildTable, childType);
+	}
 
 	/**
 	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
 	 * .
 	 * <p>
-	 * This is a convenient version of {@link #andCollectChildren(ModelColumn, Class)} for the case when you don't have to retrieve an extended interface of the child type.
+	 * This is a convenient version of {@link #andCollectChildren(String, Class)} for the case when you don't have to retrieve an extended interface of the child type.
 	 *
 	 * @param linkColumnInChildTable the column in child model which will be used to join the child records to current record's primary key
 	 * @return query build for <code>ChildType</code>
 	 */
 	default <ChildType> IQueryBuilder<ChildType> andCollectChildren(final ModelColumn<ChildType, ?> linkColumnInChildTable)
 	{
+		final String linkColumnNameInChildTable = linkColumnInChildTable.getColumnName();
 		final Class<ChildType> childType = linkColumnInChildTable.getModelClass();
-		return andCollectChildren(linkColumnInChildTable, childType);
+		return andCollectChildren(linkColumnNameInChildTable, childType);
 	}
 
 	/**

@@ -20,6 +20,7 @@ import de.metas.security.permissions.Access;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
+import de.metas.security.permissions.record_access.PermissionIssuer;
 import de.metas.security.permissions.record_access.RecordAccessFeature;
 import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.RecordAccessService;
@@ -136,6 +137,7 @@ class BPartnerDependentDocumentInterceptor extends AbstractModelInterceptor
 				.principal(Principal.userId(Env.getLoggedUserId()))
 				.permission(Access.READ)
 				.permission(Access.WRITE)
+				.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
 				.build());
 	}
 

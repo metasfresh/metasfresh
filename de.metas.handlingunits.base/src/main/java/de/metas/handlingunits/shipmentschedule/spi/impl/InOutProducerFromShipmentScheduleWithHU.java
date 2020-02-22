@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,13 +41,14 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.apache.log4j.MDC;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -64,6 +66,9 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineNoInfo;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -71,6 +76,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -85,7 +92,6 @@ import lombok.NonNull;
 public class InOutProducerFromShipmentScheduleWithHU
 		implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<ShipmentScheduleWithHU, InOutGenerateResult>
 {
-	//
 	// Services
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
@@ -96,10 +102,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 	//
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
 	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
+
+	private final ShipmentLineNoInfo shipmentLineNoInfo = new ShipmentLineNoInfo();
 
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
@@ -149,7 +160,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		try
 		{
-			final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 			final InOutGenerateResult result = trxItemProcessorExecutorService
 					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -229,7 +239,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	/**
 	 * If the schedule allows consolidation, try to retrieve the fist open shipment found matching requested transportation. If none is found, create a new shipment header.
 	 *
-	 * @param candidate
 	 * @return shipment (header)
 	 */
 	private I_M_InOut getCreateShipmentHeader(final ShipmentScheduleWithHU candidate)
@@ -251,6 +260,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
+
+		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID());
 		return shipment;
 	}
 
@@ -318,7 +329,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Dates
 		{
-			final Timestamp movementDate = TimeUtil.asTimestamp(dateDoc);
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
+			final Timestamp movementDate = TimeUtil.asTimestamp(dateDoc, timeZone);
 			shipment.setMovementDate(movementDate);
 			shipment.setDateAcct(movementDate);
 		}
@@ -419,6 +431,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private void processCurrentShipment()
 	{
+		final ImmutableList<InOutLineId> shipmentLineIdsWithLineNoCollisions = shipmentLineNoInfo.getShipmentLineIdsWithLineNoCollisions();
+		inOutDAO.unsetLineNos(shipmentLineIdsWithLineNoCollisions);
+
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
 
 		// because this is the time when we are actually generating the shipment lines,
@@ -501,6 +516,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 		currentShipmentLineBuilder = null;
 		currentShipment = null;
 		currentCandidates = null;
+
+		MDC.remove(I_M_InOut.COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
@@ -524,7 +541,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public void process(final ShipmentScheduleWithHU item) throws Exception
+	public void process(@NonNull final ShipmentScheduleWithHU item) throws Exception
 	{
 		updateShipmentDate(currentShipment, item);
 		createUpdateShipmentLine(item);
@@ -539,7 +556,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 		// the shipment was created before but wasn't yet completed;
 		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
 		{
-			final Timestamp candidateShipmentDateTS = TimeUtil.asTimestamp(candidateShipmentDate);
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipment.getAD_Org_ID()));
+			final Timestamp candidateShipmentDateTS = TimeUtil.asTimestamp(candidateShipmentDate, timeZone);
 			shipment.setMovementDate(candidateShipmentDateTS);
 			shipment.setDateAcct(candidateShipmentDateTS);
 
@@ -577,7 +595,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		return false;
 	}
 
-	private void createUpdateShipmentLine(final ShipmentScheduleWithHU candidate)
+	private void createUpdateShipmentLine(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		//
 		// If we cannot add this "candidate" to current shipment line builder
@@ -593,7 +611,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		// then create one
 		if (currentShipmentLineBuilder == null)
 		{
-			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
+			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment, shipmentLineNoInfo);
 			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
@@ -640,4 +658,5 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
+
 }

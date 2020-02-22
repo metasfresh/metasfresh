@@ -43,7 +43,7 @@ import lombok.NonNull;
 public interface IProductBL extends ISingletonService
 {
 	I_M_Product getById(ProductId productId);
-	
+
 	UOMPrecision getUOMPrecision(I_M_Product product);
 
 	UOMPrecision getUOMPrecision(ProductId productId);
@@ -54,21 +54,10 @@ public interface IProductBL extends ISingletonService
 
 	/**
 	 * @param product
-	 * @return true if item
-	 */
-	boolean isItem(I_M_Product product);
-
-	boolean isItem(ProductId productId);
-
-	default boolean isItem(int productId)
-	{
-		return isItem(ProductId.ofRepoId(productId));
-	}
-
-	/**
-	 * @param product
 	 * @return true if service (resource, online), i.e. not {@link #isItem(I_M_Product)}
+	 * @deprecated please use {@link #getProductType(ProductId)} and {@link ProductType#isService()} instead
 	 */
+	@Deprecated
 	boolean isService(I_M_Product product);
 
 	/**
@@ -185,5 +174,5 @@ public interface IProductBL extends ISingletonService
 
 	String getProductName(ProductId productId);
 
-	boolean isFreightCostProduct(ProductId productId);
+	ProductType getProductType(ProductId productId);
 }

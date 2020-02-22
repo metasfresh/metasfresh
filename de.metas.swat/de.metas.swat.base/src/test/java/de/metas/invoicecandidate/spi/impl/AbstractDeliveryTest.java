@@ -39,19 +39,21 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.order.InvoiceRule;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -112,9 +114,7 @@ public abstract class AbstractDeliveryTest
 		saveRecord(stockUom);
 		stockUomId = UomId.ofRepoId(stockUom.getC_UOM_ID());
 
-		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setC_UOM_ID(stockUom.getC_UOM_ID());
-		saveRecord(product);
+		final I_M_Product product = BusinessTestHelper.createProduct("product", stockUom);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// initialize C_BPartner data
@@ -192,6 +192,7 @@ public abstract class AbstractDeliveryTest
 		order.setAD_Org_ID(orgId.getRepoId());
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
 		order.setDocStatus(DocStatus.Completed.getCode());
+		order.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
 		InterfaceWrapperHelper.save(order);
 	}
 

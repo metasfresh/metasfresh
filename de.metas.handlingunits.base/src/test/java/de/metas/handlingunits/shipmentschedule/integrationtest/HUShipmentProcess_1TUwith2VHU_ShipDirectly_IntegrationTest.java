@@ -1,5 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 
 /*
@@ -67,8 +69,8 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		final BigDecimal qtyOrdered = new BigDecimal("100");
 
 		shipmentSchedules = Arrays.asList(
-				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered), // shipment schedule 0
-				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered) // shipment schedule 1
+				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered, 20/* orderLineNo */), // shipment schedule 0
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered, 10/* orderLineNo */) // shipment schedule 1
 		);
 	}
 
@@ -175,9 +177,11 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		// Retrieve generated shipment lines
 		// We expect to have 2 shipment lines, not because we have 2 shipment schedules, but because we have 2 order lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		Assert.assertEquals("Invalid generated shipment lines count", 2, shipmentLines.size());
+		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		assertThat(shipmentLine1.getLine()).isEqualTo(10);
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
+		assertThat(shipmentLine2.getLine()).isEqualTo(20);
 
 		//
 		// Revalidate the ShipmentSchedule_QtyPicked expectations,
@@ -185,10 +189,10 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 			.shipmentScheduleQtyPickedExpectation(0)
-				.inoutLine(shipmentLine1)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(1)
-				.inoutLine(shipmentLine2)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.assertExpected("after shipment generated");
 		//@formatter:on

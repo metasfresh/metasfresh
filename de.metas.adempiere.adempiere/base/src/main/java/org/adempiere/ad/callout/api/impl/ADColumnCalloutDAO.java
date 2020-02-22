@@ -33,7 +33,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Table.COLUMN_TableName, tableName, UpperCaseQueryFilterModifier.instance)
 				//
-				.andCollectChildren(I_AD_Column.COLUMN_AD_Table_ID)
+				.andCollectChildren(I_AD_Column.COLUMNNAME_AD_Table_ID, I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				//
 				//

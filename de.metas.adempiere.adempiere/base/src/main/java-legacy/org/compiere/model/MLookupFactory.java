@@ -16,13 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import de.metas.cache.CCache;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
@@ -39,35 +41,30 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
-import de.metas.cache.CCache;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
 
 /**
  * Create MLookups
  *
  * @author Jorg Janke
- * @version $Id: MLookupFactory.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1734394 ] MLookupFactory.getLookup_TableDirEmbed is not translated
- *         <li>BF [ 1714261 ] MLookupFactory: TableDirEmbed -> TableEmbed not supported
- *         <li>BF [ 1672820 ] Sorting should be language-sensitive
- *         <li>BF [ 1739530 ] getLookup_TableDirEmbed error when BaseColumn is sql query
- *         <li>BF [ 1739544 ] getLookup_TableEmbed error for self referencing references
- *         <li>BF [ 1817768 ] Isolate hardcoded table direct columns
+ * <li>BF [ 1734394 ] MLookupFactory.getLookup_TableDirEmbed is not translated
+ * <li>BF [ 1714261 ] MLookupFactory: TableDirEmbed -> TableEmbed not supported
+ * <li>BF [ 1672820 ] Sorting should be language-sensitive
+ * <li>BF [ 1739530 ] getLookup_TableDirEmbed error when BaseColumn is sql query
+ * <li>BF [ 1739544 ] getLookup_TableEmbed error for self referencing references
+ * <li>BF [ 1817768 ] Isolate hardcoded table direct columns
  * @author Teo Sarca
- *         <li>BF [ 2933367 ] Virtual Column Identifiers are not working
- *         https://sourceforge.net/tracker/?func=detail&aid=2933367&group_id=176962&atid=879332
+ * <li>BF [ 2933367 ] Virtual Column Identifiers are not working
+ * https://sourceforge.net/tracker/?func=detail&aid=2933367&group_id=176962&atid=879332
  * @author Carlos Ruiz, GlobalQSS
- *         <li>BF [ 2561593 ] Multi-tenant problem with webui
+ * <li>BF [ 2561593 ] Multi-tenant problem with webui
+ * @version $Id: MLookupFactory.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
  */
 public class MLookupFactory
 {
@@ -77,11 +74,16 @@ public class MLookupFactory
 	public static final int COLUMNINDEX_IsActive = 4;
 	public static final int COLUMNINDEX_Description = 5;
 	public static final int COLUMNINDEX_EntityType = 6;
+	public static final int COLUMNINDEX_ValidationInformation = 7;
 
-	/** Logging */
+	/**
+	 * Logging
+	 */
 	private static final Logger s_log = LogManager.getLogger(MLookupFactory.class);
-	/** Table Reference Cache */
-	private static CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<>("AD_Ref_Table", 30, 60);	// 1h
+	/**
+	 * Table Reference Cache
+	 */
+	private static CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<>("AD_Ref_Table", 30, 60);    // 1h
 
 	/**
 	 * Create MLookup
@@ -174,10 +176,10 @@ public class MLookupFactory
 	/**
 	 * Create MLookup
 	 *
-	 * @param ctx context for access
-	 * @param WindowNo window no
-	 * @param TabNo TabNo
-	 * @param Column_ID AD_Column_ID or AD_Process_Para_ID
+	 * @param ctx             context for access
+	 * @param WindowNo        window no
+	 * @param TabNo           TabNo
+	 * @param Column_ID       AD_Column_ID or AD_Process_Para_ID
 	 * @param AD_Reference_ID display type
 	 * @return MLookup
 	 */
@@ -303,7 +305,7 @@ public class MLookupFactory
 		// s_log.trace("Query: " + info.Query);
 		// s_log.trace("Direct: " + info.QueryDirect);
 		return info;
-	}	// createLookupInfo
+	}    // createLookupInfo
 
 	/**
 	 * Creates Direct access SQL Query. Similar with regular query but without validation rules, no security and no ORDER BY.
@@ -335,12 +337,13 @@ public class MLookupFactory
 	 * Get Lookup SQL for Lists
 	 *
 	 * @param AD_Reference_Value_ID
-	 * @return SELECT NULL, Value, Name, IsActive, Description, EntityType FROM AD_Ref_List
+	 * @return SELECT NULL, Value, Name, IsActive, Description, EntityType, FROM AD_Ref_List
 	 */
 	static public MLookupInfo getLookup_List(final int AD_Reference_Value_ID)
 	{
-		final String sqlFrom_BaseLang = "AD_Ref_List";
-		final String sqlFrom_Trl = "AD_Ref_List INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
+		final String sqlFrom_BaseLang = "AD_Ref_List LEFT OUTER JOIN AD_Message msg ON AD_Ref_List.AD_Message_ID=msg.AD_Message_ID";
+		final String sqlFrom_Trl = "AD_Ref_List LEFT OUTER JOIN AD_Message msg ON msg.AD_Message_ID=AD_Ref_List.AD_Message_ID"
+				+ " INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
 				+ " AND trl.AD_Language='" + MLookupInfo.CTXNAME_AD_Language.toStringWithMarkers() + "')";
 
 		final String displayColumnSQL_BaseLang;
@@ -361,6 +364,8 @@ public class MLookupFactory
 		final String descriptionColumnSQL_BaseLang = "AD_Ref_List.Description";
 		final String descriptionColumnSQL_Trl = "trl.Description";
 
+		final String validationMsgColumnSQL_BaseLang = "msg.value";
+
 		// SQL Select
 		final StringBuilder sqlSelect_BaseLang = new StringBuilder("SELECT ") // Key, Value
 				.append(" NULL") // Key
@@ -369,6 +374,7 @@ public class MLookupFactory
 				.append(",AD_Ref_List.IsActive") // IsActive
 				.append(",").append(descriptionColumnSQL_BaseLang)
 				.append(",AD_Ref_List.EntityType") // EntityType
+				.append(",").append(validationMsgColumnSQL_BaseLang)
 				.append(" FROM ").append(sqlFrom_BaseLang);
 
 		final StringBuilder sqlSelect_Trl = new StringBuilder("SELECT ") // Key, Value
@@ -378,6 +384,7 @@ public class MLookupFactory
 				.append(",AD_Ref_List.IsActive") // IsActive
 				.append(",").append(descriptionColumnSQL_Trl)
 				.append(",AD_Ref_List.EntityType") // EntityType
+				.append(",").append(validationMsgColumnSQL_BaseLang)
 				.append(" FROM ").append(sqlFrom_Trl);
 
 		// SQL WHERE
@@ -417,6 +424,7 @@ public class MLookupFactory
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
 		lookupInfo.setDescriptionColumnSQL(descriptionColumnSQL_BaseLang, descriptionColumnSQL_Trl);
+		lookupInfo.setValidationMsgColumnSQL(validationMsgColumnSQL_BaseLang);
 
 		lookupInfo.setSelectSqlPart(sqlSelect_BaseLang.toString(), sqlSelect_Trl.toString());
 		lookupInfo.setFromSqlPart(sqlFrom_BaseLang, sqlFrom_Trl);
@@ -426,14 +434,14 @@ public class MLookupFactory
 		lookupInfo.setQueryHasEntityType(true);
 
 		return lookupInfo;
-	}	// getLookup_List
+	}    // getLookup_List
 
 	/**
 	 * Get Lookup SQL for List
 	 *
-	 * @param languageInfo report Language
+	 * @param languageInfo          report Language
 	 * @param AD_Reference_Value_ID reference value
-	 * @param linkColumnName link column name
+	 * @param linkColumnName        link column name
 	 * @return SELECT Name FROM AD_Ref_List WHERE AD_Reference_ID=x AND Value=linkColumn
 	 */
 	static public String getLookup_ListEmbed(final LanguageInfo languageInfo, final int AD_Reference_Value_ID, final String linkColumnName)
@@ -447,7 +455,7 @@ public class MLookupFactory
 		final String baseTable = null;
 		final String sql = getLookupEmbed(lookupInfo, languageInfo, baseTable, linkColumnName);
 		return sql;
-	}	// getLookup_ListEmbed
+	}    // getLookup_ListEmbed
 
 	private static final ArrayKey createCacheKey(final ITableRefInfo tableRef)
 	{
@@ -474,14 +482,14 @@ public class MLookupFactory
 		}
 
 		return getLookupInfo(WindowNo, tableRefInfo);
-	}	// getLookup_Table
+	}    // getLookup_Table
 
 	/**
 	 * Get Embedded Lookup SQL for Table Lookup
 	 *
-	 * @param languageInfo report language
-	 * @param BaseColumn base column name
-	 * @param BaseTable base table name
+	 * @param languageInfo          report language
+	 * @param BaseColumn            base column name
+	 * @param BaseTable             base table name
 	 * @param AD_Reference_Value_ID reference value
 	 * @return SELECT Name FROM Table
 	 */
@@ -495,7 +503,7 @@ public class MLookupFactory
 
 		final String sql = getLookupEmbed(lookupInfo, languageInfo, BaseTable, BaseColumn);
 		return sql;
-	}	// getLookup_TableEmbed
+	}    // getLookup_TableEmbed
 
 	/**************************************************************************
 	 * Get Lookup SQL for direct Table Lookup
@@ -608,7 +616,7 @@ public class MLookupFactory
 			sqlSelectKeyColumnSQL = "NULL";
 			sqlSelectValueColumnSQL = keyColumnFQ;
 		}
-		
+
 		final String activeColumnSQL = tableName + ".IsActive";
 
 		//
@@ -900,8 +908,8 @@ public class MLookupFactory
 	 * Get embedded SQL for TableDir Lookup
 	 *
 	 * @param languageInfo report language
-	 * @param ColumnName column name
-	 * @param BaseTable base table
+	 * @param ColumnName   column name
+	 * @param BaseTable    base table
 	 * @return SELECT Column FROM TableName WHERE BaseTable.ColumnName=TableName.ColumnName
 	 * @see #getLookup_TableDirEmbed(LanguageInfo, String, String, String)
 	 */
@@ -914,9 +922,9 @@ public class MLookupFactory
 	 * Get embedded SQL for TableDir Lookup
 	 *
 	 * @param languageInfo report language
-	 * @param ColumnName column name
-	 * @param BaseTable base table
-	 * @param BaseColumn base column
+	 * @param ColumnName   column name
+	 * @param BaseTable    base table
+	 * @param BaseColumn   base column
 	 * @return SELECT Column FROM TableName WHERE BaseTable.BaseColumn=TableName.ColumnName
 	 */
 	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, final String ColumnName, final String BaseTable, final String BaseColumn)
@@ -930,9 +938,10 @@ public class MLookupFactory
 
 		final String sql = getLookupEmbed(lookupInfo, languageInfo, BaseTable, BaseColumn);
 		return sql;
-	}	// getLookup_TableDirEmbed
+	}    // getLookup_TableDirEmbed
 
 	// metas: begin
+
 	/**
 	 * Unified lookup embedded sql method. Based on AD_Reference_ID and AD_Reference_Value_ID parameters
 	 * it will call corresponding getLookup_*Embed methods
@@ -961,7 +970,8 @@ public class MLookupFactory
 	}
 
 	// NOTE: this is an package level method because we want to JUnit test it
-	/* package */ static String getLookupEmbed(final MLookupInfo lookupInfo, final LanguageInfo languageInfo, final String baseTable, final String baseColumn)
+	/* package */
+	static String getLookupEmbed(final MLookupInfo lookupInfo, final LanguageInfo languageInfo, final String baseTable, final String baseColumn)
 	{
 		Check.assumeNotNull(baseColumn, "baseColumn not null");
 

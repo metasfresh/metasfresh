@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -26,7 +27,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,11 +53,13 @@ public class QtyDeliveredFromOrderToInvoiceTest extends AbstractDeliveryTest
 		final List<I_C_Invoice_Candidate> invoiceCandidates = olHandler
 				.createCandidatesFor(InvoiceCandidateGenerateRequest.of(olHandler, orderLine))
 				.getC_Invoice_Candidates();
-		Assert.assertTrue("There is 1 invoice candidate", invoiceCandidates.size() == 1);
-		final I_C_Invoice_Candidate candidate = invoiceCandidates.get(0);
-		saveRecord(candidate);
-		olHandler.setDeliveredData(candidate);
+		assertThat(invoiceCandidates).as("There is 1 invoice candidate").hasSize(1);
 
-		Assert.assertEquals("Invalid qty delivered", orderLine.getQtyDelivered(), candidate.getQtyDelivered());
+		final I_C_Invoice_Candidate candidate = invoiceCandidates.get(0);
+		assertThat(candidate.getInvoiceRule()).isNotNull(); // guard
+		saveRecord(candidate);
+
+		olHandler.setDeliveredData(candidate);
+		assertThat(candidate.getQtyDelivered()).as("Invalid qty delivered").isEqualByComparingTo( orderLine.getQtyDelivered());
 	}
 }
