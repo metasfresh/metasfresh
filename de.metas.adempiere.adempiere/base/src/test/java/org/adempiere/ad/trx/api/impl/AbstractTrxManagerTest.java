@@ -12,17 +12,14 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
-import org.apache.log4j.MDC;
-import org.assertj.core.api.AbstractObjectAssert;
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.compiere.util.TrxRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 
 import com.google.common.collect.ImmutableList;
 
@@ -303,7 +300,7 @@ public class AbstractTrxManagerTest
 	@Nested
 	public class MDC_TrxName
 	{
-		private AbstractObjectAssert<?, Object> assertMDCTrxName()
+		private AbstractCharSequenceAssert<?, String> assertMDCTrxName()
 		{
 			return assertThat(MDC.get("TrxName")).as("MDC TrxName");
 		}

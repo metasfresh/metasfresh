@@ -41,12 +41,13 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.apache.log4j.MDC;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.MDC;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
@@ -66,7 +67,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineNoInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
@@ -261,7 +261,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 
-		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID());
+		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, String.valueOf(shipment.getM_InOut_ID()));
 		return shipment;
 	}
 
