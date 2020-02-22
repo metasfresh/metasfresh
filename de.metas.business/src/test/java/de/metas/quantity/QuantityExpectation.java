@@ -1,5 +1,7 @@
 package de.metas.quantity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,21 +15,18 @@ package de.metas.quantity;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 
 public class QuantityExpectation
 {
@@ -52,7 +51,7 @@ public class QuantityExpectation
 				+ "\n Quantity: " + quantity
 				+ "\n Invalid: ";
 
-		Assert.assertNotNull(prefix + "Quantity shall not be null", quantity);
+		assertThat(quantity).as(prefix + "Quantity shall not be null").isNotNull();
 
 		if (_qty != null)
 		{
@@ -60,7 +59,7 @@ public class QuantityExpectation
 		}
 		if (_uom != null)
 		{
-			Assert.assertEquals(prefix + "UOM", _uom, quantity.getUOM());
+			assertThat(quantity.getUOM()).as("UOM").isEqualTo(_uom);
 		}
 
 		if (_sourceQty != null)
@@ -69,13 +68,13 @@ public class QuantityExpectation
 		}
 		if (_sourceUOM != null)
 		{
-			Assert.assertEquals(prefix + "Source UOM", _sourceUOM, quantity.getSourceUOM());
+			assertThat(quantity.getSourceUOM()).as("Source UOM").isEqualTo(_sourceUOM);
 		}
 
 		if (_sourceSameAsCurrent)
 		{
 			assertSameOrEquals(prefix + "Source Qty (same as current)", true, quantity.toBigDecimal(), quantity.getSourceQty());
-			Assert.assertSame(prefix + "Source UOM (same as current)", quantity.getUOM(), quantity.getSourceUOM());
+			assertThat(quantity.getSourceUOM()).as("Source UOM").isSameAs(quantity.getUOM());
 		}
 
 		return this;
@@ -141,11 +140,11 @@ public class QuantityExpectation
 	{
 		if (expectSame)
 		{
-			Assert.assertSame(message, expected, actual);
+			assertThat(actual).as(message).isSameAs(expected);
 		}
 		else
 		{
-			Assert.assertThat(message, actual, Matchers.comparesEqualTo(expected));
+			assertThat(actual).as(message).isEqualByComparingTo(expected);
 		}
 	}
 

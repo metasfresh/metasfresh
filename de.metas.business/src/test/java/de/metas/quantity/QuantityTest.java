@@ -31,10 +31,9 @@ import java.math.RoundingMode;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.assertj.core.data.Offset;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.hamcrest.number.BigDecimalCloseTo;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -101,10 +100,9 @@ public class QuantityTest
 
 			//
 			// Assume their are equal
-			Assert.assertThat("Invalid Quantity.weightedAverage result (count=" + count + ")",
-					quantity.toBigDecimal(), // Actual
-					BigDecimalCloseTo.closeTo(currentQtyAvg, comparationError) // expectation
-			);
+			assertThat(quantity.toBigDecimal())
+					.as("Quantity.weightedAverage result (count=" + count + ")")
+					.isCloseTo(currentQtyAvg, Offset.offset(comparationError));
 		}
 	}
 
@@ -118,10 +116,10 @@ public class QuantityTest
 		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
 
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-		Assert.assertSame("Invalid Qty", qty, quantity.toBigDecimal());
-		Assert.assertSame("Invalid UOM", uom, quantity.getUOM());
-		Assert.assertSame("Invalid Source Qty", sourceQty, quantity.getSourceQty());
-		Assert.assertSame("Invalid Source UOM", sourceUOM, quantity.getSourceUOM());
+		assertThat(quantity.toBigDecimal()).isSameAs(qty);
+		assertThat(quantity.getUOM()).isSameAs(uom);
+		assertThat(quantity.getSourceQty()).isSameAs(sourceQty);
+		assertThat(quantity.getSourceUOM()).isSameAs(sourceUOM);
 
 		final Quantity quantitySource = quantity.switchToSource();
 		new QuantityExpectation()
@@ -196,7 +194,7 @@ public class QuantityTest
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
 		final Quantity qtyToAdd = new Quantity(new BigDecimal("0"), qtyToAdd_uom, new BigDecimal("0"), qtyToAdd_sourceUom);
 		final Quantity qtyNew = qty.add(qtyToAdd);
-		Assert.assertSame("Invalid QtyNew", qty, qtyNew);
+		assertThat(qtyNew).isSameAs(qty);
 	}
 
 	@Test

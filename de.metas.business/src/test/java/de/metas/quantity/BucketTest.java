@@ -1,6 +1,7 @@
 package de.metas.quantity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -30,10 +31,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.product.ProductId;
@@ -45,14 +44,14 @@ public class BucketTest
 	private ProductId pTomatoId;
 	private I_C_UOM uomEach;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		uomUnknown = BusinessTestHelper.createUOM("UnknownUOM");
 		uomEach = BusinessTestHelper.createUomEach();
-		
+
 		final I_M_Product pTomato = BusinessTestHelper.createProduct("tomato", uomEach);
 		pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 	}
@@ -79,7 +78,7 @@ public class BucketTest
 	public void addQty_InfiniteCapacity()
 	{
 		final Capacity capacityTotal = Capacity.createInfiniteCapacity(pTomatoId, uomEach);
-		Assert.assertTrue("Shall be infinite capacity: " + capacityTotal, capacityTotal.isInfiniteCapacity());
+		assertThat(capacityTotal.isInfiniteCapacity()).isTrue();
 
 		final Bucket capacity = Bucket.createBucketWithCapacityAndQty(capacityTotal, BigDecimal.ZERO);
 
@@ -108,7 +107,7 @@ public class BucketTest
 		assertCapacityLevels(capacity, "10", "0", "10");
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void addQty_NegativeQty()
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
@@ -116,7 +115,8 @@ public class BucketTest
 		final Capacity capacityTotal = Capacity.createCapacity(qtyTotal, pTomatoId, uomEach, allowNegativeCapacity);
 		final Bucket capacity = Bucket.createBucketWithCapacityAndQty(capacityTotal, BigDecimal.ZERO);
 
-		addQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER");
+		assertThatThrownBy(() -> addQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER"))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	/**
@@ -175,7 +175,7 @@ public class BucketTest
 		assertCapacityLevels(capacity, "10", "0", "10");
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void removeQty_NegativeQty()
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
@@ -183,14 +183,15 @@ public class BucketTest
 		final Capacity capacityTotal = Capacity.createCapacity(qtyTotal, pTomatoId, uomEach, allowNegativeCapacity);
 		final Bucket capacity = Bucket.createBucketWithCapacityAndQty(capacityTotal, BigDecimal.ZERO);
 
-		removeQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER");
+		assertThatThrownBy(() -> removeQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER"))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
 	public void removeQty_InfiniteCapacity()
 	{
 		final Capacity capacityTotal = Capacity.createInfiniteCapacity(pTomatoId, uomEach);
-		Assert.assertTrue("Shall be infinite capacity: " + capacityTotal, capacityTotal.isInfiniteCapacity());
+		assertThat(capacityTotal.isInfiniteCapacity()).isTrue();
 
 		final Bucket capacity = Bucket.createBucketWithCapacityAndQty(capacityTotal, BigDecimal.ZERO);
 
@@ -231,13 +232,11 @@ public class BucketTest
 		final Quantity qtyAdded = capacity.addQty(qtyToAdd);
 
 		// Validate Quantity Value and UOM
-		Assert.assertThat("Invalid Added Qty: " + capacity,
-				qtyAdded.toBigDecimal(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyAddedExpectedStr)));
-		Assert.assertEquals("Invalid Added UOM: ", uom, qtyAdded.getUOM());
+		assertThat(qtyAdded.toBigDecimal()).isEqualByComparingTo(qtyAddedExpectedStr);
+		assertThat(qtyAdded.getUOM()).isEqualTo(uom);
 
 		// Validate Source Quantity Value and UOM
-		Assert.assertEquals("Invalid Added Source UOM: ", capacity.getC_UOM(), qtyAdded.getSourceUOM());
+		assertThat(qtyAdded.getSourceUOM()).isEqualTo(capacity.getC_UOM());
 	}
 
 	private void removeQtyAndTest(final Bucket capacity,
@@ -252,7 +251,7 @@ public class BucketTest
 		assertThat(qtyRemoved.toBigDecimal()).as("Invalid Removed Qty: " + capacity).isEqualByComparingTo(qtyRemovedExpectedStr);
 
 		// Validate Quantity Value and UOM
-		Assert.assertEquals("Invalid Removed Source UOM: ", capacity.getC_UOM(), qtyRemoved.getSourceUOM());
+		assertThat(qtyRemoved.getSourceUOM()).isEqualTo(capacity.getC_UOM());
 	}
 
 	private void assertCapacityLevels(final Bucket capacity,
@@ -260,21 +259,13 @@ public class BucketTest
 			final String qtyExpectedStr,
 			final String qtyFreeExpectedStr)
 	{
-		Assert.assertThat("Invalid Qty Capacity/Total: " + capacity,
-				capacity.getCapacity(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyCapacityExpectedStr)));
-
+		assertThat(capacity.getCapacity()).isEqualByComparingTo(qtyCapacityExpectedStr);
 		assertQty(capacity, qtyExpectedStr);
-
-		Assert.assertThat("Invalid Qty Free: " + capacity,
-				capacity.getQtyFree(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyFreeExpectedStr)));
+		assertThat(capacity.getQtyFree()).isEqualByComparingTo(qtyFreeExpectedStr);
 	}
 
 	private void assertQty(final Bucket capacity, final String qtyExpectedStr)
 	{
-		Assert.assertThat("Invalid Qty: " + capacity,
-				capacity.getQty(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyExpectedStr)));
+		assertThat(capacity.getQty()).isEqualByComparingTo(qtyExpectedStr);
 	}
 }

@@ -2,15 +2,11 @@ package de.metas.pricing.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -37,14 +33,12 @@ import de.metas.pricing.IPricingResult;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class PricingTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private PricingTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -80,7 +74,7 @@ public class PricingTest
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
 			assertThat(result.isCalculated()).isTrue();
-			Assert.assertThat("not-Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(2)));
+			assertThat(result.getPriceStd()).as("not-Bio PriceStd\n" + result).isEqualByComparingTo("2");
 		}
 
 		//
@@ -92,7 +86,7 @@ public class PricingTest
 					.build());
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
-			Assert.assertThat("Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(3)));
+			assertThat(result.getPriceStd()).as("Bio PriceStd\n" + result).isEqualByComparingTo("3");
 		}
 	}
 }

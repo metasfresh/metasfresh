@@ -12,14 +12,9 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -53,11 +48,9 @@ import de.metas.product.ProductId;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PricingConditionsRepositoryTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -113,7 +106,7 @@ public class PricingConditionsRepositoryTest
 		saveRecord(schemaBreakRecord);
 
 		// invoke the method under test
-		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord);
+		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord, new PaymentTermService());
 
 		final PriceSpecification priceSpecification = result.getPriceSpecification();
 		assertThat(priceSpecification.getType()).isEqualTo(PriceSpecificationType.FIXED_PRICE);
@@ -129,7 +122,7 @@ public class PricingConditionsRepositoryTest
 		saveRecord(schemaBreakRecord);
 
 		// invoke the method under test
-		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord);
+		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord, new PaymentTermService());
 
 		assertThat(result.getPriceSpecification().getType()).isEqualTo(PriceSpecificationType.NONE);
 	}

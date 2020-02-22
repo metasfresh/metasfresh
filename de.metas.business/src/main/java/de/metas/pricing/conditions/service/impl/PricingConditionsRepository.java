@@ -188,6 +188,15 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	public static PricingConditionsBreak toPricingConditionsBreak(@NonNull final I_M_DiscountSchemaBreak schemaBreakRecord)
 	{
+		final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
+		return toPricingConditionsBreak(schemaBreakRecord, paymentTermService);
+	}
+
+	@VisibleForTesting
+	static PricingConditionsBreak toPricingConditionsBreak(
+			@NonNull final I_M_DiscountSchemaBreak schemaBreakRecord,
+			@NonNull final PaymentTermService paymentTermService)
+	{
 		final int discountSchemaBreakId = schemaBreakRecord.getM_DiscountSchemaBreak_ID();
 		final PricingConditionsBreakId id = discountSchemaBreakId > 0 ? PricingConditionsBreakId.of(schemaBreakRecord.getM_DiscountSchema_ID(), discountSchemaBreakId) : null;
 
@@ -195,7 +204,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		final Percent paymentDiscount = Percent.ofNullable(schemaBreakRecord.getPaymentDiscount());
 
-		final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 		final PaymentTermId derivedPaymentTermId = paymentTermService.getOrCreateDerivedPaymentTerm(
 				paymentTermIdOrNull,
 				paymentDiscount);

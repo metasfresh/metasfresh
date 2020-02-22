@@ -44,6 +44,7 @@ import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -51,17 +52,12 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -75,17 +71,13 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
+@ExtendWith(AdempiereTestWatcher.class)
 public class PricingConditionsTest
 {
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private PricingConditionsRepository repo;
 	private PricingConditionsService service;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -94,6 +86,7 @@ public class PricingConditionsTest
 		repo = new PricingConditionsRepository();
 		service = new PricingConditionsService();
 		Services.registerService(IPricingConditionsRepository.class, repo);
+		SpringContextHolder.registerJUnitBean(new PaymentTermService());
 	}
 
 	@Test
