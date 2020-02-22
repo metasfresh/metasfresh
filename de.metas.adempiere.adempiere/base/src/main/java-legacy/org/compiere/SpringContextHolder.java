@@ -12,6 +12,8 @@ import org.adempiere.util.reflect.ClassReference;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -108,7 +110,7 @@ public final class SpringContextHolder
 			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
 			if (beanImpl != null)
 			{
-				logger.info("JUnit testingL Returning manually registered bean: {}", beanImpl);
+				logger.info("JUnit testing. Returning manually registered bean: {}", beanImpl);
 				return beanImpl;
 			}
 		}
@@ -132,6 +134,24 @@ public final class SpringContextHolder
 	public <T> Collection<T> getBeansOfType(@NonNull final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getApplicationContext();
+		
+		if (springApplicationContext == null
+				&& Adempiere.isUnitTestMode())
+		{
+			@SuppressWarnings("unchecked")
+			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			if (beanImpl != null)
+			{
+				logger.info("JUnit testing. Returning manually registered bean: {}", beanImpl);
+				return ImmutableList.of(beanImpl);
+			}
+			else
+			{
+				logger.warn("No beans were registered programatically for {}. Returning empty list.", requiredType);
+				return ImmutableList.of();
+			}
+		}
+
 		try
 		{
 			throwExceptionIfNull(springApplicationContext);

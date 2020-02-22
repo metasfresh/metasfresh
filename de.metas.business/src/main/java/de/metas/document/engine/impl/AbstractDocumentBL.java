@@ -67,13 +67,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
-		if (!SpringContextHolder.instance.isApplicationContextSet())
-		{
-			// here we support the case of a unit test that
-			// * doesn't care about DocumentHandlerProviders
-			// * and does not want to do the @SpringBootTest dance
-			return ImmutableMap.of();
-		}
 		final Map<String, DocumentHandlerProvider> providersByTableName = SpringContextHolder.instance.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
