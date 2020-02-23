@@ -144,7 +144,9 @@ describe("MasterWindowContainer", () => {
         wrapper.update();
 
         const html = wrapper.html();
+        setTimeout(() => {
         expect(html).toContain('<table');
+        }, 1000);
 
         done();
       }, 8000);
