@@ -23,3 +23,18 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,584664,291,540794,TO_TIMESTAMP('2020-02-24 19:17:38','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2020-02-24 19:17:38','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N')
 ;
 
+-- 2020-02-24T20:22:34.528Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Vertriebsverantwortlichen zuordnen',Updated=TO_TIMESTAMP('2020-02-24 22:22:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584664
+;
+
+-- 2020-02-24T20:22:43.887Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Vertriebsverantwortlichen zuordnen',Updated=TO_TIMESTAMP('2020-02-24 22:22:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584664
+;
+
+-- 2020-02-24T20:22:47.763Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-02-24 22:22:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584664
+;
+
