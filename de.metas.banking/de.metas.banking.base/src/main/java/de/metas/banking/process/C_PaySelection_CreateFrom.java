@@ -22,23 +22,21 @@ package de.metas.banking.process;
  * #L%
  */
 
-import java.sql.Timestamp;
-
-import de.metas.banking.model.I_C_Payment;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.document.engine.DocStatus;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_PaySelection;
 
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
-import de.metas.process.JavaProcess;
+import java.sql.Timestamp;
 
 /**
  * Create Payment Selection Lines from AP Invoices
