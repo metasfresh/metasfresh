@@ -1,9 +1,9 @@
 package de.metas.ui.web.document.filter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.IntFunction;
@@ -13,7 +13,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -96,6 +95,8 @@ public final class DocumentFilter
 	@Getter
 	private final String filterId;
 	private final ITranslatableString caption;
+
+	private final ImmutableList<DocumentFilterParam> parameters;
 	private final ImmutableMap<String, DocumentFilterParam> parametersByName;
 	private final ImmutableSet<String> internalParameterNames;
 	@Getter
@@ -110,8 +111,15 @@ public final class DocumentFilter
 
 		facetFilter = builder.facetFilter;
 
-		parametersByName = builder.parametersByName != null ? ImmutableMap.copyOf(builder.parametersByName) : ImmutableMap.of();
-		internalParameterNames = builder.internalParameterNames != null ? ImmutableSet.copyOf(builder.internalParameterNames) : ImmutableSet.of();
+		parameters = builder.parameters != null
+				? ImmutableList.copyOf(builder.parameters)
+				: ImmutableList.of();
+		parametersByName = parameters.stream()
+				.filter(parameter -> !parameter.isSqlFilter())
+				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParam::getFieldName));
+		internalParameterNames = builder.internalParameterNames != null
+				? ImmutableSet.copyOf(builder.internalParameterNames)
+				: ImmutableSet.of();
 	}
 
 	public String getCaption(@Nullable final String adLanguage)
@@ -121,12 +129,12 @@ public final class DocumentFilter
 
 	public boolean hasParameters()
 	{
-		return !parametersByName.isEmpty();
+		return !parameters.isEmpty();
 	}
 
-	public ImmutableCollection<DocumentFilterParam> getParameters()
+	public ImmutableList<DocumentFilterParam> getParameters()
 	{
-		return parametersByName.values();
+		return parameters;
 	}
 
 	public boolean isInternalParameter(final String parameterName)
@@ -252,7 +260,7 @@ public final class DocumentFilter
 		private ITranslatableString caption = TranslatableStrings.empty();
 		private boolean facetFilter;
 
-		private LinkedHashMap<String, DocumentFilterParam> parametersByName;
+		private ArrayList<DocumentFilterParam> parameters;
 		private Set<String> internalParameterNames;
 
 		private Builder()
@@ -289,7 +297,7 @@ public final class DocumentFilter
 
 		public boolean hasParameters()
 		{
-			return !Check.isEmpty(parametersByName)
+			return !Check.isEmpty(parameters)
 					|| !Check.isEmpty(internalParameterNames);
 		}
 
@@ -297,9 +305,11 @@ public final class DocumentFilter
 		{
 			if (!parameters.isEmpty())
 			{
-				this.parametersByName = parameters
-						.stream()
-						.collect(GuavaCollectors.toMapByKey(LinkedHashMap::new, DocumentFilterParam::getFieldName));
+				this.parameters = new ArrayList<>(parameters);
+			}
+			else
+			{
+				this.parameters = null;
 			}
 
 			return this;
@@ -307,19 +317,13 @@ public final class DocumentFilter
 
 		public Builder addParameter(@NonNull final DocumentFilterParam parameter)
 		{
-			if (parametersByName == null)
+			if (parameters == null)
 			{
-				parametersByName = new LinkedHashMap<>();
+				parameters = new ArrayList<>();
 			}
 
-			final String fieldName = parameter.getFieldName();
-			final DocumentFilterParam alreadyAddedParam = parametersByName.get(fieldName);
-			if (alreadyAddedParam != null)
-			{
-				throw new AdempiereException("Cannot add " + parameter + " because a parameter with same name was already added: " + alreadyAddedParam);
-			}
+			parameters.add(parameter);
 
-			parametersByName.put(fieldName, parameter);
 			return this;
 		}
 

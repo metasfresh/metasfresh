@@ -31,6 +31,20 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 
 public class DocumentFilterTest
 {
+	@Test
+	public void sqlFilter()
+	{
+		final DocumentFilter filter = DocumentFilter.builder()
+				.setFilterId("filter1")
+				.setCaption("caption1")
+				.setFacetFilter(true)
+				.addParameter(DocumentFilterParam.ofSqlWhereClause(true, "SQL WHERE CLAUSE"))
+				.build();
+
+		assertThat(filter.getParameters())
+				.containsExactly(DocumentFilterParam.ofSqlWhereClause(true, "SQL WHERE CLAUSE"));
+	}
+
 	@Nested
 	public static class equalsTests
 	{

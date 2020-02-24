@@ -56,7 +56,7 @@ public class JSONLookupValuesListTest
 			System.out.println("JSON: " + json);
 
 			final JSONLookupValuesList objDeserialized = jsonObjectMapper.readValue(json, JSONLookupValuesList.class);
-			assertThat(objDeserialized).isEqualTo(obj);
+			assertThat(objDeserialized.toString()).isEqualTo(obj.toString());
 		}
 	}
 
@@ -84,10 +84,10 @@ public class JSONLookupValuesListTest
 					IntegerLookupValue.of(2, "A")));
 			assertThat(list.isOrdered()).isTrue(); // make sure our preconditions are right
 
-			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang"))
+			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang").toString())
 					.isEqualTo(newJSONLookupValuesList(
 							JSONLookupValue.of("1", "Z"),
-							JSONLookupValue.of("2", "A")));
+							JSONLookupValue.of("2", "A")).toString());
 		}
 
 		@Test
@@ -99,10 +99,10 @@ public class JSONLookupValuesListTest
 					.notOrdered();
 			assertThat(list.isOrdered()).isFalse(); // make sure our preconditions are right
 
-			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang"))
+			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang").toString())
 					.isEqualTo(newJSONLookupValuesList(
 							JSONLookupValue.of("2", "A"),
-							JSONLookupValue.of("1", "Z")));
+							JSONLookupValue.of("1", "Z")).toString());
 		}
 
 	}
