@@ -8,6 +8,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.GuavaCollectors;
 
 /*
@@ -23,11 +24,11 @@ import de.metas.util.GuavaCollectors;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,26 +41,7 @@ import de.metas.util.GuavaCollectors;
  */
 public class JSONViewOrderBy
 {
-	public static final List<DocumentQueryOrderBy> unwrapList(final List<JSONViewOrderBy> jsonOrderBys)
-	{
-		if (jsonOrderBys == null || jsonOrderBys.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return jsonOrderBys
-				.stream()
-				.map(jsonOrderBy -> unwrap(jsonOrderBy))
-				.filter(orderBy -> orderBy != null)
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	private static final DocumentQueryOrderBy unwrap(final JSONViewOrderBy jsonOrderBy)
-	{
-		return DocumentQueryOrderBy.byFieldName(jsonOrderBy.getFieldName(), jsonOrderBy.isAscending());
-	}
-
-	public static List<JSONViewOrderBy> ofList(final List<DocumentQueryOrderBy> orderBys)
+	public static List<JSONViewOrderBy> ofList(final DocumentQueryOrderByList orderBys)
 	{
 		if (orderBys == null || orderBys.isEmpty())
 		{

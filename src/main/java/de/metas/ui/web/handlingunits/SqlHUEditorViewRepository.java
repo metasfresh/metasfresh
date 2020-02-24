@@ -51,7 +51,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
@@ -73,7 +73,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -485,7 +485,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Override
 	public Set<HuId> retrieveHUIdsEffective(
 			@NonNull final HUIdsFilterData huIdsFilter,
-			@NonNull final List<DocumentFilter> filters,
+			@NonNull final DocumentFilterList filters,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final ImmutableSet<HuId> onlyHUIds = extractHUIds(huIdsFilter);
@@ -608,21 +608,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	public ViewRowIdsOrderedSelection createSelection(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
-			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys,
-			final SqlDocumentFilterConverterContext context)
+			final DocumentFilterList filters,
+			final DocumentQueryOrderByList orderBys,
+			@NonNull final SqlDocumentFilterConverterContext filterConverterCtx)
 	{
 		final boolean applySecurityRestrictions = true;
-		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions, context);
+		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions, filterConverterCtx);
 	}
 
 	@Override
 	public ViewRowIdsOrderedSelection createSelectionFromSelection(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			final ViewRowIdsOrderedSelection fromSelection,
-			final List<DocumentQueryOrderBy> orderBys)
+			final DocumentQueryOrderByList orderBys)
 	{
-		return viewSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
+		return viewSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, DocumentFilterList.EMPTY, orderBys, SqlDocumentFilterConverterContext.EMPTY);
 	}
 
 	@Override
@@ -646,7 +646,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Override
 	public void deleteSelection(final ViewRowIdsOrderedSelection selection)
 	{
-		viewSelectionFactory.deleteSelection(selection.getViewId());
+		viewSelectionFactory.deleteSelection(selection.getSelectionId());
 	}
 
 	@Override

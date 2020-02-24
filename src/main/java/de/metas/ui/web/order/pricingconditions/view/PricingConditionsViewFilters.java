@@ -10,11 +10,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -52,7 +52,7 @@ class PricingConditionsViewFilters
 	private static String PARAM_IsVendor = "IsVendor";
 
 	private ImmutableDocumentFilterDescriptorsProvider filterDescriptorsProvider; // lazy
-	private DocumentFiltersList defaultFilters; // lazy
+	private DocumentFilterList defaultFilters; // lazy
 
 	public DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
 	{
@@ -99,7 +99,7 @@ class PricingConditionsViewFilters
 				.build();
 	}
 
-	public static Predicate<PricingConditionsRow> isEditableRowOrMatching(final DocumentFiltersList filters)
+	public static Predicate<PricingConditionsRow> isEditableRowOrMatching(final DocumentFilterList filters)
 	{
 		if (filters.isEmpty())
 		{
@@ -118,27 +118,25 @@ class PricingConditionsViewFilters
 				|| ((showCustomers && row.isCustomer()) || (showVendors && row.isVendor()));
 	}
 
-	public DocumentFiltersList extractFilters(@NonNull final JSONFilterViewRequest filterViewRequest)
+	public DocumentFilterList extractFilters(@NonNull final JSONFilterViewRequest filterViewRequest)
 	{
-		final DocumentFilterDescriptorsProvider filtersDescriptors = getFilterDescriptorsProvider();
-		return DocumentFiltersList.ofJSONFilters(filterViewRequest.getFilters())
-				.unwrapAndCopy(filtersDescriptors);
+		return filterViewRequest.getFiltersUnwrapped(getFilterDescriptorsProvider());
 	}
 
-	public DocumentFiltersList extractFilters(@NonNull final CreateViewRequest request)
+	public DocumentFilterList extractFilters(@NonNull final CreateViewRequest request)
 	{
 		return request.isUseAutoFilters()
 				? getDefaultFilters()
-				: request.getFilters().unwrapAndCopy(getFilterDescriptorsProvider());
+				: request.getFiltersUnwrapped(getFilterDescriptorsProvider());
 	}
 
-	private DocumentFiltersList getDefaultFilters()
+	private DocumentFilterList getDefaultFilters()
 	{
 		if (defaultFilters == null)
 		{
 			final DocumentFilter isCustomer = DocumentFilter.singleParameterFilter(FILTERID_IsCustomer, PARAM_IsCustomer, Operator.EQUAL, true);
 
-			defaultFilters = DocumentFiltersList.ofFilters(isCustomer);
+			defaultFilters = DocumentFilterList.of(isCustomer);
 		}
 		return defaultFilters;
 	}

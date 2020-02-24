@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -48,7 +48,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -87,7 +87,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	private final List<DocumentQueryOrderBy> defaultOrderBys;
+	private final DocumentQueryOrderByList defaultOrderBys;
 
 	private final boolean hasIncludedRows;
 	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
@@ -138,7 +138,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Override
 	public String getSqlWhereClause(
 			final ViewId viewId,
-			final List<DocumentFilter> filters,
+			final DocumentFilterList filters,
 			final DocumentIdsSelection rowIds,
 			final SqlOptions sqlOpts)
 	{
@@ -184,7 +184,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	public ViewRowIdsOrderedSelection createOrderedSelection(
 			final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
-			final List<DocumentFilter> filters,
+			final DocumentFilterList filters,
 			final boolean applySecurityRestrictions,
 			final SqlDocumentFilterConverterContext context)
 	{
@@ -197,17 +197,20 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx,
+	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(
+			final ViewEvaluationCtx viewEvalCtx,
 			final ViewRowIdsOrderedSelection fromSelection,
-			final List<DocumentQueryOrderBy> orderBys)
+			final DocumentFilterList filters,
+			final DocumentQueryOrderByList orderBys,
+			final SqlDocumentFilterConverterContext filterConverterCtx)
 	{
-		return viewRowIdsOrderedSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
+		return viewRowIdsOrderedSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, filters, orderBys, filterConverterCtx);
 	}
 
 	@Override
-	public void deleteSelection(final ViewId viewId)
+	public void deleteSelection(@NonNull final String selectionId)
 	{
-		viewRowIdsOrderedSelectionFactory.deleteSelection(viewId);
+		viewRowIdsOrderedSelectionFactory.deleteSelection(selectionId);
 	}
 
 	@Override
@@ -615,8 +618,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			return ImmutableList.of();
 		}
 
-		final List<DocumentFilter> filters = ImmutableList.of();
-		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds, SqlOptions.usingTableAlias(getTableAlias()));
+		final String sqlWhereClause = getSqlWhereClause(viewId, DocumentFilterList.EMPTY, rowIds, SqlOptions.usingTableAlias(getTableAlias()));
 		if (Check.isEmpty(sqlWhereClause, true))
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);
@@ -632,7 +634,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Override
 	public ViewRowIdsOrderedSelection removeRowIdsNotMatchingFilters(
 			@NonNull final ViewRowIdsOrderedSelection selection,
-			@NonNull final List<DocumentFilter> filters,
+			@NonNull final DocumentFilterList filters,
 			@NonNull final Set<DocumentId> rowIds)
 	{
 		if (rowIds.isEmpty())
@@ -653,7 +655,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private Set<DocumentId> retrieveRowIdsMatchingFilters(
 			final ViewId viewId,
-			final List<DocumentFilter> filters,
+			final DocumentFilterList filters,
 			@NonNull final Set<DocumentId> rowIds)
 	{
 		if (rowIds.isEmpty())
@@ -698,5 +700,22 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@Override
+	public List<Object> retrieveFieldValues(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			@NonNull final String selectionId,
+			@NonNull final String fieldName,
+			final int limit)
+	{
+		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(fieldName);
+		final SqlAndParams sql = sqlViewSelect.selectFieldValues(viewEvalCtx, selectionId, fieldName, limit);
+
+		final String adLanguage = viewEvalCtx.getAdLanguage();
+		return DB.retrieveRows(
+				sql.getSql(),
+				sql.getSqlParams(),
+				rs -> fieldLoader.retrieveValue(rs, adLanguage));
 	}
 }

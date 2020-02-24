@@ -2,7 +2,7 @@ package de.metas.ui.web.picking.pickingslot;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HuId;
 import de.metas.picking.api.PickingSlotId;

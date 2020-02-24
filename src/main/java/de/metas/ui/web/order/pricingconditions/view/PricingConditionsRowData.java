@@ -3,7 +3,6 @@ package de.metas.ui.web.order.pricingconditions.view;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -21,7 +20,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.template.IEditableRowsData;
@@ -60,7 +59,7 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 {
 	@Getter
 	private final OrderLineId orderLineId;
-	private final DocumentFiltersList filters;
+	private final DocumentFilterList filters;
 
 	/** Sortof parent-instance that represents the superset of all pricing conditions rows. */
 	private final PricingConditionsRowData allRowsData;
@@ -81,7 +80,7 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	{
 		this.orderLineId = orderLineId;
 		this.allRowsData = null;
-		this.filters = DocumentFiltersList.EMPTY;
+		this.filters = DocumentFilterList.EMPTY;
 
 		this.rowIds = stream(editableRow, rows)
 				.map(PricingConditionsRow::getId)
@@ -96,7 +95,7 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 
 	private PricingConditionsRowData(
 			@NonNull final PricingConditionsRowData from,
-			@NonNull final DocumentFiltersList filters)
+			@NonNull final DocumentFilterList filters)
 	{
 		this.allRowsData = from.getAllRowsData();
 		this.filters = filters;
@@ -220,14 +219,14 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 		return getById(getEditableRowId());
 	}
 
-	public DocumentFiltersList getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return filters;
 	}
 
-	public PricingConditionsRowData filter(@NonNull final DocumentFiltersList filters)
+	public PricingConditionsRowData filter(@NonNull final DocumentFilterList filters)
 	{
-		if (Objects.equals(this.filters, filters))
+		if (DocumentFilterList.equals(this.filters, filters))
 		{
 			return this;
 		}

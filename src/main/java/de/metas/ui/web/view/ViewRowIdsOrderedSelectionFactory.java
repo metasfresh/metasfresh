@@ -1,12 +1,14 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
 import java.util.Set;
 
-import de.metas.ui.web.document.filter.DocumentFilter;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,15 +36,20 @@ public interface ViewRowIdsOrderedSelectionFactory
 {
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx,
 			ViewId viewId,
-			List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys, 
+			DocumentFilterList filters,
+			final DocumentQueryOrderByList orderBys,
 			final boolean applySecurityRestrictions,
 			SqlDocumentFilterConverterContext context);
 
 	/**
 	 * @return a new {@link ViewRowIdsOrderedSelection} from a given <code>fromSelection</code> ordered by <code>orderBys</code>
 	 */
-	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(
+			ViewEvaluationCtx viewEvalCtx,
+			ViewRowIdsOrderedSelection fromSelection,
+			DocumentFilterList filters,
+			DocumentQueryOrderByList orderBys,
+			final SqlDocumentFilterConverterContext filterConverterCtx);
 
 	String getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
 
@@ -51,8 +58,13 @@ public interface ViewRowIdsOrderedSelectionFactory
 	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
-	
-	void deleteSelection(ViewId viewId);
 
-	void scheduleDeleteSelections(Set<String> viewIds);
+	default void deleteSelection(@NonNull final String selectionId)
+	{
+		deleteSelections(ImmutableSet.of(selectionId));
+	}
+
+	void deleteSelections(Set<String> selectionIds);
+
+	void scheduleDeleteSelections(Set<String> selectionIds);
 }

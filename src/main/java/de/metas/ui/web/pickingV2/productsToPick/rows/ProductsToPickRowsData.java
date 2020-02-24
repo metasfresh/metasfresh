@@ -27,7 +27,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderBys;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
@@ -64,7 +64,7 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 	private final PickingCandidateService pickingCandidateService;
 
 	@Getter
-	private final ImmutableList<DocumentQueryOrderBy> orderBys;
+	private final DocumentQueryOrderByList orderBys;
 	private final ImmutableList<DocumentId> topLevelRowIdsOrdered;
 	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> _allRowsById;
 	private volatile boolean rowIdsInvalid;
@@ -73,13 +73,13 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 	private ProductsToPickRowsData(
 			@NonNull final PickingCandidateService pickingCandidateService,
 			@NonNull final List<ProductsToPickRow> rows,
-			@NonNull @Singular final ImmutableList<DocumentQueryOrderBy> orderBys)
+			@NonNull @Singular final List<DocumentQueryOrderBy> orderBys)
 	{
 		this.pickingCandidateService = pickingCandidateService;
 
-		this.orderBys = orderBys;
+		this.orderBys = DocumentQueryOrderByList.ofList(orderBys);
 		topLevelRowIdsOrdered = rows.stream()
-				.sorted(createComparator(orderBys))
+				.sorted(createComparator(this.orderBys))
 				.map(ProductsToPickRow::getId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
@@ -92,10 +92,9 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 		rowIdsInvalid = false;
 	}
 
-	private static Comparator<ProductsToPickRow> createComparator(final List<DocumentQueryOrderBy> orderBys)
+	private static Comparator<ProductsToPickRow> createComparator(final DocumentQueryOrderByList orderBys)
 	{
-		return DocumentQueryOrderBys.<ProductsToPickRow> asComparator(orderBys, JSONOptions.newInstance())
-				.thenComparing(ProductsToPickRow::getShipmentScheduleId);
+		return orderBys.toComparator(ProductsToPickRow::getFieldValueAsJsonObject, JSONOptions.newInstance());
 	}
 
 	private synchronized Map<DocumentId, ProductsToPickRow> getAllRowsById()

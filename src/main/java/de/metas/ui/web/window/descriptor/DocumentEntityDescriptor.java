@@ -55,6 +55,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyTy
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
@@ -1130,14 +1131,14 @@ public class DocumentEntityDescriptor
 			return CopyRecordFactory.isEnabledForTableName(tableName.get());
 		}
 
-		public List<DocumentQueryOrderBy> getDefaultOrderBys()
+		public DocumentQueryOrderByList getDefaultOrderBys()
 		{
 			return getFieldBuilders()
 					.stream()
 					.filter(field -> field.isDefaultOrderBy())
 					.sorted(Ordering.natural().onResultOf(field -> field.getDefaultOrderByPriority()))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
-					.collect(ImmutableList.toImmutableList());
+					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
 		}
 	}
 }

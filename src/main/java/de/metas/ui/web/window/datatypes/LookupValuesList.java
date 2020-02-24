@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -54,6 +55,7 @@ import lombok.NonNull;
  *
  */
 @Immutable
+@EqualsAndHashCode(exclude = "debugProperties")
 public final class LookupValuesList implements Iterable<LookupValue>
 {
 	/**
@@ -90,7 +92,8 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 		final ImmutableListMultimap<Object, LookupValue> valuesById = ImmutableListMultimap.of(lookupValue.getId(), lookupValue);
 		final Map<String, String> debugProperties = ImmutableMap.of();
-		return new LookupValuesList(valuesById, debugProperties);
+		final boolean ordered = true;
+		return new LookupValuesList(valuesById, ordered, debugProperties);
 	}
 
 	public static LookupValuesList fromCollection(final Collection<? extends LookupValue> lookupValues)
@@ -102,7 +105,8 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 		final ImmutableListMultimap<Object, LookupValue> valuesById = lookupValues.stream().collect(GuavaCollectors.toImmutableListMultimap(LookupValue::getId));
 		final Map<String, String> debugProperties = ImmutableMap.of();
-		return new LookupValuesList(valuesById, debugProperties);
+		final boolean ordered = true;
+		return new LookupValuesList(valuesById, ordered, debugProperties);
 	}
 
 	private static LookupValuesList build(final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
@@ -113,20 +117,24 @@ public final class LookupValuesList implements Iterable<LookupValue>
 			return EMPTY;
 		}
 
-		final LookupValuesList result = new LookupValuesList(valuesById, debugProperties);
+		final boolean ordered = true;
+		final LookupValuesList result = new LookupValuesList(valuesById, ordered, debugProperties);
 		return result;
 	}
 
 	public static final LookupValuesList EMPTY = new LookupValuesList();
 
 	private final ImmutableListMultimap<Object, LookupValue> valuesById;
-	private final transient ImmutableMap<String, String> debugProperties;
+	private final boolean ordered;
+	private final ImmutableMap<String, String> debugProperties;
 
 	private LookupValuesList(
 			@NonNull final ImmutableListMultimap<Object, LookupValue> valuesById,
+			final boolean ordered,
 			@Nullable final Map<String, String> debugProperties)
 	{
 		this.valuesById = valuesById;
+		this.ordered = ordered;
 		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
 	}
 
@@ -134,6 +142,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	private LookupValuesList()
 	{
 		valuesById = ImmutableListMultimap.of();
+		ordered = true;
 		debugProperties = ImmutableMap.of();
 	}
 
@@ -143,41 +152,9 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("values", valuesById.values())
+				.add("ordered", ordered)
 				.add("debug", debugProperties.isEmpty() ? null : debugProperties)
 				.toString();
-	}
-
-	/**
-	 * NOTE: {@link #getDebugProperties()} is ignored
-	 */
-	@Override
-	public int hashCode()
-	{
-		return valuesById.hashCode();
-	}
-
-	/**
-	 * NOTE: {@link #getDebugProperties()} is ignored when comparing
-	 */
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (obj == null)
-		{
-			return false;
-		}
-
-		if (!getClass().equals(obj.getClass()))
-		{
-			return false;
-		}
-
-		final LookupValuesList other = (LookupValuesList)obj;
-		return valuesById.equals(other.valuesById);
 	}
 
 	/**
@@ -222,7 +199,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	/**
 	 * @return debug properties or empty map; never returns null
 	 */
-	public Map<String, String> getDebugProperties()
+	public ImmutableMap<String, String> getDebugProperties()
 	{
 		return debugProperties;
 	}
@@ -335,7 +312,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 					.putAll(valuesById)
 					.put(lookupValue.getId(), lookupValue)
 					.build();
-			return new LookupValuesList(valuesByIdNew, debugProperties);
+			return new LookupValuesList(valuesByIdNew, ordered, debugProperties);
 		}
 	}
 
@@ -369,6 +346,30 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		}
 
 		//
-		return new LookupValuesList(valuesByIdNew, debugProperties);
+		return new LookupValuesList(valuesByIdNew, ordered, debugProperties);
+	}
+
+	/**
+	 * @return true if the lookup values are in a precise order (no matter which one is that);
+	 *         When converting to JSON (so when the AD_Language will be also known),
+	 *         a not ordered list will be automatically sorted alphabetically by caption.
+	 */
+	public boolean isOrdered()
+	{
+		return ordered;
+	}
+
+	/** @see #isOrdered() */
+	public LookupValuesList ordered(final boolean ordered)
+	{
+		return this.ordered != ordered
+				? new LookupValuesList(valuesById, ordered, debugProperties)
+				: this;
+	}
+
+	/** @see #isOrdered() */
+	public LookupValuesList notOrdered()
+	{
+		return ordered(false);
 	}
 }

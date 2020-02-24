@@ -18,6 +18,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -25,17 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
+import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderId;
@@ -47,10 +42,7 @@ import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowType;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -100,42 +92,10 @@ public class ProductsToPickRowsDataFactoryTest
 		locatorId = testHelper.createLocator(warehouseId);
 	}
 
-	private BPartnerBL createAndRegisterBPartnerBL()
-	{
-		final UserRepository userRepository = new UserRepository();
-		final BPartnerBL bpartnersService = new BPartnerBL(userRepository);
-		Services.registerService(IBPartnerBL.class, bpartnersService);
-		return bpartnersService;
-	}
-
-	private ProductsToPickRowsDataFactory createProductsToPickRowsDataFactory()
-	{
-		final IBPartnerBL bpartnersService = createAndRegisterBPartnerBL();
-
-		final HUReservationRepository huReservationRepository = new HUReservationRepository();
-		final HUReservationService huReservationService = new HUReservationService(huReservationRepository);
-
-		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
-
-		final HUTraceRepository huTraceRepository = new HUTraceRepository();
-		final HuId2SourceHUsService sourceHUsRepository = new HuId2SourceHUsService(huTraceRepository);
-
-		final PickingCandidateService pickingCandidateService = new PickingCandidateService(pickingCandidateRepository, sourceHUsRepository);
-
-		return ProductsToPickRowsDataFactory.builder()
-				.bpartnersService(bpartnersService)
-				.huReservationService(huReservationService)
-				.pickingCandidateService(pickingCandidateService)
-				.locatorLookup(testHelper::locatorLookupById)
-				.build();
-	}
-
 	@Builder(builderMethodName = "preparePackageableRow", builderClassName = "PackageableRowBuilder")
 	private PackageableRow createPackageableRow(
-			@NonNull final Quantity qtyOrdered,
+			final int qtyToDeliver,
 			final int qtyPickedNotDelivered,
-			final int qtyDelivered,
-			final int qtyPickedPlanned,
 			@Nullable final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
 	{
 		return PackageableRow.builder()
@@ -145,11 +105,11 @@ public class ProductsToPickRowsDataFactoryTest
 				.packageable(Packageable.builder()
 						.shipmentScheduleId(shipmentScheduleId)
 						//
-						.qtyOrdered(qtyOrdered)
-						.qtyToDeliver(qtyOrdered)
-						.qtyDelivered(Quantity.of(qtyDelivered, uomKg))
+						.qtyOrdered(Quantity.of(1000000, uomKg))
+						.qtyToDeliver(Quantity.of(qtyToDeliver, uomKg))
+						.qtyDelivered(Quantity.of(0, uomKg))
 						.qtyPickedNotDelivered(Quantity.of(qtyPickedNotDelivered, uomKg))
-						.qtyPickedPlanned(Quantity.of(qtyPickedPlanned, uomKg))
+						.qtyPickedPlanned(Quantity.of(0, uomKg))
 						.qtyPickedAndDelivered(Quantity.of(0, uomKg))
 						//
 						.customerId(customerAndLocationId.getBpartnerId())
@@ -166,152 +126,164 @@ public class ProductsToPickRowsDataFactoryTest
 				.build();
 	}
 
-	@Test
-	public void testRowsOrder_BestBeforePolicy_Expiring_First()
+	@Nested
+	public class testRowsOrder_BestBeforePolicy
 	{
-		final HuId huId1 = testHelper.prepareExistingHU()
-				.locatorId(locatorId)
-				.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 1))
-				.productId(productId)
-				.qty(Quantity.of(10, uomKg))
-				.build();
+		@Test
+		public void expiringFirst()
+		{
+			final HuId huId1 = testHelper.prepareExistingHU()
+					.locatorId(locatorId)
+					.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 1))
+					.productId(productId)
+					.qty(Quantity.of(10, uomKg))
+					.build();
 
-		final HuId huId2 = testHelper.prepareExistingHU()
-				.locatorId(locatorId)
-				.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 2))
-				.productId(productId)
-				.qty(Quantity.of(11, uomKg))
-				.build();
+			final HuId huId2 = testHelper.prepareExistingHU()
+					.locatorId(locatorId)
+					.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 2))
+					.productId(productId)
+					.qty(Quantity.of(11, uomKg))
+					.build();
 
-		final HuId huId3 = testHelper.prepareExistingHU()
-				.locatorId(locatorId)
-				.bestBeforeDate(null)
-				.productId(productId)
-				.qty(Quantity.of(12, uomKg))
-				.build();
+			final HuId huId3 = testHelper.prepareExistingHU()
+					.locatorId(locatorId)
+					.bestBeforeDate(null)
+					.productId(productId)
+					.qty(Quantity.of(12, uomKg))
+					.build();
 
-		final PackageableRow packageableRow = preparePackageableRow()
-				.qtyOrdered(Quantity.of(100, uomKg))
-				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
-				.build();
+			final PackageableRow packageableRow = preparePackageableRow()
+					.qtyToDeliver(100)
+					.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
+					.build();
 
-		final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = createProductsToPickRowsDataFactory();
-		final ProductsToPickRowsData rowsData = productsToPickRowsDataFactory.create(packageableRow);
+			final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = testHelper.createProductsToPickRowsDataFactory();
+			final ProductsToPickRowsData rowsData = productsToPickRowsDataFactory.create(packageableRow);
 
-		final ImmutableList<ProductsToPickRow> rows = ImmutableList.copyOf(rowsData.getTopLevelRows());
-		rows.forEach(row -> System.out.println("hu=" + row.getPickFromHUId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
-		assertThat(rows).hasSize(4);
+			final ImmutableList<ProductsToPickRow> rows = ImmutableList.copyOf(rowsData.getTopLevelRows());
+			rows.forEach(row -> System.out.println("hu=" + row.getPickFromHUId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
+			assertThat(rows).hasSize(4);
 
-		final ProductsToPickRow row1 = rows.get(0);
-		assertThat(row1.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
-		assertThat(row1.getPickFromHUId()).isEqualTo(huId1);
-		assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
-		assertThat(row1.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+			final ProductsToPickRow row1 = rows.get(0);
+			assertThat(row1.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+			assertThat(row1.getPickFromHUId()).isEqualTo(huId1);
+			assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
+			assertThat(row1.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
 
-		final ProductsToPickRow row2 = rows.get(1);
-		assertThat(row2.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
-		assertThat(row2.getPickFromHUId()).isEqualTo(huId2);
-		assertThat(row2.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));
-		assertThat(row2.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
+			final ProductsToPickRow row2 = rows.get(1);
+			assertThat(row2.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+			assertThat(row2.getPickFromHUId()).isEqualTo(huId2);
+			assertThat(row2.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));
+			assertThat(row2.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 
-		final ProductsToPickRow row3 = rows.get(2);
-		assertThat(row3.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
-		assertThat(row3.getPickFromHUId()).isEqualTo(huId3);
-		assertThat(row3.getQtyEffective()).isEqualTo(Quantity.of(12, uomKg));
-		assertThat(row3.getExpiringDate()).isNull();
+			final ProductsToPickRow row3 = rows.get(2);
+			assertThat(row3.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+			assertThat(row3.getPickFromHUId()).isEqualTo(huId3);
+			assertThat(row3.getQtyEffective()).isEqualTo(Quantity.of(12, uomKg));
+			assertThat(row3.getExpiringDate()).isNull();
 
-		final ProductsToPickRow row4 = rows.get(3);
-		assertThat(row4.getType()).isEqualTo(ProductsToPickRowType.UNALLOCABLE);
-		assertThat(row4.getPickFromHUId()).isNull();
-		assertThat(row4.getQtyEffective()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
-		assertThat(row4.getExpiringDate()).isNull();
-	}
+			final ProductsToPickRow row4 = rows.get(3);
+			assertThat(row4.getType()).isEqualTo(ProductsToPickRowType.UNALLOCABLE);
+			assertThat(row4.getPickFromHUId()).isNull();
+			assertThat(row4.getQtyEffective()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
+			assertThat(row4.getExpiringDate()).isNull();
+		}
 
-	@Test
-	public void testRowsOrder_BestBeforePolicy_Expiring_Last()
-	{
-		final HuId huId1 = testHelper.prepareExistingHU()
-				.locatorId(locatorId)
-				.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 1))
-				.productId(productId)
-				.qty(Quantity.of(10, uomKg))
-				.build();
+		@Test
+		public void expiringLast()
+		{
+			final HuId huId1 = testHelper.prepareExistingHU()
+					.locatorId(locatorId)
+					.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 1))
+					.productId(productId)
+					.qty(Quantity.of(10, uomKg))
+					.build();
 
-		final HuId huId2 = testHelper.prepareExistingHU()
-				.locatorId(locatorId)
-				.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 2))
-				.productId(productId)
-				.qty(Quantity.of(11, uomKg))
-				.build();
+			final HuId huId2 = testHelper.prepareExistingHU()
+					.locatorId(locatorId)
+					.bestBeforeDate(LocalDate.of(2019, Month.SEPTEMBER, 2))
+					.productId(productId)
+					.qty(Quantity.of(11, uomKg))
+					.build();
 
-		final HuId huId3 = testHelper.prepareExistingHU()
-				.locatorId(locatorId)
-				.bestBeforeDate(null)
-				.productId(productId)
-				.qty(Quantity.of(12, uomKg))
-				.build();
+			final HuId huId3 = testHelper.prepareExistingHU()
+					.locatorId(locatorId)
+					.bestBeforeDate(null)
+					.productId(productId)
+					.qty(Quantity.of(12, uomKg))
+					.build();
 
-		final PackageableRow packageableRow = preparePackageableRow()
-				.qtyOrdered(Quantity.of(100, uomKg))
-				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Newest_First)
-				.build();
+			final PackageableRow packageableRow = preparePackageableRow()
+					.qtyToDeliver(100)
+					.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Newest_First)
+					.build();
 
-		final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = createProductsToPickRowsDataFactory();
-		final ProductsToPickRowsData rowsData = productsToPickRowsDataFactory.create(packageableRow);
+			final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = testHelper.createProductsToPickRowsDataFactory();
+			final ProductsToPickRowsData rowsData = productsToPickRowsDataFactory.create(packageableRow);
 
-		final ImmutableList<ProductsToPickRow> rows = ImmutableList.copyOf(rowsData.getTopLevelRows());
-		rows.forEach(row -> System.out.println("hu=" + row.getPickFromHUId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
-		assertThat(rows).hasSize(4);
+			final ImmutableList<ProductsToPickRow> rows = ImmutableList.copyOf(rowsData.getTopLevelRows());
+			rows.forEach(row -> System.out.println("hu=" + row.getPickFromHUId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
+			assertThat(rows).hasSize(4);
 
-		final ProductsToPickRow row1 = rows.get(0);
-		assertThat(row1.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
-		assertThat(row1.getPickFromHUId()).isEqualTo(huId2);
-		assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));
-		assertThat(row1.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
+			final ProductsToPickRow row1 = rows.get(0);
+			assertThat(row1.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+			assertThat(row1.getPickFromHUId()).isEqualTo(huId2);
+			assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));
+			assertThat(row1.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 
-		final ProductsToPickRow row2 = rows.get(1);
-		assertThat(row2.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
-		assertThat(row2.getPickFromHUId()).isEqualTo(huId1);
-		assertThat(row2.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
-		assertThat(row2.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+			final ProductsToPickRow row2 = rows.get(1);
+			assertThat(row2.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+			assertThat(row2.getPickFromHUId()).isEqualTo(huId1);
+			assertThat(row2.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
+			assertThat(row2.getExpiringDate()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
 
-		final ProductsToPickRow row3 = rows.get(2);
-		assertThat(row3.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
-		assertThat(row3.getPickFromHUId()).isEqualTo(huId3);
-		assertThat(row3.getQtyEffective()).isEqualTo(Quantity.of(12, uomKg));
-		assertThat(row3.getExpiringDate()).isNull();
+			final ProductsToPickRow row3 = rows.get(2);
+			assertThat(row3.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+			assertThat(row3.getPickFromHUId()).isEqualTo(huId3);
+			assertThat(row3.getQtyEffective()).isEqualTo(Quantity.of(12, uomKg));
+			assertThat(row3.getExpiringDate()).isNull();
 
-		final ProductsToPickRow row4 = rows.get(3);
-		assertThat(row4.getType()).isEqualTo(ProductsToPickRowType.UNALLOCABLE);
-		assertThat(row4.getPickFromHUId()).isNull();
-		assertThat(row4.getQtyEffective()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
-		assertThat(row4.getExpiringDate()).isNull();
+			final ProductsToPickRow row4 = rows.get(3);
+			assertThat(row4.getType()).isEqualTo(ProductsToPickRowType.UNALLOCABLE);
+			assertThat(row4.getPickFromHUId()).isNull();
+			assertThat(row4.getQtyEffective()).isEqualTo(Quantity.of(100 - 10 - 11 - 12, uomKg));
+			assertThat(row4.getExpiringDate()).isNull();
+		}
 	}
 
 	@Test
 	public void test_AlreadyExistingPickingCandidate()
 	{
+		final HuId huId1 = testHelper.prepareExistingHU()
+				.locatorId(locatorId)
+				.productId(productId)
+				.qty(Quantity.of(999, uomKg))
+				.build();
+
 		final I_M_Picking_Candidate pickingCandidateRecord = newInstance(I_M_Picking_Candidate.class);
+		pickingCandidateRecord.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
 		pickingCandidateRecord.setStatus(PickingCandidateStatus.Draft.getCode());
+		pickingCandidateRecord.setPickStatus(PickingCandidatePickStatus.PICKED.getCode());
+		pickingCandidateRecord.setApprovalStatus(PickingCandidateApprovalStatus.TO_BE_APPROVED.getCode());
 		pickingCandidateRecord.setQtyPicked(new BigDecimal("5"));
 		pickingCandidateRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
+		pickingCandidateRecord.setPickFrom_HU_ID(huId1.getRepoId());
 		saveRecord(pickingCandidateRecord);
 
 		final PackageableRow packageableRow = preparePackageableRow()
-				.qtyOrdered(Quantity.of(5, uomKg))
-				.qtyDelivered(0)
-				.qtyPickedNotDelivered(0)
-				.qtyPickedPlanned(5)
+				.qtyToDeliver(5)
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 				.build();
 
-		final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = createProductsToPickRowsDataFactory();
+		final ProductsToPickRowsDataFactory productsToPickRowsDataFactory = testHelper.createProductsToPickRowsDataFactory();
 		final Collection<ProductsToPickRow> rows = productsToPickRowsDataFactory.create(packageableRow).getTopLevelRows();
 
 		assertThat(rows).hasSize(1);
 
 		final ProductsToPickRow row = rows.iterator().next();
-
 		assertThat(row.getQtyEffective()).isEqualTo(Quantity.of(5, uomKg));
+		assertThat(row.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
+		assertThat(row.getPickFromHUId()).isEqualTo(huId1);
 	}
 }

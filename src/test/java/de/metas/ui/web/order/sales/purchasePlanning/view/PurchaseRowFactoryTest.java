@@ -14,15 +14,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.CurrencyId;
@@ -64,23 +58,15 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { //
-		StartupListener.class, ShutdownListener.class, //
-		PurchaseRowFactory.class, //
-		AvailableToPromiseRepository.class, //
-		DoNothingPurchaseProfitInfoServiceImpl.class //
-})
 public class PurchaseRowFactoryTest
 {
-	@Autowired
 	private PurchaseRowFactory purchaseRowFactory;
 
 	private CurrencyId currencyId;
 
 	private Quantity ONE;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -89,6 +75,10 @@ public class PurchaseRowFactoryTest
 
 		final I_C_UOM each = PurchaseRowTestTools.createUOM("Ea");
 		this.ONE = Quantity.of(BigDecimal.ONE, each);
+
+		purchaseRowFactory = new PurchaseRowFactory(
+				new AvailableToPromiseRepository(),
+				new DoNothingPurchaseProfitInfoServiceImpl());
 	}
 
 	@Test

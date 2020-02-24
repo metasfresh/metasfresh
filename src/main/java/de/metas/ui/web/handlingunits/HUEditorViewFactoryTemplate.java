@@ -1,9 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -36,6 +35,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -60,6 +60,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -192,10 +193,15 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		// View field: BestBeforeDate
 		{
+			final String sqlBestBeforeDate = HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID);
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
 					.widgetType(DocumentFieldWidgetType.LocalDate)
-					.columnSql(HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID))
+					// .columnSql(sqlBestBeforeDate)
+					.sqlSelectValue(SqlSelectValue.builder()
+							.virtualColumnSql(sqlBestBeforeDate)
+							.columnNameAlias(HUEditorRow.FIELDNAME_BestBeforeDate)
+							.build())
 					.fieldLoader((rs, adLanguage) -> rs.getTimestamp(HUEditorRow.FIELDNAME_BestBeforeDate))
 					.build());
 		}
@@ -205,10 +211,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			sqlViewBinding
 					.filterDescriptors(createFilterDescriptorsProvider())
-					.filterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
-					.filterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
-
-			createFilterConvertersIndexedByFilterId().forEach(sqlViewBinding::filterConverter);
+					.filterConverter(HUBarcodeSqlDocumentFilterConverter.instance)
+					.filterConverter(HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER)
+					.filterConverters(createFilterConverters());
 		}
 
 		//
@@ -231,9 +236,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				.build();
 	}
 
-	protected Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
+	protected List<SqlDocumentFilterConverter> createFilterConverters()
 	{
-		return ImmutableMap.of();
+		return ImmutableList.of();
 	}
 
 	@Override
@@ -306,9 +311,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// Filters
 			@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
-			final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
+			final DocumentFilterList stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
 			final DocumentFilterDescriptorsProvider filterDescriptors = getViewFilterDescriptors();
-			final List<DocumentFilter> filters = request.getOrUnwrapFilters(filterDescriptors);
+			final DocumentFilterList filters = request.getFiltersUnwrapped(filterDescriptors);
 
 			// Start building the HUEditorView
 			final HUEditorViewBuilder huViewBuilder = HUEditorView.builder()
@@ -372,22 +377,25 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	 * @param huIds {@code null} means "no restriction". Empty means "select none"
 	 * @return
 	 */
-	private static List<DocumentFilter> extractStickyFilters(
-			@NonNull final List<DocumentFilter> requestStickyFilters,
+	private static DocumentFilterList extractStickyFilters(
+			@NonNull final DocumentFilterList requestStickyFilters,
 			@Nullable final Set<Integer> filterOnlyIds)
 	{
-		final List<DocumentFilter> stickyFilters = new ArrayList<>(requestStickyFilters);
-
-		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExistingOrNull(stickyFilters);
+		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExistingOrNull(requestStickyFilters);
 
 		// Create the sticky filter by HUIds from builder's huIds (if any huIds)
 		if (stickyFilter_HUIds_Existing == null && filterOnlyIds != null && !filterOnlyIds.isEmpty())
 		{
 			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(HuId.ofRepoIds(filterOnlyIds));
-			stickyFilters.add(0, stickyFilter_HUIds_New);
+
+			return DocumentFilterList.of(stickyFilter_HUIds_New)
+					.mergeWith(requestStickyFilters);
+		}
+		else
+		{
+			return requestStickyFilters;
 		}
 
-		return ImmutableList.copyOf(stickyFilters);
 	}
 
 	/**
@@ -395,7 +403,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	 */
 	private static final class HUBarcodeSqlDocumentFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final String FILTER_ID = "barcode";
+		private static final String FILTER_ID = "barcode";
 
 		public static final transient HUBarcodeSqlDocumentFilterConverter instance = new HUBarcodeSqlDocumentFilterConverter();
 
@@ -419,6 +427,12 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 		private HUBarcodeSqlDocumentFilterConverter()
 		{
+		}
+
+		@Override
+		public boolean canConvert(final String filterId)
+		{
+			return Objects.equals(filterId, FILTER_ID);
 		}
 
 		@Override

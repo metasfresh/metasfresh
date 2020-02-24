@@ -18,6 +18,8 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -31,11 +33,21 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.user.UserRepository;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -169,7 +181,40 @@ final class PickingV2TestHelper
 		huPIAttributeId_VHU_BestBeforeDate = huPIAttribute.getM_HU_PI_Attribute_ID();
 	}
 
-	public IntegerLookupValue locatorLookupById(final Object idObj)
+	public ProductsToPickRowsDataFactory createProductsToPickRowsDataFactory()
+	{
+		final IBPartnerBL bpartnersService = createAndRegisterBPartnerBL();
+
+		final HUReservationRepository huReservationRepository = new HUReservationRepository();
+		final HUReservationService huReservationService = new HUReservationService(huReservationRepository);
+
+		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
+
+		final HUTraceRepository huTraceRepository = new HUTraceRepository();
+		final HuId2SourceHUsService sourceHUsRepository = new HuId2SourceHUsService(huTraceRepository);
+
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidateRepository,
+				sourceHUsRepository);
+
+		return ProductsToPickRowsDataFactory.builder()
+				.bpartnersService(bpartnersService)
+				.huReservationService(huReservationService)
+				.pickingCandidateService(pickingCandidateService)
+				.locatorLookup(this::generateLocatorLookupById)
+				.build();
+	}
+	
+	private BPartnerBL createAndRegisterBPartnerBL()
+	{
+		final UserRepository userRepository = new UserRepository();
+		final BPartnerBL bpartnersService = new BPartnerBL(userRepository);
+		Services.registerService(IBPartnerBL.class, bpartnersService);
+		return bpartnersService;
+	}
+	
+	private IntegerLookupValue generateLocatorLookupById(final Object idObj)
 	{
 		if (idObj == null)
 		{
@@ -178,5 +223,6 @@ final class PickingV2TestHelper
 		final int id = NumberUtils.asIntegerOrNull(idObj);
 		return IntegerLookupValue.of(id, "locator-" + id);
 	}
+
 
 }

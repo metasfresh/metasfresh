@@ -6,6 +6,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
@@ -631,6 +633,18 @@ public final class DataTypes
 				return null;
 			}
 			return lookupValuesList;
+		}
+		else if (value instanceof Collection)
+		{
+			final Collection<?> fromList = (Collection<?>)value;
+			final ArrayList<LookupValue> lookupValues = new ArrayList<>(fromList.size());
+			for (final Object fromItem : fromList)
+			{
+				final LookupValue lookupValue = convertToStringLookupValue(fromItem);
+				lookupValues.add(lookupValue);
+			}
+
+			return LookupValuesList.fromCollection(lookupValues);
 		}
 		else
 		{

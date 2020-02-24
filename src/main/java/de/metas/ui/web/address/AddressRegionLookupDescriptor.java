@@ -24,6 +24,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
@@ -66,8 +67,8 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	private static final Set<CtxName> PARAMETERS = ImmutableSet.of(
 			CtxNames.parse(I_C_Location.COLUMNNAME_C_Country_ID),
 			LookupDataSourceContext.PARAM_Filter,
-			LookupDataSourceContext.PARAM_Offset,
-			LookupDataSourceContext.PARAM_Limit);
+			SqlForFetchingLookups.PARAM_Offset,
+			SqlForFetchingLookups.PARAM_Limit);
 
 	private final CCache<Integer, LookupValuesList> regionsByCountryId = CCache.newLRUCache(CACHE_PREFIX + "RegionLookupValues", 100, 0);
 

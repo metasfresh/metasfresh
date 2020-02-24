@@ -25,7 +25,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterVO;
@@ -108,7 +108,7 @@ public class MaterialCockpitRowRepository
 				.build();
 	}
 
-	public IRowsData<MaterialCockpitRow> createRowsData(@NonNull final List<DocumentFilter> filters)
+	public IRowsData<MaterialCockpitRow> createRowsData(@NonNull DocumentFilterList filters)
 	{
 		return new IRowsData<MaterialCockpitRow>()
 		{
@@ -145,7 +145,7 @@ public class MaterialCockpitRowRepository
 		};
 	}
 
-	private List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filters)
+	private List<MaterialCockpitRow> retrieveRows(@NonNull final DocumentFilterList filters)
 	{
 		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
 		if (date == null)
@@ -184,7 +184,7 @@ public class MaterialCockpitRowRepository
 		return includePerPlantDetailRows;
 	}
 
-	private ImmutableSet<ProductId> retrieveRelevantProductIds(@NonNull final List<DocumentFilter> filters)
+	private ImmutableSet<ProductId> retrieveRelevantProductIds(@NonNull final DocumentFilterList filters)
 	{
 		final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx()));
 

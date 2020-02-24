@@ -2,6 +2,7 @@ package de.metas.ui.web.quickinput.invoiceline;
 
 import java.math.BigDecimal;
 
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import org.compiere.model.I_M_Product;
 
 /*
@@ -33,6 +34,12 @@ public interface IInvoiceLineQuickInput
 	int getM_Product_ID();
 	I_M_Product getM_Product();
 	//@formatter:on
+
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	int getM_HU_PI_Item_Product_ID();
+	 I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
+	 void setM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID);
+	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPIItemProduct);
 
 	//@formatter:off
 	String COLUMNNAME_Qty = "Qty";

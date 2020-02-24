@@ -2,13 +2,14 @@ package de.metas.ui.web.view.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.descriptor.SqlViewBinding.Builder;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 
 /*
  * #%L
@@ -34,14 +35,13 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 public class SqlViewBindingTest
 {
-
 	@Test
 	public void createSqlViewBinding_Has_Null_Decorator_By_Default()
 	{
 		final SqlViewBinding sqlViewBinding = createMinimalBuilder().build();
 
 		assertThat(sqlViewBinding).isNotNull();
-		assertThat(sqlViewBinding.getFilterConverterDecoratorOrNull()).isNull();
+		assertThat(sqlViewBinding.getFilterConverterDecorator()).isNotPresent();
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class SqlViewBindingTest
 				.build();
 
 		assertThat(sqlViewBinding).isNotNull();
-		assertThat(sqlViewBinding.getFilterConverterDecoratorOrNull()).isSameAs(customDecoratorProvider);
+		assertThat(sqlViewBinding.getFilterConverterDecorator().get()).isSameAs(customDecoratorProvider);
 	}
 
 	private Builder createMinimalBuilder()
@@ -65,14 +65,16 @@ public class SqlViewBindingTest
 				.sqlValueClass(String.class)
 				.fieldLoader((rs, adLanguage) -> "dummyFieldValue")
 				.keyColumn(true)
+				.sqlSelectValue(SqlSelectValue.builder()
+						.columnName("fieldName")
+						.columnNameAlias("fieldName")
+						.build())
 				.build();
 
-		final Builder builder = SqlViewBinding.builder()
+		return SqlViewBinding.builder()
 				.tableName("dummyTable")
 				.field(field)
 				.displayFieldNames("displayFieldName");
-
-		return builder;
 	}
 
 	public static class CustomSqlDocumentFilterConverterDecoratorProvider implements SqlDocumentFilterConverterDecorator

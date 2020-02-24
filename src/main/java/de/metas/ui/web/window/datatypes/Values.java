@@ -91,7 +91,7 @@ public final class Values
 		}
 		else if (value instanceof LocalDate)
 		{
-			return DateTimeConverters.toJson((LocalDate)value);
+			return localDateToJson((LocalDate)value);
 		}
 		else if (value instanceof LocalTime)
 		{
@@ -156,6 +156,11 @@ public final class Values
 		{
 			return fallbackMapper.apply(value);
 		}
+	}
+
+	public static String localDateToJson(final LocalDate value)
+	{
+		return DateTimeConverters.toJson(value);
 	}
 
 	private static String bigDecimalToJson(final BigDecimal value)

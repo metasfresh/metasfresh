@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairValidationInformation;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
@@ -55,6 +56,8 @@ import lombok.Singular;
 
 public abstract class LookupValue
 {
+	protected final ValueNamePairValidationInformation validationInformation;
+
 	public static final Object normalizeId(final Object idObj, final boolean numericKey)
 	{
 		if (idObj == null)
@@ -117,7 +120,7 @@ public abstract class LookupValue
 		}
 		else
 		{
-			return new StringLookupValue(id.toString(), TranslatableStrings.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
+			return new StringLookupValue(id.toString(), TranslatableStrings.constant(displayName), null/* helpText */, null/* attributes */, null/* active */, null /*validation message*/);
 		}
 	}
 
@@ -162,7 +165,9 @@ public abstract class LookupValue
 		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
-			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl);
+			final ValueNamePairValidationInformation validationInformation = vnp.getValidationInformation();
+
+			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl, validationInformation);
 		}
 		else if (namePair instanceof KeyNamePair)
 		{
@@ -218,6 +223,23 @@ public abstract class LookupValue
 		this.description = TranslatableStrings.nullToEmpty(description);
 		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
 		this.active = active;
+		this.validationInformation = null;
+	}
+
+	private LookupValue(
+			@NonNull final Object id,
+			@Nullable final ITranslatableString displayName,
+			@Nullable final ITranslatableString description,
+			@Nullable final Map<String, Object> additionalAttributes,
+			@Nullable final Boolean active,
+			@Nullable final ValueNamePairValidationInformation validationInformation)
+	{
+		this.id = id;
+		this.displayName = TranslatableStrings.nullToEmpty(displayName);
+		this.description = TranslatableStrings.nullToEmpty(description);
+		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
+		this.active = active;
+		this.validationInformation = validationInformation;
 	}
 
 	@Override
@@ -230,6 +252,7 @@ public abstract class LookupValue
 				.add("description", description)
 				.add("additionalAttributes", additionalAttributes)
 				.add("active", active)
+				.add("validationInformation", validationInformation)
 				.toString();
 	}
 
@@ -270,6 +293,11 @@ public abstract class LookupValue
 	public String getDisplayName(final String adLanguage)
 	{
 		return displayName.translate(adLanguage);
+	}
+
+	public ValueNamePairValidationInformation getValidationInformation()
+	{
+		return validationInformation;
 	}
 
 	public ITranslatableString getDisplayNameTrl()
@@ -326,8 +354,7 @@ public abstract class LookupValue
 		{
 			return null;
 		}
-		@SuppressWarnings("unchecked")
-		final T value = (T)additionalAttributes.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)additionalAttributes.get(name);
 		return value;
 	}
 
@@ -363,8 +390,7 @@ public abstract class LookupValue
 		}
 		else if (valueObj instanceof Collection)
 		{
-			@SuppressWarnings("unchecked")
-			final Collection<Integer> coll = (Collection<Integer>)valueObj;
+			@SuppressWarnings("unchecked") final Collection<Integer> coll = (Collection<Integer>)valueObj;
 			return ImmutableSet.copyOf(coll);
 		}
 		else
@@ -403,7 +429,15 @@ public abstract class LookupValue
 					TranslatableStrings.constant(displayName),
 					null/* helpText */,
 					null/* attributes */,
-					true/* active */);
+					true/* active */,
+					null /* validation message */);
+		}
+
+		public static StringLookupValue of(
+				final String id,
+				final ITranslatableString displayName)
+		{
+			return new StringLookupValue(id, displayName, null/* helpText */, null/* attributes */, null/* active */, null/* validation message */);
 		}
 
 		public static StringLookupValue of(
@@ -411,7 +445,16 @@ public abstract class LookupValue
 				final ITranslatableString displayName,
 				final ITranslatableString helpText)
 		{
-			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */);
+			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */, null/* validation message */);
+		}
+
+		public static StringLookupValue of(
+				final String id,
+				final ITranslatableString displayName,
+				final ITranslatableString helpText,
+				final ValueNamePairValidationInformation validationInformation)
+		{
+			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */, validationInformation);
 		}
 
 		public static StringLookupValue unknown(final String value)
@@ -421,7 +464,8 @@ public abstract class LookupValue
 					TranslatableStrings.constant("<" + value + ">"),
 					null/* description */,
 					null/* attributes */,
-					false/* not active */);
+					false/* not active */,
+					null/* validation message */);
 		}
 
 		private Integer idInt; // lazy
@@ -432,13 +476,15 @@ public abstract class LookupValue
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
 				@Singular final Map<String, Object> attributes,
-				final Boolean active)
+				final Boolean active,
+				@Nullable final ValueNamePairValidationInformation validationInformation)
 		{
 			super(id,
 					displayName,
 					description,
 					attributes,
-					active);
+					active,
+					validationInformation);
 		}
 
 		@Override

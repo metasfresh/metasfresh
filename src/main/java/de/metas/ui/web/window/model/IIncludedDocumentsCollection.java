@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
-
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -38,7 +36,7 @@ public interface IIncludedDocumentsCollection
 
 	IIncludedDocumentsCollection copy(Document parentDocumentCopy, CopyMode copyMode);
 
-	OrderedDocumentsList getDocuments(List<DocumentQueryOrderBy> orderBys);
+	OrderedDocumentsList getDocuments(DocumentQueryOrderByList orderBys);
 
 	OrderedDocumentsList getDocumentsByIds(DocumentIdsSelection documentIds);
 

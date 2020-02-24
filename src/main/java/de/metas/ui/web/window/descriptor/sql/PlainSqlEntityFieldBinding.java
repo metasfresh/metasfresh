@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import org.adempiere.ad.expression.api.IStringExpression;
-
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,23 +39,23 @@ public class PlainSqlEntityFieldBinding implements SqlEntityFieldBinding
 	}
 
 	String columnName;
-	String columnSql;
+	SqlSelectValue sqlSelectValue;
 	DocumentFieldWidgetType widgetType;
 	Class<?> sqlValueClass;
-	IStringExpression sqlOrderBy;
+	SqlOrderByValue sqlOrderBy;
 	boolean virtualColumn;
 
 	@Builder
 	private PlainSqlEntityFieldBinding(
 			@NonNull final String columnName,
-			final String columnSql,
+			final SqlSelectValue sqlSelectValue,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			final Class<?> sqlValueClass,
-			final IStringExpression sqlOrderBy,
+			final SqlOrderByValue sqlOrderBy,
 			final boolean virtualColumn)
 	{
 		this.columnName = columnName;
-		this.columnSql = columnSql != null ? columnSql : columnName;
+		this.sqlSelectValue = sqlSelectValue;
 		this.widgetType = widgetType;
 		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
 		this.sqlOrderBy = sqlOrderBy;

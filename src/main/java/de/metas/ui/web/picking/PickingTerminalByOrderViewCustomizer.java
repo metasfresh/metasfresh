@@ -19,6 +19,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
 
@@ -90,8 +91,14 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 				.groupBy(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
-				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
-				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, "IF_MIN(DeliveryDate, PreparationDate)")
+				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, SqlSelectValue.builder()
+						.virtualColumnSql("MIN(DeliveryDate)")
+						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_DeliveryDate)
+						.build())
+				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, SqlSelectValue.builder()
+						.virtualColumnSql("IF_MIN(DeliveryDate, PreparationDate)")
+						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_PreparationDate)
+						.build())
 				.rowIdsConverter(SqlViewRowIdsConverters.TO_INT_EXCLUDING_STRINGS)
 				.build();
 	}

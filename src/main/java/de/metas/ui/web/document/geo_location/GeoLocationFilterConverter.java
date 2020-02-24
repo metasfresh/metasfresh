@@ -10,6 +10,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.slf4j.Logger;
 
+import com.jgoodies.common.base.Objects;
+
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
@@ -53,7 +55,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 
 	private static final String MSG_NoCoordinatesFoundForTheGivenLocation = "de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter.NoCoordinatesFoundForTheGivenLocation";
 
-	public static final String FILTER_ID = "location-area-search";
+	static final String FILTER_ID = "location-area-search";
 
 	static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
 	static final String PARAM_Address1 = "Address1";
@@ -67,6 +69,12 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 
 	private GeoLocationFilterConverter()
 	{
+	}
+
+	@Override
+	public boolean canConvert(final String filterId)
+	{
+		return Objects.equals(filterId, FILTER_ID);
 	}
 
 	@Override

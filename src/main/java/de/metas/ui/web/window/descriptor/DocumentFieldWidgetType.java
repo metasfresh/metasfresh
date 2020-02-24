@@ -67,6 +67,7 @@ public enum DocumentFieldWidgetType
 	//
 	// General Lookups
 	, List(LayoutAlign.Left, null, DisplayType.Search) //
+	, MultiValuesList(LayoutAlign.Left, LookupValuesList.class, -1) //
 	, Lookup(LayoutAlign.Left, null, DisplayType.Search) //
 	, Labels(LayoutAlign.Left, LookupValuesList.class, -1) //
 

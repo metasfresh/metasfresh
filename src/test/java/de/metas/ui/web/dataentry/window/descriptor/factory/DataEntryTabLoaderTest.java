@@ -10,10 +10,10 @@ import java.util.List;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -71,7 +71,7 @@ public class DataEntryTabLoaderTest
 	private JSONDocumentLayoutOptions jsonLayoutOptions;
 	private DataEntryTabLoader dataEntryTabLoader;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init(); // ..because at one point in the code under test, we use IMsgBL
@@ -102,13 +102,13 @@ public class DataEntryTabLoaderTest
 				.build();
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterAll()
 	{
 		validateSnapshots();

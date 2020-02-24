@@ -10,7 +10,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
@@ -53,7 +53,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 		return (MaterialCockpitView)view;
 	}
 
-	private final ImmutableList<DocumentFilter> filters;
+	private final DocumentFilterList filters;
 
 	private final List<RelatedProcessDescriptor> relatedProcessDescriptors;
 
@@ -62,7 +62,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
 			@NonNull final IRowsData<MaterialCockpitRow> rowsData,
-			@NonNull final ImmutableList<DocumentFilter> filters,
+			@NonNull final DocumentFilterList filters,
 			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors,
 			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors)
 	{
@@ -85,7 +85,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	}
 
 	@Override
-	public List<DocumentFilter> getFilters()
+	public DocumentFilterList getFilters()
 	{
 		return filters;
 	}

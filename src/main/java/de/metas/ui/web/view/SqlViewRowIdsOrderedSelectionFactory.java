@@ -3,10 +3,10 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -29,7 +29,7 @@ import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlCreateSel
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -63,6 +63,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	private static final Logger logger = LogManager.getLogger(SqlViewRowIdsOrderedSelectionFactory.class);
+	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
 
 	private final SqlViewBinding viewBinding;
 
@@ -86,16 +87,12 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	public ViewRowIdsOrderedSelection createOrderedSelection(
 			final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
-			final List<DocumentFilter> filters,
-			final List<DocumentQueryOrderBy> orderBys,
+			final DocumentFilterList filters,
+			final DocumentQueryOrderByList orderBys,
 			final boolean applySecurityRestrictions,
 			final SqlDocumentFilterConverterContext context)
 	{
-		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
-		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(permissionsKey);
-		final int queryLimit = permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
-				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
-				.getMaxQueryRecordsPerRole();
+		final int queryLimit = extractQueryLimit(viewEvalCtx);
 
 		//
 		//
@@ -125,15 +122,29 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		}
 
 		return ViewRowIdsOrderedSelection.builder()
-				.setViewId(viewId)
-				.setSize(rowsCount)
-				.setOrderBys(orderBys)
-				.setQueryLimit(queryLimit)
+				.viewId(viewId)
+				.size(rowsCount)
+				.orderBys(orderBys)
+				.queryLimit(queryLimit)
 				.build();
 	}
 
+	private int extractQueryLimit(final ViewEvaluationCtx viewEvalCtx)
+	{
+		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
+		final IUserRolePermissions permissions = userRolePermissionsRepo.getUserRolePermissions(permissionsKey);
+		return permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
+				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
+				.getMaxQueryRecordsPerRole();
+	}
+
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			@NonNull final ViewRowIdsOrderedSelection fromSelection,
+			@NonNull final DocumentFilterList filters,
+			@NonNull final DocumentQueryOrderByList orderBys,
+			@NonNull final SqlDocumentFilterConverterContext filterConverterCtx)
 	{
 		final WindowId windowId = fromSelection.getWindowId();
 		final String fromSelectionId = fromSelection.getSelectionId();
@@ -143,6 +154,14 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
 		if (viewQueryBuilder.hasGroupingFields())
 		{
+			// TODO: implement filters support when using groupping fields
+			if (!filters.isEmpty())
+			{
+				throw new AdempiereException("Filters are not yet supported when using groupping fields")
+						.appendParametersToMessage()
+						.setParameter("filters", filters);
+			}
+
 			final SqlAndParams sqlCreateSelectionLines = viewQueryBuilder.buildSqlCreateSelectionLinesFromSelectionLines(viewEvalCtx, newViewId, fromSelectionId);
 			final int linesCount = DB.executeUpdateEx(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 
@@ -158,15 +177,15 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		}
 		else
 		{
-			final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelection(viewEvalCtx, newViewId, fromSelectionId, orderBys);
+			final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelection(viewEvalCtx, newViewId, fromSelectionId, filters, orderBys, filterConverterCtx);
 			rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 		}
 
 		return ViewRowIdsOrderedSelection.builder()
-				.setViewId(newViewId)
-				.setSize(rowsCount)
-				.setOrderBys(orderBys)
-				.setQueryLimit(fromSelection.getQueryLimit())
+				.viewId(newViewId)
+				.size(rowsCount)
+				.orderBys(orderBys)
+				.queryLimit(fromSelection.getQueryLimit())
 				.build();
 	}
 
@@ -210,9 +229,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// NOTE: we are querying it instead of adding how many we added to current "size" because it might be that the size is staled
 		final int size = retrieveSize(selectionId);
 
-		return selection.toBuilder()
-				.setSize(size)
-				.build();
+		return selection.withSize(size);
 	}
 
 	@Override
@@ -241,9 +258,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// NOTE: we are querying it instead of subtracting "deleted" from current "size" because it might be that the size is staled
 		final int size = retrieveSize(selection.getSelectionId());
 
-		return selection.toBuilder()
-				.setSize(size)
-				.build();
+		return selection.withSize(size);
 	}
 
 	private final int retrieveSize(final String selectionId)
@@ -267,30 +282,34 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public void deleteSelection(@NonNull final ViewId viewId)
+	public void deleteSelections(@NonNull final Set<String> selectionIds)
 	{
-		final String selectionId = viewId.getViewId();
+		if (selectionIds.isEmpty())
+		{
+			return;
+		}
+
 		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
 
 		// Delete selection lines
 		{
-			final String sql = viewQueryBuilder.buildSqlDeleteSelectionLines(selectionId);
-			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-			logger.trace("Delete {} selection lines for {}", countDeleted, selectionId);
+			final SqlAndParams sql = viewQueryBuilder.buildSqlDeleteSelectionLines(selectionIds);
+			final int countDeleted = DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Delete {} selection lines for {}", countDeleted, selectionIds);
 		}
 
 		// Delete selection rows
 		{
-			final String sql = viewQueryBuilder.buildSqlDeleteSelection(selectionId);
-			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-			logger.trace("Delete {} selection rows for {}", countDeleted, selectionId);
+			final SqlAndParams sql = viewQueryBuilder.buildSqlDeleteSelection(selectionIds);
+			final int countDeleted = DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Delete {} selection rows for {}", countDeleted, selectionIds);
 		}
 	}
 
 	@Override
-	public void scheduleDeleteSelections(final Set<String> viewIds)
+	public void scheduleDeleteSelections(@NonNull final Set<String> selectionIds)
 	{
-		SqlViewSelectionToDeleteHelper.scheduleDeleteSelections(viewIds);
+		SqlViewSelectionToDeleteHelper.scheduleDeleteSelections(selectionIds);
 	}
 
 	public static Set<DocumentId> retrieveRowIdsForLineIds(

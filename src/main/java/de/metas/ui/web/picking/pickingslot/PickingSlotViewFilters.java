@@ -3,8 +3,8 @@ package de.metas.ui.web.picking.pickingslot;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
@@ -60,7 +60,7 @@ public class PickingSlotViewFilters
 				.build();
 	}
 
-	public static String getPickingSlotBarcode(final DocumentFiltersList filters)
+	public static String getPickingSlotBarcode(final DocumentFilterList filters)
 	{
 		return filters.getParamValueAsString(PickingSlotBarcodeFilter_FilterId, PARAM_Barcode);
 	}

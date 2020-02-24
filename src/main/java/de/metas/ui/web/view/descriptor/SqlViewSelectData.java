@@ -5,12 +5,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -18,6 +24,8 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectDisplayValue;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -59,7 +67,11 @@ public class SqlViewSelectData
 	public static final String COLUMNNAME_Paging_Parent_Prefix = COLUMNNAME_Paging_Prefix + "parent_";
 	public static final String COLUMNNAME_IsRecordMissing = COLUMNNAME_Paging_Prefix + "IsRecordMissing";
 
+	private final String sqlTableName;
 	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
+	private final ImmutableSet<String> displayFieldNames;
+	private final ImmutableMap<String, SqlViewRowFieldBinding> fieldsByFieldName;
+
 	@Getter(AccessLevel.PRIVATE)
 	private final IStringExpression sqlSelectByPage;
 	@Getter(AccessLevel.PRIVATE)
@@ -70,14 +82,18 @@ public class SqlViewSelectData
 
 	@Builder
 	private SqlViewSelectData(
-			final String sqlTableName,
-			final String sqlTableAlias,
+			@NonNull final String sqlTableName,
+			@NonNull final String sqlTableAlias,
 			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
-			final Collection<String> displayFieldNames,
-			final Collection<SqlViewRowFieldBinding> allFields,
-			final SqlViewGroupingBinding groupingBinding)
+			@NonNull final Collection<String> displayFieldNames,
+			@NonNull final Collection<SqlViewRowFieldBinding> allFields,
+			@Nullable final SqlViewGroupingBinding groupingBinding)
 	{
+		this.sqlTableName = sqlTableName;
 		this.keyColumnNamesMap = keyColumnNamesMap;
+		this.displayFieldNames = ImmutableSet.copyOf(displayFieldNames);
+		this.fieldsByFieldName = Maps.uniqueIndex(allFields, SqlViewRowFieldBinding::getFieldName);
+
 		final IStringExpression sqlSelect = buildSqlSelect(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields, groupingBinding);
 
 		sqlSelectByPage = sqlSelect.toComposer()
@@ -153,25 +169,25 @@ public class SqlViewSelectData
 	}
 
 	private static IStringExpression buildSqlSelect_WithoutGrouping(
-			final String sqlTableName,
-			final String sqlTableAlias,
-			final SqlViewKeyColumnNamesMap keyColumnNamesMap,
-			final Collection<String> displayFieldNames,
-			final Collection<SqlViewRowFieldBinding> allFields)
+			@NonNull final String sqlTableName,
+			@NonNull final String sqlTableAlias,
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			@NonNull final Collection<String> displayFieldNames,
+			@NonNull final Collection<SqlViewRowFieldBinding> allFields)
 	{
 		final List<String> sqlSelectValuesList = new ArrayList<>();
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		allFields.forEach(field -> {
 			// Collect the SQL select for internal value
 			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			sqlSelectValuesList.add(field.getSqlSelectValue());
+			sqlSelectValuesList.add(field.getSqlSelectValue().toSqlStringWithColumnNameAlias());
 
 			// Collect the SQL select for displayed value,
 			// * if there is one
 			// * and if it was required by caller (i.e. present in fieldNames list)
-			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
+			if (field.getSqlSelectDisplayValue() != null && displayFieldNames.contains(field.getFieldName()))
 			{
-				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
+				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue().toStringExpressionWithColumnNameAlias());
 			}
 		});
 
@@ -220,7 +236,7 @@ public class SqlViewSelectData
 		final List<String> sqlGroupBys = new ArrayList<>();
 		allFields.forEach(field -> {
 			final String fieldName = field.getFieldName();
-			final boolean usingDisplayColumn = field.isUsingDisplayColumn() && displayFieldNames.contains(fieldName);
+			final boolean usingDisplayColumn = field.getSqlSelectDisplayValue() != null && displayFieldNames.contains(fieldName);
 
 			//
 			if (keyColumnNamesMap.isKeyPartFieldName(field.getColumnName()))
@@ -229,26 +245,28 @@ public class SqlViewSelectData
 			}
 			else if (groupingBinding.isGroupBy(fieldName))
 			{
-				final String columnSql = field.getColumnSql();
-				final String sqlSelectValue = field.getSqlSelectValue();
-				sqlSelectValuesList.add(sqlSelectValue);
-				sqlGroupBys.add(columnSql);
+				final SqlSelectValue sqlSelectValue = field.getSqlSelectValue();
+				sqlSelectValuesList.add(sqlSelectValue.toSqlStringWithColumnNameAlias());
+				sqlGroupBys.add(sqlSelectValue.toSqlString());
 
 				if (usingDisplayColumn)
 				{
-					final IStringExpression sqlSelectDisplayValue = field.getSqlSelectDisplayValue(); // TODO: introduce columnSql as parameter
-					sqlSelectDisplayNamesList.add(sqlSelectDisplayValue);
+					final SqlSelectDisplayValue sqlSelectDisplayValue = field.getSqlSelectDisplayValue(); // TODO: introduce columnSql as parameter
+					sqlSelectDisplayNamesList.add(sqlSelectDisplayValue.toStringExpressionWithColumnNameAlias());
 				}
 			}
 			else
 			{
-				String sqlSelectValueAgg = groupingBinding.getColumnSqlByFieldName(fieldName);
+				SqlSelectValue sqlSelectValueAgg = groupingBinding.getColumnSqlByFieldName(fieldName);
 				if (sqlSelectValueAgg == null)
 				{
-					sqlSelectValueAgg = "NULL";
+					sqlSelectValueAgg = SqlSelectValue.builder()
+							.virtualColumnSql("NULL")
+							.columnNameAlias(field.getColumnName())
+							.build();
 				}
 
-				sqlSelectValuesList.add(sqlSelectValueAgg + " AS " + field.getColumnName());
+				sqlSelectValuesList.add(sqlSelectValueAgg.withColumnNameAlias(field.getColumnName()).toSqlStringWithColumnNameAlias());
 
 				// FIXME: NOT supported atm
 				// if (usingDisplayColumn)
@@ -319,14 +337,14 @@ public class SqlViewSelectData
 		allFields.forEach(field -> {
 			// Collect the SQL select for internal value
 			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			sqlSelectValuesList.add(field.getSqlSelectValue());
+			sqlSelectValuesList.add(field.getSqlSelectValue().toSqlStringWithColumnNameAlias());
 
 			// Collect the SQL select for displayed value,
 			// * if there is one
 			// * and if it was required by caller (i.e. present in fieldNames list)
-			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
+			if (field.getSqlSelectDisplayValue() != null && displayFieldNames.contains(field.getFieldName()))
 			{
-				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
+				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue().toStringExpressionWithColumnNameAlias());
 			}
 		});
 
@@ -435,4 +453,60 @@ public class SqlViewSelectData
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
+	public SqlAndParams selectFieldValues(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			@NonNull final String selectionId,
+			@NonNull final String fieldName,
+			final int limit)
+	{
+		Check.assumeGreaterThanZero(limit, "limit");
+
+		final SqlViewRowFieldBinding field = fieldsByFieldName.get(fieldName);
+		if (field == null)
+		{
+			throw new AdempiereException("Field `" + fieldName + "` not found. Available fields are: " + fieldsByFieldName.keySet());
+		}
+
+		final SqlSelectValue sqlValue = field.getSqlSelectValue();
+
+		final SqlSelectDisplayValue sqlDisplayValue;
+		if (field.getSqlSelectDisplayValue() != null && displayFieldNames.contains(fieldName))
+		{
+			sqlDisplayValue = field.getSqlSelectDisplayValue();
+		}
+		else
+		{
+			sqlDisplayValue = null;
+		}
+
+		final CompositeStringExpression.Builder sqlExpression = IStringExpression.composer()
+				.append("SELECT DISTINCT ")
+				.append(sqlValue.getColumnNameAlias());
+		if (sqlDisplayValue != null)
+		{
+			sqlExpression.append(", ").append(sqlDisplayValue.getColumnNameAlias());
+		}
+
+		sqlExpression
+				.append("\n FROM (")
+				.append("\n SELECT ")
+				.append("\n ").append(sqlValue.withJoinOnTableNameOrAlias(sqlTableName).toSqlStringWithColumnNameAlias());
+		if (sqlDisplayValue != null)
+		{
+			sqlExpression
+					.append("\n, ").append(sqlDisplayValue.withJoinOnTableNameOrAlias(sqlTableName).toStringExpressionWithColumnNameAlias());
+		}
+		sqlExpression.append("\n FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+				.append("\n INNER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
+				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
+				.append("\n WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+				.append("\n ORDER BY sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
+				.append("\n) t")
+				.append("\n LIMIT ?");
+
+		final String sql = sqlExpression.build()
+				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
+
+		return SqlAndParams.of(sql, selectionId, limit);
+	}
 }

@@ -1,13 +1,14 @@
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.handlingunits.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -21,7 +22,6 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
-import de.metas.ui.web.handlingunits.trace.HuTraceQueryCreator;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
@@ -50,7 +50,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 public class DocumentFilterToHuTraceQueryTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		Check.setDefaultExClass(AdempiereException.class);
@@ -79,15 +79,17 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(20);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void createTraceQueryFromDocumentFilter_duplicateFilterParam()
 	{
 		final DocumentFilter emptyFilter = DocumentFilter.builder()
 				.setFilterId("inconsitent-filter")
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID, Operator.EQUAL, IntegerLookupValue.of(23, "test-inout-id")))
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID, Operator.EQUAL, IntegerLookupValue.of(24, "inconsistent-other-test-inout-id")))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID + "2", Operator.EQUAL, IntegerLookupValue.of(24, "inconsistent-other-test-inout-id")))
 				.build();
-		HuTraceQueryCreator.createTraceQueryFromDocumentFilter(emptyFilter);
+
+		assertThatThrownBy(() -> HuTraceQueryCreator.createTraceQueryFromDocumentFilter(emptyFilter))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	@Test

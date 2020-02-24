@@ -36,7 +36,7 @@ import lombok.ToString;
 @ToString
 /* package */final class SqlDocumentFilterConvertersListWithFallback implements SqlDocumentFilterConverter
 {
-	public static final SqlDocumentFilterConvertersListWithFallback newInstance(final SqlDocumentFilterConvertersList converters, final SqlDocumentFilterConverter defaultConverter)
+	public static SqlDocumentFilterConvertersListWithFallback newInstance(final SqlDocumentFilterConvertersList converters, final SqlDocumentFilterConverter defaultConverter)
 	{
 		return new SqlDocumentFilterConvertersListWithFallback(converters, defaultConverter);
 	}
@@ -51,9 +51,15 @@ import lombok.ToString;
 	}
 
 	@Override
+	public boolean canConvert(final String filterId)
+	{
+		return true;
+	}
+
+	@Override
 	public String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut, 
-			@NonNull final DocumentFilter filter, 
+			@NonNull final SqlParamsCollector sqlParamsOut,
+			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
