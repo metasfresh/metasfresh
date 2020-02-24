@@ -200,10 +200,10 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		boolean guaranteedIteratorRequired = false;
 
-		if (queueQuery.getIsPrinted() != null)
+		if (queueQuery.getFilterByProcessedQueueItems() != null)
 		{
 			whereClause.append(" AND ").append(I_C_Printing_Queue.COLUMNNAME_Processed).append("=?");
-			params.add(queueQuery.getIsPrinted().booleanValue());
+			params.add(queueQuery.getFilterByProcessedQueueItems().booleanValue());
 
 			// The Processed column is likely to be changed after retrieving and processing. That's why we need a guaranteed iterator.
 			guaranteedIteratorRequired = true;

@@ -10,12 +10,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,17 +24,20 @@ package de.metas.printing.api.impl;
 
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
+@EqualsAndHashCode
+@ToString
 /* package */class PrintingQueueQuery implements IPrintingQueueQuery
 {
-	private Boolean isPrinted = Boolean.FALSE;
+	@Getter @Setter
+	private Boolean filterByProcessedQueueItems = Boolean.FALSE;
 	private PInstanceId onlyAD_PInstance_ID;
 	private int AD_Client_ID = -1;
 	private int AD_Org_ID = -1;
@@ -53,63 +56,13 @@ import de.metas.security.permissions.Access;
 	private int modelToRecordId = -1;
 	private ISqlQueryFilter modelFilter;
 
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
 
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(isPrinted)
-				.append(onlyAD_PInstance_ID)
-				.append(AD_Client_ID)
-				.append(AD_Org_ID)
-				.append(AD_User_ID)
-				.append(ignoreC_Printing_Queue_ID)
-				.append(filter)
-				.append(modelTableId)
-				.append(modelFromRecordId)
-				.append(modelToRecordId)
-				.append(modelFilter)
-				.append(requiredAccess)
-				.append(aggregationKey)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final PrintingQueueQuery other = EqualsBuilder.getOther(this, obj);
-
-		return new EqualsBuilder()
-				.append(isPrinted, other.isPrinted)
-				.append(onlyAD_PInstance_ID, other.onlyAD_PInstance_ID)
-				.append(AD_Client_ID, other.AD_Client_ID)
-				.append(AD_Org_ID, other.AD_Org_ID)
-				.append(AD_User_ID, other.AD_User_ID)
-				.append(ignoreC_Printing_Queue_ID, other.ignoreC_Printing_Queue_ID)
-				.append(filter, other.filter)
-				.append(modelTableId, other.modelTableId)
-				.append(modelFromRecordId, other.modelFromRecordId)
-				.append(modelToRecordId, other.modelToRecordId)
-				.append(modelFilter, other.modelFilter)
-				.append(requiredAccess, other.requiredAccess)
-				.isEqual();
-	}
 
 	@Override
 	public IPrintingQueueQuery copy()
 	{
 		final PrintingQueueQuery queryNew = new PrintingQueueQuery();
-		queryNew.isPrinted = isPrinted;
+		queryNew.filterByProcessedQueueItems = filterByProcessedQueueItems;
 		queryNew.onlyAD_PInstance_ID = onlyAD_PInstance_ID;
 		queryNew.AD_Client_ID = AD_Client_ID;
 		queryNew.AD_Org_ID = AD_Org_ID;
@@ -124,17 +77,6 @@ import de.metas.security.permissions.Access;
 		return queryNew;
 	}
 
-	@Override
-	public Boolean getIsPrinted()
-	{
-		return isPrinted;
-	}
-
-	@Override
-	public void setIsPrinted(final Boolean isPrinted)
-	{
-		this.isPrinted = isPrinted;
-	}
 
 	@Override
 	public PInstanceId getOnlyAD_PInstance_ID()
@@ -256,7 +198,7 @@ import de.metas.security.permissions.Access;
 		this.modelFilter = modelFilter;
 	}
 
-	
+
 	@Override
 	public Access getRequiredAccess()
 	{
