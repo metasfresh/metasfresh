@@ -24,7 +24,7 @@ spec:
 #
 # metasfresh-db
       - name: db
-        image: dockerhub.metasfresh.com/postgres:10.5
+        image: dockerhub.metasfresh.com/postgres:9.5
         imagePullPolicy: Always
         ports:
           - containerPort: 5432
@@ -44,7 +44,7 @@ spec:
 
       initContainers:
         - name: init-postgres
-          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:master_LATEST
+          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-9-5:master_LATEST
           imagePullPolicy: Always
           env:
           - name: DEBUG_PRINT_BASH_CMDS
