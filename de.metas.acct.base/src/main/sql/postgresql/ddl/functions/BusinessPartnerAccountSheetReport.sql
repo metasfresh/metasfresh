@@ -1,11 +1,12 @@
-DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT);
+DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text);
 
 CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric,
                                                              p_dateFrom      date,
                                                              p_dateTo        date,
                                                              p_ad_client_id  numeric,
                                                              p_ad_org_id     numeric = NULL,
-                                                             p_isSoTrx       TEXT = 'Y')
+                                                             p_isSoTrx       TEXT = 'Y',
+                                                             p_ad_language   text = 'en_US')
     RETURNS table
             (
                 dateAcct         DATE,
@@ -38,9 +39,10 @@ BEGIN
         documentno             TEXT,
         created                TIMESTAMP,
         c_currency_id_original NUMERIC,
-        orgCurrencyCode        text,
+        targetCurrencyCode     text,
         rowid                  NUMERIC,
-        ad_org_id              NUMERIC
+        ad_org_id              NUMERIC,
+        doctype                text
     );
     v_time := logDebug('created empty temporary table', v_time);
 
@@ -62,8 +64,7 @@ BEGIN
                         i.ad_org_id                            ad_org_id
                  FROM c_invoice i
                  WHERE TRUE
-                   -- AND i.c_bpartner_id = p_c_bpartner_id -- todo
-                   todo fix bpartner, test on sp80, deploy
+                   AND i.c_bpartner_id = p_c_bpartner_id
                    AND i.dateacct >= p_dateFrom
                    AND i.dateacct <= p_dateTo
                    AND i.issotrx = p_isSoTrx
@@ -83,7 +84,7 @@ BEGIN
                         p.ad_org_id     ad_org_id
                  FROM c_payment p
                  WHERE TRUE
-                   -- AND p.c_bpartner_id = p_c_bpartner_id -- todo
+                   AND p.c_bpartner_id = p_c_bpartner_id
                    AND p.dateacct >= p_dateFrom
                    AND p.dateacct <= p_dateTo
                    AND p.isreceipt = p_isSoTrx
@@ -102,7 +103,8 @@ BEGIN
                                                 c_currency_id_original,
                                                 rowid,
                                                 ad_org_id,
-                                                orgCurrencyCode)
+                                                targetCurrencyCode,
+                                                doctype)
     SELECT--
           i.beginningBalance,
           i.amount,
@@ -119,7 +121,13 @@ BEGIN
            FROM c_currency c
                     INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
                     INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
-           LIMIT 1) orgCurrencyCode
+           LIMIT 1)  targetCurrencyCode,
+          (SELECT dtt.name
+           FROM c_doctype dt
+                    INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
+           WHERE dtt.ad_language = p_ad_language
+             AND i.c_doctype_id = dt.c_doctype_id
+          )::text AS docType
     FROM invoicesAndPaymentsInPeriod i;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
@@ -136,7 +144,7 @@ BEGIN
 
 
     --
-    -- Update the amount according to the document type
+    -- Update the amount according to document base type
     WITH correctAmounts AS
              (
                  SELECT --
@@ -163,13 +171,21 @@ BEGIN
     SET beginningBalance = t.OpenInvoiceAmountToDate,
         endingBalance    = t.OpenInvoiceAmountToDate
     FROM (
-             SELECT --
-                    sum((openItems).openamt) OpenInvoiceAmountToDate
-             FROM de_metas_endcustomer_fresh_reports.OpenItems_Report((p_dateFrom - INTERVAL '1 days')::date) openItems -- dateFrom
+             SELECT getBPOpenAmtToDate(p_ad_client_id,
+                                       p_ad_org_id,
+                                       (p_dateFrom - INTERVAL '1 days')::date,
+                                       p_c_bpartner_id,
+                                       (SELECT c.c_currency_id
+                                        FROM c_currency c
+                                                 INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
+                                                 INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
+                                        LIMIT 1),
+                                       'Y'::text,
+                                       p_isSoTrx) OpenInvoiceAmountToDate
          ) t;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
-    v_time := logDebug('Update beginning and end balance with "Open Invoices Amount to Date"', v_time);
+    v_time := logDebug('Update beginning and end balance with "BP Open Invoices Amount to Date"', v_time);
 
 
     --
@@ -178,10 +194,9 @@ BEGIN
              (
                  SELECT --
                         t.rowid,
-                        -- t.endingBalance
-                        -- +
-                        sum(t.amount) OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
-                        t.amount                                                                                                             currentAmount
+                        t.endingBalance
+                            + sum(t.amount) OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
+                        t.amount                                                                                                                   currentAmount
                  FROM temp_BusinessPartnerAccountSheetReport t
              ),
          finalData AS
@@ -205,100 +220,30 @@ BEGIN
     -- return the data
     RETURN QUERY SELECT --
                         t.dateAcct,
-                        (SELECT dtt.name
-                         FROM c_doctype dt
-                                  INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
-                         WHERE dtt.ad_language = 'en_US'
-                           AND t.c_doctype_id = dt.c_doctype_id
-                        )::text         doctype,
+                        t.doctype,
                         t.documentno,
                         t.beginningBalance,
                         t.amount,
                         t.endingBalance,
-                        orgCurrencyCode currency,
+                        t.targetCurrencyCode,
                         t.description
                  FROM temp_BusinessPartnerAccountSheetReport t
-                 ORDER BY t.dateacct, t.created;
+                 ORDER BY t.dateacct, t.created, t.documentno;
 END;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE;
 
 
-SELECT--
-      beginningBalance,
-      amount,
-      endingBalance,
-      beginningBalance + amount AS checkk,
-      dateacct,
-      DocumentType,
-      documentno,
-      description,
-      currencyCode
-FROM BusinessPartnerAccountSheetReport(NULL,
+/*
+How to run:
+
+SELECT*
+FROM BusinessPartnerAccountSheetReport(2000252,
                                        '1111-1-1'::date,
                                        '3333-1-1'::date,
                                        1000000)
-ORDER BY dateacct, documentno
 ;
-
-/*
-NO bpartner filtering
-
-
-V1. perf: all updates are individual steps
-
-[2020-02-21 13:50:52] [00000] [2020-02-21 11:50:51.378825](0s) [Δ=0s]: start
-[2020-02-21 13:50:52] [00000] [2020-02-21 11:50:51.384467](0s) [Δ=0s]: created empty temporary table
-[2020-02-21 13:50:52] [00000] [2020-02-21 11:50:51.976961](1s) [Δ=1s]: inserted invoices and payments: 216375 records
-[2020-02-21 13:50:58] [00000] [2020-02-21 11:50:57.366161](6s) [Δ=5s]: Update amount to base currency
-[2020-02-21 13:50:58] [00000] [2020-02-21 11:50:58.225999](7s) [Δ=1s]: Update amount by document type
-[2020-02-21 13:52:30] [00000] [2020-02-21 11:52:29.619975](99s) [Δ=92s]: Update beginning and end balances with "Open Invoices Amount to Date"
-[2020-02-21 13:52:31] [00000] [2020-02-21 11:52:31.144835](100s) [Δ=1s]: finished calculating rolling sum
-Total = 100s
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 */
 
