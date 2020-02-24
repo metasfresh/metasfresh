@@ -113,7 +113,6 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 		final I_C_PaySelection paySelection = paySelectionDAO.retrievePaySelectionById(context.getSingleSelectedRecordId());
 
