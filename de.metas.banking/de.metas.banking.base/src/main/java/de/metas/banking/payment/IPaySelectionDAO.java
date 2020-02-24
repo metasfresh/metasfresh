@@ -36,7 +36,7 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	/**
 	 * Returns the given invoice's <code>C_PaySelectionLine</code>s
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -46,6 +46,8 @@ public interface IPaySelectionDAO extends ISingletonService
 	 * @return processed pay selection which contains given payment
 	 */
 	I_C_PaySelection retrievePaySelection(I_C_Payment payment);
+
+	I_C_PaySelection retrievePaySelectionById(int paySelectionID);
 
 	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, int paymentId);
 

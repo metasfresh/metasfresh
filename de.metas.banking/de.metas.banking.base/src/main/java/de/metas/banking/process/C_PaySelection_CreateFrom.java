@@ -10,21 +10,28 @@ package de.metas.banking.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
 
+import de.metas.banking.model.I_C_Payment;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.banking.payment.IPaySelectionBL;
@@ -35,11 +42,11 @@ import de.metas.process.JavaProcess;
 
 /**
  * Create Payment Selection Lines from AP Invoices
- * 
+ *
  * @author tsa
  * @task 08972
  */
-public class C_PaySelection_CreateFrom extends JavaProcess
+public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPrecondition
 {
 	// services
 	private final transient IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
@@ -102,6 +109,22 @@ public class C_PaySelection_CreateFrom extends JavaProcess
 				paySelectionUpdater.setC_BP_Group_ID(p_C_BP_Group_ID);
 			}
 		}
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+
+		final I_C_PaySelection paySelection = paySelectionDAO.retrievePaySelectionById(context.getSingleSelectedRecordId());
+
+		if (paySelection.getDocStatus().equals(DocStatus.Drafted.getCode()))
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		return ProcessPreconditionsResolution.reject();
 	}
 
 	@Override
