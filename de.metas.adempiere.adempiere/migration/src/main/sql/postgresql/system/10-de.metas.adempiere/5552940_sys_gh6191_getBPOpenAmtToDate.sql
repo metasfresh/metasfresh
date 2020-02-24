@@ -2,10 +2,10 @@ DROP FUNCTION IF EXISTS getBPOpenAmtToDate(numeric, numeric, date, numeric, nume
 
 CREATE OR REPLACE FUNCTION getBPOpenAmtToDate(p_AD_Client_ID numeric,
                                               p_AD_Org_ID numeric,
-                                              p_Date date,
+                                              p_DateTo date,
                                               p_C_BPartner_id numeric,
                                               p_C_Currency_ID numeric,
-                                              p_UseDateAcct text = 'Y',
+                                              p_UseDateActual text = 'Y',
                                               p_IsSOTrx text = 'Y')
     RETURNS numeric
 AS
@@ -21,11 +21,11 @@ BEGIN
                                        p_c_invoicepayschedule_id := COALESCE(ips.C_InvoicePaySchedule_ID, 0::numeric),
                                        p_DateType := (
                                            CASE
-                                               WHEN p_UseDateAcct = 'Y' THEN 'A'
+                                               WHEN p_useDateActual = 'Y' THEN 'A'
                                                                           ELSE 'T'
                                            END
                                            ),
-                                       p_Date := p_Date,
+                                       p_Date := p_dateTo,
                                        p_Result_Currency_ID := p_C_Currency_ID
                                    )
                               )
