@@ -4,8 +4,8 @@ import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';
-
 import SelectionDropdown from '../SelectionDropdown';
+import MultiSelect from '../MultiSelect';
 
 /*
  * We want the selected option to be displayed first,
@@ -218,18 +218,22 @@ export class RawList extends PureComponent {
       ...setSelectedValue(dropdownList, selected),
     };
 
-    this.setState(changedValues, () => {
-      if (selected.key === null) {
-        onSelect(null);
-      } else {
-        onSelect(selected);
-      }
-      onCloseDropdown();
+    if (Array.isArray(selected)) {
+      onSelect(selected);
+    } else {
+      this.setState(changedValues, () => {
+        if (selected.key === null) {
+          onSelect(null);
+        } else {
+          onSelect(selected);
+        }
+        onCloseDropdown();
 
-      setTimeout(() => {
-        this.focusDropdown();
-      }, 0);
-    });
+        setTimeout(() => {
+          this.focusDropdown();
+        }, 0);
+      });
+    }
   }
 
   /**
@@ -353,6 +357,7 @@ export class RawList extends PureComponent {
       isToggled,
       isFocused,
       clearable,
+      isMultiselect,
     } = this.props;
 
     let value = '';
@@ -374,7 +379,7 @@ export class RawList extends PureComponent {
       ? this.props.properties.emptyText
       : placeholder;
 
-    return (
+    const classicDropdown = (
       <TetherComponent
         attachment="top left"
         targetAttachment="bottom left"
@@ -466,6 +471,25 @@ export class RawList extends PureComponent {
         )}
       </TetherComponent>
     );
+
+    const multiSelectDropdown = (
+      <MultiSelect
+        options={this.state.dropdownList}
+        onOpenDropdown={this.props.onOpenDropdown}
+        onCloseDropdown={this.props.onCloseDropdown}
+        isToggled={this.props.isToggled}
+        onFocus={this.props.onFocus}
+        onSelect={this.props.onSelect}
+        selectedItems={this.props.selected}
+      />
+    );
+
+    return (
+      <React.Fragment>
+        {isMultiselect && multiSelectDropdown}
+        {!isMultiselect && classicDropdown}
+      </React.Fragment>
+    );
   }
 }
 
@@ -537,6 +561,7 @@ RawList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
+  isMultiselect: PropTypes.bool,
 };
 
 RawList.defaultProps = {

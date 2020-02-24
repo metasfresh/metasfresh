@@ -16,3 +16,9 @@
     margin-left: 3px;
     margin-right: 5px;
 }
+
+.filter-multiselect {
+    width: 100%;
+    min-height: 30px;
+    padding: 15px;
+}

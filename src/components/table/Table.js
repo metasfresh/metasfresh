@@ -805,12 +805,18 @@ class Table extends Component {
     dispatch(openModal('Add new', windowId, 'window', tabId, 'NEW'));
   };
 
+  /**
+   * @method handleAdvancedEdit
+   * @summary Handles advanced edit - i.e case when ALT+E key combinations are being used
+   *          Active only on subtables
+   */
   handleAdvancedEdit = (windowId, tabId, selected) => {
     const { dispatch } = this.props;
-
-    dispatch(
-      openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
-    );
+    if (this.props.docId) {
+      dispatch(
+        openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
+      );
+    }
   };
 
   handleDelete = () => {

@@ -33,7 +33,7 @@ class Login extends Component {
    * @summary ToDo: Describe the method.
    */
   browserSupport = (...supportedBrowsers) => {
-    const userBrowser = BROWSER.name;
+    const userBrowser = BROWSER !== null ? BROWSER.name : 'chrome';
     let isSupported = false;
 
     supportedBrowsers.map((browser) => {

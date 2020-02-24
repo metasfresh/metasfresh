@@ -349,7 +349,7 @@ ListWidget.propTypes = {
   mainProperty: PropTypes.object,
   isModal: PropTypes.bool,
   autoFocus: PropTypes.bool,
-  selected: PropTypes.object,
+  selected: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   initialFocus: PropTypes.any,
   doNotOpenOnFocus: PropTypes.bool,
   setNextProperty: PropTypes.func,

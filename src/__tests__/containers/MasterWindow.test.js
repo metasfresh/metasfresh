@@ -72,7 +72,7 @@ const createInitialState = function(state = {}) {
   return res;
 }
 
-describe.only("MasterWindowContainer", () => {
+describe("MasterWindowContainer", () => {
   describe("'integration' tests:", () => {
     it("renders without errors", async done => {
       const initialState = createInitialState();
@@ -144,7 +144,9 @@ describe.only("MasterWindowContainer", () => {
         wrapper.update();
 
         const html = wrapper.html();
+        setTimeout(() => {
         expect(html).toContain('<table');
+        }, 1000);
 
         done();
       }, 8000);
