@@ -35,6 +35,7 @@ import lombok.Value;
 
 public interface PerformanceMonitoringService
 {
+	/** invoke the given {@code callable} as a span. */
 	<V> Result<V> monitorSpan(Callable<V> callable, SpanMetadata request);
 
 	default <V> Result<V> monitorSpan(
