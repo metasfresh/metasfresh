@@ -1,12 +1,12 @@
 DROP FUNCTION IF EXISTS getBPOpenAmtToDate(numeric, numeric, date, numeric, numeric, text, text);
 
-CREATE OR REPLACE FUNCTION getBPOpenAmtToDate(p_AD_Client_ID numeric,
-                                              p_AD_Org_ID numeric,
-                                              p_Date date,
+CREATE OR REPLACE FUNCTION getBPOpenAmtToDate(p_AD_Client_ID  numeric,
+                                              p_AD_Org_ID     numeric,
+                                              p_Date          date,
                                               p_C_BPartner_id numeric,
                                               p_C_Currency_ID numeric,
-                                              p_UseDateAcct text = 'Y',
-                                              p_IsSOTrx text = 'Y')
+                                              p_UseDateAcct   text = 'Y',
+                                              p_IsSOTrx       text = 'Y')
     RETURNS numeric
 AS
 $$
@@ -22,7 +22,7 @@ BEGIN
                                        p_DateType := (
                                            CASE
                                                WHEN p_UseDateAcct = 'Y' THEN 'A'
-                                                                          ELSE 'T'
+                                                                        ELSE 'T'
                                            END
                                            ),
                                        p_Date := p_Date,
@@ -35,7 +35,12 @@ BEGIN
                              ON i.C_Invoice_ID = ips.C_Invoice_ID
                                  AND ips.isvalid = 'Y'
                                  AND ips.isActive = 'Y'
-    WHERE i.IsSOTrx = p_IsSOTrx
+    WHERE TRUE
+      AND i.IsSOTrx = p_IsSOTrx
+      AND (CASE
+               WHEN p_UseDateAcct = 'Y' THEN i.dateacct
+                                        ELSE i.dateinvoiced
+           END) <= p_Date
       AND i.DocStatus IN ('CO', 'CL')
       AND i.c_bpartner_id = p_c_bpartner_id
       AND i.AD_CLient_ID = p_AD_Client_ID
