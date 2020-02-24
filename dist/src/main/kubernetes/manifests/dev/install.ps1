@@ -17,7 +17,7 @@ kubectl apply -f .\admin\metasfresh-admin-deploy.yaml
 
 # postgress
 cd .\postgresql\
-kubectl apply configmap metasfresh-postgresql-config --from-file=postgresql.conf
+kubectl create configmap metasfresh-postgresql-config --from-file=postgresql.conf
 cd ..
 kubectl apply -f .\postgresql\metasfresh-postgresql-deploy_demouser_demo.yaml
 kubectl apply -f .\postgresql\metasfresh-postgresql-svc_demouser_demo.yaml
