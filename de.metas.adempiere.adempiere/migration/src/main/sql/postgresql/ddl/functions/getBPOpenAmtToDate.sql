@@ -41,7 +41,7 @@ BEGIN
       AND i.AD_CLient_ID = p_AD_Client_ID
       AND (COALESCE(p_AD_Org_ID, 0) <= 0 OR i.AD_Org_ID = p_AD_Org_ID);
 
-    RETURN v_sum;
+    RETURN coalesce(v_sum, 0);
 END ;
 $$
     LANGUAGE plpgsql VOLATILE;
