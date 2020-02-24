@@ -1,5 +1,6 @@
 package org.adempiere.ad.table.process;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -73,7 +74,7 @@ public class AD_Column_Delete extends JavaProcess
 
 	private void dropDBColumn(final I_AD_Column adColumn)
 	{
-		final String tableName = adColumn.getAD_Table().getTableName();
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adColumn.getAD_Table_ID());
 		final String columnName = adColumn.getColumnName();
 
 		executeDDL("ALTER TABLE " + tableName + " DROP COLUMN IF EXISTS " + columnName);

@@ -53,7 +53,7 @@ import lombok.Value;
 public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
-	
+
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
 	String getBPartnerName(final BPartnerId bpartnerId);
@@ -168,7 +168,12 @@ public interface IBPartnerBL extends ISingletonService
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
-	BPartnerId getBPartnerSalesRepId(BPartnerId bPartnerId);
+	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
+
+	/**
+	 * @return previous sales rep or null
+	 */
+	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
 	@Value
 	@Builder

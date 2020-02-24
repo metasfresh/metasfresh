@@ -70,8 +70,8 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		final BigDecimal qtyOrdered = new BigDecimal("100");
 
 		shipmentSchedules = Arrays.asList(
-				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered), // shipment schedule 0
-				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered) // shipment schedule 1
+				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered, 20/* orderLineNo */), // shipment schedule 0
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered, 10/* orderLineNo */) // shipment schedule 1
 		);
 	}
 
@@ -311,10 +311,10 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 			.shipmentScheduleQtyPickedExpectation(0)
-				.inoutLine(shipmentLine1)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(1)
-				.inoutLine(shipmentLine2)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.assertExpected("after shipment generated");
 		//@formatter:on

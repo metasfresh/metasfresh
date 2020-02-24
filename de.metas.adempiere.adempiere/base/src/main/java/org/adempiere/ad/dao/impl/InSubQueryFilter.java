@@ -239,6 +239,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final String subQuerySql = subQueryImpNew.buildSQL(
 				subQuerySelectClause,
 				subQueryFromClause,
+				null/* groupByClause */,
 				subQueryUseOrderByClause);
 
 		//
@@ -303,6 +304,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final String subQuerySql = subQueryImpNew.buildSQL(
 				subQuerySelectClause,
 				subQueryFromClause,
+				null/*groupByClause*/,
 				subQueryUseOrderByClause);
 
 		//

@@ -78,6 +78,7 @@ import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -257,9 +258,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		final I_C_UOM stockUomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
 		InterfaceWrapperHelper.save(stockUomRecord);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, trxName);
-		product.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
-		InterfaceWrapperHelper.save(product);
+		final I_M_Product product = BusinessTestHelper.createProduct("product", stockUomRecord);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);

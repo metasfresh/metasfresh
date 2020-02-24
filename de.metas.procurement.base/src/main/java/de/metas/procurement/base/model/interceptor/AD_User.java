@@ -4,9 +4,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 
-import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_AD_User;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -56,7 +54,7 @@ public class AD_User
 		// FIXME: as it is will push ANY bpartner, even if it is relevant or not from PMM's point of view
 		// good part: will solve the case when u have a pmm bpartner with one 1 user and u just un-ticket the IsMFProcurementUser flag for it
 		// bad part: a lot of not relevant BPartners will be sent to procurement webui
-		Services.get(IWebuiPush.class).pushBPartnerForContact(contact);
+//		Services.get(IWebuiPush.class).pushBPartnerForContact(contact);
 	}
 
 }

@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 163043362L;
+	private static final long serialVersionUID = 1996606322L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -35,6 +35,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setIsAutocomplete (false); // N
 			setIsCalculated (false); // N
 			setIsEncrypted (null); // N
+			setIsFacetFilter (false); // N
 			setIsForceIncludeInGeneratedModel (false); // N
 			setIsIdentifier (false);
 			setIsKey (false);
@@ -93,7 +94,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	public org.compiere.model.I_AD_Element getAD_Element()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
 	}
@@ -130,7 +131,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
@@ -167,7 +168,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -204,7 +205,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference_Value()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -240,18 +241,6 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -278,7 +267,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule() throws RuntimeException
+	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
 	}
@@ -436,6 +425,25 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public java.lang.String getEntityType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+	}
+
+	/** Set Facet Filter Sequence No.
+		@param FacetFilterSeqNo Facet Filter Sequence No	  */
+	@Override
+	public void setFacetFilterSeqNo (int FacetFilterSeqNo)
+	{
+		set_Value (COLUMNNAME_FacetFilterSeqNo, Integer.valueOf(FacetFilterSeqNo));
+	}
+
+	/** Get Facet Filter Sequence No.
+		@return Facet Filter Sequence No	  */
+	@Override
+	public int getFacetFilterSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_FacetFilterSeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Länge.
@@ -690,6 +698,29 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public java.lang.String getIsEncrypted () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsEncrypted);
+	}
+
+	/** Set Facet Filter.
+		@param IsFacetFilter Facet Filter	  */
+	@Override
+	public void setIsFacetFilter (boolean IsFacetFilter)
+	{
+		set_Value (COLUMNNAME_IsFacetFilter, Boolean.valueOf(IsFacetFilter));
+	}
+
+	/** Get Facet Filter.
+		@return Facet Filter	  */
+	@Override
+	public boolean isFacetFilter () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsFacetFilter);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Force include in generated model.
@@ -1088,10 +1119,30 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return (java.lang.String)get_Value(COLUMNNAME_MandatoryLogic);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
+	/** Set Maximum Facets.
+		@param MaxFacetsToFetch 
+		Maximum number of facets to fetch
 	  */
+	@Override
+	public void setMaxFacetsToFetch (int MaxFacetsToFetch)
+	{
+		set_Value (COLUMNNAME_MaxFacetsToFetch, Integer.valueOf(MaxFacetsToFetch));
+	}
+
+	/** Get Maximum Facets.
+		@return Maximum number of facets to fetch
+	  */
+	@Override
+	public int getMaxFacetsToFetch () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MaxFacetsToFetch);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Name.
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -1099,8 +1150,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -1118,8 +1168,8 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public static final String PERSONALDATACATEGORY_Personal = "P";
 	/** SensitivePersonal = SP */
 	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
-	/** Set Personal Data Category.
-		@param PersonalDataCategory Personal Data Category	  */
+	/** Set Datenschutz-Kategorie.
+		@param PersonalDataCategory Datenschutz-Kategorie	  */
 	@Override
 	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
 	{
@@ -1127,8 +1177,8 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
 	}
 
-	/** Get Personal Data Category.
-		@return Personal Data Category	  */
+	/** Get Datenschutz-Kategorie.
+		@return Datenschutz-Kategorie	  */
 	@Override
 	public java.lang.String getPersonalDataCategory () 
 	{

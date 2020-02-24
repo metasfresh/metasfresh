@@ -12,6 +12,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
@@ -19,6 +20,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.lang.SOTrx;
+import de.metas.logging.TableRecordMDC;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -83,47 +85,59 @@ public class OrderFactory
 
 	public org.compiere.model.I_C_Order createAndComplete()
 	{
-		createDraft();
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			createDraft();
 
-		Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		return order;
+			return order;
+		}
 	}
 
 	public I_C_Order createDraft()
 	{
-		if (orderLineBuilders.isEmpty())
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
 		{
-			throw new AdempiereException("no lines");
+			if (orderLineBuilders.isEmpty())
+			{
+				throw new AdempiereException("no lines");
+			}
+
+			createDraftOrderHeader();
+
+			orderLineBuilders.forEach(OrderLineBuilder::build);
+
+			return order;
 		}
-
-		createDraftOrderHeader();
-
-		orderLineBuilders.forEach(OrderLineBuilder::build);
-
-		return order;
 	}
 
 	public I_C_Order createDraftOrderHeader()
 	{
-		assertNotBuilt();
-		built = true;
-
-		if (order.getC_DocTypeTarget_ID() <= 0)
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
 		{
-			final IOrderBL orderBL = Services.get(IOrderBL.class);
-			orderBL.setDocTypeTargetId(order);
-		}
-		save(order);
+			assertNotBuilt();
+			built = true;
 
-		return order;
+			if (order.getC_DocTypeTarget_ID() <= 0)
+			{
+				final IOrderBL orderBL = Services.get(IOrderBL.class);
+				orderBL.setDocTypeTargetId(order);
+			}
+			save(order);
+
+			return order;
+		}
 	}
 
 	private void assertNotBuilt()
 	{
-		if (built)
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
 		{
-			throw new AdempiereException("Already built: " + this);
+			if (built)
+			{
+				throw new AdempiereException("Already built: " + this);
+			}
 		}
 	}
 
@@ -134,16 +148,22 @@ public class OrderFactory
 
 	public OrderLineBuilder newOrderLine()
 	{
-		final OrderLineBuilder orderLineBuilder = new OrderLineBuilder(this);
-		orderLineBuilders.add(orderLineBuilder);
-		return orderLineBuilder;
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			final OrderLineBuilder orderLineBuilder = new OrderLineBuilder(this);
+			orderLineBuilders.add(orderLineBuilder);
+			return orderLineBuilder;
+		}
 	}
 
 	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
 	{
-		return orderLineBuilders.stream()
-				.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
-				.findFirst();
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			return orderLineBuilders.stream()
+					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
+					.findFirst();
+		}
 	}
 
 	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
@@ -203,12 +223,15 @@ public class OrderFactory
 
 	public OrderFactory docType(final int docTypeTargetId)
 	{
-		assertNotBuilt();
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			assertNotBuilt();
 
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
 
-		return this;
+			return this;
+		}
 	}
 
 	public OrderFactory warehouseId(final int warehouseId)

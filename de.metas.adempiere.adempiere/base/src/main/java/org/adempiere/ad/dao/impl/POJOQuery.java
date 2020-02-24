@@ -59,6 +59,7 @@ import com.google.common.collect.Lists;
 
 import de.metas.dao.selection.pagination.PageDescriptor;
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
@@ -212,15 +213,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return null;
 		}
 
-		return new Comparator<ET>()
-		{
-
-			@Override
-			public int compare(final ET o1, final ET o2)
-			{
-				return orderByComparator.compare(o1, o2);
-			}
-		};
+		return (o1, o2) -> orderByComparator.compare(o1, o2);
 	}
 
 	@Override
@@ -613,11 +606,13 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 			if (Aggregate.SUM.equals(aggregateType))
+			{
 				if (valueObj == null)
 				{
 					// skip null values
 					continue;
 				}
+			}
 
 			result = aggregateOperator.apply(result, valueObj);
 		}
@@ -1012,7 +1007,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Used for unit testing
 	 */
-	private static final Map<String, QueryResultPage<?>> UUID_TO_PAGE = new ConcurrentHashMap<String, QueryResultPage<?>>();
+	private static final Map<String, QueryResultPage<?>> UUID_TO_PAGE = new ConcurrentHashMap<>();
 
 	/**
 	 * Invoked by the test helper after each individual test.
@@ -1035,11 +1030,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final List<List<ET>> pages = Lists.partition(bigList, pageSize);
 		if (bigList.isEmpty())
 		{
-			return new QueryResultPage<ET>(currentPageDescriptor, null, 0, resultTimestamp, ImmutableList.of());
+			return new QueryResultPage<>(currentPageDescriptor, null, 0, resultTimestamp, ImmutableList.of());
 		}
 
 		PageDescriptor nextPageDescriptor = pages.size() > 1 ? currentPageDescriptor.createNext() : null;
-		final QueryResultPage<ET> firstQueryResultPage = new QueryResultPage<ET>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(0)));
+		final QueryResultPage<ET> firstQueryResultPage = new QueryResultPage<>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(0)));
 		UUID_TO_PAGE.put(firstQueryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), firstQueryResultPage);
 
 		currentPageDescriptor = nextPageDescriptor;
@@ -1048,7 +1043,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			final boolean lastPage = pages.size() <= i + 1;
 			nextPageDescriptor = lastPage ? null : currentPageDescriptor.createNext();
-			final QueryResultPage<ET> queryResultPage = new QueryResultPage<ET>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(i)));
+			final QueryResultPage<ET> queryResultPage = new QueryResultPage<>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(i)));
 			UUID_TO_PAGE.put(queryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), queryResultPage);
 
 			currentPageDescriptor = nextPageDescriptor;
@@ -1060,5 +1055,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public static <T> QueryResultPage<T> getPage(Class<T> clazz, String next)
 	{
 		return (QueryResultPage<T>)UUID_TO_PAGE.get(next);
+	}
+
+	@Override
+	public List<Money> sumMoney(@NonNull String amountColumnName, @NonNull String currencyIdColumnName)
+	{
+		throw new UnsupportedOperationException("sumMoney");
 	}
 }

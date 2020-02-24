@@ -7,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -37,7 +39,8 @@ import de.metas.util.Services;
  */
 
 @Component
-class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 

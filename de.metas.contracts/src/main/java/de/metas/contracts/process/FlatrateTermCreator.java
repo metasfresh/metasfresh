@@ -9,7 +9,6 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_User;
@@ -17,6 +16,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -24,6 +24,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -82,31 +83,28 @@ public class FlatrateTermCreator
 
 		for (final I_C_BPartner partner : bPartners)
 		{
-			// create each term in its own transaction
-			trxManager.runInNewTrx(new TrxRunnableAdapter()
+			try (MDCCloseable partnerMDC = TableRecordMDC.putTableRecordReference(partner))
 			{
-				@Override
-				public void run(final String localTrxName)
+				// create each term in its own transaction
+				trxManager.runInNewTrx(new TrxRunnableAdapter()
 				{
-					createTerm(partner);
-				}
+					@Override
+					public void run(final String localTrxName)
+					{
+						createTerm(partner);
+						Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
+						logger.debug("created contract(s) for {}", partner);
+					}
 
-				@Override
-				public boolean doCatch(Throwable ex)
-				{
-					Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
-					logger.warn("Failed creating contract for {}", partner, ex);
-					throw AdempiereException
-							.wrapIfNeeded(ex)
-							.markUserNotified();
-				}
-
-				@Override
-				public void doFinally()
-				{
-					Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
-				}
-			});
+					@Override
+					public boolean doCatch(Throwable ex)
+					{
+						Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
+						logger.debug("Failed creating contract for {}", partner, ex);
+						return true; // rollback
+					}
+				});
+			}
 		}
 	}
 
@@ -147,10 +145,13 @@ public class FlatrateTermCreator
 
 			saveRecord(newTerm);
 
-			//
-			// Complete it if valid
-			flatrateBL.completeIfValid(newTerm);
+			try (final MDCCloseable newTermMDC = TableRecordMDC.putTableRecordReference(newTerm))
+			{
+				logger.debug("Created C_Flatrate_Term");
 
+				// Complete it if valid
+				flatrateBL.completeIfValid(newTerm);
+			}
 			result.add(newTerm);
 		}
 		return result.build();

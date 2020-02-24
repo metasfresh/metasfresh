@@ -188,7 +188,7 @@ public class RelationTypeZoomProviderFactoryTest
 	private I_AD_Column createColumn(I_AD_Table table, String columnname)
 	{
 		final I_AD_Column column = newInstance(I_AD_Column.class);
-		column.setAD_Table(table);
+		column.setAD_Table_ID(table.getAD_Table_ID());
 		column.setColumnName(columnname);
 		save(column);
 

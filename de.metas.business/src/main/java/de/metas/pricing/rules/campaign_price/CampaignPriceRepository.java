@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.pricing.PricingSystemId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.I_C_Campaign_Price;
@@ -121,6 +122,7 @@ public class CampaignPriceRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.bpGroupId(BPGroupId.ofRepoIdOrNull(record.getC_BP_Group_ID()))
+				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
 				.countryId(CountryId.ofRepoId(record.getC_Country_ID()))
 				.validRange(Range.closed(validFrom, validTo))
 				//
@@ -174,6 +176,7 @@ public class CampaignPriceRepository
 
 		private final ImmutableListMultimap<BPartnerId, CampaignPrice> bpartnerPrices;
 		private final ImmutableListMultimap<BPGroupId, CampaignPrice> bpGroupPrices;
+		private final ImmutableListMultimap<PricingSystemId, CampaignPrice> pricingSystemPrices;
 
 		private CampaignPricePage(final List<CampaignPrice> prices)
 		{
@@ -185,23 +188,36 @@ public class CampaignPriceRepository
 					.filter(price -> price.getBpGroupId() != null)
 					.sorted(Comparator.comparing(CampaignPrice::getValidFrom))
 					.collect(GuavaCollectors.toImmutableListMultimap(CampaignPrice::getBpGroupId));
+
+			pricingSystemPrices = prices.stream()
+					.filter(price -> price.getPricingSystemId() != null)
+					.sorted(Comparator.comparing(CampaignPrice::getValidFrom))
+					.collect(GuavaCollectors.toImmutableListMultimap(CampaignPrice::getPricingSystemId));
 		}
 
 		private CampaignPricePage()
 		{
 			bpartnerPrices = ImmutableListMultimap.of();
 			bpGroupPrices = ImmutableListMultimap.of();
+			pricingSystemPrices = ImmutableListMultimap.of();
 		}
 
 		public Optional<CampaignPrice> findPrice(@NonNull final CampaignPriceQuery query)
 		{
-			final Optional<CampaignPrice> result = findPrice(bpartnerPrices.get(query.getBpartnerId()), query);
+			Optional<CampaignPrice> result = findPrice(bpartnerPrices.get(query.getBpartnerId()), query);
+
 			if (result.isPresent())
 			{
 				return result;
 			}
 
-			return findPrice(bpGroupPrices.get(query.getBpGroupId()), query);
+			result = findPrice(bpGroupPrices.get(query.getBpGroupId()), query);
+
+			if (result.isPresent()) {
+				return result;
+			}
+
+			return findPrice(pricingSystemPrices.get(query.getPricingSystemId()), query);
 		}
 
 		private static Optional<CampaignPrice> findPrice(@NonNull final Collection<CampaignPrice> prices, @NonNull final CampaignPriceQuery query)

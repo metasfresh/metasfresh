@@ -48,16 +48,21 @@ public class RecordAccess
 	@JsonProperty("permission")
 	Access permission;
 
+	@JsonProperty("issuer")
+	PermissionIssuer issuer;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private RecordAccess(
 			@JsonProperty("recordRef") @NonNull final TableRecordReference recordRef,
 			@JsonProperty("principal") @NonNull final Principal principal,
-			@JsonProperty("permission") @NonNull final Access permission)
+			@JsonProperty("permission") @NonNull final Access permission,
+			@JsonProperty("issuer") @NonNull final PermissionIssuer issuer)
 	{
 		this.recordRef = recordRef;
 		this.principal = principal;
 		this.permission = permission;
+		this.issuer = issuer;
 	}
 
 	public RecordAccess withRecordRef(@NonNull final TableRecordReference recordRef)

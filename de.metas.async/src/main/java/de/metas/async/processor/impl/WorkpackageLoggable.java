@@ -1,7 +1,6 @@
 package de.metas.async.processor.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.service.ClientId;
@@ -10,14 +9,14 @@ import org.slf4j.Logger;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.WorkpackageLogEntry;
-import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.error.LoggableWithThrowableUtil;
+import de.metas.error.LoggableWithThrowableUtil.FormattedMsgWithAdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,6 +48,7 @@ import lombok.ToString;
 final class WorkpackageLoggable implements ILoggable
 {
 	private static final Logger logger = LogManager.getLogger(WorkpackageLoggable.class);
+
 	private final IWorkpackageLogsRepository logsRepository;
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
@@ -99,43 +99,13 @@ final class WorkpackageLoggable implements ILoggable
 		return this;
 	}
 
-	private WorkpackageLogEntry createLogEntry(final String msg, final Object... msgParameters)
+	private WorkpackageLogEntry createLogEntry(@NonNull final String msg, final Object... msgParameters)
 	{
-		final Throwable exception = extractThrowable(msgParameters);
-		Object[] msgParametersEffective = msgParameters;
-		AdIssueId adIssueId = null;
-		if (exception != null)
-		{
-			try
-			{
-				adIssueId = errorManager.createIssue(exception);
-				msgParametersEffective = removeLastElement(msgParameters);
-			}
-			catch (final Exception createIssueException)
-			{
-				createIssueException.addSuppressed(exception);
-				logger.warn("Failed creating AD_Issue for exception: Skip creating the AD_Issue.", createIssueException);
-			}
-		}
-
-		//
-		String messageFormatted;
-		try
-		{
-			messageFormatted = StringUtils.formatMessage(msg, msgParametersEffective);
-		}
-		catch (final Exception formatMessageException)
-		{
-			logger.warn("Failed creating log entry for msg={} and msgParametes={}. Creating a fallback one instead",
-					msg, msgParametersEffective, formatMessageException);
-
-			messageFormatted = (msg != null ? msg : "")
-					+ (msgParameters != null && msgParameters.length > 0 ? " -- parameters: " + Arrays.asList(msgParameters) : "");
-		}
+		final FormattedMsgWithAdIssueId msgAndAdIssueId = LoggableWithThrowableUtil.extractMsgAndAdIssue(msg, msgParameters);
 
 		return WorkpackageLogEntry.builder()
-				.message(messageFormatted)
-				.adIssueId(adIssueId)
+				.message(msgAndAdIssueId.getFormattedMessage())
+				.adIssueId(msgAndAdIssueId.getAdIsueId().orElse(null))
 				.timestamp(SystemTime.asInstant())
 				.workpackageId(workpackageId)
 				.adClientId(adClientId)

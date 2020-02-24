@@ -133,7 +133,8 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 			if (isDiverseChanged || isProductTypeChanged)
 			{
 				final ProductId productId = ProductId.ofRepoId(productPO.getM_Product_ID());
-				final boolean display = Services.get(IProductBL.class).isItem(productPO);
+				final boolean display = Services.get(IProductBL.class)
+						.getProductType(productId).isItem();
 
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);

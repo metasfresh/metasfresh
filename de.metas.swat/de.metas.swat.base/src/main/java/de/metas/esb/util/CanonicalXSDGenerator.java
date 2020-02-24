@@ -55,6 +55,7 @@ import javax.xml.validation.Validator;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.RPL_Constants;
@@ -116,12 +117,12 @@ public class CanonicalXSDGenerator
 	private Document document = null;
 	private Element rootElement = null;
 
-	private final List<Element> complexTypes = new ArrayList<Element>();
+	private final List<Element> complexTypes = new ArrayList<>();
 
 	// 02775: exporting AD_Reference_Values of List references as XSD enums
-	private final Map<String, Element> enumTypes = new HashMap<String, Element>();
+	private final Map<String, Element> enumTypes = new HashMap<>();
 
-	private final Map<String, Element> refTypes = new HashMap<String, Element>();
+	private final Map<String, Element> refTypes = new HashMap<>();
 
 	private boolean oneFilePerFormat = false;
 	private String targetDirectory = null;
@@ -240,7 +241,7 @@ public class CanonicalXSDGenerator
 
 		createXSDAttribute(rootElement, RPL_Constants.XML_ATTR_AD_SESSION_ID, "xsd:integer", null); // 03132
 
-		final HashMap<String, String> map = new HashMap<String, String>();
+		final HashMap<String, String> map = new HashMap<>();
 		map.put(Integer.toString(ModelValidator.TYPE_AFTER_CHANGE), "AfterChange");
 		map.put(Integer.toString(ModelValidator.TYPE_BEFORE_DELETE), "BeforeDelete");
 		map.put(Integer.toString(ModelValidator.TYPE_BEFORE_DELETE_REPLICATION), "BeforeDeleteReplication");
@@ -271,12 +272,11 @@ public class CanonicalXSDGenerator
 			return null;
 		}
 
-		final HashMap<String, String> map = new HashMap<String, String>(listValues.size());
+		final HashMap<String, String> map = new HashMap<>(listValues.size());
 		// final ValueNamePair[] list = MRefList.getList(ctx, AD_Reference_ID, false);
 
-		for (int index = 0; index < listValues.size(); index++)
+		for (final ADRefListItem listValue : listValues)
 		{
-			final ADRefListItem listValue = listValues.get(index);
 			final String value = listValue.getValue();
 			final String valueName = listValue.getValueName(); // 08456: Take valueName instead of name when generating enumerations (Names can be equal!)
 
@@ -411,7 +411,7 @@ public class CanonicalXSDGenerator
 					{
 						final String msg = msgBL.getMsg(Env.getCtx(), ERROR_ESB_AD_REFERENCE_VALUE_NON_ASCII_3P, new Object[] {
 								column.getColumnName(),
-								column.getAD_Table().getTableName(),
+								Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID()),
 								msgBL.translate(Env.getCtx(), I_AD_Column.COLUMNNAME_AD_Reference_Value_ID) });
 						throw new AdempiereException(msg);
 					}
@@ -493,7 +493,7 @@ public class CanonicalXSDGenerator
 			final String msg = msgBL.getMsg(ctx, ERROR_ESB_AD_REFERENCE_VALUE_MISSING_3P,
 					new Object[] { msgBL.translate(ctx, I_AD_Column.COLUMNNAME_AD_Reference_Value_ID),
 							column.getColumnName(),
-							column.getAD_Table().getTableName()
+							Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID())
 					});
 			throw new AdempiereException(msg);
 		}

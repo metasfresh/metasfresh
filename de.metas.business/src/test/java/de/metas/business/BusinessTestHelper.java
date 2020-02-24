@@ -28,6 +28,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
 
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -183,6 +184,8 @@ public final class BusinessTestHelper
 		product.setValue(name);
 		product.setName(name);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
+		product.setProductType(ProductType.Item.getCode());
+		product.setIsStocked(true);
 		if (weightKg != null)
 		{
 			product.setWeight(weightKg);
