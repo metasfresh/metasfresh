@@ -18,31 +18,43 @@ DECLARE
 BEGIN
     FOR v_record_to_process in
         (
-            SELECT
-                pt.Table_Name, -- physical table name
-                seq.sequence_schema||'.'||seq.sequence_name as sequence_name, -- schema name, if any
-                pc.column_name, -- physical column name
+            WITH unfiltered AS
+                     (
+                         SELECT pt.Table_Name,                                                                                               -- physical table name
+                                seq.sequence_schema || '.' || seq.sequence_name                                            AS sequence_name, -- schema name, if any
+                                pc.column_name,                                                                                              -- physical column name
 
-                -- we will create/update the native sequence named "tableName||'_seq'"
-                -- if there is *no* AD_Column or if there is an AD_Column that is both active and is flagged as a key column
-                -- otherwise, this function will not do anything about that native sequence.
-                (ac.AD_Column_ID IS NULL OR (ac.IsActive='Y' AND (ac.IsKey='Y' OR ac.IsParent='Y'))) AS CreateOrUpdateNativeSequence
+                                -- we will create/update the native sequence named "tableName||'_seq'"
+                                -- if there is *no* AD_Column or if there is an AD_Column that is both active and is flagged as a key column
+                                -- otherwise, this function will not do anything about that native sequence.
+                                (ac.AD_Column_ID IS NULL OR (ac.IsActive = 'Y' AND (ac.IsKey = 'Y' OR ac.IsParent = 'Y'))) AS CreateOrUpdateNativeSequence,
+                                at.IsView,
+                                at.IsActive,
+                                at.TableName
 
-            FROM public.AD_Table at
-                     INNER JOIN information_schema.tables pt ON pt.table_schema='public' AND lower(pt.Table_Name)=lower(at.TableName)
-                     LEFT OUTER JOIN information_schema.sequences seq ON seq.sequence_schema='public' AND seq.sequence_name=lower(at.tableName||'_seq') -- find out if there is an existing native sequence
-                     LEFT OUTER JOIN public.AD_Column ac ON ac.AD_Table_ID=at.AD_Table_ID AND lower(ac.ColumnName)=lower(at.TableName||'_ID')
-                     LEFT OUTER JOIN information_schema.columns pc ON pc.table_schema='public' AND pc.table_name=lower(at.tableName) and pc.column_name=lower(at.TableName||'_ID')
-            WHERE true
-              -- use the application dictionary's AD_Table and AD_Column to decide what tables the function chall deal with
-              AND at.IsView='N'
-              AND at.IsActive='Y'
-              AND (
-                    quote_literal(p_tableName) IS NULL AND at.TableName not like 'X!_%Template' escape '!'
-                    OR
-                                                                                                       quote_literal(lower(p_tableName)) = lower(''''||at.TableName||'''')
-                )
-            ORDER BY at.TableName
+                         FROM public.AD_Table at
+                                  INNER JOIN information_schema.tables pt ON pt.table_schema = 'public' AND lower(pt.Table_Name) = lower(at.TableName)
+                                  LEFT OUTER JOIN information_schema.sequences seq ON seq.sequence_schema = 'public' AND seq.sequence_name = lower(at.tableName || '_seq') -- find out if there is an existing native sequence
+                                  LEFT OUTER JOIN public.AD_Column ac ON ac.AD_Table_ID = at.AD_Table_ID AND lower(ac.ColumnName) = lower(at.TableName || '_ID')
+                                  LEFT OUTER JOIN information_schema.columns pc ON pc.table_schema = 'public' AND pc.table_name = lower(at.tableName) AND pc.column_name = lower(at.TableName || '_ID')
+                     ),
+                 filtered AS
+                     (
+                         SELECT *
+                         FROM unfiltered u
+                         WHERE TRUE
+                           -- use the application dictionary's AD_Table and AD_Column to decide what tables the function chall deal with
+                           AND u.IsView = 'N'
+                           AND u.IsActive = 'Y'
+                           AND (
+                                 quote_literal(p_tableName) IS NULL AND u.TableName NOT LIKE 'X!_%Template' ESCAPE '!'
+                                 OR
+                                                                                                                   quote_literal(lower(p_tableName)) = lower('''' || u.TableName || '''')
+                             )
+                     )
+            SELECT *
+            FROM filtered f
+            ORDER BY f.TableName
         )
         LOOP
             BEGIN
