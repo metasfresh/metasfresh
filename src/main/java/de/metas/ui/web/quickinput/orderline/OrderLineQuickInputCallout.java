@@ -113,4 +113,4 @@ final class OrderLineQuickInputCallout
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		quickInputModel.setShipmentAllocation_BestBefore_Policy(bestBeforePolicy.getCode());
 	}
-}
+			}
