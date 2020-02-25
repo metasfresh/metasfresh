@@ -39,6 +39,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -49,6 +50,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintPackageBL;
@@ -341,38 +343,41 @@ public class PrintJobBL implements IPrintJobBL
 		while (items.hasNext())
 		{
 			final I_C_Printing_Queue item = items.next();
-			if (source.isPrinted(item))
+			try (final MDCCloseable printingQueueMDC = TableRecordMDC.putTableRecordReference(item))
 			{
-				logger.debug("Skipping {} because is already printed", item);
-				continue;
-			}
+				if (source.isPrinted(item))
+				{
+					logger.debug("Skipping {} because is already printed", item);
+					continue;
+				}
 
-			if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
-			{
-				logger.info("The lat item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
-						new Object[] { lastItemCopies, item.getCopies(), printJob });
-				break;
-			}
+				if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
+				{
+					logger.info("The last item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
+							new Object[] { lastItemCopies, item.getCopies(), printJob });
+					break;
+				}
 
-			if (printJob == null)
-			{
-				printJob = createPrintJob(item, trxName, printingQueueProcessingInfo.getAD_User_PrintJob_ID());
-			}
+				if (printJob == null)
+				{
+					printJob = createPrintJob(item, trxName, printingQueueProcessingInfo.getAD_User_PrintJob_ID());
+				}
 
-			final int maxLinesPerJobToUse = getMaxLinesPerJob(printJob);
-			if (maxLinesPerJobToUse > 0 && lineCount >= maxLinesPerJobToUse)
-			{
-				logger.info("Max lines per print job = {} reached; not adding further items", maxLinesPerJobToUse);
-				break;
-			}
+				final int maxLinesPerJobToUse = getMaxLinesPerJob(printJob);
+				if (maxLinesPerJobToUse > 0 && lineCount >= maxLinesPerJobToUse)
+				{
+					logger.info("Max lines per print job = {} reached; not adding further items", maxLinesPerJobToUse);
+					break;
+				}
 
-			lastLine = createPrintJobLine(source, printJob, item, lineCount + 1);
-			lineCount++;
-			lastItemCopies = item.getCopies();
+				lastLine = createPrintJobLine(source, printJob, item, lineCount + 1);
+				lineCount++;
+				lastItemCopies = item.getCopies();
 
-			if (firstLine == null)
-			{
-				firstLine = lastLine;
+				if (firstLine == null)
+				{
+					firstLine = lastLine;
+				}
 			}
 		}
 
