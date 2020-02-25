@@ -1,12 +1,12 @@
 DROP FUNCTION IF EXISTS getBPOpenAmtToDate(numeric, numeric, date, numeric, numeric, text, text);
 
-CREATE OR REPLACE FUNCTION getBPOpenAmtToDate(p_AD_Client_ID numeric,
-                                              p_AD_Org_ID numeric,
-                                              p_Date date,
+CREATE OR REPLACE FUNCTION getBPOpenAmtToDate(p_AD_Client_ID  numeric,
+                                              p_AD_Org_ID     numeric,
+                                              p_Date          date,
                                               p_C_BPartner_id numeric,
                                               p_C_Currency_ID numeric,
-                                              p_UseDateAcct text = 'Y',
-                                              p_IsSOTrx text = 'Y')
+                                              p_UseDateAcct   text = 'Y',
+                                              p_IsSOTrx       text = 'Y')
     RETURNS numeric
 AS
 $$
@@ -44,22 +44,27 @@ BEGIN
     SELECT INTO v_sum sum(
                               (SELECT openamt
                                FROM invoiceOpenToDate(
+
                                        p_C_Invoice_ID := t.C_Invoice_ID,
                                        p_c_invoicepayschedule_id := COALESCE(t.C_InvoicePaySchedule_ID, 0::numeric),
                                        p_DateType := v_dateType,
+
                                        p_Date := p_Date,
                                        p_Result_Currency_ID := p_C_Currency_ID
                                    )
                               )
                           )
 
+
     FROM t;
+
 
 
     RETURN coalesce(v_sum, 0);
 END ;
 $$
     LANGUAGE plpgsql VOLATILE;
+
 
 
 -- TEST
