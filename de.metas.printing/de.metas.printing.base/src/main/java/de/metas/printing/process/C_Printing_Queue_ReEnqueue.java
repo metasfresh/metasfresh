@@ -1,17 +1,17 @@
 package de.metas.printing.process;
 
 import java.util.Iterator;
-import java.util.Properties;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
-import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -21,6 +21,8 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 /**
@@ -31,13 +33,19 @@ import de.metas.util.Services;
  */
 public class C_Printing_Queue_ReEnqueue extends JavaProcess
 {
+
+	private static final Logger logger = LogManager.getLogger(C_Printing_Queue_ReEnqueue.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+	private final IPrintingQueueQuery queueQuery = printingQueueBL.createPrintingQueueQuery();
+	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
-	public static final String PARAM_IsSelected = "IsSelected";
-	private boolean p_IsSelected = false;
+	public static final String PARAM_FilterBySelectedQueueItems = "FilterBySelectedQueueItems";
+	private boolean p_FilterBySelectedQueueItems = false;
 
-	public static final String PARAM_IsPrinted = "IsPrinted";
-	private Boolean p_IsPrinted = null;
+	public static final String PARAM_FilterByProcessedQueueItems = "FilterByProcessedQueueItems";
+	private Boolean p_FilterByProcessedQueueItems = null;
 
 	public static final String PARAM_AD_Table_ID = "AD_Table_ID";
 	private int p_AD_Table_ID = -1;
@@ -63,13 +71,13 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 				continue;
 			}
 
-			if (PARAM_IsSelected.equals(name))
+			if (PARAM_FilterBySelectedQueueItems.equals(name))
 			{
-				p_IsSelected = para.getParameterAsBoolean();
+				p_FilterBySelectedQueueItems = para.getParameterAsBoolean();
 			}
-			if (PARAM_IsPrinted.equals(name))
+			if (PARAM_FilterByProcessedQueueItems.equals(name))
 			{
-				p_IsPrinted = para.getParameterAsBooleanOrNull();
+				p_FilterByProcessedQueueItems = para.getParameterAsBooleanOrNull();
 			}
 			else if (PARAM_AD_Table_ID.equals(name))
 			{
@@ -112,9 +120,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 				try
 				{
 					countAll++;
-
-					Services.get(IPrintingQueueBL.class).renqueue(item, p_IsRecreatePrintout);
-
+					printingQueueBL.renqueue(item, p_IsRecreatePrintout);
 					countOk++;
 				}
 				catch (Exception e)
@@ -135,23 +141,19 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 
 	private Iterator<I_C_Printing_Queue> retrievePrintingQueueItems()
 	{
-		final Properties ctx = getCtx();
-
-		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
-		final IPrintingQueueQuery queueQuery = printingQueueBL.createPrintingQueueQuery();
-
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		queueQuery.setRequiredAccess(Access.WRITE);
 
-		if (p_IsSelected)
+		if (p_FilterBySelectedQueueItems)
 		{
 			final PInstanceId selectionId = getPinstanceId();
 			createWindowSelectionId(selectionId);
 			queueQuery.setOnlyAD_PInstance_ID(selectionId);
 		}
 
-		if (p_IsPrinted != null)
+		if (p_FilterByProcessedQueueItems != null)
 		{
-			queueQuery.setIsPrinted(p_IsPrinted);
+			queueQuery.setFilterByProcessedQueueItems(p_FilterByProcessedQueueItems);
 		}
 
 		queueQuery.setModelTableId(p_AD_Table_ID);
@@ -164,16 +166,14 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 			queueQuery.setModelFilter(modelFilter);
 		}
 
-		log.info("Queue query: {}", queueQuery);
+		loggable.addLog("Queue query: {}", queueQuery);
 
-		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-		final IQuery<I_C_Printing_Queue> query = printingDAO.createQuery(ctx, queueQuery, ITrx.TRXNAME_None);
-		query.setOption(Query.OPTION_IteratorBufferSize, null); // use standard IteratorBufferSize
+		final IQuery<I_C_Printing_Queue> query = printingDAO.createQuery(getCtx(), queueQuery, ITrx.TRXNAME_None);
+		query.setOption(IQuery.OPTION_IteratorBufferSize, null); // use standard IteratorBufferSize
 
 		if (log.isInfoEnabled())
 		{
-			log.info("SQL Query: {}", query);
-			log.info("SQL Query count: {}", query.count());
+			loggable.addLog("The query matches {} C_Printing_Queue records; query={}",query.count(), query);
 		}
 
 		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);
@@ -193,10 +193,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 				.setClient_ID();
 
 		final int count = query.createSelection(selectionId);
-
-		log.info("Window Selection Query: {}", query);
-		log.info("Window Selection Count: {}", count);
-
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Restricting C_Printing_Queue records to selection of {} items; query={}", count, query);
 		return count;
 	}
 

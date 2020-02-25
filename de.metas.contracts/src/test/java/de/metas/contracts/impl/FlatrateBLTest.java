@@ -135,7 +135,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(activity);
 		activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 	}
-	
+
 	private Timestamp day(final int year, final int month, final int day)
 	{
 		return TimeUtil.getDay(year, month, day);
@@ -188,6 +188,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
+		priceList.setC_Currency_ID(10);
 		priceList.setC_Country_ID(country.getC_Country_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
