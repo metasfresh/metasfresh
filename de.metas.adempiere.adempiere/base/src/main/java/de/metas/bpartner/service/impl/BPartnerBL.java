@@ -576,8 +576,13 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
 	{
-		final int salesRepRecordId = getById(bpartnerId).getSalesRep_ID();
+		final I_C_BPartner bpartnerRecord = getById(bpartnerId);
+		if (InterfaceWrapperHelper.isNull(bpartnerRecord, I_C_BPartner.COLUMNNAME_SalesRep_ID))
+		{
+			return null;
+		}
 
+		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
 		return UserId.ofRepoIdOrNull(salesRepRecordId);
 	}
 
