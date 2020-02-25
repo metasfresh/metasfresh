@@ -240,7 +240,7 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				return false;
 			}
 
-			if (queueQuery.getIsPrinted() != null && queueQuery.getIsPrinted().booleanValue() != pojo.isProcessed())
+			if (queueQuery.getFilterByProcessedQueueItems() != null && queueQuery.getFilterByProcessedQueueItems().booleanValue() != pojo.isProcessed())
 			{
 				return false;
 			}

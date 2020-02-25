@@ -10,12 +10,12 @@ package de.metas.printing.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,11 +41,11 @@ import de.metas.util.Check;
 
 /**
  * Process only selected {@link I_C_Printing_Queue} create corresponding {@link I_C_Print_Job}.
- * 
+ *
  * NOTE: this process is only for testing. After printing selected queue item, it will mark it as not printed and no document outbound will be created.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class C_Print_Job_TestPrintQueueItem extends AbstractPrintJobCreate
 {
@@ -87,7 +87,7 @@ public class C_Print_Job_TestPrintQueueItem extends AbstractPrintJobCreate
 	}
 
 	@Override
-	protected int createSelection(String trxName)
+	protected int createSelection()
 	{
 		throw new IllegalStateException("Method createSelection() shall never been called because we provided an IPrintingQueueSource");
 	}

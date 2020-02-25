@@ -106,6 +106,13 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 		{
+			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+			if (invoiceCandBL.isUpdateProcessInProgress())
+			{
+				logger.debug("Change was performed by scheduler process. No need to update the receord again: {}", icRecord);
+				return;
+			}
+
 			if (isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
 			{
 				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
