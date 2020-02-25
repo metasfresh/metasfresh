@@ -341,9 +341,8 @@ public class MLookupFactory
 	 */
 	static public MLookupInfo getLookup_List(final int AD_Reference_Value_ID)
 	{
-		final String sqlFrom_BaseLang = "AD_Ref_List LEFT OUTER JOIN AD_Message msg ON AD_Ref_List.AD_Message_ID=msg.AD_Message_ID";
-		final String sqlFrom_Trl = "AD_Ref_List LEFT OUTER JOIN AD_Message msg ON msg.AD_Message_ID=AD_Ref_List.AD_Message_ID"
-				+ " INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
+		final String sqlFrom_BaseLang = "AD_Ref_List";
+		final String sqlFrom_Trl = "AD_Ref_List INNER JOIN AD_Ref_List_Trl trl ON (AD_Ref_List.AD_Ref_List_ID=trl.AD_Ref_List_ID"
 				+ " AND trl.AD_Language='" + MLookupInfo.CTXNAME_AD_Language.toStringWithMarkers() + "')";
 
 		final String displayColumnSQL_BaseLang;
@@ -364,7 +363,7 @@ public class MLookupFactory
 		final String descriptionColumnSQL_BaseLang = "AD_Ref_List.Description";
 		final String descriptionColumnSQL_Trl = "trl.Description";
 
-		final String validationMsgColumnSQL_BaseLang = "msg.value";
+		final String validationMsgColumnSQL_BaseLang = "(select msg.value as ConfirmMsg from AD_Message msg where AD_Ref_List.AD_Message_ID=msg.AD_Message_ID)";
 
 		// SQL Select
 		final StringBuilder sqlSelect_BaseLang = new StringBuilder("SELECT ") // Key, Value
