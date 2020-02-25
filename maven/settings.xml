@@ -50,6 +50,15 @@
                     <url>https://repo.metasfresh.com/repository/mvn-3rdparty-all/</url>
                 </repository>
             </repositories>
+            <pluginRepositories>
+                <!-- our main repo is also our plugin repo; also see https://maven.apache.org/pom.html#Plugin_Repositories -->
+                <!-- see https://github.com/metasfresh/metasfresh-parent/issues/3 -->
+                <pluginRepository>
+                    <id>metasfresh-repo</id>
+                    <name>metasfresh maven repository (master branch)</name>
+                    <url>https://repo.metasfresh.com/repository/mvn-master/</url>
+                </pluginRepository>
+            </pluginRepositories>
         </profile>
 
     </profiles>
