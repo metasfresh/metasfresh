@@ -26,7 +26,6 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.document.engine.DocStatus;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -116,7 +115,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 
 		final I_C_PaySelection paySelection = paySelectionDAO.retrievePaySelectionById(context.getSingleSelectedRecordId());
 
-		if (paySelection.getDocStatus().equals(DocStatus.Drafted.getCode()))
+		final String paySelectionDocStatus = paySelection.getDocStatus();
+		if (paySelectionDocStatus.equals(DocStatus.Drafted.getCode()) || paySelectionDocStatus.equals(DocStatus.InProgress.getCode()))
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
