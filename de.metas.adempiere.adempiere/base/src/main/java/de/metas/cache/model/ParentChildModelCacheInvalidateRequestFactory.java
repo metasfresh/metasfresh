@@ -1,8 +1,12 @@
 package de.metas.cache.model;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
 import lombok.Builder;
@@ -24,15 +28,14 @@ import lombok.ToString;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 @EqualsAndHashCode
 @ToString
@@ -58,29 +61,29 @@ final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheI
 	}
 
 	@Override
-	public CacheInvalidateRequest createRequestFromModel(final Object model, final ModelCacheInvalidationTiming timing)
+	public List<CacheInvalidateRequest> createRequestsFromModel(final Object model, final ModelCacheInvalidationTiming timing)
 	{
 		final int rootRecordId = getValueAsInt(model, childLinkColumnName);
 		if (rootRecordId < 0)
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
 		final int childRecordId = getValueAsInt(model, childKeyColumnName);
 		if (childRecordId >= 0)
 		{
-			return CacheInvalidateRequest.builder()
+			return ImmutableList.of(CacheInvalidateRequest.builder()
 					.rootRecord(rootTableName, rootRecordId)
 					.childRecord(childTableName, childRecordId)
-					.build();
+					.build());
 		}
 		else
 		{
-			return CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId);
+			return ImmutableList.of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
 		}
 	}
 
-	private static final int getValueAsInt(@NonNull final Object model, @Nullable final String columnName)
+	private static int getValueAsInt(@NonNull final Object model, @Nullable final String columnName)
 	{
 		if (columnName == null)
 		{

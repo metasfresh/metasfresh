@@ -1,6 +1,7 @@
 package de.metas.cache.model.impl;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -92,7 +93,9 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	{
 		final Set<CacheInvalidateRequest> requests = getRequestFactoriesForModel(model)
 				.stream()
-				.map(requestFactory -> requestFactory.createRequestFromModel(model, timing))
+				.map(requestFactory -> requestFactory.createRequestsFromModel(model, timing))
+				.filter(Predicates.notNull())
+				.flatMap(List::stream)
 				.filter(Predicates.notNull())
 				.collect(Collectors.toCollection(HashSet::new));
 

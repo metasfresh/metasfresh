@@ -1,5 +1,7 @@
 package de.metas.cache.model;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,5 +26,5 @@ package de.metas.cache.model;
 
 public interface ModelCacheInvalidateRequestFactory
 {
-	CacheInvalidateRequest createRequestFromModel(Object model, ModelCacheInvalidationTiming timing);
+	List<CacheInvalidateRequest> createRequestsFromModel(Object model, ModelCacheInvalidationTiming timing);
 }
