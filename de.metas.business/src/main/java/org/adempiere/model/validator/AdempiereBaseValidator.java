@@ -76,6 +76,7 @@ import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
+import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
@@ -340,5 +341,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 
 		WindowBasedCacheInvalidateRequestInitializer.setup();
+		ColumnSqlCacheInvalidateRequestInitializer.setup();
 	}
 }
