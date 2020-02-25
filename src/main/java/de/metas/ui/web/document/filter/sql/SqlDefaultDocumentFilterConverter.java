@@ -10,6 +10,7 @@ import org.adempiere.db.DBConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 
 import de.metas.printing.esb.base.util.Check;
@@ -194,17 +195,6 @@ import lombok.NonNull;
 		}
 	}
 
-	private String extractColumnSql(@NonNull final SqlEntityFieldBinding fieldBinding, final IQueryFilterModifier modifier, final SqlOptions sqlOpts)
-	{
-		SqlSelectValue columnSql = fieldBinding.getSqlSelectValue();
-		if (sqlOpts.isUseTableAlias())
-		{
-			columnSql = columnSql.withJoinOnTableNameOrAlias(sqlOpts.getTableAlias());
-		}
-
-		return modifier.getColumnSql(columnSql.toSqlString());
-	}
-
 	private Object convertToSqlValue(final Object value, final SqlEntityFieldBinding fieldBinding, final IQueryFilterModifier modifier)
 	{
 		final String columnName = fieldBinding.getColumnName();
@@ -220,12 +210,16 @@ import lombok.NonNull;
 		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
 		final DocumentFieldWidgetType widgetType = paramBinding.getWidgetType();
 
-		//
-		// Regular filter
-		final IQueryFilterModifier fieldModifier = extractFieldModifier(widgetType);
-		final IQueryFilterModifier valueModifier = extractValueModifier(widgetType);
-		final String columnSql = extractColumnSql(paramBinding, fieldModifier, sqlOpts);
+		final String columnSqlString;
+		{
+			final IQueryFilterModifier fieldModifier = extractFieldModifier(widgetType);
+			final SqlSelectValue columnSqlEffective = replaceTableNameWithTableAliasIfNeeded(
+					paramBinding.getSqlSelectValue(),
+					sqlOpts);
+			columnSqlString = fieldModifier.getColumnSql(columnSqlEffective.toSqlString());
+		}
 
+		final IQueryFilterModifier valueModifier = extractValueModifier(widgetType);
 		final Operator operator = filterParam.getOperator();
 		switch (operator)
 		{
@@ -233,72 +227,72 @@ import lombok.NonNull;
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = false;
-				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
+				return buildSqlWhereClause_Equals(columnSqlString, sqlValue, negate, sqlParams);
 			}
 			case NOT_EQUAL:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = true;
-				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
+				return buildSqlWhereClause_Equals(columnSqlString, sqlValue, negate, sqlParams);
 			}
 			case IN_ARRAY:
 			{
 				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, paramBinding, valueModifier));
-				return buildSqlWhereClause_InArray(columnSql, sqlValuesList, sqlParams);
+				return buildSqlWhereClause_InArray(columnSqlString, sqlValuesList, sqlParams);
 			}
 			case GREATER:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, ">", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, ">", sqlValue, sqlParams);
 			}
 			case GREATER_OR_EQUAL:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, ">=", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, ">=", sqlValue, sqlParams);
 			}
 			case LESS:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, "<", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, "<", sqlValue, sqlParams);
 			}
 			case LESS_OR_EQUAL:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, "<=", sqlValue, sqlParams);
+				return buildSqlWhereClause_Compare(columnSqlString, "<=", sqlValue, sqlParams);
 			}
 			case LIKE:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = false;
 				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case NOT_LIKE:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = true;
 				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case LIKE_I:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = false;
 				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case NOT_LIKE_I:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final boolean negate = true;
 				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+				return buildSqlWhereClause_Like(columnSqlString, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case BETWEEN:
 			{
 				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
 				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), paramBinding, valueModifier);
-				return buildSqlWhereClause_Between(columnSql, sqlValue, sqlValueTo, sqlParams);
+				return buildSqlWhereClause_Between(columnSqlString, sqlValue, sqlValueTo, sqlParams);
 			}
 			default:
 			{
@@ -411,9 +405,39 @@ import lombok.NonNull;
 				.toString();
 	}
 
+	@VisibleForTesting
+	SqlSelectValue replaceTableNameWithTableAliasIfNeeded(
+			@NonNull final SqlSelectValue columnSql,
+			@NonNull final SqlOptions sqlOpts)
+	{
+		if (sqlOpts.isUseTableAlias())
+		{
+			SqlSelectValue columnSqlEffective = columnSql;
+			columnSqlEffective = columnSqlEffective.withJoinOnTableNameOrAlias(sqlOpts.getTableAlias());
+
+			if (columnSqlEffective.isVirtualColumn())
+			{
+				final String virtualColumnSql = replaceTableNameWithTableAlias(
+						columnSqlEffective.getVirtualColumnSql(),
+						sqlOpts.getTableAlias());
+				columnSqlEffective = columnSqlEffective.withVirtualColumnSql(virtualColumnSql);
+			}
+
+			return columnSqlEffective;
+		}
+		else
+		{
+			return columnSql;
+		}
+
+	}
+
 	private String replaceTableNameWithTableAlias(final String sql, @NonNull final String tableAlias)
 	{
-		return entityBinding.replaceTableNameWithTableAlias(sql, tableAlias);
+		return SqlEntityBinding.replaceTableNameWithTableAlias(
+				sql,
+				entityBinding.getTableName(),
+				tableAlias);
 	}
 
 	private String buildSqlWhereClause_LabelsWidget(

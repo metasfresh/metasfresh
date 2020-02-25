@@ -40,6 +40,8 @@ public class SqlSelectValue
 {
 	private final String tableNameOrAlias;
 	private final String columnName;
+	
+	@Getter
 	private final String virtualColumnSql;
 
 	@Getter
@@ -92,6 +94,11 @@ public class SqlSelectValue
 		}
 	}
 
+	public boolean isVirtualColumn()
+	{
+		return virtualColumnSql != null;
+	}
+
 	public SqlSelectValue withJoinOnTableNameOrAlias(final String tableNameOrAlias)
 	{
 		final String tableNameOrAliasEffective = virtualColumnSql != null ? null : tableNameOrAlias;
@@ -104,6 +111,13 @@ public class SqlSelectValue
 	{
 		return !Objects.equals(this.columnNameAlias, columnNameAlias)
 				? toBuilder().columnNameAlias(columnNameAlias).build()
+				: this;
+	}
+
+	public SqlSelectValue withVirtualColumnSql(final String virtualColumnSql)
+	{
+		return !Objects.equals(this.virtualColumnSql, virtualColumnSql)
+				? toBuilder().virtualColumnSql(virtualColumnSql).build()
 				: this;
 	}
 }
