@@ -1,5 +1,9 @@
 package de.metas.banking.process;
 
+import java.sql.Timestamp;
+
+import org.compiere.model.I_C_PaySelection;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -13,11 +17,11 @@ package de.metas.banking.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,9 +37,6 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_PaySelection;
-
-import java.sql.Timestamp;
 
 /**
  * Create Payment Selection Lines from AP Invoices
@@ -46,9 +47,29 @@ import java.sql.Timestamp;
 public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPrecondition
 {
 	// services
-	private final transient IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
 	private IPaySelectionUpdater paySelectionUpdater;
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		final I_C_PaySelection paySelection = paySelectionDAO.retrievePaySelectionById(context.getSingleSelectedRecordId());
+		if (paySelection == null)
+		{
+			// to avoid NPE in case the document is new in webui, not yet saved
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		final DocStatus paySelectionDocStatus = DocStatus.ofNullableCodeOrUnknown(paySelection.getDocStatus());
+		if (!paySelectionDocStatus.isDraftedOrInProgress())
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected void prepare()
@@ -63,7 +84,7 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				;
+
 			}
 			else if (name.equals("OnlyDiscount"))
 			{
@@ -109,23 +130,7 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
-	{
-		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-
-		final I_C_PaySelection paySelection = paySelectionDAO.retrievePaySelectionById(context.getSingleSelectedRecordId());
-
-		final String paySelectionDocStatus = paySelection.getDocStatus();
-		if (paySelectionDocStatus.equals(DocStatus.Drafted.getCode()) || paySelectionDocStatus.equals(DocStatus.InProgress.getCode()))
-		{
-			return ProcessPreconditionsResolution.accept();
-		}
-
-		return ProcessPreconditionsResolution.reject();
-	}
-
-	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		paySelectionUpdater.setContext(this);
 		paySelectionUpdater.update();
