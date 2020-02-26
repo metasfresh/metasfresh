@@ -25,7 +25,6 @@ package de.metas.printing.process;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
@@ -57,10 +56,9 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 	/**
 	 * Create {@link I_C_Printing_Queue} selection by using {@link #getAD_PInstance_ID()} as current instance
 	 *
-	 * @param trxName transaction to be used when creating the selection
 	 * @return number of records selected
 	 */
-	protected abstract int createSelection(final String trxName);
+	protected abstract int createSelection();
 
 	@Override
 	protected String doIt()
@@ -115,7 +113,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 	protected List<IPrintingQueueSource> createPrintingQueueSources(final Properties ctxToUse)
 	{
 		// NOTE: we create the selection out of transaction because methods which are polling the printing queue are working out of transaction
-		final int selectionLength = createSelection(ITrx.TRXNAME_None);
+		final int selectionLength = createSelection();
 		if (selectionLength <= 0)
 		{
 			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_PRINTING_QUEUE_0P + "@");
@@ -124,7 +122,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 
 		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
-		query.setIsPrinted(false);
+		query.setFilterByProcessedQueueItems(false);
 		query.setOnlyAD_PInstance_ID(getPinstanceId());
 
 		return printingQueueBL.createPrintingQueueSources(ctxToUse, query);

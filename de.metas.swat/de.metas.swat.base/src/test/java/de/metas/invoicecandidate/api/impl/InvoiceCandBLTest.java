@@ -7,6 +7,7 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+
 /*
  * #%L
  * de.metas.swat.base
@@ -65,7 +66,6 @@ import de.metas.money.MoneyService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
@@ -414,7 +414,7 @@ public class InvoiceCandBLTest
 			final BigDecimal expectedQtyDelivered_Effective)
 	{
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
-		final I_C_Invoice_Candidate icRecord = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID()/*partner*/, 10/*priceEntered*/, 3/*qty*/, 10/*discount*/, false/*isManual*/, false/*isSOTrx*/);
+		final I_C_Invoice_Candidate icRecord = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID()/* partner */, 10/* priceEntered */, 3/* qty */, 10/* discount */, false/* isManual */, false/* isSOTrx */);
 
 		// the qtys we set here don't really matter; the invoice candidate will be updated
 		icRecord.setM_Product_ID(icTestSupport.getProductId().getRepoId());
@@ -456,7 +456,6 @@ public class InvoiceCandBLTest
 		iol2.setIsInDispute(true);
 		save(iol2);
 
-
 		final I_C_InvoiceCandidate_InOutLine icIol2 = InterfaceWrapperHelper.create(ctx, I_C_InvoiceCandidate_InOutLine.class, trxName);
 		icIol2.setC_Invoice_Candidate(icRecord);
 		invoiceCandBL.updateICIOLAssociationFromIOL(icIol2, iol2);
@@ -478,5 +477,4 @@ public class InvoiceCandBLTest
 	{
 		return Percent.of(discount).subtractFromBase(baseAmount, precision.toInt());
 	}
-
 }
