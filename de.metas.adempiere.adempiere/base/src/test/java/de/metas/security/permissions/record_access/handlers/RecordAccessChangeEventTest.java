@@ -72,6 +72,7 @@ public class RecordAccessChangeEventTest
 				.principal(Principal.userId(UserId.METASFRESH))
 				.permission(Access.READ)
 				.issuer(PermissionIssuer.MANUAL)
+				.createdBy(UserId.ofRepoId(111))
 				.build();
 	}
 

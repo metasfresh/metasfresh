@@ -1,12 +1,9 @@
-package de.metas.security.permissions.bpartner_hierarchy.handlers;
+package de.metas.security.permissions.record_access;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.jgoodies.common.base.Objects;
-
-import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,9 +11,9 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,21 +33,20 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class BPartnerDependentDocument
+public class RecordAccessCopyRequest
 {
 	@NonNull
-	TableRecordReference documentRef;
+	TableRecordReference target;
 
 	@Nullable
-	BPartnerId newBPartnerId;
+	TableRecordReference grantFrom;
+
 	@Nullable
-	BPartnerId oldBPartnerId;
-	
+	TableRecordReference revokeFrom;
+
 	@NonNull
-	UserId updatedBy;
+	PermissionIssuer issuer;
 
-	public boolean isBPartnerChanged()
-	{
-		return !Objects.equals(getOldBPartnerId(), getNewBPartnerId());
-	}
+	@NonNull
+	UserId requestedBy;
 }
