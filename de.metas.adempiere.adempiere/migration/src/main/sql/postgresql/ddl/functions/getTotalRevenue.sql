@@ -42,15 +42,15 @@ WITH t AS (
       AND i.AD_Org_ID = p_AD_Org_ID
       AND (p_DateFrom IS NULL OR i.DateInvoiced >= p_dateFrom)
       AND (p_DateTo IS NULL OR i.DateInvoiced <= p_dateTo))
-     ,
-      accounting as (
-                  SELECT C.c_currency_id
-                  FROM C_Currency C
-                           JOIN C_AcctSchema acc
-                                ON C.c_currency_id = acc.c_currency_id
-                           JOIN AD_ClientInfo ci ON ci.C_AcctSchema1_ID = acc.C_AcctSchema_ID
-                  WHERE ci.AD_Client_ID = p_AD_Client_ID
-              )
+        ,
+     accounting AS (
+         SELECT C.c_currency_id
+         FROM C_Currency C
+                  JOIN C_AcctSchema acc
+                       ON C.c_currency_id = acc.c_currency_id
+                  JOIN AD_ClientInfo ci ON ci.C_AcctSchema1_ID = acc.C_AcctSchema_ID
+         WHERE ci.AD_Client_ID = p_AD_Client_ID
+     )
 
 
 SELECT sum(
@@ -68,15 +68,20 @@ SELECT sum(
                    END
                    * t.multiplier)
 
-FROM t, accounting;
+FROM t,
+     accounting;
 
 
 $$
     LANGUAGE SQL STABLE;
 
--- TEST:
--- SELECT *
--- FROM getTotalRevenue(1000000 :: numeric,
---                      1000000 ::numeric,
---                       NULL :: date,
---                       NULL :: date) -- 7s
+COMMENT ON FUNCTION
+    getTotalRevenue
+    (NUMERIC, NUMERIC, date, date)
+    IS
+        '  TEST
+        SELECT *
+        FROM getTotalRevenue(1000000 :: numeric,
+                             1000000 ::numeric,
+                              NULL :: date,
+                              NULL :: date) ; ';

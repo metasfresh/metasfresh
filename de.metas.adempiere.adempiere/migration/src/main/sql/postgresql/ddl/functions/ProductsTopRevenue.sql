@@ -56,7 +56,9 @@ SELECT ROW_NUMBER() OVER (ORDER BY t.Revenue DESC NULLS LAST, t.ProductValue) ::
                                                    ELSE 0
               END), 2)                                                                   AS SalesPercentOfTotal
 
-from t, accounting, totals
+FROM t,
+     accounting,
+     totals
 
 ORDER BY Rang
 LIMIT (CASE
@@ -68,15 +70,13 @@ $$
 
 
 
-
-
-
--- TEST
--- SELECT *
--- FROM ProductsTopRevenue
---     (p_AD_Client_ID := 1000000,
---      p_AD_Org_ID := 1000000,
---      p_DateFrom := NULL,
---      p_DateTo := NULL,
---      p_Limit := -1,
---      p_AD_Language := 'de_DE') ----32 s 698 ms for 3797 products
+COMMENT ON FUNCTION ProductsTopRevenue(numeric, numeric, date, date, numeric, character varying) IS
+    '  TEST
+    SELECT *
+    FROM ProductsTopRevenue
+        (p_AD_Client_ID := 1000000,
+         p_AD_Org_ID := 1000000,
+         p_DateFrom := NULL,
+         p_DateTo := NULL,
+         p_Limit := -1,
+         p_AD_Language := ''de_DE''); ';
