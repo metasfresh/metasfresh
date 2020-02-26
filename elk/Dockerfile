@@ -16,7 +16,10 @@ RUN apt update --quiet --assume-yes \
 #RUN update-rc.d apm-server defaults
 
 COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 COPY elastic-post-hooks.sh /usr/local/bin/elastic-post-hooks.sh
+RUN chmod +x /usr/local/bin/elastic-post-hooks.sh
+
 
 # copy logstash config files
 COPY 01-tcp-input.conf /etc/logstash/conf.d/01-tcp-input.conf

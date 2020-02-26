@@ -1,0 +1,66 @@
+version: '2.4'
+
+services:
+  elk:
+    image: metasfresh/elk:latest
+    restart: always
+    ports:
+      - "127.0.0.1:5601:5601" #Kibana web interface
+      - "172.17.0.1:9200:9200" #Elasticsearch JSON interface  - only set for docker-compose v1
+      - "172.17.0.1:9300:9300" #Elasticsearch transport interface - only set for docker-compose v1
+      - "172.17.0.1:5000:5000" #Logstash appender - only set for docker-compose v1
+    volumes:
+      - ./volumes/elk/elasticsearch:/var/lib/elasticsearch
+    environment:
+      - ELK_INDEX_ROLLOVER_SIZE=1G
+      - ELK_INDEX_ROLLOVER_AGE=30d
+      - ELK_INDEX_DELETE_AGE=7d
+      - ELK_ELASTIC_HOSTNAME=localhost
+      - ELK_ELASTIC_JSON_PORT=9200
+    networks:
+      backend:
+        aliases:
+          - elk
+          - elasticsearch
+      connector:
+        aliases:
+          - elk
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.5.2
+    restart: always
+    depends_on:
+      elk:
+        condition: service_healthy
+    ports:
+      - "172.17.0.1:8200:8200" #apm-server port - only set for docker-compose v1
+    environment:
+      - output.elasticsearch.hosts=['http://elasticsearch:9200']
+      - apm-server.host="0.0.0.0:8200"
+      - apm-server.secret_token="SUPERSECRETPASSWORDTOKEN"
+      - setup.kibana.host="elasticsearch:5601"
+      - setup.template.enabled=true
+      - logging.to_files=false
+    networks:
+      backend:
+        aliases:
+          - apm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8200"]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+networks:
+  backend:
+  connector:
