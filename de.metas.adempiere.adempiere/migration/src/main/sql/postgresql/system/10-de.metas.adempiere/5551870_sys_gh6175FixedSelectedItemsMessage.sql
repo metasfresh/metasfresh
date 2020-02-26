@@ -23,3 +23,17 @@ UPDATE AD_Message_Trl SET MsgText='%(size)s Zeile(n) ausgewählt',Updated=TO_TIM
 UPDATE AD_Message SET MsgText='%(size)s Zeile(n) ausgewählt',Updated=TO_TIMESTAMP('2020-02-12 15:34:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544378
 ;
 
+-- 2020-02-26T10:54:06.224Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Alle Zeilen dieser Seite auswählen',Updated=TO_TIMESTAMP('2020-02-26 12:54:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544377
+;
+
+-- 2020-02-26T10:54:10.405Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-02-26 12:54:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544377
+;
+
+-- 2020-02-26T10:54:13.701Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Alle Zeilen dieser Seite auswählen',Updated=TO_TIMESTAMP('2020-02-26 12:54:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=544377
+;
