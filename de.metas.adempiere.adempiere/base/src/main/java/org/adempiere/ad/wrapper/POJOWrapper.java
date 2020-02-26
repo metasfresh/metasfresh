@@ -225,7 +225,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-
 	/**
 	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
 	 * assumed when running against a DB and should also be made sure when running unti tests in decoupled mode.
@@ -1275,7 +1274,12 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return true;
 		}
 
-		final Object value = wrapper.getValue(columnName, Object.class);
+		return wrapper.isNull(columnName);
+	}
+
+	public boolean isNull(final String columnName)
+	{
+		final Object value = getValue(columnName, Object.class);
 		if (value == null)
 		{
 			return true;
@@ -1587,7 +1591,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final int valueInt = Integer.parseInt(value.toString());
 			return Integer.max(valueInt, idForNewModel(columnName));
 		}
-		else if(value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware)
 		{
 			return ((RepoIdAware)value).getRepoId();
 		}

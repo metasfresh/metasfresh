@@ -1,7 +1,5 @@
 package org.adempiere.ad.wrapper;
 
-import static org.adempiere.model.InterfaceWrapperHelper.hasChanges;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -403,14 +401,18 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					wrapper.setId(id);
 
 					wrapper.setValue(COLUMNNAME_Created, now);
-					wrapper.setValue(COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
-					wrapper.setValue(COLUMNNAME_Updated, now);
-					wrapper.setValue(COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
+					if (wrapper.isNull(COLUMNNAME_CreatedBy))
+					{
+						wrapper.setValue(COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
+					}
 				}
-				if (hasChanges(model))
+				if (isNew || wrapper.hasChanges())
 				{
 					wrapper.setValue(COLUMNNAME_Updated, now);
-					wrapper.setValue(COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
+					if (wrapper.isNull(COLUMNNAME_UpdatedBy))
+					{
+						wrapper.setValue(COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
+					}
 				}
 
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
