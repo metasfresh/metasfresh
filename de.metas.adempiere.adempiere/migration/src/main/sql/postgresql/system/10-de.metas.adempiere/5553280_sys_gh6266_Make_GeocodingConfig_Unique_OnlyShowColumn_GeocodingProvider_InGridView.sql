@@ -25,6 +25,6 @@ INSERT INTO AD_Index_Column (Created,CreatedBy,Updated,AD_Client_ID,AD_Index_Tab
 
 -- 2020-02-26T09:57:54.189Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX GeocodingConfig_Unique ON GeocodingConfig (IsActive)
+CREATE UNIQUE INDEX GeocodingConfig_Unique ON GeocodingConfig (IsActive) WHERE IsActive='Y'
 ;
 
