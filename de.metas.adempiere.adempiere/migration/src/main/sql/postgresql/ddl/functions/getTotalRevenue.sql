@@ -16,6 +16,7 @@ WITH t AS (
     SELECT il.M_Product_ID,
            i.DateInvoiced,
            i.C_Currency_ID,
+           i.C_ConversionType_ID,
            CASE
                WHEN dt.DocBaseType IN ('ARC', 'APC') -- subtract credit memos
                    THEN -1
@@ -54,19 +55,15 @@ WITH t AS (
 
 
 SELECT sum(
-                   CASE
-                       WHEN (t.C_Currency_ID <> accounting.C_Currency_ID)
-                           THEN currencyBase
-                           (
-                               t.amt,
-                               t.C_Currency_ID, -- currencyFrom
-                               t.DateInvoiced, -- date
-                               p_AD_Client_ID,
-                               p_AD_Org_ID
-                           )
-                           ELSE t.amt
-                   END
-                   * t.multiplier)
+                   t.multiplier *
+                   currencyconvert(
+                           p_amount := t.amt,
+                           p_curfrom_id := t.C_Currency_ID,
+                           p_curto_ID := accounting.c_currency_id,
+                           p_convdate := t.DateInvoiced,
+                           p_conversiontype_id := t.c_conversiontype_id,
+                           p_client_id := p_AD_Client_ID,
+                           p_org_id := p_AD_Org_ID))
 
 FROM t,
      accounting;
@@ -79,7 +76,7 @@ COMMENT ON FUNCTION
     getTotalRevenue
     (NUMERIC, NUMERIC, date, date)
     IS
-        '  TEST
+        '-- TEST
         SELECT *
         FROM getTotalRevenue(1000000 :: numeric,
                              1000000 ::numeric,
