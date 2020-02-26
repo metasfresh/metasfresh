@@ -80,6 +80,7 @@ import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -93,7 +94,9 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
 	private static final String COLUMNNAME_Created = "Created";
+	private static final String COLUMNNAME_CreatedBy = "CreatedBy";
 	private static final String COLUMNNAME_Updated = "Updated";
+	private static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
@@ -393,17 +396,21 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				fireModelChanged(model, isNew ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
 				final Timestamp now = SystemTime.asTimestamp();
+				final UserId loggedUserId = Env.getLoggedUserIdIfExists(wrapper.getCtx()).orElse(UserId.SYSTEM);
 				if (isNew)
 				{
 					id = nextId(tableName);
 					wrapper.setId(id);
 
 					wrapper.setValue(COLUMNNAME_Created, now);
+					wrapper.setValue(COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
 					wrapper.setValue(COLUMNNAME_Updated, now);
+					wrapper.setValue(COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
 				}
 				if (hasChanges(model))
 				{
 					wrapper.setValue(COLUMNNAME_Updated, now);
+					wrapper.setValue(COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
 				}
 
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
