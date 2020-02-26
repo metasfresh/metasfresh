@@ -21,7 +21,7 @@ class MultiSelect extends Component {
       nextProps.selectedItems && Array.isArray(nextProps.selectedItems)
         ? nextProps.selectedItems
         : valuesPart;
-    if (selected !== null) {
+    if (selected !== null && typeof selected !== 'undefined') {
       let updatedCheckedItems = {};
       selected.map((item) => {
         if (item) {
