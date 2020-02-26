@@ -1,8 +1,19 @@
 package de.metas.banking.process;
 
-import java.sql.Timestamp;
-
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.document.engine.DocStatus;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_C_PaySelection;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -25,22 +36,6 @@ import org.compiere.model.I_C_PaySelection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.document.engine.DocStatus;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.model.I_C_PaySelection;
-
-import java.sql.Timestamp;
 
 /**
  * Create Payment Selection Lines from AP Invoices
