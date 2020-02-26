@@ -10,32 +10,30 @@ package de.metas.banking.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
+import org.compiere.model.I_C_PaySelection;
 
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_PaySelection;
-
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
-import de.metas.process.JavaProcess;
-
 /**
  * Create Payment Selection Lines from AP Invoices
- * 
+ *
  * @author tsa
  * @task 08972
  */

@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -53,6 +52,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private static final transient Logger log = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	// private static final String INV_WITH_PO = "P";
 	// private static final String INV_WITH_PAY_RECEIPT = "R";
@@ -175,7 +175,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				setTrxName(localTrxName);
 
 				update0();
-				CacheMgt.get().reset();
 			}
 
 			@Override
@@ -712,9 +711,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	 */
 	private void cacheInvalidationForCurrentPaySelection()
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		modelCacheInvalidationService.invalidate(
-				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, _paySelection.getC_PaySelection_ID()),
+				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getC_PaySelection_ID()),
 				ModelCacheInvalidationTiming.CHANGE);
 	}
 
