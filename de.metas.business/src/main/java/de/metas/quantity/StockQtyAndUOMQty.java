@@ -78,7 +78,7 @@ public class StockQtyAndUOMQty
 				.build();
 	}
 
-	private static Quantity addNullables(final Quantity qty1, final Quantity qty2)
+	private static Quantity addNullables(@Nullable final Quantity qty1, @Nullable final Quantity qty2)
 	{
 		if (qty1 != null)
 		{
