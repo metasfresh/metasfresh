@@ -164,7 +164,6 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, commissionShareRecord);
 
 		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
-
 		icRecord.setAD_Org_ID(orgId.getRepoId());
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
@@ -175,7 +174,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(FlatrateTermId.ofRepoId(commissionShareRecord.getC_Flatrate_Term_ID()));
 
 		// product
-		icRecord.setM_Product_ID(CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId());
+		final ProductId commissionProductId = ProductId.ofRepoId(commissionShareRecord.getCommission_Product_ID());
+		icRecord.setM_Product_ID(commissionProductId.getRepoId());
 
 		setOrderedData(icRecord, commissionShareRecord);
 		setDeliveredData(icRecord);
@@ -192,9 +192,9 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						orgId,
-						CommissionConstants.COMMISSION_PRODUCT_ID,
+						commissionProductId,
 						bPartnerId,
-						Quantitys.create(ONE, CommissionConstants.COMMISSION_PRODUCT_ID),
+						Quantitys.create(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
@@ -234,7 +234,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
 				ClientId.ofRepoId(commissionShareRecord.getAD_Client_ID()),
 				orgId,
-				CommissionConstants.COMMISSION_PRODUCT_ID);
+				commissionProductId);
 		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		// tax
@@ -250,7 +250,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					Env.getCtx(),
 					icRecord, // model
 					pricingResult.getTaxCategoryId(),
-					CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId(),
+					commissionProductId.getRepoId(),
 					icRecord.getDeliveryDate(),
 					orgId,
 					(WarehouseId)null,

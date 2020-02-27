@@ -22,11 +22,13 @@
 
 package de.metas.contracts.commission.commissioninstance.services;
 
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import lombok.NonNull;
 
 @Service
 public class CommissionInstanceService
@@ -35,16 +37,24 @@ public class CommissionInstanceService
 
 	private final CommissionAlgorithmInvoker commissionAlgorithmInvoker;
 
-	public CommissionInstanceService(final CommissionInstanceRequestFactory commissionInstanceRequestFactory, final CommissionAlgorithmInvoker commissionAlgorithmInvoker)
+	public CommissionInstanceService(
+			@NonNull final CommissionInstanceRequestFactory commissionInstanceRequestFactory,
+			@NonNull final CommissionAlgorithmInvoker commissionAlgorithmInvoker)
 	{
 		this.commissionInstanceRequestFactory = commissionInstanceRequestFactory;
 		this.commissionAlgorithmInvoker = commissionAlgorithmInvoker;
 	}
 
-	public Optional<CommissionInstance> getCommissionInstanceFor(final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
+	public ImmutableList<CommissionInstance> getCommissionInstanceFor(
+			@NonNull final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
 	{
-		final Optional<CreateInstanceRequest> createInstanceRequest = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
+		final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
 
-		return createInstanceRequest.map(commissionAlgorithmInvoker::applyCreateRequest);
+		final ImmutableList.Builder<CommissionInstance> result = ImmutableList.builder();
+		for (final CreateInstanceRequest request : requests)
+		{
+			result.add(commissionAlgorithmInvoker.applyCreateRequest(request));
+		}
+		return result.build();
 	}
 }

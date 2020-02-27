@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
@@ -39,6 +38,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,9 +52,9 @@ import static java.math.BigDecimal.ONE;
 @Service
 public class CommissionPointsService
 {
-	public Optional<Money> getCommissionPointsValue( @NonNull final CommissionPoints commissionPoints,
-													 @NonNull final FlatrateTermId flatrateTermId,
-													 @NonNull final LocalDate priceDate )
+	public Optional<Money> getCommissionPointsValue(@NonNull final CommissionPoints commissionPoints,
+			@NonNull final FlatrateTermId flatrateTermId,
+			@NonNull final LocalDate priceDate)
 	{
 		final IPricingResult pricingResult = calculateCommissionPointPriceFor(flatrateTermId, priceDate);
 
@@ -64,13 +64,15 @@ public class CommissionPointsService
 		}
 
 		final Money customerTradeMarginAmount = Money.of(
-				pricingResult.getPriceStd().multiply( commissionPoints.getPoints() ),
-				pricingResult.getCurrencyId() );
+				pricingResult.getPriceStd().multiply(commissionPoints.getPoints()),
+				pricingResult.getCurrencyId());
 
 		return Optional.of(customerTradeMarginAmount);
 	}
 
-	private IPricingResult calculateCommissionPointPriceFor(final FlatrateTermId flatrateTermId, final LocalDate requestedDate)
+	private IPricingResult calculateCommissionPointPriceFor(
+			@NonNull final FlatrateTermId flatrateTermId,
+			@NonNull final LocalDate requestedDate)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -81,18 +83,21 @@ public class CommissionPointsService
 
 		final BPartnerLocationId commissionToLocationId = BPartnerLocationId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId( flatrateTerm.getBill_BPartner_ID() );
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID());
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
 
+		// TODO migrate
+		final ProductId commissionProductId = ProductId.ofRepoId(flatrateTerm.getM_Product_ID());
+
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
-						OrgId.ofRepoId( flatrateTerm.getAD_Org_ID() ),
-						CommissionConstants.COMMISSION_PRODUCT_ID,
+						OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
+						commissionProductId,
 						bPartnerId,
-						Quantitys.create(ONE, CommissionConstants.COMMISSION_PRODUCT_ID),
+						Quantitys.create(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
 				.setPriceDate(requestedDate);
