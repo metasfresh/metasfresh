@@ -61,7 +61,7 @@ WITH t AS (
                         END AS amt,
 
                         CASE
-                            WHEN il.c_uom_id <> p.C_UOM_ID
+                            WHEN il.c_uom_id <> p.C_UOM_ID -- Only convert the UOM if it's not the same one. The uomconvert function is very time consuming.
                                 THEN
                                 uomconvert(il.M_Product_ID, il.c_uom_id, p.C_UOM_ID, il.qtyInvoiced)
                                 ELSE il.qtyInvoiced
