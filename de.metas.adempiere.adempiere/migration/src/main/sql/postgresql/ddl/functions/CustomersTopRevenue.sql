@@ -95,3 +95,16 @@ COMMENT ON FUNCTION CustomersTopRevenue(NUMERIC, NUMERIC, DATE, DATE, INTEGER) I
          p_DateFrom := ''2020-01-01'',
          p_DateTo := ''2020-05-05'',
          p_Limit := -1); ';
+
+
+/* TEST:
+
+ SELECT *
+    FROM CustomersTopRevenue
+        (p_AD_Client_ID := 1000000,
+         p_AD_Org_ID := 1000000,
+         p_DateFrom := '2020-01-01',
+         p_DateTo := '2020-05-05',
+         p_Limit := -1);
+
+*/

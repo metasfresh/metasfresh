@@ -81,3 +81,15 @@ COMMENT ON FUNCTION getCustomerRevenue(numeric, numeric, numeric, date, date) IS
 
      FROM C_BPartner; ';
 
+/* TEST:
+
+ SELECT C_BPartner_ID,
+            getCustomerRevenue(C_BPartner_ID,
+                               1000000,
+                               1000000,
+                               NULL,
+                               NULL)
+
+     FROM C_BPartner ;
+
+*/

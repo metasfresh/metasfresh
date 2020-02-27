@@ -15,16 +15,16 @@ DECLARE
     v_orgNotSet boolean;
     v_dateType  text;
 BEGIN
-    SELECT INTO v_orgNotSet COALESCE(p_AD_Org_ID, 0) < 0;
+    v_orgNotSet := COALESCE(p_AD_Org_ID, 0) <= 0;
 
-    SELECT INTO v_dateType CASE
-                               WHEN p_UseDateAcct = 'Y' THEN 'A'
-                                                        ELSE 'T'
-                           END;
+    v_dateType := CASE
+                      WHEN p_UseDateAcct = 'Y' THEN 'A'
+                                               ELSE 'T'
+                  END;
+
     WITH t AS
              (SELECT i.C_Invoice_ID,
                      ips.C_InvoicePaySchedule_ID
-
               FROM C_Invoice i
                        LEFT OUTER JOIN C_InvoicePaySchedule ips
                                        ON i.C_Invoice_ID = ips.C_Invoice_ID
@@ -77,3 +77,19 @@ COMMENT ON FUNCTION getBPOpenAmtToDate(numeric, numeric, date, numeric, numeric,
                                ''Y'')
 
      FROM C_Bpartner ; ';
+
+/* TEST:
+
+SELECT value,
+       C_Bpartner_ID,
+       getBPOpenAmtToDate(1000000,
+                          1000000,
+                          '9999-01-01' :: date,
+                          C_BPartner_ID,
+                          318,
+                           'Y',
+                           'Y')
+
+ FROM C_Bpartner ;
+
+*/

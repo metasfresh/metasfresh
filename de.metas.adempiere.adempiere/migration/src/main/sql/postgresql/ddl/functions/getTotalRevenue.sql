@@ -76,9 +76,19 @@ COMMENT ON FUNCTION
     getTotalRevenue
     (NUMERIC, NUMERIC, date, date)
     IS
-        '-- TEST
+        ' TEST :
         SELECT *
         FROM getTotalRevenue(1000000 :: numeric,
                              1000000 ::numeric,
                               NULL :: date,
                               NULL :: date) ; ';
+
+/* TEST:
+
+ SELECT *
+        FROM getTotalRevenue(1000000 :: numeric,
+                             1000000 ::numeric,
+                              NULL :: date,
+                              NULL :: date) ;
+
+*/
