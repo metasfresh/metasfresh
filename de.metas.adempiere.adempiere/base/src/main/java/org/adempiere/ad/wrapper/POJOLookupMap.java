@@ -394,16 +394,24 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				{
 					id = nextId(tableName);
 					wrapper.setId(id);
-
-					wrapper.setValue(POJOWrapper.COLUMNNAME_Created, now);
-					if (wrapper.getValue(POJOWrapper.COLUMNNAME_CreatedBy, Object.class, false/* enforceStrictValues */) == null)
-					{
-						wrapper.setValue(POJOWrapper.COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
-					}
 				}
-				if (isNew || wrapper.hasChanges())
+
+				if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_Created))
+				{
+					wrapper.setValue(POJOWrapper.COLUMNNAME_Created, now);
+				}
+				if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_CreatedBy))
+				{
+					wrapper.setValue(POJOWrapper.COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
+				}
+
+				final boolean hasChanges = wrapper.hasChanges();
+				if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_Updated))
 				{
 					wrapper.setValue(POJOWrapper.COLUMNNAME_Updated, now);
+				}
+				if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_UpdatedBy))
+				{
 					wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
 				}
 

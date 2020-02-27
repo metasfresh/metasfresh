@@ -3,6 +3,9 @@ package org.adempiere.ad.wrapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Properties;
 
 /*
  * #%L
@@ -33,8 +36,14 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import de.metas.user.UserId;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
 
 public class POJOWrapperTests
 {
@@ -106,6 +115,30 @@ public class POJOWrapperTests
 	{
 		assertThat(POJOWrapper.DEFAULT_VALUE_int).isEqualTo(0);
 		assertThat(POJOWrapper.DEFAULT_VALUE_BigDecimal).isEqualTo(BigDecimal.ZERO);
+	}
+
+	@Nested
+	public class created_and_updated_handling
+	{
+		@Test
+		public void presetID()
+		{
+			final UserId userId = UserId.ofRepoId(111);
+			SystemTime.setTimeSource(new FixedTimeSource(LocalDate.of(2020, Month.FEBRUARY, 27).atStartOfDay()));
+
+			final Properties ctx = contextProvider.getCtx();
+			Env.setLoggedUserId(ctx, userId);
+
+			final ITable1 record = POJOWrapper.create(ctx, ITable1.class);
+			record.setTable1_ID(12345);
+			POJOWrapper.save(record);
+
+			final POJOWrapper wrapper = POJOWrapper.getWrapper(record);
+			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_CreatedBy, Object.class)).isEqualTo(userId.getRepoId());
+			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_Created, Object.class)).isEqualTo(TimeUtil.getDay(2020, 02, 27));
+			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_UpdatedBy, Object.class)).isEqualTo(userId.getRepoId());
+			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_Updated, Object.class)).isEqualTo(TimeUtil.getDay(2020, 02, 27));
+		}
 	}
 
 	@Test

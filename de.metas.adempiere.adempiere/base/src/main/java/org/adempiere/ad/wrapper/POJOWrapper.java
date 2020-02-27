@@ -1284,7 +1284,17 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public boolean isNull(final String columnName)
 	{
-		final Object value = getValue(columnName, Object.class);
+		return isNull(columnName, strictValues);
+	}
+
+	boolean isNullNotStrict(final String columnName)
+	{
+		return isNull(columnName, false /* enforceStrictValues */);
+	}
+
+	private boolean isNull(final String columnName, final boolean enforceStrictValues)
+	{
+		final Object value = getValue(columnName, Object.class, enforceStrictValues);
 		if (value == null)
 		{
 			return true;
