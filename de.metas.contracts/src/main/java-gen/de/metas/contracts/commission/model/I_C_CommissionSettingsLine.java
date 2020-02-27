@@ -88,7 +88,7 @@ public interface I_C_CommissionSettingsLine
     public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set C_CommissionSettingsLine.
+	 * Set Einstellungsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -97,7 +97,7 @@ public interface I_C_CommissionSettingsLine
 	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
 
 	/**
-	 * Get C_CommissionSettingsLine.
+	 * Get Einstellungsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -217,7 +217,7 @@ public interface I_C_CommissionSettingsLine
 	 * Set % der Basispunkte.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPercentOfBasePoints (java.math.BigDecimal PercentOfBasePoints);
@@ -226,7 +226,7 @@ public interface I_C_CommissionSettingsLine
 	 * Get % der Basispunkte.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getPercentOfBasePoints();

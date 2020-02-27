@@ -15,7 +15,7 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -779056953L;
+	private static final long serialVersionUID = -2017781349L;
 
     /** Standard Constructor */
     public X_C_CommissionSettingsLine (Properties ctx, int C_CommissionSettingsLine_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
         {
 			setC_CommissionSettingsLine_ID (0);
 			setC_HierarchyCommissionSettings_ID (0);
+			setPercentOfBasePoints (BigDecimal.ZERO);
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM C_CommissionSettingsLine WHERE C_HierarchyCommissionSettings=@C_HierarchyCommissionSettings@
         } */
     }
@@ -81,8 +82,8 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
-	/** Set C_CommissionSettingsLine.
-		@param C_CommissionSettingsLine_ID C_CommissionSettingsLine	  */
+	/** Set Einstellungsdetail.
+		@param C_CommissionSettingsLine_ID Einstellungsdetail	  */
 	@Override
 	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID)
 	{
@@ -92,8 +93,8 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 			set_ValueNoCheck (COLUMNNAME_C_CommissionSettingsLine_ID, Integer.valueOf(C_CommissionSettingsLine_ID));
 	}
 
-	/** Get C_CommissionSettingsLine.
-		@return C_CommissionSettingsLine	  */
+	/** Get Einstellungsdetail.
+		@return Einstellungsdetail	  */
 	@Override
 	public int getC_CommissionSettingsLine_ID () 
 	{

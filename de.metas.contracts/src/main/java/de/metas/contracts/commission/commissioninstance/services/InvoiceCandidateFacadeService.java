@@ -1,9 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import de.metas.contracts.commission.CommissionConstants;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -57,22 +58,17 @@ public class InvoiceCandidateFacadeService
 			final boolean candidateDeleted)
 	{
 		final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getById(invoiceCandidateId);
-		final int icProductRepoId = icRecord.getM_Product_ID();
 
-		if (icProductRepoId <= 0 /* ic can't belong to a commission contract */ )
-		{
-			logger.debug("ic has M_Product_ID={} is <= 0; -> nothing to do", icProductRepoId);
-			return; // nothing to do
-		}
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(icRecord.getAD_Table_ID());
 
-		if (CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId() == icProductRepoId)
+		if (I_C_Commission_Share.Table_Name.equals(tableName))
 		{
-			logger.debug("ic has M_Product_ID={} is ==COMMISSION_PRODUCT_ID; -> invoke SettlementInvoiceCandidateService", icProductRepoId);
+			logger.debug("ic references a record from AD_Table.TableName={}; -> invoke SettlementInvoiceCandidateService", tableName);
 			settlementInvoiceCandidateService.syncSettlementICToCommissionInstance(invoiceCandidateId, candidateDeleted);
 		}
 		else
 		{
-			logger.debug("ic has M_Product_ID={} is !=COMMISSION_PRODUCT_ID; -> invoke SalesInvoiceCandidateService", icProductRepoId);
+			logger.debug("ic references a record from AD_Table.TableName={}; -> invoke SalesInvoiceCandidateService", tableName);
 			invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId, candidateDeleted);
 		}
 	}

@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
@@ -41,6 +43,7 @@ import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
 import io.github.jsonSnapshot.SnapshotMatcher;
 
@@ -74,10 +77,17 @@ class CommissionSettlementShareRepositoryTest
 
 	private long currentTimestamp = START_TIMESTAMP;
 
+	private ProductId commissionProductId;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		final I_M_Product commissionProductRecord = newInstance(I_M_Product.class);
+		saveRecord(commissionProductRecord);
+		commissionProductId = ProductId.ofRepoId(commissionProductRecord.getM_Product_ID());
+
 		commissionSettlementShareRepository = new CommissionSettlementShareRepository();
 	}
 
@@ -104,6 +114,7 @@ class CommissionSettlementShareRepositoryTest
 		final ConfigData configData = ConfigTestRecord.builder()
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
+				.commissionProductId(commissionProductId)
 				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
 				.build()
 				.createConfigData();
@@ -117,6 +128,7 @@ class CommissionSettlementShareRepositoryTest
 				.pointsBase_Invoiced("999")
 				.commissionShareTestRecord(
 						CommissionShareTestRecord.builder()
+								.commissionProductId(commissionProductId)
 								.C_BPartner_SalesRep_ID(bpartnerIdAndFlatrateTermId.getKey())
 								.flatrateTermId(bpartnerIdAndFlatrateTermId.getValue())
 								.levelHierarchy(10)
@@ -164,10 +176,11 @@ class CommissionSettlementShareRepositoryTest
 		saveRecord(settlementICRecord);
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
 
-		 final ConfigData configData = ConfigTestRecord.builder()
+		final ConfigData configData = ConfigTestRecord.builder()
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
+				.commissionProductId(commissionProductId)
 				.build()
 				.createConfigData();
 		assertThat(configData.getBpartnerId2FlatrateTermId().entrySet()).hasSize(1); // guard
@@ -180,6 +193,7 @@ class CommissionSettlementShareRepositoryTest
 				.pointsBase_Invoiced("999")
 				.commissionShareTestRecord(
 						CommissionShareTestRecord.builder()
+								.commissionProductId(commissionProductId)
 								.C_BPartner_SalesRep_ID(bpartnerIdAndFlatrateTermId.getKey())
 								.flatrateTermId(bpartnerIdAndFlatrateTermId.getValue())
 								.levelHierarchy(10)

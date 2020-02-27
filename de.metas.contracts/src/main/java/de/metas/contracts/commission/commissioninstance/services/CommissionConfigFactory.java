@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -112,7 +110,7 @@ public class CommissionConfigFactory
 	{
 		final StagingData stagingData = commissionConfigStagingDataService.retrieveStagingData(termRecords);
 
-		final ImmutableMap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = stagingData.getBPartnerId2FlatrateTermIds();
+		final ImmutableListMultimap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = stagingData.getBPartnerId2FlatrateTermIds();
 		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = stagingData.getConditionRecordId2BPartnerIds();
 
 		final ImmutableList.Builder<CommissionConfig> commissionConfigs = ImmutableList.<CommissionConfig> builder();
@@ -127,17 +125,25 @@ public class CommissionConfigFactory
 			final I_C_HierarchyCommissionSettings settingsRecord = stagingData.getId2SettingsRecord().get(settingsId);
 			final HierarchyConfigBuilder builder = HierarchyConfig
 					.builder()
+					.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
 					.subtractLowerLevelCommissionFromBase(settingsRecord.isSubtractLowerLevelCommissionFromBase());
 
-			for (final Integer termId : settingsId2TermsIds.getValue())
+			for (final Integer termRepoId : settingsId2TermsIds.getValue())
 			{
-				final I_C_Flatrate_Term termRecord = stagingData.getId2TermRecord().get(termId);
+				final I_C_Flatrate_Term termRecord = stagingData.getId2TermRecord().get(termRepoId);
+
+				final FlatrateTermId termId = FlatrateTermId.ofRepoId(termRepoId);
 
 				final ImmutableList<BPartnerId> bPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
 				for (final BPartnerId bPartnerId : bPartnerIds)
 				{
+					if (!bPartnerId2FlatrateTermIds.get(bPartnerId).contains(termId))
+					{
+						continue;
+					}
+
 					final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
-							.id(bPartnerId2FlatrateTermIds.get(bPartnerId))
+							.id(termId)
 							.pointsPrecision(settingsRecord.getPointsPrecision());
 
 					boolean foundMatchingSettingsLine = false;
