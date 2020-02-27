@@ -140,8 +140,7 @@ public final class JSONLookupValue
 				.description(description)
 				.active(active);
 
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
+		@SuppressWarnings("unchecked") final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes != null && !attributes.isEmpty())
 		{
 			builder.attributes(attributes);
@@ -158,17 +157,15 @@ public final class JSONLookupValue
 		final ITranslatableString displayName = extractCaption(map);
 		final ITranslatableString description = extractDescription(map);
 		final Boolean active = extractActive(map);
-		final ValueNamePairValidationInformation validationInformation = extractValidationInformation(map);
 
 		final StringLookupValueBuilder builder = StringLookupValue.builder()
 				.id(key)
 				.displayName(displayName)
 				.description(description)
 				.active(active)
-				.validationInformation(validationInformation);
+				.validationInformation(null); //TODO: Extract this from map for future usages
 
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
+		@SuppressWarnings("unchecked") final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes != null && !attributes.isEmpty())
 		{
 			builder.attributes(attributes);
@@ -191,13 +188,6 @@ public final class JSONLookupValue
 		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
 		final ITranslatableString description = TranslatableStrings.anyLanguage(descriptionStr);
 		return description;
-	}
-
-	private static ValueNamePairValidationInformation extractValidationInformation(@NonNull final Map<String, Object> map)
-	{
-		final Object validationInformationObj = map.get(PROPERTY_ValidationInformation);
-		final ValueNamePairValidationInformation validationInformation = (ValueNamePairValidationInformation)validationInformationObj;
-		return validationInformation;
 	}
 
 	private static Boolean extractActive(@NonNull final Map<String, Object> map)
