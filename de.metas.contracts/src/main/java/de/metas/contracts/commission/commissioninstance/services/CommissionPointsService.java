@@ -89,7 +89,6 @@ public class CommissionPointsService
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
 
-		// TODO migrate
 		final ProductId commissionProductId = ProductId.ofRepoId(flatrateTerm.getM_Product_ID());
 
 		final IEditablePricingContext pricingContext = pricingBL
