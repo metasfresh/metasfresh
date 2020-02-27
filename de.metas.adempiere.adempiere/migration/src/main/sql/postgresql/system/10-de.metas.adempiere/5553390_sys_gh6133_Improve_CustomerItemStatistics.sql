@@ -1,3 +1,42 @@
+-- DROP FUNCTION getCostPrice(numeric, numeric, numeric);
+
+CREATE OR REPLACE FUNCTION getCostPrice
+(
+	p_M_Product_ID numeric,
+	p_AD_Client_ID numeric,
+	p_AD_Org_ID numeric
+) 
+RETURNS numeric 
+AS
+$BODY$
+	SELECT COALESCE(sum(cost.CurrentCostPrice), 0)
+	FROM M_Cost cost
+	INNER JOIN C_AcctSchema acs on acs.C_AcctSchema_ID=cost.C_AcctSchema_ID
+	INNER JOIN M_CostElement ce on cost.M_CostElement_ID = ce.M_CostElement_ID
+
+	WHERE cost.M_Product_ID = p_M_Product_ID
+	AND cost.AD_Client_ID = p_AD_Client_ID
+	AND cost.AD_Org_ID = p_AD_Org_ID
+	AND cost.C_AcctSchema_ID = (select ci.C_AcctSchema1_ID from AD_ClientInfo ci where ci.AD_Client_ID = p_AD_Client_ID)
+	AND ce.CostingMethod = acs.CostingMethod
+	--
+	UNION ALL
+	(
+		SELECT 0
+	)
+	LIMIT 1
+$BODY$
+LANGUAGE sql STABLE
+;
+
+
+COMMENT ON FUNCTION getCostPrice(numeric, numeric, numeric) IS
+    '  -- TEST :
+SELECT M_Product_ID, getCostPrice(M_Product_ID, 1000000, 1000000) from M_Product; '
+;
+
+
+
 DROP FUNCTION IF EXISTS customerItemStatistics(numeric, numeric, DATE, DATE, numeric, numeric);
 DROP FUNCTION IF EXISTS customerItemStatistics(numeric, numeric, DATE, DATE, numeric, numeric, character varying);
 
@@ -29,10 +68,10 @@ $$
 
 WITH t AS (
     WITH accounting AS (
-        SELECT c.C_Currency_ID, c.ISO_Code
-        FROM AD_ClientInfo ci
-                 JOIN C_AcctSchema acc ON ci.C_AcctSchema1_ID = acc.C_AcctSchema_ID
-                 JOIN C_Currency c ON acc.c_currency_id = c.c_currency_id
+        SELECT c.C_Currency_ID, ISO_Code
+        FROM C_Currency c
+                 JOIN C_AcctSchema acc ON c.c_currency_id = acc.c_currency_id
+                 JOIN AD_ClientInfo ci ON ci.C_AcctSchema1_ID = acc.C_AcctSchema_ID
         WHERE ci.AD_Client_ID = p_AD_Client_ID
     ),
          InvoiceLines AS
@@ -53,19 +92,14 @@ WITH t AS (
                                 THEN -1
                                 ELSE
                                 1
-                        END AS multiplier,
+                        END                                                                  AS multiplier,
 
                         CASE
                             WHEN i.IsTaxIncluded = 'Y' THEN il.LineNetAmt - il.TaxAmtInfo
                                                        ELSE il.LineNetAmt
-                        END AS amt,
+                        END                                                                  AS amt,
 
-                        CASE
-                            WHEN il.c_uom_id <> p.C_UOM_ID -- Only convert the UOM if it's not the same one. The uomconvert function is very time consuming.
-                                THEN
-                                uomconvert(il.M_Product_ID, il.c_uom_id, p.C_UOM_ID, il.qtyInvoiced)
-                                ELSE il.qtyInvoiced
-                        END AS QtyInvoiced
+                        uomconvert(il.M_Product_ID, il.c_uom_id, p.C_UOM_ID, il.qtyInvoiced) AS QtyInvoiced
 
 
                  FROM C_InvoiceLine il
@@ -149,18 +183,4 @@ COMMENT ON FUNCTION customerItemStatistics(NUMERIC, NUMERIC, DATE, DATE, NUMERIC
     ''de_DE''); ';
 
 
-/* TEST:
-DROP TABLE IF EXISTS TMP_customerItemStatistics;
-CREATE TEMPORARY TABLE TMP_customerItemStatistics AS
-SELECT *
-FROM customerItemStatistics(
-        1000000,
-        1000000,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        'de_DE');
-SELECT *
-FROM TMP_customerItemStatistics;
- */
+
