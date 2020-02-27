@@ -91,11 +91,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
 
-	private static final String COLUMNNAME_Created = "Created";
-	private static final String COLUMNNAME_CreatedBy = "CreatedBy";
-	private static final String COLUMNNAME_Updated = "Updated";
-	private static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
 	public static POJOLookupMap get()
@@ -400,19 +395,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					id = nextId(tableName);
 					wrapper.setId(id);
 
-					wrapper.setValue(COLUMNNAME_Created, now);
-					if (wrapper.isNull(COLUMNNAME_CreatedBy))
+					wrapper.setValue(POJOWrapper.COLUMNNAME_Created, now);
+					if (wrapper.getValue(POJOWrapper.COLUMNNAME_CreatedBy, Object.class, false/* enforceStrictValues */) == null)
 					{
-						wrapper.setValue(COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
+						wrapper.setValue(POJOWrapper.COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
 					}
 				}
 				if (isNew || wrapper.hasChanges())
 				{
-					wrapper.setValue(COLUMNNAME_Updated, now);
-					if (wrapper.isNull(COLUMNNAME_UpdatedBy))
-					{
-						wrapper.setValue(COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
-					}
+					wrapper.setValue(POJOWrapper.COLUMNNAME_Updated, now);
+					wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
 				}
 
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);

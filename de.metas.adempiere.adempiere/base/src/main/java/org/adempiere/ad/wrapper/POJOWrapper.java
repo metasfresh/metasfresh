@@ -86,6 +86,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private static final String DYNATTR_IsJustCreated = POJOWrapper.class.getName() + "#IsJustCreated";
 
+	static final String COLUMNNAME_Created = "Created";
+	static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	static final String COLUMNNAME_Updated = "Updated";
+	static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
 	public static <T> T create(final Properties ctx, final Class<T> cl)
 	{
 		return create(ctx, cl, POJOLookupMap.get());
@@ -983,7 +988,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return getValue(propertyName, returnType, strictValues);
 	}
 
-	private Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
+	Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
 	{
 		final Map<String, Object> values = getInnerValues();
 

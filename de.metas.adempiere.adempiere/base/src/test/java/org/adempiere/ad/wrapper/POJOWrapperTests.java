@@ -1,7 +1,8 @@
 package org.adempiere.ad.wrapper;
 
-import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -25,9 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
@@ -35,15 +33,14 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class POJOWrapperTests
 {
 	private PlainContextAware contextProvider;
 
-	public static interface ITable1
+	public interface ITable1
 	{
 		// @formatter:off
 		String Table_Name = "Table1";
@@ -61,7 +58,7 @@ public class POJOWrapperTests
 		// @formatter:on
 	}
 
-	public static interface ITable2
+	public interface ITable2
 	{
 		// @formatter:off
 		String Table_Name = "Table2";
@@ -76,7 +73,7 @@ public class POJOWrapperTests
 		// @formatter:on
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -89,11 +86,26 @@ public class POJOWrapperTests
 		contextProvider = PlainContextAware.newOutOfTrx();
 	}
 
+	private void assertEquals(final String message, final int expected, final int actual)
+	{
+		assertThat(actual).as(message).isEqualTo(expected);
+	}
+
+	private void assertEquals(final String message, final Object expected, final ITable1 actual)
+	{
+		assertThat(actual).as(message).isEqualTo(expected);
+	}
+
+	private void assertSame(final String message, final ITable1 expected, final ITable1 actual)
+	{
+		assertThat(actual).as(message).isSameAs(expected);
+	}
+
 	@Test
 	public void test_DefaultValues()
 	{
-		assertEquals("Invalid Default Value for Integer", POJOWrapper.DEFAULT_VALUE_int, 0);
-		assertEquals("Invalid Default Value for BigDecimals", POJOWrapper.DEFAULT_VALUE_BigDecimal, ZERO);
+		assertThat(POJOWrapper.DEFAULT_VALUE_int).isEqualTo(0);
+		assertThat(POJOWrapper.DEFAULT_VALUE_BigDecimal).isEqualTo(BigDecimal.ZERO);
 	}
 
 	@Test
@@ -134,8 +146,7 @@ public class POJOWrapperTests
 		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
+		assertThat(table2.getTable1()).isSameAs(table1);
 	}
 
 	@Test
@@ -162,12 +173,12 @@ public class POJOWrapperTests
 		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
+		assertThat(table2.getTable1_ID()).isEqualTo(table1.getTable1_ID());
+		assertThat(table2.getTable1()).isSameAs(table1);
 
 		table2.setTable1_ID(-1);
-		assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
-		assertEquals("Invalid Table1", null, table2.getTable1());
+		assertThat(table2.getTable1_ID()).isEqualTo(-1);
+		assertThat(table2.getTable1()).isNull();
 	}
 
 	@Test
@@ -178,7 +189,7 @@ public class POJOWrapperTests
 
 		table2.setTable1(table1);
 		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
+		assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
 		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
@@ -195,7 +206,7 @@ public class POJOWrapperTests
 
 		table2.setTable1(table1);
 		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
+		assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
 		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
@@ -214,11 +225,11 @@ public class POJOWrapperTests
 
 		table2.setTable1(table1_1);
 		assertEquals("Invalid Table1_ID", table1_1.getTable1_ID(), table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1_1, table2.getTable1());
+		assertSame("Invalid Table1", table1_1, table2.getTable1());
 
 		table2.setTable1_ID(-1);
 		assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
-		Assert.assertNull("Invalid Table1", table2.getTable1());
+		assertThat(table2.getTable1()).isNull();
 	}
 
 	@Test
@@ -231,7 +242,7 @@ public class POJOWrapperTests
 
 		table2.setTable1(table1);
 		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
+		assertSame("Invalid Table1", table1, table2.getTable1());
 
 		final ITable1 table1_saved = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.save(table1_saved);
@@ -239,7 +250,7 @@ public class POJOWrapperTests
 		table2.setTable1_ID(table1_saved.getTable1_ID());
 		assertEquals("Invalid Table1_ID", table1_saved.getTable1_ID(), table2.getTable1_ID());
 		assertEquals("Invalid Table1 value", table1_saved, table2.getTable1());
-		Assert.assertNotSame("Invalid Table1 value; shall not be same", table1_saved, table2.getTable1());
+		assertThat(table2.getTable1()).isNotSameAs(table1_saved);
 	}
 
 	@Test
@@ -266,7 +277,7 @@ public class POJOWrapperTests
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.save(table1);
 
-		Assert.assertTrue("ID was not set: " + table1, table1.getTable1_ID() > 0);
+		assertThat(table1.getTable1_ID()).isGreaterThan(0);
 
 		// Shall throw an exception because we are not allowed to reset ID
 		table1.setTable1_ID(11111);
@@ -311,11 +322,11 @@ public class POJOWrapperTests
 	{
 		final I_C_BPartner bp = POJOWrapper.create(Env.getCtx(), I_C_BPartner.class);
 		POJOWrapper.save(bp);
-		assertNull(POJOWrapper.getTrxName(bp)); // guard
+		assertThat(POJOWrapper.getTrxName(bp)).isNull(); // guard
 
 		final boolean discardChanges = false;
 		POJOWrapper.refresh(bp, discardChanges, "myTrxName");
-		assertEquals("myTrxName", POJOWrapper.getTrxName(bp));
+		assertThat(POJOWrapper.getTrxName(bp)).isEqualTo("myTrxName");
 	}
 
 }
