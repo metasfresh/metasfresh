@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { fetchTopActions } from '../../actions/WindowActions';
 import { dropdownRequest } from '../../actions/GenericActions';
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
+import Prompt from '../../components/app/Prompt';
 
 /**
  * @file Class based component.
@@ -18,6 +19,11 @@ class ActionButton extends Component {
     this.state = {
       list: [],
       selected: 0,
+      promptOpen: false,
+      promptTitle: 'Confirm',
+      promptText: 'Are you sure?',
+      promptYes: 'Ok',
+      promptNo: 'Cancel',
     };
   }
 
@@ -131,22 +137,16 @@ class ActionButton extends Component {
    * @todo Write the documentation
    */
   handleChangeStatus = (status) => {
-    const {
-      onChange,
-      docId,
-      windowType,
-      activeTab,
-      fetchTopActions,
-    } = this.props;
-    const changePromise = onChange(status);
-
-    this.statusDropdown.blur();
-    if (changePromise instanceof Promise) {
-      changePromise.then(() => {
-        fetchTopActions(windowType, docId, activeTab);
-
-        return this.fetchStatusList();
+    if (status.hasOwnProperty('validationInformation')) {
+      this.setState({
+        promptOpen: true,
+        promptTitle: status.validationInformation.title,
+        promptText: status.validationInformation.question,
+        promptYes: status.validationInformation.answerYes,
+        promptNo: status.validationInformation.answerNo,
       });
+    } else {
+      this.processStatus(status, false);
     }
   };
 
@@ -215,6 +215,29 @@ class ActionButton extends Component {
     });
   };
 
+  processStatus = (status, option) => {
+    const {
+      onChange,
+      docId,
+      windowType,
+      activeTab,
+      fetchTopActions,
+    } = this.props;
+    const changePromise = onChange(status);
+
+    this.statusDropdown.blur();
+    if (changePromise instanceof Promise) {
+      changePromise.then(() => {
+        fetchTopActions(windowType, docId, activeTab);
+
+        return this.fetchStatusList();
+      });
+    }
+    if (option) {
+      this.setState({ promptOpen: false });
+    }
+  };
+
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -222,7 +245,14 @@ class ActionButton extends Component {
    */
   render() {
     const { data, modalVisible } = this.props;
-    const { list } = this.state;
+    const {
+      list,
+      promptOpen,
+      promptTitle,
+      promptText,
+      promptNo,
+      promptYes,
+    } = this.state;
     const abrev = data.status.value && data.status.value.key;
     const status = this.getStatusContext(abrev);
     let value;
@@ -240,6 +270,22 @@ class ActionButton extends Component {
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
       >
+        {promptOpen && (
+          <Prompt
+            title={promptTitle}
+            text={promptText}
+            buttons={{ submit: promptYes, cancel: promptNo }}
+            onCancelClick={() =>
+              this.setState({ promptOpen: false }, () => {
+                this.statusDropdown.blur();
+              })
+            }
+            onSubmitClick={() =>
+              this.processStatus(list.find((elem) => elem.key === 'CO'), true)
+            }
+          />
+        )}
+
         {value ? (
           <div className={`tag tag-${status}`}>{value}</div>
         ) : (
