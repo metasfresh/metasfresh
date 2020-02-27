@@ -100,6 +100,9 @@ class FiltersFrequent extends PureComponent {
     return (
       <div className="filter-wrapper filters-frequent">
         {data.map((item, index) => {
+          if (!item.parameters) {
+            return false;
+          }
           const parameter = item.parameters[0];
           const filterType = parameter.widgetType;
           const dateStepper =
