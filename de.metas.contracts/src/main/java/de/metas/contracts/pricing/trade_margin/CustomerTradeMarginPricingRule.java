@@ -194,9 +194,10 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if (commissionInstances.size() > 1)
 		{
-			throw new AdempiereException("Expecting only one commissionInstance for a sales rep")
+			throw new AdempiereException("With customer trade margin, only one commissionInstance for a sales rep is allowed")
 					.appendParametersToMessage()
-					.setParameter("createForecastCommissionPerPriceUOMReq", createForecastCommissionPerPriceUOMReq);
+					.setParameter("request", createForecastCommissionPerPriceUOMReq)
+					.setParameter("resultingCommissionInstances", commissionInstances);
 		}
 
 		return Optional.of(commissionInstances.get(0));
