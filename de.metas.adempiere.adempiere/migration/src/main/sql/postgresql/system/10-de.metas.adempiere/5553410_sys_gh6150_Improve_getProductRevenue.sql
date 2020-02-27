@@ -17,9 +17,7 @@ WITH t AS (
     SELECT il.M_Product_ID,
            i.DateInvoiced,
            i.C_Currency_ID,
-
            i.C_ConversionType_ID,
-
            CASE
                WHEN dt.DocBaseType IN ('ARC', 'APC') -- subtract credit memos
                    THEN -1
@@ -59,7 +57,6 @@ WITH t AS (
 
 
 SELECT sum(
-
                    t.multiplier *
                    currencyconvert(
                            p_amount := t.amt,
@@ -70,7 +67,6 @@ SELECT sum(
                            p_client_id := p_AD_Client_ID,
                            p_org_id := p_AD_Org_ID))
 
-
 FROM t,
      accounting;
 
@@ -80,13 +76,11 @@ $$
 
 
 
-
-COMMENT ON FUNCTION getProductRevenue(numeric, numeric, numeric, date, date) IS
-    '  TEST
-    select M_Product_ID, getProductRevenue (M_Product_ID,
-                                                  1000000,
-                                                   1000000,
-                                                  null,
-                                                  null)
-
-     from m_product; ';
+--  TEST
+-- select M_Product_ID, getProductRevenue (M_Product_ID,
+--                                               1000000,
+--                                                1000000,
+--                                               null,
+--                                               null)
+--
+-- from m_product;
