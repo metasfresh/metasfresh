@@ -22,7 +22,6 @@ package de.metas.banking.payment.modelvalidator;
  * #L%
  */
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_PaySelectionLine;
@@ -122,11 +121,10 @@ public class C_AllocationHdr
 
 	private static Set<InvoiceId> extractInvoiceIds(final List<I_C_AllocationLine> lines)
 	{
-		final Set<InvoiceId> invoiceIds = lines.stream()
-				.map(line -> InvoiceId.ofRepoId(line.getC_Invoice_ID()))
-				.filter(Predicates.notNull())
+		return lines.stream()
+				.map(line -> InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID()))
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-		return invoiceIds;
 	}
 
 	public void updateDraftedPaySelectionLinesForInvoiceIds(final Set<InvoiceId> invoiceIds)
