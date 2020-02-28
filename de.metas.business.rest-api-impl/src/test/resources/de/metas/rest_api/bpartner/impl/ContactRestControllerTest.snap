@@ -11,12 +11,12 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
           "AD_User_ID": 100010
         }
       },
-      "createdByUserId": 0,
+      "createdByUserId": 30,
       "createdTimestamp": {
         "seconds": 1561134,
         "nanos": 560000000
       },
-      "lastChangedByUserId": 0,
+      "lastChangedByUserId": 30,
       "lastChangedTimestamp": {
         "seconds": 1561134,
         "nanos": 560000000
@@ -470,7 +470,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 31
+          "lastUpdatedBy": 0
         }
       }
     ]
@@ -503,7 +503,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 32,
-          "lastUpdatedMillis": 1561133544
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 0
         }
       },
       {
@@ -527,7 +528,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
-          "lastUpdatedMillis": 1561133544
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 0
         }
       }
     ]

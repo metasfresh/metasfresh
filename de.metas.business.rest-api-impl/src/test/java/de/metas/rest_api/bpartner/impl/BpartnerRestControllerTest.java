@@ -271,6 +271,7 @@ class BpartnerRestControllerTest
 				.build();
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
@@ -356,6 +357,7 @@ class BpartnerRestControllerTest
 	void createOrUpdateBPartner_Update_BPartner_Name_Insert_Location()
 	{
 		SystemTime.setTimeSource(() -> 1563553074); // Fri, 19 Jul 2019 16:17:54 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BPartnerRestControllerTest_Update_BPartner_Name_Insert_Location.json");
 
@@ -543,6 +545,7 @@ class BpartnerRestControllerTest
 		final JsonRequestContactUpsertItem jsonContact = MockedDataUtil.createMockContact("newContact-");
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
@@ -592,6 +595,7 @@ class BpartnerRestControllerTest
 				.build();
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
@@ -629,6 +633,7 @@ class BpartnerRestControllerTest
 		final JsonRequestLocationUpsertItem jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateLocation(
@@ -703,6 +708,7 @@ class BpartnerRestControllerTest
 		createBPartnerData(4);
 
 		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
