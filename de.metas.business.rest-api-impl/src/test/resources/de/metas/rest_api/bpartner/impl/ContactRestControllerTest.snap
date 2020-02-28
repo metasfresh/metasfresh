@@ -470,7 +470,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 0
+          "lastUpdatedBy": 30
         }
       }
     ]
@@ -504,7 +504,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "createdMillis": 1561133544,
           "createdBy": 32,
           "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 0
+          "lastUpdatedBy": 30
         }
       },
       {
@@ -529,7 +529,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 0
+          "lastUpdatedBy": 30
         }
       }
     ]

@@ -24,6 +24,7 @@ import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -86,6 +88,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 class ContactRestControllerTest
 {
 	private ContactRestController contactRestController;
@@ -110,6 +113,7 @@ class ContactRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -164,7 +168,6 @@ class ContactRestControllerTest
 		resetTimeSource();
 
 		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
-		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
@@ -289,7 +292,6 @@ class ContactRestControllerTest
 				.build();
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
-		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 
@@ -348,7 +350,6 @@ class ContactRestControllerTest
 				.build();
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
-		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 
