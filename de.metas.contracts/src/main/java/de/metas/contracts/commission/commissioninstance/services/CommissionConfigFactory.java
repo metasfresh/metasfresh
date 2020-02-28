@@ -103,6 +103,29 @@ public class CommissionConfigFactory
 				contractRequest.getSalesProductId());
 	}
 
+	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
+	{
+		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
+				.retrieveTerms(commissionConfigRequest.getContractIds())
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<CommissionConfig> result = createCommissionConfigsFor(
+				commissionTermRecords,
+				commissionConfigRequest.getCustomerBPartnerId(),
+				commissionConfigRequest.getSalesProductId());
+		if (result.size() != 1)
+		{
+			throw new AdempiereException("The given commissionConfigRequest needs specify exactly one CommissionConfig")
+					.appendParametersToMessage()
+					.setParameter("result.size()", result.size())
+					.setParameter("commissionConfigRequest", commissionConfigRequest)
+					.setParameter("result", result);
+
+		}
+		return result.get(0);
+	}
+
 	private ImmutableList<CommissionConfig> createCommissionConfigsFor(
 			@NonNull final ImmutableList<I_C_Flatrate_Term> termRecords,
 			@NonNull final BPartnerId customerBPartnerId,
@@ -184,11 +207,30 @@ public class CommissionConfigFactory
 		final BPGroupId recordBPGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getC_BP_Group_ID());
 		final ProductCategoryId recordProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
 
-		final boolean bPartnerMatches = recordBPGroupId == null || recordBPGroupId.equals(customerGroupId);
-		final boolean productMatches = recordProductCategoryId == null || recordProductCategoryId.equals(salesProductCategoryId);
+		final boolean productMatches;
+		if (recordProductCategoryId == null)
+		{
+			productMatches = true;
+		}
+		else
+		{
+			final boolean productCategoryIdEquals = recordProductCategoryId.equals(salesProductCategoryId);
+			productMatches = settingsLineRecord.isExcludeProductCategory() ? !productCategoryIdEquals : productCategoryIdEquals;
+		}
+
+
+		final boolean bPartnerMatches;
+		if (recordBPGroupId == null)
+		{
+			bPartnerMatches = true;
+		}
+		else
+		{
+			final boolean groupIdEquals = recordBPGroupId.equals(customerGroupId);
+			bPartnerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupIdEquals : groupIdEquals;
+		}
 
 		final boolean settingsLineMatches = bPartnerMatches && productMatches;
-
 		return settingsLineMatches;
 	}
 
@@ -212,29 +254,6 @@ public class CommissionConfigFactory
 
 		@NonNull
 		Hierarchy commissionHierarchy;
-	}
-
-	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
-	{
-		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
-				.retrieveTerms(commissionConfigRequest.getContractIds())
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableList<CommissionConfig> result = createCommissionConfigsFor(
-				commissionTermRecords,
-				commissionConfigRequest.getCustomerBPartnerId(),
-				commissionConfigRequest.getSalesProductId());
-		if (result.size() != 1)
-		{
-			throw new AdempiereException("The given commissionConfigRequest needs specify exactly one CommissionConfig")
-					.appendParametersToMessage()
-					.setParameter("result.size()", result.size())
-					.setParameter("commissionConfigRequest", commissionConfigRequest)
-					.setParameter("result", result);
-
-		}
-		return result.get(0);
 	}
 
 	@Builder

@@ -15,7 +15,7 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2017781349L;
+	private static final long serialVersionUID = -1375899791L;
 
     /** Standard Constructor */
     public X_C_CommissionSettingsLine (Properties ctx, int C_CommissionSettingsLine_ID, String trxName)
@@ -25,6 +25,8 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
         {
 			setC_CommissionSettingsLine_ID (0);
 			setC_HierarchyCommissionSettings_ID (0);
+			setIsExcludeBPGroup (false); // N
+			setIsExcludeProductCategory (false); // N
 			setPercentOfBasePoints (BigDecimal.ZERO);
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM C_CommissionSettingsLine WHERE C_HierarchyCommissionSettings=@C_HierarchyCommissionSettings@
         } */
@@ -136,6 +138,58 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Geschäftspartnergruppe ausschließen.
+		@param IsExcludeBPGroup 
+		Wenn eine Geschäftspartnergruppe ausgewählt ist, entscheided dieses Feld, ob diese Gruppe ein Ein- oder Ausschlusskriterium ist
+	  */
+	@Override
+	public void setIsExcludeBPGroup (boolean IsExcludeBPGroup)
+	{
+		set_Value (COLUMNNAME_IsExcludeBPGroup, Boolean.valueOf(IsExcludeBPGroup));
+	}
+
+	/** Get Geschäftspartnergruppe ausschließen.
+		@return Wenn eine Geschäftspartnergruppe ausgewählt ist, entscheided dieses Feld, ob diese Gruppe ein Ein- oder Ausschlusskriterium ist
+	  */
+	@Override
+	public boolean isExcludeBPGroup () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExcludeBPGroup);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Produktkategorie ausschließen.
+		@param IsExcludeProductCategory 
+		Wenn eine Produktkategorie ausgewählt ist, entscheided dieses Feld, ob diese Kategorie ein Ein- oder Ausschlusskriterium ist
+	  */
+	@Override
+	public void setIsExcludeProductCategory (boolean IsExcludeProductCategory)
+	{
+		set_Value (COLUMNNAME_IsExcludeProductCategory, Boolean.valueOf(IsExcludeProductCategory));
+	}
+
+	/** Get Produktkategorie ausschließen.
+		@return Wenn eine Produktkategorie ausgewählt ist, entscheided dieses Feld, ob diese Kategorie ein Ein- oder Ausschlusskriterium ist
+	  */
+	@Override
+	public boolean isExcludeProductCategory () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExcludeProductCategory);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Produkt Kategorie.

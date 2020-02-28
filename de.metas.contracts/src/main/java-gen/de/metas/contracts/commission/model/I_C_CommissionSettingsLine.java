@@ -191,6 +191,56 @@ public interface I_C_CommissionSettingsLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Geschäftspartnergruppe ausschließen.
+	 * Wenn eine Geschäftspartnergruppe ausgewählt ist, entscheided dieses Feld, ob diese Gruppe ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsExcludeBPGroup (boolean IsExcludeBPGroup);
+
+	/**
+	 * Get Geschäftspartnergruppe ausschließen.
+	 * Wenn eine Geschäftspartnergruppe ausgewählt ist, entscheided dieses Feld, ob diese Gruppe ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isExcludeBPGroup();
+
+    /** Column definition for IsExcludeBPGroup */
+    public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object> COLUMN_IsExcludeBPGroup = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object>(I_C_CommissionSettingsLine.class, "IsExcludeBPGroup", null);
+    /** Column name IsExcludeBPGroup */
+    public static final String COLUMNNAME_IsExcludeBPGroup = "IsExcludeBPGroup";
+
+	/**
+	 * Set Produktkategorie ausschließen.
+	 * Wenn eine Produktkategorie ausgewählt ist, entscheided dieses Feld, ob diese Kategorie ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsExcludeProductCategory (boolean IsExcludeProductCategory);
+
+	/**
+	 * Get Produktkategorie ausschließen.
+	 * Wenn eine Produktkategorie ausgewählt ist, entscheided dieses Feld, ob diese Kategorie ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isExcludeProductCategory();
+
+    /** Column definition for IsExcludeProductCategory */
+    public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object> COLUMN_IsExcludeProductCategory = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object>(I_C_CommissionSettingsLine.class, "IsExcludeProductCategory", null);
+    /** Column name IsExcludeProductCategory */
+    public static final String COLUMNNAME_IsExcludeProductCategory = "IsExcludeProductCategory";
+
+	/**
 	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
