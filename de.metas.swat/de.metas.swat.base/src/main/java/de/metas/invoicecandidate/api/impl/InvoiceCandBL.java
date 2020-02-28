@@ -47,6 +47,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -1057,10 +1059,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	public I_C_Invoice_Line_Alloc createUpdateIla(
-			final I_C_Invoice_Candidate invoiceCand,
-			final I_C_InvoiceLine invoiceLine,
-			final StockQtyAndUOMQty qtysInvoiced,
-			final String note)
+			@NonNull final I_C_Invoice_Candidate invoiceCand,
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final StockQtyAndUOMQty qtysInvoiced,
+			@Nullable final String note)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");
