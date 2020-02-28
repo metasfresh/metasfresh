@@ -186,6 +186,5 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				.contentType(MimeType.TYPE_XML)
 				.content(out.toByteArray())
 				.build();
-
 	}
 }
