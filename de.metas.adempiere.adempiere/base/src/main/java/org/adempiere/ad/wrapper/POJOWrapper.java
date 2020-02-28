@@ -694,6 +694,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				// value = idForNewModel(propertyNameLowerCase);
 				value = ID_ZERO;
 			}
+			else if (propertyNameLowerCase.equalsIgnoreCase(COLUMNNAME_CreatedBy)
+					|| propertyNameLowerCase.equals(COLUMNNAME_UpdatedBy))
+			{
+				value = ID_MINUS_ONE;
+			}
 			else
 			{
 				value = DEFAULT_VALUE_int;

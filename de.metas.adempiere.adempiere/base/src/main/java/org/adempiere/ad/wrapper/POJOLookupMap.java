@@ -82,7 +82,9 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -186,6 +188,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		// Global instance
 		instance.clear();
 		instance.setCopyOnSave(true);
+		instance.setManageCreatedByAndUpdatedBy(true);
 		instance.unregisterAllInterceptors();
 	}
 
@@ -204,7 +207,14 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
 	Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
+	/** true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working. */
+	@Getter
+	@Setter
 	private boolean copyOnSave = true;
+
+	@Getter
+	@Setter
+	private boolean manageCreatedByAndUpdatedBy = true;
 
 	/**
 	 * Tool used to track how many object instances are released for a given table record.
@@ -224,21 +234,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		nextId++;
 		return nextId;
-	}
-
-	@Override
-	public boolean isCopyOnSave()
-	{
-		return copyOnSave;
-	}
-
-	/**
-	 *
-	 * @param copyOnSave true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working.
-	 */
-	public void setCopyOnSave(boolean copyOnSave)
-	{
-		this.copyOnSave = copyOnSave;
 	}
 
 	private <T> T copy(final T model)
@@ -389,30 +384,36 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				fireModelChanged(model, isNew ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
 				final Timestamp now = SystemTime.asTimestamp();
-				final UserId loggedUserId = Env.getLoggedUserIdIfExists(wrapper.getCtx()).orElse(UserId.SYSTEM);
 				if (isNew)
 				{
 					id = nextId(tableName);
 					wrapper.setId(id);
 				}
 
+				//
+				// Set Created/Updated
+				final boolean hasChanges = wrapper.hasChanges();
 				if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_Created))
 				{
 					wrapper.setValue(POJOWrapper.COLUMNNAME_Created, now);
 				}
-				if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_CreatedBy))
-				{
-					wrapper.setValue(POJOWrapper.COLUMNNAME_CreatedBy, loggedUserId.getRepoId());
-				}
-
-				final boolean hasChanges = wrapper.hasChanges();
 				if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_Updated))
 				{
 					wrapper.setValue(POJOWrapper.COLUMNNAME_Updated, now);
 				}
-				if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_UpdatedBy))
+				if (manageCreatedByAndUpdatedBy)
 				{
-					wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserId.getRepoId());
+					final Integer loggedUserRepoId = Env.getLoggedUserIdIfExists(wrapper.getCtx())
+							.map(UserId::getRepoId)
+							.orElse(null);
+					if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_CreatedBy))
+					{
+						wrapper.setValue(POJOWrapper.COLUMNNAME_CreatedBy, loggedUserRepoId);
+					}
+					if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_UpdatedBy))
+					{
+						wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserRepoId);
+					}
 				}
 
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
