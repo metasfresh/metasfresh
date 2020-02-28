@@ -182,7 +182,7 @@
 
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
-			<artifactId>de.metas.payment.sepa</artifactId>
+			<artifactId>de.metas.payment.sepa.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
