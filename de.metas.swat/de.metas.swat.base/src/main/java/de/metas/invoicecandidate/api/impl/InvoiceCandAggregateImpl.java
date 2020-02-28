@@ -267,7 +267,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	}
 
 	@Override
-	public StockQtyAndUOMQty getAllocatedQty(I_C_Invoice_Candidate ic, IInvoiceLineRW il)
+	public StockQtyAndUOMQty getAllocatedQty(@NonNull final I_C_Invoice_Candidate ic, @NonNull final IInvoiceLineRW il)
 	{
 		return getAllocatedQty(ic, ic.getC_Invoice_Candidate_ID(), il);
 	}

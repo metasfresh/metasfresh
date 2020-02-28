@@ -331,8 +331,11 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
 
-		final BigDecimal delivered = commissionShareRecord.getPointsSum_Invoiceable()
-				.add(commissionShareRecord.getPointsSum_Invoiced());
+		// Right now, only invoiced sales transactions are commission-worthy.
+		// We can later add a tick-box in the commission settings to make this configurable.
+		final BigDecimal delivered = commissionShareRecord.getPointsSum_Invoiced()
+		// .add(commissionShareRecord.getPointsSum_Invoiceable())
+		;
 
 		final StockQtyAndUOMQty stockAndUom = StockQtyAndUOMQtys.createConvert(delivered,
 				ProductId.ofRepoId(ic.getM_Product_ID()),
