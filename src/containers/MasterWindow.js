@@ -43,6 +43,10 @@ class MasterWindowContainer extends Component {
       // displayed in tabs. This is the only place we're updating this apart of
       // initial load (so contrary to what we used to do, we're not handling responses
       // from any user actions now, like batch entry for instance)
+      disconnectWS.call(this);
+      // ^^ - for the case where we come from different area like Phonecall Schedule and then
+      // we go via it to Sales Order master.websocket is changed and by doing that we assure that
+      // communication is set on the right master.websocket . disconnectWS clears the WS
       connectWS.call(this, master.websocket, async (msg) => {
         const { includedTabsInfo, stale } = msg;
         const { master } = this.props;
