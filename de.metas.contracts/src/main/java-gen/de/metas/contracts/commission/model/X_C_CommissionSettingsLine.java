@@ -15,7 +15,7 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1375899791L;
+	private static final long serialVersionUID = -81235738L;
 
     /** Standard Constructor */
     public X_C_CommissionSettingsLine (Properties ctx, int C_CommissionSettingsLine_ID, String trxName)
@@ -47,38 +47,23 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
       return poi;
     }
 
+	/** Set Kunde.
+		@param C_BPartner_Customer_ID Kunde	  */
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group()
+	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
-	}
-
-	@Override
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
-	}
-
-	/** Set Geschäftspartnergruppe.
-		@param C_BP_Group_ID 
-		Geschäftspartnergruppe
-	  */
-	@Override
-	public void setC_BP_Group_ID (int C_BP_Group_ID)
-	{
-		if (C_BP_Group_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Group_ID, null);
+		if (C_BPartner_Customer_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Customer_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
+			set_Value (COLUMNNAME_C_BPartner_Customer_ID, Integer.valueOf(C_BPartner_Customer_ID));
 	}
 
-	/** Get Geschäftspartnergruppe.
-		@return Geschäftspartnergruppe
-	  */
+	/** Get Kunde.
+		@return Kunde	  */
 	@Override
-	public int getC_BP_Group_ID () 
+	public int getC_BPartner_Customer_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Customer_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -140,9 +125,43 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartnergruppe ausschließen.
+	@Override
+	public org.compiere.model.I_C_BP_Group getCustomer_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_Customer_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setCustomer_Group(org.compiere.model.I_C_BP_Group Customer_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_Customer_Group_ID, org.compiere.model.I_C_BP_Group.class, Customer_Group);
+	}
+
+	/** Set Kundengruppe.
+		@param Customer_Group_ID Kundengruppe	  */
+	@Override
+	public void setCustomer_Group_ID (int Customer_Group_ID)
+	{
+		if (Customer_Group_ID < 1) 
+			set_Value (COLUMNNAME_Customer_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_Customer_Group_ID, Integer.valueOf(Customer_Group_ID));
+	}
+
+	/** Get Kundengruppe.
+		@return Kundengruppe	  */
+	@Override
+	public int getCustomer_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Customer_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kunde bzw. Gruppe ausschließen.
 		@param IsExcludeBPGroup 
-		Wenn eine Geschäftspartnergruppe ausgewählt ist, entscheided dieses Feld, ob diese Gruppe ein Ein- oder Ausschlusskriterium ist
+		Wenn eine Kundegruppe oder ein Kunde ausgewählt ist, entscheided dieses Feld, ob es ein Ein- oder Ausschlusskriterium ist
 	  */
 	@Override
 	public void setIsExcludeBPGroup (boolean IsExcludeBPGroup)
@@ -150,8 +169,8 @@ public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements
 		set_Value (COLUMNNAME_IsExcludeBPGroup, Boolean.valueOf(IsExcludeBPGroup));
 	}
 
-	/** Get Geschäftspartnergruppe ausschließen.
-		@return Wenn eine Geschäftspartnergruppe ausgewählt ist, entscheided dieses Feld, ob diese Gruppe ein Ein- oder Ausschlusskriterium ist
+	/** Get Kunde bzw. Gruppe ausschließen.
+		@return Wenn eine Kundegruppe oder ein Kunde ausgewählt ist, entscheided dieses Feld, ob es ein Ein- oder Ausschlusskriterium ist
 	  */
 	@Override
 	public boolean isExcludeBPGroup () 

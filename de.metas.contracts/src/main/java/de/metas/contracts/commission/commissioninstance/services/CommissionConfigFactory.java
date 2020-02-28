@@ -3,11 +3,14 @@ package de.metas.contracts.commission.commissioninstance.services;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -31,6 +34,8 @@ import de.metas.contracts.commission.commissioninstance.services.CommissionConfi
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -65,6 +70,9 @@ import lombok.Value;
 @Service
 public class CommissionConfigFactory
 {
+
+	private static final Logger logger = LogManager.getLogger(CommissionConfigFactory.class);
+
 	private CommissionConfigStagingDataService commissionConfigStagingDataService;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -141,59 +149,74 @@ public class CommissionConfigFactory
 		final ProductCategoryId salesProductCategory = productDAO.retrieveProductCategoryByProductId(salesproductId);
 		final BPGroupId customerGroupId = bPartnerDAO.getBPGroupIdByBPartnerId(customerBPartnerId);
 
+		// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method. or with big "request"-classes that i use as params.
 		for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : stagingData.getSettingsId2termIds().asMap().entrySet())
 		{
 			final Integer settingsId = settingsId2TermsIds.getKey();
 
 			final I_C_HierarchyCommissionSettings settingsRecord = stagingData.getId2SettingsRecord().get(settingsId);
-			final HierarchyConfigBuilder builder = HierarchyConfig
-					.builder()
-					.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
-					.subtractLowerLevelCommissionFromBase(settingsRecord.isSubtractLowerLevelCommissionFromBase());
-
-			for (final Integer termRepoId : settingsId2TermsIds.getValue())
+			try (final MDCCloseable settingsRecordMDC = TableRecordMDC.putTableRecordReference(settingsRecord))
 			{
-				final I_C_Flatrate_Term termRecord = stagingData.getId2TermRecord().get(termRepoId);
+				final HierarchyConfigBuilder builder = HierarchyConfig
+						.builder()
+						.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
+						.subtractLowerLevelCommissionFromBase(settingsRecord.isSubtractLowerLevelCommissionFromBase());
 
-				final FlatrateTermId termId = FlatrateTermId.ofRepoId(termRepoId);
-
-				final ImmutableList<BPartnerId> bPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
-				for (final BPartnerId bPartnerId : bPartnerIds)
+				for (final Integer termRepoId : settingsId2TermsIds.getValue())
 				{
-					if (!bPartnerId2FlatrateTermIds.get(bPartnerId).contains(termId))
+					final I_C_Flatrate_Term termRecord = stagingData.getId2TermRecord().get(termRepoId);
+					try (final MDCCloseable termRecordMDC = TableRecordMDC.putTableRecordReference(termRecord))
 					{
-						continue;
-					}
+						final FlatrateTermId termId = FlatrateTermId.ofRepoId(termRepoId);
 
-					final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
-							.id(termId)
-							.pointsPrecision(settingsRecord.getPointsPrecision());
-
-					boolean foundMatchingSettingsLine = false;
-					final ImmutableListMultimap<Integer, Integer> settingsId2settingsLineIds = stagingData.getSettingsId2settingsLineIds();
-					for (final Integer settingsLineId : settingsId2settingsLineIds.get(settingsId))
-					{
-						final I_C_CommissionSettingsLine settingsLineRecord = stagingData.getId2SettingsLineRecord().get(settingsLineId);
-
-						final boolean settingsLineMatches = settingsLineRecordMatches(salesProductCategory, customerGroupId, settingsLineRecord);
-						if (settingsLineMatches)
+						final ImmutableList<BPartnerId> bPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
+						for (final BPartnerId bPartnerId : bPartnerIds)
 						{
-							contractBuilder.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
-							foundMatchingSettingsLine = true;
-							break;
+							if (!bPartnerId2FlatrateTermIds.get(bPartnerId).contains(termId))
+							{
+								continue;
+							}
+
+							final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
+									.id(termId)
+									.pointsPrecision(settingsRecord.getPointsPrecision());
+
+							boolean foundMatchingSettingsLine = false;
+							final ImmutableListMultimap<Integer, Integer> settingsId2settingsLineIds = stagingData.getSettingsId2settingsLineIds();
+							for (final Integer settingsLineId : settingsId2settingsLineIds.get(settingsId))
+							{
+								final I_C_CommissionSettingsLine settingsLineRecord = stagingData.getId2SettingsLineRecord().get(settingsLineId);
+								try (final MDCCloseable settingsLineRecordMDC = TableRecordMDC.putTableRecordReference(settingsLineRecord))
+								{
+									final boolean settingsLineMatches = settingsLineRecordMatches(
+											salesProductCategory,
+											customerGroupId,
+											customerBPartnerId,
+											settingsLineRecord);
+									if (settingsLineMatches)
+									{
+										logger.debug("Settings line matches; -> commissionPercent={}", settingsLineRecord.getPercentOfBasePoints());
+										contractBuilder.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
+										foundMatchingSettingsLine = true;
+										break;
+									}
+								}
+							}
+							if (foundMatchingSettingsLine)
+							{
+								builder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
+							}
 						}
 					}
-					if (foundMatchingSettingsLine)
-					{
-						builder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
-					}
+				}
+
+				final HierarchyConfig config = builder.build();
+				if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
+				{
+					commissionConfigs.add(config);
 				}
 			}
-			final HierarchyConfig config = builder.build();
-			if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
-			{
-				commissionConfigs.add(config);
-			}
+
 		}
 		return commissionConfigs.build();
 	}
@@ -201,36 +224,41 @@ public class CommissionConfigFactory
 	private boolean settingsLineRecordMatches(
 			@Nullable final ProductCategoryId salesProductCategoryId,
 			@Nullable final BPGroupId customerGroupId,
+			@NonNull final BPartnerId customerPartnerId,
 			@NonNull final I_C_CommissionSettingsLine settingsLineRecord)
 	{
 
-		final BPGroupId recordBPGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getC_BP_Group_ID());
-		final ProductCategoryId recordProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
+		final ProductCategoryId settingsProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
 
 		final boolean productMatches;
-		if (recordProductCategoryId == null)
+		if (settingsProductCategoryId == null)
 		{
+			logger.debug("settingsProductCategoryId is null; => product matches");
 			productMatches = true;
 		}
 		else
 		{
-			final boolean productCategoryIdEquals = recordProductCategoryId.equals(salesProductCategoryId);
+			final boolean productCategoryIdEquals = settingsProductCategoryId.equals(salesProductCategoryId);
 			productMatches = settingsLineRecord.isExcludeProductCategory() ? !productCategoryIdEquals : productCategoryIdEquals;
 		}
 
-
-		final boolean bPartnerMatches;
-		if (recordBPGroupId == null)
+		final boolean customerMatches;
+		final BPGroupId settingsCustomerGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getCustomer_Group_ID());
+		final BPartnerId settingsCustomerId = BPartnerId.ofRepoIdOrNull(settingsLineRecord.getC_BPartner_Customer_ID());
+		if (settingsCustomerGroupId == null && settingsCustomerId == null)
 		{
-			bPartnerMatches = true;
+			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customerMatches matches");
+			customerMatches = true;
 		}
 		else
 		{
-			final boolean groupIdEquals = recordBPGroupId.equals(customerGroupId);
-			bPartnerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupIdEquals : groupIdEquals;
+			final boolean groupIdEquals = Objects.equals(settingsCustomerGroupId, customerGroupId);
+			final boolean partnerIdEquals = Objects.equals(settingsCustomerId, customerPartnerId);
+			final boolean groupOrPartnerEquals = groupIdEquals || partnerIdEquals;
+			customerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupOrPartnerEquals : groupOrPartnerEquals;
 		}
 
-		final boolean settingsLineMatches = bPartnerMatches && productMatches;
+		final boolean settingsLineMatches = customerMatches && productMatches;
 		return settingsLineMatches;
 	}
 
