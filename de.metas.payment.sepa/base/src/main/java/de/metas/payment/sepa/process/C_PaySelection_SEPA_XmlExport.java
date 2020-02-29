@@ -5,7 +5,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
-import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.interfaces.I_C_PaySelection;
@@ -34,7 +33,6 @@ public class C_PaySelection_SEPA_XmlExport
 
 	//
 	// services
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
 
@@ -75,7 +73,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = paymentBL.createSEPAExport(paySelection);
+		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection);
 
 		//
 		// After the export header and lines have been created, marshal the document.

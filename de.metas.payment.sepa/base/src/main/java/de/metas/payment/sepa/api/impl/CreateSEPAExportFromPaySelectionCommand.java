@@ -7,28 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-/*
- * #%L
- * de.metas.payment.sepa
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -40,7 +18,6 @@ import org.compiere.model.I_C_PaySelection;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -48,18 +25,46 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+/*
+ * #%L
+ * de.metas.payment.sepa.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-public class PaymentBL implements IPaymentBL
+class CreateSEPAExportFromPaySelectionCommand
 {
-
 	private static final String ERR_C_BP_BankAccount_BankNotSet = "de.metas.payment.sepa.C_BP_BankAccount_BankNotSet";
+	private final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
+	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
-	@Override
-	public I_SEPA_Export createSEPAExport(@NonNull final I_C_PaySelection source)
+	private final I_C_PaySelection source;
+
+	public CreateSEPAExportFromPaySelectionCommand(@NonNull final I_C_PaySelection source)
+	{
+		this.source = source;
+	}
+
+	public I_SEPA_Export run()
 	{
 		final I_SEPA_Export header = createExportHeader(source);
 
-		for (final I_C_PaySelectionLine line : Services.get(IPaymentDAO.class).getProcessedLines(source))
+		for (final I_C_PaySelectionLine line : paymentsRepo.getProcessedLines(source))
 		{
 			if (line.getC_BP_BankAccount_ID() <= 0)
 			{
@@ -78,10 +83,9 @@ public class PaymentBL implements IPaymentBL
 	{
 		final I_C_Invoice sourceInvoice = line.getC_Invoice();
 		Check.assumeNotNull(line.getC_Invoice(), "Parameter line has a not-null C_Invoice; line={}", line);
-		
+
 		final I_C_BPartner bpartner = line.getC_BPartner();
 		final I_C_BP_BankAccount bpBankAccount = create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
-
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
 
@@ -120,7 +124,7 @@ public class PaymentBL implements IPaymentBL
 		//
 		// We need the source org BP.
 		final I_AD_Org sourceOrg = create(ctx, paySelectionHeader.getAD_Org_ID(), I_AD_Org.class, trxName);
-		final I_C_BPartner orgBP = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(sourceOrg);
+		final I_C_BPartner orgBP = partnerOrgBL.retrieveLinkedBPartner(sourceOrg);
 
 		final org.compiere.model.I_C_BP_BankAccount bankAccountSource = paySelectionHeader.getC_BP_BankAccount();
 		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null");
@@ -165,4 +169,5 @@ public class PaymentBL implements IPaymentBL
 		}
 		return from.replace(" ", "");
 	}
+
 }

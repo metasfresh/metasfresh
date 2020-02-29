@@ -27,12 +27,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.compiere.model.I_C_PaySelection;
+
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.ISingletonService;
 
 public interface ISEPADocumentBL extends ISingletonService
 {
+	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from);
+
 	/**
 	 * Creates {@link I_SEPA_Export} entries from an iterator over SEPA documents
 	 * 

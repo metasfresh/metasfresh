@@ -13,6 +13,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.MimeType;
 
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -36,6 +37,12 @@ import lombok.NonNull;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {
+	@Override
+	public I_SEPA_Export createSEPAExportFromPaySelection(final I_C_PaySelection from)
+	{
+		return new CreateSEPAExportFromPaySelectionCommand(from).run();
+	}
+
 	@Override
 	public List<I_SEPA_Export> createSEPAExports(final Properties ctx, final Iterator<ISEPADocument> iterator, final String trxName, final boolean ignorePaymentRule)
 	{
