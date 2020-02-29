@@ -47,6 +47,7 @@ import de.metas.logging.LogManager;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
@@ -709,10 +710,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	}
 
 	@Override
-	public IPaySelectionUpdater setC_PaySelection(final I_C_PaySelection paySelection)
+	public IPaySelectionUpdater setC_PaySelection(@NonNull final I_C_PaySelection paySelection)
 	{
 		assertConfigurable();
 		_paySelection = paySelection;
+		if (paySelection.isProcessed())
+		{
+			throw new AdempiereException("Document already completed");
+		}
 		return this;
 	}
 
