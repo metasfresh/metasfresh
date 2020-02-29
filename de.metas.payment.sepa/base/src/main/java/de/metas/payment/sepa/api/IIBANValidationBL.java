@@ -9,7 +9,7 @@ import de.metas.util.ISingletonService;
  * @author cg
  *
  */
-public interface IIBANValidationBL  extends ISingletonService
+public interface IIBANValidationBL extends ISingletonService
 {
 
 	/**
@@ -35,5 +35,4 @@ public interface IIBANValidationBL  extends ISingletonService
 	 * @param iban
 	 */
 	void validateCheckDigit(String iban);
-
 }
