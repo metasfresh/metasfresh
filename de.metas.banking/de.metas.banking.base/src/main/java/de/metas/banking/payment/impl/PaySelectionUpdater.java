@@ -1,5 +1,7 @@
 package de.metas.banking.payment.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,7 +22,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
@@ -28,7 +29,6 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
@@ -57,9 +57,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private boolean _configurable = true;
-	private Properties _ctx = null;
-	private String _trxNameInitial = ITrx.TRXNAME_ThreadInherited;
-	private String _trxName = null;
 
 	/**
 	 * Only When Discount
@@ -110,7 +107,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaySelectionLine.class, getCtx(), getTrxName())
+				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getC_PaySelection_ID())
 				.addInArrayOrAllFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
 				.create()
@@ -141,26 +138,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	@Override
 	public void update()
 	{
-		trxManager.run(getTrxNameInitial(), new TrxRunnableAdapter()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				setTrxName(localTrxName);
-
-				update0();
-			}
-
-			@Override
-			public void doFinally()
-			{
-				setTrxName(null); // reset current transaction
-			}
-		});
+		trxManager.runInThreadInheritedTrx(this::updateInTrx);
 	}
 
-	private final void update0()
+	private final void updateInTrx()
 	{
 		// Lock this updater. Shall not be configurable anymore.
 		assertConfigurable();
@@ -172,7 +153,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		PreparedStatement pstmt = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, getTrxName());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
 
 			rs = pstmt.executeQuery();
@@ -494,7 +475,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final boolean isNewPaySelectionLine;
 		if (existingPaySelectionLine == null)
 		{
-			paySelectionLine = InterfaceWrapperHelper.create(getCtx(), I_C_PaySelectionLine.class, getTrxName());
+			paySelectionLine = newInstance(I_C_PaySelectionLine.class);
 			isNewPaySelectionLine = true;
 		}
 		else
@@ -611,56 +592,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return paymentRules.stream()
 				.map(PaymentRule::ofCode)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	public IPaySelectionUpdater setContext(final Properties ctx, final String trxName)
-	{
-		assertConfigurable();
-		_ctx = ctx;
-		_trxNameInitial = trxName;
-		return this;
-	}
-
-	@Override
-	public IPaySelectionUpdater setContext(final IContextAware context)
-	{
-		return setContext(context.getCtx(), context.getTrxName());
-	}
-
-	private final Properties getCtx()
-	{
-		Check.assumeNotNull(_ctx, "_ctx not null");
-		return _ctx;
-	}
-
-	/**
-	 * @return initial trxName which was set when this updater was configured
-	 */
-	private final String getTrxNameInitial()
-	{
-		return _trxNameInitial;
-	}
-
-	/**
-	 * @return current running transaction; never returns a null transaction
-	 */
-	private final String getTrxName()
-	{
-		trxManager.assertTrxNameNotNull(_trxName);
-		return _trxName;
-	}
-
-	/**
-	 * Sets current running transaction
-	 */
-	private void setTrxName(final String trxName)
-	{
-		if (trxName != null)
-		{
-			trxManager.assertTrxNameNull(_trxName);
-		}
-		_trxName = trxName;
 	}
 
 	/**
@@ -802,7 +733,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		if (_nextLineNo == null)
 		{
-			final int lastLineNo = paySelectionDAO.retrieveLastPaySelectionLineNo(getCtx(), getC_PaySelection_ID(), getTrxName());
+			final int lastLineNo = paySelectionDAO.retrieveLastPaySelectionLineNo(getC_PaySelection_ID());
 			_nextLineNo = lastLineNo + 10;
 		}
 

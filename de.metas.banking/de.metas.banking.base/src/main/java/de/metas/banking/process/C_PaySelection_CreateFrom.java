@@ -131,7 +131,6 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	@Override
 	protected String doIt()
 	{
-		paySelectionUpdater.setContext(this);
 		paySelectionUpdater.update();
 		return paySelectionUpdater.getSummary();
 	}

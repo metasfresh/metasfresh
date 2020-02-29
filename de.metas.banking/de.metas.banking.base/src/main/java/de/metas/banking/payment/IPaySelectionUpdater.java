@@ -23,9 +23,7 @@ package de.metas.banking.payment;
  */
 
 import java.sql.Timestamp;
-import java.util.Properties;
 
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
@@ -55,10 +53,6 @@ public interface IPaySelectionUpdater
 	 * @return update summary
 	 */
 	String getSummary();
-
-	IPaySelectionUpdater setContext(final IContextAware context);
-
-	IPaySelectionUpdater setContext(final Properties ctx, final String trxName);
 
 	/**
 	 * Sets {@link I_C_PaySelection} in scope (mandatory).
