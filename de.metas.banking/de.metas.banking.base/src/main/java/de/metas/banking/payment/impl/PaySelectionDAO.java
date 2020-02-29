@@ -152,6 +152,16 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
+	public I_C_PaySelection retrievePaySelectionById(int paySelectionID)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelection.class, paySelectionID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID, paySelectionID)
+				.create()
+				.firstOnlyOrNull(I_C_PaySelection.class);
+	}
+
+	@Override
 	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(final I_C_PaySelection paySelection, final int paymentId)
 	{
 		return createQueryBuilder(paySelection)

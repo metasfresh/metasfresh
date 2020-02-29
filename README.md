@@ -1,7 +1,7 @@
 # <img src='/images/metasfresh_logo_green.jpg' height='60' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/30ecd0d9ba8a4561a60335644b592418)](https://www.codacy.com/gh/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
-[![release](https://img.shields.io/badge/release-5.137-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.137)
+[![release](https://img.shields.io/badge/release-5.138-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.138)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)

@@ -10,6 +10,36 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.139
+## Features
+* metasfresh
+  * [#6133](https://github.com/metasfresh/metasfresh/issues/6133) Jasper: Customer Product Statistic
+  * [#6148](https://github.com/metasfresh/metasfresh/issues/6148) Jasper Report: Profit & Loss Report
+  * [#6150](https://github.com/metasfresh/metasfresh/issues/6150) Jasper: Product Top Sales
+  * [#6154](https://github.com/metasfresh/metasfresh/issues/6154) Backend: Send new object in JSON of available docaction dropdowns for VOID Action
+  * [#6156](https://github.com/metasfresh/metasfresh/issues/6156) Add clone action for "Transportation Order" window.
+  * [#6167](https://github.com/metasfresh/metasfresh/issues/6167) Rename 'Verrechnung Billcare' process
+  * [#6168](https://github.com/metasfresh/metasfresh/issues/6168) Enhance campaign pricing to apply also based on pricing system
+  * [#6182](https://github.com/metasfresh/metasfresh/issues/6182) Add IBAN structure for DK
+  * [#6197](https://github.com/metasfresh/metasfresh/issues/6197) Adjust timeout so that big report to be able to run
+  * [#6201](https://github.com/metasfresh/metasfresh/issues/6201) Support packing instructions for invoice line 'Batch entry'
+  * [#6207](https://github.com/metasfresh/metasfresh/issues/6207) Minor adjustments to customs invoice document
+  * [#6216](https://github.com/metasfresh/metasfresh/issues/6216) Filter for Virtual Column
+  * [#6219](https://github.com/metasfresh/metasfresh/issues/6219) Product Price creation for Price = 0
+  * [#6223](https://github.com/metasfresh/metasfresh/issues/6223) Material Tracking Copy action
+
+* metasfresh-webui-api
+  * [#1363](https://github.com/metasfresh/metasfresh-webui-api/issues/1363) Add possibility to turn off 'Area Search' filter
+
+## Fixes
+* metasfresh
+  * [#6157](https://github.com/metasfresh/metasfresh/issues/6157) Order: when setting the DocType, consider the default one first
+  * [#6174](https://github.com/metasfresh/metasfresh/issues/6174) Don't use delivery day with wrong bpartner
+  * [#6215](https://github.com/metasfresh/metasfresh/issues/6215) Exclude migration-cli from reports service
+
+* metasfresh-webui-api
+  * [#6174](https://github.com/metasfresh/metasfresh/issues/6175) webui-api: fix the webui.view.itemsSelected.caption AD_Message
+
 # metasfresh 5.138
 ## Features
 * metasfresh

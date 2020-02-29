@@ -1,18 +1,19 @@
 package de.metas.banking.payment.impl;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.logging.LogManager;
+import de.metas.payment.PaymentRule;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -32,18 +33,18 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.logging.LogManager;
-import de.metas.payment.PaymentRule;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
@@ -51,6 +52,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private static final transient Logger log = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	// private static final String INV_WITH_PO = "P";
 	// private static final String INV_WITH_PAY_RECEIPT = "R";
@@ -84,28 +86,48 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private String _trxNameInitial = ITrx.TRXNAME_ThreadInherited;
 	private String _trxName = null;
 
-	/** Only When Discount */
+	/**
+	 * Only When Discount
+	 */
 	private boolean _onlyDiscount = false;
-	/** Only when Due */
+	/**
+	 * Only when Due
+	 */
 	private boolean _onlyDue = false;
-	/** Include Disputed */
+	/**
+	 * Include Disputed
+	 */
 	private Boolean _includeInDispute = null;
-	/** Match Requirement */
+	/**
+	 * Match Requirement
+	 */
 	private String _matchRequirement = INV_ALL;
-	/** Match Requirement */
+	/**
+	 * Match Requirement
+	 */
 	private Timestamp _payDate = null;
 
-	/** Payment Rule */
+	/**
+	 * Payment Rule
+	 */
 	private String _paymentRule = null;
-	/** BPartner */
+	/**
+	 * BPartner
+	 */
 	private int _bpartnerId = 0;
-	/** BPartner Group */
+	/**
+	 * BPartner Group
+	 */
 	private int _bpGroupId = 0;
-	/** Payment Selection */
+	/**
+	 * Payment Selection
+	 */
 	private I_C_PaySelection _paySelection;
 
 	private final Set<Integer> paySelectionLineIdsToUpdate = new HashSet<>();
-	/** Provides a map of C_Invoice_ID to {@link I_C_PaySelectionLine} which were enqueued to be updated */
+	/**
+	 * Provides a map of C_Invoice_ID to {@link I_C_PaySelectionLine} which were enqueued to be updated
+	 */
 	private final Supplier<Map<Integer, I_C_PaySelectionLine>> _invoiceId2paySelectionLineToUpdateSupplier = Suppliers.memoize(() -> {
 		if (paySelectionLineIdsToUpdate.isEmpty())
 		{
@@ -223,6 +245,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			sb.append(", @Deleted@: ").append(countDeleted);
 		}
+		cacheInvalidationForCurrentPaySelection();
 		return sb.toString();
 	}
 
@@ -277,7 +300,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " FROM C_Invoice i "
 				+ " LEFT JOIN C_Doctype dt on i.C_Doctype_ID = dt.C_Doctype_ID "
 				+ " WHERE true " //
-		;
+				;
 		sqlParams.add(C_CurrencyTo_ID); // #1
 		sqlParams.add(payDate); // #2
 		sqlParams.add(payDate); // #3
@@ -557,7 +580,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		log.debug("Deleted {}", paySelectionLine);
 	}
 
-	/** Updates {@link I_C_PaySelectionLine} from: given candidate and current pay selection header */
+	/**
+	 * Updates {@link I_C_PaySelectionLine} from: given candidate and current pay selection header
+	 */
 	private final void updatePaySelectionLine(final I_C_PaySelectionLine paySelectionLine, final PaySelectionLineCandidate candidate)
 	{
 		//
@@ -610,7 +635,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return _paymentRulesSupplier.get();
 	}
 
-	/** Payment Rules (from C_Invoice.PaymentRule's available values list) */
+	/**
+	 * Payment Rules (from C_Invoice.PaymentRule's available values list)
+	 */
 	private final Supplier<ImmutableSet<PaymentRule>> _paymentRulesSupplier = Suppliers.memoize(this::retrieveInvoicePaymentRules);
 
 	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
@@ -650,20 +677,26 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return _ctx;
 	}
 
-	/** @return initial trxName which was set when this updater was configured */
+	/**
+	 * @return initial trxName which was set when this updater was configured
+	 */
 	private final String getTrxNameInitial()
 	{
 		return _trxNameInitial;
 	}
 
-	/** @return current running transaction; never returns a null transaction */
+	/**
+	 * @return current running transaction; never returns a null transaction
+	 */
 	private final String getTrxName()
 	{
 		trxManager.assertTrxNameNotNull(_trxName);
 		return _trxName;
 	}
 
-	/** Sets current running transaction */
+	/**
+	 * Sets current running transaction
+	 */
 	private void setTrxName(final String trxName)
 	{
 		if (trxName != null)
@@ -671,6 +704,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			trxManager.assertTrxNameNull(_trxName);
 		}
 		_trxName = trxName;
+	}
+
+	/**
+	 * Invalidates Cache for current PaySelection.
+	 */
+	private void cacheInvalidationForCurrentPaySelection()
+	{
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getC_PaySelection_ID()),
+				ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	private boolean isOnlyDiscount()
