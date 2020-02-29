@@ -85,7 +85,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	/**
 	 * Payment Rule
 	 */
-	private String _paymentRule = null;
+	private PaymentRule _paymentRule = null;
 	/**
 	 * BPartner
 	 */
@@ -738,13 +738,13 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-	private String getPaymentRule()
+	private PaymentRule getPaymentRule()
 	{
 		return _paymentRule;
 	}
 
 	@Override
-	public IPaySelectionUpdater setPaymentRule(final String paymentRule)
+	public IPaySelectionUpdater setPaymentRule(final PaymentRule paymentRule)
 	{
 		assertConfigurable();
 		_paymentRule = paymentRule;

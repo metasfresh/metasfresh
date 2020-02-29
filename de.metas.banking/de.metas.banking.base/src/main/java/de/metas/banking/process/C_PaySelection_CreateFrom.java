@@ -9,6 +9,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.InvoiceMatchingMode;
 import de.metas.document.engine.DocStatus;
+import de.metas.payment.PaymentRule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -111,8 +112,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 			}
 			else if (name.equals("PaymentRule"))
 			{
-				final String p_PaymentRule = para.getParameterAsString();
-				paySelectionUpdater.setPaymentRule(p_PaymentRule);
+				final PaymentRule paymentRule = PaymentRule.ofNullableCode(para.getParameterAsString());
+				paySelectionUpdater.setPaymentRule(paymentRule);
 			}
 			else if (name.equals("C_BPartner_ID"))
 			{

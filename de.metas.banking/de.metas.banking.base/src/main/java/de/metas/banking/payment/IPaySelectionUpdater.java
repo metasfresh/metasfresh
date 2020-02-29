@@ -29,6 +29,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.payment.PaymentRule;
 
 /**
  * Used to create or update {@link I_C_PaySelectionLine}s for a given {@link I_C_PaySelection}.<br>
@@ -70,7 +71,7 @@ public interface IPaySelectionUpdater
 
 	IPaySelectionUpdater setC_BPartner_ID(int bpartnerId);
 
-	IPaySelectionUpdater setPaymentRule(String paymentRule);
+	IPaySelectionUpdater setPaymentRule(PaymentRule paymentRule);
 
 	IPaySelectionUpdater setPayDate(Timestamp payDate);
 
