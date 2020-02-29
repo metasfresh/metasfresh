@@ -65,11 +65,11 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_SEPA_Export_Line.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_SEPA_Export_Line.COLUMN_IsError, false)
+				.addEqualsFilter(I_SEPA_Export_Line.COLUMNNAME_IsError, false)
 				.addEqualsFilter(I_SEPA_Export_Line.COLUMNNAME_SEPA_Export_ID, doc.getSEPA_Export_ID())
 				.orderBy()
-				.addColumn(I_SEPA_Export_Line.COLUMN_C_Currency_ID)
-				.addColumn(I_SEPA_Export_Line.COLUMN_SEPA_Export_Line_ID).endOrderBy()
+				.addColumn(I_SEPA_Export_Line.COLUMNNAME_C_Currency_ID)
+				.addColumn(I_SEPA_Export_Line.COLUMNNAME_SEPA_Export_Line_ID).endOrderBy()
 				.create()
 				.list();
 	}

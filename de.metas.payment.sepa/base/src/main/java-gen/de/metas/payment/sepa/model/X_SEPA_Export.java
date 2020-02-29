@@ -14,7 +14,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1656536518L;
+	private static final long serialVersionUID = -1113395518L;
 
     /** Standard Constructor */
     public X_SEPA_Export (Properties ctx, int SEPA_Export_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
@@ -180,7 +168,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -189,7 +177,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

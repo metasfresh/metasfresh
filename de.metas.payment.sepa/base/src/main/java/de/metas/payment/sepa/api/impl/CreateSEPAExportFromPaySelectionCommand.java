@@ -84,7 +84,6 @@ class CreateSEPAExportFromPaySelectionCommand
 		final I_C_Invoice sourceInvoice = line.getC_Invoice();
 		Check.assumeNotNull(line.getC_Invoice(), "Parameter line has a not-null C_Invoice; line={}", line);
 
-		final I_C_BPartner bpartner = line.getC_BPartner();
 		final I_C_BP_BankAccount bpBankAccount = create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
@@ -95,7 +94,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setAmt(line.getPayAmt());
 		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
 		exportLine.setC_Currency_ID(bpBankAccount.getC_Currency_ID());
-		exportLine.setC_BPartner(bpartner);
+		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 		exportLine.setDescription(sourceInvoice.getDescription());
 
 		exportLine.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
@@ -137,7 +136,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		// Set corresponding data
-		header.setAD_Org(sourceOrg);
+		header.setAD_Org_ID(sourceOrg.getAD_Org_ID());
 		final String iban = bpBankAccount.getIBAN();
 		if (!Check.isEmpty(iban, true))
 		{

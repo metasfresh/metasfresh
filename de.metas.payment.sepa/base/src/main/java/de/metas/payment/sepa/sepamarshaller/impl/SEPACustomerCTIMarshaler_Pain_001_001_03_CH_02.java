@@ -59,6 +59,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -607,7 +609,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			cdtr.setNm(getFirstNonEmpty(
 					() -> line.getSEPA_MandateRefNo(),
 					() -> line.getC_BP_BankAccount().getA_Name(),
-					() -> line.getC_BPartner().getName()));
+					() -> getBPartnerNameById(line.getC_BPartner_ID())));
 
 			// task 08655: also provide the creditor's address
 			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
@@ -953,7 +955,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		if (line.getC_BPartner_ID() > 0)
 		{
 			sb.append("@C_BPartner_ID@ ");
-			sb.append(line.getC_BPartner().getName());
+			sb.append(getBPartnerNameById(line.getC_BPartner_ID()));
 		}
 		if (line.getC_BP_BankAccount_ID() > 0)
 		{
@@ -976,5 +978,11 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			return null;
 		}
 		return input.replaceAll(FORBIDDEN_CHARS, "_");
+	}
+	
+	private String getBPartnerNameById(final int bpartnerRepoId)
+	{
+		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
+		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
 	}
 }

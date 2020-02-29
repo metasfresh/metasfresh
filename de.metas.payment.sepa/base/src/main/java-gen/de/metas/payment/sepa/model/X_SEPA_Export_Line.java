@@ -15,7 +15,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 298725425L;
+	private static final long serialVersionUID = 2085289787L;
 
     /** Standard Constructor */
     public X_SEPA_Export_Line (Properties ctx, int SEPA_Export_Line_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
@@ -108,44 +96,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -181,16 +132,29 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 		return ii.intValue();
 	}
 
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	public int getC_BPartner_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Währung.
@@ -340,7 +304,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	}
 
 	@Override
-	public de.metas.payment.sepa.model.I_SEPA_Export getSEPA_Export() throws RuntimeException
+	public de.metas.payment.sepa.model.I_SEPA_Export getSEPA_Export()
 	{
 		return get_ValueAsPO(COLUMNNAME_SEPA_Export_ID, de.metas.payment.sepa.model.I_SEPA_Export.class);
 	}
@@ -396,7 +360,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	}
 
 	@Override
-	public de.metas.payment.sepa.model.I_SEPA_Export_Line getSEPA_Export_Line_Retry() throws RuntimeException
+	public de.metas.payment.sepa.model.I_SEPA_Export_Line getSEPA_Export_Line_Retry()
 	{
 		return get_ValueAsPO(COLUMNNAME_SEPA_Export_Line_Retry_ID, de.metas.payment.sepa.model.I_SEPA_Export_Line.class);
 	}
