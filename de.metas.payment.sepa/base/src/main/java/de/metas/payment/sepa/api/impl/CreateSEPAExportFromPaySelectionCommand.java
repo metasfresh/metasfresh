@@ -1,24 +1,22 @@
 package de.metas.payment.sepa.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Org;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
+import de.metas.payment.sepa.interfaces.I_C_PaySelection;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
@@ -55,9 +53,9 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private final I_C_PaySelection source;
 
-	public CreateSEPAExportFromPaySelectionCommand(@NonNull final I_C_PaySelection source)
+	public CreateSEPAExportFromPaySelectionCommand(@NonNull final org.compiere.model.I_C_PaySelection source)
 	{
-		this.source = source;
+		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
 	}
 
 	public I_SEPA_Export run()
@@ -113,17 +111,20 @@ class CreateSEPAExportFromPaySelectionCommand
 		return exportLine;
 	}
 
-	private I_SEPA_Export createExportHeader(final I_C_PaySelection paySelectionHeader)
+	private I_SEPA_Export createExportHeader(@NonNull final I_C_PaySelection paySelectionHeader)
 	{
-		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
+		final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(paySelectionHeader.getPaySelectionTrxType());
+		if (paySelectionTrxType == null)
+		{
+			throw new AdempiereException("@Invalid@ @PaySelectionTrxType@");
+		}
 
-		final Properties ctx = getCtx(paySelectionHeader);
-		final String trxName = getTrxName(paySelectionHeader);
+		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
+		header.setSEPA_Protocol(SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType).getCode());
 
 		//
 		// We need the source org BP.
-		final I_AD_Org sourceOrg = create(ctx, paySelectionHeader.getAD_Org_ID(), I_AD_Org.class, trxName);
-		final I_C_BPartner orgBP = partnerOrgBL.retrieveLinkedBPartner(sourceOrg);
+		final I_C_BPartner orgBP = partnerOrgBL.retrieveLinkedBPartner(paySelectionHeader.getAD_Org_ID());
 
 		final org.compiere.model.I_C_BP_BankAccount bankAccountSource = paySelectionHeader.getC_BP_BankAccount();
 		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null");
@@ -136,7 +137,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 
 		// Set corresponding data
-		header.setAD_Org_ID(sourceOrg.getAD_Org_ID());
+		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
 		final String iban = bpBankAccount.getIBAN();
 		if (!Check.isEmpty(iban, true))
 		{

@@ -350,6 +350,29 @@ public interface I_SEPA_Export
     public static final String COLUMNNAME_SEPA_Export_ID = "SEPA_Export_ID";
 
 	/**
+	 * Set SEPA Protocol.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSEPA_Protocol (java.lang.String SEPA_Protocol);
+
+	/**
+	 * Get SEPA Protocol.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSEPA_Protocol();
+
+    /** Column definition for SEPA_Protocol */
+    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_Protocol = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_Protocol", null);
+    /** Column name SEPA_Protocol */
+    public static final String COLUMNNAME_SEPA_Protocol = "SEPA_Protocol";
+
+	/**
 	 * Set Swift code.
 	 * Swift Code or BIC
 	 *

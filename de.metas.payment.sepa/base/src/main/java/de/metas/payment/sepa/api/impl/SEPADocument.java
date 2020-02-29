@@ -29,7 +29,6 @@ import de.metas.util.Check;
 
 public class SEPADocument implements ISEPADocument
 {
-
 	private final int AD_Client_ID;
 	private final int AD_Org_ID;
 	private final BigDecimal Amt;

@@ -14,6 +14,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -82,6 +83,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final String bic)
 	{
 		final I_SEPA_Export sepaExport = newInstance(I_SEPA_Export.class);
+		sepaExport.setSEPA_Protocol(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.getCode());
 		sepaExport.setSEPA_CreditorIdentifier(SEPA_CreditorIdentifier);
 		sepaExport.setSwiftCode(bic);
 		sepaExport.setIsExportBatchBookings(true);

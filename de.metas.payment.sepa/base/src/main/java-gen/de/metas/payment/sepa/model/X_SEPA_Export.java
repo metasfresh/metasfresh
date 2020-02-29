@@ -14,7 +14,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1113395518L;
+	private static final long serialVersionUID = 1388902854L;
 
     /** Standard Constructor */
     public X_SEPA_Export (Properties ctx, int SEPA_Export_ID, String trxName)
@@ -253,6 +253,32 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * SEPA_Protocol AD_Reference_ID=541110
+	 * Reference name: SEPA_Protocol
+	 */
+	public static final int SEPA_PROTOCOL_AD_Reference_ID=541110;
+	/** Credit Transfer (pain.001.001.03.ch.02) = pain.001.001.03.ch.02 */
+	public static final String SEPA_PROTOCOL_CreditTransferPain00100103Ch02 = "pain.001.001.03.ch.02";
+	/** Direct Debit (pain.008.003.02) = pain.008.003.02 */
+	public static final String SEPA_PROTOCOL_DirectDebitPain00800302 = "pain.008.003.02";
+	/** Set SEPA Protocol.
+		@param SEPA_Protocol SEPA Protocol	  */
+	@Override
+	public void setSEPA_Protocol (java.lang.String SEPA_Protocol)
+	{
+
+		set_Value (COLUMNNAME_SEPA_Protocol, SEPA_Protocol);
+	}
+
+	/** Get SEPA Protocol.
+		@return SEPA Protocol	  */
+	@Override
+	public java.lang.String getSEPA_Protocol () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SEPA_Protocol);
 	}
 
 	/** Set Swift code.

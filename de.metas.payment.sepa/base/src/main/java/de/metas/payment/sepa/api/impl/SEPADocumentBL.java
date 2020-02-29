@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_AD_Org;
@@ -25,9 +26,12 @@ import de.metas.payment.sepa.api.ISEPADocument;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
+import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerDirectDebitMarshaler_Pain_008_003_02;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
 import de.metas.util.Check;
 import de.metas.util.FileUtils;
@@ -183,9 +187,10 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	@Override
 	public SEPACreditTransferXML exportCreditTransferXML(@NonNull final I_SEPA_Export sepaExport)
 	{
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final SEPAProtocol protocol = SEPAProtocol.ofCode(sepaExport.getSEPA_Protocol());
 
-		final SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 marshaler = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final SEPAMarshaler marshaler = newSEPAMarshaler(protocol);
 		marshaler.marshal(sepaExport, out);
 
 		return SEPACreditTransferXML.builder()
@@ -193,5 +198,22 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				.contentType(MimeType.TYPE_XML)
 				.content(out.toByteArray())
 				.build();
+	}
+
+	private SEPAMarshaler newSEPAMarshaler(@NonNull final SEPAProtocol protocol)
+	{
+		if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
+		{
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
+		}
+		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
+		{
+			return new SEPACustomerDirectDebitMarshaler_Pain_008_003_02();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown SEPA protocol: " + protocol);
+		}
+
 	}
 }

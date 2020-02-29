@@ -3,7 +3,6 @@ package de.metas.banking.payment.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -12,15 +11,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
@@ -31,7 +31,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
@@ -40,11 +39,13 @@ import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -53,9 +54,9 @@ import lombok.NonNull;
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
-	private static final transient Logger log = LogManager.getLogger(PaySelectionUpdater.class);
+	private static final transient Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
 	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private boolean _configurable = true;
@@ -75,12 +76,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	/**
 	 * Match Requirement
 	 */
-	private InvoiceMatchingMode _matchRequirement;
+	private Optional<InvoiceMatchingMode> _matchRequirement = Optional.empty();
 	/**
 	 * Match Requirement
 	 */
 	private Timestamp _payDate = null;
-
 	/**
 	 * Payment Rule
 	 */
@@ -134,7 +134,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	PaySelectionUpdater()
 	{
-		super();
 	}
 
 	@Override
@@ -145,35 +144,27 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private final void updateInTrx()
 	{
-		// Lock this updater. Shall not be configurable anymore.
 		assertConfigurable();
-		_configurable = false;
+		_configurable = false; // Lock this updater. Shall not be configurable anymore.
 
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = buildSelectSQL(sqlParams);
-		ResultSet rs = null;
-		PreparedStatement pstmt = null;
-		try
+		//
+		// Validate InvoiceMatchingMode vs PaySelectionTrxType
+		final I_C_PaySelection paySelection = getC_PaySelection();
+		final InvoiceMatchingMode invoiceMatchingMode = getMatchRequirement().orElse(null);
+		if (invoiceMatchingMode != null)
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
-
-			rs = pstmt.executeQuery();
-			while (rs.next())
+			final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(paySelection.getPaySelectionTrxType());
+			if (paySelectionTrxType != null && !invoiceMatchingMode.isCompatibleWith(paySelectionTrxType))
 			{
-				final PaySelectionLineCandidate candidate = retrievePaySelectionLineCandidate(rs);
-				createOrUpdatePaySelectionLine(candidate);
+				throw new AdempiereException("@Invalid@ @PaySelectionTrxType@");
 			}
 		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
 
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+		//
+		// Create/Update PaySelection lines
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final String sql = buildSelectSQL(sqlParams);
+		DB.forEachRow(sql, sqlParams, this::createOrUpdatePaySelectionLine);
 
 		//
 		// Delete remaining pay selection lines (which were enqueued to be updated),
@@ -182,6 +173,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			deletePaySelectionLine(paySelectionLine);
 		}
+
+		//
+		// Update the PaySelection
+		paySelection.setPaySelectionTrxType(invoiceMatchingMode.getPaySelectionTrxType().getCode());
+		InterfaceWrapperHelper.save(paySelection);
+
+		// make sure pay selection is invalidated
+		cacheInvalidationForCurrentPaySelection();
 	}
 
 	private final void assertConfigurable()
@@ -203,7 +202,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			sb.append(", @Deleted@: ").append(countDeleted);
 		}
-		cacheInvalidationForCurrentPaySelection();
 		return sb.toString();
 	}
 
@@ -213,9 +211,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		Check.assume(sqlParams != null && sqlParams.isEmpty(), "instantiated empty list");
 
-		if (log.isInfoEnabled())
+		if (logger.isInfoEnabled())
 		{
-			log.info("C_PaySelection_ID=" + getC_PaySelection()
+			logger.info("C_PaySelection_ID=" + getC_PaySelection()
 					+ ", OnlyDiscount=" + isOnlyDiscount() + ", OnlyDue=" + isOnlyDue()
 					+ ", IncludeInDispute=" + getIncludeInDispute()
 					+ ", MatchRequirement=" + getMatchRequirement()
@@ -224,7 +222,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		final I_C_PaySelection paySelection = getC_PaySelection();
-		final int C_CurrencyTo_ID = paySelection.getC_BP_BankAccount().getC_Currency_ID();
+		final CurrencyId C_CurrencyTo_ID = CurrencyId.ofRepoId(paySelection.getC_BP_BankAccount().getC_Currency_ID());
 		final Timestamp payDate;
 
 		//
@@ -273,7 +271,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		// Only COmpleted/CLosed invoices
 		{
-			sql += " AND i.DocStatus IN ('CO','CL')";
+			sql += " AND i.DocStatus IN (?,?)";
+			sqlParams.add(DocStatus.Completed);
+			sqlParams.add(DocStatus.Closed);
 		}
 
 		// Only those invoices which are matching C_PaySelection's currency (07885)
@@ -327,6 +327,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sql += " AND PaymentRule=?"; // ##
 			sqlParams.add(getPaymentRule());
 		}
+
 		// OnlyDiscount
 		if (isOnlyDiscount())
 		{
@@ -387,8 +388,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType!='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
-		final InvoiceMatchingMode matchRequirement = getMatchRequirement();
-		if (InvoiceMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
+		final InvoiceMatchingMode matchRequirement = getMatchRequirement().orElse(null);
+		if (matchRequirement == null) // ALL
+		{
+			return "AND ( (" + whereCreditTransferToVendor + ") OR ( " + whereDirectDebitFromCustomer + " ) OR (" + whereCreditTransferToCustomer + ") )";
+		}
+		else if (InvoiceMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
 		{
 			return " AND " + whereCreditTransferToVendor;
 		}
@@ -400,14 +405,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			return " AND " + whereCreditTransferToCustomer;
 		}
-		else if (matchRequirement == null) // ALL
-		{
-			return "AND ( (" + whereCreditTransferToVendor + ") OR ( " + whereDirectDebitFromCustomer + " ) OR (" + whereCreditTransferToCustomer + ") )";
-		}
 		else
 		{
 			throw new AdempiereException("Unknown matchRequirement: " + matchRequirement);
 		}
+	}
+
+	private void createOrUpdatePaySelectionLine(final ResultSet rs) throws SQLException
+	{
+		final PaySelectionLineCandidate candidate = retrievePaySelectionLineCandidate(rs);
+		createOrUpdatePaySelectionLine(candidate);
 	}
 
 	private PaySelectionLineCandidate retrievePaySelectionLineCandidate(final ResultSet rs) throws SQLException
@@ -433,7 +440,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		PaymentRule paymentRule = PaymentRule.ofNullableCode(rs.getString("PaymentRule"));
 		// check active payment rules
-		final Set<PaymentRule> paymentRules = getInvoicePaymentRules();
+		final ImmutableSet<PaymentRule> paymentRules = getInvoicePaymentRules();
 		if (paymentRule == null || !paymentRules.contains(paymentRule))
 		{
 			paymentRule = PaymentRule.DirectDeposit;
@@ -456,7 +463,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		//
 		// Dequeue existing C_PaySelectionLine to be updated.
 		// Also make sure the existing pay selection is valid in our context.
-		final I_C_PaySelectionLine existingPaySelectionLine = dequeuePaySelectionLineToUpdateByInvoice(candidate.getC_Invoice_ID()).orNull();
+		final I_C_PaySelectionLine existingPaySelectionLine = dequeuePaySelectionLineToUpdateByInvoice(candidate.getC_Invoice_ID()).orElse(null);
 		if (existingPaySelectionLine != null && existingPaySelectionLine.getC_PaySelection_ID() != paySelection.getC_PaySelection_ID())
 		{
 			throw new AdempiereException("PaySelectionLine to update it's not matching the PaySelection header"
@@ -494,12 +501,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		if (isNewPaySelectionLine)
 		{
 			countCreated++;
-			log.debug("Created {}", paySelectionLine);
+			logger.debug("Created {}", paySelectionLine);
 		}
 		else
 		{
 			countUpdated++;
-			log.debug("Updated {}", paySelectionLine);
+			logger.debug("Updated {}", paySelectionLine);
 		}
 	}
 
@@ -517,7 +524,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// Actually delete the pay selection line & update statistics
 		InterfaceWrapperHelper.delete(paySelectionLine);
 		countDeleted++;
-		log.debug("Deleted {}", paySelectionLine);
+		logger.debug("Deleted {}", paySelectionLine);
 	}
 
 	/**
@@ -645,16 +652,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-	private InvoiceMatchingMode getMatchRequirement()
+	private Optional<InvoiceMatchingMode> getMatchRequirement()
 	{
 		return _matchRequirement;
 	}
 
 	@Override
-	public IPaySelectionUpdater setMatchRequirement(final InvoiceMatchingMode matchRequirement)
+	public IPaySelectionUpdater setMatchRequirement(@Nullable final InvoiceMatchingMode matchRequirement)
 	{
 		assertConfigurable();
-		_matchRequirement = matchRequirement;
+		_matchRequirement = Optional.ofNullable(matchRequirement);
 		return this;
 	}
 
@@ -742,7 +749,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		if (_nextLineNo == null)
 		{
-			final int lastLineNo = paySelectionDAO.retrieveLastPaySelectionLineNo(getC_PaySelection_ID());
+			final int lastLineNo = paySelectionsRepo.retrieveLastPaySelectionLineNo(getC_PaySelection_ID());
 			_nextLineNo = lastLineNo + 10;
 		}
 
@@ -783,7 +790,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		final Map<Integer, I_C_PaySelectionLine> invoiceId2paySelectionLineToUpdate = _invoiceId2paySelectionLineToUpdateSupplier.get();
 		final I_C_PaySelectionLine paySelectionLine = invoiceId2paySelectionLineToUpdate.remove(invoiceId);
-		return Optional.fromNullable(paySelectionLine);
+		return Optional.ofNullable(paySelectionLine);
 	}
 
 	/**

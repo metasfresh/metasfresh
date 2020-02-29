@@ -2,6 +2,8 @@ package de.metas.banking.payment;
 
 import javax.annotation.Nullable;
 
+import org.compiere.model.X_C_PaySelection;
+
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -30,42 +32,30 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum InvoiceMatchingMode implements ReferenceListAwareEnum
+public enum PaySelectionTrxType implements ReferenceListAwareEnum
 {
-	DIRECT_DEBIT_FROM_CUSTOMER("CDD", PaySelectionTrxType.DIRECT_DEBIT), //
-	CREDIT_TRANSFER_TO_CUSTOMER("CRE", PaySelectionTrxType.CREDIT_TRANSFER), //
-	CREDIT_TRANSFER_TO_VENDOR("OUT", PaySelectionTrxType.CREDIT_TRANSFER), //
+	DIRECT_DEBIT(X_C_PaySelection.PAYSELECTIONTRXTYPE_DirectDebit), //
+	CREDIT_TRANSFER(X_C_PaySelection.PAYSELECTIONTRXTYPE_CreditTransfer) //
 	;
-
-	private static final ValuesIndex<InvoiceMatchingMode> index = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
 
-	@Getter
-	private final PaySelectionTrxType paySelectionTrxType;
-
-	InvoiceMatchingMode(
-			@NonNull final String code,
-			@NonNull final PaySelectionTrxType paySelectionTrxType)
+	PaySelectionTrxType(final String code)
 	{
 		this.code = code;
-		this.paySelectionTrxType = paySelectionTrxType;
 	}
 
-	public static InvoiceMatchingMode ofCode(@NonNull final String code)
+	public static PaySelectionTrxType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
 	@Nullable
-	public static InvoiceMatchingMode ofNullableCode(@Nullable final String code)
+	public static PaySelectionTrxType ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
 	}
 
-	public boolean isCompatibleWith(@NonNull final PaySelectionTrxType trxTypeToMatch)
-	{
-		return trxTypeToMatch.equals(this.paySelectionTrxType);
-	}
+	private static final ValuesIndex<PaySelectionTrxType> index = ReferenceListAwareEnums.index(values());
 }

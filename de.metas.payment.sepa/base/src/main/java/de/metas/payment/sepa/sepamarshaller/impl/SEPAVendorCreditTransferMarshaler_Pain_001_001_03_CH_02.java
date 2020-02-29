@@ -135,7 +135,7 @@ import lombok.NonNull;
  * <p>
  * All other payment modes are <b>not</b> supported (or maybe just "incidentally", when I think of Zahlart 6).
  */
-public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02
+public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
@@ -223,6 +223,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02
 		}
 	}
 
+	@Override
 	public void marshal(
 			@NonNull final I_SEPA_Export sepaDocument,
 			@NonNull final OutputStream out)
@@ -979,7 +980,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02
 		}
 		return input.replaceAll(FORBIDDEN_CHARS, "_");
 	}
-	
+
 	private String getBPartnerNameById(final int bpartnerRepoId)
 	{
 		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
