@@ -575,7 +575,7 @@ SubHeader.propTypes = {
   siteName: PropTypes.any,
   standardActions: PropTypes.any,
   viewId: PropTypes.string,
-  windowId: PropTypes.string.isRequired,
+  windowId: PropTypes.string,
 };
 
 /**
