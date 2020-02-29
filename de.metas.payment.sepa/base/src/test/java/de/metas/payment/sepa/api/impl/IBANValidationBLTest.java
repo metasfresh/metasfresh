@@ -3,6 +3,8 @@
  */
 package de.metas.payment.sepa.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.payment.sepa
@@ -16,19 +18,14 @@ package de.metas.payment.sepa.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
 
@@ -37,11 +34,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.payment.sepa.interfaces.I_C_Country;
 
@@ -49,21 +44,13 @@ import de.metas.payment.sepa.interfaces.I_C_Country;
  * @author cg
  *
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class IBANValidationBLTest
 {
 
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-		private Properties ctx;
+	private Properties ctx;
 
-	@BeforeClass
-	public static void staticInit()
-	{
-		AdempiereTestHelper.get().staticInit();
-	}
-
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
@@ -111,8 +98,7 @@ public class IBANValidationBLTest
 			String branchCodeCharType, String branchCodeLength, String branchCodeSeqNo,
 			String accountNumberCharType, String accountNumberLength, String accountNumberSeqNo,
 			String accountTypeCharTyoe, String accountTypeLength, String accountTypeSeqNo,
-			String nationalCheckDigitCharType, String nationalCheckDigitLength, String nationalCheckDigiSeqNo
-			)
+			String nationalCheckDigitCharType, String nationalCheckDigitLength, String nationalCheckDigiSeqNo)
 	{
 		final I_C_Country country = InterfaceWrapperHelper.create(ctx, I_C_Country.class, ITrx.TRXNAME_None);
 		country.setCountryCode(countryCode);
@@ -141,40 +127,39 @@ public class IBANValidationBLTest
 	}
 
 	@Test
-	public void test_CheckDigit_GoodIBAN() 
+	public void test_CheckDigit_GoodIBAN()
 	{
 		final IBANValidationBL ibanValidationBL = new IBANValidationBL();
 		final String ibanDE = "DE45500105170041262312";
 		final int checkDigitDE = ibanValidationBL.ISO7064Mod97_10(ibanDE);
-		
+
 		final String ibanCH = "CH9300762011623852957";
 		final int checkDigitCH = ibanValidationBL.ISO7064Mod97_10(ibanCH);
-		
+
 		final String ibanFR = "FR1420041010050500013M02606";
 		final int checkDigitFR = ibanValidationBL.ISO7064Mod97_10(ibanFR);
-		
-		assertThat(" Check digit should be 1 , but is " + checkDigitDE, 1, is(checkDigitDE));
-		assertThat(" Check digit should be 1 , but is " + checkDigitCH, 1, is(checkDigitCH));
-		assertThat(" Check digit should be 1 , but is " + checkDigitFR, 1, is(checkDigitFR));
+
+		assertThat(checkDigitDE).isEqualTo(1);
+		assertThat(checkDigitCH).isEqualTo(1);
+		assertThat(checkDigitFR).isEqualTo(1);
 	}
-	
 
 	@Test
-	public void test_CheckDigit_WrongIBAN() 
+	public void test_CheckDigit_WrongIBAN()
 	{
 		final IBANValidationBL ibanValidationBL = new IBANValidationBL();
 		final String ibanDE = "DE45500105170041262311";
 		final int checkDigitDE = ibanValidationBL.ISO7064Mod97_10(ibanDE);
-		
+
 		final String ibanCH = "CH9300762011623852956";
 		final int checkDigitCH = ibanValidationBL.ISO7064Mod97_10(ibanCH);
-		
+
 		final String ibanFR = "FR1420041010050500013M02605";
 		final int checkDigitFR = ibanValidationBL.ISO7064Mod97_10(ibanFR);
-		
-		assertThat(" Check digit should be different from 1! " , 1, not(checkDigitDE));
-		assertThat(" Check digit should be different from 1! " , 1, not(checkDigitCH));
-		assertThat(" Check digit should be different from 1! " , 1, not(checkDigitFR));
+
+		assertThat(checkDigitDE).isNotEqualTo(1);
+		assertThat(checkDigitCH).isNotEqualTo(1);
+		assertThat(checkDigitFR).isNotEqualTo(1);
 	}
-	
+
 }

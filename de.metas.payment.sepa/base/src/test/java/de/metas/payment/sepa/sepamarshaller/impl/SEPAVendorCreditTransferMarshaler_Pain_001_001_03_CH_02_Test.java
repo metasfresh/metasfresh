@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -18,7 +18,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 
-public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Tests
+public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
 	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
 	private Document xmlDocument;
@@ -26,7 +26,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Tests
 	private CurrencyId eur;
 	private CurrencyId chf;
 
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
