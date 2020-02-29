@@ -21,10 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
-import de.metas.security.UserAuthTokenRepository;
 import de.metas.util.StringUtils;
-import de.metas.util.web.security.UserAuthTokenFilter;
-import de.metas.util.web.security.UserAuthTokenService;
 
 /*
  * #%L
@@ -48,13 +45,10 @@ import de.metas.util.web.security.UserAuthTokenService;
  * #L%
  */
 
-@SpringBootApplication(scanBasePackageClasses = {
-		PrintServiceMain.class,
-		UserAuthTokenRepository.class,
-		UserAuthTokenService.class })
-@ServletComponentScan(basePackageClasses = UserAuthTokenFilter.class)
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@ServletComponentScan(value = { "de.metas", "org.adempiere" })
 @Profile(Profiles.PROFILE_PrintService)
-public class PrintServiceMain
+public class Application
 {
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -71,7 +65,7 @@ public class PrintServiceMain
 
 		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
-		new SpringApplicationBuilder(PrintServiceMain.class)
+		new SpringApplicationBuilder(Application.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
 				.profiles(Profiles.PROFILE_PrintService)

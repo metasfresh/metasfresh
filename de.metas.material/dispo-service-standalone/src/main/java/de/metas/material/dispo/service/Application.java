@@ -51,13 +51,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
  */
 
 /**
- * metasfresh server boot.
- *
- * @author metas-dev <dev@metasfresh.com>
+ * metasfresh material dispo standalone services.
  */
-@SpringBootApplication( //
-		scanBasePackages = { "de.metas", "org.adempiere" }  //
-)
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @Profile(Application.PROFILE_MaterialDispo_Standalone)
 public class Application
 {

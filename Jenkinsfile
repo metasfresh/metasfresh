@@ -135,18 +135,18 @@ node('agent && linux')
 				'metasfresh-material-dispo', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
 				MF_VERSION, // versionSuffix
-				'de.metas.material/dispo-service/target/docker' // workDir
+				'de.metas.material/dispo-service-standalone/target/docker' // workDir
 			);
 			final String publishedMaterialDispoDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
 
 			final DockerConf reportDockerConf = materialDispoDockerConf
 				.withArtifactName('metasfresh-report')
-				.withWorkDir('de.metas.report/report-service/target/docker');
+				.withWorkDir('de.metas.report/report-service-standalone/target/docker');
 			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
 			final DockerConf printDockerConf = materialDispoDockerConf
 				.withArtifactName('metasfresh-print')
-				.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
+				.withWorkDir('de.metas.printing.rest-api-impl-standalone/target/docker');
 			final String publishedPrintDockerImageName = dockerBuildAndPush(printDockerConf)
 
 			final DockerConf msv3ServerDockerConf = materialDispoDockerConf
