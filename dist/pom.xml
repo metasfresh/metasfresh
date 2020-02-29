@@ -394,7 +394,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
-			<artifactId>de.metas.payment.sepa</artifactId>
+			<artifactId>de.metas.payment.sepa.base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
