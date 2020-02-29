@@ -43,6 +43,7 @@ import de.metas.banking.payment.InvoiceMatchingMode;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
@@ -714,10 +715,13 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		assertConfigurable();
 		_paySelection = paySelection;
-		if (paySelection.isProcessed())
+
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(paySelection.getDocStatus());
+		if (!docStatus.isDraftedOrInProgress())
 		{
-			throw new AdempiereException("Document already completed");
+			throw new AdempiereException("Document already processed");
 		}
+
 		return this;
 	}
 
