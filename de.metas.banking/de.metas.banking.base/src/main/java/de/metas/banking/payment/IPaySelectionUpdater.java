@@ -74,7 +74,7 @@ public interface IPaySelectionUpdater
 
 	IPaySelectionUpdater setPayDate(Timestamp payDate);
 
-	IPaySelectionUpdater setMatchRequirement(String matchRequirement);
+	IPaySelectionUpdater setMatchRequirement(InvoiceMatchingMode matchRequirement);
 
 	IPaySelectionUpdater setIncludeInDispute(boolean includeInDispute);
 

@@ -1,8 +1,13 @@
 package de.metas.banking.process;
 
+import java.sql.Timestamp;
+
+import org.compiere.model.I_C_PaySelection;
+
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.InvoiceMatchingMode;
 import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -11,9 +16,6 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_PaySelection;
-
-import java.sql.Timestamp;
 
 /*
  * #%L
@@ -38,10 +40,7 @@ import java.sql.Timestamp;
  */
 
 /**
- * Create Payment Selection Lines from AP Invoices
- *
- * @author tsa
- * @task 08972
+ * Create Payment Selection Lines from AP or AR Invoices
  */
 public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPrecondition
 {
@@ -102,8 +101,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 			}
 			else if (name.equals("MatchRequirement"))
 			{
-				final String p_MatchRequirement = para.getParameterAsString();
-				paySelectionUpdater.setMatchRequirement(p_MatchRequirement);
+				final InvoiceMatchingMode matchRequirement = InvoiceMatchingMode.ofCode(para.getParameterAsString());
+				paySelectionUpdater.setMatchRequirement(matchRequirement);
 			}
 			else if (name.equals("PayDate"))
 			{

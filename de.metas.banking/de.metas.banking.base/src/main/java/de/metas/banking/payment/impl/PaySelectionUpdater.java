@@ -1,38 +1,5 @@
 package de.metas.banking.payment.impl;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.logging.LogManager;
-import de.metas.payment.PaymentRule;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Constants;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,6 +13,41 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.logging.LogManager;
+import de.metas.payment.PaymentRule;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
@@ -53,33 +55,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-
-	// private static final String INV_WITH_PO = "P";
-	// private static final String INV_WITH_PAY_RECEIPT = "R";
-	// private static final String INV_EMPLOYEE = "E";
-	// private static final String INV_INTERNAL = "C";
-
-	/**
-	 * Customer direct debit
-	 */
-	private static final String INV_C_DD = "CDD";
-
-	/**
-	 * Customer remittance
-	 */
-	private static final String INV_C_RE = "CRE";
-
-	private static final String INV_ALL = "ALL";
-
-	/**
-	 * Internal (recurring payment) and vendor invoices
-	 */
-	private static final String INV_OUT = "OUT";
-
-	/**
-	 * Salary/Commission invoices
-	 */
-	private static final String INV_SAL = "SAL";
 
 	private boolean _configurable = true;
 	private Properties _ctx = null;
@@ -101,7 +76,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	/**
 	 * Match Requirement
 	 */
-	private String _matchRequirement = INV_ALL;
+	private InvoiceMatchingMode _matchRequirement;
 	/**
 	 * Match Requirement
 	 */
@@ -300,7 +275,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " FROM C_Invoice i "
 				+ " LEFT JOIN C_Doctype dt on i.C_Doctype_ID = dt.C_Doctype_ID "
 				+ " WHERE true " //
-				;
+		;
 		sqlParams.add(C_CurrencyTo_ID); // #1
 		sqlParams.add(payDate); // #2
 		sqlParams.add(payDate); // #3
@@ -418,56 +393,38 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(getC_BP_Group_ID());
 		}
 
-		// // PO Matching Requiremnent
-		// if (p_MatchRequirement.equals(INV_WITH_PO) || p_MatchRequirement.equals("B"))
-		// {
-		// sql += " AND EXISTS (SELECT * FROM C_InvoiceLine il "
-		// + "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-		// + " AND QtyInvoiced=(SELECT SUM(Qty) FROM M_MatchPO m "
-		// + "WHERE il.C_InvoiceLine_ID=m.C_InvoiceLine_ID))";
-		// }
-		// // Receipt Matching Requiremnent
-		// else if (p_MatchRequirement.equals(INV_WITH_PAY_RECEIPT) || p_MatchRequirement.equals("B"))
-		// {
-		// sql += " AND EXISTS (SELECT * FROM C_InvoiceLine il "
-		// + "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-		// + " AND QtyInvoiced=(SELECT SUM(Qty) FROM M_MatchInv m "
-		// + "WHERE il.C_InvoiceLine_ID=m.C_InvoiceLine_ID))";
-		// }
-
-		// Vendor invoice and recurrent payment with direct deposit
-		final String whereVendorRE = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-
-		// customer invoice with direct debit
-		final String whereCustomerDD = " i.IsSOTrx='Y' AND dt.DocBaseType!='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-
-		// Customer credit memo with direct deposit
-		final String whereCustomerRE = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-
-		final String matchRequirement = getMatchRequirement();
-		if (INV_SAL.equals(matchRequirement))
-		{
-			// salary/commission. Note: this is a subset of 'whereVendorRE'
-			sql += " AND dt.Docbasetype = '" + Constants.DOCBASETYPE_AEInvoice + "' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-		}
-		else if (INV_OUT.equals(matchRequirement))
-		{
-			sql += " AND " + whereVendorRE;
-		}
-		else if (INV_C_DD.equals(matchRequirement))
-		{
-			sql += " AND " + whereCustomerDD;
-		}
-		else if (INV_C_RE.equals(matchRequirement))
-		{
-			sql += " AND " + whereCustomerRE;
-		}
-		else if (INV_ALL.equals(matchRequirement))
-		{
-			sql += "AND ( (" + whereVendorRE + ") OR ( " + whereCustomerDD + " ) OR (" + whereCustomerRE + ") )";
-		}
+		sql += buildSelectSQL_MatchRequirement();
 
 		return sql;
+	}
+
+	private String buildSelectSQL_MatchRequirement()
+	{
+		final String whereCreditTransferToVendor = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
+		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType!='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
+		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
+
+		final InvoiceMatchingMode matchRequirement = getMatchRequirement();
+		if (InvoiceMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
+		{
+			return " AND " + whereCreditTransferToVendor;
+		}
+		else if (InvoiceMatchingMode.DIRECT_DEBIT_FROM_CUSTOMER.equals(matchRequirement))
+		{
+			return " AND " + whereDirectDebitFromCustomer;
+		}
+		else if (InvoiceMatchingMode.CREDIT_TRANSFER_TO_CUSTOMER.equals(matchRequirement))
+		{
+			return " AND " + whereCreditTransferToCustomer;
+		}
+		else if (matchRequirement == null) // ALL
+		{
+			return "AND ( (" + whereCreditTransferToVendor + ") OR ( " + whereDirectDebitFromCustomer + " ) OR (" + whereCreditTransferToCustomer + ") )";
+		}
+		else
+		{
+			throw new AdempiereException("Unknown matchRequirement: " + matchRequirement);
+		}
 	}
 
 	private PaySelectionLineCandidate retrievePaySelectionLineCandidate(final ResultSet rs) throws SQLException
@@ -755,13 +712,13 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-	private String getMatchRequirement()
+	private InvoiceMatchingMode getMatchRequirement()
 	{
 		return _matchRequirement;
 	}
 
 	@Override
-	public IPaySelectionUpdater setMatchRequirement(final String matchRequirement)
+	public IPaySelectionUpdater setMatchRequirement(final InvoiceMatchingMode matchRequirement)
 	{
 		assertConfigurable();
 		_matchRequirement = matchRequirement;
