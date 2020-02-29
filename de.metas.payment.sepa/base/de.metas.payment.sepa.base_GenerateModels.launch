@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
-<stringAttribute key="bad_container_name" value="\de"/>
+<stringAttribute key="bad_container_name" value="\metasfresh\de.metas.payment.sepa.base"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/de.metas.adempiere.adempiere.base/src/main/java-legacy/org/adempiere/util/GenerateModel.java"/>
 </listAttribute>
