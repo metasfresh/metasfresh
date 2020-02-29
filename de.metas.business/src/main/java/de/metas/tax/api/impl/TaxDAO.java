@@ -33,23 +33,25 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.Query;
-import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -80,34 +82,34 @@ public class TaxDAO implements ITaxDAO
 
 	@Override
 	@Cached(cacheName = I_C_VAT_SmallBusiness.Table_Name + "#By#C_BPartner_ID#Date")
-	public boolean retrieveIsTaxExempt(
-			final @CacheCtx Properties ctx,
-			final int bPartnerId,
-			final Timestamp date,
-			final @CacheTrx String trxName)
+	public boolean retrieveIsTaxExemptSmallBusiness(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final Timestamp date)
 	{
-		final Timestamp dateTrunc = TimeUtil.getDay(date);
-
-		final String whereClause = I_C_VAT_SmallBusiness.COLUMNNAME_C_BPartner_ID + "=?"
-				+ " AND " + I_C_VAT_SmallBusiness.COLUMNNAME_ValidFrom + "<=?"
-				+ " AND " + I_C_VAT_SmallBusiness.COLUMNNAME_ValidTo + ">=?";
-
-		boolean match = new Query(ctx, I_C_VAT_SmallBusiness.Table_Name, whereClause, trxName)
-				.setParameters(bPartnerId, dateTrunc, dateTrunc)
-				.setOnlyActiveRecords(true)
+		return queryBL.createQueryBuilder(I_C_VAT_SmallBusiness.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_SmallBusiness.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addCompareFilter(I_C_VAT_SmallBusiness.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_VAT_SmallBusiness.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
+				.create()
 				.anyMatch();
-
-		return match;
 	}
 
 	@Override
-	public boolean retrieveIsTaxExempt(final I_C_BPartner bPartner, final Timestamp date)
+	public TaxId retrieveExemptTax(@NonNull final OrgId orgId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
-		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
-		final int bPartnerId = bPartner.getC_BPartner_ID();
-
-		return retrieveIsTaxExempt(ctx, bPartnerId, date, trxName);
+		int C_Tax_ID = queryBL.createQueryBuilder(I_C_Tax.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_IsTaxExempt, true)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId)
+				.orderByDescending(I_C_Tax.COLUMNNAME_Rate)
+				.create()
+				.firstId();
+		if (C_Tax_ID <= 0)
+		{
+			throw new TaxNoExemptFoundException(orgId.getRepoId());
+		}
+		return TaxId.ofRepoId(C_Tax_ID);
 	}
 
 	@Override

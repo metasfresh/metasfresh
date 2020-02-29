@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
-import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.services.InvoiceCandidateFacadeService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -79,35 +78,20 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		logger.debug("selectedICsFilter={}", selectedICsFilter);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Processing sales order InvoiceCandidates");
-		final Iterator<InvoiceCandidateId> salesOrderIcIds = createInvoiceCandidateIdIterator(selectedICsFilter, true/* salesOrderIcs */);
+		final Iterator<InvoiceCandidateId> salesOrderIcIds = createInvoiceCandidateIdIterator(selectedICsFilter);
 		final Result salesOrderIcResult = processInvoiceCandidates(salesOrderIcIds);
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} sales order InvoiceCandidates; anyException={}", salesOrderIcResult.getCounter(), salesOrderIcResult.isAnyException());
-
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Processing settlement InvoiceCandidates");
-		final Iterator<InvoiceCandidateId> settlementIcIds = createInvoiceCandidateIdIterator(selectedICsFilter, false/* salesOrderIcs */);
-		final Result settlementIcResult = processInvoiceCandidates(settlementIcIds);
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} settlement InvoiceCandidates; anyException={}", settlementIcResult.getCounter(), settlementIcResult.isAnyException());
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} InvoiceCandidates; anyException={}", salesOrderIcResult.getCounter(), salesOrderIcResult.isAnyException());
 
 		return MSG_OK;
 	}
 
-	private Iterator<InvoiceCandidateId> createInvoiceCandidateIdIterator(
-			@NonNull final IQueryFilter<I_C_Invoice_Candidate> selectedICsFilter,
-			final boolean salesOrderIcs)
+	private Iterator<InvoiceCandidateId> createInvoiceCandidateIdIterator(@NonNull final IQueryFilter<I_C_Invoice_Candidate> selectedICsFilter)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(selectedICsFilter);
 
-		if (salesOrderIcs)
-		{
-			queryBuilder.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, CommissionConstants.COMMISSION_PRODUCT_ID);
-		}
-		else
-		{
-			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, CommissionConstants.COMMISSION_PRODUCT_ID);
-		}
 		final Iterator<InvoiceCandidateId> icIds = queryBuilder
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)

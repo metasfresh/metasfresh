@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -24,9 +25,11 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
+import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -66,10 +69,21 @@ class CommissionConfigFactoryTest
 	private BPartnerId endCustomerId;
 	private BPGroupId customerBPGroudId;
 
+	private ProductId commissionProduct1Id;
+	private ProductId commissionProduct2Id;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		final I_M_Product commissionProduct1Record = newInstance(I_M_Product.class);
+		saveRecord(commissionProduct1Record);
+		commissionProduct1Id = ProductId.ofRepoId(commissionProduct1Record.getM_Product_ID());
+
+		final I_M_Product commissionProduct2Record = newInstance(I_M_Product.class);
+		saveRecord(commissionProduct2Record);
+		commissionProduct2Id = ProductId.ofRepoId(commissionProduct2Record.getM_Product_ID());
 
 		commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
@@ -101,6 +115,7 @@ class CommissionConfigFactoryTest
 	void createFor()
 	{
 		final ConfigData configData = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
@@ -148,11 +163,60 @@ class CommissionConfigFactoryTest
 	}
 
 	@Test
+	void createForNewCommissionInstances_multiple_contracts()
+	{
+		final ConfigData configData1 = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(1); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3); // guard
+
+		ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct2Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(6); // guard
+
+		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
+
+		// invoke method under test
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(salesProductId)
+				.date(date).build();
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		assertThat(configs).hasSize(2);
+
+	}
+
+	@Test
 	void createForNewCommissionInstances_no_configLines()
 	{
 		final ProductCategoryId someOtherProductCategoryId = ProductCategoryId.ofRepoId(34);
 
 		final ConfigData configData = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create an unrelated configLine
@@ -170,6 +234,7 @@ class CommissionConfigFactoryTest
 	void createForNewCommissionInstances_no_matching_configLines()
 	{
 		final ConfigData configData = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create no configLines
