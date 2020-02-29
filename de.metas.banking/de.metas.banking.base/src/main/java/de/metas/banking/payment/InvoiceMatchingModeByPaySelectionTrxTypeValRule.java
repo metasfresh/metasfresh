@@ -11,6 +11,8 @@ import org.compiere.util.NamePair;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -71,9 +73,18 @@ public class InvoiceMatchingModeByPaySelectionTrxTypeValRule extends AbstractJav
 
 	private PaySelectionTrxType extractPaySelectionTrxType(@Nullable final IValidationContext evalCtx)
 	{
-		return isContextAvailable(evalCtx)
-				? PaySelectionTrxType.ofNullableCode(evalCtx.get_ValueAsString(PARAM_PaySelectionTrxType))
-				: null;
+		if (!isContextAvailable(evalCtx))
+		{
+			return null;
+		}
+
+		final String code = evalCtx.get_ValueAsString(PARAM_PaySelectionTrxType);
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return PaySelectionTrxType.ofCode(code);
 	}
 
 	private InvoiceMatchingMode extractInvoiceMatchingMode(@Nullable final NamePair item)

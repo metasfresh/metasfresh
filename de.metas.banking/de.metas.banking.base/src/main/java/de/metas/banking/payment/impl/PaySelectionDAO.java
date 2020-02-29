@@ -153,7 +153,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public I_C_PaySelection retrievePaySelectionById(int paySelectionID)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelection.class, paySelectionID)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelection.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID, paySelectionID)
 				.create()

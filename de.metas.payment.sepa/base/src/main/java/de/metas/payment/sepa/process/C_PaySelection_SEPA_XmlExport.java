@@ -51,12 +51,18 @@ public class C_PaySelection_SEPA_XmlExport
 		}
 
 		final I_C_PaySelection paySelectionHeader = context.getSelectedModel(I_C_PaySelection.class);
+		if (paySelectionHeader == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No payment selection");
+		}
+
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(paySelectionHeader.getDocStatus());
 		if (!docStatus.isCompletedOrClosed())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(
 					"Process " + C_PaySelection_SEPA_XmlExport.class + " only works for completed or closed C_PaySelections; C_PaySelection_ID=" + paySelectionHeader.getC_PaySelection_ID());
 		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
