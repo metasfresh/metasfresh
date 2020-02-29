@@ -1,7 +1,6 @@
 package de.metas.banking.payment;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.compiere.model.IQuery;
@@ -24,7 +23,7 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	int retrievePaySelectionLinesCount(I_C_PaySelection paySelection);
 
-	int retrieveLastPaySelectionLineNo(Properties ctx, int paySelectionId, String trxName);
+	int retrieveLastPaySelectionLineNo(int paySelectionId);
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLinesMatchingInvoice(I_C_PaySelection paySelection, I_C_Invoice invoice);
 
@@ -46,6 +45,8 @@ public interface IPaySelectionDAO extends ISingletonService
 	 * @return processed pay selection which contains given payment
 	 */
 	I_C_PaySelection retrievePaySelection(I_C_Payment payment);
+
+	I_C_PaySelection retrievePaySelectionById(int paySelectionID);
 
 	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, int paymentId);
 

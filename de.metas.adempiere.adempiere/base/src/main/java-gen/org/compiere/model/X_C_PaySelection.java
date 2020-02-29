@@ -15,7 +15,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1205954194L;
+	private static final long serialVersionUID = -1432519166L;
 
     /** Standard Constructor */
     public X_C_PaySelection (Properties ctx, int C_PaySelection_ID, String trxName)
@@ -28,7 +28,6 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
 			setIsApproved (false);
-			setIsExportBatchBookings (true); // Y
 			setName (null); // @#Date@
 			setPayDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setProcessed (false);
@@ -52,7 +51,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
     }
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -278,33 +277,8 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		return false;
 	}
 
-	/** Set Sammelbuchungen exportieren.
-		@param IsExportBatchBookings Sammelbuchungen exportieren	  */
-	@Override
-	public void setIsExportBatchBookings (boolean IsExportBatchBookings)
-	{
-		set_Value (COLUMNNAME_IsExportBatchBookings, Boolean.valueOf(IsExportBatchBookings));
-	}
-
-	/** Get Sammelbuchungen exportieren.
-		@return Sammelbuchungen exportieren	  */
-	@Override
-	public boolean isExportBatchBookings () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsExportBatchBookings);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -312,8 +286,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -355,9 +328,35 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		return (java.lang.String)get_Value(COLUMNNAME_PaySelection_includedTab);
 	}
 
+	/** 
+	 * PaySelectionTrxType AD_Reference_ID=541109
+	 * Reference name: PaySelectionTrxType
+	 */
+	public static final int PAYSELECTIONTRXTYPE_AD_Reference_ID=541109;
+	/** Direct Debit = DD */
+	public static final String PAYSELECTIONTRXTYPE_DirectDebit = "DD";
+	/** Credit Transfer = CT */
+	public static final String PAYSELECTIONTRXTYPE_CreditTransfer = "CT";
+	/** Set Transaktionsart.
+		@param PaySelectionTrxType Transaktionsart	  */
+	@Override
+	public void setPaySelectionTrxType (java.lang.String PaySelectionTrxType)
+	{
+
+		set_Value (COLUMNNAME_PaySelectionTrxType, PaySelectionTrxType);
+	}
+
+	/** Get Transaktionsart.
+		@return Transaktionsart	  */
+	@Override
+	public java.lang.String getPaySelectionTrxType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaySelectionTrxType);
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -366,7 +365,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

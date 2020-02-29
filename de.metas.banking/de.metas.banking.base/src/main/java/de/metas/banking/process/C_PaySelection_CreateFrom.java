@@ -1,5 +1,23 @@
 package de.metas.banking.process;
 
+import java.sql.Timestamp;
+
+import org.compiere.model.I_C_PaySelection;
+
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.document.engine.DocStatus;
+import de.metas.payment.PaymentRule;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -34,10 +52,7 @@ import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**
- * Create Payment Selection Lines from AP Invoices
- * 
- * @author tsa
- * @task 08972
+ * Create Payment Selection Lines from AP or AR Invoices
  */
 public class C_PaySelection_CreateFrom extends JavaProcess
 {
@@ -78,8 +93,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess
 			}
 			else if (name.equals("MatchRequirement"))
 			{
-				final String p_MatchRequirement = para.getParameterAsString();
-				paySelectionUpdater.setMatchRequirement(p_MatchRequirement);
+				final InvoiceMatchingMode matchRequirement = InvoiceMatchingMode.ofCode(para.getParameterAsString());
+				paySelectionUpdater.setMatchRequirement(matchRequirement);
 			}
 			else if (name.equals("PayDate"))
 			{
@@ -88,8 +103,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess
 			}
 			else if (name.equals("PaymentRule"))
 			{
-				final String p_PaymentRule = para.getParameterAsString();
-				paySelectionUpdater.setPaymentRule(p_PaymentRule);
+				final PaymentRule paymentRule = PaymentRule.ofNullableCode(para.getParameterAsString());
+				paySelectionUpdater.setPaymentRule(paymentRule);
 			}
 			else if (name.equals("C_BPartner_ID"))
 			{
@@ -107,7 +122,6 @@ public class C_PaySelection_CreateFrom extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		paySelectionUpdater.setContext(this);
 		paySelectionUpdater.update();
 		return paySelectionUpdater.getSummary();
 	}

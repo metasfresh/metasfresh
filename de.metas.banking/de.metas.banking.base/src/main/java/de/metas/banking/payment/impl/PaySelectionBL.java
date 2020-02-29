@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringJoiner;
 
-import de.metas.banking.api.BankAccountId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,6 +37,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -402,33 +402,47 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void completePaySelection(final I_C_PaySelection paySelection)
 	{
+		final List<I_C_PaySelectionLine> lines = getPaySelectionLines(paySelection);
+		if (lines.isEmpty())
+		{
+			throw new AdempiereException("@NoLines@");
+		}
+
 		validateBankAccounts(paySelection);
 
 		paySelection.setProcessed(true);
 		paySelection.setDocAction(IDocument.ACTION_ReActivate);
+	}
 
+	private List<I_C_PaySelectionLine> getPaySelectionLines(final I_C_PaySelection paySelection)
+	{
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		return paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class);
 	}
 
 	@Override
 	public void validateBankAccounts(final I_C_PaySelection paySelection)
 	{
-		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		final List<I_C_PaySelectionLine> paySelectionLines = getPaySelectionLines(paySelection);
+		validateBankAccounts(paySelectionLines);
+	}
 
-		StringJoiner joiner = new StringJoiner(",");
+	private void validateBankAccounts(final List<I_C_PaySelectionLine> paySelectionLines)
+	{
+		final StringJoiner linesWithoutBankAccount = new StringJoiner(",");
 
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLines)
 		{
 			if (paySelectionLine.getC_BP_BankAccount_ID() <= 0)
 			{
-				joiner.add(String.valueOf(paySelectionLine.getLine()));
+				linesWithoutBankAccount.add(String.valueOf(paySelectionLine.getLine()));
 			}
 		}
 
-		if (joiner.length() != 0)
+		if (linesWithoutBankAccount.length() != 0)
 		{
-			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount, new Object[] { joiner.toString() });
+			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount, new Object[] { linesWithoutBankAccount.toString() });
 		}
-
 	}
 
 	@Override
