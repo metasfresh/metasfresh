@@ -135,7 +135,7 @@ import lombok.NonNull;
  * <p>
  * All other payment modes are <b>not</b> supported (or maybe just "incidentally", when I think of Zahlart 6).
  */
-public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
+public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02
 {
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
@@ -177,7 +177,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 
 	private static final String FORBIDDEN_CHARS = "([^a-zA-Z0-9\\.,;:'\\+\\-/\\(\\)?\\*\\[\\]\\{\\}\\\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])";
 
-	public SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02()
+	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02()
 	{
 		objectFactory = new ObjectFactory();
 		try

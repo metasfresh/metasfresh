@@ -18,9 +18,9 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 
-public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
+public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Tests
 {
-	private SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
+	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
 	private Document xmlDocument;
 
 	private CurrencyId eur;
@@ -31,7 +31,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 	{
 		AdempiereTestHelper.get().init();
 
-		this.xmlGenerator = new SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02();
+		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -132,7 +132,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 
 	private void assertReplaceForbiddenCharsWorks(String input, String expected)
 	{
-		String output = SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
+		String output = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
 		assertThat(output).isEqualTo(expected);
 	}
 

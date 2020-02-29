@@ -28,7 +28,7 @@ import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
 import de.metas.util.Check;
 import de.metas.util.FileUtils;
 import de.metas.util.Services;
@@ -185,7 +185,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	{
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		final SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 marshaler = new SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02();
+		final SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 marshaler = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
 		marshaler.marshal(sepaExport, out);
 
 		return SEPACreditTransferXML.builder()
