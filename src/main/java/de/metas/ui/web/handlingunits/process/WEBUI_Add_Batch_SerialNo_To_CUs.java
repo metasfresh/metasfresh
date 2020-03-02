@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -253,7 +253,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		final HUEditorView view = getView();
 		final ImmutableSet<HuId> selectedHUIds = view.streamByIds(selectedRowIds)
 				.map(HUEditorRow::getHuId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return removeHUsIfDestroyed(selectedHUIds);

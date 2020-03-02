@@ -1,26 +1,5 @@
 package de.metas.ui.web.view.descriptor.annotation;
 
-import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.reflect.FieldReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.reflections.ReflectionUtils;
-import org.slf4j.Logger;
-
-import com.google.common.base.Predicates;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -28,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -63,6 +41,25 @@ import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.reflect.FieldReference;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -363,7 +360,7 @@ public final class ViewColumnHelper
 		final ImmutableMap<String, Object> map = getDescriptor(rowClass)
 				.streamColumns()
 				.map(column -> extractFieldNameAndValueAsJsonObject(row, column))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMap());
 
 		return ViewRowFieldNameAndJsonValues.ofMap(map);

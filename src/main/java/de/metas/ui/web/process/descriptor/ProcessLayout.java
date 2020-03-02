@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -77,7 +77,7 @@ public class ProcessLayout
 		{
 			final ImmutableSet<BarcodeScannerType> barcodeScannerTypes = this.elements.stream()
 					.map(DocumentLayoutElementDescriptor::getBarcodeScannerType)
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 			barcodeScannerType = barcodeScannerTypes.size() == 1 ? barcodeScannerTypes.iterator().next() : null;
 		}

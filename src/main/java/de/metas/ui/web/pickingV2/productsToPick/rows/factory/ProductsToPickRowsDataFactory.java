@@ -19,7 +19,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.eevolution.api.IPPOrderBL;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -216,7 +216,7 @@ public final class ProductsToPickRowsDataFactory
 		return pickingCandidates
 				.stream()
 				.map(pickingCandidate -> createRowFromExistingPickingCandidate(packageable, pickingCandidate))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -293,7 +293,7 @@ public final class ProductsToPickRowsDataFactory
 						.<ProductsToPickRow> comparingInt(row -> row.isHuReservedForThisRow() ? 0 : 1) // consider reserved HU first
 						.thenComparing(bestBeforePolicy.comparator(ProductsToPickRow::getExpiringDate))) // then first/last expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

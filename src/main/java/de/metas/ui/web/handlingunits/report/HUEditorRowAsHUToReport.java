@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits.report;
 
 import java.util.List;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -91,7 +91,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 		return row.getIncludedRows()
 				.stream()
 				.map(HUEditorRow::getAsHUToReportOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

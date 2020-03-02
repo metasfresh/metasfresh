@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import org.adempiere.util.lang.MutableInt;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 /*
  * #%L
@@ -64,7 +64,7 @@ public abstract class WEBUI_M_HU_Receipt_Base
 
 				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
 				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
-				.filter(Predicates.notNull()) // filter out those which are not errors
+				.filter(Objects::nonNull) // filter out those which are not errors
 				.findFirst()
 				.orElse(null);
 		if (firstRejection != null)

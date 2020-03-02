@@ -20,7 +20,7 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -310,7 +310,7 @@ public class MaterialCockpitRow implements IViewRow
 	private void assertNullOrCommonUomId(@NonNull final List<Quantity> quantitiesToVerify)
 	{
 		final boolean notOK = CollectionUtils.hasDifferentValues(
-				ListUtils.copyAndFilter(quantitiesToVerify, Predicates.notNull()),
+				ListUtils.copyAndFilter(quantitiesToVerify, Objects::nonNull),
 				Quantity::getUomId);
 		Check.errorIf(notOK, "Some of the given quantities have different UOMs; quantities={}", quantitiesToVerify);
 	}

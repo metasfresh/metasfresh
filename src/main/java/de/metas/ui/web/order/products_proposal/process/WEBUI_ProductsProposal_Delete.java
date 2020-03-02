@@ -3,7 +3,7 @@ package de.metas.ui.web.order.products_proposal.process;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.pricing.ProductPriceId;
@@ -63,7 +63,7 @@ public class WEBUI_ProductsProposal_Delete extends ProductsProposalViewBasedProc
 		// Remove product prices from database
 		final Set<ProductPriceId> productPriceIds = selectedRows.stream()
 				.map(ProductsProposalRow::getProductPriceId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		priceListsRepo.deleteProductPricesByIds(productPriceIds);
 

@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -86,7 +86,7 @@ class PurchaseRowsSaver
 		// Zerofy remaining candidates:
 		final Set<PurchaseCandidateId> purchaseCandidateIdsSaved = purchaseCandidatesToSave.stream()
 				.map(PurchaseCandidate::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		final List<PurchaseCandidate> purchaseCandidatesToZero = existingPurchaseCandidatesById.values()
 				.stream()
@@ -124,7 +124,7 @@ class PurchaseRowsSaver
 		return groupingRows.stream()
 				.flatMap(groupingRow -> groupingRow.getIncludedRows().stream())
 				.flatMap(lineRow -> lineRow.getDemandGroupReferences().stream())
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -263,7 +263,7 @@ class PurchaseRowsSaver
 		return candidatesGroup.getPurchaseCandidateIds()
 				.stream()
 				.map(existingPurchaseCandidatesById::get)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.sorted(Comparator.comparing(candidate -> candidate.getId().getRepoId()))
 				.collect(ImmutableList.toImmutableList());
 	}

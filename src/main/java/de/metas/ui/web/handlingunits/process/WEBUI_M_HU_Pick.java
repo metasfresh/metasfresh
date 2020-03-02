@@ -6,7 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -103,7 +103,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	{
 		return streamSelectedRows()
 				.map(row -> toHURowOrNull(row))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.filter(HURow::isTopLevelHU)
 				.filter(HURow::isHuStatusActive);
 	}

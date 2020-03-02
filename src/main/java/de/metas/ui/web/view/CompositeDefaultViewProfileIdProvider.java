@@ -1,12 +1,11 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.ToString;
+
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -58,7 +57,7 @@ public final class CompositeDefaultViewProfileIdProvider implements DefaultViewP
 	{
 		return providers.stream()
 				.map(provider -> provider.getDefaultProfileIdByWindowId(windowId))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(ViewProfileId.NULL);
 	}

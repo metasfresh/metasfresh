@@ -9,7 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -207,7 +207,7 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 
 		return purchaseCandidates.stream()
 				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(OrderAndLineId::getOrderId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More or less than one salesOrderId found in the given purchaseCandidates")

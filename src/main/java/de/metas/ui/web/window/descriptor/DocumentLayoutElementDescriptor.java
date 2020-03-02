@@ -1,20 +1,8 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -26,6 +14,16 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -88,7 +86,7 @@ public final class DocumentLayoutElementDescriptor
 
 		final DocumentFieldDescriptor[] elementFields = Stream.of(fieldNames)
 				.map(fieldName -> entityDescriptor.getFieldOrNull(fieldName))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.toArray(size -> new DocumentFieldDescriptor[size]);
 
 		if (elementFields.length == 0)

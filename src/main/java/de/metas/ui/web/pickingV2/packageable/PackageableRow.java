@@ -7,7 +7,7 @@ import java.util.Collection;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -133,7 +133,7 @@ public final class PackageableRow implements IViewRow
 	{
 		return packageables.stream()
 				.map(Packageable::getDeliveryDate)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(TimeUtil::asLocalDate)
 				.min(LocalDate::compareTo)
 				.orElse(null);
@@ -143,7 +143,7 @@ public final class PackageableRow implements IViewRow
 	{
 		return packageables.stream()
 				.map(Packageable::getPreparationDate)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.min(ZonedDateTime::compareTo)
 				.orElse(null);
 	}

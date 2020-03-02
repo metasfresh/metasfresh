@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -294,7 +294,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 						.distinct()
 						.filter(rowId -> !isRowIdIncluded(onlyRowIds, rowId))
 						.map(rowId -> allRowsById.get(rowId.toDocumentId()))
-						.filter(Predicates.notNull())
+						.filter(Objects::nonNull)
 						.filter(HUEditorRowFilters.toPredicate(filter));
 			}
 		}

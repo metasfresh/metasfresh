@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -102,7 +102,7 @@ public final class HUEditorRowFilter
 		this.onlyHUStatuses = onlyHUStatuses;
 		this.excludeHUStatuses = excludeHUStatuses;
 		this.userInputFilter = userInputFilter;
-		this.excludeHUIds = excludeHUIds.stream().filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+		this.excludeHUIds = excludeHUIds.stream().filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public HUEditorRowFilter andOnlyRowIds(final DocumentIdsSelection rowIds)

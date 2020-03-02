@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -182,7 +182,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	{
 		final Set<HUToReport> husToCheck = view.streamByIds(viewRowIdsSelection.getRowIds())
 				.map(HUEditorRow::getAsHUToReportOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return HUReportService.get().getHUsToProcess(husToCheck);

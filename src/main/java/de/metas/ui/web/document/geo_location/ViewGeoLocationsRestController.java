@@ -1,6 +1,6 @@
 package de.metas.ui.web.document.geo_location;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -174,7 +174,7 @@ public class ViewGeoLocationsRestController
 		return rows.getPage()
 				.stream()
 				.map(row -> LocationId.ofRepoIdOrNull(row.getFieldValueAsInt(locationColumnName, -1)))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

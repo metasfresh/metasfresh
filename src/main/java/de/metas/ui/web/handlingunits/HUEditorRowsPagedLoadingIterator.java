@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
@@ -196,7 +196,7 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 		}
 
 		return Stream.of(rows)
-				.filter(Predicates.notNull()) // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
+				.filter(Objects::nonNull) // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
 				.filter(filterPredicate)
 				.iterator();
 	}

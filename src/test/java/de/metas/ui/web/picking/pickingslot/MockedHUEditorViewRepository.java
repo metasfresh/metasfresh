@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
@@ -66,7 +66,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	{
 		return huIds.stream()
 				.map(rowsByHUId::get)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.filter(HUEditorRowFilters.toPredicate(filter))
 				.collect(ImmutableList.toImmutableList());
 	}

@@ -8,7 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -102,7 +102,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
 			return rows.stream()
 					.map(ProductsToPickRow::getShipperId)
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.findFirst()
 					.map(ShipperId::getRepoId)
 					.orElse(-1);
@@ -153,7 +153,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.stream()
 				.filter(ProductsToPickRow::isEligibleForProcessing)
 				.map(ProductsToPickRow::getPickingCandidateId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return pickingCandidatesService

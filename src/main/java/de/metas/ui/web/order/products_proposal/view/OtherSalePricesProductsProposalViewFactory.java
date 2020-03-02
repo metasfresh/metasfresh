@@ -10,7 +10,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -180,7 +180,7 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 					.stream()
 					// .filter(stats -> excludeBPartnerId == null || !BPartnerId.equals(stats.getBpartnerId(), excludeBPartnerId))
 					.map(this::toProductsProposalRowOrNull)
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.sorted(Comparator.comparing(ProductsProposalRow::getProductName)
 							.thenComparing(Comparator.comparing(ProductsProposalRow::getLastSalesInvoiceDate)).reversed())
 					.collect(ImmutableList.toImmutableList());

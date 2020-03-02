@@ -15,7 +15,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -396,7 +396,7 @@ public class HUEditorView implements IView
 		}
 
 		return hus.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
 				.collect(Collectors.toSet());
@@ -460,7 +460,7 @@ public class HUEditorView implements IView
 		final Set<HuId> huIds = streamByIds(rowIds)
 				.filter(HUEditorRow::isPureHU)
 				.map(HUEditorRow::getHuId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		if (huIds.isEmpty())
 		{

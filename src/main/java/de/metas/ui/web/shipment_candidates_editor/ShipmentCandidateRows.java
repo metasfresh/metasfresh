@@ -8,7 +8,7 @@ import java.util.function.UnaryOperator;
 
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
@@ -150,7 +150,7 @@ final class ShipmentCandidateRows implements IEditableRowsData<ShipmentCandidate
 		final ImmutableList<ShipmentScheduleUserChangeRequest> userChanges = rowsById.values()
 				.stream()
 				.map(row -> row.createShipmentScheduleUserChangeRequest().orElse(null))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return !userChanges.isEmpty()

@@ -1,20 +1,5 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.slf4j.Logger;
-
-import com.google.common.base.Predicates;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.logging.LogManager;
@@ -24,6 +9,19 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -158,7 +156,7 @@ public final class LookupDataSourceFactory
 	{
 		tableNames.stream()
 				.map(cacheInvalidationGroupsByTableName::get)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.forEach(CacheInvalidationGroup::cacheInvalidate);
 	}
 

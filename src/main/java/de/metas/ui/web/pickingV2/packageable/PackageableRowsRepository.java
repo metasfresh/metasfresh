@@ -12,7 +12,7 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -99,7 +99,7 @@ final class PackageableRowsRepository
 				.values()
 				.stream()
 				.map(this::createPackageableRowNoFail)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.sorted(Comparator.comparing(PackageableRow::getPreparationDate).thenComparing(PackageableRow::getOrderDocumentNo))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -184,7 +184,7 @@ final class PackageableRowsRepository
 	{
 		return packageables.stream()
 				.map(Packageable::getSalesOrderLineNetAmt)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(Money.sumByCurrencyAndStream())
 				.map(moneyService::toTranslatableString)
 				.collect(TranslatableStrings.joining(", "));

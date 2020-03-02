@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
@@ -173,7 +173,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 
 		final LookupValuesList lookupValues = rawValues.stream()
 				.map(this::convertRawFieldValueToLookupValue)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(LookupValuesList.collect())
 				.ordered(valuesAreOrdered);

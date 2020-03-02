@@ -10,7 +10,7 @@ import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
@@ -157,7 +157,7 @@ public final class HUEditorRowId
 				.map(HUEditorRowId::ofDocumentId)
 				// .filter(HUEditorRowId::isHU) // accept even CUs (i.e. product storages)
 				.map(HUEditorRowId::getHuId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

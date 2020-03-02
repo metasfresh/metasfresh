@@ -15,7 +15,7 @@ import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -212,7 +212,7 @@ public final class WebuiProcessClassInfo
 		final ImmutableSet<BarcodeScannerType> barcodeScannerTypes = processClassInfo.getParameterInfos(parameterName)
 				.stream()
 				.map(ProcessClassParamInfo::getBarcodeScannerType)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		if (barcodeScannerTypes.isEmpty())
 		{

@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -48,7 +48,7 @@ public abstract class PackingHUsViewBasedProcess extends HUEditorProcessTemplate
 	{
 		final Set<HuId> huIds = streamEligibleHURows()
 				.map(HUEditorRow::getHuId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		Check.assumeNotEmpty(huIds, "huIds is not empty"); // shall not happen
 

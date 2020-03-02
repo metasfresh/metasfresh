@@ -2,7 +2,7 @@ package de.metas.ui.web.pporder.process;
 
 import java.util.stream.Stream;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -56,6 +56,6 @@ public abstract class WEBUI_PP_Order_Template
 	{
 		return streamSelectedRows()
 				.map(PPOrderLineRow::cast)
-				.filter(Predicates.notNull());
+				.filter(Objects::nonNull);
 	}
 }

@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -114,7 +114,7 @@ public final class DocumentFilterDescriptor
 
 		final ImmutableSet<BarcodeScannerType> barcodeScannerTypes = parametersByName.values().stream()
 				.map(DocumentFilterParamDescriptor::getBarcodeScannerType)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		barcodeScannerType = barcodeScannerTypes.size() == 1
 				? barcodeScannerTypes.iterator().next()

@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.stream.Stream;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -83,7 +83,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	{
 		return streamSelectedRows(filter)
 				.map(HUEditorRow::getHuId)
-				.filter(Predicates.notNull());
+				.filter(Objects::nonNull);
 	}
 
 	/**

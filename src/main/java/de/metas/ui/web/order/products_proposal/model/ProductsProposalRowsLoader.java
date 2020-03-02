@@ -16,7 +16,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -182,7 +182,7 @@ public final class ProductsProposalRowsLoader
 		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
 				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
-				.filter(Predicates.notNull());
+				.filter(Objects::nonNull);
 	}
 
 	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)

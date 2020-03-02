@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -125,7 +125,7 @@ class PricingConditionsRowsLoader
 		final List<PricingConditionsRow> rows = pricingConditionsRepo.getPricingConditionsByIds(pricingConditionsIds)
 				.stream()
 				.flatMap(pricingConditionsBreaksExtractor::streamPricingConditionsBreaks)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.flatMap(this::createPricingConditionsRows)
 				.sorted(ROWS_SORTING)
 				.collect(ImmutableList.toImmutableList());
@@ -175,7 +175,7 @@ class PricingConditionsRowsLoader
 		return discountSchemaIdsByBPartnerId.keySet()
 				.stream()
 				.map(lookups::lookupBPartner)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(bpartner -> PricingConditionsInfo.builder()
 						.bpartner(bpartner)
 						.pricingConditionsId(getPricingConditionsIdByBPartner(bpartner, discountSchemaIdsByBPartnerId))

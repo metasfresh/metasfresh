@@ -1,35 +1,8 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.GridTabVO;
-import org.compiere.model.GridWindowVO;
-import org.compiere.model.I_AD_UI_Column;
-import org.compiere.model.I_AD_UI_Element;
-import org.compiere.model.I_AD_UI_ElementField;
-import org.compiere.model.I_AD_UI_ElementGroup;
-import org.compiere.model.I_AD_UI_Section;
-import org.compiere.model.X_AD_UI_Element;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -59,6 +32,30 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.GridWindowVO;
+import org.compiere.model.I_AD_UI_Column;
+import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.I_AD_UI_ElementGroup;
+import org.compiere.model.I_AD_UI_Section;
+import org.compiere.model.X_AD_UI_Element;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -701,7 +698,7 @@ public class LayoutFactory
 				.filter(uiElement -> uiElement.isDisplayed_SideList())
 				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo_SideList))
 				.map(this::layoutElement)
-				.filter(Predicates.notNull()) // avoid NPE
+				.filter(Objects::nonNull) // avoid NPE
 				.map(layoutElement -> layoutElement.setGridElement())
 				.filter(uiElement -> uiElement != null)
 				.forEach(layoutBuilder::addElement);

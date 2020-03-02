@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
@@ -60,7 +60,7 @@ public final class JSONDocumentFilter
 		return jsonFilters
 				.stream()
 				.map(jsonFilter -> unwrap(jsonFilter, filterDescriptorProvider))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(DocumentFilterList.toDocumentFilterList());
 	}
 
