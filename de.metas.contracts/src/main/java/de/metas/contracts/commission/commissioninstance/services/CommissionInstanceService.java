@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import lombok.NonNull;
 
 @Service
@@ -48,10 +48,10 @@ public class CommissionInstanceService
 	public ImmutableList<CommissionInstance> getCommissionInstanceFor(
 			@NonNull final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
 	{
-		final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
+		final ImmutableList<CreateCommissionSharesRequest> requests = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
 
 		final ImmutableList.Builder<CommissionInstance> result = ImmutableList.builder();
-		for (final CreateInstanceRequest request : requests)
+		for (final CreateCommissionSharesRequest request : requests)
 		{
 			result.add(commissionAlgorithmInvoker.applyCreateRequest(request));
 		}

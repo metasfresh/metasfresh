@@ -15,7 +15,7 @@ import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
@@ -175,14 +175,14 @@ class HierachyAlgorithmTest
 						.pointsPrecision(2))
 				.build();
 
-		final CreateInstanceRequest request = CreateInstanceRequest.builder()
+		final CreateCommissionSharesRequest request = CreateCommissionSharesRequest.builder()
 				.config(config)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
 				.build();
 
 		// invoke the method under test
-		final ImmutableList<SalesCommissionShare> shares = new HierachyAlgorithm().createInstanceShares(request);
+		final ImmutableList<SalesCommissionShare> shares = new HierachyAlgorithm().createCommissionShares(request);
 		assertThat(shares).hasSize(3);
 
 		assertThat(shares).allSatisfy(share -> {
@@ -230,6 +230,15 @@ class HierachyAlgorithmTest
 
 		return shares;
 	}
+
+
+	@Test
+	void createInstanceShares_multiple_settings()
+	{
+		createInstanceShares_performTest(InvoiceCandidateId.ofRepoId(10));
+	}
+
+
 
 	private CommissionTrigger createInitialcommissionTrigger(
 			@NonNull final InvoiceCandidateId invoiceCandiateId,

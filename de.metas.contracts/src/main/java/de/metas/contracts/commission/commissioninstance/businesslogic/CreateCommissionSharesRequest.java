@@ -33,7 +33,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CreateInstanceRequest
+public class CreateCommissionSharesRequest
 {
 	@NonNull
 	CommissionTrigger trigger;

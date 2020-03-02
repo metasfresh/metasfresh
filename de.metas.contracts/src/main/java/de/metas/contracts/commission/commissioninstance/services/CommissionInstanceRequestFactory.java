@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
@@ -63,13 +63,13 @@ public class CommissionInstanceRequestFactory
 	}
 
 	/** note: if the given IC is a "commission-product-IC" or a purchase-IC, then there won't be requests because these IC's don't have a sales rep */
-	public ImmutableList<CreateInstanceRequest> createRequestsForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public ImmutableList<CreateCommissionSharesRequest> createRequestsForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getById(invoiceCandidateId);
 		return createRequestFor(icRecord);
 	}
 
-	private ImmutableList<CreateInstanceRequest> createRequestFor(@NonNull final I_C_Invoice_Candidate icRecord)
+	private ImmutableList<CreateCommissionSharesRequest> createRequestFor(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final BPartnerId salesRepBPartnerId = BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID());
 		if (salesRepBPartnerId == null)
@@ -98,7 +98,7 @@ public class CommissionInstanceRequestFactory
 			return ImmutableList.of();
 		}
 
-		final ImmutableList.Builder<CreateInstanceRequest> result = ImmutableList.builder();
+		final ImmutableList.Builder<CreateCommissionSharesRequest> result = ImmutableList.builder();
 		for (final CommissionConfig config : configs)
 		{
 			result.add(createRequest(hierarchy, config, trigger.get()));
@@ -106,12 +106,12 @@ public class CommissionInstanceRequestFactory
 		return result.build();
 	}
 
-	private CreateInstanceRequest createRequest(
+	private CreateCommissionSharesRequest createRequest(
 			@NonNull final Hierarchy hierarchy,
 			@NonNull final CommissionConfig config,
 			@NonNull final CommissionTrigger trigger)
 	{
-		final CreateInstanceRequest request = CreateInstanceRequest.builder()
+		final CreateCommissionSharesRequest request = CreateCommissionSharesRequest.builder()
 				.config(config)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
@@ -119,7 +119,7 @@ public class CommissionInstanceRequestFactory
 		return request;
 	}
 
-	public ImmutableList<CreateInstanceRequest> createRequestFor(
+	public ImmutableList<CreateCommissionSharesRequest> createRequestFor(
 			@NonNull final CreateForecastCommissionInstanceRequest retrieveForecastCommissionPointsRequest)
 	{
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(retrieveForecastCommissionPointsRequest.getSalesRepId());
@@ -149,7 +149,7 @@ public class CommissionInstanceRequestFactory
 				retrieveForecastCommissionPointsRequest.getSalesRepId(),
 				retrieveForecastCommissionPointsRequest.getCustomerId());
 
-		final ImmutableList.Builder<CreateInstanceRequest> result = ImmutableList.builder();
+		final ImmutableList.Builder<CreateCommissionSharesRequest> result = ImmutableList.builder();
 		for (final CommissionConfig config : configs)
 		{
 			result.add(createRequest(hierarchy, config, commissionTrigger));

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
@@ -71,8 +71,8 @@ public class SalesInvoiceCandidateService
 			}
 			// initially create commission data for the given invoice candidate;
 			// the list of requests might be empty, if there are no matching contracts and/or settings
-			final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestsForNewSalesInvoiceCandidate(invoiceCandidateId);
-			for (final CreateInstanceRequest request : requests)
+			final ImmutableList<CreateCommissionSharesRequest> requests = commissionInstanceRequestFactory.createRequestsForNewSalesInvoiceCandidate(invoiceCandidateId);
+			for (final CreateCommissionSharesRequest request : requests)
 			{
 				final CommissionInstance createdInstance = commissionAlgorithmInvoker.applyCreateRequest(request);
 				commissionInstanceRepository.save(createdInstance);

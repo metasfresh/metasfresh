@@ -15,7 +15,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
@@ -62,7 +62,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	private static final Logger logger = LogManager.getLogger(HierachyAlgorithm.class);
 
 	@Override
-	public ImmutableList<SalesCommissionShare> createInstanceShares(@NonNull final CreateInstanceRequest request)
+	public ImmutableList<SalesCommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
 	{
 		final CommissionTrigger trigger = request.getTrigger();
 		final CommissionTriggerData triggerData = trigger.getCommissionTriggerData();

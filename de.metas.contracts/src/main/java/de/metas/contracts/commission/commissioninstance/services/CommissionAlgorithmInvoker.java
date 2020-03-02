@@ -11,7 +11,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
@@ -43,7 +43,7 @@ import lombok.NonNull;
 @Service
 public class CommissionAlgorithmInvoker
 {
-	public CommissionInstance applyCreateRequest(@NonNull final CreateInstanceRequest request)
+	public CommissionInstance applyCreateRequest(@NonNull final CreateCommissionSharesRequest request)
 	{
 		try
 		{
@@ -63,7 +63,7 @@ public class CommissionAlgorithmInvoker
 					algorithm = createAlgorithmInstance(commissionType);
 
 					// invoke the algorithm
-					final ImmutableList<SalesCommissionShare> shares = algorithm.createInstanceShares(request);
+					final ImmutableList<SalesCommissionShare> shares = algorithm.createCommissionShares(request);
 					result.shares(shares);
 				}
 			}
