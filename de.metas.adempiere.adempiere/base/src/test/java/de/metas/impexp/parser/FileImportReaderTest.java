@@ -68,6 +68,45 @@ public class FileImportReaderTest
 	}
 
 	@Test
+	public void multilineFile_OnlyAppendIfInQuotesPreserveFirstLine() throws IOException
+	{
+		final URL url = getClass().getResource(packagePath + "/OnlyAppendIfInQuotesPreserveFirstLine.csv");
+		System.out.println(url);
+		assertNotNull("url null", url);
+		final File file = FileUtils.toFile(url);
+		assertNotNull("file null", file);
+
+		//
+		final Charset charset = StandardCharsets.UTF_8;
+		final List<String> lines = FileImportReader.readMultiLines(file, charset);
+
+		assertNotNull("lines null", lines);
+		assertFalse(lines.isEmpty());
+		assertEquals(5, lines.size());
+
+		// todo
+		assertEquals("Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF", lines.get(0));
+		assertEquals("Umsatztotal;;;;;4420;2210;", lines.get(1));
+		assertEquals("11.01.1111;11.01.1111;aaaaaaaaaaaaaaaaaaa;\"aaaaaaa\n"
+				+ "aaaaaaaaaaaaaaaa\n"
+				+ "aaaaaaaaaaaaa\n"
+				+ "aaaaa aaaaaaaaaaaaaaaaaaaa aaaa\";;2210;;", lines.get(2));
+
+		assertEquals("22.02.2222;22.02.2222;bbbbbbbbb bbbbbbbbb; \"bbbbbbbb\n"
+				+ "bbbbbbbbbbbbbbbbb b\n"
+				+ "bbbb\n"
+				+ "bbbbbbbbb\n"
+				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+				+ "bbbbbbbbbbb.bb bb\n"
+				+ "bbbbbbbbbbbbbbbbbbbb\";;;2210;", lines.get(3));
+
+		assertEquals("33.03.3333;33.03.3333;cccccccccccccc;\"cccccccccccccccccc\n"
+				+ "cccccc c cccccccc  cc\";;2210;;", lines.get(4));
+
+	}
+
+	@Test
 	public void multilineFile_NumberOfEmptyLinesIsPreserved() throws IOException
 	{
 		final URL url = getClass().getResource(packagePath + "/NumberOfEmptyLinesIsPreserved.csv");
@@ -81,16 +120,18 @@ public class FileImportReaderTest
 
 		assertNotNull("lines null", lines);
 		assertFalse(lines.isEmpty());
-		assertEquals(14, lines.size());
+		assertEquals(15, lines.size());
 
-		Arrays.asList(1, 3, 4, 5, 6, 7, 8, 9, 11, 12).forEach(i -> assertEquals(0, lines.get(i).length()));
+		Arrays.asList(1, 4, 5, 6, 7, 8, 9, 10, 12, 13).forEach(i -> assertEquals(0, lines.get(i).length()));
 
 		assertEquals("Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF", lines.get(0));
-		assertEquals("tttttttt;;;;;4444;2222;\n"
-				+ "11.01.1111;11.01.1111;aaaaaaaaaaaaaa;\"aaaaaaaaa\n"
+
+		assertEquals("tttttttt;;;;;4444;2222;", lines.get(2));
+
+		assertEquals("11.01.1111;11.01.1111;aaaaaaaaaaaaaa;\"aaaaaaaaa\n"
 				+ "aaaaaaaaaa\n"
 				+ "aaaaaaaaaaaaaaa\n"
-				+ "aaaaaaaaaaaaaaaaaaaa\";;1111;;", lines.get(2));
+				+ "aaaaaaaaaaaaaaaaaaaa\";;1111;;", lines.get(3));
 
 		assertEquals("22.02.2222;22.02.2222;bbbbbbbbbbbbb;\"bbbbbbbbbbbbbb\n"
 				+ "bbbbbbbbbbbbbb\n"
@@ -99,10 +140,10 @@ public class FileImportReaderTest
 				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
 				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
 				+ "bbbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbbb\";;;2222;", lines.get(10));
+				+ "bbbbbbbbbbbb\";;;2222;", lines.get(11));
 
 		assertEquals("33.03.3333;33.03.3333;ccccccccccccc;\"ccccccccccc\n"
-				+ "ccccccccccc\";;3333;;", lines.get(13));
+				+ "ccccccccccc\";;3333;;", lines.get(14));
 
 	}
 
