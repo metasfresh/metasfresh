@@ -201,6 +201,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		final CreateForecastCommissionInstanceRequest createForecastCommissionPerPriceUOMReq = CreateForecastCommissionInstanceRequest
 				.builder()
 				// we need the commission points per one qty of product in pricing UOM
+				.orgId(pricingCtx.getOrgId())
 				.forecastQty(Quantitys.create(BigDecimal.ONE, productPrice.getUomId()))
 				.productPrice(productPrice)
 				.customerId(customerId)

@@ -1,8 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICEABLE;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_SETTLED;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_TO_SETTLE;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static de.metas.contracts.commission.model.X_C_Commission_Fact.*;
-
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
@@ -49,6 +53,7 @@ import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import io.github.jsonSnapshot.SnapshotMatcher;
@@ -82,6 +87,7 @@ class CommissionInstanceRepositoryTest
 	private long currentTimestamp = START_TIMESTAMP;
 
 	private static final InvoiceCandidateId C_INVOICE_CANDIDATE_ID = InvoiceCandidateId.ofRepoId(10);
+	private static final OrgId AD_ORG_ID = OrgId.ofRepoId(20);
 
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private static final BigDecimal TWELVE = new BigDecimal("12");
@@ -149,6 +155,7 @@ class CommissionInstanceRepositoryTest
 		final BPartnerId C_BPartner_SalesRep_2_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_2_ID");
 
 		CommissionInstanceTestRecord.builder()
+				.AD_ORG_ID(AD_ORG_ID)
 				.C_INVOICE_CANDIDATE_ID(C_INVOICE_CANDIDATE_ID)
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("11")
@@ -258,6 +265,7 @@ class CommissionInstanceRepositoryTest
 		final Beneficiary beneficiary2 = Beneficiary.of(C_BPartner_SalesRep_2_ID);
 
 		final HierarchyConfig config = HierarchyConfig.builder()
+				.id(configData.getHierarchyConfigId())
 				.commissionProductId(commissionProductId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.beneficiary2HierarchyContract(
@@ -269,9 +277,9 @@ class CommissionInstanceRepositoryTest
 				.build();
 
 		final CommissionInstance commissionInstance = CommissionInstance.builder()
-				.config(config)
 				.id(null) // not yet persisted
 				.currentTriggerData(CommissionTriggerData.builder()
+						.orgId(AD_ORG_ID)
 						.invoiceCandidateId(InvoiceCandidateId.ofRepoId(salesInvoiceCandidate.getC_Invoice_Candidate_ID()))
 						.timestamp(Instant.parse("2019-09-17T11:50:35Z"))
 						.forecastedPoints(CommissionPoints.of("10"))
@@ -279,7 +287,7 @@ class CommissionInstanceRepositoryTest
 						.invoicedPoints(CommissionPoints.of("12"))
 						.build())
 				.share(SalesCommissionShare.builder()
-						.commissionProductId(commissionProductId)
+						.config(config)
 						.beneficiary(beneficiary1)
 						.level(HierarchyLevel.of(10))
 						.fact(SalesCommissionFact.builder()
@@ -300,7 +308,7 @@ class CommissionInstanceRepositoryTest
 								.timestamp(Instant.parse("2019-09-17T11:49:55Z")).build())
 						.build())
 				.share(SalesCommissionShare.builder()
-						.commissionProductId(commissionProductId)
+						.config(config)
 						.beneficiary(beneficiary2)
 						.level(HierarchyLevel.of(20))
 						.fact(SalesCommissionFact.builder()

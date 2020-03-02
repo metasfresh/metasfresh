@@ -119,7 +119,8 @@ public class CommissionInstanceRequestFactory
 		return request;
 	}
 
-	public ImmutableList<CreateInstanceRequest> createRequestFor(final CreateForecastCommissionInstanceRequest retrieveForecastCommissionPointsRequest)
+	public ImmutableList<CreateInstanceRequest> createRequestFor(
+			@NonNull final CreateForecastCommissionInstanceRequest retrieveForecastCommissionPointsRequest)
 	{
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(retrieveForecastCommissionPointsRequest.getSalesRepId());
 
@@ -141,11 +142,12 @@ public class CommissionInstanceRequestFactory
 			return ImmutableList.of();
 		}
 
-		final CommissionTrigger commissionTrigger = commissionTriggerFactory
-				.createForForecastQtyAndPrice(retrieveForecastCommissionPointsRequest.getProductPrice(),
-						retrieveForecastCommissionPointsRequest.getForecastQty(),
-						retrieveForecastCommissionPointsRequest.getSalesRepId(),
-						retrieveForecastCommissionPointsRequest.getCustomerId());
+		final CommissionTrigger commissionTrigger = commissionTriggerFactory.createForForecastQtyAndPrice(
+				retrieveForecastCommissionPointsRequest.getOrgId(),
+				retrieveForecastCommissionPointsRequest.getProductPrice(),
+				retrieveForecastCommissionPointsRequest.getForecastQty(),
+				retrieveForecastCommissionPointsRequest.getSalesRepId(),
+				retrieveForecastCommissionPointsRequest.getCustomerId());
 
 		final ImmutableList.Builder<CreateInstanceRequest> result = ImmutableList.builder();
 		for (final CommissionConfig config : configs)
