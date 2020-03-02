@@ -1,7 +1,8 @@
-/**
- *
- */
 package de.metas.impexp.parser;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,11 +11,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-
-import com.google.common.collect.Lists;
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
