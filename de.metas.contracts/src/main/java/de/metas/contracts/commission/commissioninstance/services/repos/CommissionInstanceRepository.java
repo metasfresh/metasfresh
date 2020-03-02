@@ -132,7 +132,6 @@ public class CommissionInstanceRepository
 
 		final CommissionInstanceBuilder instanceBuilder = CommissionInstance.builder()
 				.id(commissionInstanceId)
-				.config(commissionConfig)
 				.currentTriggerData(createCommissionTriggerData(instanceRecord));
 
 		for (final I_C_Commission_Share shareRecord : shareRecords)
@@ -167,6 +166,7 @@ public class CommissionInstanceRepository
 
 	private SalesCommissionShareBuilder createShareBuilder(@NonNull final I_C_Commission_Share shareRecord)
 	{
+		shareRecord.getC_Flatrate_Term_ID()
 		final SalesCommissionShareBuilder share = SalesCommissionShare.builder()
 				.commissionProductId(ProductId.ofRepoId(shareRecord.getCommission_Product_ID()))
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
@@ -231,7 +231,6 @@ public class CommissionInstanceRepository
 		final ImmutableMap<SalesCommissionShare, I_C_Commission_Share> shareToShareRecord = syncShareRecords(
 				instance.getShares(),
 				commissionInstanceId,
-				instance.getConfig(),
 				stagingRecords);
 
 		for (final SalesCommissionShare share : instance.getShares())
@@ -255,12 +254,11 @@ public class CommissionInstanceRepository
 	private ImmutableMap<SalesCommissionShare, I_C_Commission_Share> syncShareRecords(
 			@NonNull final ImmutableList<SalesCommissionShare> shares,
 			@NonNull final CommissionInstanceId commissionInstanceId,
-			@NonNull final CommissionConfig config,
 			@NonNull final CommissionStagingRecords records)
 	{
 		final ImmutableList<I_C_Commission_Share> shareRecords = records.getShareRecordsForInstanceRecordId(commissionInstanceId);
 
-		// noteth that we have a UC to make sure that instanceId and level are unique
+		// TODO noteth that we have a UC to make sure that instanceId, contract and level are unique
 		final ImmutableMap<ArrayKey, I_C_Commission_Share> instanceRecordIdAndLevelToShareRecord = Maps.uniqueIndex(shareRecords, r -> ArrayKey.of(r.getC_Commission_Instance_ID(), r.getLevelHierarchy()));
 
 		final ImmutableMap.Builder<SalesCommissionShare, I_C_Commission_Share> result = ImmutableMap.builder();
@@ -277,7 +275,6 @@ public class CommissionInstanceRepository
 				shareRecordsToDelete.remove(shareRecordOrNull);
 			}
 			final I_C_Commission_Share shareRecord = createOrUpdateShareRecord(
-					config.getContractFor(share.getBeneficiary()),
 					commissionInstanceId,
 					share,
 					shareRecordOrNull);
@@ -289,7 +286,6 @@ public class CommissionInstanceRepository
 		for (final SalesCommissionShare share : unPersistedShares)
 		{
 			final I_C_Commission_Share shareRecord = createOrUpdateShareRecord(
-					config.getContractFor(share.getBeneficiary()),
 					commissionInstanceId,
 					share,
 					null/* shareRecordOrNull */);
@@ -302,7 +298,6 @@ public class CommissionInstanceRepository
 	}
 
 	private I_C_Commission_Share createOrUpdateShareRecord(
-			@NonNull final CommissionContract contract,
 			@NonNull final CommissionInstanceId commissionInstanceId,
 			@NonNull final SalesCommissionShare share,
 			@Nullable final I_C_Commission_Share shareRecordOrNull)
@@ -315,7 +310,7 @@ public class CommissionInstanceRepository
 			shareRecordToUse.setLevelHierarchy(share.getLevel().toInt());
 		}
 		shareRecordToUse.setC_BPartner_SalesRep_ID(share.getBeneficiary().getBPartnerId().getRepoId());
-		shareRecordToUse.setC_Flatrate_Term_ID(contract.getId().getRepoId());
+		shareRecordToUse.setC_Flatrate_Term_ID(share.getContract().getId().getRepoId());
 		shareRecordToUse.setCommission_Product_ID(share.getCommissionProductId().getRepoId());
 		shareRecordToUse.setPointsSum_Forecasted(share.getForecastedPointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiceable(share.getInvoiceablePointsSum().toBigDecimal());

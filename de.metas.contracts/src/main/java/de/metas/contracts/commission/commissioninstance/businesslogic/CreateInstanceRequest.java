@@ -1,9 +1,12 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,7 +39,8 @@ public class CreateInstanceRequest
 	CommissionTrigger trigger;
 
 	@NonNull
-	CommissionConfig config;
+	@Singular
+	ImmutableList<CommissionConfig> configs;
 
 	@NonNull
 	Hierarchy hierarchy;

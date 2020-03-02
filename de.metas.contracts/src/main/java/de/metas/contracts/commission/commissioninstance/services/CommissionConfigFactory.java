@@ -106,13 +106,16 @@ public class CommissionConfigFactory
 				.filter(termRecord -> CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(termRecord.getType_Conditions()))
 				.collect(ImmutableList.toImmutableList());
 
-		return createCommissionConfigsFor(commissionTermRecords,
+		return createCommissionConfigsFor(
+				commissionTermRecords,
 				contractRequest.getCustomerBPartnerId(),
 				contractRequest.getSalesProductId());
 	}
 
-	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
+	public ImmutableList<CommissionConfig> createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
 	{
+		TODO: load all configs
+
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
 				.retrieveTerms(commissionConfigRequest.getContractIds())
 				.stream()
@@ -122,16 +125,15 @@ public class CommissionConfigFactory
 				commissionTermRecords,
 				commissionConfigRequest.getCustomerBPartnerId(),
 				commissionConfigRequest.getSalesProductId());
-		if (result.size() != 1)
+		if (result.isEmpty())
 		{
-			throw new AdempiereException("The given commissionConfigRequest needs specify exactly one CommissionConfig")
+			throw new AdempiereException("The given commissionConfigRequest needs at least one commissionConfig")
 					.appendParametersToMessage()
 					.setParameter("result.size()", result.size())
 					.setParameter("commissionConfigRequest", commissionConfigRequest)
 					.setParameter("result", result);
-
 		}
-		return result.get(0);
+		return result;
 	}
 
 	private ImmutableList<CommissionConfig> createCommissionConfigsFor(

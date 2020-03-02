@@ -23,25 +23,30 @@
 package de.metas.contracts.pricing.trade_margin;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionPointsService;
 import de.metas.contracts.commission.commissioninstance.services.CreateForecastCommissionInstanceRequest;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.pricing.IPricingContext;
@@ -52,6 +57,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 public class CustomerTradeMarginPricingRule implements IPricingRule
 {
@@ -129,38 +135,55 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! Forecast commission instance couldn't be created!");
 			return;
 		}
-		final CommissionContract salesRepCommissionContract = forecastCommissionInstance.get().getConfig().getContractFor(Beneficiary.of(salesRepId));
 
-		final Optional<CommissionPoints> tradedCommissionPointsPerPriceUOM = customerTradeMarginService
-				.getTradedCommissionPointsFor(customerTradeMarginSettings.get(),
-						forecastCommissionInstance.get().getShares(),
-						salesRepCommissionContract);
 
-		if (!tradedCommissionPointsPerPriceUOM.isPresent())
+		final Map<SalesCommissionShare, CommissionPoints> share2TradedCommissionPoints = customerTradeMarginService
+				.getTradedCommissionPointsFor(
+						customerTradeMarginSettings.get(),
+						forecastCommissionInstance.get().getShares());
+
+		if (share2TradedCommissionPoints.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPointsPerPriceUOM couldn't be calculated");
 			return;
 		}
 
-		final Optional<Money> tradedCommissionPointsValue = SpringContextHolder.instance.getBean(CommissionPointsService.class)
-				.getCommissionPointsValue(
-						tradedCommissionPointsPerPriceUOM.get(),
-						salesRepCommissionContract.getId(),
-						pricingCtx.getPriceDate());
+		Money customerTradeMarginPerPriceUOMSum = Money.zero(result.getCurrencyId());
 
-		if (!tradedCommissionPointsValue.isPresent())
+		for (final Entry<SalesCommissionShare, CommissionPoints> shareAndPoints : share2TradedCommissionPoints.entrySet())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPointsValue couldn't be calculated");
-			return;
-		}
+			final SalesCommissionShare share = shareAndPoints.getKey();
+			try (final MDCCloseable shareMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Share.Table_Name, share.getId()))
+			{
+				final CommissionContract salesRepCommissionContract = share.getContract();
+				final CommissionPoints tradedCommissionPointsPerPriceUOM = shareAndPoints.getValue();
 
-		final Money customerTradeMarginPerPriceUOM = SpringContextHolder.instance.getBean(MoneyService.class)
-				.convertMoneyToCurrency(tradedCommissionPointsValue.get(), result.getCurrencyId());
+				final CommissionPointsService commissionPointsService = SpringContextHolder.instance.getBean(CommissionPointsService.class);
+				final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
+				final Optional<Money> tradedCommissionPointsValue = commissionPointsService
+						.getCommissionPointsValue(
+								tradedCommissionPointsPerPriceUOM,
+								salesRepCommissionContract.getId(),
+								pricingCtx.getPriceDate());
+
+				if (!tradedCommissionPointsValue.isPresent())
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPoints monetary amount couldn't be calculated");
+					return;
+				}
+
+				final Money customerTradeMarginPerPriceUOM = moneyService
+						.convertMoneyToCurrency(tradedCommissionPointsValue.get(), result.getCurrencyId());
+
+				customerTradeMarginPerPriceUOMSum = customerTradeMarginPerPriceUOMSum.add(customerTradeMarginPerPriceUOM);
+			}
+		}
 
 		result.setBaseCommissionPointsPerPriceUOM(forecastCommissionInstance.get().getCurrentTriggerData().getForecastedPoints().toBigDecimal());
 		result.setTradedCommissionPercent(Percent.of(customerTradeMarginSettings.get().getMarginPercent()));
 
-		result.setPriceStd(priceBeforeApplyingRule.toBigDecimal().subtract(customerTradeMarginPerPriceUOM.toBigDecimal()));
+		result.setPriceStd(priceBeforeApplyingRule.toBigDecimal().subtract(customerTradeMarginPerPriceUOMSum.toBigDecimal()));
 		result.setCalculated(true);
 
 		Loggables.withLogger(logger, Level.DEBUG)
@@ -169,12 +192,12 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 						result.getPriceStd(), result.getCurrencyId().getRepoId());
 	}
 
-	private Optional<CommissionInstance> createForecastCommissionInstanceForOneQtyInPriceUOM(final IPricingContext pricingCtx,
-			final ProductPrice productPrice,
-			final BPartnerId salesRepId,
-			final BPartnerId customerId)
+	private Optional<CommissionInstance> createForecastCommissionInstanceForOneQtyInPriceUOM(
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final ProductPrice productPrice,
+			@NonNull final BPartnerId salesRepId,
+			@NonNull final BPartnerId customerId)
 	{
-
 		final CreateForecastCommissionInstanceRequest createForecastCommissionPerPriceUOMReq = CreateForecastCommissionInstanceRequest
 				.builder()
 				// we need the commission points per one qty of product in pricing UOM
