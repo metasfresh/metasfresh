@@ -179,6 +179,11 @@ public class BPartnerBL implements IBPartnerBL
 
 		for (final I_AD_User contactRecord : contactRecords)
 		{
+			if(request.isForceActive() && !contactRecord.isActive())
+			{
+				continue;
+			}
+
 			final User contact = userRepository.ofRecord(contactRecord);
 			if (!request.getFilter().test(contact))
 			{
@@ -203,7 +208,18 @@ public class BPartnerBL implements IBPartnerBL
 			if (recordMatchesType(contactRecord, request.getContactType()))
 			{
 				defaultContactOfType = contact;
+
+				if (request.isForceType())
+				{
+					return defaultContactOfType;
+				}
 			}
+		}
+
+		if(request.isForceType())
+		{
+			// no user of the given type was found
+			return null;
 		}
 
 		if (!contactsAtLocation.isEmpty())

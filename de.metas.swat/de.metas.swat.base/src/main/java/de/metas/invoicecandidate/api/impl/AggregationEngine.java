@@ -63,6 +63,7 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inout.InOutId;
@@ -540,6 +541,9 @@ public final class AggregationEngine
 
 		final RetrieveContactRequest request = RetrieveContactRequest
 				.builder()
+				.forceActive(true)
+				.contactType(ContactType.BILL_TO_DEFAULT)
+				.forceType(true)
 				.bpartnerId(partnerLocationId.getBpartnerId())
 				.bPartnerLocationId(partnerLocationId)
 				.build();

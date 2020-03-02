@@ -206,6 +206,10 @@ public interface IBPartnerBL extends ISingletonService
 		@Default
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
+
+		boolean forceActive;
+
+		boolean forceType;
 	}
 
 	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
