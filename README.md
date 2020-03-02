@@ -65,7 +65,7 @@ Also remember to respect our code-schema rules. All of them are listed in __esli
 > npm run-script stylelint
 
 (first one is also autofixing when possible)
-Also please follow our Code of conduct [https://github.com/metasfresh/metasfresh/wiki/Code-of-conduct-for-the-contributors]
+Also please follow our [Code of conduct](https://github.com/metasfresh/metasfresh/wiki/Code-of-conduct-for-the-contributors)
 
 ### Dictionary
 
