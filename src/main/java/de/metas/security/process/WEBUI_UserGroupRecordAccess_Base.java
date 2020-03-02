@@ -89,6 +89,7 @@ abstract class WEBUI_UserGroupRecordAccess_Base extends ViewBasedProcessTemplate
 	{
 		final Principal principal = getPrincipal();
 		final Set<Access> permissionsToGrant = getPermissionsToGrant();
+		final UserId requestedBy = getUserId();
 
 		final IView view = getView();
 		getSelectedRowIds()
@@ -99,12 +100,14 @@ abstract class WEBUI_UserGroupRecordAccess_Base extends ViewBasedProcessTemplate
 						.principal(principal)
 						.permissions(permissionsToGrant)
 						.issuer(PermissionIssuer.MANUAL)
+						.requestedBy(requestedBy)
 						.build()));
 	}
 
 	protected final void revokeAccessFromSelectedRows()
 	{
 		final Principal principal = getPrincipal();
+		final UserId requestedBy = getUserId();
 
 		final boolean revokeAllPermissions;
 		final List<Access> permissionsToRevoke;
@@ -130,6 +133,7 @@ abstract class WEBUI_UserGroupRecordAccess_Base extends ViewBasedProcessTemplate
 						.revokeAllPermissions(revokeAllPermissions)
 						.permissions(permissionsToRevoke)
 						.issuer(PermissionIssuer.MANUAL)
+						.requestedBy(requestedBy)
 						.build()));
 	}
 
