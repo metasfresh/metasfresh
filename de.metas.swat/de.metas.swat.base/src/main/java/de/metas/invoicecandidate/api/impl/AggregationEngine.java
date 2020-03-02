@@ -549,7 +549,7 @@ public final class AggregationEngine
 				.build();
 
 		final User billContact = bpartnerBL.retrieveContactOrNull(request);
-		return billContact == null ? -1 : billContact.getId().getRepoId();
+		return billContact == null ? ic.getBill_User_ID() : billContact.getId().getRepoId();
 	}
 
 	public List<IInvoiceHeader> aggregate()
