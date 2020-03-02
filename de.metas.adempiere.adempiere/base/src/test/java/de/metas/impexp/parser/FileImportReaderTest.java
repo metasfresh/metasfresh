@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -52,7 +53,7 @@ public class FileImportReaderTest
 		Assert.assertNotNull("file null", file);
 
 		//
-		final Charset charset = Charset.forName("UTF-8");
+		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
 		Assert.assertNotNull("lines null", lines);
@@ -71,7 +72,7 @@ public class FileImportReaderTest
 		final File file = FileUtils.toFile(url);
 		Assert.assertNotNull("file null", file);
 
-		final Charset charset = Charset.forName("UTF-8");
+		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readRegularLines(file, charset);
 
 		Assert.assertNotNull("lines null", lines);
