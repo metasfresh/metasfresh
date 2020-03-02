@@ -299,7 +299,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		else
 		{
-			userId = UserId.ofRepoId(workPackage.getCreatedBy());
+			userId = UserId.ofRepoIdOrSystem(workPackage.getCreatedBy());
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_User_ID, userId.getRepoId());
 		Env.setContext(workPackageCtx, Env.CTXNAME_SalesRep_ID, userId.getRepoId());

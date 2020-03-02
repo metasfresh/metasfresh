@@ -14,6 +14,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /*
@@ -60,6 +61,7 @@ public class OrderBPartnerDependentDocumentHandler implements BPartnerDependentD
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(orderRecord.getUpdatedBy()))
 				.build();
 	}
 

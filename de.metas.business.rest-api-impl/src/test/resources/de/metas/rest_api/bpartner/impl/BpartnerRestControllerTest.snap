@@ -11,9 +11,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       "customer": false,
       "changeInfo": {
         "createdMillis": 1563553074,
-        "createdBy": 0,
+        "createdBy": 30,
         "lastUpdatedMillis": 1563553074,
-        "lastUpdatedBy": 0
+        "lastUpdatedBy": 30
       }
     },
     "locations": [
@@ -30,9 +30,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "billToDefault": true,
         "changeInfo": {
           "createdMillis": 1563553074,
-          "createdBy": 0,
+          "createdBy": 30,
           "lastUpdatedMillis": 1563553074,
-          "lastUpdatedBy": 0
+          "lastUpdatedBy": 30
         }
       }
     ]
@@ -55,12 +55,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "C_BPartner_ID": 100012
           }
         },
-        "createdByUserId": 0,
+        "createdByUserId": 30,
         "createdTimestamp": {
           "seconds": 1561134,
           "nanos": 560000000
         },
-        "lastChangedByUserId": 0,
+        "lastChangedByUserId": 30,
         "lastChangedTimestamp": {
           "seconds": 1561134,
           "nanos": 560000000
@@ -86,8 +86,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           }
         },
         "leftToRight": true,
-        "baseLanguage": true,
-        "decimalPoint": false
+        "decimalPoint": false,
+        "baseLanguage": true
       },
       "name": "bPartner.name",
       "parentId": 1,
@@ -109,12 +109,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "AD_User_ID": 100017
             }
           },
-          "createdByUserId": 0,
+          "createdByUserId": 30,
           "createdTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
           },
-          "lastChangedByUserId": 0,
+          "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
@@ -177,12 +177,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "AD_User_ID": 100018
             }
           },
-          "createdByUserId": 0,
+          "createdByUserId": 30,
           "createdTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
           },
-          "lastChangedByUserId": 0,
+          "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
@@ -249,12 +249,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "C_BPartner_Location_ID": 100014
             }
           },
-          "createdByUserId": 0,
+          "createdByUserId": 30,
           "createdTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
           },
-          "lastChangedByUserId": 0,
+          "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
@@ -305,12 +305,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
               "C_BPartner_Location_ID": 100016
             }
           },
-          "createdByUserId": 0,
+          "createdByUserId": 30,
           "createdTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
           },
-          "lastChangedByUserId": 0,
+          "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
@@ -503,12 +503,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
               "AD_User_ID": 100010
             }
           },
-          "createdByUserId": 0,
+          "createdByUserId": 30,
           "createdTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
           },
-          "lastChangedByUserId": 0,
+          "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
@@ -1241,12 +1241,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
               "C_BPartner_Location_ID": 100012
             }
           },
-          "createdByUserId": 0,
+          "createdByUserId": 30,
           "createdTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
           },
-          "lastChangedByUserId": 0,
+          "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
             "seconds": 1561134,
             "nanos": 560000000
