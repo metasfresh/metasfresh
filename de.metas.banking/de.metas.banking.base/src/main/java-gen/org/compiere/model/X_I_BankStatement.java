@@ -15,7 +15,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1871926945L;
+	private static final long serialVersionUID = 447556155L;
 
     /** Standard Constructor */
     public X_I_BankStatement (Properties ctx, int I_BankStatement_ID, String trxName)
@@ -42,6 +42,43 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_Issue getAD_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Bank Account No.
 		@param BankAccountNo 
@@ -171,6 +208,31 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
@@ -245,43 +307,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
-	}
-
-	@Override
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
-	}
-
 	/** Set Kosten.
 		@param C_Charge_ID 
 		Additional document charges
@@ -330,6 +355,112 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DataImport getC_DataImport()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
+	}
+
+	@Override
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Daten Import.
+		@param C_DataImport_ID Daten Import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_Value (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Daten Import.
+		@return Daten Import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DataImport_Run getC_DataImport_Run()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class);
+	}
+
+	@Override
+	public void setC_DataImport_Run(org.compiere.model.I_C_DataImport_Run C_DataImport_Run)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class, C_DataImport_Run);
+	}
+
+	/** Set Data Import Run.
+		@param C_DataImport_Run_ID Data Import Run	  */
+	@Override
+	public void setC_DataImport_Run_ID (int C_DataImport_Run_ID)
+	{
+		if (C_DataImport_Run_ID < 1) 
+			set_Value (COLUMNNAME_C_DataImport_Run_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DataImport_Run_ID, Integer.valueOf(C_DataImport_Run_ID));
+	}
+
+	/** Get Data Import Run.
+		@return Data Import Run	  */
+	@Override
+	public int getC_DataImport_Run_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_Run_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
+	@Override
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Gebühr.
+		@return Gebühr	  */
+	@Override
+	public java.math.BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Gebühren-Bezeichnung.
+		@param ChargeName 
+		Name of the Charge
+	  */
+	@Override
+	public void setChargeName (java.lang.String ChargeName)
+	{
+		set_Value (COLUMNNAME_ChargeName, ChargeName);
+	}
+
+	/** Get Gebühren-Bezeichnung.
+		@return Name of the Charge
+	  */
+	@Override
+	public java.lang.String getChargeName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ChargeName);
 	}
 
 	@Override
@@ -406,44 +537,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
-	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Gebühren-Bezeichnung.
-		@param ChargeName 
-		Name of the Charge
-	  */
-	@Override
-	public void setChargeName (java.lang.String ChargeName)
-	{
-		set_Value (COLUMNNAME_ChargeName, ChargeName);
-	}
-
-	/** Get Gebühren-Bezeichnung.
-		@return Name of the Charge
-	  */
-	@Override
-	public java.lang.String getChargeName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ChargeName);
-	}
-
 	/** Set Zahlung erstellen.
 		@param CreatePayment Zahlung erstellen	  */
 	@Override
@@ -458,6 +551,25 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public java.lang.String getCreatePayment () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreatePayment);
+	}
+
+	/** Set Credit Statement Amount.
+		@param CreditStmtAmt Credit Statement Amount	  */
+	@Override
+	public void setCreditStmtAmt (java.math.BigDecimal CreditStmtAmt)
+	{
+		set_Value (COLUMNNAME_CreditStmtAmt, CreditStmtAmt);
+	}
+
+	/** Get Credit Statement Amount.
+		@return Credit Statement Amount	  */
+	@Override
+	public java.math.BigDecimal getCreditStmtAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditStmtAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Buchungsdatum.
@@ -477,6 +589,25 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public java.sql.Timestamp getDateAcct () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
+	}
+
+	/** Set Debit Statement Amount.
+		@param DebitStmtAmt Debit Statement Amount	  */
+	@Override
+	public void setDebitStmtAmt (java.math.BigDecimal DebitStmtAmt)
+	{
+		set_Value (COLUMNNAME_DebitStmtAmt, DebitStmtAmt);
+	}
+
+	/** Get Debit Statement Amount.
+		@return Debit Statement Amount	  */
+	@Override
+	public java.math.BigDecimal getDebitStmtAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DebitStmtAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Beschreibung.
@@ -745,6 +876,25 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EftValutaDate);
 	}
 
+	/** Set IBAN.
+		@param IBAN 
+		International Bank Account Number
+	  */
+	@Override
+	public void setIBAN (java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	/** Get IBAN.
+		@return International Bank Account Number
+	  */
+	@Override
+	public java.lang.String getIBAN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+	}
+
 	/** Set Import - Bankauszug.
 		@param I_BankStatement_ID 
 		Import of the Bank Statement
@@ -768,6 +918,22 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set IBAN_To.
+		@param IBAN_To IBAN_To	  */
+	@Override
+	public void setIBAN_To (java.lang.String IBAN_To)
+	{
+		set_Value (COLUMNNAME_IBAN_To, IBAN_To);
+	}
+
+	/** Get IBAN_To.
+		@return IBAN_To	  */
+	@Override
+	public java.lang.String getIBAN_To () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN_To);
 	}
 
 	/** Set Import-Fehlermeldung.
@@ -815,39 +981,39 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return false;
 	}
 
-	/** Set IBAN.
-		@param IBAN 
-		International Bank Account Number
-	  */
+	/** Set Import Line Content.
+		@param I_LineContent Import Line Content	  */
 	@Override
-	public void setIBAN (java.lang.String IBAN)
+	public void setI_LineContent (java.lang.String I_LineContent)
 	{
-		set_Value (COLUMNNAME_IBAN, IBAN);
+		set_Value (COLUMNNAME_I_LineContent, I_LineContent);
 	}
 
-	/** Get IBAN.
-		@return International Bank Account Number
-	  */
+	/** Get Import Line Content.
+		@return Import Line Content	  */
 	@Override
-	public java.lang.String getIBAN () 
+	public java.lang.String getI_LineContent () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+		return (java.lang.String)get_Value(COLUMNNAME_I_LineContent);
 	}
 
-	/** Set IBAN_To.
-		@param IBAN_To IBAN_To	  */
+	/** Set Import Line No.
+		@param I_LineNo Import Line No	  */
 	@Override
-	public void setIBAN_To (java.lang.String IBAN_To)
+	public void setI_LineNo (int I_LineNo)
 	{
-		set_Value (COLUMNNAME_IBAN_To, IBAN_To);
+		set_Value (COLUMNNAME_I_LineNo, Integer.valueOf(I_LineNo));
 	}
 
-	/** Get IBAN_To.
-		@return IBAN_To	  */
+	/** Get Import Line No.
+		@return Import Line No	  */
 	@Override
-	public java.lang.String getIBAN_To () 
+	public int getI_LineNo () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IBAN_To);
+		Integer ii = (Integer)get_Value(COLUMNNAME_I_LineNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Interest Amount.
@@ -1049,7 +1215,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1058,7 +1224,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

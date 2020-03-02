@@ -297,6 +297,15 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
+		// update StmtAmt from DebitStmtAmt and CreditStmtAmt
+		sql = new StringBuilder("UPDATE I_BankStatement "
+				+ "SET StmtAmt = (coalesce(DebitStmtAmt, 0) - coalesce(CreditStmtAmt,0)) "
+				+ "WHERE (StmtAmt IS NULL OR StmtAmt = 0) "
+				+ "AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause());
+
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
 		sql = new StringBuilder("UPDATE I_BankStatement "
 				+ "SET TrxAmt=StmtAmt - InterestAmt - ChargeAmt "
 				+ "WHERE (TrxAmt IS NULL OR TrxAmt = 0) "
