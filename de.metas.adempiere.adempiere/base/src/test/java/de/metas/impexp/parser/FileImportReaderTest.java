@@ -58,7 +58,7 @@ public class FileImportReaderTest
 
 		Assert.assertNotNull("lines null", lines);
 		Assert.assertFalse(lines.isEmpty());
-		Assert.assertTrue(lines.size() == 2);
+		Assert.assertEquals(2, lines.size());
 		lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
 		Assert.assertTrue(lines.get(0).endsWith("70"));
 		Assert.assertTrue(lines.get(1).endsWith("80"));
@@ -77,7 +77,7 @@ public class FileImportReaderTest
 
 		Assert.assertNotNull("lines null", lines);
 		Assert.assertFalse(lines.isEmpty());
-		Assert.assertTrue(lines.size() == 3);
+		Assert.assertEquals(3, lines.size());
 		lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
 		Assert.assertTrue(lines.get(0).endsWith("80"));
 		Assert.assertTrue(lines.get(1).endsWith("90"));
