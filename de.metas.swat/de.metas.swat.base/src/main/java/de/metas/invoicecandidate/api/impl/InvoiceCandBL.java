@@ -446,7 +446,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		final UomId icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
-		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.createZero(productId, icUomId);
+		StockQtyAndUOMQty qtyInvoicedSum = StockQtyAndUOMQtys.createZero(productId, icUomId);
 		final CurrencyId icCurrencyId = CurrencyId.ofRepoId(ic.getC_Currency_ID());
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
@@ -466,12 +466,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //			{
 // @formatter:on
 
-			final StockQtyAndUOMQty qtysInvoiced = StockQtyAndUOMQtys.create(
+			final StockQtyAndUOMQty ilaQtysInvoiced = StockQtyAndUOMQtys.create(
 					ila.getQtyInvoiced(),
 					productId,
 					ila.getQtyInvoicedInUOM(),
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
-			qtyInvoiced = qtyInvoiced.add(qtysInvoiced);
+			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
 			//
 			// 07202: We update the net amount invoice according to price UOM.
@@ -500,7 +500,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //			}
 // @formatter:on
 		}
-		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoiced, netAmtInvoiced);
+		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoicedSum, netAmtInvoiced);
 		return Optional.of(qtyAndNetAmtInvoiced);
 	}
 
