@@ -60,9 +60,13 @@ import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inout.InOutId;
@@ -131,7 +135,7 @@ public final class AggregationEngine
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
-	private final boolean updateLocationAndContactForInvoice;
+	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -145,7 +149,7 @@ public final class AggregationEngine
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
-			final boolean updateLocationAndContactForInvoice)
+			final boolean useDefaultBillLocationAndContactIfNotOverride)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 
@@ -155,7 +159,7 @@ public final class AggregationEngine
 
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
-		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
@@ -383,10 +387,13 @@ public final class AggregationEngine
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			@Nullable final InOutId inoutId)
 	{
+		final BPartnerLocationId billBPLocationId = getBillLocationId(icRecord);
+		final BPartnerContactId billContactId = getBillContactId(icRecord, billBPLocationId);
+
 		invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
-		invoiceHeader.setBill_BPartner_ID(icRecord.getBill_BPartner_ID());
-		invoiceHeader.setBill_Location_ID(getBill_Location_ID(icRecord, updateLocationAndContactForInvoice));
-		invoiceHeader.setBill_User_ID(getBill_User_ID(icRecord, updateLocationAndContactForInvoice));
+		invoiceHeader.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
+		invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
+		invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
 		invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
@@ -503,49 +510,55 @@ public final class AggregationEngine
 				});
 	}
 
-	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic, final boolean isUpdateLocationAndContactForInvoice)
+	@NonNull
+	private BPartnerLocationId getBillLocationId(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final int bill_Location_Override_ID = ic.getBill_Location_Override_ID();
-		if (bill_Location_Override_ID > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
+		final BPartnerLocationId billBPLocationOverrideId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, ic.getBill_Location_Override_ID());
+		if (billBPLocationOverrideId != null)
 		{
-			return bill_Location_Override_ID;
+			return billBPLocationOverrideId;
 		}
 
-		if (!isUpdateLocationAndContactForInvoice)
+		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
-			return ic.getBill_Location_ID();
+			final BPartnerLocationId defaulBillLocationId = bpartnerDAO.retrieveCurrentBillLocationOrNull(bpartnerId);
+			if (defaulBillLocationId != null)
+			{
+				return defaulBillLocationId;
+			}
 		}
-		final de.metas.bpartner.BPartnerId bpartnerId = de.metas.bpartner.BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
 
-		final BPartnerLocationId currentBillLocation = bpartnerDAO.retrieveCurrentBillLocationOrNull(bpartnerId);
-
-		return currentBillLocation == null ? -1 : currentBillLocation.getRepoId();
-
+		return BPartnerLocationId.ofRepoId(bpartnerId, ic.getBill_Location_ID());
 	}
 
-	private int getBill_User_ID(@NonNull final I_C_Invoice_Candidate ic, final boolean isUpdateLocationAndContactForInvoice)
+	private BPartnerContactId getBillContactId(
+			@NonNull final I_C_Invoice_Candidate ic,
+			final BPartnerLocationId billBPLocationId)
 	{
-		final int bill_User_ID_Override_ID = ic.getBill_User_ID_Override_ID();
-		if (bill_User_ID_Override_ID > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
+		final BPartnerContactId billContactOverrideId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, ic.getBill_User_ID_Override_ID());
+		if (billContactOverrideId != null)
 		{
-			return bill_User_ID_Override_ID;
+			return billContactOverrideId;
 		}
 
-		if (!isUpdateLocationAndContactForInvoice)
+		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
-			return ic.getBill_User_ID();
+			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
+					.onlyActive(true)
+					.contactType(ContactType.BILL_TO_DEFAULT)
+					.bpartnerId(billBPLocationId.getBpartnerId())
+					.bPartnerLocationId(billBPLocationId)
+					.ifNotFound(IfNotFound.RETURN_NULL)
+					.build());
+			if(defaultBillContact != null)
+			{
+				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
+			}
 		}
 
-		final BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), getBill_Location_ID(ic, isUpdateLocationAndContactForInvoice));
-
-		final RetrieveContactRequest request = RetrieveContactRequest
-				.builder()
-				.bpartnerId(partnerLocationId.getBpartnerId())
-				.bPartnerLocationId(partnerLocationId)
-				.build();
-
-		final User billContact = bpartnerBL.retrieveContactOrNull(request);
-		return billContact == null ? -1 : billContact.getId().getRepoId();
+		return BPartnerContactId.ofRepoIdOrNull(bpartnerId, ic.getBill_User_ID());
 	}
 
 	public List<IInvoiceHeader> aggregate()
