@@ -73,17 +73,3 @@ FROM dataExcludingEmptyLines
 ORDER BY AccountValue
 $$
     LANGUAGE sql STABLE;
-
-/*
-How to run:
-
-
-SELECT *
-FROM SummaryAndBalanceReport('2019-09-01'::date,
-                             '2020-05-31'::date,
-                             1000000,
-                             1000000,
-                             NULL,
-                             'Y')
-;
- */
