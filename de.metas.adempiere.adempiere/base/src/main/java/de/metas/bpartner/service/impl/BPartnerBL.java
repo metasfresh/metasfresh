@@ -173,6 +173,9 @@ public class BPartnerBL implements IBPartnerBL
 				request.getBpartnerId().getRepoId(),
 				ITrx.TRXNAME_None);
 
+		final boolean ifNotFoundReturnNull = RetrieveContactRequest.IfNotFound.RETURN_NULL.equals(request.getIfNotFound());
+		final boolean onlyActiveContacts = request.isOnlyActive();
+
 		// we will collect the candidates for our return value into these variables
 		final Set<User> contactsAtLocation = new TreeSet<>(request.getComparator());
 		final Set<User> contactsAtOtherLocations = new TreeSet<>(request.getComparator());
@@ -181,6 +184,11 @@ public class BPartnerBL implements IBPartnerBL
 
 		for (final I_AD_User contactRecord : contactRecords)
 		{
+			if (onlyActiveContacts && !contactRecord.isActive())
+			{
+				continue;
+			}
+
 			final User contact = userRepository.ofRecord(contactRecord);
 			if (!request.getFilter().test(contact))
 			{
@@ -205,7 +213,18 @@ public class BPartnerBL implements IBPartnerBL
 			if (recordMatchesType(contactRecord, request.getContactType()))
 			{
 				defaultContactOfType = contact;
+
+				if (ifNotFoundReturnNull)
+				{
+					return defaultContactOfType;
+				}
 			}
+		}
+
+		if (ifNotFoundReturnNull)
+		{
+			// no user of the given type was found
+			return null;
 		}
 
 		if (!contactsAtLocation.isEmpty())

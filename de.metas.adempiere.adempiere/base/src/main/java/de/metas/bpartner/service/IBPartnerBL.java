@@ -177,6 +177,11 @@ public interface IBPartnerBL extends ISingletonService
 			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER;
 		}
 
+		public enum IfNotFound
+		{
+			RETURN_DEFAULT_CONTACT, RETURN_NULL
+		};
+
 		@NonNull
 		BPartnerId bpartnerId;
 
@@ -199,6 +204,11 @@ public interface IBPartnerBL extends ISingletonService
 		@Default
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
+
+		boolean onlyActive;
+
+		@Default
+		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
 	}
 
 	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
