@@ -19,3 +19,4 @@ hs_err*.log
 *.jar
 *.launch
 src/main/resources/rebel.xml
+*.log
