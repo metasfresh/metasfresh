@@ -282,7 +282,7 @@ public class CommissionInstanceRepository
 
 		for (final SalesCommissionShare share : shares)
 		{
-			final ArrayKey instanceAndLevelKey = ArrayKey.of(commissionInstanceId.getRepoId(), share.getLevel().toInt());
+			final ArrayKey instanceAndLevelKey = ArrayKey.of(commissionInstanceId.getRepoId(), share.getLevel().toInt(), share.getContract().getId().getRepoId());
 			final I_C_Commission_Share shareRecordOrNull = instanceRecordIdAndLevelToShareRecord.get(instanceAndLevelKey);
 			if (shareRecordOrNull != null)
 			{

@@ -3,15 +3,12 @@ package de.metas.contracts.commission.commissioninstance.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.commission.commissioninstance.services.InvoiceCandidateFacadeService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
 
@@ -41,17 +38,11 @@ import lombok.NonNull;
 @Component
 public class C_Invoice_Candidate
 {
-
-	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate.class);
-
-	private final CommissionProductService commissionProductService;
 	private final InvoiceCandidateFacadeService invoiceCandidateFacadeService;
 
 	public C_Invoice_Candidate(
-			@NonNull final InvoiceCandidateFacadeService invoiceCandidateFacadeService,
-			@NonNull final CommissionProductService commissionProductService)
+			@NonNull final InvoiceCandidateFacadeService invoiceCandidateFacadeService)
 	{
-		this.commissionProductService = commissionProductService;
 		this.invoiceCandidateFacadeService = invoiceCandidateFacadeService;
 
 	}

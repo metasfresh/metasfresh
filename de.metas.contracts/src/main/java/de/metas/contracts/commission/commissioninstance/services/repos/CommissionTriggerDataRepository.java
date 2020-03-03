@@ -71,6 +71,7 @@ public class CommissionTriggerDataRepository
 	{
 		final CommissionTriggerDataBuilder builder = CommissionTriggerData
 				.builder()
+				.orgId(commissionTriggerRequest.getOrgId())
 				.invoiceCandidateWasDeleted( commissionTriggerRequest.isCandidateDeleted() )
 				.invoiceCandidateId( commissionTriggerRequest.getInvoiceCandidateId() )
 				.timestamp( commissionTriggerRequest.getTimestamp() );

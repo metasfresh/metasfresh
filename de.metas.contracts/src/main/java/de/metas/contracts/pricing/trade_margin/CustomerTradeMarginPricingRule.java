@@ -27,12 +27,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
@@ -136,7 +133,6 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			return;
 		}
 
-
 		final Map<SalesCommissionShare, CommissionPoints> share2TradedCommissionPoints = customerTradeMarginService
 				.getTradedCommissionPointsFor(
 						customerTradeMarginSettings.get(),
@@ -210,20 +206,11 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				.productId(pricingCtx.getProductId())
 				.build();
 
-		final ImmutableList<CommissionInstance> commissionInstances = commissionInstanceService.getCommissionInstanceFor(createForecastCommissionPerPriceUOMReq);
-		if (commissionInstances.isEmpty())
+		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.getCommissionInstanceFor(createForecastCommissionPerPriceUOMReq);
+		if (!commissionInstance.isPresent())
 		{
 			return Optional.empty();
 		}
-
-		if (commissionInstances.size() > 1)
-		{
-			throw new AdempiereException("With customer trade margin, only one commissionInstance for a sales rep is allowed")
-					.appendParametersToMessage()
-					.setParameter("request", createForecastCommissionPerPriceUOMReq)
-					.setParameter("resultingCommissionInstances", commissionInstances);
-		}
-
-		return Optional.of(commissionInstances.get(0));
+		return Optional.of(commissionInstance.get());
 	}
 }

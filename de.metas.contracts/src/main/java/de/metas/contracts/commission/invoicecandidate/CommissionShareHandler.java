@@ -81,7 +81,7 @@ import lombok.NonNull;
  * #L%
  */
 
-/** 
+/**
   * Creates an maintains commission settlement invoice candidates.
   */
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
@@ -200,10 +200,10 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						Quantitys.create(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setFailIfNotCalculated();
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-		// TODO throw exception if not calculated
 
 		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
 		icRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
