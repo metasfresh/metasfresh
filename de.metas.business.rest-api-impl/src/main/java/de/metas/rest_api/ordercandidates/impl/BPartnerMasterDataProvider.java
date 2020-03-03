@@ -191,8 +191,8 @@ final class BPartnerMasterDataProvider
 			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo, // both bpartner and location might be needed for lookup
 			@NonNull final BPartnerMasterDataContext context)
 	{
+		final SyncAdvise syncAdviseEff = coalesce(jsonBPartnerInfo.getSyncAdvise(), context.getSyncAdvise());
 		final JsonRequestBPartner jsonBPartner = jsonBPartnerInfo.getBpartner();
-		final SyncAdvise syncAdviseEff = coalesce(jsonBPartner.getSyncAdvise(), context.getSyncAdvise());
 
 		final BPartnerId bpartnerId = lookupBPartnerIdOrNull(jsonBPartnerInfo, context);
 		if (bpartnerId == null)
