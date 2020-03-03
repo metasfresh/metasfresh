@@ -82,7 +82,7 @@ public interface I_C_Commission_Fact
     public static final String COLUMNNAME_C_Commission_Fact_ID = "C_Commission_Fact_ID";
 
 	/**
-	 * Set C_Commission_Share.
+	 * Set Buchauszug.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -91,7 +91,7 @@ public interface I_C_Commission_Fact
 	public void setC_Commission_Share_ID (int C_Commission_Share_ID);
 
 	/**
-	 * Get C_Commission_Share.
+	 * Get Buchauszug.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

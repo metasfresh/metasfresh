@@ -107,7 +107,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
 
 	/**
-	 * Set C_Commission_Share.
+	 * Set Buchauszug.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -116,7 +116,7 @@ public interface I_C_Commission_Share
 	public void setC_Commission_Share_ID (int C_Commission_Share_ID);
 
 	/**
-	 * Get C_Commission_Share.
+	 * Get Buchauszug.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -151,6 +151,29 @@ public interface I_C_Commission_Share
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, Object> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Share, Object>(I_C_Commission_Share.class, "C_Flatrate_Term_ID", null);
     /** Column name C_Flatrate_Term_ID */
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Provisionsprodukt.
+	 * Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCommission_Product_ID (int Commission_Product_ID);
+
+	/**
+	 * Get Provisionsprodukt.
+	 * Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCommission_Product_ID();
+
+    /** Column name Commission_Product_ID */
+    public static final String COLUMNNAME_Commission_Product_ID = "Commission_Product_ID";
 
 	/**
 	 * Get Erstellt.

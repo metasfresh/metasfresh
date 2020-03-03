@@ -25,6 +25,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -52,6 +53,8 @@ import lombok.NonNull;
 
 class HierachyAlgorithmTest
 {
+	private final ProductId commissionProductId = ProductId.ofRepoId(100);
+
 	@Test
 	void createInstance()
 	{
@@ -90,7 +93,9 @@ class HierachyAlgorithmTest
 				.commissionTriggerData(triggerData)
 				.build();
 
-		final HierarchyConfig config = HierarchyConfig.builder().subtractLowerLevelCommissionFromBase(true)
+		final HierarchyConfig config = HierarchyConfig.builder()
+				.subtractLowerLevelCommissionFromBase(true)
+				.commissionProductId(commissionProductId)
 				.beneficiary2HierarchyContract(headOfSales, HierarchyContract.builder()
 						.id(FlatrateTermId.ofRepoId(1))
 						.commissionPercent(Percent.of(10))

@@ -82,6 +82,29 @@ public interface I_C_HierarchyCommissionSettings
     public static final String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
 
 	/**
+	 * Set Provisionsprodukt.
+	 * Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCommission_Product_ID (int Commission_Product_ID);
+
+	/**
+	 * Get Provisionsprodukt.
+	 * Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCommission_Product_ID();
+
+    /** Column name Commission_Product_ID */
+    public static final String COLUMNNAME_Commission_Product_ID = "Commission_Product_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

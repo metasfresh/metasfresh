@@ -18,7 +18,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.AccountIdentificationSEPA;
@@ -57,6 +60,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
@@ -68,6 +72,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 	private static final DynamicObjectFactory JAXB_ObjectFactory = new DynamicObjectFactory(new ObjectFactory());
 
 	private final DatatypeFactory datatypeFactory;
+
+	private final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
 
 	public SEPACustomerDirectDebitMarshaler_Pain_008_003_02()
 	{
@@ -301,7 +307,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		}
 
 		{
-			paymentInformation.setCdtrSchmeId(convertPartyIdentificationSEPA3(customerDirectDebitInitiation.getGrpHdr().getInitgPty()));
+			paymentInformation.setCdtrSchmeId(convertPartyIdentificationSEPA3(sepaHdr));
 		}
 
 		return paymentInformation;
@@ -348,9 +354,11 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 			// AmendmentIndicator: Valid values are True and False.
 			mandateRelatedInf.setAmdmntInd(Boolean.FALSE);
-			mandateRelatedInf.setDtOfSgntr(newXMLGregorianCalendar(line.getSEPA_Export().getPaymentDate()));
-			// FIXME : Not sure.
-			mandateRelatedInf.setMndtId(line.getSEPA_MandateRefNo());
+
+			// NOTE: put an earlier as its not allowed to be on the same date as the credit. Minus 4 days should do it
+			mandateRelatedInf.setDtOfSgntr(newXMLGregorianCalendar(TimeUtil.addDays(line.getSEPA_Export().getPaymentDate(), -4)));
+
+			mandateRelatedInf.setMndtId(getSEPA_MandateRefNo(line));
 		}
 
 		//
@@ -371,7 +379,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			final PartyIdentificationSEPA2 debitor = new PartyIdentificationSEPA2();
 			directDebitTrxInfo.setDbtr(debitor);
 
-			debitor.setNm(line.getSEPA_MandateRefNo());
+			debitor.setNm(getBPartnerNameById(line.getC_BPartner_ID()));
 
 			// FIXME: Debitor Address
 			// NOTE: this is not mandatory
@@ -425,7 +433,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		return partyIdCopy;
 	}
 
-	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(final PartyIdentificationSEPA1 partyId)
+	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(final I_SEPA_Export sepaHeader)
 	{
 		final PartyIdentificationSEPA3 partyIdCopy = new PartyIdentificationSEPA3();
 		final PartySEPA2 partySEPA = new PartySEPA2();
@@ -438,7 +446,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		prvtId.setOthr(othr);
 
 		final RestrictedPersonIdentificationSchemeNameSEPA schemeNm = new RestrictedPersonIdentificationSchemeNameSEPA();
-		othr.setId(partyId.getNm());
+		othr.setId(sepaHeader.getIBAN());
 		othr.setSchmeNm(schemeNm);
 		schemeNm.setPrtry(IdentificationSchemeNameSEPA.valueOf("SEPA"));
 
@@ -446,6 +454,23 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		// FIXME: copy address if exists
 
 		return partyIdCopy;
+	}
+
+	private String getSEPA_MandateRefNo(final I_SEPA_Export_Line line)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> line.getSEPA_MandateRefNo(),
+				() -> getBPartnerValueById(line.getC_BPartner_ID()) + "-1");
+	}
+
+	private String getBPartnerValueById(final int bpartnerRepoId)
+	{
+		return bpartnerService.getBPartnerValue(BPartnerId.ofRepoIdOrNull(bpartnerRepoId)).trim();
+	}
+
+	private String getBPartnerNameById(final int bpartnerRepoId)
+	{
+		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId)).trim();
 	}
 
 }

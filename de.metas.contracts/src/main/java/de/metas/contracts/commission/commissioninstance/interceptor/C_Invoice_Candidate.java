@@ -2,14 +2,19 @@ package de.metas.contracts.commission.commissioninstance.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.contracts.commission.commissioninstance.services.InvoiceCandidateFacadeService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -38,6 +43,9 @@ import lombok.NonNull;
 @Component
 public class C_Invoice_Candidate
 {
+
+	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate.class);
+
 	private final InvoiceCandidateFacadeService invoiceCandidateFacadeService;
 
 	public C_Invoice_Candidate(
@@ -58,6 +66,11 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 		{
+			if (productPreventsCommissioning(icRecord))
+			{
+				return;
+			}
+
 			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 			invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateId, false/* candidateDeleted */);
 		}
@@ -68,8 +81,28 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 		{
+			if (productPreventsCommissioning(icRecord))
+			{
+				return;
+			}
+
 			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 			invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateId, true/* candidateDeleted */);
 		}
+	}
+
+	private boolean productPreventsCommissioning(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getM_Product_ID() <= 0)
+		{
+			return false; // no product also means nothing is prevented
+		}
+
+		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(icRecord.getM_Product_ID());
+		if (!productRecord.isCommissioned())
+		{
+			logger.debug("M_Product_ID={} if invoice candidate has Commissioned=false; -> not going to invoke commission system");
+		}
+		return !productRecord.isCommissioned();
 	}
 }

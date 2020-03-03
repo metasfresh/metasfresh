@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
+import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -50,6 +51,9 @@ public class SalesCommissionShare
 	@Setter(AccessLevel.NONE)
 	private final SalesCommissionShareId id;
 
+	@Setter(AccessLevel.NONE)
+	private final ProductId commissionProductId;
+
 	private final HierarchyLevel level;
 
 	private final Beneficiary beneficiary;
@@ -70,12 +74,13 @@ public class SalesCommissionShare
 	@Builder
 	private SalesCommissionShare(
 			@JsonProperty("id") @Nullable final SalesCommissionShareId id,
-			//@JsonProperty("contract") @NonNull final CommissionContract contract,
+			@JsonProperty("commissionProductId") @NonNull final ProductId commissionProductId,
 			@JsonProperty("level") @NonNull final HierarchyLevel level,
 			@JsonProperty("beneficiary") @NonNull final Beneficiary beneficiary,
 			@JsonProperty("facts") @NonNull @Singular final List<SalesCommissionFact> facts)
 	{
 		this.id = id;
+		this.commissionProductId = commissionProductId;
 		this.level = level;
 		this.beneficiary = beneficiary;
 		this.facts = new ArrayList<>();

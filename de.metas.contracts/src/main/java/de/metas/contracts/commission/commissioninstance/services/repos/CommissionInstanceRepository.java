@@ -168,6 +168,7 @@ public class CommissionInstanceRepository
 	private SalesCommissionShareBuilder createShareBuilder(@NonNull final I_C_Commission_Share shareRecord)
 	{
 		final SalesCommissionShareBuilder share = SalesCommissionShare.builder()
+				.commissionProductId(ProductId.ofRepoId(shareRecord.getCommission_Product_ID()))
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()));
 
@@ -315,6 +316,7 @@ public class CommissionInstanceRepository
 		}
 		shareRecordToUse.setC_BPartner_SalesRep_ID(share.getBeneficiary().getBPartnerId().getRepoId());
 		shareRecordToUse.setC_Flatrate_Term_ID(contract.getId().getRepoId());
+		shareRecordToUse.setCommission_Product_ID(share.getCommissionProductId().getRepoId());
 		shareRecordToUse.setPointsSum_Forecasted(share.getForecastedPointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiceable(share.getInvoiceablePointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiced(share.getInvoicedPointsSum().toBigDecimal());
