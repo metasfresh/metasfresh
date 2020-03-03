@@ -202,7 +202,6 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
 				.setFailIfNotCalculated();
-
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
 		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
