@@ -47,8 +47,6 @@ public class CommissionInstance
 
 	private CommissionTriggerData currentTriggerData;
 
-	private final CommissionConfig config;
-
 	/** Each share means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
 	private final ImmutableList<SalesCommissionShare> shares;
 
@@ -57,12 +55,10 @@ public class CommissionInstance
 	private CommissionInstance(
 			@JsonProperty("id") @Nullable final CommissionInstanceId id,
 			@JsonProperty("currentTriggerData") @NonNull final CommissionTriggerData currentTriggerData,
-			@JsonProperty("config") @NonNull final CommissionConfig config,
 			@JsonProperty("shares") @Singular final List<SalesCommissionShare> shares)
 	{
 		this.id = id;
 		this.currentTriggerData = currentTriggerData;
-		this.config = config;
 		this.shares = ImmutableList.copyOf(shares);
 	}
 }

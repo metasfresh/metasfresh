@@ -19,6 +19,7 @@ import de.metas.contracts.commission.commissioninstance.services.repos.Commissio
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord;
 import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord.CreateCommissionInstanceResult;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.contracts.commission.testhelpers.CommissionShareTestRecord;
 
@@ -70,6 +71,7 @@ class CommissionRecordStagingServiceTest
 	void retrieveRecordsForInstanceId_commission_share_ordering()
 	{
 		final CreateCommissionInstanceResult commissionData1 = CommissionInstanceTestRecord.builder()
+				.AD_ORG_ID(OrgId.ofRepoId(10))
 				.mostRecentTriggerTimestamp(1000000L)
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("5")
@@ -80,6 +82,7 @@ class CommissionRecordStagingServiceTest
 		final CommissionInstanceId commissionInstance1Id = commissionData1.getCommissionInstanceId();
 
 		final CreateCommissionInstanceResult commissionData2 = CommissionInstanceTestRecord.builder()
+				.AD_ORG_ID(OrgId.ofRepoId(5))
 				.mostRecentTriggerTimestamp(1000000L)
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("5")

@@ -1,5 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 
@@ -31,7 +33,7 @@ public interface CommissionAlgorithm
 	 * Create a new commission instance with the given {@code trigger} and {@link SalesCommissionShare}s.
 	 * The method is invoked by the framework and can safely assume that no commission instance exists yet (in case that matters).
 	 */
-	CommissionInstance createInstance(CreateInstanceRequest request);
+	ImmutableList<SalesCommissionShare> createCommissionShares(CreateCommissionSharesRequest request);
 
 	/**
 	 * Apply the given {@code change}'s {@code newCommissionTriggerData} to its {@link CommissionInstance}.

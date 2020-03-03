@@ -115,7 +115,7 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 				});
 				counter++;
 			}
-			catch (RuntimeException e)
+			catch (final RuntimeException e)
 			{
 				anyException = true;
 				final AdIssueId adIssueId = errorManager.createIssue(e);

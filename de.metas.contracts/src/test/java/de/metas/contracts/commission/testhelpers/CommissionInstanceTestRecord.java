@@ -22,6 +22,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.model.I_M_Product_Category;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -64,6 +65,9 @@ public class CommissionInstanceTestRecord
 
 	@NonNull
 	Long mostRecentTriggerTimestamp;
+
+	@NonNull
+	OrgId AD_ORG_ID;
 
 	@Nullable
 	InvoiceCandidateId C_INVOICE_CANDIDATE_ID;
@@ -112,6 +116,7 @@ public class CommissionInstanceTestRecord
 		{
 			instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID.getRepoId());
 		}
+		instanceRecord.setAD_Org_ID(AD_ORG_ID.getRepoId());
 		instanceRecord.setBill_BPartner_ID(customerRecord.getC_BPartner_ID());
 		instanceRecord.setM_Product_Order_ID(salesProductRecord.getM_Product_ID());
 		instanceRecord.setMostRecentTriggerTimestamp(Timestamp.from(Instant.ofEpochMilli(mostRecentTriggerTimestamp)));

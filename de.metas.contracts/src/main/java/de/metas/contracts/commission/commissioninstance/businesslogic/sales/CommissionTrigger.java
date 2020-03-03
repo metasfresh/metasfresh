@@ -31,7 +31,7 @@ import lombok.Value;
  * #L%
  */
 
-/** "basically" an invoice candidate */
+/** "basically" an invoice candidate; but can be other things in future as well. */
 @Value
 public class CommissionTrigger
 {
@@ -40,7 +40,6 @@ public class CommissionTrigger
 	/** The direct beneficiary; usually the customer's "direct" sales rep. Will probably be part of a hierarchy. */
 	Beneficiary beneficiary;
 
-	@NonNull
 	CommissionTriggerData commissionTriggerData;
 
 	@Builder

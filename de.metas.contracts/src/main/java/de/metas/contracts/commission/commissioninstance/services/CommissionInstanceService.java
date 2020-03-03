@@ -22,12 +22,12 @@
 
 package de.metas.contracts.commission.commissioninstance.services;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import lombok.NonNull;
 
 @Service
@@ -45,16 +45,15 @@ public class CommissionInstanceService
 		this.commissionAlgorithmInvoker = commissionAlgorithmInvoker;
 	}
 
-	public ImmutableList<CommissionInstance> getCommissionInstanceFor(
+	public Optional<CommissionInstance> getCommissionInstanceFor(
 			@NonNull final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
 	{
-		final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
+		final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
 
-		final ImmutableList.Builder<CommissionInstance> result = ImmutableList.builder();
-		for (final CreateInstanceRequest request : requests)
+		if (request.isPresent())
 		{
-			result.add(commissionAlgorithmInvoker.applyCreateRequest(request));
+			return Optional.of(commissionAlgorithmInvoker.applyCreateRequest(request.get()));
 		}
-		return result.build();
+		return Optional.empty();
 	}
 }
