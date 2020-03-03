@@ -95,6 +95,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				final SalesCommissionShare share = SalesCommissionShare.builder()
 						.beneficiary(beneficiary)
 						.level(currentLevel)
+						.commissionProductId(config.getCommissionProductId())
 						.build();
 				shares.add(share);
 			}

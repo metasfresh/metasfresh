@@ -210,7 +210,7 @@ public interface I_C_Commission_Instance
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set MostRecentTriggerTimestamp.
+	 * Set Provisionsauslöser Zeitpunkt.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -219,7 +219,7 @@ public interface I_C_Commission_Instance
 	public void setMostRecentTriggerTimestamp (java.sql.Timestamp MostRecentTriggerTimestamp);
 
 	/**
-	 * Get MostRecentTriggerTimestamp.
+	 * Get Provisionsauslöser Zeitpunkt.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true

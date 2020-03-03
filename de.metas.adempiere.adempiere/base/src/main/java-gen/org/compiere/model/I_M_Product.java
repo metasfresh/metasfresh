@@ -36,29 +36,6 @@ public interface I_M_Product
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
 	 * Set Obligatorische Zusatzangaben.
 	 *
 	 * <br>Type: Text
@@ -82,56 +59,27 @@ public interface I_M_Product
     public static final String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
 
 	/**
-	 * Set Umsatzrealisierung.
-	 * Method for recording revenue
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RevenueRecognition_ID (int C_RevenueRecognition_ID);
-
-	/**
-	 * Get Umsatzrealisierung.
-	 * Method for recording revenue
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RevenueRecognition_ID();
-
-	public org.compiere.model.I_C_RevenueRecognition getC_RevenueRecognition();
-
-	public void setC_RevenueRecognition(org.compiere.model.I_C_RevenueRecognition C_RevenueRecognition);
-
-    /** Column definition for C_RevenueRecognition_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_RevenueRecognition> COLUMN_C_RevenueRecognition_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_RevenueRecognition>(I_M_Product.class, "C_RevenueRecognition_ID", org.compiere.model.I_C_RevenueRecognition.class);
-    /** Column name C_RevenueRecognition_ID */
-    public static final String COLUMNNAME_C_RevenueRecognition_ID = "C_RevenueRecognition_ID";
-
-	/**
-	 * Set Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Unit of Measure
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	public int getAD_Org_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Klassifizierung.
@@ -185,6 +133,58 @@ public interface I_M_Product
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Umsatzrealisierung.
+	 * Method for recording revenue
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RevenueRecognition_ID (int C_RevenueRecognition_ID);
+
+	/**
+	 * Get Umsatzrealisierung.
+	 * Method for recording revenue
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RevenueRecognition_ID();
+
+	public org.compiere.model.I_C_RevenueRecognition getC_RevenueRecognition();
+
+	public void setC_RevenueRecognition(org.compiere.model.I_C_RevenueRecognition C_RevenueRecognition);
+
+    /** Column definition for C_RevenueRecognition_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_RevenueRecognition> COLUMN_C_RevenueRecognition_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_RevenueRecognition>(I_M_Product.class, "C_RevenueRecognition_ID", org.compiere.model.I_C_RevenueRecognition.class);
+    /** Column name C_RevenueRecognition_ID */
+    public static final String COLUMNNAME_C_RevenueRecognition_ID = "C_RevenueRecognition_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Auszeichnungsname.
@@ -619,6 +619,31 @@ public interface I_M_Product
     public static final String COLUMNNAME_IsBOM = "IsBOM";
 
 	/**
+	 * Set Wird provisioniert.
+	 * Markiert Produkte, zu denen prinzipiell eine Provisionierung stattfinden kann, sofern die entsprechenden Einstellungen und Verträge hinterlegt sind.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCommissioned (boolean IsCommissioned);
+
+	/**
+	 * Get Wird provisioniert.
+	 * Markiert Produkte, zu denen prinzipiell eine Provisionierung stattfinden kann, sofern die entsprechenden Einstellungen und Verträge hinterlegt sind.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCommissioned();
+
+    /** Column definition for IsCommissioned */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_IsCommissioned = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "IsCommissioned", null);
+    /** Column name IsCommissioned */
+    public static final String COLUMNNAME_IsCommissioned = "IsCommissioned";
+
+	/**
 	 * Set Streckengeschäft.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
@@ -963,6 +988,29 @@ public interface I_M_Product
     public static final String COLUMNNAME_LowLevel = "LowLevel";
 
 	/**
+	 * Set Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getManufacturer_ID();
+
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
+
+	/**
 	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
@@ -1171,29 +1219,6 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
 
 	/**
-	 * Set Hersteller.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setManufacturer_ID (int Manufacturer_ID);
-
-	/**
-	 * Get Hersteller.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getManufacturer_ID();
-
-    /** Column name Manufacturer_ID */
-    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
-
-	/**
 	 * Set MRP ausschliessen.
 	 *
 	 * <br>Type: List
@@ -1240,27 +1265,6 @@ public interface I_M_Product
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Verpackungseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPackage_UOM_ID (int Package_UOM_ID);
-
-	/**
-	 * Get Verpackungseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPackage_UOM_ID();
-
-    /** Column name Package_UOM_ID */
-    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
-
-	/**
 	 * Set Pck. Gr..
 	 *
 	 * <br>Type: String
@@ -1282,6 +1286,27 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "PackageSize", null);
     /** Column name PackageSize */
     public static final String COLUMNNAME_PackageSize = "PackageSize";
+
+	/**
+	 * Set Verpackungseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackage_UOM_ID (int Package_UOM_ID);
+
+	/**
+	 * Get Verpackungseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPackage_UOM_ID();
+
+    /** Column name Package_UOM_ID */
+    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
 
 	/**
 	 * Set Verarbeiten.
@@ -1361,6 +1386,27 @@ public interface I_M_Product
     public static final String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
+	 * Set Kundenbetreuer.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSalesRep_ID (int SalesRep_ID);
+
+	/**
+	 * Get Kundenbetreuer.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSalesRep_ID();
+
+    /** Column name SalesRep_ID */
+    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/**
 	 * Set Aufwandsart.
 	 * Expense report type
 	 *
@@ -1388,56 +1434,6 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_ExpenseType> COLUMN_S_ExpenseType_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_ExpenseType>(I_M_Product.class, "S_ExpenseType_ID", org.compiere.model.I_S_ExpenseType.class);
     /** Column name S_ExpenseType_ID */
     public static final String COLUMNNAME_S_ExpenseType_ID = "S_ExpenseType_ID";
-
-	/**
-	 * Set Ressource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Ressource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getS_Resource_ID();
-
-	public org.compiere.model.I_S_Resource getS_Resource();
-
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
-	 * Set Kundenbetreuer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSalesRep_ID (int SalesRep_ID);
-
-	/**
-	 * Get Kundenbetreuer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getSalesRep_ID();
-
-    /** Column name SalesRep_ID */
-    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Regaltiefe.
@@ -1538,6 +1534,35 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_SKU = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "SKU", null);
     /** Column name SKU */
     public static final String COLUMNNAME_SKU = "SKU";
+
+	/**
+	 * Set Ressource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Ressource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_Resource_ID();
+
+	public org.compiere.model.I_S_Resource getS_Resource();
+
+	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+
+    /** Column definition for S_Resource_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_S_Resource>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+    /** Column name S_Resource_ID */
+    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set UnitsPerPack.

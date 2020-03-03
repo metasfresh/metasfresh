@@ -14,7 +14,7 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1839506217L;
+	private static final long serialVersionUID = -589622344L;
 
     /** Standard Constructor */
     public X_C_HierarchyCommissionSettings (Properties ctx, int C_HierarchyCommissionSettings_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
       /** if (C_HierarchyCommissionSettings_ID == 0)
         {
 			setC_HierarchyCommissionSettings_ID (0);
+			setCommission_Product_ID (0);
 			setIsSubtractLowerLevelCommissionFromBase (true); // Y
 			setName (null);
 			setPointsPrecision (0); // 2
@@ -61,6 +62,31 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 	public int getC_HierarchyCommissionSettings_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_HierarchyCommissionSettings_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Provisionsprodukt.
+		@param Commission_Product_ID 
+		Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	  */
+	@Override
+	public void setCommission_Product_ID (int Commission_Product_ID)
+	{
+		if (Commission_Product_ID < 1) 
+			set_Value (COLUMNNAME_Commission_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Commission_Product_ID, Integer.valueOf(Commission_Product_ID));
+	}
+
+	/** Get Provisionsprodukt.
+		@return Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	  */
+	@Override
+	public int getCommission_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Commission_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
