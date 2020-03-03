@@ -9,18 +9,12 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -55,15 +49,6 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		//
-		CurrencyRepository.class,
-		MoneyService.class,
-		InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBase
 {
 	@Override
@@ -71,6 +56,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void init()
 	{
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 	}
 
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()
@@ -205,7 +192,6 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoice.getBill_User_ID()).isEqualTo(oldUserId);
 	}
 
-
 	@Test
 	public void test_updateLocationAndUser_True_UserWithNoLocation()
 	{
@@ -215,8 +201,8 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		updateInvalidCandidates();
 		refresh(ic1);
 
-		final int newLocationId =createNewDefaultLocation(partnerId, true);
-		final int newUserId =createNewDefaultUser(partnerId, -1, "User1", true);
+		final int newLocationId = createNewDefaultLocation(partnerId, true);
+		final int newUserId = createNewDefaultUser(partnerId, -1, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
