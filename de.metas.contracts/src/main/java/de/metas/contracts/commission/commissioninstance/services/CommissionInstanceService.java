@@ -45,7 +45,7 @@ public class CommissionInstanceService
 		this.commissionAlgorithmInvoker = commissionAlgorithmInvoker;
 	}
 
-	public Optional<CommissionInstance> getCommissionInstanceFor(
+	public Optional<CommissionInstance> computeCommissionInstanceFor(
 			@NonNull final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
 	{
 		final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);

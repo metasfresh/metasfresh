@@ -206,7 +206,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				.productId(pricingCtx.getProductId())
 				.build();
 
-		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.getCommissionInstanceFor(createForecastCommissionPerPriceUOMReq);
+		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.computeCommissionInstanceFor(createForecastCommissionPerPriceUOMReq);
 		if (!commissionInstance.isPresent())
 		{
 			return Optional.empty();
