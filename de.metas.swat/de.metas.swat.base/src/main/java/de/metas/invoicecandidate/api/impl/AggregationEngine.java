@@ -155,7 +155,7 @@ public final class AggregationEngine
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
-		this.today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
+		this.today = invoiceCandBL.getToday();
 
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
@@ -557,8 +557,6 @@ public final class AggregationEngine
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
 			}
 		}
-		}
-
 		return BPartnerContactId.ofRepoIdOrNull(bpartnerId, ic.getBill_User_ID());
 	}
 
