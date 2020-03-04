@@ -132,8 +132,8 @@ public final class AggregationEngine
 	private final IBPartnerBL bpartnerBL;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
-	private final LocalDate defaultDateInvoiced;
-	private final LocalDate defaultDateAcct;
+	private final LocalDate dateInvoicedParam;
+	private final LocalDate dateAcctParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 
 	private final AdTableId inoutLineTableId;
@@ -146,8 +146,8 @@ public final class AggregationEngine
 	private AggregationEngine(
 			final IBPartnerBL bpartnerBL,
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
-			@Nullable final LocalDate defaultDateInvoiced,
-			@Nullable final LocalDate defaultDateAcct,
+			@Nullable final LocalDate dateInvoicedParam,
+			@Nullable final LocalDate dateAcctParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
@@ -156,8 +156,8 @@ public final class AggregationEngine
 
 		this.today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
 
-		this.defaultDateInvoiced = defaultDateInvoiced;
-		this.defaultDateAcct = defaultDateAcct;
+		this.dateInvoicedParam = dateInvoicedParam;
+		this.dateAcctParam = dateAcctParam;
 		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -461,7 +461,7 @@ public final class AggregationEngine
 		return CoalesceUtil.coalesceSuppliers(
 				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
 				() -> TimeUtil.asLocalDate(ic.getDateInvoiced()),
-				() -> defaultDateInvoiced,
+				() -> dateInvoicedParam,
 				() -> today);
 	}
 
@@ -470,7 +470,7 @@ public final class AggregationEngine
 		return CoalesceUtil.coalesceSuppliers(
 				() -> TimeUtil.asLocalDate(ic.getPresetDateInvoiced()),
 				() -> TimeUtil.asLocalDate(ic.getDateAcct()),
-				() -> defaultDateAcct,
+				() -> dateAcctParam,
 				() -> computeDateInvoiced(ic));
 	}
 
