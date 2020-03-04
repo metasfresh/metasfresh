@@ -36,6 +36,7 @@ import java.util.Set;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -69,6 +70,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**
@@ -91,6 +93,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	protected void afterInitialize()
 	{
 		super.afterInitialize();
+		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 

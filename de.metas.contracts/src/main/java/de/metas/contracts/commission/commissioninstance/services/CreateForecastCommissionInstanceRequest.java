@@ -22,7 +22,10 @@
 
 package de.metas.contracts.commission.commissioninstance.services;
 
+import java.time.LocalDate;
+
 import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -30,12 +33,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDate;
-
 @Value
 @Builder
 public class CreateForecastCommissionInstanceRequest
 {
+	@NonNull
+	OrgId orgId;
+
 	@NonNull
 	BPartnerId salesRepId;
 

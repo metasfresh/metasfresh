@@ -2,6 +2,7 @@ package de.metas.impexp.parser;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -38,7 +39,7 @@ import lombok.ToString;
 @ToString
 public final class ImpDataParser
 {
-	private static final Charset CHARSET = Charset.forName("UTF-8");
+	private static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	private final boolean multiline;
 	private final ImpDataLineParser lineParser;

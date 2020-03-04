@@ -1,5 +1,20 @@
 package de.metas.banking.payment.modelvalidator;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -23,6 +38,7 @@ package de.metas.banking.payment.modelvalidator;
  */
 
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
@@ -37,21 +53,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr
@@ -182,7 +183,6 @@ public class C_AllocationHdr
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 		final IPaySelectionUpdater paySelectionUpdater = paySelectionBL.newPaySelectionUpdater();
 		paySelectionUpdater
-				.setContext(PlainContextAware.newWithThreadInheritedTrx())
 				.setC_PaySelection(paySelection)
 				.addPaySelectionLinesToUpdate(paySelectionLines)
 				.update();

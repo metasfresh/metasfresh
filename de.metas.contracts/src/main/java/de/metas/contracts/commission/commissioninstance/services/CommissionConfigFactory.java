@@ -1,9 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
@@ -15,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -26,6 +31,7 @@ import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig.HierarchyConfigBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfigId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract.HierarchyContractBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
@@ -40,6 +46,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -106,51 +113,58 @@ public class CommissionConfigFactory
 				.filter(termRecord -> CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(termRecord.getType_Conditions()))
 				.collect(ImmutableList.toImmutableList());
 
-		return createCommissionConfigsFor(commissionTermRecords,
+		final ImmutableMap<FlatrateTermId, CommissionConfig> contractId2Config = createCommissionConfigsFor(
+				commissionTermRecords,
 				contractRequest.getCustomerBPartnerId(),
 				contractRequest.getSalesProductId());
+
+		return CollectionUtils.extractDistinctElements(contractId2Config.values(), Function.identity());
 	}
 
-	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
+	public ImmutableMap<FlatrateTermId, CommissionConfig> createForExisingInstance(
+			@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
 	{
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
 				.retrieveTerms(commissionConfigRequest.getContractIds())
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<CommissionConfig> result = createCommissionConfigsFor(
+		final ImmutableMap<FlatrateTermId, CommissionConfig> result = createCommissionConfigsFor(
 				commissionTermRecords,
 				commissionConfigRequest.getCustomerBPartnerId(),
 				commissionConfigRequest.getSalesProductId());
-		if (result.size() != 1)
+		if (result.isEmpty())
 		{
-			throw new AdempiereException("The given commissionConfigRequest needs specify exactly one CommissionConfig")
+			throw new AdempiereException("The given commissionConfigRequest needs at least one commissionConfig")
 					.appendParametersToMessage()
 					.setParameter("result.size()", result.size())
 					.setParameter("commissionConfigRequest", commissionConfigRequest)
 					.setParameter("result", result);
-
 		}
-		return result.get(0);
+		return result;
 	}
 
-	private ImmutableList<CommissionConfig> createCommissionConfigsFor(
+	private ImmutableMap<FlatrateTermId, CommissionConfig> createCommissionConfigsFor(
 			@NonNull final ImmutableList<I_C_Flatrate_Term> termRecords,
 			@NonNull final BPartnerId customerBPartnerId,
-			@NonNull final ProductId salesproductId)
+			@NonNull final ProductId salesProductId)
 	{
 		final StagingData stagingData = commissionConfigStagingDataService.retrieveStagingData(termRecords);
 
 		final ImmutableListMultimap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = stagingData.getBPartnerId2FlatrateTermIds();
 		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = stagingData.getConditionRecordId2BPartnerIds();
 
-		final ImmutableList.Builder<CommissionConfig> commissionConfigs = ImmutableList.<CommissionConfig> builder();
-
-		final ProductCategoryId salesProductCategory = productDAO.retrieveProductCategoryByProductId(salesproductId);
+		final ProductCategoryId salesProductCategory = productDAO.retrieveProductCategoryByProductId(salesProductId);
 		final BPGroupId customerGroupId = bPartnerDAO.getBPGroupIdByBPartnerId(customerBPartnerId);
 
+		final ImmutableSet<Entry<Integer, Collection<Integer>>> settingsIdWithTermId = stagingData.getSettingsId2termIds()
+				.asMap()
+				.entrySet();
+
+		final ArrayList<HierarchyConfig> hierarchyConfigs = new ArrayList<>();
+
 		// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method. or with big "request"-classes that i use as params.
-		for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : stagingData.getSettingsId2termIds().asMap().entrySet())
+		for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : settingsIdWithTermId)
 		{
 			final Integer settingsId = settingsId2TermsIds.getKey();
 
@@ -159,6 +173,7 @@ public class CommissionConfigFactory
 			{
 				final HierarchyConfigBuilder builder = HierarchyConfig
 						.builder()
+						.id(HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()))
 						.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
 						.subtractLowerLevelCommissionFromBase(settingsRecord.isSubtractLowerLevelCommissionFromBase());
 
@@ -176,7 +191,6 @@ public class CommissionConfigFactory
 							{
 								continue;
 							}
-
 							final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
 									.id(termId)
 									.pointsPrecision(settingsRecord.getPointsPrecision());
@@ -213,12 +227,22 @@ public class CommissionConfigFactory
 				final HierarchyConfig config = builder.build();
 				if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
 				{
-					commissionConfigs.add(config);
+					hierarchyConfigs.add(config);
 				}
 			}
-
 		}
-		return commissionConfigs.build();
+
+		// finally index the configs by contract-Id
+		final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.<FlatrateTermId, CommissionConfig> builder();
+		for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
+		{
+			final int settingsRepoId = hierarchyConfig.getId().getRepoId();
+			for (final Integer contractId : stagingData.getSettingsId2termIds().get(settingsRepoId))
+			{
+				result.put(FlatrateTermId.ofRepoId(contractId), hierarchyConfig);
+			}
+		}
+		return result.build();
 	}
 
 	private boolean settingsLineRecordMatches(

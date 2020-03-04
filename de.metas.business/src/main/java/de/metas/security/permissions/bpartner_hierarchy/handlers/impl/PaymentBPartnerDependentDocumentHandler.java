@@ -14,6 +14,7 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /*
@@ -63,6 +64,7 @@ public class PaymentBPartnerDependentDocumentHandler implements BPartnerDependen
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(paymentRecord.getUpdatedBy()))
 				.build();
 	}
 

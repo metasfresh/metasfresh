@@ -57,7 +57,6 @@ public final class JsonOLCandCreateRequest
 	private JsonOrganization org;
 
 	@ApiModelProperty( //
-
 			required = true, //
 			value = "This translates to 'C_OLCand.externalLineId'.\n"
 					+ "'externalLineId' and 'dataSource' together need to be unique.")

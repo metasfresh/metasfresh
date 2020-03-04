@@ -9,6 +9,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -42,13 +43,16 @@ public class InvoiceCandidateFacadeService
 
 	private final SalesInvoiceCandidateService invoiceCandidateService;
 	private final SettlementInvoiceCandidateService settlementInvoiceCandidateService;
+	private final CommissionProductService commissionProductService;
 
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public InvoiceCandidateFacadeService(
+			@NonNull final CommissionProductService commissionProductService,
 			@NonNull final SalesInvoiceCandidateService invoiceCandidateService,
 			@NonNull final SettlementInvoiceCandidateService settlementInvoiceCandidateService)
 	{
+		this.commissionProductService = commissionProductService;
 		this.invoiceCandidateService = invoiceCandidateService;
 		this.settlementInvoiceCandidateService = settlementInvoiceCandidateService;
 	}
@@ -68,8 +72,12 @@ public class InvoiceCandidateFacadeService
 		}
 		else
 		{
-			logger.debug("ic references a record from AD_Table.TableName={}; -> invoke SalesInvoiceCandidateService", tableName);
-			invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId, candidateDeleted);
+			final ProductId productId = ProductId.ofRepoIdOrNull(icRecord.getM_Product_ID());
+			if (!commissionProductService.productPreventsCommissioning(productId))
+			{
+				logger.debug("ic references a record from AD_Table.TableName={}; -> invoke SalesInvoiceCandidateService", tableName);
+				invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId, candidateDeleted);
+			}
 		}
 	}
 }

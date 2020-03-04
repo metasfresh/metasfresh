@@ -8,6 +8,7 @@ import java.util.Optional;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
@@ -53,7 +54,7 @@ public class CommissionTriggerFactory
 	private final MoneyService moneyService;
 
 	public CommissionTriggerFactory(@NonNull final CommissionTriggerDataRepository commissionTriggerDataRepository,
-									@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService)
 	{
 		this.commissionTriggerDataRepository = commissionTriggerDataRepository;
 		this.moneyService = moneyService;
@@ -88,27 +89,30 @@ public class CommissionTriggerFactory
 		return Optional.of(trigger);
 	}
 
-	public CommissionTrigger createForForecastQtyAndPrice(@NonNull final ProductPrice productPrice,
-														  @NonNull final Quantity forecastQty,
-														  @NonNull final BPartnerId salesRepId,
-														  @NonNull final BPartnerId customerId)
+	public CommissionTrigger createForForecastQtyAndPrice(
+			@NonNull final OrgId orgId,
+			@NonNull final ProductPrice productPrice,
+			@NonNull final Quantity forecastQty,
+			@NonNull final BPartnerId salesRepId,
+			@NonNull final BPartnerId customerId)
 	{
 		final Money forecastNetAmt = moneyService.multiply(forecastQty, productPrice);
 
 		final CommissionTriggerRequest commissionTriggerRequest = CommissionTriggerRequest
 				.builder()
-				.forecastCommissionPoints( CommissionPoints.of( forecastNetAmt.toBigDecimal() ) )
+				.orgId(orgId)
+				.forecastCommissionPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
 				.invoicedCommissionPoints(CommissionPoints.ZERO)
 				.commissionPointsToInvoice(CommissionPoints.ZERO)
 				.tradedCommissionPercent(Percent.ZERO)
 				.candidateDeleted(Boolean.FALSE)
-				.timestamp( TimeUtil.asInstant( LocalDate.now() ) )
+				.timestamp(TimeUtil.asInstant(LocalDate.now()))
 				.build();
 
 		return CommissionTrigger.builder()
-				.customer( Customer.of(customerId) )
-				.beneficiary( Beneficiary.of(salesRepId) )
-				.commissionTriggerData( commissionTriggerDataRepository.createForRequest(commissionTriggerRequest)  )
+				.customer(Customer.of(customerId))
+				.beneficiary(Beneficiary.of(salesRepId))
+				.commissionTriggerData(commissionTriggerDataRepository.createForRequest(commissionTriggerRequest))
 				.build();
 	}
 

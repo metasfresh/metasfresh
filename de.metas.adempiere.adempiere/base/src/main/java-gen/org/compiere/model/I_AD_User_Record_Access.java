@@ -206,6 +206,29 @@ public interface I_AD_User_Record_Access
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object>(I_AD_User_Record_Access.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -229,6 +252,31 @@ public interface I_AD_User_Record_Access
     public static final org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object>(I_AD_User_Record_Access.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Parent.
+	 * Parent of Entity
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setParent_ID (int Parent_ID);
+
+	/**
+	 * Get Parent.
+	 * Parent of Entity
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getParent_ID();
+
+    /** Column definition for Parent_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object> COLUMN_Parent_ID = new org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object>(I_AD_User_Record_Access.class, "Parent_ID", null);
+    /** Column name Parent_ID */
+    public static final String COLUMNNAME_Parent_ID = "Parent_ID";
 
 	/**
 	 * Set Permission Issuer.
@@ -277,6 +325,29 @@ public interface I_AD_User_Record_Access
     public static final org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object>(I_AD_User_Record_Access.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Root Entry.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRoot_ID (int Root_ID);
+
+	/**
+	 * Get Root Entry.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRoot_ID();
+
+    /** Column definition for Root_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object> COLUMN_Root_ID = new org.adempiere.model.ModelColumn<I_AD_User_Record_Access, Object>(I_AD_User_Record_Access.class, "Root_ID", null);
+    /** Column name Root_ID */
+    public static final String COLUMNNAME_Root_ID = "Root_ID";
 
 	/**
 	 * Get Aktualisiert.

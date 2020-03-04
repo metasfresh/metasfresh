@@ -2,7 +2,6 @@ package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -48,10 +47,10 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public int retrieveLastPaySelectionLineNo(final Properties ctx, final int paySelectionId, final String trxName)
+	public int retrieveLastPaySelectionLineNo(final int paySelectionId)
 	{
 		final BigDecimal lastLineNo = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaySelectionLine.class, ctx, trxName)
+				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -154,7 +153,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public I_C_PaySelection retrievePaySelectionById(int paySelectionID)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelection.class, paySelectionID)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelection.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID, paySelectionID)
 				.create()

@@ -15,13 +15,13 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Help,Name,Description, IsTran
 
 -- 2019-12-05T08:04:59.525Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=593483
-;
+--DELETE FROM AD_Element_Link WHERE AD_Field_ID=593483
+--;
 
 -- 2019-12-05T08:04:59.527Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(593483)
-;
+--/* DDL */ select AD_Element_Link_Create_Missing_Field(593483)
+--;
 
 -- 2019-12-05T08:05:43.870Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -45,13 +45,13 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Help,Name,Description, IsTran
 
 -- 2019-12-05T08:07:21.322Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=593484
-;
+--DELETE FROM AD_Element_Link WHERE AD_Field_ID=593484
+--;
 
 -- 2019-12-05T08:07:21.324Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(593484)
-;
+--/* DDL */ select AD_Element_Link_Create_Missing_Field(593484)
+--;
 
 -- 2019-12-05T08:07:44.223Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
