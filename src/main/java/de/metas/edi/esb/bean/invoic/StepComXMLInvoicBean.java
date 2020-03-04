@@ -35,6 +35,8 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Comparator;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
@@ -101,16 +103,20 @@ public class StepComXMLInvoicBean
 
 	private static final ObjectFactory INVOIC_objectFactory = new ObjectFactory();
 
-	// Credit note - metasfresh "ARC" base doc type and "CR" sub doc type
-	private static final int DOC_CRNO_ID = 83;
-	// Credit note - metasfresh "ARC" base doc type and "CQ", "CS" sub doc types
-	private static final int DOC_CRNO2_ID = 381;
-	// Commercial invoice - metasfresh "ARI" base doc type
-	private static final int DOC_CMIV_ID = 380;
-	// Debit note - metasfresh "ARI" base doc type and "AQ" sub doc type
-	private static final int DOC_DBNO_ID = 383;
-	// Debit note - metasfresh "ARI" base doc type and "AP" sub doc type
-	private static final int DOC_DBNO2_ID = 84;
+	/** Credit note - metasfresh "ARC" base doc type and "CR" sub doc type */
+	private static final String DOC_CRNO_83 = "83";
+
+	/** Credit note - metasfresh "ARC" base doc type and "CQ"="quality-adjustment-credit-memo", "CS"="material-return-credit-memo" sub doc types */
+	private static final String DOC_CRNF_381 = "381";
+
+	/** Commercial invoice - metasfresh "ARI" base doc type */
+	private static final String DOC_CMIV_380 = "380";
+
+	/** Debit note - metasfresh "ARI" base doc type and "AQ"="quantity-adjustment-debit-note" sub doc type */
+	private static final String DOC_DBNO_383 = "383";
+
+	/** Debit note - metasfresh "ARI" base doc type and "AP"="price-adjustment-debit-note" sub doc type */
+	private static final String DOC_DBNF_84 = "84";
 
 	public void createXMLEDIData(final Exchange exchange)
 	{
@@ -146,7 +152,7 @@ public class StepComXMLInvoicBean
 		headerXrech.setOWNERID(ownerId);
 		final String documentId = invoice.getInvoiceDocumentno();
 		headerXrech.setDOCUMENTID(documentId);
-		final DocumentType documentType = mapDocumentType(invoice.getEancomDoctype());
+		final DocumentType documentType = mapDocumentType(invoice);
 		if (documentType == null)
 		{
 			throw new RuntimeCamelException("Could not identify document type");
@@ -185,23 +191,32 @@ public class StepComXMLInvoicBean
 		return xrech4H;
 	}
 
-	private DocumentType mapDocumentType(final String eancomDocType)
+	private DocumentType mapDocumentType(@NonNull final EDICctopInvoicVType invoice)
 	{
-		final int incomingDocType = Integer.parseInt(eancomDocType);
-		DocumentType documentType = null;
-		if (incomingDocType == DOC_CRNO_ID || incomingDocType == DOC_CRNO2_ID)
+		final String eancomDoctype = invoice.getEancomDoctype();
+
+		if (DOC_CRNO_83.equals(eancomDoctype))
 		{
-			documentType = DocumentType.CRNO;
+			return DocumentType.CRNO;
 		}
-		else if (incomingDocType == DOC_DBNO_ID || incomingDocType == DOC_DBNO2_ID)
+		else if( DOC_CRNF_381.equals(eancomDoctype))
 		{
-			documentType = DocumentType.DBNO;
+			return DocumentType.CRNF;
 		}
-		else if (incomingDocType == DOC_CMIV_ID)
+		else if (DOC_DBNO_383.equals(eancomDoctype))
 		{
-			documentType = DocumentType.CMIV;
+			return DocumentType.DBNO;
 		}
-		return documentType;
+		else if (DOC_DBNF_84.equals(eancomDoctype))
+		{
+			return DocumentType.DBNF;
+		}
+		else if (DOC_CMIV_380.equals(eancomDoctype))
+		{
+			return DocumentType.CMIV;
+		}
+
+		throw new RuntimeCamelException("@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @EancomDoctype@");
 	}
 
 	private void mapTrailer(final EDICctopInvoicVType invoice, final DecimalFormat decimalFormat, final TRAILR docTrailer)
@@ -787,23 +802,43 @@ public class StepComXMLInvoicBean
 			@NonNull final HEADERXrech headerXrech,
 			@NonNull final String dateFormat)
 	{
+		final XMLGregorianCalendar dateInvoiced = ValidationHelper.validateObject(invoice.getDateInvoiced(),
+				"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @DateInvoiced@");
+
+		// CREA
 		final HDATE1 documentDate = INVOIC_objectFactory.createHDATE1();
 		documentDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		documentDate.setDATEQUAL(DateQual.CREA.name());
-		documentDate.setDATEFROM(toFormattedStringDate(toDate(invoice.getDateInvoiced()), dateFormat));
-		final HDATE1 deliveryDate = INVOIC_objectFactory.createHDATE1();
+		documentDate.setDATEFROM(toFormattedStringDate(toDate(dateInvoiced), dateFormat));
+		headerXrech.getHDATE1().add(documentDate);
 
-		deliveryDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
-		deliveryDate.setDATEQUAL(DateQual.DELV.name());
-		deliveryDate.setDATEFROM(toFormattedStringDate(toDate(invoice.getMovementDate()), dateFormat));
-
+		// VALU
 		final HDATE1 valueDate = INVOIC_objectFactory.createHDATE1();
 		valueDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		valueDate.setDATEQUAL(DateQual.VALU.name());
-		valueDate.setDATEFROM(toFormattedStringDate(toDate(invoice.getDateInvoiced()), dateFormat));
-
-		headerXrech.getHDATE1().add(documentDate);
-		headerXrech.getHDATE1().add(deliveryDate);
+		valueDate.setDATEFROM(toFormattedStringDate(toDate(dateInvoiced), dateFormat));
 		headerXrech.getHDATE1().add(valueDate);
+
+		// DELV
+		final XMLGregorianCalendar movementDate;
+		if (DOC_CRNF_381.equals(invoice.getEancomDoctype()))
+		{
+			// may be null, if the invoice is a material return credit memo
+			// TODO DOC_CRNF_381 means EITHER CQ => "credit memo - Lieferdifferenz" OR CS => "credit memo - Retoure"; missing movement date is only OK for "Retoure"
+			movementDate = invoice.getMovementDate();
+		}
+		else
+		{
+			movementDate = ValidationHelper.validateObject(invoice.getMovementDate(),
+					"@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @MovementDate@");
+		}
+		if (movementDate != null)
+		{
+			final HDATE1 deliveryDate = INVOIC_objectFactory.createHDATE1();
+			deliveryDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
+			deliveryDate.setDATEQUAL(DateQual.DELV.name());
+			deliveryDate.setDATEFROM(toFormattedStringDate(toDate(movementDate), dateFormat));
+			headerXrech.getHDATE1().add(deliveryDate);
+		}
 	}
 }
