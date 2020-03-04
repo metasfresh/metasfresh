@@ -3,6 +3,7 @@ package de.metas.location.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +137,11 @@ public class LocationDAO implements ILocationDAO
 		if (request.getRegionId() > 0)
 		{
 			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, request.getRegionId());
+		}
+
+		if (!Check.isEmpty(request.getCity()))
+		{
+			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_City, request.getCity());
 		}
 
 		final int postalId = postalQuery.filter(PostalQueryFilter.of(postalValue))

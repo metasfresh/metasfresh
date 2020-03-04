@@ -14,12 +14,12 @@ import java.time.ZonedDateTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -78,15 +78,10 @@ public class C_Order
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised })
 	public void setPreparationDate(final I_C_Order order, final ICalloutField field)
 	{
-		if (!order.isSOTrx())
-		{
-			return; // task 09000: nothing to do, the PreparationDate is only relevant for sales orders.
-		}
-
 		// The user needs to make sure there is a *proper* PreparationDate (task 08931).
 		// If we are currently copying this record, it's fine to fallback to DatePromised (task 09000).
 		final boolean fallbackToDatePromised = field.isRecordCopyingMode();
 
-		Services.get(IOrderDeliveryDayBL.class).setPreparationDate(order, fallbackToDatePromised);
+		Services.get(IOrderDeliveryDayBL.class).setPreparationDateAndTour(order, fallbackToDatePromised);
 	}
 }

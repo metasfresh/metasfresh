@@ -1,8 +1,9 @@
 package de.metas.pricing.rules.campaign_price;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
@@ -11,6 +12,7 @@ import de.metas.money.Money;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -41,16 +43,15 @@ public class CampaignPricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CampaignPricingRule.class);
 
-	private final CampaignPriceService campaignPriceService = Adempiere.getBean(CampaignPriceService.class);
+	private final CampaignPriceService campaignPriceService = SpringContextHolder.instance.getBean(CampaignPriceService.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
-
 		if (result.isCalculated())
 		{
-			logger.debug("Not applying because already calculated");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because already calculated");
 			return false;
 		}
 
@@ -58,32 +59,33 @@ public class CampaignPricingRule implements IPricingRule
 
 		if (bpartnerId == null)
 		{
-			logger.debug("Not applying because there is no BPartner specified in context");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no BPartner specified in context");
 			return false;
 		}
 
 		if (!bpartnersRepo.isCampaignPriceAllowed(bpartnerId))
 		{
-			logger.debug("Not applying because the partner is not allowed to receive campaign prices");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because the partner is not allowed to receive campaign prices");
 			return false;
 		}
 
 		if (pricingCtx.getProductId() == null)
 		{
-			logger.debug("Not applying because there is no Product specified in context");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no Product specified in context");
 			return false;
 		}
 		if (pricingCtx.getCountryId() == null)
 		{
-			logger.debug("Not applying because there is no Country specified in context");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no Country specified in context");
 			return false;
 		}
 		if (pricingCtx.getCurrencyId() == null)
 		{
-			logger.warn("Not applying because there is no Currency specified in context");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no Currency specified in context");
 			return false;
 		}
 
+		Loggables.withLogger(logger, Level.DEBUG).addLog("applying");
 		return true;
 	}
 
@@ -124,6 +126,7 @@ public class CampaignPricingRule implements IPricingRule
 		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
 		result.setPriceStd(campaignPrice.getPriceStd().toBigDecimal());
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
+		result.setPriceUomId(campaignPrice.getPriceUomId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
 		result.setInvoicableQtyBasedOn(campaignPrice.getInvoicableQtyBasedOn());

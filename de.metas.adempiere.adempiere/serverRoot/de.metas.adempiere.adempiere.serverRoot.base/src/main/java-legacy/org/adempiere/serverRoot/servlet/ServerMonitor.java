@@ -1078,6 +1078,7 @@ public class ServerMonitor extends HttpServlet
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
+		// NOTE: actually here we are starting all servers
 		m_serverMgr = AdempiereServerMgr.get();
 	}
 

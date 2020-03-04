@@ -1,15 +1,20 @@
 package de.metas.business;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.junit.Assert.assertNotNull;
 
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -18,7 +23,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -69,7 +79,7 @@ public final class BusinessTestHelper
 	{
 		final I_C_UOM uomKg = createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_3);
 		uomKg.setX12DE355("KGM");
-		save(uomKg);
+		saveRecord(uomKg);
 		return uomKg;
 	}
 
@@ -88,7 +98,7 @@ public final class BusinessTestHelper
 		final I_C_UOM uom = createUOM(name, stdPrecision, 0);
 		uom.setUOMType(uomType);
 
-		save(uom);
+		saveRecord(uom);
 		return uom;
 	}
 
@@ -97,7 +107,7 @@ public final class BusinessTestHelper
 		final I_C_UOM uom = createUOM(name);
 		uom.setStdPrecision(stdPrecision);
 		uom.setCostingPrecision(costingPrecission);
-		save(uom);
+		saveRecord(uom);
 		return uom;
 	}
 
@@ -110,11 +120,12 @@ public final class BusinessTestHelper
 	public static I_C_UOM createUOM(final String name, final String x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		POJOWrapper.setInstanceName(uom, name);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
 		uom.setX12DE355(x12de355);
 
-		save(uom);
+		saveRecord(uom);
 
 		return uom;
 	}
@@ -150,8 +161,18 @@ public final class BusinessTestHelper
 				.build());
 	}
 
+	public static CurrencyId getEURCurrencyId()
+	{
+		final String currencyCodeEur = "EUR";
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeEur);
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(currencyCode).getId();
+		assertNotNull(currencyId);
+
+		return currencyId;
+	}
+
 	/**
-	 *
 	 * @param name
 	 * @param uom
 	 * @param weightKg product weight (Kg); mainly used for packing materials
@@ -163,11 +184,13 @@ public final class BusinessTestHelper
 		product.setValue(name);
 		product.setName(name);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
+		product.setProductType(ProductType.Item.getCode());
+		product.setIsStocked(true);
 		if (weightKg != null)
 		{
 			product.setWeight(weightKg);
 		}
-		save(product);
+		saveRecord(product);
 
 		return product;
 	}
@@ -180,16 +203,14 @@ public final class BusinessTestHelper
 
 	/**
 	 * Creates and saves a simple {@link I_C_BPartner}
-	 *
-	 * @param nameAndValue
-	 * @return
 	 */
 	public static I_C_BPartner createBPartner(final String nameAndValue)
 	{
 		final I_C_BPartner bpartner = newInstanceOutOfTrx(I_C_BPartner.class);
+		POJOWrapper.setInstanceName(bpartner, nameAndValue);
 		bpartner.setValue(nameAndValue);
 		bpartner.setName(nameAndValue);
-		save(bpartner);
+		saveRecord(bpartner);
 
 		return bpartner;
 	}
@@ -200,8 +221,19 @@ public final class BusinessTestHelper
 		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpl.setIsShipTo(true);
 		bpl.setIsBillTo(true);
-		save(bpl);
+		saveRecord(bpl);
 		return bpl;
+	}
+
+	public static I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)
+	{
+		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
+		bpBankAccount.setIBAN(iban);
+		bpBankAccount.setC_BPartner_ID(bPartnerId.getRepoId());
+		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
+		saveRecord(bpBankAccount);
+
+		return bpBankAccount;
 	}
 
 	/**
@@ -218,22 +250,19 @@ public final class BusinessTestHelper
 
 	/**
 	 * Creates a warehouse and one (default) locator.
-	 *
-	 * @param name
-	 * @param isIssueWarehouse
-	 * @return
 	 */
 	public static I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
 	{
 		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
+		POJOWrapper.setInstanceName(warehouse, name);
 		warehouse.setValue(name);
 		warehouse.setName(name);
 		warehouse.setIsIssueWarehouse(isIssueWarehouse);
-		save(warehouse);
+		saveRecord(warehouse);
 
 		final I_M_Locator locator = createLocator(name + "-default", warehouse);
 		locator.setIsDefault(true);
-		save(locator);
+		saveRecord(locator);
 
 		return warehouse;
 	}
@@ -241,11 +270,12 @@ public final class BusinessTestHelper
 	public static I_M_Locator createLocator(final String name, final I_M_Warehouse warehouse)
 	{
 		final I_M_Locator locator = newInstanceOutOfTrx(I_M_Locator.class);
+		POJOWrapper.setInstanceName(locator, name);
 		locator.setIsDefault(true);
 		locator.setValue(name);
 		locator.setIsActive(true);
 		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		save(locator);
+		saveRecord(locator);
 		return locator;
 	}
 
@@ -253,12 +283,23 @@ public final class BusinessTestHelper
 	{
 		final I_C_TaxCategory noTaxCategoryFound = newInstanceOutOfTrx(I_C_TaxCategory.class);
 		noTaxCategoryFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
-		save(noTaxCategoryFound);
+		saveRecord(noTaxCategoryFound);
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
 		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
 		noTaxFound.setC_TaxCategory(noTaxCategoryFound);
-		save(noTaxFound);
+		saveRecord(noTaxFound);
+	}
 
+	public static I_C_Currency createCurrency(final String symbol)
+	{
+		final I_C_Currency currencyRecord = newInstanceOutOfTrx(I_C_Currency.class);
+		POJOWrapper.setInstanceName(currencyRecord, symbol);
+		currencyRecord.setCurSymbol(symbol);
+		currencyRecord.setISO_Code(CurrencyCode.EUR.toThreeLetterCode());
+		currencyRecord.setIsActive(true);
+
+		saveRecord(currencyRecord);
+		return currencyRecord;
 	}
 }

@@ -54,15 +54,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
- *
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
- * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link de.metas.document.ICopyHandlerBL}.
  * <p>
+ * IMPORTANT: this copy handler is special in that it could also complete the target invoice! Make sure that it's called after the other "generic" handlers.<br>
  * Also see the javadoc of {@link IInvoiceBL#creditInvoice(de.metas.adempiere.model.I_C_Invoice, IInvoiceCreditContext)}.
  */
 public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_InvoiceLine>
 {
-	// private final Properties ctx;
 	private final IInvoiceCreditContext creditCtx;
 	private final BigDecimal openAmt;
 	private final String trxName;
@@ -72,9 +70,6 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			final BigDecimal openAmt,
 			final String trxName)
 	{
-		super();
-
-		// this.ctx = ctx;
 		this.creditCtx = creditCtx;
 		this.openAmt = openAmt;
 		this.trxName = trxName;

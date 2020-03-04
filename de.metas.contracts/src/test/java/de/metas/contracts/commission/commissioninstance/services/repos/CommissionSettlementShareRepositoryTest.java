@@ -43,6 +43,7 @@ import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
 import io.github.jsonSnapshot.SnapshotMatcher;
@@ -122,6 +123,7 @@ class CommissionSettlementShareRepositoryTest
 		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = CommissionInstanceTestRecord.builder()
+				.AD_ORG_ID(OrgId.ofRepoId(5))
 				.C_INVOICE_CANDIDATE_ID(InvoiceCandidateId.ofRepoId(10))
 				.pointsBase_Forecasted("999")
 				.pointsBase_Invoiceable("999")
@@ -187,6 +189,7 @@ class CommissionSettlementShareRepositoryTest
 		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = CommissionInstanceTestRecord.builder()
+				.AD_ORG_ID(OrgId.ofRepoId(5))
 				.C_INVOICE_CANDIDATE_ID(InvoiceCandidateId.ofRepoId(10))
 				.pointsBase_Forecasted("999")
 				.pointsBase_Invoiceable("999")

@@ -46,8 +46,9 @@ public class TypedSqlQueryTests
 		typedSqlQuery.addUnion(unionQuery2, true);
 
 		final String result = typedSqlQuery.buildSQL(
-				new StringBuilder("customSelectClause"),
-				new StringBuilder("customFromClause"),
+				"customSelectClause",
+				"customFromClause",
+				null/* groupByClause */,
 				true);
 		assertThat(result).isNotEmpty();
 

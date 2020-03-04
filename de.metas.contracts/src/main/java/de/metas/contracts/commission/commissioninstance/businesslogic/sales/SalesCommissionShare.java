@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.product.ProductId;
@@ -52,7 +54,7 @@ public class SalesCommissionShare
 	private final SalesCommissionShareId id;
 
 	@Setter(AccessLevel.NONE)
-	private final ProductId commissionProductId;
+	private final CommissionConfig config;
 
 	private final HierarchyLevel level;
 
@@ -74,13 +76,13 @@ public class SalesCommissionShare
 	@Builder
 	private SalesCommissionShare(
 			@JsonProperty("id") @Nullable final SalesCommissionShareId id,
-			@JsonProperty("commissionProductId") @NonNull final ProductId commissionProductId,
+			@JsonProperty("config") @NonNull final CommissionConfig config,
 			@JsonProperty("level") @NonNull final HierarchyLevel level,
 			@JsonProperty("beneficiary") @NonNull final Beneficiary beneficiary,
 			@JsonProperty("facts") @NonNull @Singular final List<SalesCommissionFact> facts)
 	{
 		this.id = id;
-		this.commissionProductId = commissionProductId;
+		this.config = config;
 		this.level = level;
 		this.beneficiary = beneficiary;
 		this.facts = new ArrayList<>();
@@ -121,5 +123,15 @@ public class SalesCommissionShare
 	public ImmutableList<SalesCommissionFact> getFacts()
 	{
 		return ImmutableList.copyOf(facts);
+	}
+
+	public CommissionContract getContract()
+	{
+		return config.getContractFor(beneficiary);
+	}
+
+	public ProductId getCommissionProductId()
+	{
+		return config.getCommissionProductId();
 	}
 }

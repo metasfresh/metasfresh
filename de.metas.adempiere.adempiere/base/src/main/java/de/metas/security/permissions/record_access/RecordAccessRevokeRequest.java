@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,20 +41,26 @@ public class RecordAccessRevokeRequest
 {
 	TableRecordReference recordRef;
 	Principal principal;
+	PermissionIssuer issuer;
 
 	boolean revokeAllPermissions;
 	ImmutableSet<Access> permissions;
+	final UserId requestedBy;
 
 	@Builder
 	private RecordAccessRevokeRequest(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull Principal principal,
+			@NonNull PermissionIssuer issuer,
 			//
 			final boolean revokeAllPermissions,
-			@Singular final Set<Access> permissions)
+			@Singular final Set<Access> permissions,
+			//
+			@NonNull final UserId requestedBy)
 	{
 		this.recordRef = recordRef;
 		this.principal = principal;
+		this.issuer = issuer;
 
 		if (revokeAllPermissions)
 		{
@@ -66,5 +73,7 @@ public class RecordAccessRevokeRequest
 			this.revokeAllPermissions = false;
 			this.permissions = ImmutableSet.copyOf(permissions);
 		}
+
+		this.requestedBy = requestedBy;
 	}
 }

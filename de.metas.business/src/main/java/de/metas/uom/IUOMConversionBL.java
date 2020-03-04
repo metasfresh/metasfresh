@@ -26,17 +26,20 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_UOM;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
-public interface IUOMConversionBL extends ISingletonService
+public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverter
 {
 	/** for backward; compatibility */
 	default BigDecimal convertQty(
@@ -70,11 +73,10 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, UomId uomFrom, UomId uomTo);
 
 	/**
-	 * @deprecated please consider using {@link #convertQuantityTo(Quantity, UOMConversionContext, UomId)
+	 * @deprecated please consider using {@link #convertQuantityTo(Quantity, UOMConversionContext, UomId)}
 	 */
 	@Deprecated
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, I_C_UOM uomTo);
-
 
 	/**
 	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
@@ -86,6 +88,16 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
 	Quantity convertQuantityTo(Quantity quantity, UOMConversionContext conversionCtx, UomId uomToId);
+
+	@Override
+	default Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final ProductId productId,
+			@NonNull final UomId uomToId)
+	{
+		final UOMConversionContext uomConversionContext = UOMConversionContext.of(productId);
+		return convertQuantityTo(quantity, uomConversionContext, uomToId);
+	}
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to product's stocking UOM.

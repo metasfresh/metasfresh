@@ -7,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
@@ -37,6 +39,7 @@ import de.metas.util.Services;
  */
 
 @Component
+@VisibleForTesting
 public class UserBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
@@ -56,6 +59,7 @@ public class UserBPartnerDependentDocumentHandler implements BPartnerDependentDo
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(userRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(userRecord.getUpdatedBy()))
 				.build();
 	}
 

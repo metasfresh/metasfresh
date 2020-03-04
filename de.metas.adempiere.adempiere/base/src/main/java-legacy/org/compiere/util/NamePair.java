@@ -21,6 +21,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import java.io.Serializable;
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -55,6 +56,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	}
 
 	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	public final String getDescription()
 	{
 		return m_description;
@@ -80,7 +82,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 		String s1 = o1 == null ? "" : o1.toString();
 		String s2 = o2 == null ? "" : o2.toString();
 		return s1.compareTo(s2);    // sort order ??
-	}	// compare
+	}    // compare
 
 	/**
 	 * Comparator Interface (based on toString value)
@@ -94,7 +96,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 		String s1 = o1 == null ? "" : o1.toString();
 		String s2 = o2 == null ? "" : o2.toString();
 		return s1.compareTo(s2);    // sort order ??
-	}	// compare
+	}    // compare
 
 	/**
 	 * Comparable Interface (based on toString value)
@@ -107,7 +109,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	public final int compareTo(Object o)
 	{
 		return compare(this, o);
-	}	// compareTo
+	}    // compareTo
 
 	/**
 	 * Comparable Interface (based on toString value)
@@ -119,7 +121,7 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 	public final int compareTo(NamePair o)
 	{
 		return compare(this, o);
-	}	// compareTo
+	}    // compareTo
 
 	/**
 	 * To String - returns name
@@ -140,5 +142,5 @@ public abstract class NamePair implements Comparator<Object>, Serializable, Comp
 		StringBuilder sb = new StringBuilder(getID());
 		sb.append("=").append(m_name);
 		return sb.toString();
-	}	// toStringX
-}	// NamePair
+	}    // toStringX
+}    // NamePair

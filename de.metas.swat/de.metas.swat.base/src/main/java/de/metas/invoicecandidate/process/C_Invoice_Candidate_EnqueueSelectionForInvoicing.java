@@ -26,6 +26,7 @@ package de.metas.invoicecandidate.process;
  */
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,23 +35,32 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.IClientUI;
+import de.metas.currency.Amount;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.ProcessPreconditionsResolution.ProcessCaptionMapper;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
@@ -62,8 +72,9 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
 	//
 	// Services
-	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	// Parameters
 	private IInvoicingParams invoicingParams;
@@ -71,15 +82,18 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 	private int selectionCount = 0;
 
-
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if(context.isNoSelection())
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		return ProcessPreconditionsResolution.accept();
+
+		final IQueryFilter<I_C_Invoice_Candidate> selectionFilter = context.getQueryFilter(I_C_Invoice_Candidate.class);
+
+		return ProcessPreconditionsResolution.accept()
+				.withCaptionMapper(processCaptionMapper(selectionFilter));
 	}
 
 	@Override
@@ -209,6 +223,11 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 			}
 		}
 
+		return createICQueryBuilder(userSelectionFilter);
+	}
+
+	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder(final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter)
+	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
@@ -227,11 +246,57 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		//
 		// Consider only approved invoices (if we were asked to do so)
-		if (invoicingParams.isOnlyApprovedForInvoicing())
+		if (invoicingParams != null && invoicingParams.isOnlyApprovedForInvoicing())
 		{
 			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing, true);
 		}
 
 		return queryBuilder;
+	}
+
+	private ProcessCaptionMapper processCaptionMapper(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
+	{
+		final List<Amount> netAmountsToInvoiceList = computeNetAmountsToInvoiceForSelection(selectionFilter);
+		if (netAmountsToInvoiceList.isEmpty())
+		{
+			return null;
+		}
+
+		final ITranslatableString netAmountsToInvoiceString = joinAmountsToTranslatableString(netAmountsToInvoiceList);
+
+		return originalProcessCaption -> TranslatableStrings.builder()
+				.append(originalProcessCaption)
+				.append(" (").append(netAmountsToInvoiceString).append(")")
+				.build();
+	}
+
+	private List<Amount> computeNetAmountsToInvoiceForSelection(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
+	{
+		return createICQueryBuilder(selectionFilter)
+				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
+				.create()
+				.sumMoney(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
+				.stream()
+				.filter(amt -> amt != null && amt.signum() != 0)
+				.map(moneyService::toAmount)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static final ITranslatableString joinAmountsToTranslatableString(final List<Amount> amounts)
+	{
+		Check.assumeNotEmpty(amounts, "amounts is not empty");
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		for (final Amount amt : amounts)
+		{
+			if (!builder.isEmpty())
+			{
+				builder.append(" ");
+			}
+
+			builder.append(amt);
+		}
+
+		return builder.build();
 	}
 }

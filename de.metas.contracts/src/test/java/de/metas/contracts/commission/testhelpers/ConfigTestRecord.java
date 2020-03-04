@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfigId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -111,12 +112,16 @@ public class ConfigTestRecord
 			}
 		}
 
-		return new ConfigData(bpartnerId2flatrateTermId.build(), name2bpartnerId.build());
+		return new ConfigData(
+				HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()),
+				bpartnerId2flatrateTermId.build(),
+				name2bpartnerId.build());
 	}
 
 	@Value
 	public static class ConfigData
 	{
+		HierarchyConfigId hierarchyConfigId;
 		ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId;
 		ImmutableMap<String, BPartnerId> name2BPartnerId;
 	}

@@ -243,7 +243,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 			bankStatementLine.setDateAcct(date);
 			bankStatementLine.setStatementLineDate(date);
 			bankStatementLine.setReferenceNo(null); // no ReferenceNo at this level
-			bankStatementLine.setC_BPartner(null); // no partner because we will have it on "line reference" level
+			bankStatementLine.setC_BPartner_ID(0); // no partner because we will have it on "line reference" level
 			bankStatementLine.setStmtAmt(BigDecimal.ZERO); // will be updated at the end
 			bankStatementLine.setTrxAmt(BigDecimal.ZERO); // will be updated at the end
 			bankStatementLine.setChargeAmt(BigDecimal.ZERO);

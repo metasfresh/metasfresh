@@ -17,15 +17,20 @@
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
-	<!-- 
-		Exclude lucene stuff from jasperreports because it's old.
-		Explicitly add them because they might be needed...but with versions implied by spring-boot.
-	-->
 	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
 			<exclusions>
+				<!-- 
+					Exclude lucene stuff from jasperreports because it's old.
+					Explicitly add them because they might be needed...but with versions implied by spring-boot.
+				-->
 				<exclusion>
 					<groupId>org.apache.lucene</groupId>
 					<artifactId>lucene-queryparser</artifactId>

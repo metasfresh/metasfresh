@@ -1,17 +1,21 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
+import java.time.Instant;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.organization.OrgId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.Instant;
-
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -38,6 +42,8 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 @Value
 public class CommissionTriggerData
 {
+	OrgId orgId;
+
 	InvoiceCandidateId invoiceCandidateId;
 
 	boolean invoiceCandidateWasDeleted;
@@ -51,22 +57,23 @@ public class CommissionTriggerData
 
 	CommissionPoints invoicedPoints;
 
-	@NonNull
 	Percent tradedCommissionPercent;
 
 	@Builder
 	@JsonCreator
 	private CommissionTriggerData(
+			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("invoiceCandidateId") final InvoiceCandidateId invoiceCandidateId,
 			@JsonProperty("invoiceCandidateWasDeleted") final boolean invoiceCandidateWasDeleted,
 			@JsonProperty("timestamp") @NonNull final Instant timestamp,
 			@JsonProperty("forecastedPoints") @NonNull final CommissionPoints forecastedPoints,
 			@JsonProperty("invoiceablePoints") @NonNull final CommissionPoints invoiceablePoints,
 			@JsonProperty("invoicedPoints") @NonNull final CommissionPoints invoicedPoints,
-			@JsonProperty("tradedCommissionPercent") final Percent tradedCommissionPercent)
+			@JsonProperty("tradedCommissionPercent") @Nullable final Percent tradedCommissionPercent)
 	{
 		this.timestamp = timestamp;
 
+		this.orgId = orgId;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.invoiceCandidateWasDeleted = invoiceCandidateWasDeleted;
 

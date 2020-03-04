@@ -41,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
@@ -86,8 +85,6 @@ import lombok.NonNull;
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
-	public static final C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
-
 	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
 	private static final String MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT = "Term_Error_PlannedQtyPerUnit";
@@ -96,8 +93,11 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
 
-	private C_Flatrate_Term()
+	private final ContractOrderService contractOrderService;
+
+	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService)
 	{
+		this.contractOrderService = contractOrderService;
 	}
 
 	@Init
@@ -593,8 +593,6 @@ public class C_Flatrate_Term
 	})
 	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
 	{
-		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);

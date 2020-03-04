@@ -10,12 +10,12 @@ package org.adempiere.server.rpl.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package org.adempiere.server.rpl.api.impl;
 
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -49,9 +50,9 @@ import de.metas.util.xml.DynamicObjectFactory;
 
 /**
  * Mocked implementation of {@link IImportHelper} which delegates the work to registered converters.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class MockedImportHelper implements IImportHelper
 {
@@ -171,7 +172,7 @@ public class MockedImportHelper implements IImportHelper
 
 	private Source createXMLSourceFromString(final String xmlStr)
 	{
-		final InputStream inputStream = new ByteArrayInputStream(xmlStr == null ? new byte[0] : xmlStr.getBytes());
+		final InputStream inputStream = new ByteArrayInputStream(xmlStr == null ? new byte[0] : xmlStr.getBytes(StandardCharsets.UTF_8));
 		return new StreamSource(inputStream);
 	}
 }

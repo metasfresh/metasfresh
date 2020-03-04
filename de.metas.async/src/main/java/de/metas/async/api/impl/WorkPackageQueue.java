@@ -43,6 +43,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
@@ -69,6 +70,7 @@ import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -297,7 +299,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		else
 		{
-			userId = UserId.ofRepoId(workPackage.getCreatedBy());
+			userId = UserId.ofRepoIdOrSystem(workPackage.getCreatedBy());
 		}
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_User_ID, userId.getRepoId());
 		Env.setContext(workPackageCtx, Env.CTXNAME_SalesRep_ID, userId.getRepoId());
@@ -732,43 +734,42 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public void markReadyForProcessing(final I_C_Queue_WorkPackage workPackage, final IQueueProcessorListener callback)
+	public void markReadyForProcessing(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final IQueueProcessorListener callback)
 	{
-		Check.assumeNotNull(workPackage, "workPackage not null");
-		Check.assumeNotNull(callback, "callback not null");
-
-		final IQueueProcessorEventDispatcher queueProcessorEventDispatcher = Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
-
-		boolean success = false;
-
-		mainLock.lock();
-		try
+		try (final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage))
 		{
-			// Callback: Register the callback before marking the workpackage as ready for processing
-			queueProcessorEventDispatcher.registerListener(callback, workPackage.getC_Queue_WorkPackage_ID());
+			final IQueueProcessorEventDispatcher queueProcessorEventDispatcher = Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
 
-			// Mark the workpackage as ready for processing and save it
-			workPackage.setIsReadyForProcessing(true);
-			dao.save(workPackage);
+			boolean success = false;
 
-			success = true;
-		}
-		finally
-		{
+			mainLock.lock();
 			try
 			{
-				// Callback: if something went wrong we need to unregister the callback
-				if (!success)
-				{
-					queueProcessorEventDispatcher.unregisterListener(callback, workPackage.getC_Queue_WorkPackage_ID());
-				}
+				// Callback: Register the callback before marking the workpackage as ready for processing
+				queueProcessorEventDispatcher.registerListener(callback, workPackage.getC_Queue_WorkPackage_ID());
+
+				// Mark the workpackage as ready for processing and save it
+				workPackage.setIsReadyForProcessing(true);
+				dao.save(workPackage);
+				logger.debug("C_Queue_WorkPackage.IsReadyForProcessing is now set to true");
+				success = true;
 			}
 			finally
 			{
-				mainLock.unlock(); // make sure we unlock, even if unregisterListener failed
+				try
+				{
+					// Callback: if something went wrong we need to unregister the callback
+					if (!success)
+					{
+						queueProcessorEventDispatcher.unregisterListener(callback, workPackage.getC_Queue_WorkPackage_ID());
+					}
+				}
+				finally
+				{
+					mainLock.unlock(); // make sure we unlock, even if unregisterListener failed
+				}
 			}
 		}
-
 	}
 
 	private IQuery<I_C_Queue_WorkPackage> createQuery(final Properties workPackageCtx)

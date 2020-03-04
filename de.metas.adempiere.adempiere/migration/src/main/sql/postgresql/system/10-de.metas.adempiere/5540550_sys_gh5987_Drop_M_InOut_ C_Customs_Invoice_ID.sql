@@ -35,7 +35,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=568012
 
 
 
-ALTER TABLE M_InOut DROP COLUMN C_Customs_Invoice_ID;
+select db_alter_table('M_InOut', 'ALTER TABLE M_InOut DROP COLUMN C_Customs_Invoice_ID;');
 
 
 

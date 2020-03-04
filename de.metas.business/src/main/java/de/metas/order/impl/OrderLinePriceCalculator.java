@@ -116,6 +116,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}
 
@@ -516,7 +517,8 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			final I_C_OrderLine orderLine = request.getOrderLine();
-			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
+			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.setParameter("log", pricingResult.getLoggableMessages());
 		}
 
 		return pricingResult.getTaxCategoryId();

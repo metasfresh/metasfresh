@@ -38,6 +38,7 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -55,6 +56,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -163,7 +165,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		final ICUpdateResult result = new ICUpdateResult();
 		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult>createExecutor()
+			trxItemProcessorExecutorService.<I_C_Invoice_Candidate, ICUpdateResult> createExecutor()
 					.setContext(getCtx(), getTrxName()) // if called from process or wp-processor then getTrxName() is null because *we* want to manage the trx => commit after each chunk
 					.setItemsPerBatch(itemsPerBatch)
 
@@ -182,20 +184,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						final List<Integer> chunkInvoiceCandidateIds = new ArrayList<>();
 
 						@Override
-						public void process(final I_C_Invoice_Candidate ic)
+						public void process(final I_C_Invoice_Candidate icRecord)
 						{
-							chunkInvoiceCandidateIds.add(ic.getC_Invoice_Candidate_ID());
+							try (final MDCCloseable icMDC = TableRecordMDC.putTableRecordReference(icRecord))
+							{
+								chunkInvoiceCandidateIds.add(icRecord.getC_Invoice_Candidate_ID());
 
-							updateInvalid(ic);
-							if (!ic.isError())
-							{
-								result.addInvoiceCandidate(ic);
-							}
-							else
-							{
-								Loggables.withLogger(logger, Level.DEBUG)
-										.addLog("Error processing invoice; ic.errorMessage={}; ic={}", ic.getErrorMsg(), ic);
-								result.incrementErrorsCount();
+								updateInvalid(icRecord);
+								if (!icRecord.isError())
+								{
+									logger.debug("Updated invoice canddiate");
+									result.addInvoiceCandidate(icRecord);
+								}
+								else
+								{
+									Loggables.withLogger(logger, Level.DEBUG)
+											.addLog("Error updating invoice candidate; ic.errorMessage={}; icRecord={}", icRecord.getErrorMsg(), icRecord);
+									result.incrementErrorsCount();
+								}
 							}
 						}
 
@@ -239,7 +245,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
-	private void updateInvalid(final I_C_Invoice_Candidate icRecord)
+	private void updateInvalid(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 
@@ -307,8 +313,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
-		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);
-
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
 
 		// 06539 add qty overdelivery to qty delivered
@@ -321,7 +325,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(icRecord);
 
-		invoiceCandBL.setAmountAndDateForFreightCost(icRecord);
+		invoiceCandBL.setQtyAndDateForFreightCost(icRecord);
+
+		// setQtyAndDateForFreightCost might have changed the ICs delivery date, so we do setInvoiceScheduleAndDateToInvoice only now
+		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else

@@ -26,6 +26,7 @@ package de.schaeffer.compiere.tools;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.List;
@@ -136,7 +137,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 					final DateFormat df = DisplayType.getDateFormat(DisplayType.DateTime);
 					final String name = "Text " + df.format(new Timestamp(System.currentTimeMillis()));
 
-					attachmentEntryService.createNewAttachment(tableRecordReference, name, text.getBytes());
+					attachmentEntryService.createNewAttachment(tableRecordReference, name, text.getBytes(StandardCharsets.UTF_8));
 				}
 			}
 			catch (Exception ex)

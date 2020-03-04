@@ -9,14 +9,17 @@ import java.util.Date;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
@@ -50,6 +53,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // only one handler should bother itself with these events
 public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrderRequestedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(DDOrderRequestedEventHandler.class);
+
 	private final DDOrderProducer ddOrderProducer;
 
 	public DDOrderRequestedEventHandler(@NonNull final DDOrderProducer ddOrderProducer)
@@ -83,14 +88,14 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 
-		Loggables.addLog(
+		Loggables.withLogger(logger, Level.DEBUG).addLog(
 				"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
 				ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 
 		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
 		{
 			Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
-			Loggables.addLog(
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
 					"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
 					ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 		}

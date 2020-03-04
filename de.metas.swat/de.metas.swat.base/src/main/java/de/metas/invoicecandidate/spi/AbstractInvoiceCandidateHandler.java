@@ -40,6 +40,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -130,16 +131,16 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 			return true;
 		}
 
-		final boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(product.getM_Product_ID()));
+		final ProductType productType = productBL.getProductType(ProductId.ofRepoId(product.getM_Product_ID()));
 
-		if (isFreightCostProduct)
+		if (productType.isFreightCost())
 		{
 			return false;
 		}
 
 		// If the product is not a service
 		// => return false
-		if (!Services.get(IProductBL.class).isService(product))
+		if (!productType.isService())
 		{
 			return false;
 		}

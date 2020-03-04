@@ -172,7 +172,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	/**
-	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>.<p>
+	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>.
+	 * <p>
 	 * Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty list.<br>
 	 * That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
 	 *
@@ -233,7 +234,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				final String errmsg = "Caught " + (rootCause != null ? rootCause : e).getClass()
 						+ " calling createMissingCandidates() method of handler " + handlerRecord.getName() + " (class " + handlerRecord.getClassname() + ") : "
 						+ ExceptionUtils.getRootCauseMessage(e);
-				loggable.addLog(errmsg);
+				loggable.addLog(errmsg, e);
 
 				logger.warn(errmsg, e);
 				throw e; // rethrow. that ways, at least the trx is rolled back
@@ -321,12 +322,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 					// Collect candidates (we will invalidate them all together)
 					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 				}
-				catch (final Exception e)
+				catch (final Exception ex)
 				{
-					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
+					Loggables.withWarnLoggerToo(logger)
+							.addLog("Caught {} while trying to create candidate for request={} with requestInitial={}",
+									ex.getClass(), request, requestInitial, ex);
 
-					Loggables.addLog(msg, e.getClass(), request, requestInitial, e);
-					logger.error(msg, e.getClass(), request, requestInitial, e);
+					throw AdempiereException.wrapIfNeeded(ex);
 				}
 			}
 		}
@@ -526,9 +528,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
-	public void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	public void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
-		handler.setInvoiceScheduleAndDateToInvoice(ic);
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(icRecord);
+		handler.setInvoiceScheduleAndDateToInvoice(icRecord);
 	}
 }

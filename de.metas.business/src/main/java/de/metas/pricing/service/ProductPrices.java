@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListId;
@@ -38,6 +39,9 @@ import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionsMap;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -300,6 +304,10 @@ public class ProductPrices
 		return null;
 	}
 
+	/**
+	 * @deprecated Please use {@link IPriceListDAO#addProductPrice(AddProductPriceRequest)}. If doesn't fit, extend it ;)
+	 */
+	@Deprecated
 	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);

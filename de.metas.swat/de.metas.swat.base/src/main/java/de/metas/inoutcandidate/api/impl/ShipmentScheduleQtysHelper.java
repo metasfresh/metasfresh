@@ -78,25 +78,32 @@ import lombok.experimental.UtilityClass;
 		final BigDecimal newQtyToDeliverOverrideFulfilled = computeQtyToDeliverOverrideFulFilled(olAndSched);
 		if (olAndSched.getQtyOverride() != null)
 		{
-			if (newQtyToDeliverOverrideFulfilled.compareTo(olAndSched.getQtyOverride()) >= 0)
+			if (olAndSched.getQtyOverride().signum() == 0)
+			{
+				logger.debug("QtyToDeliver_Override is zero; leave both QtyToDeliver_Override and QtyToDeliver_OverrideFulfilled unchanged");
+			}
+			else if (newQtyToDeliverOverrideFulfilled.compareTo(olAndSched.getQtyOverride()) >= 0)
 			{
 				// the QtyToDeliverOverride value that was set by the user has been fulfilled (or even over-fulfilled)
+				logger.debug("QtyToDeliver_Override={} is less or equal fullFilled={}; -> reset both QtyToDeliver_Override and QtyToDeliver_OverrideFulfilled to null", olAndSched.getQtyOverride(), newQtyToDeliverOverrideFulfilled);
 				sched.setQtyToDeliver_Override(null);
 				sched.setQtyToDeliver_OverrideFulfilled(null);
 			}
 			else
 			{
+				logger.debug("Set QtyToDeliver_OverrideFulfilled={}; old value was ={}", newQtyToDeliverOverrideFulfilled, sched.getQtyToDeliver_OverrideFulfilled());
 				sched.setQtyToDeliver_OverrideFulfilled(newQtyToDeliverOverrideFulfilled);
 			}
 		}
 		else
 		{
+			logger.debug("QtyToDeliver_Override is null; -> reset QtyToDeliver_OverrideFulfilled to null as well");
 			sched.setQtyToDeliver_OverrideFulfilled(null);
 		}
 
 	}
 
-	private static void setZeroQtyToDeliverAndRelatedStatuses(final I_M_ShipmentSchedule sched)
+	private static void setZeroQtyToDeliverAndRelatedStatuses(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final StringBuilder statusMessages = new StringBuilder();
 		if (sched.isDeliveryStop())
@@ -107,6 +114,7 @@ import lombok.experimental.UtilityClass;
 		{
 			statusMessages.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ClosedStatus) + "\n");
 		}
+		logger.debug("isClosed={}; isDeliveryStop={}; -> set QtyToDeliver to zero", sched.isClosed(), sched.isDeliveryStop());
 		sched.setQtyToDeliver(BigDecimal.ZERO);
 		sched.setStatus(statusMessages.toString());
 	}
@@ -114,16 +122,16 @@ import lombok.experimental.UtilityClass;
 	/**
 	 * Method sets the give {@code sched}'s {@code QtyToDeliver} value in case the previous allocation runs did <b>not</b> allocate a qty to deliver. Note that if the effective delivery rule is
 	 * "FORCE", then we still need to set a qty even in that case.
-	 *
-	 * @param discardedShipmentSchedule
 	 */
 	@VisibleForTesting
 	/* package */static void setQtyToDeliverForDiscardedShipmentSchedule(final I_M_ShipmentSchedule discardedShipmentSchedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final boolean ruleForce = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(discardedShipmentSchedule));
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(discardedShipmentSchedule);
+		final boolean ruleForce = DeliveryRule.FORCE.equals(deliveryRule);
 		if (!ruleForce)
 		{
+			logger.debug("deliveryRule={} is not 'force'; -> set QtyToDeliver to zero", deliveryRule);
 			discardedShipmentSchedule.setQtyToDeliver(BigDecimal.ZERO);
 			return;
 		}
@@ -131,6 +139,7 @@ import lombok.experimental.UtilityClass;
 		final BigDecimal qtyToDeliverOverride = discardedShipmentSchedule.getQtyToDeliver_Override();
 		if (qtyToDeliverOverride.signum() > 0)
 		{
+			logger.debug("deliveryRule={}; -> set QtyToDeliver to QtyToDeliverOverride={}", deliveryRule, qtyToDeliverOverride);
 			discardedShipmentSchedule.setQtyToDeliver(qtyToDeliverOverride);
 		}
 		else
@@ -139,15 +148,16 @@ import lombok.experimental.UtilityClass;
 			final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(discardedShipmentSchedule);
 
 			// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
-			discardedShipmentSchedule.setQtyToDeliver(computeQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList()));
+			final BigDecimal qtyToDeliver = computeQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList());
+
+			logger.debug("DeliveryRule={}; QtyOrdered={}; QtyPickList={} -> set QtyToDeliver to {}",
+					deliveryRule, qtyOrdered, discardedShipmentSchedule.getQtyPickList(), qtyToDeliver);
+			discardedShipmentSchedule.setQtyToDeliver(qtyToDeliver);
 		}
 	}
 
 	/**
 	 * Creates the status string for the {@link I_M_ShipmentSchedule#COLUMNNAME_Status} column.
-	 *
-	 * @param deliveryLineCandidate
-	 * @param shipmentCandidates
 	 */
 	private static String computeShipmentScheduleStatus(
 			@NonNull final DeliveryLineCandidate deliveryLineCandidate,
@@ -171,7 +181,7 @@ import lombok.experimental.UtilityClass;
 		BigDecimal qtyToDeliver = qtyRequired.subtract(qtyPickedOrOnDraftShipment);
 		final BigDecimal result = qtyToDeliver.signum() > 0 ? qtyToDeliver : BigDecimal.ZERO;
 
-		logger.debug("qtyRequired={}; qtyOnDraftShipment={}; => qtyToDeliver={}", qtyRequired, qtyPickedOrOnDraftShipment, result);
+		logger.debug("qtyRequired={}; qtyPickedOrOnDraftShipment={}; -> qtyToDeliver={}", qtyRequired, qtyPickedOrOnDraftShipment, result);
 		return result;
 	}
 

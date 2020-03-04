@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -172,7 +173,7 @@ class TablePrimaryKeyGenerator
 
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		Loggables.addLog(msg, msgParameters);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)
@@ -180,7 +181,7 @@ class TablePrimaryKeyGenerator
 		return queryBL
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, table.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Column.COLUMN_IsKey, true)
 				.create()
 				.anyMatch();
@@ -191,7 +192,7 @@ class TablePrimaryKeyGenerator
 		return queryBL
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_AD_Column.COLUMN_IsParent, true)
 				.create()
 				.listDistinct(I_AD_Column.COLUMNNAME_ColumnName, String.class);
@@ -201,7 +202,7 @@ class TablePrimaryKeyGenerator
 	{
 		final I_AD_Column columnPK = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
 		columnPK.setAD_Org_ID(0);
-		columnPK.setAD_Table(table);
+		columnPK.setAD_Table_ID(table.getAD_Table_ID());
 		columnPK.setEntityType(table.getEntityType());
 
 		final I_AD_Element adElement = getOrCreateKeyColumnNameElement(table);

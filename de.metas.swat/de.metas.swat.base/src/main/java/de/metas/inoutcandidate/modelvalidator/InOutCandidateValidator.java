@@ -23,10 +23,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator
@@ -114,7 +115,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 	}
 
 	@Override
-	public void onModelChange(Object model, ModelChangeType changeType) throws Exception
+	public void onModelChange(@NonNull final Object model, @NonNull final ModelChangeType changeType) throws Exception
 	{
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_M_Product.class))
 		{
@@ -123,9 +124,10 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		}
 	}
 
-	private void productChange(final I_M_Product productPO, final ModelChangeType type)
+	private void productChange(@NonNull final I_M_Product productPO, @NonNull final ModelChangeType type)
 	{
-		if (type.isNewOrChange() && type.isAfter())
+		if (type.isChange() /* not on new, because a new product can't have any shipment schedules yet */
+				&& type.isAfter())
 		{
 			final boolean isDiverseChanged = InterfaceWrapperHelper.isValueChanged(productPO, de.metas.adempiere.model.I_M_Product.COLUMNNAME_IsDiverse);
 			final boolean isProductTypeChanged = InterfaceWrapperHelper.isValueChanged(productPO, I_M_Product.COLUMNNAME_ProductType);
@@ -133,13 +135,13 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 			if (isDiverseChanged || isProductTypeChanged)
 			{
 				final ProductId productId = ProductId.ofRepoId(productPO.getM_Product_ID());
-				final boolean display = Services.get(IProductBL.class).isItem(productPO);
+				final boolean display = ProductType.ofCode(productPO.getProductType()).isItem();
 
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
 
 				final IShipmentScheduleInvalidateBL shipmentScheduleInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-				shipmentScheduleInvalidator.invalidateForProduct(productId);
+				shipmentScheduleInvalidator.flagForRecompute(productId);
 			}
 		}
 	}

@@ -161,6 +161,7 @@ public class ShipmentLineBuilderTest
 		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
 
 		assertThat(shipmentLine).isNotNull();
+		assertThat(shipmentLine.getMovementQty()).isEqualTo("1");
 		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(shipmentSchedule.getC_OrderLine_ID());
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
 		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo("1");

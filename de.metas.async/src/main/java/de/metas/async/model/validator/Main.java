@@ -32,6 +32,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,8 +49,10 @@ import de.metas.event.Topic;
 import de.metas.impexp.async.AsyncImportProcessBuilderFactory;
 import de.metas.impexp.async.AsyncImportWorkpackageProcessor;
 import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.
@@ -62,6 +65,9 @@ import de.metas.util.Services;
  */
 public class Main extends AbstractModuleInterceptor
 {
+	private static final String SYSTEM_PROPERTY_ASYNC_DISABLE = "async_disable";
+
+	private static final Logger logger = LogManager.getLogger(Main.class);
 
 	private static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
 
@@ -74,16 +80,7 @@ public class Main extends AbstractModuleInterceptor
 
 		super.onInit(engine, client);
 
-		// task 04585: start queue processors only if we are running on the backend server.
-		// =>why not always run them?
-		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
-		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
-		// => it can all be solved, but as of now isn't
-		if (SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
-		{
-			final int initDelayMillis = getInitDelayMillis();
-			Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);
-		}
+		startQueueProcessors();
 
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage.Table_Name);
@@ -93,6 +90,30 @@ public class Main extends AbstractModuleInterceptor
 		// Data import (async support)
 		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderFactory(AsyncImportProcessBuilderFactory.instance);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
+	}
+
+	private void startQueueProcessors()
+	{
+		// task 04585: start queue processors only if we are running on the backend server.
+		// =>why not always run them?
+		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
+		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
+		// => it can all be solved, but as of now isn't
+		if (!SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
+		{
+			return;
+		}
+
+		if (StringUtils.toBoolean(System.getProperty(SYSTEM_PROPERTY_ASYNC_DISABLE)))
+		{
+			logger.warn("\n----------------------------------------------------------------------------------------------"
+					+ "\n Avoid starting asynchronous queue processors because " + SYSTEM_PROPERTY_ASYNC_DISABLE + "=true."
+					+ "\n----------------------------------------------------------------------------------------------");
+			return;
+		}
+
+		final int initDelayMillis = getInitDelayMillis();
+		Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);
 	}
 
 	/**

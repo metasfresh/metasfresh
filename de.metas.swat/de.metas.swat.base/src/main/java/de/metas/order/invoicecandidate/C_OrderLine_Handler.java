@@ -126,7 +126,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	public InvoiceCandidateGenerateResult createCandidatesFor(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_C_OrderLine orderLine = request.getModel(I_C_OrderLine.class);
 
@@ -156,7 +156,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int productRecordId = orderLine.getM_Product_ID();
 		icRecord.setM_Product_ID(productRecordId);
 
-		boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(productRecordId));
+		boolean isFreightCostProduct = productBL
+				.getProductType(ProductId.ofRepoId(productRecordId))
+				.isFreightCost();
 
 		icRecord.setIsFreightCost(isFreightCostProduct);
 		icRecord.setIsPackagingMaterial(orderLine.isPackagingMaterial());
@@ -341,6 +343,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
+		//
+		// Quantity
 		StockQtyAndUOMQty qtysDelivered = invoiceCandidateRecordService
 				.ofRecord(icRecord)
 				.computeQtysDelivered();
@@ -356,9 +360,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 						orderLine.getQtyEntered(), UomId.ofRepoId(orderLine.getC_UOM_ID()));
 			}
 		}
+
 		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
 		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
+
 		//
+		// Date
 		// Find out the first shipment/receipt
 		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(icRecord));
 		I_M_InOut firstInOut = null;
@@ -426,7 +433,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setBPartnerData(ic, orderLine);
 	}
 
-	private void setBPartnerData(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
+	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		ic.setBill_BPartner_ID(order.getBill_BPartner_ID());

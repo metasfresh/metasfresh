@@ -81,6 +81,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+  * Creates an maintains commission settlement invoice candidates.
+  */
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
 	private final transient IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -114,7 +117,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return true;
 	}
 
-	public boolean recordHasAnInvoiceCandiate(final I_C_Commission_Share commissionShareRecord)
+	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
 	{
 		final boolean recordHasInvoiceCandidate = createICsThatReferenceSharesQueryBuilder()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, commissionShareRecord.getC_Commission_Share_ID())
@@ -123,7 +126,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return recordHasInvoiceCandidate;
 	}
 
-	public IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
+	private IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
 	{
 		final IQuery<I_C_Commission_Share> shareWithMissingCandidateQuery = queryBL
 				.createQueryBuilder(I_C_Commission_Share.class)
@@ -197,10 +200,9 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						Quantitys.create(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
-
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-		// TODO throw exception if not calculated
 
 		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
 		icRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));

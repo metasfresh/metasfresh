@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
@@ -16,6 +17,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
@@ -52,6 +54,8 @@ import lombok.NonNull;
 @Service
 public class InvoiceCandidateRecordService
 {
+	private static final Logger logger = LogManager.getLogger(InvoiceCandidateRecordService.class);
+
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
@@ -63,6 +67,8 @@ public class InvoiceCandidateRecordService
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final boolean stocked = productBL.isStocked(productId);
+
 		final UomId icUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
 
 		// might be null if the IC was just created from an inout line
@@ -74,7 +80,7 @@ public class InvoiceCandidateRecordService
 				.id(invoiceCandidateId)
 				.soTrx(soTrx)
 				.uomId(icUomId)
-				.productId(productId)
+				.product(new InvoiceCandidateProduct(productId, stocked))
 				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
@@ -104,6 +110,7 @@ public class InvoiceCandidateRecordService
 		final OrderedData orderedData = OrderedDataLoader.builder()
 				.invoiceCandidateRecord(icRecord)
 				.stockUomId(stockUomId)
+				.productBL(productBL)
 				.build()
 				.loadOrderedQtys();
 
@@ -204,6 +211,7 @@ public class InvoiceCandidateRecordService
 
 				if (qualityDiscountPercentNew.signum() > 0)
 				{
+					logger.debug("Set IsIndispute=true because QualityDiscountPercent={}", qualityDiscountPercentNew);
 					// the inOuts' indisputQqty changed and we (now) have effective qualityDiscountPercent > 0
 					// set the IC to IsInDispute = true to make sure the qtywithissue-chage is dealt with
 					icRecord.setIsInDispute(true);

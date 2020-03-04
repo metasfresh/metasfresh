@@ -54,6 +54,11 @@ public class HierarchyContract implements CommissionContract
 
 	int pointsPrecision;
 
+	public static boolean isInstance(@NonNull final CommissionContract contract)
+	{
+		return contract instanceof HierarchyContract;
+	}
+
 	public static HierarchyContract cast(@Nullable final CommissionContract contract)
 	{
 		if (contract == null)
@@ -104,6 +109,5 @@ public class HierarchyContract implements CommissionContract
 	{
 		return config;
 	}
-
 
 }

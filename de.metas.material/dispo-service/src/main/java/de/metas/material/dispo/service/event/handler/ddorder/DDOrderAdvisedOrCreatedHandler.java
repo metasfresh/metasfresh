@@ -90,7 +90,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			final DDOrderLine ddOrderLine)
 	{
 		final DDOrder ddOrder = ddOrderEvent.getDdOrder();
-		//final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
+		// final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
 
 		//
 		// create the supply candidate
@@ -104,7 +104,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				//.status(candidateStatus)
+				// .status(candidateStatus)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
@@ -132,7 +132,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.groupId(groupId)
 				.parentId(supplyCandidateWithId.getId())
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				//.status(candidateStatus)
+				// .status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
@@ -224,20 +224,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 
 	protected abstract Flag extractIsAdviseEvent(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent);
-
-//	private CandidateStatus computeCandidateStatus(@NonNull final DDOrder ddOrder)
-//	{
-//		final CandidateStatus candidateStatus;
-//		if (ddOrder.getDdOrderId() <= 0)
-//		{
-//			candidateStatus = CandidateStatus.doc_planned;
-//		}
-//		else
-//		{
-//			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
-//		}
-//		return candidateStatus;
-//	}
 
 	protected final WarehouseId computeWarehouseId(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,

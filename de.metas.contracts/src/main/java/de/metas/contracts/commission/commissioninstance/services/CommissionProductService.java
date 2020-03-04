@@ -1,12 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -34,11 +41,29 @@ import lombok.NonNull;
 @Service
 public class CommissionProductService
 {
+	private static final Logger logger = LogManager.getLogger(CommissionProductService.class);
+
 	public ProductId getCommissionProduct(@NonNull final ConditionsId conditionsId)
 	{
 		final I_C_Flatrate_Conditions conditionsRecord = InterfaceWrapperHelper.loadOutOfTrx(conditionsId, I_C_Flatrate_Conditions.class);
 		final I_C_HierarchyCommissionSettings commissionSettings = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_HierarchyCommissionSettings_ID(), I_C_HierarchyCommissionSettings.class);
 
 		return ProductId.ofRepoId(commissionSettings.getCommission_Product_ID());
+	}
+
+	public boolean productPreventsCommissioning(@Nullable final ProductId productId)
+	{
+		if (productId == null)
+		{
+			return false; // no product also means nothing is prevented
+		}
+
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product productRecord = productDAO.getById(productId);
+		if (!productRecord.isCommissioned())
+		{
+			logger.debug("M_Product_ID={} of invoice candidate has Commissioned=false; -> not going to invoke commission system");
+		}
+		return !productRecord.isCommissioned();
 	}
 }

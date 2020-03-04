@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -47,5 +48,15 @@ public class ShipmentSchedulesMDC
 	public MDCCloseable putRevalidationId(@NonNull final PInstanceId selectionId)
 	{
 		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
+	}
+
+	/** Remove shipment schedule ID from MDC just to add it back when the closable is closed. */
+	public IAutoCloseable removeCurrentShipmentScheduleId()
+	{
+		final String value = MDC.get(I_M_ShipmentSchedule.Table_Name);
+		MDC.remove(I_M_ShipmentSchedule.Table_Name);
+
+		final IAutoCloseable result = () -> MDC.put(I_M_ShipmentSchedule.Table_Name, value);
+		return result;
 	}
 }

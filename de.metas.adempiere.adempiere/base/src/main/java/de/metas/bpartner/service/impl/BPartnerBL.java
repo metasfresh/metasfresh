@@ -72,17 +72,19 @@ public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 
+	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
+		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
 		this.userRepository = userRepository;
 	}
 
 	@Override
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
-		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		return bpartnersRepo.getById(bpartnerId);
 	}
 
 	@Override
@@ -110,8 +112,7 @@ public class BPartnerBL implements IBPartnerBL
 			return "?";
 		}
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+		final I_C_BPartner bpartner = getById(bpartnerId);
 		if (bpartner == null)
 		{
 			return "<" + bpartnerId + ">";
@@ -137,8 +138,7 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public I_AD_User retrieveShipContact(final Properties ctx, final int bPartnerId, final String trxName)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner_Location loc = bPartnerDAO.retrieveShipToLocation(ctx, bPartnerId, trxName);
+		final I_C_BPartner_Location loc = bpartnersRepo.retrieveShipToLocation(ctx, bPartnerId, trxName);
 
 		final int bPartnerLocationId = loc == null ? -1 : loc.getC_BPartner_Location_ID();
 		return retrieveUserForLoc(ctx, bPartnerId, bPartnerLocationId, trxName);
@@ -166,12 +166,13 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public User retrieveContactOrNull(@NonNull final RetrieveContactRequest request)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final List<I_AD_User> contactRecords = bPartnerDAO.retrieveContacts(
+		final List<I_AD_User> contactRecords = bpartnersRepo.retrieveContacts(
 				Env.getCtx(),
 				request.getBpartnerId().getRepoId(),
 				ITrx.TRXNAME_None);
+
+		final boolean ifNotFoundReturnNull = RetrieveContactRequest.IfNotFound.RETURN_NULL.equals(request.getIfNotFound());
+		final boolean onlyActiveContacts = request.isOnlyActive();
 
 		// we will collect the candidates for our return value into these variables
 		final Set<User> contactsAtLocation = new TreeSet<>(request.getComparator());
@@ -181,6 +182,11 @@ public class BPartnerBL implements IBPartnerBL
 
 		for (final I_AD_User contactRecord : contactRecords)
 		{
+			if (onlyActiveContacts && !contactRecord.isActive())
+			{
+				continue;
+			}
+
 			final User contact = userRepository.ofRecord(contactRecord);
 			if (!request.getFilter().test(contact))
 			{
@@ -205,7 +211,18 @@ public class BPartnerBL implements IBPartnerBL
 			if (recordMatchesType(contactRecord, request.getContactType()))
 			{
 				defaultContactOfType = contact;
+
+				if (ifNotFoundReturnNull)
+				{
+					return defaultContactOfType;
+				}
 			}
+		}
+
+		if (ifNotFoundReturnNull)
+		{
+			// no user of the given type was found
+			return null;
 		}
 
 		if (!contactsAtLocation.isEmpty())
@@ -272,8 +289,7 @@ public class BPartnerBL implements IBPartnerBL
 
 	private I_AD_User retrieveUserForLoc(final Properties ctx, final int bPartnerId, final int bPartnerLocationId, final String trxName)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final List<I_AD_User> users = bPartnerDAO.retrieveContacts(ctx, bPartnerId, trxName);
+		final List<I_AD_User> users = bpartnersRepo.retrieveContacts(ctx, bPartnerId, trxName);
 
 		if (bPartnerLocationId > 0)
 		{
@@ -312,32 +328,12 @@ public class BPartnerBL implements IBPartnerBL
 		return users.get(0);
 	}
 
-	//
-	// Commenting out this de.metas.terminable related code, because it assumes that the following columns exist
-	//
-	/*
-	 * @Override public void updateNextLocation(I_C_BPartner_Location bpLocation) { final int nextId = bpLocation.getNext_ID(); if (nextId <= 0) { return; }
-	 *
-	 * final Properties ctx = InterfaceWrapperHelper.getCtx(bpLocation); final String trxName = InterfaceWrapperHelper.getTrxName(bpLocation);
-	 *
-	 * final I_C_BPartner_Location nextLocation = InterfaceWrapperHelper.create(ctx, nextId, I_C_BPartner_Location.class, trxName);
-	 *
-	 * // inherit the flags from the previous
-	 *
-	 * // Don't update the defaults if the current location is still valid. if (isTerminatedInThePast(bpLocation)) { nextLocation.setIsBillToDefault(bpLocation.isBillToDefault());
-	 * nextLocation.setIsShipToDefault(bpLocation.isShipToDefault()); }
-	 *
-	 * nextLocation.setIsBillTo(bpLocation.isBillTo()); nextLocation.setIsShipTo(bpLocation.isShipTo());
-	 *
-	 * InterfaceWrapperHelper.save(nextLocation); }
-	 */
-
 	@Override
 	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(
 				bpLocation.getC_Location(),
-				Services.get(IBPartnerDAO.class).getById(bpLocation.getC_BPartner_ID()),
+				bpartnersRepo.getById(bpLocation.getC_BPartner_ID()),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
@@ -386,7 +382,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		if (bpartnerId > 0)
 		{
-			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+			final I_C_BPartner bp = bpartnersRepo.getById(bpartnerId);
 			if (null != bp)
 			{
 				final String lang = bp.getAD_Language();
@@ -461,7 +457,7 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setPO_PaymentTerm_ID(template.getPO_PaymentTerm_ID());
 		bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
 		//
-		InterfaceWrapperHelper.save(bpartner);
+		bpartnersRepo.save(bpartner);
 
 		template.setC_BPartner(bpartner);
 
@@ -474,7 +470,7 @@ public class BPartnerBL implements IBPartnerBL
 		bpLocation.setIsBillToDefault(true);
 		bpLocation.setIsShipTo(true);
 		bpLocation.setIsShipToDefault(true);
-		InterfaceWrapperHelper.save(bpLocation);
+		bpartnersRepo.save(bpLocation);
 
 		template.setC_BPartner_Location(bpLocation);
 
@@ -503,15 +499,20 @@ public class BPartnerBL implements IBPartnerBL
 				bpContact.setIsPurchaseContact(true);
 				bpContact.setIsPurchaseContact_Default(true);
 			}
-			InterfaceWrapperHelper.save(bpContact);
+			bpartnersRepo.save(bpContact);
 
 			template.setAD_User(bpContact);
 		}
 
 		template.setProcessed(true);
-		InterfaceWrapperHelper.save(template);
+		save(template);
 
 		return bpartner;
+	}
+
+	private void save(final I_C_BPartner_QuickInput template)
+	{
+		InterfaceWrapperHelper.saveRecord(template);
 	}
 
 	private final String extractName(final I_C_BPartner_QuickInput template)
@@ -533,8 +534,7 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+		final I_C_BPartner bpartner = getById(bpartnerId);
 
 		return getDiscountSchemaId(bpartner, soTrx);
 	}
@@ -588,19 +588,25 @@ public class BPartnerBL implements IBPartnerBL
 			return "?";
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
 		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
 	}
 
 	@Override
 	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
 	{
-		final int salesRepRecordId = getById(bpartnerId).getSalesRep_ID();
+		final I_C_BPartner bpartnerRecord = getById(bpartnerId);
+		if (InterfaceWrapperHelper.isNull(bpartnerRecord, I_C_BPartner.COLUMNNAME_SalesRep_ID))
+		{
+			return null;
+		}
 
+		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
 		return UserId.ofRepoIdOrNull(salesRepRecordId);
 	}
 
-	@Override public BPartnerId getBPartnerSalesRepId(BPartnerId bPartnerId)
+	@Override
+	public BPartnerId getBPartnerSalesRepId(final BPartnerId bPartnerId)
 	{
 		final int salesRepRecordId = getById(bPartnerId).getC_BPartner_SalesRep_ID();
 
@@ -608,17 +614,28 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public UserId setSalesRepId(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final UserId salesRepId)
+	{
+		final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
+
+		final UserId oldSalesRepId = UserId.ofRepoIdOrNull(bpartnerRecord.getSalesRep_ID());
+		bpartnerRecord.setSalesRep_ID(UserId.toRepoId(salesRepId));
+		bpartnersRepo.save(bpartnerRecord);
+
+		return oldSalesRepId;
+	}
+
+	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
 	}
 
 	@Override
 	public int getFreightCostIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		int freightCostId = bpartner.getM_FreightCost_ID();
 		if (freightCostId > 0)

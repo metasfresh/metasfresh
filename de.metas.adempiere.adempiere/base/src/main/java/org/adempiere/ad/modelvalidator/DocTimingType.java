@@ -17,7 +17,7 @@ import de.metas.util.GuavaCollectors;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public enum DocTimingType
+public enum DocTimingType implements TimingType
 {
 	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress, BeforeAfterType.Before) //
 	, AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress, BeforeAfterType.After) //
@@ -57,7 +57,8 @@ public enum DocTimingType
 		this.beforeAfter = beforeAfter;
 	}
 
-	public final int getTiming()
+	@Override
+	public int toInt()
 	{
 		return timing;
 	}
@@ -71,7 +72,7 @@ public enum DocTimingType
 	{
 		return docStatus;
 	}
-	
+
 	public boolean isDocAction(final String docAction)
 	{
 		return Objects.equals(this.docAction, docAction);
@@ -108,7 +109,7 @@ public enum DocTimingType
 		return value;
 	}
 
-	private static final Map<Integer, DocTimingType> timingInt2type = Stream.of(values()).collect(GuavaCollectors.toImmutableMapByKey(DocTimingType::getTiming));
+	private static final Map<Integer, DocTimingType> timingInt2type = Stream.of(values()).collect(GuavaCollectors.toImmutableMapByKey(DocTimingType::toInt));
 
 	public static final DocTimingType forAction(final String docAction, final BeforeAfterType beforeAfterType)
 	{
@@ -127,5 +128,4 @@ public enum DocTimingType
 
 		throw new IllegalArgumentException("Unknown DocAction: " + docAction + ", " + beforeAfterType);
 	}
-
 }

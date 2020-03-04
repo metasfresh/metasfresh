@@ -21,7 +21,8 @@ RETURNS TABLE
 	sr_fax character varying(40),
 	sr_email character varying(60),
 	printname character varying(60),
-	datepromised timestamp with time zone
+	datepromised timestamp with time zone,
+	dt_description text
 )
 AS
 $$
@@ -52,7 +53,8 @@ SELECT
 	srep.fax	as sr_fax,
 	srep.email	as sr_email,
 	COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
-	o.datepromised
+	o.datepromised,
+	COALESCE(dtt.Description, dt.Description) AS dt_description
 FROM
 	C_Order o
 	INNER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'

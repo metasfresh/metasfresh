@@ -100,7 +100,7 @@ public class SearialLetterService
 
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery printingQuery = printingQueueBL.createPrintingQueueQuery();
-		printingQuery.setIsPrinted(false);
+		printingQuery.setFilterByProcessedQueueItems(false);
 		printingQuery.setOnlyAD_PInstance_ID(pinstanceId);
 
 		final Properties ctx = Env.getCtx();

@@ -72,9 +72,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 			return feedback;
 		}
 
-		// assertEligible(document); no need; we are eligible by nature
-
-		// Mark the InOut as: EDI starting
+		// Mark the document as: EDI starting
 		document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
 		InterfaceWrapperHelper.save(document);
 
@@ -84,8 +82,6 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		}
 		catch (final Exception e)
 		{
-			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
-
 			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
 
 			final ITranslatableString errorMsgTrl = msgBL.parseTranslatableString(e.getLocalizedMessage());

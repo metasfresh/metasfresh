@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,16 +61,17 @@ public class BPartnerDependentDocumentEvent
 		return builder()
 				.documentRef(doc.getDocumentRef())
 				.newBPartnerId(doc.getNewBPartnerId())
-				.oldBPartnerId(doc.getOldBPartnerId());
+				.oldBPartnerId(doc.getOldBPartnerId())
+				.updatedBy(doc.getUpdatedBy());
 	}
 
 	@JsonProperty("documentRef")
 	TableRecordReference documentRef;
 
-	public static enum EventType
+	public enum EventType
 	{
 		NEW_RECORD, BPARTNER_CHANGED
-	};
+	}
 
 	@JsonProperty("eventType")
 	EventType eventType;
@@ -80,17 +82,22 @@ public class BPartnerDependentDocumentEvent
 	@JsonProperty("oldBPartnerId")
 	BPartnerId oldBPartnerId;
 
+	@JsonProperty("updatedBy")
+	UserId updatedBy;
+
 	@JsonCreator
 	@Builder
 	private BPartnerDependentDocumentEvent(
 			@JsonProperty("documentRef") @NonNull final TableRecordReference documentRef,
 			@JsonProperty("eventType") @NonNull final EventType eventType,
 			@JsonProperty("newBPartnerId") @Nullable final BPartnerId newBPartnerId,
-			@JsonProperty("oldBPartnerId") @Nullable final BPartnerId oldBPartnerId)
+			@JsonProperty("oldBPartnerId") @Nullable final BPartnerId oldBPartnerId,
+			@JsonProperty("updatedBy") @NonNull final UserId updatedBy)
 	{
 		this.documentRef = documentRef;
 		this.eventType = eventType;
 		this.newBPartnerId = newBPartnerId;
 		this.oldBPartnerId = oldBPartnerId;
+		this.updatedBy = updatedBy;
 	}
 }

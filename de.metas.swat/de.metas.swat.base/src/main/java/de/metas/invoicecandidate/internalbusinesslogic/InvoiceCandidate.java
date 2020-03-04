@@ -5,9 +5,12 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,9 +19,9 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.ToInvoiceExclOverride.InvoicedQtys;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData.ToInvoiceDataBuilder;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.order.InvoiceRule;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -58,11 +61,13 @@ import lombok.Setter;
 @Data
 public class InvoiceCandidate
 {
+	private static final Logger logger = LogManager.getLogger(InvoiceCandidate.class);
+
 	private final InvoiceCandidateId id;
 
 	private final SOTrx soTrx;
 
-	private final ProductId productId;
+	private final InvoiceCandidateProduct product;
 
 	private final UomId uomId;
 
@@ -91,7 +96,7 @@ public class InvoiceCandidate
 	private InvoiceCandidate(
 			@JsonProperty("id") @NonNull final InvoiceCandidateId id,
 			@JsonProperty("soTrx") @NonNull final SOTrx soTrx,
-			@JsonProperty("productId") @NonNull final ProductId productId,
+			@JsonProperty("product") @NonNull final InvoiceCandidateProduct product,
 			@JsonProperty("uomId") @NonNull final UomId uomId,
 			@JsonProperty("orderedData") @NonNull final OrderedData orderedData,
 			@JsonProperty("deliveredData") @NonNull final DeliveredData deliveredData,
@@ -104,7 +109,7 @@ public class InvoiceCandidate
 	{
 		this.id = id;
 		this.soTrx = soTrx;
-		this.productId = productId;
+		this.product = product;
 		this.uomId = uomId;
 		this.orderedData = orderedData;
 		this.deliveredData = deliveredData;
@@ -165,32 +170,36 @@ public class InvoiceCandidate
 	{
 		final ToInvoiceExclOverride toInvoiceExclOverride = computeToInvoiceExclOverride();
 
-		final StockQtyAndUOMQty deliveredQtysCalc = toInvoiceExclOverride.getQtysCalc();
+		final StockQtyAndUOMQty toInvoiceExclOverrideCalc = toInvoiceExclOverride.getQtysCalc();
 
 		final ToInvoiceDataBuilder result = ToInvoiceData.builder()
 				.qtysRaw(toInvoiceExclOverride.getQtysRaw())
-				.qtysCalc(deliveredQtysCalc);
+				.qtysCalc(toInvoiceExclOverrideCalc);
 
 		final StockQtyAndUOMQty qtysEffective;
 
 		if (qtyToInvoiceOverrideInStockUom == null)
 		{
-			qtysEffective = deliveredQtysCalc;
+			qtysEffective = toInvoiceExclOverrideCalc;
 		}
 		else
 		{
-			final boolean overrideExceedsDelivered = qtyToInvoiceOverrideInStockUom.compareTo(deliveredQtysCalc.getStockQty().toBigDecimal()) > 0;
+			final boolean overrideExceedsDelivered = qtyToInvoiceOverrideInStockUom.compareTo(toInvoiceExclOverrideCalc.getStockQty().toBigDecimal()) > 0;
 
-			// qtyToInvoiceOverride > qtyDelivered
 			if (overrideExceedsDelivered)
 			{
-				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, productId, uomId);
-				final Quantity qtyDelivered = deliveredQtysCalc.getUOMQtyOpt().get();
+				logger.debug("qtyToInvoiceOverrideInStockUom={} is > deliveredQtysCalcInStockUom={}; -> going to use qtyToInvoiceOverride",
+						qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
+				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, product.getId(), uomId);
+				final Quantity qtyDelivered = toInvoiceExclOverrideCalc.getUOMQtyNotNull();
 
 				final boolean deliveredInUomExceedsOverride = qtyDelivered
-						.compareTo(qtysToInvoice.getUOMQtyOpt().get()) > 0;
+						.compareTo(qtysToInvoice.getUOMQtyNotNull()) > 0;
 				if (deliveredInUomExceedsOverride)
 				{
+					logger.debug("qtyDeliveredInUom={} is > qtyToInvoiceInUom={}; -> going to use qtyDelivered instead of override, for the UOM-qty",
+							qtyDelivered.toBigDecimal(), qtysToInvoice.getUOMQtyNotNull().toBigDecimal());
+
 					final StockQtyAndUOMQty qtysToIvoiceWithAdjustedQty = qtysToInvoice.toBuilder().uomQty(qtyDelivered).build();
 					qtysEffective = qtysToIvoiceWithAdjustedQty;
 				}
@@ -201,25 +210,38 @@ public class InvoiceCandidate
 			}
 			else if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
 			{
-				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, productId, uomId);
+				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn=NominalWeight; -> going to use qtyToInvoiceOverride",
+						qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
+				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, product.getId(), uomId);
+				qtysEffective = qtysToInvoice;
+			}
+			else if (InvoiceRule.Immediate.equals(invoiceRule))
+			{
+				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn=CatchWeight and invoiceRule=Immediate; -> going to use qtyToInvoiceOverride",
+						qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
+				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, product.getId(), uomId);
 				qtysEffective = qtysToInvoice;
 			}
 			else
 			{
-				StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createZero(productId, uomId);
+				logger.debug("qtyToInvoiceOverrideInStockUom={} is <= deliveredQtysCalcInStockUom={} and invoicableQtyBasedOn=CatchWeight; -> going to sum up actually shipped stockQtys and their respective catchQtys",
+						qtyToInvoiceOverrideInStockUom, toInvoiceExclOverrideCalc.getStockQty().toBigDecimal());
+
+				StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createZero(product.getId(), uomId);
 				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12);
 
 				// if qtyToInvoiceOverride <= qtyDelivered and catchWeight, then get the appropriate fraction
-				for (final DeliveredQtyItem shippedQtyItem : deliveredData.getShipmentData().getDeliveredQtyItems())
+				final List<DeliveredQtyItem> deliveredQtyItems = deliveredData.getShipmentData().getDeliveredQtyItems();
+				for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 				{
-					final Quantity itemQtyInStockUom = shippedQtyItem.getQtyInStockUom();
-					final Quantity itemUomQty = coalesce(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyCatch());
+					final Quantity itemQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
+					final Quantity itemUomQty = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyCatch());
 
 					final boolean allocateCompleteItem = remainingQtyOverride.compareTo(itemQtyInStockUom.toBigDecimal()) >= 0;
 					if (allocateCompleteItem)
 					{
 						final StockQtyAndUOMQty augent = StockQtyAndUOMQty.builder()
-								.productId(productId)
+								.productId(product.getId())
 								.stockQty(itemQtyInStockUom)
 								.uomQty(itemUomQty).build();
 						qtysToInvoice = StockQtyAndUOMQtys.add(qtysToInvoice, augent);
@@ -229,15 +251,20 @@ public class InvoiceCandidate
 					else
 					{
 						// allocate partial item
+
 						final BigDecimal fraction = remainingQtyOverride.divide(itemQtyInStockUom.toBigDecimal(), RoundingMode.HALF_UP);
 						final Quantity partialItemUomQty = itemUomQty.multiply(fraction);
 
+						logger.debug("remainingQtyOverride={} is < itemQtyInStockUom={}; -> for this last item, we use rule-of-3 to get the partial catchQty={}",
+								remainingQtyOverride, itemQtyInStockUom.toBigDecimal(), partialItemUomQty);
+
 						final StockQtyAndUOMQty augent = StockQtyAndUOMQtys.create(
-								remainingQtyOverride, productId,
+								remainingQtyOverride, product.getId(),
 								partialItemUomQty.toBigDecimal(), partialItemUomQty.getUomId());
 						qtysToInvoice = StockQtyAndUOMQtys.add(qtysToInvoice, augent);
 
 						remainingQtyOverride = ZERO;
+
 					}
 
 					if (remainingQtyOverride.signum() <= 0)
@@ -246,6 +273,7 @@ public class InvoiceCandidate
 					}
 				}
 				qtysEffective = qtysToInvoice;
+				logger.debug("Iterated over {} deliveredQtyItems; resulting qtysEffective={}", deliveredQtyItems.size(), qtysEffective);
 			}
 		}
 
@@ -253,7 +281,7 @@ public class InvoiceCandidate
 
 		final Quantity qtyInPriceUom = Quantitys.create(
 				qtysEffective.getUOMQtyNotNull(),
-				UOMConversionContext.of(productId),
+				UOMConversionContext.of(product.getId()),
 				priceUomId);
 
 		return result
@@ -269,10 +297,24 @@ public class InvoiceCandidate
 		switch (invoiceRule)
 		{
 			case AfterDelivery:
-				qtyToInvoice = computeInvoicableQtysDelivered();
+				if (product.isStocked())
+				{
+					qtyToInvoice = computeInvoicableQtysDelivered();
+				}
+				else
+				{
+					qtyToInvoice = computeDeliveredOrOrdered();
+				}
 				break;
 			case CustomerScheduleAfterDelivery:
-				qtyToInvoice = computeInvoicableQtysDelivered();
+				if (product.isStocked())
+				{
+					qtyToInvoice = computeInvoicableQtysDelivered();
+				}
+				else
+				{
+					qtyToInvoice = computeDeliveredOrOrdered();
+				}
 				break;
 			case Immediate:
 				qtyToInvoice = computeDeliveredOrOrdered();
@@ -306,13 +348,14 @@ public class InvoiceCandidate
 		if (!orderedData.isOrderFullyDelivered())
 		{
 			return new ToInvoiceExclOverride(InvoicedQtys.NOT_SUBTRACTED,
-					StockQtyAndUOMQtys.createZero(productId, uomId),
-					StockQtyAndUOMQtys.createZero(productId, uomId));
+					StockQtyAndUOMQtys.createZero(product.getId(), uomId),
+					StockQtyAndUOMQtys.createZero(product.getId(), uomId));
 		}
 
 		return computeDeliveredOrOrdered();
 	}
 
+	/** @return the "bigger" quantity of either the ordered or delivered quantity. */
 	private ToInvoiceExclOverride computeDeliveredOrOrdered()
 	{
 		final Quantity orderedInStockUom = orderedData.getQtyInStockUom();
@@ -352,12 +395,12 @@ public class InvoiceCandidate
 		}
 
 		final StockQtyAndUOMQty qtysToInvoiceRaw = StockQtyAndUOMQty.builder()
-				.productId(productId)
+				.productId(product.getId())
 				.stockQty(qtyToInvoiceInStockUomRaw)
 				.uomQty(qtyToInvoiceRaw)
 				.build();
 		final StockQtyAndUOMQty qtysToInvoiceCalc = StockQtyAndUOMQty.builder()
-				.productId(productId)
+				.productId(product.getId())
 				.stockQty(qtyToInvoiceInStockUomCalc)
 				.uomQty(qtyToInvoiceCalc)
 				.build();
@@ -382,6 +425,7 @@ public class InvoiceCandidate
 			qtysToInvoiceRaw = deliveredData.getReceiptData().getQtysTotal(invoicableQtyBasedOn);
 			qtysToInvoiceCalc = deliveredData.getReceiptData().computeInvoicableQtyDelivered(qualityDiscountOverride, invoicableQtyBasedOn);
 		}
+		logger.debug("IsSales={} -> return delivered quantity={}", soTrx.isSales(), qtysToInvoiceCalc);
 		return new ToInvoiceExclOverride(
 				ToInvoiceExclOverride.InvoicedQtys.NOT_SUBTRACTED,
 				qtysToInvoiceRaw, qtysToInvoiceCalc);

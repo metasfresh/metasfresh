@@ -30,6 +30,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
@@ -87,7 +89,6 @@ final class PricingResult implements IPricingResult
 
 	private PricingConditionsResult pricingConditions;
 
-
 	private BigDecimal priceList = BigDecimal.ZERO;
 	private BigDecimal priceStd = BigDecimal.ZERO;
 	private BigDecimal priceLimit = BigDecimal.ZERO;
@@ -114,6 +115,9 @@ final class PricingResult implements IPricingResult
 
 	@Getter(AccessLevel.NONE)
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
+
+	@Getter
+	private ImmutableList<String> loggableMessages;
 
 	private BigDecimal baseCommissionPointsPerPriceUOM;
 
@@ -211,5 +215,12 @@ final class PricingResult implements IPricingResult
 	public boolean isCampaignPrice()
 	{
 		return campaignPrice;
+	}
+
+	@Override
+	public IPricingResult setLoggableMessages(@NonNull final ImmutableList<String> loggableMessages)
+	{
+		this.loggableMessages = loggableMessages;
+		return this;
 	}
 }

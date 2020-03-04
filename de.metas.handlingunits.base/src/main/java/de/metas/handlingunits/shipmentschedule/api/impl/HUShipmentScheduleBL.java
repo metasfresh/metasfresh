@@ -1,5 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -46,11 +48,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -97,6 +100,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -448,37 +452,43 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
-	public HUPIItemProductId getPackingMaterialId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	public HUPIItemProductId getEffectivePackingMaterialId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule huShipmentSchedule = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
-		final HUPIItemProductId pip = HUPIItemProductId.ofRepoIdOrNull(huShipmentSchedule.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId pip = HUPIItemProductId.ofRepoIdOrNull(
+				firstGreaterThanZero(
+						huShipmentSchedule.getM_HU_PI_Item_Product_Override_ID(),
+						huShipmentSchedule.getM_HU_PI_Item_Product_ID()));
 		if (pip != null)
 		{
 			return pip;
 		}
 
-		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(huShipmentSchedule.getC_Order_ID(), huShipmentSchedule.getC_OrderLine_ID());
-		if (orderLineId != null)
+		// if is not set in shipment schedule, return the one form order line or null
+		final HUPIItemProductId orderLinePIPOrNull = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
+		return orderLinePIPOrNull;
+	}
+
+	private HUPIItemProductId extractOrderLinePackingMaterialIdOrNull(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
-			// if is not set, return the one form order line
-			final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-			final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
-			final HUPIItemProductId orderLinePIP = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
-			if (orderLinePIP != null)
-			{
-				return orderLinePIP;
-			}
+			return null;
 		}
 
-		return null;
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
+		final HUPIItemProductId orderLinePIP = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
+		return orderLinePIP;
 	}
 
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final HUPIItemProductId packingMaterialId = getPackingMaterialId(shipmentSchedule);
+		final HUPIItemProductId packingMaterialId = getEffectivePackingMaterialId(shipmentSchedule);
 		if (packingMaterialId == null)
 		{
 			return null;
@@ -566,7 +576,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
-		final I_C_UOM cuUOM = shipmentScheduleBL.getUomOfProduct(schedule);
+		final UomId cuUOMId = shipmentScheduleBL.getUomIdOfProduct(schedule);
 		final ProductId cuProductId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
 		final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(schedule);
@@ -579,7 +589,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
-				cuUOM,
+				cuUOMId,
 				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
@@ -667,39 +677,84 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void updateHURelatedValuesFromOrderLine(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
+		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
+
+		final HUPIItemProductId orderLinePackingMaterialId = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
+		if (shipmentSchedule.getC_OrderLine_ID() <= 0 || !HUPIItemProductId.isRegular(orderLinePackingMaterialId))
 		{
+			logger.debug("C_OrderLine_ID={}; orderLinePackingMaterialId={} is regular={}; -> unset M_HU_PI_Item_Product_ID and PackDescription",
+					shipmentSchedule.getC_OrderLine_ID(), HUPIItemProductId.toRepoId(orderLinePackingMaterialId), HUPIItemProductId.isRegular(orderLinePackingMaterialId));
+			shipmentScheduleToUse.setM_HU_PI_Item_Product_ID(-1);
+			shipmentScheduleToUse.setPackDescription(null);
 			return;
+
 		}
 		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 
-		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
-
 		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
-		updateTuQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
+		updateHUQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
+		updatePackingRelatedQtys(shipmentScheduleToUse);
 	}
 
 	private void updatePackingInstructionsFromOrderLine(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_OrderLine orderLine)
 	{
-
-		final I_M_HU_PI_Item_Product hupip = orderLine.getM_HU_PI_Item_Product();
-		final I_M_HU_PI_Item_Product piItemProduct_Effective = hupip;
+		final I_M_HU_PI_Item_Product piItemProduct_Effective = orderLine.getM_HU_PI_Item_Product();
 
 		shipmentSchedule.setM_HU_PI_Item_Product_Calculated(piItemProduct_Effective);
 		shipmentSchedule.setM_HU_PI_Item_Product(piItemProduct_Effective);
-		shipmentSchedule.setPackDescription(orderLine.getPackDescription());
+
+		if (shipmentSchedule.getM_HU_PI_Item_Product_Override_ID() <= 0)
+		{
+			shipmentSchedule.setPackDescription(orderLine.getPackDescription());
+		}
 	}
 
-	private void updateTuQuantitiesFromOrderLine(
+	private void updateHUQuantitiesFromOrderLine(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyTU_Effective = orderLine.getQtyEnteredTU();
 
 		shipmentSchedule.setQtyTU_Calculated(qtyTU_Effective);
+		getEffectivePackingMaterialId(shipmentSchedule);
+
 		shipmentSchedule.setQtyOrdered_TU(qtyTU_Effective);
+
+		final I_M_HU_LUTU_Configuration lutuConfiguration = //
+				deriveM_HU_LUTU_Configuration(shipmentSchedule);
+
+		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+		final int qtyOrderedLU = //
+				lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
+		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
+	}
+
+	private void updatePackingRelatedQtys(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final ShipmentScheduleHUPackingAware packingAware = new ShipmentScheduleHUPackingAware(shipmentSchedule);
+		final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
+		final BigDecimal qtyTUCalculated = shipmentSchedule.getQtyTU_Calculated();
+
+		if (!qtyTUCalculated.equals(shipmentSchedule.getQtyOrdered_TU()))
+		{
+			// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
+			final int qtyTU = packingAware.getQtyTU().intValueExact();
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
+		}
+
+		final int hupipCalculatedID = shipmentSchedule.getM_HU_PI_Item_Product_Calculated_ID();
+		final int currentHUPIPID = shipmentSchedule.getM_HU_PI_Item_Product_ID();
+
+		if (hupipCalculatedID != currentHUPIPID)
+		{
+			final BigDecimal qtyTU = packingAware.getQtyTU();
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU.intValueExact());
+
+			shipmentSchedule.setQtyOrdered_Override(packingAware.getQty());
+		}
 	}
 
 	@Override

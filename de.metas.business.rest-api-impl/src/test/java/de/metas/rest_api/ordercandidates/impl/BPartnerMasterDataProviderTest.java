@@ -16,10 +16,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -39,7 +39,6 @@ import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.PermissionService;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -63,14 +62,9 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class BPartnerMasterDataProviderTest
 {
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Mocked
-	private PermissionService permissionService;
-
 	private JsonRequestBPartner jsonBPartner;
 
 	private JsonRequestBPartnerLocationAndContact jsonBPartnerInfo;
@@ -79,7 +73,7 @@ public class BPartnerMasterDataProviderTest
 
 	private BPartnerMasterDataProvider bpartnerMasterDataProvider;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -88,6 +82,7 @@ public class BPartnerMasterDataProviderTest
 		countryRecord.setCountryCode("DE");
 		saveRecord(countryRecord);
 
+		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		bpartnerMasterDataProvider = new BPartnerMasterDataProvider(permissionService);
 
 		jsonBPartner = JsonRequestBPartner.builder()

@@ -32,10 +32,6 @@ public interface I_AD_Column
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_Client>(I_AD_Column.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -94,31 +90,25 @@ public interface I_AD_Column
     public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_Org>(I_AD_Column.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -229,12 +219,6 @@ public interface I_AD_Column
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_Table>(I_AD_Column.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
@@ -342,8 +326,6 @@ public interface I_AD_Column
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_User>(I_AD_Column.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -448,6 +430,29 @@ public interface I_AD_Column
     public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "EntityType", null);
     /** Column name EntityType */
     public static final String COLUMNNAME_EntityType = "EntityType";
+
+	/**
+	 * Set Facet Filter Sequence No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFacetFilterSeqNo (int FacetFilterSeqNo);
+
+	/**
+	 * Get Facet Filter Sequence No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getFacetFilterSeqNo();
+
+    /** Column definition for FacetFilterSeqNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_FacetFilterSeqNo = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "FacetFilterSeqNo", null);
+    /** Column name FacetFilterSeqNo */
+    public static final String COLUMNNAME_FacetFilterSeqNo = "FacetFilterSeqNo";
 
 	/**
 	 * Set Länge.
@@ -746,6 +751,29 @@ public interface I_AD_Column
     public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsEncrypted = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsEncrypted", null);
     /** Column name IsEncrypted */
     public static final String COLUMNNAME_IsEncrypted = "IsEncrypted";
+
+	/**
+	 * Set Facet Filter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsFacetFilter (boolean IsFacetFilter);
+
+	/**
+	 * Get Facet Filter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isFacetFilter();
+
+    /** Column definition for IsFacetFilter */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsFacetFilter = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsFacetFilter", null);
+    /** Column name IsFacetFilter */
+    public static final String COLUMNNAME_IsFacetFilter = "IsFacetFilter";
 
 	/**
 	 * Set Force include in generated model.
@@ -1144,8 +1172,32 @@ public interface I_AD_Column
     public static final String COLUMNNAME_MandatoryLogic = "MandatoryLogic";
 
 	/**
+	 * Set Maximum Facets.
+	 * Maximum number of facets to fetch
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMaxFacetsToFetch (int MaxFacetsToFetch);
+
+	/**
+	 * Get Maximum Facets.
+	 * Maximum number of facets to fetch
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getMaxFacetsToFetch();
+
+    /** Column definition for MaxFacetsToFetch */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_MaxFacetsToFetch = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "MaxFacetsToFetch", null);
+    /** Column name MaxFacetsToFetch */
+    public static final String COLUMNNAME_MaxFacetsToFetch = "MaxFacetsToFetch";
+
+	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1155,7 +1207,6 @@ public interface I_AD_Column
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1169,7 +1220,7 @@ public interface I_AD_Column
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Personal Data Category.
+	 * Set Datenschutz-Kategorie.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1178,7 +1229,7 @@ public interface I_AD_Column
 	public void setPersonalDataCategory (java.lang.String PersonalDataCategory);
 
 	/**
-	 * Get Personal Data Category.
+	 * Get Datenschutz-Kategorie.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1316,8 +1367,6 @@ public interface I_AD_Column
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Column, org.compiere.model.I_AD_User>(I_AD_Column.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

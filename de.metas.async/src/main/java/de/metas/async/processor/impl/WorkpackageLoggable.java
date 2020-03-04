@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.WorkpackageLogEntry;
+import de.metas.error.IErrorManager;
 import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.error.LoggableWithThrowableUtil.FormattedMsgWithAdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,7 +48,9 @@ import lombok.ToString;
 final class WorkpackageLoggable implements ILoggable
 {
 	private static final Logger logger = LogManager.getLogger(WorkpackageLoggable.class);
+
 	private final IWorkpackageLogsRepository logsRepository;
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final QueueWorkPackageId workpackageId;
 	private final ClientId adClientId;
@@ -107,6 +111,31 @@ final class WorkpackageLoggable implements ILoggable
 				.adClientId(adClientId)
 				.userId(userId)
 				.build();
+	}
+
+	private static Throwable extractThrowable(final Object[] msgParameters)
+	{
+		if (msgParameters == null || msgParameters.length == 0)
+		{
+			return null;
+		}
+
+		final Object lastEntry = msgParameters[msgParameters.length - 1];
+		return lastEntry instanceof Throwable
+				? (Throwable)lastEntry
+				: null;
+	}
+
+	private static Object[] removeLastElement(final Object[] msgParameters)
+	{
+		if (msgParameters == null || msgParameters.length == 0)
+		{
+			return msgParameters;
+		}
+		final int newLen = msgParameters.length - 1;
+		final Object[] msgParametersNew = new Object[newLen];
+		System.arraycopy(msgParameters, 0, msgParametersNew, 0, newLen);
+		return msgParametersNew;
 	}
 
 	@Override
