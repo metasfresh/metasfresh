@@ -22,6 +22,23 @@
 
 package de.metas.banking.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 import de.metas.banking.BankStatementTestHelper;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
@@ -41,22 +58,6 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BankStatementPaymentBLTest
 {
@@ -76,7 +77,11 @@ class BankStatementPaymentBLTest
 		modelInterceptorRegistry.addModelInterceptor(C_BankStatementLine.instance);
 	}
 
-	private void paymentChecks(final BigDecimal expectedPayAmt, final int expectedC_payment_id, final boolean expectedIsReceipt, final int expectedC_BP_BankAccount_ID)
+	private void paymentChecks(
+			final BigDecimal expectedPayAmt,
+			final int expectedC_payment_id,
+			final boolean expectedIsReceipt,
+			final BankAccountId expectedBankAccountId)
 	{
 		final I_C_Payment payment = InterfaceWrapperHelper.load(expectedC_payment_id, I_C_Payment.class);
 		assertNotNull(payment);
@@ -84,7 +89,7 @@ class BankStatementPaymentBLTest
 		assertTrue(payment.isReconciled());
 		assertEquals(expectedIsReceipt, payment.isReceipt());
 		assertEquals(DocStatus.Completed, DocStatus.ofCode(payment.getDocStatus()));
-		assertEquals(expectedC_BP_BankAccount_ID, payment.getC_BP_BankAccount_ID());
+		assertEquals(expectedBankAccountId.getRepoId(), payment.getC_BP_BankAccount_ID());
 
 		// can't test `payment.getC_DocType_ID()` as it is set by `PaymentsForInvoicesCreator`, and during test there's no DocTypes
 	}
@@ -96,22 +101,22 @@ class BankStatementPaymentBLTest
 		void vendorOneMatchingPaymentExists_DifferentInvoiceOnBSL()
 		{
 			// TODO tbp: check with mark in a followup task about this usecase.
-			// 	 the followup task is: https://github.com/metasfresh/metasfresh/issues/6128
-			//   here is a draft of the data required to test
-			//   outgoing payment:
-			// 		there is invoice for vendor: no. 1111
-			// 		payment is allocated completely against invoice
-			// 		amount 169.09 (same as BSL)
-			// 		curency ok
-			// 		bpartner ok
-			// 		NOT reconciled!
-			//	 ====================
-			// 	 BankStatementLine:
-			// 		same bpartner as Invoice 1111
-			//		amount = 169.09 (same as payment)
-			// 		reference = 2222 (this invoice number is different from the one on the payment!!!!!!!!)
-			//	 ====================
-			// 	 => outcome: should not auto-link the payment, since the invoices are wrong
+			// the followup task is: https://github.com/metasfresh/metasfresh/issues/6128
+			// here is a draft of the data required to test
+			// outgoing payment:
+			// there is invoice for vendor: no. 1111
+			// payment is allocated completely against invoice
+			// amount 169.09 (same as BSL)
+			// curency ok
+			// bpartner ok
+			// NOT reconciled!
+			// ====================
+			// BankStatementLine:
+			// same bpartner as Invoice 1111
+			// amount = 169.09 (same as payment)
+			// reference = 2222 (this invoice number is different from the one on the payment!!!!!!!!)
+			// ====================
+			// => outcome: should not auto-link the payment, since the invoices are wrong
 		}
 
 		@Test
@@ -125,26 +130,25 @@ class BankStatementPaymentBLTest
 
 			final I_C_BPartner metasfreshBPartner = BusinessTestHelper.createBPartner("metasfresh");
 			final I_C_BP_BankAccount metasfreshBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(metasfreshBPartner.getC_BPartner_ID()), eurCurrencyId, metasfreshIban);
+			final BankAccountId metasfreshBankAccountId = BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID());
 
-			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID()), "Bank Statement 1", statementDate);
+			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(metasfreshBankAccountId, "Bank Statement 1", statementDate);
 
 			final I_C_BPartner customerBPartner = BusinessTestHelper.createBPartner("le customer");
-			final I_C_BP_BankAccount customerBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()), eurCurrencyId, null);
 
 			final I_C_BankStatementLine bsl = BankStatementTestHelper.createBankStatementLine(
 					BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-					BPartnerId.ofRepoId(customerBankAccount.getC_BPartner_ID()),
+					BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()),
 					10,
 					statementDate,
 					valutaDate,
 					lineStmtAmt,
-					eurCurrencyId
-			);
+					eurCurrencyId);
 
 			final org.compiere.model.I_C_Payment payment = Services.get(IPaymentBL.class).newOutboundPaymentBuilder()
 					.adOrgId(OrgId.ANY)
 					.bpartnerId(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()))
-					.bpBankAccountId(BankAccountId.ofRepoId(customerBankAccount.getC_BP_BankAccount_ID()))
+					.bpBankAccountId(metasfreshBankAccountId)
 					.currencyId(eurCurrencyId)
 					.payAmt(paymentAmt)
 					.dateAcct(statementDate.toLocalDateTime().toLocalDate())
@@ -158,15 +162,14 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementPaymentBL = new BankStatmentPaymentBL();
-			testBankStatementPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			testBankStatementPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
 
 			//
 			// Checks
 			InterfaceWrapperHelper.refresh(bsl);
 			final boolean isReceipt = false;
-			final int expectedC_BP_BankAccount_ID = customerBankAccount.getC_BP_BankAccount_ID();
 			assertEquals(payment.getC_Payment_ID(), bsl.getC_Payment_ID());
-			paymentChecks(paymentAmt, bsl.getC_Payment_ID(), isReceipt, expectedC_BP_BankAccount_ID);
+			paymentChecks(paymentAmt, bsl.getC_Payment_ID(), isReceipt, metasfreshBankAccountId);
 			assertFalse(bsl.isMultiplePayment());
 			assertFalse(bsl.isMultiplePaymentOrInvoice());
 		}
@@ -182,28 +185,27 @@ class BankStatementPaymentBLTest
 
 			final I_C_BPartner metasfreshBPartner = BusinessTestHelper.createBPartner("metasfresh");
 			final I_C_BP_BankAccount metasfreshBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(metasfreshBPartner.getC_BPartner_ID()), eurCurrencyId, metasfreshIban);
+			final BankAccountId metasfreshBankAccountId = BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID());
 
-			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID()), "Bank Statement 1", statementDate);
+			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(metasfreshBankAccountId, "Bank Statement 1", statementDate);
 
 			final I_C_BPartner customerBPartner = BusinessTestHelper.createBPartner("le customer");
-			final I_C_BP_BankAccount customerBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()), eurCurrencyId, null);
 
 			final I_C_BankStatementLine bsl = BankStatementTestHelper.createBankStatementLine(
 					BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-					BPartnerId.ofRepoId(customerBankAccount.getC_BPartner_ID()),
+					BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()),
 					10,
 					statementDate,
 					valutaDate,
 					lineStmtAmt,
-					eurCurrencyId
-			);
+					eurCurrencyId);
 
 			//
 			// create 2 identical payments
 			final org.compiere.model.I_C_Payment payment1 = Services.get(IPaymentBL.class).newOutboundPaymentBuilder()
 					.adOrgId(OrgId.ANY)
 					.bpartnerId(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()))
-					.bpBankAccountId(BankAccountId.ofRepoId(customerBankAccount.getC_BP_BankAccount_ID()))
+					.bpBankAccountId(metasfreshBankAccountId)
 					.currencyId(eurCurrencyId)
 					.payAmt(paymentAmt)
 					.dateAcct(statementDate.toLocalDateTime().toLocalDate())
@@ -215,7 +217,7 @@ class BankStatementPaymentBLTest
 			final org.compiere.model.I_C_Payment payment2 = Services.get(IPaymentBL.class).newOutboundPaymentBuilder()
 					.adOrgId(OrgId.ANY)
 					.bpartnerId(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()))
-					.bpBankAccountId(BankAccountId.ofRepoId(customerBankAccount.getC_BP_BankAccount_ID()))
+					.bpBankAccountId(metasfreshBankAccountId)
 					.currencyId(eurCurrencyId)
 					.payAmt(paymentAmt)
 					.dateAcct(statementDate.toLocalDateTime().toLocalDate())
@@ -229,7 +231,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
 
 			//
 			// Checks
@@ -260,35 +262,33 @@ class BankStatementPaymentBLTest
 
 			final I_C_BPartner metasfreshBPartner = BusinessTestHelper.createBPartner("metasfresh");
 			final I_C_BP_BankAccount metasfreshBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(metasfreshBPartner.getC_BPartner_ID()), eurCurrencyId, metasfreshIban);
+			final BankAccountId metasfreshBankAccountId = BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID());
 
-			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID()), "Bank Statement 1", statementDate);
+			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(metasfreshBankAccountId, "Bank Statement 1", statementDate);
 
 			final I_C_BPartner customerBPartner = BusinessTestHelper.createBPartner("le customer");
-			final I_C_BP_BankAccount customerBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()), eurCurrencyId, null);
 
 			final I_C_BankStatementLine bsl = BankStatementTestHelper.createBankStatementLine(
 					BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-					BPartnerId.ofRepoId(customerBankAccount.getC_BPartner_ID()),
+					BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()),
 					10,
 					statementDate,
 					valutaDate,
 					lineStmtAmt,
-					eurCurrencyId
-			);
+					eurCurrencyId);
 
 			//
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
 
 			//
 			// Checks
 			InterfaceWrapperHelper.refresh(bsl);
 			final boolean isReceipt = true;
-			final int expectedC_BP_BankAccount_ID = customerBankAccount.getC_BP_BankAccount_ID();
-			paymentChecks(paymentAmt, bsl.getC_Payment_ID(), isReceipt, expectedC_BP_BankAccount_ID);
+			paymentChecks(paymentAmt, bsl.getC_Payment_ID(), isReceipt, metasfreshBankAccountId);
 			assertFalse(bsl.isMultiplePayment());
 			assertFalse(bsl.isMultiplePaymentOrInvoice());
 		}
@@ -304,35 +304,33 @@ class BankStatementPaymentBLTest
 
 			final I_C_BPartner metasfreshBPartner = BusinessTestHelper.createBPartner("metasfresh");
 			final I_C_BP_BankAccount metasfreshBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(metasfreshBPartner.getC_BPartner_ID()), eurCurrencyId, metasfreshIban);
+			final BankAccountId metasfreshBankAccountId = BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID());
 
-			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID()), "Bank Statement 1", statementDate);
+			final I_C_BankStatement bankStatement = BankStatementTestHelper.createBankStatement(metasfreshBankAccountId, "Bank Statement 1", statementDate);
 
 			final I_C_BPartner customerBPartner = BusinessTestHelper.createBPartner("le customer");
-			final I_C_BP_BankAccount customerBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()), eurCurrencyId, null);
 
 			final I_C_BankStatementLine bsl = BankStatementTestHelper.createBankStatementLine(
 					BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-					BPartnerId.ofRepoId(customerBankAccount.getC_BPartner_ID()),
+					BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()),
 					10,
 					statementDate,
 					valutaDate,
 					lineStmtAmt,
-					eurCurrencyId
-			);
+					eurCurrencyId);
 
 			//
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bsl);
+			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
 
 			//
 			// Checks
 			InterfaceWrapperHelper.refresh(bsl);
 			final boolean isReceipt = false;
-			final int expectedC_BP_BankAccount_ID = customerBankAccount.getC_BP_BankAccount_ID();
-			paymentChecks(paymentAmt, bsl.getC_Payment_ID(), isReceipt, expectedC_BP_BankAccount_ID);
+			paymentChecks(paymentAmt, bsl.getC_Payment_ID(), isReceipt, metasfreshBankAccountId);
 			assertFalse(bsl.isMultiplePayment());
 			assertFalse(bsl.isMultiplePaymentOrInvoice());
 		}

@@ -1,5 +1,22 @@
 package de.metas.banking.service.impl;
 
+import java.math.BigDecimal;
+import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MBankStatement;
+import org.compiere.model.MBankStatementLine;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -38,22 +55,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.Properties;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -97,7 +98,7 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
-			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(line);
+			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
 			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
 		}
 	}
