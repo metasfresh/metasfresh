@@ -59,8 +59,8 @@ WITH totals AS
 SELECT ROW_NUMBER() OVER (ORDER BY t.Revenue DESC NULLS LAST, t.BPValue) :: INTEGER AS Rang,
        t.BPValue,
        t.Name,
-       round(t.Revenue, 2)  as Revenue,
-       round(t.OpenAmt, 2)  as OpenAmt,
+       round(t.Revenue, 2)                                                          AS Revenue,
+       round(t.OpenAmt, 2)                                                          AS OpenAmt,
        accounting.ISO_Code,
        round(
                (CASE
