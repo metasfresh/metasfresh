@@ -141,10 +141,7 @@
 		<module>de.metas.payment.paypal</module>
 
 		<module>de.metas.printing</module>
-
 		<module>de.metas.printing.rest-api-impl</module>
-		<module>de.metas.printing.rest-api-impl-standalone</module>
-
 		<module>de.metas.printing.common</module>
 		<module>de.metas.printing.client</module>
 

@@ -144,11 +144,6 @@ node('agent && linux')
 				.withWorkDir('de.metas.report/metasfresh-report-service-standalone/target/docker');
 			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
-			final DockerConf printDockerConf = materialDispoDockerConf
-				.withArtifactName('metasfresh-print')
-				.withWorkDir('de.metas.printing.rest-api-impl-standalone/target/docker');
-			final String publishedPrintDockerImageName = dockerBuildAndPush(printDockerConf)
-
 			final DockerConf msv3ServerDockerConf = materialDispoDockerConf
 				.withArtifactName('de.metas.vertical.pharma.msv3.server')
 				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
