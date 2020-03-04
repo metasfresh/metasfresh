@@ -13,6 +13,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -59,6 +60,7 @@ public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDepen
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getC_BPartner_SalesRep_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecordOld.getC_BPartner_SalesRep_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(bpartnerRecord.getUpdatedBy()))
 				.build();
 	}
 

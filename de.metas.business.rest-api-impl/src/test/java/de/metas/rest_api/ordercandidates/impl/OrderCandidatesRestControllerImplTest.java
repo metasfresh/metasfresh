@@ -36,11 +36,12 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.MimeType;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -99,7 +100,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -123,11 +123,9 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class OrderCandidatesRestControllerImplTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
@@ -145,24 +143,21 @@ public class OrderCandidatesRestControllerImplTest
 
 	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
 
-	@Mocked
-	private PermissionService permissionService;
-
 	private OLCandBL olCandBL;
 
-	@BeforeClass
+	@BeforeAll
 	public static void initStatic()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterAll()
 	{
 		validateSnapshots();
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -205,6 +200,9 @@ public class OrderCandidatesRestControllerImplTest
 		final DocTypeService docTypeService = new DocTypeService();
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
+		final PermissionService permissionService = Mockito.mock(PermissionService.class);
+		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
+
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				jsonConverters,
 				new OLCandRepository());
@@ -213,7 +211,7 @@ public class OrderCandidatesRestControllerImplTest
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
 	}
 
-	// NOTE: Shall be called programatically by each test
+	// NOTE: Shall be called programmatically by each test
 	private void startInterceptors()
 	{
 		final DefaultOLCandValidator defaultOLCandValidator = new DefaultOLCandValidator(

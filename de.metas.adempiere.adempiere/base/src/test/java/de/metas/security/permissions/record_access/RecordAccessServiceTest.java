@@ -7,12 +7,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.AbstractBooleanAssert;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Role_Record_Access_Config;
+import org.compiere.model.I_AD_User_Record_Access;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -93,6 +95,54 @@ public class RecordAccessServiceTest
 		return assertThat(recordAccessService.hasRecordPermission(userId, roleId, recordRef, access));
 	}
 
+	private RecordAccess getRecordAccessById(@NonNull final RecordAccessId id)
+	{
+		final I_AD_User_Record_Access record = InterfaceWrapperHelper.load(id, I_AD_User_Record_Access.class);
+		return RecordAccessService.toUserGroupRecordAccess(record);
+	}
+
+	@Test
+	public void saveNew_load()
+	{
+		final RecordAccess access = RecordAccess.builder()
+				.recordRef(TableRecordReference.of("MyTable", 123))
+				.principal(Principal.userId(UserId.ofRepoId(111)))
+				.permission(Access.READ)
+				.issuer(PermissionIssuer.ofCode("bla"))
+				.createdBy(UserId.ofRepoId(222))
+				.description("some description")
+				//
+				.id(null)
+				.parentId(RecordAccessId.ofRepoId(444))
+				.rootId(RecordAccessId.ofRepoId(555))
+				//
+				.build();
+		recordAccessService.saveNew(access);
+
+		final RecordAccess accessLoaded = getRecordAccessById(access.getId());
+
+		assertThat(accessLoaded).isEqualTo(access);
+	}
+
+	@Test
+	public void saveNew_load_assertRootIdSet()
+	{
+		final RecordAccess access = RecordAccess.builder()
+				.recordRef(TableRecordReference.of("MyTable", 123))
+				.principal(Principal.userId(UserId.ofRepoId(111)))
+				.permission(Access.READ)
+				.issuer(PermissionIssuer.ofCode("bla"))
+				.createdBy(UserId.ofRepoId(222))
+				.build();
+		recordAccessService.saveNew(access);
+
+		assertThat(access.getId()).isNotNull();
+		assertThat(access.getRootId()).isEqualTo(access.getId());
+
+		final RecordAccess accessLoaded = getRecordAccessById(access.getId());
+		assertThat(accessLoaded.getRootId()).isEqualTo(access.getId());
+	}
+
 	@Test
 	public void grand_and_revoke_with_different_issuers()
 	{
@@ -106,6 +156,7 @@ public class RecordAccessServiceTest
 				.principal(Principal.userId(userId))
 				.permission(Access.READ)
 				.issuer(PermissionIssuer.ofCode("Issuer1"))
+				.requestedBy(UserId.ofRepoId(111))
 				.build());
 		assertHasPermission(recordRef, Access.READ).isTrue();
 
@@ -114,6 +165,7 @@ public class RecordAccessServiceTest
 				.principal(Principal.userId(userId))
 				.permission(Access.READ)
 				.issuer(PermissionIssuer.ofCode("Issuer2"))
+				.requestedBy(UserId.ofRepoId(111))
 				.build());
 		assertHasPermission(recordRef, Access.READ).isTrue();
 
@@ -122,6 +174,7 @@ public class RecordAccessServiceTest
 				.principal(Principal.userId(userId))
 				.permission(Access.READ)
 				.issuer(PermissionIssuer.ofCode("Issuer1"))
+				.requestedBy(UserId.ofRepoId(111))
 				.build());
 		assertHasPermission(recordRef, Access.READ).isTrue();
 
@@ -130,6 +183,7 @@ public class RecordAccessServiceTest
 				.principal(Principal.userId(userId))
 				.permission(Access.READ)
 				.issuer(PermissionIssuer.ofCode("Issuer2"))
+				.requestedBy(UserId.ofRepoId(111))
 				.build());
 		assertHasPermission(recordRef, Access.READ).isFalse();
 	}

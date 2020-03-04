@@ -1,5 +1,7 @@
 package de.metas.tax.api;
 
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -22,24 +24,24 @@ package de.metas.tax.api;
  * #L%
  */
 
-import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.compiere.model.I_C_BPartner;
+import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
+import de.metas.tax.model.I_C_VAT_SmallBusiness;
 import de.metas.util.ISingletonService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 public interface ITaxDAO extends ISingletonService
 {
@@ -49,9 +51,15 @@ public interface ITaxDAO extends ISingletonService
 
 	I_C_Tax getTaxByIdOrNull(int taxRepoId);
 
-	boolean retrieveIsTaxExempt(Properties ctx, int bPartnerId, Timestamp date, String trxName);
+	/**
+	 * @return true if the given bpartner currently has a {@link I_C_VAT_SmallBusiness} record.
+	 */
+	boolean retrieveIsTaxExemptSmallBusiness(BPartnerId bPartnerId, Timestamp date);
 
-	boolean retrieveIsTaxExempt(I_C_BPartner bPartner, Timestamp date);
+	/**
+	 * @throws TaxNoExemptFoundException if no tax exempt found
+	 */
+	TaxId retrieveExemptTax(OrgId orgId);
 
 	/**
 	 * getDefaultTax Get the default tax id associated with this tax category
@@ -91,6 +99,7 @@ public interface ITaxDAO extends ISingletonService
 		public enum VATType
 		{
 			RegularVAT("N"), ReducedVAT("R"), TaxExempt("E");
+
 			private final String value;
 		}
 

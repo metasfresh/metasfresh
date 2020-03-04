@@ -46,6 +46,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -446,7 +448,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		final UomId icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
-		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.createZero(productId, icUomId);
+		StockQtyAndUOMQty qtyInvoicedSum = StockQtyAndUOMQtys.createZero(productId, icUomId);
 		final CurrencyId icCurrencyId = CurrencyId.ofRepoId(ic.getC_Currency_ID());
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
@@ -466,12 +468,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //			{
 // @formatter:on
 
-			final StockQtyAndUOMQty qtysInvoiced = StockQtyAndUOMQtys.create(
+			final StockQtyAndUOMQty ilaQtysInvoiced = StockQtyAndUOMQtys.create(
 					ila.getQtyInvoiced(),
 					productId,
 					ila.getQtyInvoicedInUOM(),
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
-			qtyInvoiced = qtyInvoiced.add(qtysInvoiced);
+			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
 			//
 			// 07202: We update the net amount invoice according to price UOM.
@@ -500,7 +502,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //			}
 // @formatter:on
 		}
-		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoiced, netAmtInvoiced);
+		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoicedSum, netAmtInvoiced);
 		return Optional.of(qtyAndNetAmtInvoiced);
 	}
 
@@ -1086,10 +1088,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	public I_C_Invoice_Line_Alloc createUpdateIla(
-			final I_C_Invoice_Candidate invoiceCand,
-			final I_C_InvoiceLine invoiceLine,
-			final StockQtyAndUOMQty qtysInvoiced,
-			final String note)
+			@NonNull final I_C_Invoice_Candidate invoiceCand,
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final StockQtyAndUOMQty qtysInvoiced,
+			@Nullable final String note)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");

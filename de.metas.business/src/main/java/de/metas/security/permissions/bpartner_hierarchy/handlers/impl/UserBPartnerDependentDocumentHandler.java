@@ -59,6 +59,7 @@ public class UserBPartnerDependentDocumentHandler implements BPartnerDependentDo
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(userRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(userRecord.getUpdatedBy()))
 				.build();
 	}
 

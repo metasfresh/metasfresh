@@ -207,7 +207,7 @@ public class C_Order
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void linkWithPaymentByExternalOrderId(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
@@ -227,7 +227,6 @@ public class C_Order
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false, order.getAD_Client_ID(), order.getAD_Org_ID());
-
 		if (!autoAssignEnabled)
 		{
 			return;
@@ -240,6 +239,13 @@ public class C_Order
 		{
 			return;
 		}
+
+		// ! [workaround]
+		// This save should not be needed but it is.
+		// Without it MPayment.setC_Order_ID fails because it tries to read the C_DocType_ID from the order
+		// 		and since the order is not yet saved => only C_DocType_Target_ID has value and C_DocType_ID doesn't (is 0).
+		// Therefore we use this save to flush the order.
+		Services.get(IOrderDAO.class).save(order);
 
 		final I_C_Payment payment = paymentOptional.get();
 		order.setC_Payment_ID(payment.getC_Payment_ID());

@@ -83,6 +83,7 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 				.principal(getPrincipal())
 				.permissions(getPermissionsToGrant())
 				.issuer(PermissionIssuer.MANUAL)
+				.requestedBy(getUserId())
 				.build());
 	}
 
@@ -108,6 +109,7 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 				.revokeAllPermissions(revokeAllPermissions)
 				.permissions(permissionsToRevoke)
 				.issuer(PermissionIssuer.MANUAL)
+				.requestedBy(getUserId())
 				.build());
 	}
 

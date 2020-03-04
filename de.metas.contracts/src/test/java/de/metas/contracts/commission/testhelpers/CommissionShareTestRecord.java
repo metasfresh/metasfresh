@@ -9,6 +9,7 @@ import java.util.List;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -67,6 +68,9 @@ public class CommissionShareTestRecord
 	@NonNull
 	FlatrateTermId flatrateTermId;
 
+	@NonNull
+	ProductId commissionProductId;
+
 	@Singular
 	List<CommissionFactTestRecord> commissionFactTestRecords;
 
@@ -74,6 +78,7 @@ public class CommissionShareTestRecord
 	{
 		final I_C_Commission_Share shareRecord = newInstance(I_C_Commission_Share.class);
 		shareRecord.setC_Flatrate_Term_ID(flatrateTermId.getRepoId());
+		shareRecord.setCommission_Product_ID(commissionProductId.getRepoId());
 		shareRecord.setC_Commission_Instance_ID(C_Commission_Instance_ID);
 		shareRecord.setC_BPartner_SalesRep_ID(C_BPartner_SalesRep_ID.getRepoId());
 		shareRecord.setLevelHierarchy(levelHierarchy);

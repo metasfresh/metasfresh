@@ -58,7 +58,7 @@ import lombok.NonNull;
 @Service
 class CommissionRecordStagingService
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	CommissionStagingRecords retrieveRecordsForInstanceId(@NonNull final Collection<CommissionInstanceId> commissionInstanceIds)
 	{

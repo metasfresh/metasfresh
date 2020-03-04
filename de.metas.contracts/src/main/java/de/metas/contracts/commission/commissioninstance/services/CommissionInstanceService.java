@@ -22,11 +22,13 @@
 
 package de.metas.contracts.commission.commissioninstance.services;
 
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
+import lombok.NonNull;
 
 @Service
 public class CommissionInstanceService
@@ -35,16 +37,23 @@ public class CommissionInstanceService
 
 	private final CommissionAlgorithmInvoker commissionAlgorithmInvoker;
 
-	public CommissionInstanceService(final CommissionInstanceRequestFactory commissionInstanceRequestFactory, final CommissionAlgorithmInvoker commissionAlgorithmInvoker)
+	public CommissionInstanceService(
+			@NonNull final CommissionInstanceRequestFactory commissionInstanceRequestFactory,
+			@NonNull final CommissionAlgorithmInvoker commissionAlgorithmInvoker)
 	{
 		this.commissionInstanceRequestFactory = commissionInstanceRequestFactory;
 		this.commissionAlgorithmInvoker = commissionAlgorithmInvoker;
 	}
 
-	public Optional<CommissionInstance> getCommissionInstanceFor(final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
+	public Optional<CommissionInstance> computeCommissionInstanceFor(
+			@NonNull final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
 	{
-		final Optional<CreateInstanceRequest> createInstanceRequest = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
+		final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
 
-		return createInstanceRequest.map(commissionAlgorithmInvoker::applyCreateRequest);
+		if (request.isPresent())
+		{
+			return Optional.of(commissionAlgorithmInvoker.applyCreateRequest(request.get()));
+		}
+		return Optional.empty();
 	}
 }

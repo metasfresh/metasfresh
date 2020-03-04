@@ -2,12 +2,15 @@ package de.metas.security.permissions.record_access;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,12 +47,24 @@ public class RecordAccessGrantRequest
 	ImmutableSet<Access> permissions;
 	PermissionIssuer issuer;
 
+	UserId requestedBy;
+
+	String description;
+
+	RecordAccess parentAccess;
+
 	@Builder
 	private RecordAccessGrantRequest(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final Principal principal,
 			@NonNull @Singular final Set<Access> permissions,
-			@NonNull final PermissionIssuer issuer)
+			@NonNull final PermissionIssuer issuer,
+			//
+			@NonNull final UserId requestedBy,
+			//
+			@Nullable final String description,
+			//
+			@Nullable final RecordAccess parentAccess)
 	{
 		Check.assumeNotEmpty(permissions, "permissions is not empty");
 
@@ -57,5 +72,22 @@ public class RecordAccessGrantRequest
 		this.principal = principal;
 		this.permissions = ImmutableSet.copyOf(permissions);
 		this.issuer = issuer;
+
+		this.requestedBy = requestedBy;
+
+		this.description = description;
+
+		this.parentAccess = parentAccess;
 	}
+
+	public RecordAccessId getParentAccessId()
+	{
+		return parentAccess != null ? parentAccess.getId() : null;
+	}
+
+	public RecordAccessId getRootAccessId()
+	{
+		return parentAccess != null ? parentAccess.getRootId() : null;
+	}
+
 }
