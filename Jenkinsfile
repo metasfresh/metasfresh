@@ -131,20 +131,15 @@ node('agent && linux')
 		{
 			final def misc = new de.metas.jenkins.Misc();
 
-			final DockerConf materialDispoDockerConf = new DockerConf(
-				'metasfresh-material-dispo', // artifactName
+			final DockerConf reportDockerConf = new DockerConf(
+				'metasfresh-report', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
 				MF_VERSION, // versionSuffix
-				'de.metas.material/dispo-service-standalone/target/docker' // workDir
+				'de.metas.report/metasfresh-report-service-standalone/target/docker' // workDir
 			);
-			final String publishedMaterialDispoDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
-
-			final DockerConf reportDockerConf = materialDispoDockerConf
-				.withArtifactName('metasfresh-report')
-				.withWorkDir('de.metas.report/metasfresh-report-service-standalone/target/docker');
 			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
-			final DockerConf msv3ServerDockerConf = materialDispoDockerConf
+			final DockerConf msv3ServerDockerConf = reportDockerConf
 				.withArtifactName('de.metas.vertical.pharma.msv3.server')
 				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
 			final String publishedMsv3ServerImageName =dockerBuildAndPush(msv3ServerDockerConf)
@@ -153,8 +148,6 @@ node('agent && linux')
 			<h3>Docker</h3>
 			This build created the following deployable docker images 
 			<ul>
-			<li><code>${publishedMaterialDispoDockerImageName}</code></li>
-			<li><code>${publishedPrintDockerImageName}</code></li>
 			<li><code>${publishedMsv3ServerImageName}</code></li>
 			</ul>
 			<p>
