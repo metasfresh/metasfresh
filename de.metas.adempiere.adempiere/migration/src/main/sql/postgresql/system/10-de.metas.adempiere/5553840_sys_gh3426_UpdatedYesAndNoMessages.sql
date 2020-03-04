@@ -59,4 +59,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-03-04 11:5
 ;
 
 --dropping old validationmessage column if it still exists (It is removed from ad_column in the other migration script with sys_gh3426...).Now we use ad_message_id column
+delete from ad_column where columnname ilike '%validationmessage%' and ad_table_id = 104;
+delete from ad_column where columnname ilike '%validationmessage%' and ad_table_id = 136;
 alter table ad_ref_list drop column if exists validationmessage;
+alter table ad_ref_list_trl drop column if exists validationmessage;
