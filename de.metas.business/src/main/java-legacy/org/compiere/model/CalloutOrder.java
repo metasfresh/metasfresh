@@ -468,6 +468,7 @@ public class CalloutOrder extends CalloutEngine
 				if (contID <= 0)
 				{
 					order.setAD_User_ID(-1);
+					order.setBill_User_ID(-1);
 				}
 				else
 				{
