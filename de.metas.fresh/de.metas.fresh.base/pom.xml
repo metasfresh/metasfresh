@@ -251,7 +251,7 @@
 		 -->
 		<dependency>
 			<groupId>de.metas.report</groupId>
-			<artifactId>report-service</artifactId>
+			<artifactId>metasfresh-report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>

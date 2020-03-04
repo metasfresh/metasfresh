@@ -17,8 +17,8 @@
 	<modules>
 		<module>de.metas.report.jasper.client</module>
 		<module>de.metas.report.jasper.commons</module>
-		<module>report-service</module>
-		<module>report-service-standalone</module>
+		<module>metasfresh-report-service</module>
+		<module>metasfresh-report-service-standalone</module>
 	</modules>
 
 </project>

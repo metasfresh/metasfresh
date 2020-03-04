@@ -141,7 +141,7 @@ node('agent && linux')
 
 			final DockerConf reportDockerConf = materialDispoDockerConf
 				.withArtifactName('metasfresh-report')
-				.withWorkDir('de.metas.report/report-service-standalone/target/docker');
+				.withWorkDir('de.metas.report/metasfresh-report-service-standalone/target/docker');
 			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
 			final DockerConf printDockerConf = materialDispoDockerConf

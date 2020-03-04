@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<version>10.0.0</version>
-	<artifactId>report-service-standalone</artifactId>
+	<artifactId>metasfresh-report-service-standalone</artifactId>
 
 	<properties>
 		<start-class>de.metas.report.ReportServiceMain</start-class>
@@ -34,7 +34,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.report</groupId>
-			<artifactId>report-service</artifactId>
+			<artifactId>metasfresh-report-service</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 	
