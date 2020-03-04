@@ -299,7 +299,7 @@ public class BankStatementImportTableSqlUpdater
 
 		// update StmtAmt from DebitStmtAmt and CreditStmtAmt
 		sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET StmtAmt = (coalesce(DebitStmtAmt, 0) - coalesce(CreditStmtAmt,0)) "
+				+ "SET StmtAmt = (coalesce(CreditStmtAmt, 0) - coalesce(DebitStmtAmt,0)) "
 				+ "WHERE (StmtAmt IS NULL OR StmtAmt = 0) "
 				+ "AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause());
