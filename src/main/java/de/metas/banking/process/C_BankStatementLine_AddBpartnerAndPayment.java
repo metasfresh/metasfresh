@@ -25,24 +25,21 @@ package de.metas.banking.process;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.IProcessPrecondition;
@@ -73,7 +70,7 @@ public class C_BankStatementLine_AddBpartnerAndPayment extends JavaProcess imple
 
 	private final IMsgBL iMsgBL = Services.get(IMsgBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final IBPartnerOrgBL orgBPartnerService = Services.get(IBPartnerOrgBL.class);
+	private final IBankStatmentPaymentBL bankStatementPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -132,32 +129,21 @@ public class C_BankStatementLine_AddBpartnerAndPayment extends JavaProcess imple
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		doIt(getSelectedBankStatementLine(), paymentId, bPartnerId);
+		final I_C_BankStatement bankStatement = getSelectedBankStatement();
+		final I_C_BankStatementLine bankStatementLine = getSelectedBankStatementLine();
+
+		bankStatementLine.setC_BPartner_ID(bPartnerId.getRepoId());
+		bankStatementPaymentBL.setOrCreateAndLinkPaymentToBankStatementLine(bankStatement, bankStatementLine, paymentId);
 
 		return MSG_OK;
 	}
 
-	private void doIt(
-			final I_C_BankStatementLine bankStatementLine,
-			final PaymentId paymentId,
-			final BPartnerId bPartnerId)
+	private I_C_BankStatement getSelectedBankStatement()
 	{
-		bankStatementLine.setC_BPartner_ID(bPartnerId.getRepoId());
-		final IBankStatmentPaymentBL bankStatementPaymentBL = Services.get(IBankStatmentPaymentBL.class);
-
-		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
-		final CurrencyId currencyId = CurrencyId.ofRepoId(bankStatementLine.getC_Currency_ID());
-		final BankAccountId orgBankAccountId = orgBPartnerService.getOrgBankAccountId(orgId, currencyId).orElse(null);
-		if (orgBankAccountId == null)
-		{
-			throw new AdempiereException("@NotFound@ @C_BP_BankAccount_ID@")
-					.setParameter("orgId", orgId)
-					.setParameter("currencyId", currencyId);
-		}
-
-		bankStatementPaymentBL.setOrCreateAndLinkPaymentToBankStatementLine(bankStatementLine, paymentId);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(getRecord_ID());
+		return bankStatementDAO.getById(bankStatementId);
 	}
 
 	private I_C_BankStatementLine getSelectedBankStatementLine()
