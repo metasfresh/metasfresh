@@ -1,5 +1,32 @@
 package de.metas.banking.payment.impl;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MAllocationHdr;
+import org.compiere.model.MAllocationLine;
+import org.compiere.model.MBankStatementLine;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MPayment;
+import org.compiere.model.X_C_AllocationHdr;
+import org.compiere.model.X_C_Payment;
+import org.compiere.model.X_I_BankStatement;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -23,8 +50,8 @@ package de.metas.banking.payment.impl;
  */
 
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.api.BankAccountId;
-import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatement;
@@ -45,31 +72,6 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAllocationHdr;
-import org.compiere.model.MAllocationLine;
-import org.compiere.model.MBankStatementLine;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MPayment;
-import org.compiere.model.X_C_AllocationHdr;
-import org.compiere.model.X_C_Payment;
-import org.compiere.model.X_I_BankStatement;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
@@ -120,13 +122,16 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	}
 
 	@Override
-	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(final de.metas.banking.model.I_C_BankStatementLine line)
+	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(
+			@NonNull final org.compiere.model.I_C_BankStatement bankStatement,
+			@NonNull final de.metas.banking.model.I_C_BankStatementLine line)
 	{
 		final boolean manualActionRequired = findAndLinkPaymentToBankStatementLineIfPossible(line);
 
 		if (!manualActionRequired)
 		{
-			setOrCreateAndLinkPaymentToBankStatementLine(line, null);
+			final PaymentId paymentIdToSet = null;
+			setOrCreateAndLinkPaymentToBankStatementLine(bankStatement, line, paymentIdToSet);
 		}
 	}
 
@@ -168,7 +173,10 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	}
 
 	@Override
-	public Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(@NonNull final de.metas.banking.model.I_C_BankStatementLine line, @Nullable final PaymentId paymentIdToSet)
+	public Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(
+			@NonNull final org.compiere.model.I_C_BankStatement bankStatement,
+			@NonNull final de.metas.banking.model.I_C_BankStatementLine line,
+			@Nullable final PaymentId paymentIdToSet)
 	{
 		// a payment is already linked
 		if (line.getC_Payment_ID() > 0)
@@ -197,17 +205,12 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
 		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
 		final LocalDate statementLineDate = TimeUtil.asLocalDate(line.getStatementLineDate());
-
-		final Optional<BankAccountId> bankAccountIdOptional = Services.get(IBPBankAccountDAO.class).retrieveFirstIdByBPartnerAndCurrency(bpartnerId, currencyId);
-		if (!bankAccountIdOptional.isPresent())
-		{
-			return Optional.empty();
-		}
+		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
 		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
 		final BigDecimal payAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
 
-		final I_C_Payment createdPayment = createAndCompletePayment(bankAccountIdOptional.get(), statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
+		final I_C_Payment createdPayment = createAndCompletePayment(orgBankAccountId, statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
 		setC_Payment(line, createdPayment);
 
 		bankStatementDAO.save(line);
@@ -215,7 +218,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	}
 
 	private I_C_Payment createAndCompletePayment(
-			@NonNull final BankAccountId bankAccountId,
+			@NonNull final BankAccountId orgBankAccountId,
 			@NonNull final LocalDate dateAcct,
 			@NonNull final BigDecimal payAmt,
 			final boolean isReceipt,
@@ -238,7 +241,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		return paymentBuilder
 				.adOrgId(adOrgId)
 				.bpartnerId(bpartnerId)
-				.bpBankAccountId(bankAccountId)
+				.bpBankAccountId(orgBankAccountId)
 				.currencyId(currencyId)
 				.payAmt(payAmt)
 				.dateAcct(dateAcct)

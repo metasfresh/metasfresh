@@ -131,6 +131,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
