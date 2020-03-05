@@ -1,16 +1,18 @@
 package de.metas.banking.payment;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MBankStatementLine;
+import org.compiere.model.X_I_BankStatement;
+
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatementLine;
-import org.compiere.model.X_I_BankStatement;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
 
 public interface IBankStatmentPaymentBL extends ISingletonService
 {
@@ -22,7 +24,9 @@ public interface IBankStatmentPaymentBL extends ISingletonService
 
 	String createPayment(X_I_BankStatement ibs) throws Exception;
 
-	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(de.metas.banking.model.I_C_BankStatementLine line);
+	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(
+			org.compiere.model.I_C_BankStatement bankStatement,
+			de.metas.banking.model.I_C_BankStatementLine line);
 
 	/**
 	 * If no payment exists and a bpartner is set, create a new Payment or use an existing Payment if paymentIdToSet param is not null,
@@ -31,6 +35,9 @@ public interface IBankStatmentPaymentBL extends ISingletonService
 	 * @param paymentIdToSet - if not null, don't create a new payment but link this one to the BankStatementLine
 	 * @return the current paymentId of the line if it has a payment, null if the line does not have a payment
 	 */
-	Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(@NonNull de.metas.banking.model.I_C_BankStatementLine line, @Nullable PaymentId paymentIdToSet);
+	Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(
+			@NonNull org.compiere.model.I_C_BankStatement bankStatement,
+			@NonNull de.metas.banking.model.I_C_BankStatementLine line,
+			@Nullable PaymentId paymentIdToSet);
 
 }
