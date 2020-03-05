@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { fetchTopActions } from '../../actions/WindowActions';
 import { dropdownRequest } from '../../actions/GenericActions';
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
+import Prompt from '../../components/app/Prompt';
 
 /**
  * @file Class based component.
@@ -18,13 +19,19 @@ class ActionButton extends Component {
     this.state = {
       list: [],
       selected: 0,
+      prompt: {
+        isOpen: {},
+        title: 'Confirm',
+        text: 'Are you sure?',
+        yes: 'Cancel',
+      },
     };
   }
 
   /**
    * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Lifecycle method
+   *          Fetches the status list once the component is mounted
    */
   componentDidMount() {
     this.fetchStatusList();
@@ -127,26 +134,26 @@ class ActionButton extends Component {
   /**
    * @method handleChangeStatus
    * @summary ToDo: Describe the method
-   * @param {*} status
+   * @param {object} status
    * @todo Write the documentation
    */
   handleChangeStatus = (status) => {
-    const {
-      onChange,
-      docId,
-      windowType,
-      activeTab,
-      fetchTopActions,
-    } = this.props;
-    const changePromise = onChange(status);
-
-    this.statusDropdown.blur();
-    if (changePromise instanceof Promise) {
-      changePromise.then(() => {
-        fetchTopActions(windowType, docId, activeTab);
-
-        return this.fetchStatusList();
+    const prompt = { ...this.state.prompt };
+    const promptOpenClone = { ...prompt.isOpen };
+    if (status.hasOwnProperty('validationInformation')) {
+      promptOpenClone[status.key] = true;
+      this.setState({
+        prompt: {
+          isOpen: promptOpenClone,
+          title: status.validationInformation.title,
+          text: status.validationInformation.question,
+          yes: status.validationInformation.answerYes,
+          no: status.validationInformation.answerNo,
+        },
       });
+    } else {
+      this.setState({ prompt: { ...prompt, isOpen: false } });
+      this.processStatus(status, false);
     }
   };
 
@@ -190,9 +197,8 @@ class ActionButton extends Component {
 
   /**
    * @method renderStatusList
-   * @summary ToDo: Describe the method
-   * @param {*} list
-   * @todo Write the documentation
+   * @summary Renders the status list by looping through the list array passed as parameter
+   * @param {array} list
    */
   renderStatusList = (list) => {
     const { selected } = this.state;
@@ -216,13 +222,42 @@ class ActionButton extends Component {
   };
 
   /**
+   * @method processStatus
+   * @summary Processes the actual status. Depending of the boolean value of option it will show or
+   *          hide the prompt for the user
+   * @param {object} status
+   * @param {boolean} option
+   */
+  processStatus = (status, option) => {
+    const {
+      onChange,
+      docId,
+      windowType,
+      activeTab,
+      fetchTopActions,
+    } = this.props;
+    const changePromise = onChange(status);
+
+    this.statusDropdown.blur();
+    if (changePromise instanceof Promise) {
+      changePromise.then(() => {
+        fetchTopActions(windowType, docId, activeTab);
+
+        return this.fetchStatusList();
+      });
+    }
+    if (option) {
+      this.setState({ prompt: { ...this.state.prompt, isOpen: false } });
+    }
+  };
+
+  /**
    * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Main render function for the ActionButton
    */
   render() {
     const { data, modalVisible } = this.props;
-    const { list } = this.state;
+    const { list, prompt } = this.state;
     const abrev = data.status.value && data.status.value.key;
     const status = this.getStatusContext(abrev);
     let value;
@@ -230,6 +265,14 @@ class ActionButton extends Component {
     if (abrev) {
       value = data.status.value.caption;
     }
+    let showPrompt = false;
+    let activePrompt = null;
+    list.forEach((listItem) => {
+      if (prompt.isOpen[listItem.key]) {
+        showPrompt = true;
+        activePrompt = listItem.key;
+      }
+    });
 
     return (
       <div
@@ -240,6 +283,29 @@ class ActionButton extends Component {
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
       >
+        {showPrompt && (
+          <Prompt
+            title={prompt.title}
+            text={prompt.text}
+            buttons={{ submit: prompt.yes, cancel: prompt.no }}
+            onCancelClick={() =>
+              this.setState({ prompt: { ...prompt, isOpen: false } }, () => {
+                this.statusDropdown.blur();
+              })
+            }
+            onSubmitClick={() =>
+              this.processStatus(
+                list.find(
+                  (elem) =>
+                    elem.hasOwnProperty('validationInformation') &&
+                    elem.key === activePrompt
+                ),
+                true
+              )
+            }
+          />
+        )}
+
         {value ? (
           <div className={`tag tag-${status}`}>{value}</div>
         ) : (
@@ -277,7 +343,7 @@ ActionButton.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
   fetchTopActions: PropTypes.func.isRequired,
   data: PropTypes.any,
-  onChange: PropTypes.any,
+  onChange: PropTypes.instanceOf(Function),
   dropdownOpenCallback: PropTypes.any,
   windowType: PropTypes.any,
   fields: PropTypes.any,
