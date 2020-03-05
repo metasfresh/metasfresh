@@ -133,21 +133,23 @@ import org.compiere.util.Env;
 		final BigDecimal amt = payment.getPayAmt(true); 
 		setTrxAmt(amt);
 		setStmtAmt(amt);
-		//
-		setDescription(payment.getDescription());
 	}	//	setPayment
 
 	/**
 	 * 	Add to Description
 	 *	@param description text
 	 */
-	public void addDescription (String description)
+	void addDescription (String description)
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	//	addDescription
 
 	
@@ -187,7 +189,9 @@ import org.compiere.util.Env;
 			MPayment payment = new MPayment (getCtx(), getC_Payment_ID(), get_TrxName());
 			setC_BPartner_ID(payment.getC_BPartner_ID());
 			if (payment.getC_Invoice_ID() != 0)
+			{
 				setC_Invoice_ID(payment.getC_Invoice_ID());
+			}
 		}
 		if (getC_Invoice_ID() != 0 && getC_BPartner_ID() == 0)
 		{
@@ -200,8 +204,10 @@ import org.compiere.util.Env;
 		amt = amt.subtract(getTrxAmt());
 		amt = amt.subtract(getInterestAmt());
 		if (amt.compareTo(getChargeAmt()) != 0)
+		 {
 			setChargeAmt (amt);
 		//
+		}
 		
 		return true;
 	}	//	beforeSave
@@ -216,7 +222,9 @@ import org.compiere.util.Env;
 	public MBankStatement getParent()
 	{
 		if (m_parent == null)
+		{
 			m_parent = new MBankStatement (getCtx(), getC_BankStatement_ID(), get_TrxName());
+		}
 		return m_parent;
 	}	//	getParent
 	
@@ -230,7 +238,9 @@ import org.compiere.util.Env;
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		return updateHeader();
 	}	//	afterSave
 	
@@ -243,7 +253,9 @@ import org.compiere.util.Env;
 	protected boolean afterDelete (boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		return updateHeader();
 	}	//	afterSave
 
