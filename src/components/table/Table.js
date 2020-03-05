@@ -810,9 +810,11 @@ class Table extends Component {
    * @summary Handles advanced edit - i.e case when ALT+E key combinations are being used
    *          Active only on subtables
    */
-  handleAdvancedEdit = (windowId, tabId, selected) => {
-    const { dispatch } = this.props;
-    if (this.props.docId) {
+  handleAdvancedEdit = () => {
+    const { dispatch, windowId, tabId, docId } = this.props;
+    const { selected } = this.state;
+
+    if (docId) {
       dispatch(
         openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
       );
@@ -1194,9 +1196,7 @@ class Table extends Component {
               tabId={tabId}
               deselect={this.deselectAllProducts}
               handleFieldEdit={this.handleFieldEdit}
-              handleAdvancedEdit={() =>
-                this.handleAdvancedEdit(windowId, tabId, selected)
-              }
+              handleAdvancedEdit={this.handleAdvancedEdit}
               onOpenNewTab={handleOpenNewTab}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
