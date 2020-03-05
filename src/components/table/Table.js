@@ -951,13 +951,17 @@ class Table extends Component {
     }
   };
 
-  handleFieldEdit = (selected, fieldName) => {
-    this.closeContextMenu();
+  handleFieldEdit = () => {
+    const { selected, contextMenu } = this.state;
 
-    const selectedId = selected[0];
+    if (contextMenu.supportFieldEdit && selected.length === 1) {
+      const selectedId = selected[0];
 
-    if (this.rowRefs && this.rowRefs[selectedId]) {
-      this.rowRefs[selectedId].initPropertyEditor(fieldName);
+      this.closeContextMenu();
+
+      if (this.rowRefs && this.rowRefs[selectedId]) {
+        this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
+      }
     }
   };
 
@@ -1060,7 +1064,8 @@ class Table extends Component {
         ref={(c) => {
           if (c) {
             const keyProp = item[keyProperty];
-            this.rowRefs[keyProp] = c.wrappedInstance;
+
+            this.rowRefs[keyProp] = c;
           }
         }}
         keyProperty={item[keyProperty]}
@@ -1188,11 +1193,7 @@ class Table extends Component {
               blur={this.closeContextMenu}
               tabId={tabId}
               deselect={this.deselectAllProducts}
-              handleFieldEdit={() => {
-                if (contextMenu.supportFieldEdit && selected.length === 1) {
-                  this.handleFieldEdit(selected, contextMenu.fieldName);
-                }
-              }}
+              handleFieldEdit={this.handleFieldEdit}
               handleAdvancedEdit={() =>
                 this.handleAdvancedEdit(windowId, tabId, selected)
               }
