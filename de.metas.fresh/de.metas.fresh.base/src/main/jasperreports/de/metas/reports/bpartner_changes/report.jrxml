@@ -93,7 +93,7 @@ order By bpc.bpValue, bpc.tablename;]]>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<text><![CDATA[Stammdaten Mutationsprotokoll]]></text>
+				<text><![CDATA[$R{reportName}]]></text>
 			</staticText>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement uuid="0915ffcd-95d0-495a-a086-48b740900673" x="41" y="20" width="50" height="12"/>
