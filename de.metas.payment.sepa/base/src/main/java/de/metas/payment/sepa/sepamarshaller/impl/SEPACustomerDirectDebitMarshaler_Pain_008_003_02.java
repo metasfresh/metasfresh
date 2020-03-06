@@ -446,7 +446,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		prvtId.setOthr(othr);
 
 		final RestrictedPersonIdentificationSchemeNameSEPA schemeNm = new RestrictedPersonIdentificationSchemeNameSEPA();
-		othr.setId(sepaHeader.getIBAN());
+		othr.setId(sepaHeader.getSEPA_CreditorIdentifier());
 		othr.setSchmeNm(schemeNm);
 		schemeNm.setPrtry(IdentificationSchemeNameSEPA.valueOf("SEPA"));
 
