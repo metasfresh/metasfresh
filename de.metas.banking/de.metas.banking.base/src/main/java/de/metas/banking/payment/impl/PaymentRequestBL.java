@@ -49,7 +49,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 	public I_C_Payment_Request createNewFromTemplate(final I_C_Payment_Request request)
 	{
 		final I_C_Payment_Request clone = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, request);
-		clone.setC_BP_BankAccount(request.getC_BP_BankAccount());
+		clone.setC_BP_BankAccount_ID(request.getC_BP_BankAccount_ID());
 		clone.setAmount(request.getAmount());
 		clone.setReference(request.getReference());
 		clone.setFullPaymentString(request.getFullPaymentString()); // FRESH-318
@@ -139,7 +139,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 			// Find a default partner account
 			final IBankingBPBankAccountDAO bpBankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
 			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(invoice.getC_BPartner());
-			requestForInvoice.setC_BP_BankAccount(bpBankAccount);
+			requestForInvoice.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 
 			//
 			// Assume the invoice grand total for payment request amount

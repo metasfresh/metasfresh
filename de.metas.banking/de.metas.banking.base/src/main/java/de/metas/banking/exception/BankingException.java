@@ -95,8 +95,9 @@ public class BankingException extends AdempiereException
 		if (targetAcct != null)
 		{
 			sb.append("Zielkonto:\n");
-			sb.append("\tEmpfaenger: ")
-					.append(targetAcct.getC_BPartner().getName());
+			 // TODO tbp: how to fix this?
+			// sb.append("\tEmpfaenger: ")
+					// .append(targetAcct.getC_BPartner().getName());
 			sb.append("\n");
 			sb.append("\tKonto-Nr: ").append(targetAcct.getAccountNo());
 			sb.append("\n");
