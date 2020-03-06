@@ -81,11 +81,11 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, partnerID);
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, partnerID);
 
 		if (currencyID > 0)
 		{
-			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_Currency_ID, currencyID);
+			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyID);
 		}
 
 		final List<I_C_BP_BankAccount> bpBankAccounts = qb.addOnlyActiveRecordsFilter()
@@ -104,8 +104,8 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	public Optional<BankAccountId> retrieveFirstIdByBPartnerAndCurrency(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId)
 	{
 		final BankAccountId bankAccountId = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_Currency_ID, currencyId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstId(BankAccountId::ofRepoIdOrNull);
@@ -118,8 +118,8 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	public Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @NonNull final String iban)
 	{
 		final BankAccountId bankAccountId = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_Currency_ID, currencyId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -139,7 +139,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 
 		queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addNotInArrayFilter(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID, exceptIds)
 				.create()
 				.update(columnUpdater);

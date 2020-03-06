@@ -35,7 +35,7 @@ public class C_PaySelectionLine
 	 *
 	 * @param paySelectionLine
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 	public void updateFromPaymentRequestOrInvoice(final I_C_PaySelectionLine paySelectionLine)
 	{
 		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);

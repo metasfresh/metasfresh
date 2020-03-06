@@ -85,23 +85,31 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	// trl
 	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
 
-	@Override protected String doIt() throws Exception
+	@Override
+	protected String doIt() throws Exception
 	{
 		final IPaymentStringDataProvider dataProvider = getDataProvider();
 
+		final I_C_BP_BankAccount bpBankAccount;
 		if (willCreateANewBandAccountParam)
 		{
-			dataProvider.createNewC_BP_BankAccount(this, bPartnerParam.getC_BPartner_ID());
+			bpBankAccount = dataProvider.createNewC_BP_BankAccount(this, bPartnerParam.getC_BPartner_ID());
+		}
+		else
+		{
+			Check.assumeNotNull(bankAccountParam, "bankAccountParam not null");
+			bpBankAccount = bankAccountParam;
 		}
 
 		final IPaymentString paymentString = dataProvider.getPaymentString();
-		final I_C_Payment_Request paymentRequestTemplate = paymentStringProcessService.createPaymentRequestTemplate(bankAccountParam, amountParam, paymentString);
+		final I_C_Payment_Request paymentRequestTemplate = paymentStringProcessService.createPaymentRequestTemplate(bpBankAccount, amountParam, paymentString);
 
 		paymentStringProcessService.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
 		return MSG_OK;
 	}
 
-	@Override public void onParameterChanged(final String parameterName)
+	@Override
+	public void onParameterChanged(final String parameterName)
 	{
 		if (!PARAM_fullPaymentString.equals(parameterName) && !PARAM_C_BPartner_ID.equals(parameterName))
 		{
@@ -168,7 +176,8 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		return invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
 	}
 
-	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		return paymentStringProcessService.checkPreconditionsApplicable(context);
 	}
