@@ -1,5 +1,8 @@
 package de.metas.payment.esr.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 import java.util.List;
@@ -31,12 +34,14 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final ImmutableSet<String> matchingESRAccountNumbers = createMatchingESRAccountNumbers(postAccountNo);
+
 		final IQueryBuilder<I_C_BP_BankAccount> bpBankAccountESRRenderedAccountNo = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, postAccountNo);
+				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, matchingESRAccountNumbers);
 
 		final IQueryBuilder<I_C_BP_BankAccount> esrPostalFinanceUserESRRenderedAccountNo = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.andCollectChildren(I_ESR_PostFinanceUserNumber.COLUMN_C_BP_BankAccount_ID, I_ESR_PostFinanceUserNumber.class)
-				.addEqualsFilter(I_ESR_PostFinanceUserNumber.COLUMNNAME_ESR_RenderedAccountNo, postAccountNo)
+				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, matchingESRAccountNumbers)
 				.andCollect(I_ESR_PostFinanceUserNumber.COLUMN_C_BP_BankAccount_ID, I_C_BP_BankAccount.class);
 
 		final IQueryFilter<I_C_BP_BankAccount> esrAccountNoFromBankAcctOrESRPostFinanceUser = queryBL.createCompositeQueryFilter(I_C_BP_BankAccount.class)
@@ -62,6 +67,58 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 		return bankAccountQuery
 				.create()
 				.list();
+	}
+
+	/**
+	 * Explode the given {@code esrString} into a number of syntactically equivalent strings that can be matched against {@code C_BP_BankAccount.ESR_RenderedAccountNo}.
+	 * <p>
+	 * Formatting done according to https://www.gkb.ch/de/Documents/DC/Beratung-Produkte/Factsheets-Flyers/Handbuch-ESR/ESR-Handbuch-Postfinance-DE.pdf
+	 * <p>
+	 * 01-1067-4
+	 * 010010674
+	 * 010106704 NOT created
+	 */
+	@NonNull
+	@VisibleForTesting
+	static ImmutableSet<String> createMatchingESRAccountNumbers(@NonNull final String esrString)
+	{
+		final ImmutableSet.Builder<String> builder = ImmutableSet.<String>builder();
+		builder.add(esrString);
+
+		final String[] split = esrString.split("-");
+		if (split.length == 3)
+		{
+			// case 01-1067-4 => generate 010010674
+			String str = split[0];
+			str += StringUtils.lpadZero(split[1], 6, "createMatchingESRAccountNumbers");
+			str += split[2];
+			builder.add(str);
+		}
+		else if (split.length == 1)
+		{
+			// case 010010674 => generate 01-1067-4
+
+			// i dont have a better idea right now
+			// get rid of leading 0
+			final int i = Integer.parseInt(esrString.substring(2, 8));
+			final int len = Integer.toString(i).length();
+			String str = esrString.substring(0, 2);
+
+			if (len == 6 - 2)
+			{
+				str += "-" + i + "-";
+				str += esrString.substring(8);
+				builder.add(str);
+			}
+			else if (len == 6 - 1)
+			{
+				str += i + "-";
+				str += esrString.substring(8);
+				builder.add(str);
+			}
+		}
+
+		return builder.build();
 	}
 
 	@Override

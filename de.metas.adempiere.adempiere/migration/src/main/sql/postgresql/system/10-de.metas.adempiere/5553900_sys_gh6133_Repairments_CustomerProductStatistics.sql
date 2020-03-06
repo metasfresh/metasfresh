@@ -112,7 +112,7 @@ WITH t AS (
 SELECT t.BPValue,
        t.productValue,
        t.Name,
-       t.qtyInvoiced::numeric,
+       t.qtyInvoiced :: numeric,
        t.UOM,
        round(t.Revenue, 2)                   AS Revenue,
        round(t.costPrice * t.qtyInvoiced, 2) AS ProductCosts,
@@ -158,3 +158,4 @@ FROM customerItemStatistics(
 SELECT *
 FROM TMP_customerItemStatistics;
  */
+

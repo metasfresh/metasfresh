@@ -155,7 +155,7 @@ public final class AggregationEngine
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
-		this.today = TimeUtil.asLocalDate(invoiceCandBL.getToday());
+		this.today = invoiceCandBL.getToday();
 
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
@@ -398,7 +398,7 @@ public final class AggregationEngine
 		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
 		// why not using DateToInvoice[_Override] if available?
-		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this ic may be invoiced
+		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
 		// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
 		final LocalDate dateInvoiced = computeDateInvoiced(icRecord);
 		logger.debug("Setting invoiceHeader's dateInvoiced={}", dateInvoiced);
@@ -557,7 +557,6 @@ public final class AggregationEngine
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
 			}
 		}
-
 		return BPartnerContactId.ofRepoIdOrNull(bpartnerId, ic.getBill_User_ID());
 	}
 
