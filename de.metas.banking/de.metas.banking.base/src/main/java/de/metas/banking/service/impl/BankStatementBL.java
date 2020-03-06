@@ -11,7 +11,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -30,11 +29,11 @@ import org.slf4j.Logger;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,7 +65,7 @@ public class BankStatementBL implements IBankStatementBL
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
+		for (final org.compiere.model.I_C_BankStatementLine linePO : bankStatementPO.getLines(false))
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
@@ -94,7 +93,7 @@ public class BankStatementBL implements IBankStatementBL
 		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
+		for (final org.compiere.model.I_C_BankStatementLine linePO : bankStatementPO.getLines(false))
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
@@ -126,7 +125,7 @@ public class BankStatementBL implements IBankStatementBL
 		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
+		for (final org.compiere.model.I_C_BankStatementLine linePO : bankStatementPO.getLines(false))
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 

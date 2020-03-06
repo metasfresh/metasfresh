@@ -109,19 +109,6 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		setDescription(payment.getDescription());
 	}	// setPayment
 
-	void addDescription(final String description)
-	{
-		final String desc = getDescription();
-		if (desc == null)
-		{
-			setDescription(description);
-		}
-		else
-		{
-			setDescription(desc + " | " + description);
-		}
-	}
-
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{

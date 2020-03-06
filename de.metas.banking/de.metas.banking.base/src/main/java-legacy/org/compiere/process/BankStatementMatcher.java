@@ -17,14 +17,17 @@
 package org.compiere.process;
 
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import org.compiere.impexp.BankStatementMatchInfo;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MBankStatementMatcher;
 import org.compiere.model.X_I_BankStatement;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Bank Statement Matching
@@ -43,13 +46,17 @@ public class BankStatementMatcher extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 		m_matchers = MBankStatementMatcher.getMatchers(getCtx(), get_TrxName());
 	}	//	prepare
@@ -64,17 +71,25 @@ public class BankStatementMatcher extends JavaProcess
 		final String tableName = getTableName();
 		final int Record_ID = getRecord_ID();
 		if (m_matchers == null || m_matchers.length == 0)
+		{
 			throw new IllegalStateException("No Matchers found");
+		}
 		//
 		log.info("doIt - Table_Name=" + tableName + ", Record_ID=" + Record_ID
 			+ ", Matchers=" + m_matchers.length);
 		
 		if (X_I_BankStatement.Table_Name.equals(tableName))
+		{
 			return match (new X_I_BankStatement(getCtx(), Record_ID, get_TrxName()));
+		}
 		else if (MBankStatement.Table_Name.equals(tableName))
+		{
 			return match (new MBankStatement(getCtx(), Record_ID, get_TrxName()));
+		}
 		else if (MBankStatementLine.Table_Name.equals(tableName))
+		{
 			return match (new MBankStatementLine(getCtx(), Record_ID, get_TrxName()));
+		}
 		
 		return "??";
 	}	//	doIt
@@ -87,23 +102,31 @@ public class BankStatementMatcher extends JavaProcess
 	private String match (X_I_BankStatement ibs)
 	{
 		if (m_matchers == null || ibs == null || ibs.getC_Payment_ID() != 0)
+		{
 			return "--";
+		}
 			
 		log.debug("" + ibs);
 		BankStatementMatchInfo info = null;
-		for (int i = 0; i < m_matchers.length; i++)
+		for (MBankStatementMatcher m_matcher : m_matchers)
 		{
-			if (m_matchers[i].isMatcherValid())
+			if (m_matcher.isMatcherValid())
 			{
-				info = m_matchers[i].getMatcher().findMatch(ibs);
+				info = m_matcher.getMatcher().findMatch(ibs);
 				if (info != null && info.isMatched())
 				{
 					if (info.getC_Payment_ID() > 0)
+					{
 						ibs.setC_Payment_ID(info.getC_Payment_ID());
+					}
 					if (info.getC_Invoice_ID() > 0)
+					{
 						ibs.setC_Invoice_ID(info.getC_Invoice_ID());
+					}
 					if (info.getC_BPartner_ID() > 0)
+					{
 						ibs.setC_BPartner_ID(info.getC_BPartner_ID());
+					}
 					ibs.save();
 					return "OK";
 				}
@@ -118,27 +141,35 @@ public class BankStatementMatcher extends JavaProcess
 	 *	@param bsl bank statement line
 	 *	@return Message
 	 */
-	private String match (MBankStatementLine bsl)
+	private String match (I_C_BankStatementLine bsl)
 	{
 		if (m_matchers == null || bsl == null || bsl.getC_Payment_ID() != 0)
+		{
 			return "--";
+		}
 			
 		log.debug("match - " + bsl);
 		BankStatementMatchInfo info = null;
-		for (int i = 0; i < m_matchers.length; i++)
+		for (MBankStatementMatcher m_matcher : m_matchers)
 		{
-			if (m_matchers[i].isMatcherValid())
+			if (m_matcher.isMatcherValid())
 			{
-				info = m_matchers[i].getMatcher().findMatch(bsl);
+				info = m_matcher.getMatcher().findMatch(bsl);
 				if (info != null && info.isMatched())
 				{
 					if (info.getC_Payment_ID() > 0)
+					{
 						bsl.setC_Payment_ID(info.getC_Payment_ID());
+					}
 					if (info.getC_Invoice_ID() > 0)
+					{
 						bsl.setC_Invoice_ID(info.getC_Invoice_ID());
+					}
 					if (info.getC_BPartner_ID() > 0)
+					{
 						bsl.setC_BPartner_ID(info.getC_BPartner_ID());
-					bsl.save();
+					}
+					saveRecord(bsl);
 					return "OK";
 				}
 			}
@@ -154,15 +185,17 @@ public class BankStatementMatcher extends JavaProcess
 	private String match (MBankStatement bs)
 	{
 		if (m_matchers == null || bs == null)
+		{
 			return "--";
+		}
 		log.debug("match - " + bs);
 		int count = 0;
-		MBankStatementLine[] lines = bs.getLines(false);
-		for (int i = 0; i < lines.length; i++)
+		I_C_BankStatementLine[] lines = bs.getLines(false);
+		for (I_C_BankStatementLine line : lines)
 		{
-			if (lines[i].getC_Payment_ID() == 0)
+			if (line.getC_Payment_ID() == 0)
 			{
-				match(lines[i]);
+				match(line);
 				count++;
 			}
 		}
