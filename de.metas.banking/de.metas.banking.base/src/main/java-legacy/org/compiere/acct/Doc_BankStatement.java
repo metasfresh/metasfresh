@@ -28,6 +28,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
@@ -37,6 +38,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
 
 /**
  * Post Bank Statement Documents.
@@ -77,13 +79,14 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final I_C_BP_BankAccount ba = getC_BP_BankAccount(); // shall not be null
 		setC_Currency_ID(CurrencyId.ofRepoId(ba.getC_Currency_ID()));
 
-		setDocLines(loadLines(bs));
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bs.getC_BankStatement_ID());
+		setDocLines(loadLines(bankStatementId));
 	}
 
-	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bs)
+	private List<DocLine_BankStatement> loadLines(@NonNull final BankStatementId bankStatementId)
 	{
 		final List<DocLine_BankStatement> docLines = new ArrayList<>();
-		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs, I_C_BankStatementLine.class))
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bankStatementId, I_C_BankStatementLine.class))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 

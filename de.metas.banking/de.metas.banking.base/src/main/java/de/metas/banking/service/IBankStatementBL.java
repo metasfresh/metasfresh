@@ -1,5 +1,11 @@
 package de.metas.banking.service;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+
+import de.metas.banking.model.BankStatementId;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -13,25 +19,17 @@ package de.metas.banking.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
 
 public interface IBankStatementBL extends ISingletonService
 {
@@ -44,10 +42,12 @@ public interface IBankStatementBL extends ISingletonService
 	ModelDynAttributeAccessor<I_C_BankStatementLine_Ref, Boolean> DYNATTR_DisableBankStatementLineRecalculateFromReferences = new ModelDynAttributeAccessor<>(
 			"DisableBankStatementLineRecalculateFromReferences", Boolean.class);
 
+	int getNextLineNo(BankStatementId bankStatementId);
+
 	/**
 	 * Handles:
 	 * <ul>
-	 * <li> {@link I_C_BankStatementLine_Ref#getC_Payment()}s
+	 * <li>{@link I_C_BankStatementLine_Ref#getC_Payment()}s
 	 * </ul>
 	 */
 	void handleAfterPrepare(I_C_BankStatement bankStatement);
@@ -55,16 +55,15 @@ public interface IBankStatementBL extends ISingletonService
 	/**
 	 * Handles:
 	 * <ul>
-	 * <li> {@link I_C_BankStatementLine_Ref#getC_Payment()}s
+	 * <li>{@link I_C_BankStatementLine_Ref#getC_Payment()}s
 	 * </ul>
 	 */
 	void handleAfterComplete(I_C_BankStatement bankStatement);
 
-
 	/**
 	 * Handles:
 	 * <ul>
-	 * <li> {@link I_C_BankStatementLine_Ref#getC_Payment()}s
+	 * <li>{@link I_C_BankStatementLine_Ref#getC_Payment()}s
 	 * </ul>
 	 */
 	void handleBeforeVoid(I_C_BankStatement bankStatement);

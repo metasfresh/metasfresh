@@ -1,7 +1,25 @@
 package de.metas.banking.impexp;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Properties;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_I_BankStatement;
+
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
@@ -10,23 +28,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_I_BankStatement;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_I_BankStatement;
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -52,6 +53,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	private int p_C_BP_BankAccount_ID = 0;
 
@@ -100,34 +103,27 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final BankStatementId existingBankStatementId = retrieveExistingBankStatementId(importRecord);
 
-		final int existingBankStatementId = retrieveExistingBankStatementId(importRecord);
-
-		final boolean isNewBankStatement = existingBankStatementId <= 0;
-
-		if (!isNewBankStatement && isInsertOnly)
+		if (existingBankStatementId != null && isInsertOnly)
 		{
 			// #4994 do not update
 			return ImportRecordResult.Nothing;
 		}
 
-		if (isNewBankStatement)
+		if (existingBankStatementId == null)
 		{
-			final I_C_BankStatement bankStatement = createBankStatement(importRecord);
+			final BankStatementId bankStatementId = createBankStatement(importRecord);
 
-			save(bankStatement);
-
-			final int bankStatementRecordId = bankStatement.getC_BankStatement_ID();
-			importRecord.setC_BankStatement_ID(bankStatementRecordId);
+			importRecord.setC_BankStatement_ID(bankStatementId.getRepoId());
 			save(importRecord);
 
 		}
 		else
 		{
-			importRecord.setC_BankStatement_ID(existingBankStatementId);
+			importRecord.setC_BankStatement_ID(existingBankStatementId.getRepoId());
 			save(importRecord);
 
 			final I_C_BankStatement bankStatement = bankStatementDAO.getById(existingBankStatementId);
@@ -161,22 +157,21 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getC_BankStatement(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
-		return isNewBankStatement ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+		return existingBankStatementId == null ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private int retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
+	private BankStatementId retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, importRecord.getC_BP_BankAccount_ID())
 				.create()
-				.firstId();
+				.firstId(BankStatementId::ofRepoIdOrNull);
 	}
 
 	private void createUpdateBankStatementLine(final I_I_BankStatement importRecord)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 		final int importLineId = importRecord.getC_BankStatementLine_ID();
 
 		final I_C_BankStatementLine bankStatementLine;
@@ -195,11 +190,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	private void updateBankStatementLine(final I_C_BankStatementLine bankStatementLine, final I_I_BankStatement importRecord)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(importRecord.getC_BankStatement_ID());
 
-		final int bankStatementId = importRecord.getC_BankStatement_ID();
-
-		bankStatementLine.setC_BankStatement_ID(bankStatementId);
+		bankStatementLine.setC_BankStatement_ID(bankStatementId.getRepoId());
 		bankStatementLine.setImportedBillPartnerName(importRecord.getBill_BPartner_Name());
 		bankStatementLine.setImportedBillPartnerIBAN(importRecord.getIBAN_To());
 		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
@@ -241,21 +234,15 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		if (bankStatementLine.getLine() <= 0)
 		{
-			final List<I_C_BankStatementLine> bankStatementLines = bankStatementDAO.retrieveLines(bankStatementDAO.getById(bankStatementId), I_C_BankStatementLine.class);
-
-			final int maxLineNo = bankStatementLines.stream()
-					.max(Comparator.comparing(line -> line.getLine()))
-					.map(line -> line.getLine())
-					.orElse(0);
-
-			bankStatementLine.setLine(maxLineNo + 10);
+			final int nextLineNo = bankStatementBL.getNextLineNo(bankStatementId);
+			bankStatementLine.setLine(nextLineNo);
 		}
 
 		save(bankStatementLine);
 
 	}
 
-	private I_C_BankStatement createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
+	private @NonNull BankStatementId createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
 	{
 		final I_C_BankStatement bankStatement = newInstance(I_C_BankStatement.class);
 
@@ -269,8 +256,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		bankStatement.setMatchStatement(importBankStatement.getMatchStatement());
 		bankStatement.setName(importBankStatement.getName());
 		bankStatement.setStatementDate(importBankStatement.getStatementDate());
+		bankStatementDAO.save(bankStatement);
 
-		return bankStatement;
+		return BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 	}
 
 }

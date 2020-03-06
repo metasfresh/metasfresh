@@ -30,12 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.payment.PaymentId;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -47,10 +41,16 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.payment.PaymentId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BankStatementDAO implements IBankStatementDAO
 {
@@ -78,10 +78,9 @@ public class BankStatementDAO implements IBankStatementDAO
 	@Override
 	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
 	{
-		final de.metas.banking.model.I_C_BankStatement bankStatement = getById(bankStatementId);
-		final List<de.metas.banking.model.I_C_BankStatementLine> lines = retrieveLines(bankStatement, de.metas.banking.model.I_C_BankStatementLine.class);
+		final List<I_C_BankStatementLine> lines = retrieveLines(bankStatementId, I_C_BankStatementLine.class);
 		return lines.stream()
-				.map(l -> PaymentId.ofRepoIdOrNull(l.getC_Payment_ID()))
+				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
 				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableSet());
 	}
@@ -105,24 +104,29 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public <T extends I_C_BankStatementLine> List<T> retrieveLines(final I_C_BankStatement bankStatement, final Class<T> clazz)
+	public <T extends I_C_BankStatementLine> List<T> retrieveLines(@NonNull final BankStatementId bankStatementId, @NonNull final Class<T> clazz)
 	{
-		return retrieveLinesQuery(bankStatement)
+		return query(bankStatementId)
 				.create()
 				.list(clazz);
 	}
 
-	private IQueryBuilder<I_C_BankStatementLine> retrieveLinesQuery(final I_C_BankStatement bankStatement)
+	private IQueryBuilder<I_C_BankStatementLine> query(@NonNull final BankStatementId bankStatementId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine.class, bankStatement)
+				.createQueryBuilder(I_C_BankStatementLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatement.getC_BankStatement_ID())
-				//
-				.orderBy()
-				.addColumn(I_C_BankStatementLine.COLUMNNAME_Line)
-				.addColumn(I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID)
-				.endOrderBy();
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.orderBy(I_C_BankStatementLine.COLUMNNAME_Line)
+				.orderBy(I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID);
+	}
+
+	@Override
+	public int retrieveLastLineNo(@NonNull final BankStatementId bankStatementId)
+	{
+		return query(bankStatementId)
+				.create()
+				.maxInt(I_C_BankStatementLine.COLUMNNAME_Line);
 	}
 
 	@Override

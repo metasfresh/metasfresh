@@ -27,6 +27,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.DB;
 
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.util.Services;
+
 /**
  * Bank Statement Line Model
  *
@@ -135,8 +139,8 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		// Set Line No
 		if (getLine() == 0)
 		{
-			final String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_BankStatementLine WHERE C_BankStatement_ID=?";
-			final int nextLineNo = DB.getSQLValue(get_TrxName(), sql, getC_BankStatement_ID());
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(getC_BankStatement_ID());
+			final int nextLineNo = Services.get(IBankStatementBL.class).getNextLineNo(bankStatementId);
 			setLine(nextLineNo);
 		}
 

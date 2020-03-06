@@ -33,6 +33,8 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -108,23 +110,12 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		this(account, false);
 	}
 
-	public I_C_BankStatementLine[] getLines(boolean requery)
+	public List<I_C_BankStatementLine> getLines()
 	{
-		if (m_lines != null && !requery)
-		{
-			set_TrxName(m_lines, get_TrxName());
-			return m_lines;
-		}
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(getC_BankStatement_ID());
 
-		// metas: replaced with Query API
-		List<MBankStatementLine> list = new Query(getCtx(), I_C_BankStatementLine.Table_Name, I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID + "=?", get_TrxName())
-				.setParameters(this.getC_BankStatement_ID())
-				.setOrderBy(I_C_BankStatementLine.COLUMNNAME_Line)
-				.list(MBankStatementLine.class);
-
-		MBankStatementLine[] retValue = new MBankStatementLine[list.size()];
-		list.toArray(retValue);
-		return retValue;
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		return bankStatementDAO.retrieveLines(bankStatementId);
 	}
 
 	private void addDescription(String description)
@@ -219,8 +210,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 		// Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
-		I_C_BankStatementLine[] lines = getLines(true);
-		if (lines.length == 0)
+		final List<I_C_BankStatementLine> lines = getLines();
+		if (lines.isEmpty())
 		{
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
@@ -300,7 +291,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		log.debug("Completed: {}", this);
 
 		// Set Payment reconciled
-		for (I_C_BankStatementLine line : getLines(false))
+		for (I_C_BankStatementLine line : getLines())
 		{
 			completeLine(line);
 		}
@@ -387,7 +378,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		}
 
 		// Set lines to 0
-		for (final I_C_BankStatementLine line : getLines(true))
+		for (final I_C_BankStatementLine line : getLines())
 		{
 			voidDraftLine(line);
 		}
@@ -518,7 +509,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		// : Total Lines = 123.00 (#1)
 		sb.append(": ")
 				.append(Msg.translate(getCtx(), "StatementDifference")).append("=").append(getStatementDifference())
-				.append(" (#").append(getLines(false).length).append(")");
+				.append(" (#").append(getLines().size()).append(")");
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
 		{

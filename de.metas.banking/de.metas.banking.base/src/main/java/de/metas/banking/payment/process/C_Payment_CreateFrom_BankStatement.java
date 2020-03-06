@@ -50,6 +50,7 @@ import org.compiere.model.MBankStatementLine;
 import org.compiere.model.X_I_BankStatement;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
@@ -112,8 +113,8 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 		}
 		else if (I_C_BankStatement.Table_Name.equals(tableName))
 		{
-			final I_C_BankStatement bankStatement = InterfaceWrapperHelper.create(getCtx(), Record_ID, I_C_BankStatement.class, getTrxName());
-			final List<MBankStatementLine> bankStatementLines = bankStatementDAO.retrieveLines(bankStatement, MBankStatementLine.class);
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(Record_ID);
+			final List<MBankStatementLine> bankStatementLines = bankStatementDAO.retrieveLines(bankStatementId, MBankStatementLine.class);
 			for (final MBankStatementLine bankStatementLine : bankStatementLines)
 			{
 				bankStatmentPaymentBL.createPayment(bankStatementLine);

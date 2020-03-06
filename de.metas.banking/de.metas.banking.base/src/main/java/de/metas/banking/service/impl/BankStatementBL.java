@@ -6,11 +6,9 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatement;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -40,6 +38,7 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
@@ -58,17 +57,24 @@ import de.metas.util.Services;
 public class BankStatementBL implements IBankStatementBL
 {
 	private final Logger logger = LogManager.getLogger(getClass());
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
+	private final IBankStatementListenerService listenersService = Services.get(IBankStatementListenerService.class);
+
+	@Override
+	public int getNextLineNo(final BankStatementId bankStatementId)
+	{
+		final int lastLineNo = bankStatementDAO.retrieveLastLineNo(bankStatementId);
+		return lastLineNo + 10;
+	}
 
 	@Override
 	public void handleAfterPrepare(final I_C_BankStatement bankStatement)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 
-		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final org.compiere.model.I_C_BankStatementLine linePO : bankStatementPO.getLines(false))
+		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(bankStatementId, I_C_BankStatementLine.class))
 		{
-			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
-
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 			{
 				// Payment in C_BankStatementLine_Ref are mandatory
@@ -89,14 +95,10 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public void handleAfterComplete(final I_C_BankStatement bankStatement)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 
-		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final org.compiere.model.I_C_BankStatementLine linePO : bankStatementPO.getLines(false))
+		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(bankStatementId, I_C_BankStatementLine.class))
 		{
-			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
-
 			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
 			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
 		}
@@ -121,14 +123,12 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public void handleBeforeVoid(final I_C_BankStatement bankStatement)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
+		final IBankStatementListener listeners = listenersService.getListeners();
 
-		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final org.compiere.model.I_C_BankStatementLine linePO : bankStatementPO.getLines(false))
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
+
+		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(bankStatementId, I_C_BankStatementLine.class))
 		{
-			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
-
 			listeners.onBankStatementLineVoiding(line);
 
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())

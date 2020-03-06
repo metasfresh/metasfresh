@@ -1,19 +1,20 @@
 package de.metas.banking.service;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,7 +40,12 @@ import java.util.Properties;
 
 public interface IBankStatementDAO extends ISingletonService
 {
-	<T extends I_C_BankStatementLine> List<T> retrieveLines(I_C_BankStatement bankStatement, Class<T> clazz);
+	default List<I_C_BankStatementLine> retrieveLines(BankStatementId bankStatementId)
+	{
+		return retrieveLines(bankStatementId, I_C_BankStatementLine.class);
+	}
+
+	<T extends I_C_BankStatementLine> List<T> retrieveLines(BankStatementId bankStatementId, Class<T> clazz);
 
 	List<I_C_BankStatementLine_Ref> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
 
@@ -81,4 +87,6 @@ public interface IBankStatementDAO extends ISingletonService
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
 	void save(@NonNull final I_C_BankStatementLine_Ref lineOrRef);
+
+	int retrieveLastLineNo(@NonNull BankStatementId bankStatementId);
 }
