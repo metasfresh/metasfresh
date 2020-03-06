@@ -146,6 +146,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
+		header.setSEPA_CreditorName(orgBP.getName());
 		header.setSEPA_CreditorIdentifier(bpBankAccount.getSEPA_CreditorIdentifier());
 		header.setSwiftCode(bpBankAccount.getC_Bank().getSwiftCode());
 

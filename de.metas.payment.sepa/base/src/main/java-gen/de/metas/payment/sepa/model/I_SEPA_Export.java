@@ -36,7 +36,7 @@ public interface I_SEPA_Export
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
+	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -46,7 +46,7 @@ public interface I_SEPA_Export
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
+	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -304,7 +304,7 @@ public interface I_SEPA_Export
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set SEPA Creditor Identifier.
+	 * Set Gläubiger-Identifikationsnummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -313,7 +313,7 @@ public interface I_SEPA_Export
 	public void setSEPA_CreditorIdentifier (java.lang.String SEPA_CreditorIdentifier);
 
 	/**
-	 * Get SEPA Creditor Identifier.
+	 * Get Gläubiger-Identifikationsnummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -325,6 +325,29 @@ public interface I_SEPA_Export
     public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_CreditorIdentifier = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_CreditorIdentifier", null);
     /** Column name SEPA_CreditorIdentifier */
     public static final String COLUMNNAME_SEPA_CreditorIdentifier = "SEPA_CreditorIdentifier";
+
+	/**
+	 * Set Gläubigername.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSEPA_CreditorName (java.lang.String SEPA_CreditorName);
+
+	/**
+	 * Get Gläubigername.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSEPA_CreditorName();
+
+    /** Column definition for SEPA_CreditorName */
+    public static final org.adempiere.model.ModelColumn<I_SEPA_Export, Object> COLUMN_SEPA_CreditorName = new org.adempiere.model.ModelColumn<I_SEPA_Export, Object>(I_SEPA_Export.class, "SEPA_CreditorName", null);
+    /** Column name SEPA_CreditorName */
+    public static final String COLUMNNAME_SEPA_CreditorName = "SEPA_CreditorName";
 
 	/**
 	 * Set SEPA Export.
@@ -353,7 +376,7 @@ public interface I_SEPA_Export
 	 * Set SEPA Protocol.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setSEPA_Protocol (java.lang.String SEPA_Protocol);
@@ -362,7 +385,7 @@ public interface I_SEPA_Export
 	 * Get SEPA Protocol.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getSEPA_Protocol();
