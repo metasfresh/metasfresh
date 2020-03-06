@@ -243,6 +243,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
 					</includeOnlyProperties-->
 					<commitIdGenerationMode>full</commitIdGenerationMode>
+					<!--
+					Using the native git binary gives us aprox-10 minutes in the metasfresh repo
+					Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md 
+					Most notably, you can also call maven with `-Dmaven.gitcommitid.nativegit=false` to override this
+					-->
+					<useNativeGit>true</useNativeGit>
+
 				</configuration>
 			</plugin>
 		</plugins>
