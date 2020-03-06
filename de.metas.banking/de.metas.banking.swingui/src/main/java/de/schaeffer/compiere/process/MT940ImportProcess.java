@@ -38,7 +38,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.banking.misc.ImportBankstatementCtrl;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.security.permissions.Access;
@@ -105,7 +104,7 @@ public class MT940ImportProcess extends JavaProcess {
 				I_C_Order.Table_Name, whereClauseOrder, get_TrxName())
 				.setOnlyActiveRecords(true).setClient_ID().list(MOrder.class);
 
-		new ImportBankstatementCtrl(statement, invoiceList, orderList);
+		//new ImportBankstatementCtrl(statement, invoiceList, orderList);
 		return null;
 
 	}
