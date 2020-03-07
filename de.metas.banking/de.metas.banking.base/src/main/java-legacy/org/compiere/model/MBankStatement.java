@@ -32,6 +32,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
@@ -62,7 +64,6 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 {
 	private String m_processMsg = null;
 	private boolean m_justPrepared = false;
-	private MBankStatementLine[] m_lines = null;
 
 	public MBankStatement(Properties ctx, int C_BankStatement_ID, String trxName)
 	{
@@ -81,38 +82,20 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			setPosted(false);	// N
 			super.setProcessed(false);
 		}
-	}	// MBankStatement
+	}
 
 	public MBankStatement(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MBankStatement
-
-	/**
-	 * Parent Constructor
-	 *
-	 * @param account Bank Account
-	 * @param isManual Manual statement
-	 **/
-	public MBankStatement(I_C_BP_BankAccount account, boolean isManual)
-	{
-		this(InterfaceWrapperHelper.getCtx(account), 0, InterfaceWrapperHelper.getTrxName(account));
-		setAD_Org_ID(account.getAD_Org_ID());
-		setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
-		setStatementDate(new Timestamp(System.currentTimeMillis()));
-
-		setName(getStatementDate().toString());
-		setIsManual(isManual);
-	}	// MBankStatement
-
-	public MBankStatement(final I_C_BP_BankAccount account)
-	{
-		this(account, false);
 	}
 
-	public List<I_C_BankStatementLine> getLines()
+	private List<I_C_BankStatementLine> getLines()
 	{
-		final BankStatementId bankStatementId = BankStatementId.ofRepoId(getC_BankStatement_ID());
+		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getC_BankStatement_ID());
+		if (bankStatementId == null)
+		{
+			return ImmutableList.of();
+		}
 
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 		return bankStatementDAO.retrieveLines(bankStatementId);
@@ -136,17 +119,23 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 	{
 		super.setProcessed(processed);
 
-		final int bankStatementId = getC_BankStatement_ID();
-		if (bankStatementId > 0)
+		updateBankStatementLinesProcessedFlag(processed);
+	}
+
+	private void updateBankStatementLinesProcessedFlag(boolean processed)
+	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getC_BankStatement_ID());
+		if (bankStatementId == null)
 		{
-			final String sql = "UPDATE C_BankStatementLine SET Processed=? WHERE C_BankStatement_ID=?";
-			final int updateCount = DB.executeUpdateEx(
-					sql,
-					new Object[] { processed, bankStatementId },
-					ITrx.TRXNAME_ThreadInherited);
-			m_lines = null;
-			log.debug("setProcessed - {} - Lines={}", processed, updateCount);
+			return;
 		}
+		
+		final String sql = "UPDATE C_BankStatementLine SET Processed=? WHERE C_BankStatement_ID=?";
+		final int updateCount = DB.executeUpdateEx(
+				sql,
+				new Object[] { processed, bankStatementId },
+				ITrx.TRXNAME_ThreadInherited);
+		log.debug("setProcessed - {} - Lines={}", processed, updateCount);
 	}
 
 	@Override

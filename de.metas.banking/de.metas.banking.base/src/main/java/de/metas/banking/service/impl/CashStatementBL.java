@@ -13,15 +13,14 @@ package de.metas.banking.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -38,30 +37,33 @@ import org.compiere.util.TimeUtil;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.util.Services;
 
 public class CashStatementBL implements ICashStatementBL
 {
-	// metas: us025b
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	private final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
+
 	@Override
 	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
 	{
 		I_C_BankStatement bs = getCreateCashStatement(payment);
-		
+
 		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
 		bsl.setAD_Org_ID(bs.getAD_Org_ID());
 		bsl.setC_BankStatement_ID(bs.getC_BankStatement_ID());
-		Services.get(IBankStatementBL.class).setDate(bsl, bs.getStatementDate());
-		Services.get(IBankStatmentPaymentBL.class).setC_Payment(bsl, payment);
-		
+		bankStatementBL.setDate(bsl, bs.getStatementDate());
+		bankStatmentPaymentBL.setC_Payment(bsl, payment);
+
 		bsl.setProcessed(true);
 		InterfaceWrapperHelper.save(bsl);
-		
+
 		return bsl;
 	}
 
-	// metas: us025b
 	private I_C_BankStatement getCreateCashStatement(final I_C_Payment payment)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
@@ -73,7 +75,7 @@ public class CashStatementBL implements ICashStatementBL
 				+ " AND TRUNC(" + MBankStatement.COLUMNNAME_StatementDate + ")=?"
 				+ " AND " + MBankStatement.COLUMNNAME_Processed + "=?";
 
-		MBankStatement bs = new Query(ctx, MBankStatement.Table_Name, whereClause, trxName)
+		I_C_BankStatement bs = new Query(ctx, MBankStatement.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { C_BP_BankAccount_ID, statementDate, false })
 				.firstOnly();
 
@@ -90,11 +92,23 @@ public class CashStatementBL implements ICashStatementBL
 		}
 
 		// Create Statement
-		bs = new MBankStatement(ba, false);
-		bs.setStatementDate(statementDate);
-		bs.saveEx();
+		bs = createBankStatement(ba, statementDate);
 		return bs;
 	}
-	// metas end
 
+	private I_C_BankStatement createBankStatement(
+			final I_C_BP_BankAccount account,
+			final Timestamp statementDate)
+	{
+		final I_C_BankStatement bankStatement = InterfaceWrapperHelper.newInstance(I_C_BankStatement.class);
+		bankStatement.setAD_Org_ID(account.getAD_Org_ID());
+		bankStatement.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		bankStatement.setStatementDate(statementDate);
+
+		bankStatement.setName(statementDate.toString());
+		bankStatement.setIsManual(false);
+		bankStatementDAO.save(bankStatement);
+
+		return bankStatement;
+	}
 }
