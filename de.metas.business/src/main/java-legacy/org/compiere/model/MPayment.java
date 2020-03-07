@@ -193,8 +193,8 @@ public final class MPayment extends X_C_Payment
 
 	/** Logger */
 	private static final Logger s_log = LogManager.getLogger(MPayment.class);
-//	/** Error Message */
-//	private String m_errorMessage = null;
+	// /** Error Message */
+	// private String m_errorMessage = null;
 
 	/** Reversal Indicator */
 	private static final String REVERSE_INDICATOR = "^";
@@ -225,7 +225,7 @@ public final class MPayment extends X_C_Payment
 		// metas: tsa: us025b: end
 		// @Trifon - CashPayments
 		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && ! Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
+		if (isCashTrx() && !Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
 		{
 			// Cash Book Is mandatory
 			if (getC_CashBook_ID() <= 0)
@@ -270,16 +270,16 @@ public final class MPayment extends X_C_Payment
 		if (newRecord
 				|| is_ValueChanged("C_Charge_ID") || is_ValueChanged("C_Invoice_ID")
 				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID"))
-		 {
+		{
 			setIsPrepayment(getC_Charge_ID() == 0
 					&& getC_BPartner_ID() != 0
 					&& (getC_Order_ID() != 0
 							|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
-						// metas: commented - Write off amount must not be set to 0.
-						/*
-						 * if (isPrepayment()) { if (newRecord || is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")) { setWriteOffAmt(Env.ZERO); setDiscountAmt(Env.ZERO); setIsOverUnderPayment(false);
-						 * setOverUnderAmt(Env.ZERO); } }
-						 */
+			// metas: commented - Write off amount must not be set to 0.
+			/*
+			 * if (isPrepayment()) { if (newRecord || is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")) { setWriteOffAmt(Env.ZERO); setDiscountAmt(Env.ZERO); setIsOverUnderPayment(false);
+			 * setOverUnderAmt(Env.ZERO); } }
+			 */
 		}
 
 		// Document Type/Receipt
@@ -600,7 +600,7 @@ public final class MPayment extends X_C_Payment
 		// Credit Card
 		if (tenderType.isCreditCard())
 		{
-			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID()))
+			if (Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID()))
 			{
 				documentNo = getCreditCardType()
 						+ " " + Obscure.obscure(getCreditCardNumber())
@@ -613,7 +613,7 @@ public final class MPayment extends X_C_Payment
 				&& !isReceipt()
 				&& getCheckNo() != null && getCheckNo().length() > 0)
 		{
-			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_PAYMENT", true, getAD_Client_ID()))
+			if (Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_PAYMENT", true, getAD_Client_ID()))
 			{
 				documentNo = getCheckNo();
 			}
@@ -622,7 +622,7 @@ public final class MPayment extends X_C_Payment
 		else if (tenderType.isCheck()
 				&& isReceipt())
 		{
-			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
+			if (Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
 			{
 				if (getRoutingNo() != null)
 				{
@@ -662,7 +662,7 @@ public final class MPayment extends X_C_Payment
 		super.setR_PnRef(R_PnRef);
 		if (R_PnRef != null
 				// metas: don't overwrite the documentno
-				&&  Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID())
+				&& Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID())
 		// metas: end
 		)
 		{
@@ -695,7 +695,7 @@ public final class MPayment extends X_C_Payment
 	public void setAmount(final int currencyId, final BigDecimal payAmt)
 	{
 		final CurrencyId currencyIdEffective;
-		if(currencyId > 0)
+		if (currencyId > 0)
 		{
 			currencyIdEffective = CurrencyId.ofRepoId(currencyId);
 		}
@@ -1075,20 +1075,11 @@ public final class MPayment extends X_C_Payment
 		}
 	}	// addDescription
 
-	/**
-	 * Get Pay Amt
-	 *
-	 * @param absolute if true the absolute amount (i.e. negative if payment)
-	 * @return amount
-	 */
-	public BigDecimal getPayAmt(final boolean absolute)
+	public BigDecimal getPayAmtNegateIfOutbound()
 	{
-		if (isReceipt())
-		{
-			return super.getPayAmt();
-		}
-		return super.getPayAmt().negate();
-	}	// getPayAmt
+		final BigDecimal payAmt = super.getPayAmt();
+		return isReceipt() ? payAmt : payAmt.negate();
+	}
 
 	@Override
 	public boolean processIt(final String processAction)
@@ -1156,7 +1147,7 @@ public final class MPayment extends X_C_Payment
 
 			final I_C_Order order = ordersRepo.getById(orderId);
 			final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
-			if(orderDocStatus.isWaitingForPayment())
+			if (orderDocStatus.isWaitingForPayment())
 			{
 				order.setC_Payment_ID(getC_Payment_ID());
 				order.setDocAction(IDocument.ACTION_WaitComplete);
@@ -1242,8 +1233,7 @@ public final class MPayment extends X_C_Payment
 		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
 
-
-		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true), getDateTrx()))
+		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmtNegateIfOutbound(), getDateTrx()))
 		{
 			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
 					+ stats.getSOCreditUsed()
@@ -1333,7 +1323,7 @@ public final class MPayment extends X_C_Payment
 
 		// @Trifon - CashPayments
 		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && ! Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
+		if (isCashTrx() && !Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
 		{
 			// Create Cash Book entry
 			if (getC_CashBook_ID() <= 0)
@@ -1727,7 +1717,7 @@ public final class MPayment extends X_C_Payment
 			final DocStatus allocDocStatus = DocStatus.ofCode(allocation.getDocStatus());
 
 			// 07570: Skip allocations which were already Reversed or Voided
-			if(allocDocStatus.isReversedOrVoided())
+			if (allocDocStatus.isReversedOrVoided())
 			{
 				continue;
 			}
@@ -1789,7 +1779,7 @@ public final class MPayment extends X_C_Payment
 		//
 		// Make sure not already closed
 		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
-		if(docStatus.isClosedReversedOrVoided())
+		if (docStatus.isClosedReversedOrVoided())
 		{
 			throw new AdempiereException("Document Closed: " + docStatus);
 		}
@@ -1955,7 +1945,7 @@ public final class MPayment extends X_C_Payment
 		else
 		{
 			// Original Allocation
-			MAllocationLine aLine = new MAllocationLine(alloc, getPayAmt(true),
+			MAllocationLine aLine = new MAllocationLine(alloc, getPayAmtNegateIfOutbound(),
 					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
@@ -1964,7 +1954,7 @@ public final class MPayment extends X_C_Payment
 				log.warn("Automatic allocation - line not saved");
 			}
 			// Reversal Allocation
-			aLine = new MAllocationLine(alloc, reversal.getPayAmt(true),
+			aLine = new MAllocationLine(alloc, reversal.getPayAmtNegateIfOutbound(),
 					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(reversal.getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(reversal.getC_Payment_ID(), 0);
@@ -2206,7 +2196,7 @@ public final class MPayment extends X_C_Payment
 
 		// checking doc type of C_Order_ID=" + C_Order_ID
 		final I_C_Order order = getC_Order();
-		if(order == null || order.getC_Order_ID() <= 0)
+		if (order == null || order.getC_Order_ID() <= 0)
 		{
 			return;
 		}

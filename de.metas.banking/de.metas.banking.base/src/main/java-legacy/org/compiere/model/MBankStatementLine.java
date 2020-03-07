@@ -106,7 +106,7 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		setC_BPartner_ID(payment.getC_BPartner_ID()); // metas
 		setC_Invoice_ID(payment.getC_Invoice_ID()); // metas
 		//
-		final BigDecimal amt = payment.getPayAmt(true);
+		final BigDecimal amt = payment.getPayAmtNegateIfOutbound();
 		setTrxAmt(amt);
 		setStmtAmt(amt);
 		//
