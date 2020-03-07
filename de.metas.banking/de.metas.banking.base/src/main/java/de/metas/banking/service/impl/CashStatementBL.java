@@ -28,17 +28,17 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
-import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.util.Services;
 
 public class CashStatementBL implements ICashStatementBL
 {
@@ -47,10 +47,9 @@ public class CashStatementBL implements ICashStatementBL
 	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
 	{
 		MBankStatement bs = getCreateCashStatement(payment);
-		MBankStatementLine bsl = new MBankStatementLine(bs);
+		I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(new MBankStatementLine(bs), I_C_BankStatementLine.class);
 		
-		MPayment paymentPO = LegacyAdapters.convertToPO(payment);
-		bsl.setPayment(paymentPO);
+		Services.get(IBankStatmentPaymentBL.class).setC_Payment(bsl, payment);
 		
 		bsl.setProcessed(true);
 		InterfaceWrapperHelper.save(bsl);
@@ -75,7 +74,9 @@ public class CashStatementBL implements ICashStatementBL
 				.firstOnly();
 
 		if (bs != null)
+		{
 			return bs;
+		}
 
 		// Get BankAccount/CashBook
 		I_C_BP_BankAccount ba = InterfaceWrapperHelper.create(ctx, C_BP_BankAccount_ID, I_C_BP_BankAccount.class, trxName);
