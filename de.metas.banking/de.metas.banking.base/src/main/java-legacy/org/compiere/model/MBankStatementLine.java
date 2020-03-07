@@ -109,9 +109,24 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		final BigDecimal amt = payment.getPayAmtNegateIfOutbound();
 		setTrxAmt(amt);
 		setStmtAmt(amt);
-		//
-		setDescription(payment.getDescription());
-	}	// setPayment
+	}	//	setPayment
+
+	/**
+	 * 	Add to Description
+	 *	@param description text
+	 */
+	void addDescription (String description)
+	{
+		String desc = getDescription();
+		if (desc == null)
+		{
+			setDescription(description);
+		}
+		else
+		{
+			setDescription(desc + " | " + description);
+		}
+	}	//	addDescription
 
 	@Override
 	protected boolean beforeSave(final boolean newRecord)

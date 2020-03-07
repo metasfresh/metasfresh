@@ -1,10 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-
 import java.util.List;
 import java.util.Properties;
 
@@ -18,12 +13,17 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 {
