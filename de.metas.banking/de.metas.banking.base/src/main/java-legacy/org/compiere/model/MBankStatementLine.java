@@ -94,40 +94,6 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		setDateAcct(StatementLineDate);
 	}	// setStatementLineDate
 
-	/**
-	 * Set Payment
-	 *
-	 * @param payment payment
-	 */
-	public void setPayment(final MPayment payment)
-	{
-		setC_Payment(payment);
-		setC_Currency_ID(payment.getC_Currency_ID());
-		setC_BPartner_ID(payment.getC_BPartner_ID()); // metas
-		setC_Invoice_ID(payment.getC_Invoice_ID()); // metas
-		//
-		final BigDecimal amt = payment.getPayAmtNegateIfOutbound();
-		setTrxAmt(amt);
-		setStmtAmt(amt);
-	}	//	setPayment
-
-	/**
-	 * 	Add to Description
-	 *	@param description text
-	 */
-	void addDescription (String description)
-	{
-		String desc = getDescription();
-		if (desc == null)
-		{
-			setDescription(description);
-		}
-		else
-		{
-			setDescription(desc + " | " + description);
-		}
-	}	//	addDescription
-
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
