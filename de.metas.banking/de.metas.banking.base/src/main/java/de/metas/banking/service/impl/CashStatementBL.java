@@ -30,7 +30,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatement;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
@@ -71,14 +70,13 @@ public class CashStatementBL implements ICashStatementBL
 		final int C_BP_BankAccount_ID = payment.getC_BP_BankAccount_ID();
 		final Timestamp statementDate = TimeUtil.getDay(payment.getDateTrx());
 
-		String whereClause = MBankStatement.COLUMNNAME_C_BP_BankAccount_ID + "=?"
-				+ " AND TRUNC(" + MBankStatement.COLUMNNAME_StatementDate + ")=?"
-				+ " AND " + MBankStatement.COLUMNNAME_Processed + "=?";
+		String whereClause = I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID + "=?"
+				+ " AND TRUNC(" + I_C_BankStatement.COLUMNNAME_StatementDate + ")=?"
+				+ " AND " + I_C_BankStatement.COLUMNNAME_Processed + "=?";
 
-		I_C_BankStatement bs = new Query(ctx, MBankStatement.Table_Name, whereClause, trxName)
+		I_C_BankStatement bs = new Query(ctx, I_C_BankStatement.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { C_BP_BankAccount_ID, statementDate, false })
 				.firstOnly();
-
 		if (bs != null)
 		{
 			return bs;

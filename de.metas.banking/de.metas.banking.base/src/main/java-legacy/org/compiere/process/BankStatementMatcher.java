@@ -21,8 +21,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.compiere.impexp.BankStatementMatchInfo;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MBankStatementMatcher;
 import org.compiere.model.X_I_BankStatement;
 
@@ -78,13 +76,16 @@ public class BankStatementMatcher extends JavaProcess
 		{
 			return match(new X_I_BankStatement(getCtx(), Record_ID, get_TrxName()));
 		}
-		else if (MBankStatement.Table_Name.equals(tableName))
+		else if (I_C_BankStatement.Table_Name.equals(tableName))
 		{
-			return match(new MBankStatement(getCtx(), Record_ID, get_TrxName()));
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(Record_ID);
+			final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(bankStatementId);
+			return match(bankStatement);
 		}
-		else if (MBankStatementLine.Table_Name.equals(tableName))
+		else if (I_C_BankStatementLine.Table_Name.equals(tableName))
 		{
-			return match(new MBankStatementLine(getCtx(), Record_ID, get_TrxName()));
+			final I_C_BankStatementLine bankStatementLine = Services.get(IBankStatementDAO.class).getLineById(Record_ID);
+			return match(bankStatementLine);
 		}
 
 		return "??";
