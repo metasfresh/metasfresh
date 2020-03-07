@@ -58,13 +58,12 @@ public class C_BankStatementLine
 	 * @task US025b
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Payment_ID)
-	public void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final int timing)
+	public void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 		//
 		// Do nothing if we are dealing with a new line which does not have an C_Payment_ID
-		final ModelChangeType changeType = ModelChangeType.valueOf(timing);
 		int paymentRecordId = bankStatementLine.getC_Payment_ID();
 
 		if (changeType.isNew() && paymentRecordId <= 0)
