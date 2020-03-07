@@ -104,9 +104,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				bankStatementLine.setIsMultiplePaymentOrInvoice(true); // we have a reference line for each invoice
 				bankStatementLine.setIsMultiplePayment(true); // each invoice shall have it's own payment
 				bankStatementLine.setC_Currency_ID(bankStatement.getC_BP_BankAccount().getC_Currency_ID());
-				bankStatementLine.setValutaDate(paySelection.getPayDate());
-				bankStatementLine.setDateAcct(paySelection.getPayDate());
-				bankStatementLine.setStatementLineDate(paySelection.getPayDate());
+				bankStatementBL.setDate(bankStatementLine, paySelection.getPayDate());
 				bankStatementLine.setReferenceNo(null); // no ReferenceNo at this level
 				bankStatementLine.setC_BPartner_ID(0); // no partner because we will have it on "line reference" level
 				bankStatementLine.setStmtAmt(BigDecimal.ZERO); // will be updated at the end

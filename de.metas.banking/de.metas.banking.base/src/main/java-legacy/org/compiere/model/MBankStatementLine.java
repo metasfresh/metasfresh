@@ -19,7 +19,6 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -72,27 +71,6 @@ public class MBankStatementLine extends X_C_BankStatementLine
 	{
 		super(ctx, rs, trxName);
 	}
-
-	public MBankStatementLine(final MBankStatement statement)
-	{
-		this(statement.getCtx(), 0, statement.get_TrxName());
-		setClientOrg(statement);
-		setC_BankStatement_ID(statement.getC_BankStatement_ID());
-		setStatementLineDate(statement.getStatementDate());
-	}
-
-	/**
-	 * Set Statement Line Date and all other dates (Valuta, Acct)
-	 *
-	 * @param StatementLineDate date
-	 */
-	@Override
-	public void setStatementLineDate(final Timestamp StatementLineDate)
-	{
-		super.setStatementLineDate(StatementLineDate);
-		setValutaDate(StatementLineDate);
-		setDateAcct(StatementLineDate);
-	}	// setStatementLineDate
 
 	@Override
 	protected boolean beforeSave(final boolean newRecord)

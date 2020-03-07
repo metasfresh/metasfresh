@@ -29,14 +29,15 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.util.Services;
 
@@ -46,9 +47,12 @@ public class CashStatementBL implements ICashStatementBL
 	@Override
 	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
 	{
-		MBankStatement bs = getCreateCashStatement(payment);
-		I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(new MBankStatementLine(bs), I_C_BankStatementLine.class);
+		I_C_BankStatement bs = getCreateCashStatement(payment);
 		
+		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
+		bsl.setAD_Org_ID(bs.getAD_Org_ID());
+		bsl.setC_BankStatement_ID(bs.getC_BankStatement_ID());
+		Services.get(IBankStatementBL.class).setDate(bsl, bs.getStatementDate());
 		Services.get(IBankStatmentPaymentBL.class).setC_Payment(bsl, payment);
 		
 		bsl.setProcessed(true);
@@ -58,7 +62,7 @@ public class CashStatementBL implements ICashStatementBL
 	}
 
 	// metas: us025b
-	private MBankStatement getCreateCashStatement(final I_C_Payment payment)
+	private I_C_BankStatement getCreateCashStatement(final I_C_Payment payment)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);

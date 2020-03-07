@@ -1,5 +1,7 @@
 package de.metas.banking.service;
 
+import java.sql.Timestamp;
+
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -84,4 +86,6 @@ public interface IBankStatementBL extends ISingletonService
 	 * Un-post given bank statement.
 	 */
 	void unpost(I_C_BankStatement bankStatement);
+
+	void setDate(I_C_BankStatementLine bankStatementLine, Timestamp date);
 }

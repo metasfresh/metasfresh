@@ -239,9 +239,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 			bankStatementLine.setIsMultiplePaymentOrInvoice(true); // we have a reference line for each invoice
 			bankStatementLine.setIsMultiplePayment(true); // each invoice shall have it's own payment
 			bankStatementLine.setC_Currency_ID(bankStatement.getC_BP_BankAccount().getC_Currency_ID());
-			bankStatementLine.setValutaDate(date);
-			bankStatementLine.setDateAcct(date);
-			bankStatementLine.setStatementLineDate(date);
+			bankStatementBL.setDate(bankStatementLine, date);
 			bankStatementLine.setReferenceNo(null); // no ReferenceNo at this level
 			bankStatementLine.setC_BPartner_ID(0); // no partner because we will have it on "line reference" level
 			bankStatementLine.setStmtAmt(BigDecimal.ZERO); // will be updated at the end

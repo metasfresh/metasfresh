@@ -1,6 +1,7 @@
 package de.metas.banking.service.impl;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -53,6 +54,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -273,5 +275,15 @@ public class BankStatementBL implements IBankStatementBL
 
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);
+	}
+
+	@Override
+	public void setDate(
+			@NonNull final org.compiere.model.I_C_BankStatementLine bankStatementLine,
+			@NonNull final Timestamp date)
+	{
+		bankStatementLine.setStatementLineDate(date);
+		bankStatementLine.setValutaDate(date);
+		bankStatementLine.setDateAcct(date);
 	}
 }
