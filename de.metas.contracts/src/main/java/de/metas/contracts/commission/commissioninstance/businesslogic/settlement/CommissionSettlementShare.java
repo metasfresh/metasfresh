@@ -42,7 +42,7 @@ import lombok.Setter;
 @Data
 public class CommissionSettlementShare
 {
-	/** a settlement share doesn't make sense without a sames commission share. */
+	/** a settlement share doesn't make sense without a sales commission share. */
 	private SalesCommissionShareId salesCommissionShareId;
 
 	@Setter(AccessLevel.NONE)

@@ -14,7 +14,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1388902854L;
+	private static final long serialVersionUID = -1472887250L;
 
     /** Standard Constructor */
     public X_SEPA_Export (Properties ctx, int SEPA_Export_ID, String trxName)
@@ -29,6 +29,7 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 			setProcessed (false); // N	
 			setSEPA_CreditorIdentifier (null);
 			setSEPA_Export_ID (0);
+			setSEPA_Protocol (null);
 			setSwiftCode (null);
         } */
     }
@@ -217,20 +218,36 @@ public class X_SEPA_Export extends org.compiere.model.PO implements I_SEPA_Expor
 		return ii.intValue();
 	}
 
-	/** Set SEPA Creditor Identifier.
-		@param SEPA_CreditorIdentifier SEPA Creditor Identifier	  */
+	/** Set Gläubiger-Identifikationsnummer.
+		@param SEPA_CreditorIdentifier Gläubiger-Identifikationsnummer	  */
 	@Override
 	public void setSEPA_CreditorIdentifier (java.lang.String SEPA_CreditorIdentifier)
 	{
 		set_Value (COLUMNNAME_SEPA_CreditorIdentifier, SEPA_CreditorIdentifier);
 	}
 
-	/** Get SEPA Creditor Identifier.
-		@return SEPA Creditor Identifier	  */
+	/** Get Gläubiger-Identifikationsnummer.
+		@return Gläubiger-Identifikationsnummer	  */
 	@Override
 	public java.lang.String getSEPA_CreditorIdentifier () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SEPA_CreditorIdentifier);
+	}
+
+	/** Set Gläubigername.
+		@param SEPA_CreditorName Gläubigername	  */
+	@Override
+	public void setSEPA_CreditorName (java.lang.String SEPA_CreditorName)
+	{
+		set_Value (COLUMNNAME_SEPA_CreditorName, SEPA_CreditorName);
+	}
+
+	/** Get Gläubigername.
+		@return Gläubigername	  */
+	@Override
+	public java.lang.String getSEPA_CreditorName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SEPA_CreditorName);
 	}
 
 	/** Set SEPA Export.
