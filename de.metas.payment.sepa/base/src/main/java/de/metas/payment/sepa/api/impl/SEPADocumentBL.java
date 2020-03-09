@@ -149,6 +149,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		header.setDescription(null); // TODO: Add description.
 		header.setProcessed(false);
 		header.setPaymentDate(SystemTime.asDayTimestamp()); // TODO: Is this correct?
+		header.setSEPA_CreditorName(orgBP.getName());
 		header.setSEPA_CreditorIdentifier(sepaBankAccount.getSEPA_CreditorIdentifier());
 
 		InterfaceWrapperHelper.save(header);
