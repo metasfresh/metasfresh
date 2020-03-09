@@ -1,7 +1,5 @@
 package de.metas.banking.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.banking.base
@@ -28,7 +26,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine;
@@ -38,7 +35,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 @Interceptor(I_C_BankStatementLine.class)
@@ -51,22 +48,14 @@ public class C_BankStatementLine
 		super();
 	}
 
-	/**
-	 *
-	 * @param bankStatementLine
-	 * @param timing
-	 * @task US025b
-	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Payment_ID)
 	public void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
 
 		//
 		// Do nothing if we are dealing with a new line which does not have an C_Payment_ID
-		int paymentRecordId = bankStatementLine.getC_Payment_ID();
-
-		if (changeType.isNew() && paymentRecordId <= 0)
+		if (changeType.isNew() && paymentId == null)
 		{
 			return;
 		}
@@ -74,12 +63,10 @@ public class C_BankStatementLine
 		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 		bankStatmentPaymentBL.setC_Payment(bankStatementLine, bankStatementLine.getC_Payment());
 
-		if (paymentRecordId > 0)
+		if (paymentId != null)
 		{
-			final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(paymentRecordId));
-
-			payment.setIsReconciled(true);
-			save(payment);
+			final IPaymentBL paymentService = Services.get(IPaymentBL.class);
+			paymentService.markReconciled(paymentId);
 		}
 
 	}

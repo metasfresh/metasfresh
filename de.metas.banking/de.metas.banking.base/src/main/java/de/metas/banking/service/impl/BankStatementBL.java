@@ -9,7 +9,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -38,9 +37,9 @@ import org.slf4j.Logger;
  */
 
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
@@ -52,16 +51,21 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(BankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 	private final IBankStatementListenerService listenersService = Services.get(IBankStatementListenerService.class);
+	private final IPaymentBL paymentService = Services.get(IPaymentBL.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
 	@Override
 	public int getNextLineNo(final BankStatementId bankStatementId)
@@ -112,11 +116,10 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
 			{
-				if (refLine.getC_Payment_ID() > 0)
+				final PaymentId paymentId = PaymentId.ofRepoIdOrNull(refLine.getC_Payment_ID());
+				if (paymentId != null)
 				{
-					final I_C_Payment payment = refLine.getC_Payment();
-					payment.setIsReconciled(true);
-					InterfaceWrapperHelper.save(payment);
+					paymentService.markReconciled(paymentId);
 				}
 			}
 		}
@@ -141,14 +144,13 @@ public class BankStatementBL implements IBankStatementBL
 				{
 					//
 					// Unlink payment
-					if (refLine.getC_Payment_ID() > 0)
+					final PaymentId paymentId = PaymentId.ofRepoIdOrNull(refLine.getC_Payment_ID());
+					if (paymentId != null)
 					{
-						final I_C_Payment payment = refLine.getC_Payment();
-						payment.setIsReconciled(false);
-						InterfaceWrapperHelper.save(payment);
-						refLine.setC_Payment(null);
+						paymentService.markNotReconciled(paymentId);
 
-						InterfaceWrapperHelper.save(refLine);
+						refLine.setC_Payment_ID(-1);
+						bankStatementDAO.save(refLine);
 					}
 				}
 			}
@@ -164,9 +166,6 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			return;
 		}
-
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 		//
 		// Aggregated amounts from reference lines:
@@ -271,7 +270,7 @@ public class BankStatementBL implements IBankStatementBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
 		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
-		Services.get(IFactAcctDAO.class).deleteForDocumentModel(bankStatement);
+		factAcctDAO.deleteForDocumentModel(bankStatement);
 
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);

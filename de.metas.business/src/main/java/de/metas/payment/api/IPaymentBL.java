@@ -38,6 +38,7 @@ import org.compiere.model.I_C_Payment;
 import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPaymentBL extends ISingletonService
 {
@@ -116,4 +117,10 @@ public interface IPaymentBL extends ISingletonService
 	 * @return generated and completed allocation
 	 */
 	I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date);
+
+	void markReconciled(@NonNull PaymentId paymentId);
+
+	void markNotReconciled(@NonNull PaymentId paymentId);
+
+	void markReconciledAndSave(@NonNull I_C_Payment payment);
 }

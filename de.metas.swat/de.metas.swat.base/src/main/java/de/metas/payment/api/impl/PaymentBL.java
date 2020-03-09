@@ -481,4 +481,34 @@ public class PaymentBL implements IPaymentBL
 
 		return allocHdrRef.getValue();
 	}
+
+	@Override
+	public void markReconciled(@NonNull final PaymentId paymentId)
+	{
+		setReconciled(paymentId, true);
+	}
+
+	@Override
+	public void markReconciledAndSave(@NonNull final I_C_Payment payment)
+	{
+		final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
+
+		payment.setIsReconciled(true);
+		paymentsRepo.save(payment);
+	}
+
+	@Override
+	public void markNotReconciled(@NonNull final PaymentId paymentId)
+	{
+		setReconciled(paymentId, false);
+	}
+
+	private void setReconciled(@NonNull final PaymentId paymentId, final boolean reconciled)
+	{
+		final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
+
+		final I_C_Payment payment = paymentsRepo.getById(paymentId);
+		payment.setIsReconciled(reconciled);
+		paymentsRepo.save(payment);
+	}
 }

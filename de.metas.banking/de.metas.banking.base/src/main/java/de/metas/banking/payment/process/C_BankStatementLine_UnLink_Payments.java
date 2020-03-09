@@ -1,16 +1,15 @@
 package de.metas.banking.payment.process;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
@@ -27,11 +26,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,19 +44,14 @@ import de.metas.util.Services;
 public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 {
 	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	private final IPaymentBL paymentService = Services.get(IPaymentBL.class);
 
 	@Override
-	protected void prepare()
+	protected String doIt()
 	{
-	}
-
-	@Override
-	protected String doIt() throws Exception
-	{
-		final I_C_BankStatementLine bankStatementLine = getRecord(I_C_BankStatementLine.class);
+		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(getRecord_ID());
 
 		//
 		// Make sure we are allowed to modify this line
@@ -71,15 +65,15 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 		//
 		// Unlink payment from line
 		{
-			final I_C_Payment payment = bankStatementLine.getC_Payment();
-			if (payment != null)
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
+			if (paymentId != null)
 			{
-				payment.setIsReconciled(false);
-				InterfaceWrapperHelper.save(payment);
-				addLog("@C_Payment_ID@ " + payment.getDocumentNo());
+				paymentService.markReconciled(paymentId);
+				addLog("@C_Payment_ID@ " + paymentId);
+
+				bankStatementLine.setC_Payment_ID(-1);
+				bankStatementDAO.save(bankStatementLine);
 			}
-			bankStatementLine.setC_Payment(null);
-			InterfaceWrapperHelper.save(bankStatementLine);
 		}
 
 		// Delete references
@@ -88,15 +82,14 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 			// make sure we are not changing the bank statement line amounts when we will delete the line reference
 			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(lineRef, true);
 
-			final I_C_Payment payment = lineRef.getC_Payment();
-			if (payment != null)
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
+			if (paymentId != null)
 			{
-				payment.setIsReconciled(false);
-				InterfaceWrapperHelper.save(payment);
-				addLog("@C_Payment_ID@ " + payment.getDocumentNo());
+				paymentService.markNotReconciled(paymentId);
+				addLog("@C_Payment_ID@ " + paymentId);
 			}
 
-			InterfaceWrapperHelper.delete(lineRef);
+			bankStatementDAO.delete(lineRef);
 		}
 
 		//

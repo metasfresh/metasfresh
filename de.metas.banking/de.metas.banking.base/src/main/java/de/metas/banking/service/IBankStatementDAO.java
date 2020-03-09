@@ -10,8 +10,8 @@ import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -88,5 +88,9 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void save(@NonNull final I_C_BankStatementLine_Ref lineOrRef);
 
+	void delete(I_C_BankStatementLine_Ref lineRef);
+
 	int retrieveLastLineNo(@NonNull BankStatementId bankStatementId);
+
+	void updateBankStatementLinesProcessedFlag(@NonNull BankStatementId bankStatementId, boolean processed);
 }

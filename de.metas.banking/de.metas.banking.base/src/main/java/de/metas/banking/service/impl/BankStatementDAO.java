@@ -39,12 +39,13 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.payment.PaymentId;
@@ -98,9 +99,15 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void save(final @NonNull I_C_BankStatementLine_Ref lineOrRef)
+	public void save(@NonNull final I_C_BankStatementLine_Ref lineOrRef)
 	{
 		InterfaceWrapperHelper.save(lineOrRef);
+	}
+
+	@Override
+	public void delete(@NonNull final I_C_BankStatementLine_Ref lineRef)
+	{
+		InterfaceWrapperHelper.delete(lineRef);
 	}
 
 	@Override
@@ -215,7 +222,15 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);
-
 	}
 
+	@Override
+	public void updateBankStatementLinesProcessedFlag(@NonNull final BankStatementId bankStatementId, final boolean processed)
+	{
+		final String sql = "UPDATE C_BankStatementLine SET Processed=? WHERE C_BankStatement_ID=?";
+		DB.executeUpdateEx(
+				sql,
+				new Object[] { processed, bankStatementId },
+				ITrx.TRXNAME_ThreadInherited);
+	}
 }

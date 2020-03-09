@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -26,10 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +35,8 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -119,23 +116,11 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 	{
 		super.setProcessed(processed);
 
-		updateBankStatementLinesProcessedFlag(processed);
-	}
-
-	private void updateBankStatementLinesProcessedFlag(boolean processed)
-	{
 		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getC_BankStatement_ID());
-		if (bankStatementId == null)
+		if (bankStatementId != null)
 		{
-			return;
+			Services.get(IBankStatementDAO.class).updateBankStatementLinesProcessedFlag(bankStatementId, processed);
 		}
-		
-		final String sql = "UPDATE C_BankStatementLine SET Processed=? WHERE C_BankStatement_ID=?";
-		final int updateCount = DB.executeUpdateEx(
-				sql,
-				new Object[] { processed, bankStatementId },
-				ITrx.TRXNAME_ThreadInherited);
-		log.debug("setProcessed - {} - Lines={}", processed, updateCount);
 	}
 
 	@Override
@@ -177,7 +162,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		log.debug("unlockIt - {}", this);
 		setProcessing(false);
 		return true;
-	}	// unlockIt
+	}
 
 	@Override
 	public boolean invalidateIt()
@@ -185,7 +170,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		log.debug("invalidateIt - {}", this);
 		setDocAction(DOCACTION_Prepare);
 		return true;
-	}	// invalidateIt
+	}
 
 	@Override
 	public String prepareIt()
@@ -321,17 +306,17 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 				lineFrom.setC_BP_BankAccountTo_ID(this.getC_BP_BankAccount_ID());
 				lineFrom.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-				InterfaceWrapperHelper.save(lineFrom);
+				Services.get(IBankStatementDAO.class).save(lineFrom);
 			}
 		}
 
 		//
 		// Reconcile the payment
-		if (line.getC_Payment_ID() > 0)
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		if (paymentId != null)
 		{
-			I_C_Payment payment = line.getC_Payment();
-			payment.setIsReconciled(true);
-			InterfaceWrapperHelper.save(payment);
+			final IPaymentBL paymentService = Services.get(IPaymentBL.class);
+			paymentService.markReconciled(paymentId);
 		}
 	}
 
@@ -419,22 +404,23 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
 			{
 				lineFrom.setLink_BankStatementLine(null);
-				InterfaceWrapperHelper.save(lineFrom);
+				Services.get(IBankStatementDAO.class).save(lineFrom);
 			}
 		}
 		// metas: tsa: end
 
 		//
 		// Unlink payment
-		if (line.getC_Payment_ID() > 0)
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		if (paymentId != null)
 		{
-			final I_C_Payment payment = line.getC_Payment();
-			payment.setIsReconciled(false);
-			InterfaceWrapperHelper.save(payment);
-			line.setC_Payment(null);
+			final IPaymentBL paymentService = Services.get(IPaymentBL.class);
+			paymentService.markNotReconciled(paymentId);
+
+			line.setC_Payment_ID(-1);
 		}
 
-		saveRecord(line);
+		Services.get(IBankStatementDAO.class).save(line);
 	}
 
 	private static void addDescription(final I_C_BankStatementLine line, final String descriptionToAppend)
