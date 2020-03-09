@@ -3,25 +3,51 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAProtocol;
-import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
+import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 
-public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
+/*
+ * #%L
+ * de.metas.payment.sepa.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 {
-	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
+
+	private SEPACustomerDirectDebitMarshaler_Pain_008_003_02 xmlGenerator;
 	private Document xmlDocument;
 
 	private CurrencyId eur;
@@ -31,20 +57,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
+		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02();
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
 	}
 
 	@Test
 	public void createDocument_batch() throws Exception
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport(
-				"org", // SEPA_CreditorName
-				"12345", // SEPA_CreditorIdentifier
+				"SEPA_CreditorName", // SEPA_CreditorName
+				"SEPA_CreditorIdentifier", // SEPA_CreditorIdentifier
 				"INGBNL2A" // bic
 		);
 		createSEPAExportLine(sepaExport,
@@ -70,15 +98,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		// invoke the method under test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3");
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo("SEPA_CreditorName");
 
-		// if no batch, it would be 3..
-		// assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(3);
-
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("SEPA_CreditorName"));
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtrSchmeId().getId().getPrvtId().getOthr().getId()).isEqualTo("SEPA_CreditorIdentifier"));
 	}
 
 	private I_SEPA_Export createSEPAExport(
@@ -87,7 +112,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final String bic)
 	{
 		final I_SEPA_Export sepaExport = newInstance(I_SEPA_Export.class);
-		sepaExport.setSEPA_Protocol(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.getCode());
+		sepaExport.setSEPA_Protocol(SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.getCode());
 		sepaExport.setSEPA_CreditorName(SEPA_CreditorName);
 		sepaExport.setSEPA_CreditorIdentifier(SEPA_CreditorIdentifier);
 		sepaExport.setSwiftCode(bic);
@@ -127,20 +152,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		save(line);
 
 		return line;
-	}
-
-	@Test
-	public void testReplaceForbiddenChars()
-	{
-		assertReplaceForbiddenCharsWorks("(1020739<-) | (1026@313<-)", "(1020739<-) _ (1026@313<-)");
-		assertReplaceForbiddenCharsWorks("(1020739&lt;-) | (1026313&lt;-)", "(1020739&lt;-) _ (1026313&lt;-)");
-		assertReplaceForbiddenCharsWorks("(1020739&lt;-) - (1026313&lt;-)", "(1020739&lt;-) - (1026313&lt;-)");
-	}
-
-	private void assertReplaceForbiddenCharsWorks(String input, String expected)
-	{
-		String output = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
-		assertThat(output).isEqualTo(expected);
 	}
 
 }

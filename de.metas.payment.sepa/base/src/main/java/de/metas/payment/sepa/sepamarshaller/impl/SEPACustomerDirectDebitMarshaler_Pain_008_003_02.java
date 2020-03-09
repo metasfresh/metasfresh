@@ -432,7 +432,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		return partyIdCopy;
 	}
 
-	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(final I_SEPA_Export sepaHeader)
+	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(@NonNull final I_SEPA_Export sepaHeader)
 	{
 		final PartyIdentificationSEPA3 partyIdCopy = new PartyIdentificationSEPA3();
 		final PartySEPA2 partySEPA = new PartySEPA2();
