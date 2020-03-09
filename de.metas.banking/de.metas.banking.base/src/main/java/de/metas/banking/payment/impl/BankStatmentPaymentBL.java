@@ -118,7 +118,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		{
 			return true;
 		}
-		if (line.getC_BPartner_ID() <= 0)
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
+		if (bpartnerId == null)
 		{
 			return true;
 		}
@@ -127,22 +129,25 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
 
 		final Money money = Money.of(expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()));
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
-		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, bPartnerId, money);
+		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, bpartnerId, money);
 
-		// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
-		// The user must fix this case manually by choosing the correct Payment
-		if (possiblePayments.size() > 1)
+		if (possiblePayments.isEmpty())
 		{
+			return false;
+		}
+		else if (possiblePayments.size() == 1)
+		{
+			final PaymentId paymentId = possiblePayments.iterator().next();
+			line.setC_Payment_ID(paymentId.getRepoId());
+			bankStatementDAO.save(line);
+			return false;
+		}
+		else // if (possiblePayments.size() > 1)
+		{
+			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
+			// The user must fix this case manually by choosing the correct Payment
 			return true;
 		}
-
-		if (possiblePayments.size() == 1)
-		{
-			line.setC_Payment_ID(possiblePayments.iterator().next().getRepoId());
-			bankStatementDAO.save(line);
-		}
-		return false;
 	}
 
 	@Override
