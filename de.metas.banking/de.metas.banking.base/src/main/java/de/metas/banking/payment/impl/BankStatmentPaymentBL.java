@@ -62,11 +62,11 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	public void setPayment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final PaymentId paymentId)
 	{
 		final I_C_Payment payment = paymentId != null ? paymentBL.getById(paymentId) : null;
-		setC_Payment(lineOrRef, payment);
+		setPayment(lineOrRef, payment);
 	}
 
 	@Override
-	public void setC_Payment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final I_C_Payment payment)
+	public void setPayment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final I_C_Payment payment)
 	{
 		if (payment == null)
 		{
@@ -162,7 +162,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 			final I_C_Payment payment = paymentDAO.getById(paymentIdToSet);
-			setC_Payment(line, payment);
+			setPayment(line, payment);
 
 			bankStatementDAO.save(line);
 			paymentDAO.save(payment);
@@ -184,7 +184,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		final BigDecimal payAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
 
 		final I_C_Payment createdPayment = createAndCompletePayment(orgBankAccountId, statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
-		setC_Payment(line, createdPayment);
+		setPayment(line, createdPayment);
 
 		bankStatementDAO.save(line);
 		return Optional.of(PaymentId.ofRepoId(createdPayment.getC_Payment_ID()));

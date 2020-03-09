@@ -55,7 +55,7 @@ public class CashStatementBL implements ICashStatementBL
 		bsl.setAD_Org_ID(bs.getAD_Org_ID());
 		bsl.setC_BankStatement_ID(bs.getC_BankStatement_ID());
 		bankStatementBL.setDate(bsl, bs.getStatementDate());
-		bankStatmentPaymentBL.setC_Payment(bsl, payment);
+		bankStatmentPaymentBL.setPayment(bsl, payment);
 
 		bsl.setProcessed(true);
 		InterfaceWrapperHelper.save(bsl);

@@ -68,13 +68,13 @@ public class C_BankStatementLine
 			final IPaymentBL paymentService = Services.get(IPaymentBL.class);
 
 			final I_C_Payment payment = paymentService.getById(paymentId);
-			bankStatmentPaymentBL.setC_Payment(bankStatementLine, payment);
+			bankStatmentPaymentBL.setPayment(bankStatementLine, payment);
 
 			paymentService.markReconciledAndSave(payment);
 		}
 		else
 		{
-			bankStatmentPaymentBL.setC_Payment(bankStatementLine, null);
+			bankStatmentPaymentBL.setPayment(bankStatementLine, (PaymentId)null);
 		}
 
 	}
