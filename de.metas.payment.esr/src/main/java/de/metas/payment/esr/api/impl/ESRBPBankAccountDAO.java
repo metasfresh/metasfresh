@@ -70,8 +70,6 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	}
 
 	/**
-	 * Explode the given {@code esrString} into a number of syntactically equivalent strings that can be matched against {@code C_BP_BankAccount.ESR_RenderedAccountNo}.
-	 * <p>
 	 * Formatting done according to https://www.gkb.ch/de/Documents/DC/Beratung-Produkte/Factsheets-Flyers/Handbuch-ESR/ESR-Handbuch-Postfinance-DE.pdf
 	 * <p>
 	 * 01-1067-4
@@ -120,6 +118,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 
 		return builder.build();
 	}
+
 
 	@Override
 	public final List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(@NonNull final I_C_BP_BankAccount bankAcct)
