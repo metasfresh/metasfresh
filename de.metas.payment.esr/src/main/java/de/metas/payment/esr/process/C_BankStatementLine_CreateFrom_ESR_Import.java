@@ -38,9 +38,9 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.Ordering;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.payment.esr.api.IESRImportDAO;

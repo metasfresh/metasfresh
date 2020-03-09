@@ -1,12 +1,12 @@
 package de.metas.banking.callout;
 
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import lombok.NonNull;
 
 /*
@@ -22,11 +22,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -59,35 +59,36 @@ public class C_BankStatementLine_Ref
 		setBankStatementLineOrRefFieldsAmounts(line, colName);
 	}
 
-	private void setBankStatementLineOrRefFieldsAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName)
+	private void setBankStatementLineOrRefFieldsAmounts(@NonNull final I_C_BankStatementLine_Ref lineRef, @NonNull final String colName)
 	{
-		if (lineOrRef.getC_Invoice_ID() <= 0)
+		if (lineRef.getC_Invoice_ID() <= 0)
 		{
+			final IBankStatementLineOrRef lineOrRef = InterfaceWrapperHelper.create(lineRef, IBankStatementLineOrRef.class);
 			BankStatementLineOrRefHelper.setBankStatementLineOrRefAmountsToZero(lineOrRef);
 		}
 		else
 		{
+			final IBankStatementLineOrRef lineOrRef = InterfaceWrapperHelper.create(lineRef, IBankStatementLineOrRef.class);
 			BankStatementLineOrRefHelper.setBankStatementLineOrRefAmountsWhenSomeAmountChanged(lineOrRef, colName);
 		}
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_BankStatementLine_Ref.COLUMNNAME_C_Invoice_ID
-	})
+	@CalloutMethod(columnNames = I_C_BankStatementLine_Ref.COLUMNNAME_C_Invoice_ID)
 	public void onInvoiceIdChanged(final I_C_BankStatementLine_Ref line)
 	{
 		if (line.getC_Invoice_ID() <= 0)
 		{
 			return;
 		}
-		BankStatementLineOrRefHelper.setBankStatementLineOrRefFieldsWhenInvoiceChanged(line);
+
+		final IBankStatementLineOrRef lineOrRef = InterfaceWrapperHelper.create(line, IBankStatementLineOrRef.class);
+		BankStatementLineOrRefHelper.setBankStatementLineOrRefFieldsWhenInvoiceChanged(lineOrRef);
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_BankStatementLine_Ref.COLUMNNAME_C_Payment_ID
-	})
+	@CalloutMethod(columnNames = I_C_BankStatementLine_Ref.COLUMNNAME_C_Payment_ID)
 	public void onPaymentIdChanged(final I_C_BankStatementLine_Ref line)
 	{
-		BankStatementLineOrRefHelper.setPaymentDetails(line);
+		final IBankStatementLineOrRef lineOrRef = InterfaceWrapperHelper.create(line, IBankStatementLineOrRef.class);
+		BankStatementLineOrRefHelper.setPaymentDetails(lineOrRef);
 	}
 }

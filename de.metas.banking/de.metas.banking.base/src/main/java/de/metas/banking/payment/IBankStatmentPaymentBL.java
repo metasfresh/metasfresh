@@ -13,6 +13,8 @@ import lombok.NonNull;
 
 public interface IBankStatmentPaymentBL extends ISingletonService
 {
+	void setPayment(@NonNull IBankStatementLineOrRef lineOrRef, @Nullable PaymentId paymentId);
+
 	void setC_Payment(@NonNull IBankStatementLineOrRef lineOrRef, @Nullable I_C_Payment payment);
 
 	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(

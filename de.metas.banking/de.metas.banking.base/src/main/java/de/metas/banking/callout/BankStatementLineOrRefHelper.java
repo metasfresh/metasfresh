@@ -17,16 +17,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -35,6 +34,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -318,7 +318,7 @@ public class BankStatementLineOrRefHelper
 		{
 			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
 			final CurrencyPrecision precision = currency.getPrecision();
-			
+
 			final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
 			BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
 			invoiceOpenAmt = precision.round(invoiceOpenAmt.multiply(currencyRate));
@@ -436,11 +436,7 @@ public class BankStatementLineOrRefHelper
 
 	public static void setPaymentDetails(IBankStatementLineOrRef line)
 	{
-		I_C_Payment payment = null;
-		if (line.getC_Payment_ID() > 0)
-		{
-			payment = line.getC_Payment();
-		}
-		Services.get(IBankStatmentPaymentBL.class).setC_Payment(line, payment);
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		Services.get(IBankStatmentPaymentBL.class).setPayment(line, paymentId);
 	}
 }

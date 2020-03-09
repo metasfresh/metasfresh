@@ -13,11 +13,11 @@ package de.metas.banking.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,17 +29,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.util.Services;
 
-/**
- * Code moved here form de.metas.swat de.metas.banking.model.MBankStatementLineRef.
- * 
- * @author ts
- *
- */
 @Interceptor(I_C_BankStatementLine_Ref.class)
 public class C_BankStatementLine_Ref
 {
@@ -105,7 +99,7 @@ public class C_BankStatementLine_Ref
 		{
 			throw new AdempiereException("@C_Payment_ID@"); // TODO: AD_Message
 		}
-		
+
 		//
 		// Notify listeners that our bank statement line reference will become void (i.e. we are deleting it)
 		Services.get(IBankStatementListenerService.class)

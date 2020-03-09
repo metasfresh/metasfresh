@@ -29,7 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;

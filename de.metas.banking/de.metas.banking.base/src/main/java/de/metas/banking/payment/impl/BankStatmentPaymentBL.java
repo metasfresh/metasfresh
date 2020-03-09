@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -35,8 +36,8 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
@@ -56,6 +57,13 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	// private static final transient Logger logger = LogManager.getLogger(BankStatmentPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+
+	@Override
+	public void setPayment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final PaymentId paymentId)
+	{
+		final I_C_Payment payment = paymentId != null ? paymentBL.getById(paymentId) : null;
+		setC_Payment(lineOrRef, payment);
+	}
 
 	@Override
 	public void setC_Payment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final I_C_Payment payment)
@@ -222,18 +230,19 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 
 	public void setPayAmt(@NonNull final IBankStatementLineOrRef lineOrRef, final BigDecimal payAmt, final boolean updateStatementAmt)
 	{
-		if (lineOrRef instanceof I_C_BankStatementLine)
+		if (InterfaceWrapperHelper.isInstanceOf(lineOrRef, I_C_BankStatementLine.class))
 		{
-			final I_C_BankStatementLine bsl = (I_C_BankStatementLine)lineOrRef;
+			final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(lineOrRef, I_C_BankStatementLine.class);
 			bsl.setTrxAmt(payAmt);
 			if (updateStatementAmt || bsl.getStmtAmt().signum() == 0)
 			{
 				bsl.setStmtAmt(payAmt);
 			}
 		}
-		else if (lineOrRef instanceof I_C_BankStatementLine_Ref)
+		else if (InterfaceWrapperHelper.isInstanceOf(lineOrRef, I_C_BankStatementLine_Ref.class))
 		{
-			((I_C_BankStatementLine_Ref)lineOrRef).setTrxAmt(payAmt);
+			final I_C_BankStatementLine_Ref lineRef = InterfaceWrapperHelper.create(lineOrRef, I_C_BankStatementLine_Ref.class);
+			lineRef.setTrxAmt(payAmt);
 		}
 		else
 		{
