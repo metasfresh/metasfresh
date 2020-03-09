@@ -38,6 +38,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 
 /**
@@ -63,15 +65,10 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	{
 		super(InterfaceWrapperHelper.getPO(line), doc);
 
-		final I_C_Payment payment = line.getC_Payment();
-		if (payment == null || payment.getC_Payment_ID() <= 0)
-		{
-			this._payment = null;
-		}
-		else
-		{
-			this._payment = payment;
-		}
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		this._payment = paymentId != null
+				? Services.get(IPaymentDAO.class).getById(paymentId)
+				: null;
 		m_IsReversal = line.isReversal();
 		//
 		m_StmtAmt = line.getStmtAmt();

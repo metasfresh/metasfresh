@@ -33,10 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.money.Money;
-import de.metas.organization.OrgId;
-import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -53,14 +49,19 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
@@ -74,14 +75,14 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	@Override
 	public Optional<I_C_Payment> getByExternalOrderId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
 	{
-		final I_C_Payment i_c_payment = Services.get(IQueryBL.class)
+		final I_C_Payment payment = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalOrderId, externalId.getValue())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.firstOnlyOrNull(I_C_Payment.class);
 
-		return Optional.ofNullable(i_c_payment);
+		return Optional.ofNullable(payment);
 	}
 
 	@Override

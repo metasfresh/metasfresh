@@ -26,6 +26,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine;
@@ -61,12 +62,19 @@ public class C_BankStatementLine
 		}
 
 		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
-		bankStatmentPaymentBL.setC_Payment(bankStatementLine, bankStatementLine.getC_Payment());
 
 		if (paymentId != null)
 		{
 			final IPaymentBL paymentService = Services.get(IPaymentBL.class);
-			paymentService.markReconciled(paymentId);
+
+			final I_C_Payment payment = paymentService.getById(paymentId);
+			bankStatmentPaymentBL.setC_Payment(bankStatementLine, payment);
+
+			paymentService.markReconciledAndSave(payment);
+		}
+		else
+		{
+			bankStatmentPaymentBL.setC_Payment(bankStatementLine, null);
 		}
 
 	}

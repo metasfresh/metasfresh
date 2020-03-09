@@ -15,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1727600090L;
+	private static final long serialVersionUID = -293818896L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -119,31 +119,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo()
 	{
@@ -176,6 +151,31 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public int getC_BP_BankAccountTo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccountTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -229,25 +229,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
-	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	@Override
@@ -324,18 +305,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Payment getC_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
-	}
-
 	/** Set Zahlung.
 		@param C_Payment_ID 
 		Payment identifier
@@ -359,6 +328,25 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
+	@Override
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Gebühr.
+		@return Gebühr	  */
+	@Override
+	public java.math.BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Zahlung erstellen.

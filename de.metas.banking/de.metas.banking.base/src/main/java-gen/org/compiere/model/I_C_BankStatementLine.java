@@ -36,7 +36,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -46,7 +46,7 @@ public interface I_C_BankStatementLine
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -113,29 +113,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_BankStatementLine_ID = "C_BankStatementLine_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set Cashbook/Bank account To.
 	 * Cashbook/Bank account To
 	 *
@@ -163,6 +140,29 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccountTo_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BP_BankAccount>(I_C_BankStatementLine.class, "C_BP_BankAccountTo_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccountTo_ID */
     public static final String COLUMNNAME_C_BP_BankAccountTo_ID = "C_BP_BankAccountTo_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Kosten.
@@ -209,29 +209,6 @@ public interface I_C_BankStatementLine
 
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getChargeAmt();
-
-    /** Column definition for ChargeAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ChargeAmt", null);
-    /** Column name ChargeAmt */
-    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Rechnung.
@@ -311,14 +288,31 @@ public interface I_C_BankStatementLine
 	 */
 	public int getC_Payment_ID();
 
-	public org.compiere.model.I_C_Payment getC_Payment();
-
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
-
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Payment>(I_C_BankStatementLine.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getChargeAmt();
+
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Get Erstellt.

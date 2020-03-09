@@ -134,6 +134,7 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_TaxCategory")
 			.add("org.compiere.model.I_C_Tax")
 			//
+			.add("org.compiere.model.I_C_Payment")
 			.add("org.compiere.model.I_C_PaymentTerm")
 			//
 			.add("org.compiere.model.I_C_Currency")

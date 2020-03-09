@@ -178,7 +178,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		// Check if payment is on any bank statement line, processed or not
 		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class, payment)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine.COLUMN_C_Payment_ID, paymentId)
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
 				.anyMatch();
 		if (hasBankStatementLines)

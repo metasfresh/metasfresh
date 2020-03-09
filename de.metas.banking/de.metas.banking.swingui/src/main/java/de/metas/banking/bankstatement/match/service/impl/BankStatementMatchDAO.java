@@ -73,7 +73,7 @@ public class BankStatementMatchDAO implements IBankStatementMatchDAO
 		final ICompositeQueryFilter<I_C_BankStatementLine> filters = queryBL.createCompositeQueryFilter(I_C_BankStatementLine.class);
 
 		// Payment is not set
-		filters.addEqualsFilter(I_C_BankStatementLine.COLUMN_C_Payment_ID, null);
+		filters.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_Payment_ID, null);
 
 		// Has no reference lines
 		{
