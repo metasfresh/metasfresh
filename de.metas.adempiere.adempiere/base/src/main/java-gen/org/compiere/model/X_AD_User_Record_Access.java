@@ -14,7 +14,7 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -333119461L;
+	private static final long serialVersionUID = -1683909890L;
 
     /** Standard Constructor */
     public X_AD_User_Record_Access (Properties ctx, int AD_User_Record_Access_ID, String trxName)
@@ -181,6 +181,47 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Parent.
+		@param Parent_ID 
+		Parent of Entity
+	  */
+	@Override
+	public void setParent_ID (int Parent_ID)
+	{
+		if (Parent_ID < 1) 
+			set_Value (COLUMNNAME_Parent_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_ID, Integer.valueOf(Parent_ID));
+	}
+
+	/** Get Parent.
+		@return Parent of Entity
+	  */
+	@Override
+	public int getParent_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Permission Issuer.
 		@param PermissionIssuer Permission Issuer	  */
 	@Override
@@ -217,6 +258,28 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Root Entry.
+		@param Root_ID Root Entry	  */
+	@Override
+	public void setRoot_ID (int Root_ID)
+	{
+		if (Root_ID < 1) 
+			set_Value (COLUMNNAME_Root_ID, null);
+		else 
+			set_Value (COLUMNNAME_Root_ID, Integer.valueOf(Root_ID));
+	}
+
+	/** Get Root Entry.
+		@return Root Entry	  */
+	@Override
+	public int getRoot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Root_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

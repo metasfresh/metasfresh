@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.exceptions.TaxNoExemptFoundException;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 
@@ -132,19 +131,7 @@ public interface ITaxBL extends ISingletonService
 			boolean IsSOTrx);
 
 	/**
-	 * Get Exempt Tax Code
-	 *
-	 * @param ctx context
-	 * @param AD_Org_ID org to find client
-	 * @return C_Tax_ID
-	 * @throws TaxNoExemptFoundException if no tax exempt found
-	 */
-	int getExemptTax(Properties ctx, int AD_Org_ID);
-
-	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.
-	 *
-	 * @param tax
 	 */
 	void setupIfIsWholeTax(final I_C_Tax tax);
 

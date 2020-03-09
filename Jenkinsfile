@@ -376,7 +376,8 @@ Map invokeDownStreamJobs(
 	final def misc = new de.metas.jenkins.Misc();
 	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 
-	final buildResult = build job: jobName,
+	final buildResult = build job: jobName, 
+		propagate: false,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL

@@ -121,7 +121,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		account.setC_BPartner(bp);
+		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
@@ -162,7 +162,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		account.setC_BPartner(bp);
+		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
@@ -204,7 +204,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		account.setC_BPartner(bp);
+		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
@@ -245,7 +245,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		account.setC_BPartner(bp);
+		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
 
 		esrImport.setC_BP_BankAccount(account);

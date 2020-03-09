@@ -72,4 +72,5 @@ public class C_Invoice_Candidate
 			invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateId, true/* candidateDeleted */);
 		}
 	}
+
 }

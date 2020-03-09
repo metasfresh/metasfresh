@@ -4,11 +4,11 @@ DROP FUNCTION IF EXISTS SummaryAndBalanceReport(p_dateFrom date, p_dateTo date, 
 
 
 
-CREATE OR REPLACE FUNCTION SummaryAndBalanceReport(p_dateFrom date,
-                                                   p_dateTo date,
-                                                   p_c_acctschema_id NUMERIC,
-                                                   p_ad_org_id numeric,
-                                                   p_account_id NUMERIC=NULL,
+CREATE OR REPLACE FUNCTION SummaryAndBalanceReport(p_dateFrom          date,
+                                                   p_dateTo            date,
+                                                   p_c_acctschema_id   NUMERIC,
+                                                   p_ad_org_id         numeric,
+                                                   p_account_id        NUMERIC=NULL,
                                                    p_ExcludeEmptyLines text = 'Y')
     RETURNS table
             (
@@ -61,7 +61,7 @@ WITH filteredElementValues AS
                     credit,
                     endingBalance
              FROM data
-             WHERE (p_ExcludeEmptyLines = 'N' OR (beginningBalance != 0 AND endingBalance != 0))
+             WHERE (p_ExcludeEmptyLines = 'N' OR (beginningBalance != 0 OR endingBalance != 0))
          )
 SELECT AccountValue,
        AccountName,
@@ -77,9 +77,13 @@ $$
 /*
 How to run:
 
-select * from SummaryAndBalanceReport('2018-04-01'::date,
-                                          '2018-05-31'::date,
-                                          1000000,
-                                          1000000)
+
+SELECT *
+FROM SummaryAndBalanceReport('2019-09-01'::date,
+                             '2020-05-31'::date,
+                             1000000,
+                             1000000,
+                             NULL,
+                             'Y')
 ;
  */

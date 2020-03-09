@@ -93,7 +93,7 @@ public class FlatrateTermCreator
 					{
 						createTerm(partner);
 						Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
-						logger.debug("created contract(s) for {}", partner);
+						logger.debug("Created contract(s) for {}", partner);
 					}
 
 					@Override

@@ -23,12 +23,11 @@ package de.metas.banking.payment;
  */
 
 import java.sql.Timestamp;
-import java.util.Properties;
 
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.payment.PaymentRule;
 
 /**
  * Used to create or update {@link I_C_PaySelectionLine}s for a given {@link I_C_PaySelection}.<br>
@@ -55,10 +54,6 @@ public interface IPaySelectionUpdater
 	 */
 	String getSummary();
 
-	IPaySelectionUpdater setContext(final IContextAware context);
-
-	IPaySelectionUpdater setContext(final Properties ctx, final String trxName);
-
 	/**
 	 * Sets {@link I_C_PaySelection} in scope (mandatory).
 	 *
@@ -70,11 +65,11 @@ public interface IPaySelectionUpdater
 
 	IPaySelectionUpdater setC_BPartner_ID(int bpartnerId);
 
-	IPaySelectionUpdater setPaymentRule(String paymentRule);
+	IPaySelectionUpdater setPaymentRule(PaymentRule paymentRule);
 
 	IPaySelectionUpdater setPayDate(Timestamp payDate);
 
-	IPaySelectionUpdater setMatchRequirement(String matchRequirement);
+	IPaySelectionUpdater setMatchRequirement(InvoiceMatchingMode matchRequirement);
 
 	IPaySelectionUpdater setIncludeInDispute(boolean includeInDispute);
 

@@ -44,6 +44,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -57,6 +58,7 @@ import de.metas.util.Services;
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {
 	private final RefundConfigRepository refundConfigRepository = SpringContextHolder.instance.getBean(RefundConfigRepository.class);
+	private final CommissionProductService commissionProductService = SpringContextHolder.instance.getBean(CommissionProductService.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private int p_flatrateconditionsID;
@@ -77,9 +79,10 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		final I_C_Flatrate_Conditions conditions = loadOutOfTrx(p_flatrateconditionsID, I_C_Flatrate_Conditions.class);
 		setConditions(conditions);
 
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
+
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
 		{
-			final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
 
 			final RefundConfigQuery query = RefundConfigQuery.builder()
 					.conditionsId(conditionsId)
@@ -106,7 +109,8 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		}
 		else if (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
 		{
-			addProduct(null);
+			final I_M_Product commissionProductRecord = loadOutOfTrx(commissionProductService.getCommissionProduct(conditionsId), I_M_Product.class);
+			addProduct(commissionProductRecord);
 		}
 		else if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
 		{

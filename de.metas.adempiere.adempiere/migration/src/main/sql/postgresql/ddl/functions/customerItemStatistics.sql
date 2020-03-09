@@ -53,19 +53,13 @@ WITH t AS (
                                 THEN -1
                                 ELSE
                                 1
-                        END AS multiplier,
+                        END            AS multiplier,
 
                         CASE
                             WHEN i.IsTaxIncluded = 'Y' THEN il.LineNetAmt - il.TaxAmtInfo
                                                        ELSE il.LineNetAmt
-                        END AS amt,
-
-                        CASE
-                            WHEN il.c_uom_id <> p.C_UOM_ID -- Only convert the UOM if it's not the same one. The uomconvert function is very time consuming.
-                                THEN
-                                uomconvert(il.M_Product_ID, il.c_uom_id, p.C_UOM_ID, il.qtyInvoiced)
-                                ELSE il.qtyInvoiced
-                        END AS QtyInvoiced
+                        END            AS amt,
+                        il.qtyInvoiced AS QtyInvoiced
 
 
                  FROM C_InvoiceLine il
@@ -118,15 +112,15 @@ WITH t AS (
 SELECT t.BPValue,
        t.productValue,
        t.Name,
-       t.qtyInvoiced,
+       t.qtyInvoiced::numeric,
        t.UOM,
-       t.Revenue                   AS Revenue,
-       t.costPrice * t.qtyInvoiced AS ProductCosts,
+       round(t.Revenue, 2)                   AS Revenue,
+       round(t.costPrice * t.qtyInvoiced, 2) AS ProductCosts,
        t.iso_Code,
        round((CASE
                   WHEN t.Revenue > 0 THEN (t.costPrice * t.qtyInvoiced * 100) / t.Revenue
                                      ELSE 0
-              END), 2)             AS ProductCostsPercent
+              END), 2)                       AS ProductCostsPercent
 
 
 FROM t

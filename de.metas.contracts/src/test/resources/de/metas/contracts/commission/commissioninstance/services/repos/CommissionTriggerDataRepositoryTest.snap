@@ -1,0 +1,10 @@
+de.metas.contracts.commission.commissioninstance.services.repos.CommissionTriggerDataRepositoryTest.testGetForInvoiceCandidateId=[ {
+  "orgId" : 10,
+  "invoiceCandidateId" : 100003,
+  "invoiceCandidateWasDeleted" : false,
+  "timestamp" : "2020-03-03T08:23:00.929Z",
+  "forecastedPoints" : 100,
+  "invoiceablePoints" : 300,
+  "invoicedPoints" : 100,
+  "tradedCommissionPercent" : 0
+} ]
