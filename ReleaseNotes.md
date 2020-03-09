@@ -9,6 +9,18 @@ Additional notes:
  * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
 
 Here come the actual release notes:
+
+# metasfresh 5.141
+## Features
+* metasfresh
+  * [#6190](https://github.com/metasfresh/metasfresh/issues/6190) Jasper Report: Summary and balance list - Summen- und Saldenliste
+  * [#6283](https://github.com/metasfresh/metasfresh/issues/6283) Implement SEPA Direct Debit
+  * [#6289](https://github.com/metasfresh/metasfresh/issues/6289) Bankstatement improvements
+  * [#6291](https://github.com/metasfresh/metasfresh/issues/6291) User in generated invoice must be active
+
+* metasfresh-parent
+  * [#42](https://github.com/metasfresh/metasfresh-parent/pull/42) Use binary git after a test which i made yesterday
+
 # metasfresh 5.140
 ## Features
 * metasfresh
