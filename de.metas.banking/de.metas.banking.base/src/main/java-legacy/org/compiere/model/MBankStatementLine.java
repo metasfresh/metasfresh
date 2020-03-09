@@ -24,10 +24,14 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.util.DB;
 
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 /**
@@ -105,18 +109,21 @@ public class MBankStatementLine extends X_C_BankStatementLine
 
 		//
 		// Set References
-		if (getC_Payment_ID() > 0 && getC_BPartner_ID() <= 0)
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(getC_Payment_ID());
+		if (paymentId != null && getC_BPartner_ID() <= 0)
 		{
-			final I_C_Payment payment = new MPayment(getCtx(), getC_Payment_ID(), get_TrxName());
+			final I_C_Payment payment = Services.get(IPaymentBL.class).getById(paymentId);
 			setC_BPartner_ID(payment.getC_BPartner_ID());
 			if (payment.getC_Invoice_ID() > 0)
 			{
 				setC_Invoice_ID(payment.getC_Invoice_ID());
 			}
 		}
-		if (getC_Invoice_ID() > 0 && getC_BPartner_ID() <= 0)
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(getC_Invoice_ID());
+		if (invoiceId != null && getC_BPartner_ID() <= 0)
 		{
-			final I_C_Invoice invoice = new MInvoice(getCtx(), getC_Invoice_ID(), get_TrxName());
+			final I_C_Invoice invoice = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
 			setC_BPartner_ID(invoice.getC_BPartner_ID());
 		}
 
