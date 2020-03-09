@@ -100,7 +100,7 @@ public class CommissionInstanceRequestFactory
 			return Optional.empty();
 		}
 
-		final Optional<CommissionTrigger> trigger = commissionTriggerFactory.createForNewSalesInvoiceCandidate(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()));
+		final Optional<CommissionTrigger> trigger = commissionTriggerFactory.createForSalesInvoiceCandidate(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()));
 		if (!trigger.isPresent())
 		{
 			logger.debug("No CommissionTrigger for contractRequest; -> return empty; contractRequest={}", contractRequest);

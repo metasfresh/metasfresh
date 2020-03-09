@@ -22,7 +22,7 @@ import de.metas.util.Services;
  * @author Teo Sarca, www.arhipac.ro
  *         <li>FR [ 2758097 ] Implement TaxNotFoundException
  */
-public class TaxNoExemptFoundException extends AdempiereException
+public class ExemptTaxNotFoundException extends AdempiereException
 {
 	/**
 	 * 
@@ -31,7 +31,7 @@ public class TaxNoExemptFoundException extends AdempiereException
 
 	private static final String AD_Message = "TaxNoExemptFound";
 
-	public TaxNoExemptFoundException(int AD_Org_ID)
+	public ExemptTaxNotFoundException(int AD_Org_ID)
 	{
 		super(buildMessage(AD_Org_ID));
 	}

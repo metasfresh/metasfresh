@@ -58,6 +58,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -403,8 +404,8 @@ public class ESRImportBL implements IESRImportBL
 		if (line.getC_Invoice_ID() > 0
 				&& !line.getC_Invoice().isPaid()
 				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID() // only if orgs match
-			// we also want to handle invoices that are already paid, because this line links them to another payment
-			/* && !line.getC_Invoice().isPaid() */)
+		// we also want to handle invoices that are already paid, because this line links them to another payment
+		/* && !line.getC_Invoice().isPaid() */)
 		{
 			key = Util.mkKey(
 					line.getAD_Org_ID(),
@@ -579,7 +580,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
-	 * @param line      the line in question
+	 * @param line the line in question
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
@@ -906,8 +907,14 @@ public class ESRImportBL implements IESRImportBL
 			}
 
 			// check partners first
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 			final I_C_BPartner esrPartner = line.getC_BPartner();
-			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0 ? line.getC_Invoice().getC_BPartner() : null;
+			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0
+					? bpartnerDAO.getById(line.getC_Invoice().getC_BPartner_ID())
+					: null;
+
+
 			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? InterfaceWrapperHelper.load(line.getC_Payment().getC_BPartner_ID(), I_C_BPartner.class) : null;
 			if (esrPartner != null)
 			{

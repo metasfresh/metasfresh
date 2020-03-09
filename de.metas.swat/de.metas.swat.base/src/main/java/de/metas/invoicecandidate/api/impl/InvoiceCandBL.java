@@ -103,6 +103,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
@@ -191,7 +192,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
 	// task 08927
-	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(Boolean.class);
+	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS = new ModelDynAttributeAccessor<>(Boolean.class);
 
 	/** @task 08451 */
 	private static final LocalDate DATE_TO_INVOICE_MAX_DATE = LocalDate.of(9999, Month.DECEMBER, 31); // NOTE: not using LocalDate.MAX because we want to convert it to Timestamp
@@ -1371,8 +1372,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void handleCompleteForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
-		if (!DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.isNull(invoice)
-				&& DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.getValue(invoice))
+		if (!DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.isNull(invoice)
+				&& DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.getValue(invoice))
 		{
 			return; // nothing to do for us
 		}
@@ -1466,8 +1467,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final String note;
 				if (isCreditMemo)
 				{
+					final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 					// task 08927
-					note = "@C_DocType_ID@=" + invoice.getC_DocType().getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+					note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 					if (creditMemoReinvoicable)
 					{
 						qtysInvoiced = StockQtyAndUOMQtys

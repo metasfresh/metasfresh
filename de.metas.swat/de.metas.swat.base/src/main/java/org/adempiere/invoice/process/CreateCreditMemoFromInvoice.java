@@ -32,12 +32,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.IDocTypeDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
 
 public class CreateCreditMemoFromInvoice extends JavaProcess
 {
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private static final String PARA_C_DocType_ID = "C_DocType_ID";
 	private int C_DocType_ID = -1;
 
@@ -74,12 +78,12 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 				.referenceInvoice(referenceInvoice)
 				.creditedInvoiceReinvoicable(creditedInvoiceReinvoicable).build();
 
-		creditMemo = Services.get(IInvoiceBL.class).creditInvoice(invoice, creditCtx);
+		creditMemo = invoiceBL.creditInvoice(invoice, creditCtx);
 
 		final String documentNo = creditMemo.getDocumentNo();
 
 		final String msg = "@Created@: "
-				+ creditMemo.getC_DocTypeTarget().getName() + ", @DocumentNo@ "
+				+ docTypeDAO.getById(creditMemo.getC_DocTypeTarget_ID()).getName() + ", @DocumentNo@ "
 				+ documentNo;
 
 		AD_Table_ID = InterfaceWrapperHelper.getModelTableId(creditMemo);

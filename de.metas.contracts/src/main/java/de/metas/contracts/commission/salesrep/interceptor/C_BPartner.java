@@ -1,4 +1,4 @@
-package de.metas.contracts.commission.interceptor;
+package de.metas.contracts.commission.salesrep.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;

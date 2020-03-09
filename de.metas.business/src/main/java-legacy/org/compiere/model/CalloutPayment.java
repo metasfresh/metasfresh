@@ -29,6 +29,7 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.payment.api.IPaymentBL;
@@ -125,7 +126,10 @@ public class CalloutPayment extends CalloutEngine
 				// 07564
 				// In case of a credit memo invoice, if the amount is negative, we have to make is positive
 				BigDecimal payAmt = InvoiceOpen.subtract(DiscountAmt);
-				final I_C_DocType invoiceDocType = invoice.getC_DocType();
+
+				final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+				final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
+
 				if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(invoiceDocType.getDocBaseType())
 						|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(invoiceDocType.getDocBaseType()))
 				{

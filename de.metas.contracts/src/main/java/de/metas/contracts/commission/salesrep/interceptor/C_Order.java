@@ -1,10 +1,7 @@
-package de.metas.contracts.commission.interceptor;
+package de.metas.contracts.commission.salesrep.interceptor;
 
-import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Optional;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -12,19 +9,16 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -55,89 +49,47 @@ import lombok.NonNull;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private static final String MSG_CUSTOMER_NEEDS_SALES_PARTNER = "de.metas.contracts.commission.salesOrder.MissingSalesPartner";
+	private DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
+	private DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
 
-	private final IBPartnerDAO bpartnerDAO;
-
-	public C_Order()
+	public C_Order(
+			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
+			@NonNull final DocumentSalesRepDescriptorService documentSalesRepDescriptorService)
 	{
+		this.documentSalesRepDescriptorService = documentSalesRepDescriptorService;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 
-		bpartnerDAO = Services.get(IBPartnerDAO.class);
+		this.documentSalesRepDescriptorFactory = documentSalesRepDescriptorFactory;
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
-	public void updateSalesPartnerFromBillPartner(@NonNull final I_C_Order orderRecord)
+	public void updateSalesPartnerFromCustomer(@NonNull final I_C_Order orderRecord)
 	{
-		if (!orderRecord.isSOTrx())
-		{
-			return;
-		}
+		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(orderRecord);
 
-		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
-		if (effectiveBillPartnerId == null)
-		{
-			return; // no customer whose salesrep data we can use to update this order
-		}
+		documentSalesRepDescriptorService.updateFromCustomer(documentSalesRepDescriptor);
 
-		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
-		orderRecord.setIsSalesPartnerRequired(billBPartnerRecord.isSalesPartnerRequired());
-
-		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(billBPartnerRecord.getC_BPartner_SalesRep_ID());
-		orderRecord.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesBPartnerId));
-
-		if (salesBPartnerId == null)
-		{
-			orderRecord.setSalesPartnerCode(null);
-			return;
-		}
-
-		final I_C_BPartner salesBPartnerRecord = bpartnerDAO.getById(salesBPartnerId);
-		orderRecord.setSalesPartnerCode(salesBPartnerRecord.getSalesPartnerCode());
+		documentSalesRepDescriptor.syncToRecord();
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_SalesPartnerCode)
 	public void updateSalesPartnerFromCode(@NonNull final I_C_Order orderRecord)
 	{
-		final String salesPartnerCode = orderRecord.getSalesPartnerCode();
-		if (isEmpty(salesPartnerCode, true))
-		{
-			orderRecord.setC_BPartner_SalesRep_ID(-1);
-			return;
-		}
+		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(orderRecord);
 
-		final Optional<BPartnerId> salesPartnerId = bpartnerDAO.getBPartnerIdBySalesPartnerCode(
-				salesPartnerCode,
-				ImmutableSet.of(OrgId.ofRepoId(orderRecord.getAD_Org_ID()), OrgId.ANY));
-		if (salesPartnerId.isPresent())
-		{
-			orderRecord.setC_BPartner_SalesRep_ID(salesPartnerId.get().getRepoId());
-		}
+		documentSalesRepDescriptorService.updateFromSalesPartnerCode(documentSalesRepDescriptor);
+
+		documentSalesRepDescriptor.syncToRecord();
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
 	public void updateSalesPartnerInOrder(@NonNull final I_C_Order orderRecord)
 	{
-		if (!orderRecord.isSOTrx())
-		{
-			return;
-		}
+		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(orderRecord);
 
-		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
-		if (effectiveBillPartnerId == null)
-		{
-			return; // no customer whose mater data we we could update
-		}
+		documentSalesRepDescriptorService.updateFromSalesRep(documentSalesRepDescriptor);
 
-		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
-		if (salesBPartnerId == null)
-		{
-			orderRecord.setSalesPartnerCode(null);
-			return;
-		}
-
-		final I_C_BPartner salesBPartnerRecord = bpartnerDAO.getById(salesBPartnerId);
-		orderRecord.setSalesPartnerCode(salesBPartnerRecord.getSalesPartnerCode());
+		documentSalesRepDescriptor.syncToRecord();
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
@@ -160,6 +112,7 @@ public class C_Order
 			return; // leave the master data untouched
 		}
 
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
 		billBPartnerRecord.setC_BPartner_SalesRep_ID(orderRecord.getC_BPartner_SalesRep_ID());
 		saveRecord(billBPartnerRecord);
@@ -168,31 +121,14 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void preventCompleteIfMissingSalesPartner(@NonNull final I_C_Order orderRecord)
 	{
-		if (!orderRecord.isSOTrx())
+		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(orderRecord);
+
+		if (documentSalesRepDescriptor.validatesOK())
 		{
-			return; // nothing to do for purchase orders
+			return; // nothing to do
 		}
 
-		if (orderRecord.getC_BPartner_SalesRep_ID() > 0)
-		{
-			return; // having specified a sales partner is never wrong
-		}
-
-		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
-		if (effectiveBillPartnerId == null)
-		{
-			return;
-		}
-
-		final I_C_BPartner bpartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
-		if (!bpartnerRecord.isSalesPartnerRequired())
-		{
-			return; // doesn't need to have a sales partner
-		}
-
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_CUSTOMER_NEEDS_SALES_PARTNER);
-		throw new AdempiereException(message).markAsUserValidationError();
+		throw documentSalesRepDescriptorService.createMissingSalesRepException();
 	}
 
 	private BPartnerId extractEffectiveBillPartnerId(@NonNull final I_C_Order orderRecord)

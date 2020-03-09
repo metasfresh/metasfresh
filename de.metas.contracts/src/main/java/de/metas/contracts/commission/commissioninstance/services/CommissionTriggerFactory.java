@@ -5,23 +5,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.money.Money;
-import de.metas.money.MoneyService;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.util.lang.Percent;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionTriggerDataRepository;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /*
@@ -60,7 +62,7 @@ public class CommissionTriggerFactory
 		this.moneyService = moneyService;
 	}
 
-	public Optional<CommissionTrigger> createForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public Optional<CommissionTrigger> createForSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		return createForRecord(icRecord);
@@ -87,6 +89,12 @@ public class CommissionTriggerFactory
 				.build();
 
 		return Optional.of(trigger);
+	}
+
+	public Optional<CommissionTrigger> createForManualInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		final I_C_Invoice icRecord = load(invoiceId, I_C_Invoice.class);
+		return createForRecord(icRecord);
 	}
 
 	public CommissionTrigger createForForecastQtyAndPrice(

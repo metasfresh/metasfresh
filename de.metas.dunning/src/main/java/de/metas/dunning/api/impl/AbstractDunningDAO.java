@@ -32,6 +32,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.annotation.CacheCtx;
@@ -54,8 +57,11 @@ import lombok.NonNull;
 public abstract class AbstractDunningDAO implements IDunningDAO
 {
 	@Override
-	public final I_C_Dunning retrieveDunningForBPartner(final I_C_BPartner bpartner)
+	public final I_C_Dunning retrieveDunningForBPartner(@NonNull final BPartnerId bpartnerId)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
+
 		I_C_Dunning dunning = InterfaceWrapperHelper.create(bpartner.getC_Dunning(), I_C_Dunning.class);
 		if (dunning != null)
 		{

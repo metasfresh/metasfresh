@@ -35,13 +35,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.document.IDocTypeDAO;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
@@ -140,7 +140,9 @@ public class C_Payment
 		}
 		else
 		{
-			Services.get(IPaymentDAO.class).updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), invoice.getC_DocType());
+			final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docTypeDAO.getById(invoice.getC_DocType_ID()));
 		}
 	}
 
