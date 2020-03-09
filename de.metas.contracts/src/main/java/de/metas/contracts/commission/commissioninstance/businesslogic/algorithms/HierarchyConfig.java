@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.algorithm
 
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -13,7 +14,9 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract.HierarchyContractBuilder;
+import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -43,10 +46,20 @@ import lombok.Value;
 @Value
 public class HierarchyConfig implements CommissionConfig
 {
+	HierarchyConfigId id;
+
 	boolean subtractLowerLevelCommissionFromBase;
+
+	@Getter
+	ProductId commissionProductId;
 
 	/* using integer as key to avoid complications on deserializing from JSON which we do in our tests. */
 	Map<Integer, HierarchyContract> bpartnerId2HierarchyContracts;
+
+	public static boolean isInstance(@NonNull final CommissionConfig config)
+	{
+		return config instanceof HierarchyConfig;
+	}
 
 	public static HierarchyConfig cast(@NonNull final CommissionConfig config)
 	{
@@ -63,9 +76,13 @@ public class HierarchyConfig implements CommissionConfig
 	@JsonCreator
 	@Builder
 	private HierarchyConfig(
+			@JsonProperty("id") @NonNull final HierarchyConfigId id,
+			@JsonProperty("commissionProductId") @NonNull final ProductId commissionProductId,
 			@JsonProperty("subtractLowerLevelCommissionFromBase") @NonNull final Boolean subtractLowerLevelCommissionFromBase,
 			@JsonProperty("beneficiary2HierarchyContracts") @Singular @NonNull final Map<Beneficiary, HierarchyContractBuilder> beneficiary2HierarchyContracts)
 	{
+		this.id = id;
+		this.commissionProductId = commissionProductId;
 		this.subtractLowerLevelCommissionFromBase = subtractLowerLevelCommissionFromBase;
 
 		final ImmutableMap.Builder<Integer, HierarchyContract> builder = ImmutableMap.<Integer, HierarchyContract> builder();

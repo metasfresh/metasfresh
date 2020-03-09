@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundProducerService;
@@ -63,6 +64,7 @@ import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -133,7 +135,8 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 			if (oldItemCopies != newItemCopies)
 			{
-				logger.debug("An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
+				Loggables.withLogger(logger, Level.DEBUG).addLog(
+						"An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
 						copiesMultipliers, item.getCopies(), oldItemCopies, copiesMultipliers, newItemCopies, item);
 				item.setCopies(newItemCopies);
 			}
@@ -169,7 +172,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void renqueue(final I_C_Printing_Queue item, final boolean recreateArchive)
+	public void renqueue(@NonNull final I_C_Printing_Queue item, final boolean recreateArchive)
 	{
 		cancel(item);
 

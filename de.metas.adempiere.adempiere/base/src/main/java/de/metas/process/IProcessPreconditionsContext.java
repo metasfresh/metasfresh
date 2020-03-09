@@ -5,11 +5,14 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,7 +40,6 @@ import com.google.common.collect.ImmutableSet;
  * Preconditions checking context.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IProcessPreconditionsContext
 {
@@ -53,24 +55,28 @@ public interface IProcessPreconditionsContext
 	String getTableName();
 
 	/**
-	 * @param modelClass
 	 * @return single selected row's model
+	 * @deprecated please use {@link #getSingleSelectedRecordId()} and read via DAO/Repository instead
 	 */
+	@Deprecated
 	<T> T getSelectedModel(final Class<T> modelClass);
 
 	/**
-	 * @param modelClass
 	 * @return all selected rows's model(s)
+	 * @deprecated please use {@link #getSingleSelectedRecordId()} and read via DAO/Repository instead
 	 */
+	@Deprecated
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
 
-	/** @return single Record_ID; throws exception otherwise */
+	/**
+	 * @return single Record_ID; throws exception otherwise
+	 */
 	int getSingleSelectedRecordId();
 
 	/**
 	 * Gets how many rows were selected.
 	 * In case the size is not determined, an exception is thrown.
-	 *
+	 * <p>
 	 * Instead of calling this method, always consider using {@link #isNoSelection()}, {@link #isSingleSelection()}, {@link #isMoreThanOneSelected()} if applicable.
 	 */
 	SelectionSize getSelectionSize();
@@ -90,10 +96,13 @@ public interface IProcessPreconditionsContext
 		return getSelectionSize().isMoreThanOneSelected();
 	}
 
-	/** @return selected included rows of current single selected document */
+	/**
+	 * @return selected included rows of current single selected document
+	 */
 	default Set<TableRecordReference> getSelectedIncludedRecords()
 	{
 		return ImmutableSet.of();
 	}
 
+	<T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass);
 }

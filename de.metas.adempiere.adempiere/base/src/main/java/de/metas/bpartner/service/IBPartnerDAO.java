@@ -335,7 +335,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
 
-	Stream<BPartnerId> streamChildBPartnerIds(BPartnerId parentPartnerId);
+	Stream<BPartnerId> streamBPartnerIdsBySalesRepBPartnerId(BPartnerId parentPartnerId);
 
 	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
 

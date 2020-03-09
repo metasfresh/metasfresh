@@ -47,6 +47,7 @@ import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -120,7 +121,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		// only display item products
 		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
-		final boolean display = Services.get(IProductBL.class).isItem(term.getM_Product_ID());
+		final boolean display = Services.get(IProductBL.class).getProductType(ProductId.ofRepoId(term.getM_Product_ID())).isItem();
 		newSched.setIsDisplayed(display);
 
 		save(newSched);
@@ -163,7 +164,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.invalidateStorageSegment(segment);
+		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(segment);
 
 	}
 

@@ -7,12 +7,14 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -58,18 +60,29 @@ public class ContractTestRecord
 	LocalDate date = LocalDate.now();
 
 	/** Supposed to be invoked from {@link ConfigTestRecord}. */
-	I_C_Flatrate_Term createContractData(@NonNull Integer C_Flatrate_Conditions_ID)
+	I_C_Flatrate_Term createContractData(
+			@NonNull final Integer C_Flatrate_Conditions_ID,
+			@NonNull final ProductId commissionProductId)
 	{
-		final I_C_BPartner saleRepBPartnerRecord = newInstance(I_C_BPartner.class);
-		saleRepBPartnerRecord.setName(name);
-		saveRecord(saleRepBPartnerRecord);
-
 		final I_C_Flatrate_Term termRecord = newInstance(I_C_Flatrate_Term.class);
-		termRecord.setBill_BPartner_ID(saleRepBPartnerRecord.getC_BPartner_ID());
+
+		final I_C_BPartner exitingBPartnerRecord = POJOLookupMap.get().getFirstOnly(I_C_BPartner.class, bpRecord -> name.equals(bpRecord.getName()));
+		if (exitingBPartnerRecord == null)
+		{
+			final I_C_BPartner saleRepBPartnerRecord = newInstance(I_C_BPartner.class);
+			saleRepBPartnerRecord.setName(name);
+			saveRecord(saleRepBPartnerRecord);
+			termRecord.setBill_BPartner_ID(saleRepBPartnerRecord.getC_BPartner_ID());
+		}
+		else
+		{
+			termRecord.setBill_BPartner_ID(exitingBPartnerRecord.getC_BPartner_ID());
+		}
 		termRecord.setC_Flatrate_Conditions_ID(C_Flatrate_Conditions_ID);
 		termRecord.setNote("name=" + name + " (parentName=" + parentName + ")");
 		termRecord.setDocStatus(IDocument.STATUS_Completed);
 		termRecord.setType_Conditions(CommissionConstants.TYPE_CONDITIONS_COMMISSION);
+		termRecord.setM_Product_ID(commissionProductId.getRepoId());
 		termRecord.setStartDate(TimeUtil.asTimestamp(date.minusDays(10)));
 		termRecord.setEndDate(TimeUtil.asTimestamp(date.plusDays(10)));
 

@@ -64,7 +64,7 @@ public class AD_Table_CreatePK_AllMissing extends JavaProcess
 		return queryBL.createQueryBuilder(I_AD_Table.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Table.COLUMN_IsView, false) // exclude views
-				.addNotInSubQueryFilter(I_AD_Table.COLUMN_AD_Table_ID, I_AD_Column.COLUMN_AD_Table_ID, primaryKeyColumnQuery) // no primary key
+				.addNotInSubQueryFilter(I_AD_Table.COLUMNNAME_AD_Table_ID, I_AD_Column.COLUMNNAME_AD_Table_ID, primaryKeyColumnQuery) // no primary key
 				.create()
 				.list(I_AD_Table.class);
 	}

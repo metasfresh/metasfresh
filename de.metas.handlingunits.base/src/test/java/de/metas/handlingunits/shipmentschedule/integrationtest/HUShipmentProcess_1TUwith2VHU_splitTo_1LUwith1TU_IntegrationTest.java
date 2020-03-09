@@ -36,6 +36,7 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Package;
 import org.junit.Assert;
 import org.w3c.dom.Node;
 
@@ -50,7 +51,6 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.product.ProductId;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.util.Services;
 
 /**
@@ -70,8 +70,8 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		final BigDecimal qtyOrdered = new BigDecimal("100");
 
 		shipmentSchedules = Arrays.asList(
-				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered), // shipment schedule 0
-				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered) // shipment schedule 1
+				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered, 20/* orderLineNo */), // shipment schedule 0
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered, 10/* orderLineNo */) // shipment schedule 1
 		);
 	}
 
@@ -311,10 +311,10 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 			.shipmentScheduleQtyPickedExpectation(0)
-				.inoutLine(shipmentLine1)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(1)
-				.inoutLine(shipmentLine2)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.assertExpected("after shipment generated");
 		//@formatter:on

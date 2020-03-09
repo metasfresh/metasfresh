@@ -33,6 +33,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.ch.lagerkonf.ILagerKonfQualityBasedConfig;
@@ -41,6 +43,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Abstract implementation of {@link ILagerKonfQualityBasedConfig}.
@@ -86,14 +89,11 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 
 	//
 	private final IContextAware _context;
-	private Integer _invoiceDocTypeDownPaymentId = null;
-	private Integer _invoiceDocTypeFinalSettlementId = null;
+	private DocTypeId _invoiceDocTypeDownPaymentId = null;
+	private DocTypeId _invoiceDocTypeFinalSettlementId = null;
 
-	public AbstractQualityBasedConfig(final IContextAware context)
+	public AbstractQualityBasedConfig(@NonNull final IContextAware context)
 	{
-		super();
-
-		Check.assumeNotNull(context, "context not null");
 		_context = context;
 	}
 
@@ -132,7 +132,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 			final String docSubType = IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment;
 			_invoiceDocTypeDownPaymentId = loadDocType(docSubType);
 		}
-		return _invoiceDocTypeDownPaymentId;
+		return _invoiceDocTypeDownPaymentId.getRepoId();
 	}
 
 	@Override
@@ -143,7 +143,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 			final String docSubType = IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_FinalSettlement;
 			_invoiceDocTypeFinalSettlementId = loadDocType(docSubType);
 		}
-		return _invoiceDocTypeFinalSettlementId;
+		return _invoiceDocTypeFinalSettlementId.getRepoId();
 	}
 
 	/**
@@ -155,7 +155,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		return getScrapPercentageTreshold().compareTo(new BigDecimal("100")) < 0;
 	}
 
-	private int loadDocType(final String docSubType)
+	private DocTypeId loadDocType(final String docSubType)
 	{
 		final IContextAware context = getContext();
 
@@ -164,13 +164,12 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 		final int adOrgId = Env.getAD_Org_ID(ctx); // FIXME: not sure if it's ok
 
 		return Services.get(IDocTypeDAO.class).getDocTypeId(
-				ctx,
-				X_C_DocType.DOCBASETYPE_APInvoice,
-				docSubType,
-				adClientId,
-				adOrgId,
-				context.getTrxName()
-				);
+				DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
+						.docSubType(docSubType)
+						.adClientId(adClientId)
+						.adOrgId(adOrgId)
+						.build());
 	}
 
 }

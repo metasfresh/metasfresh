@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,6 +111,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IADPInstanceDAO;
@@ -129,6 +129,8 @@ import lombok.NonNull;
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
+
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -263,23 +265,24 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public BigDecimal retrieveInvoicableAmount(final I_C_BPartner billBPartner, final Timestamp date)
+	public BigDecimal retrieveInvoicableAmount(@NonNull final I_C_BPartner billBPartner, @Nullable final LocalDate date)
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(billBPartner);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(billBPartner);
+		final OrgId orgId = OrgId.ofRepoId(billBPartner.getAD_Org_ID());
 
 		final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
 				.billBPartnerId(BPartnerId.ofRepoId(billBPartner.getC_BPartner_ID()))
+				.orgId(orgId)
 				.dateToInvoice(date)
 				.error(false)
 				.build();
 		final CurrencyId targetCurrencyId = currencyBL.getBaseCurrency(ctx).getId();
 		final int adClientId = billBPartner.getAD_Client_ID();
-		final int adOrgId = billBPartner.getAD_Org_ID();
 
-		return retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, adOrgId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
+		return retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
 	}
 
 	@Override
@@ -1131,13 +1134,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final void updateDateInvoiced(
 			@Nullable final LocalDate dateInvoiced,
-			@NonNull final PInstanceId selectionId,
-			final boolean updateOnlyIfNull)
+			@NonNull final PInstanceId selectionId)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
 				dateInvoiced, // value
-				updateOnlyIfNull, // updateOnlyIfNull
+				false, // updateOnlyIfNull
 				selectionId // selectionId
 		);
 	}
@@ -1325,12 +1327,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			@NonNull final InvoiceCandidateQuery query,
 			@NonNull final CurrencyId targetCurrencyId,
 			final int adClientId,
-			final int adOrgId,
 			final String amountColumnName,
 			final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");
 		final List<Object> params = new ArrayList<>();
+
+		final OrgId orgId = query.getOrgIdNotNull();
 
 		// Bill BPartner
 		if (query.getBillBPartnerId() != null)
@@ -1339,12 +1342,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			params.add(query.getBillBPartnerId().getRepoId());
 		}
 
+		whereClause.append(" AND ").append(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID).append("=?");
+		params.add(orgId.getRepoId());
+
 		// DateToInvoice
 		if (query.getDateToInvoice() != null)
 		{
 			whereClause.append(" AND ")
 					.append(" COALESCE(" + I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override + "," + I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice + ")").append("<=?");
-			params.add(TimeUtil.getDay(query.getDateToInvoice()));
+			params.add(TimeUtil.asTimestamp(
+					query.getDateToInvoice(),
+					orgDAO.getTimeZone(orgId) /* note that if dateToInvoice is not null, then orgId is also not null */));
 		}
 
 		// Filter HeaderAggregationKey
@@ -1452,7 +1460,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						dateConv, // ConvDate,
 						conversionTypeId,
 						ClientId.ofRepoId(adClientId),
-						OrgId.ofRepoId(adOrgId));
+						orgId);
 				result = result.add(amtConverted);
 			}
 		}
@@ -1470,7 +1478,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list(I_M_InOutLine.class);
 	}
 
-	protected void saveErrorToDB(final I_C_Invoice_Candidate ic)
+	protected void saveErrorToDB(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final String sql = "UPDATE " + I_C_Invoice_Candidate.Table_Name + " SET "
 				+ " " + I_C_Invoice_Candidate.COLUMNNAME_SchedulerResult + "=?"
@@ -1626,22 +1634,37 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public InvoiceCandidateId getFirstInvoiceableInvoiceCandId(final OrderId orderId)
+	public InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(@NonNull final OrderId orderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_C_Invoice_Candidate> qtyToInvoiceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-				.setJoinOr()
-				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
-				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override, Operator.GREATER, BigDecimal.ZERO);
 
-		return queryBL
+		final List<I_C_Invoice_Candidate> nonFreightCostICs = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addFiltersUnboxed(qtyToInvoiceFilter)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 				.create()
-				.firstId(InvoiceCandidateId::ofRepoIdOrNull);
+				.list();
+
+		if (nonFreightCostICs.isEmpty())
+		{
+			return new InvoiceableInvoiceCandIdResult(null/* firstInvoiceableInvoiceCandId */, false/* orderHasInvoiceCandidatesToWaitFor */);
+		}
+
+		for (final I_C_Invoice_Candidate nonFreightCostIC : nonFreightCostICs)
+		{
+			if (nonFreightCostIC.getQtyToInvoice().signum() > 0 || nonFreightCostIC.getQtyToInvoice_Override().signum() > 0)
+			{
+				return new InvoiceableInvoiceCandIdResult(
+						InvoiceCandidateId.ofRepoId(nonFreightCostIC.getC_Invoice_Candidate_ID())/* firstInvoiceableInvoiceCandId */,
+						true/* orderHasInvoiceCandidatesToWaitFor */);
+			}
+		}
+
+		return new InvoiceableInvoiceCandIdResult(
+				null/* firstInvoiceableInvoiceCandId */,
+				true/* orderHasInvoiceCandidatesToWaitFor */);
 	}
 
 	@Override
@@ -1693,6 +1716,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
+		final OrgId orgId = query.getOrgId();
+		if (orgId != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
 		final InvoiceCandidateId invoiceCandidateId = query.getInvoiceCandidateId();
 		if (invoiceCandidateId != null)
 		{
@@ -1705,11 +1734,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, billBPartnerId);
 		}
 
-		final Timestamp dateToInvoice = query.getDateToInvoice();
+		final LocalDate dateToInvoice = query.getDateToInvoice();
 		if (dateToInvoice != null)
 		{
-			// TODO see how to get rid if this getDay shit
-			filter.addCoalesceEqualsFilter(TimeUtil.getDay(dateToInvoice), I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+			filter.addCoalesceEqualsFilter(
+					TimeUtil.asTimestamp(dateToInvoice, orgDAO.getTimeZone(orgId)) /* note that if dateToInvoice is not null, then orgId is also not null */,
+					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 		}
 
 		final String headerAggregationKey = query.getHeaderAggregationKey();

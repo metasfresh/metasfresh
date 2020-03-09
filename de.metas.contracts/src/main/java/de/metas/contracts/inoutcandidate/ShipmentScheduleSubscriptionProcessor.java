@@ -10,12 +10,12 @@ package de.metas.contracts.inoutcandidate;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,83 +29,82 @@ import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.ToString;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php?title=Auftrag_versenden_mit_Abo-Lieferung_(2009_0027_G62)'>(2009 0027 G62)</a>"
- * 
+ *
  */
+@ToString
 public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {
 	public static final String MSG_OPEN_INVOICE_1P = "ShipmentSchedule_OpenInvoice_1P";
 
 	public static final String MSG_WITH_NEXT_SUBSCRIPTION = "ShipmentSchedule_WithNextSubscription";
 
-	@Override
-	public int doUpdateAfterFirstPass(
-			final Properties ctx,
-			final IShipmentSchedulesDuringUpdate candidates,
-			final String trxName)
-	{
-		int removeCount = 0;
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleSubscriptionProcessor.class);
 
-		for (final DeliveryGroupCandidate inOut : candidates.getCandidates())
+	@Override
+	public void doUpdateAfterFirstPass(
+			final Properties ctx,
+			final IShipmentSchedulesDuringUpdate candidates)
+	{
+		for (final DeliveryGroupCandidate groupCandidate : candidates.getCandidates())
 		{
-			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
+			for (final DeliveryLineCandidate lineCandidate : groupCandidate.getLines())
 			{
-				if (inOutLine.isDiscarded())
+				if (lineCandidate.isDiscarded())
 				{
 					// this line won't be delivered anyways. Nothing to do
 					continue;
 				}
-
-				removeCount += handleWithNextSubscription(ctx, candidates, inOutLine, trxName);
+				try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(lineCandidate.getShipmentScheduleId()))
+				{
+					handleWithNextSubscription(ctx, candidates, lineCandidate);
+				}
 			}
 		}
-		return removeCount;
 	}
 
-	private int handleWithNextSubscription(
+	private void handleWithNextSubscription(
 			final Properties ctx,
 			final IShipmentSchedulesDuringUpdate candidates,
-			final DeliveryLineCandidate inOutLine,
-			final String trxName)
+			final DeliveryLineCandidate lineCandidate)
 	{
-		if (!DeliveryRule.WITH_NEXT_SUBSCRIPTION_DELIVERY.equals(inOutLine.getDeliveryRule()))
+		if (!DeliveryRule.WITH_NEXT_SUBSCRIPTION_DELIVERY.equals(lineCandidate.getDeliveryRule()))
 		{
-			// this line doesn't need to be delivered together with a
-			// subscription delivery
-			// -> nothing to do
-			return 0;
-
+			// this line doesn't need to be delivered together with a subscription delivery -> nothing to do
+			return;
 		}
 
 		// find out there are subscription delivery lines
-		boolean atLeastOneSubscription = hasSubscriptionDelivery(ctx, candidates, inOutLine, trxName);
+		final boolean atLeastOneSubscription = hasSubscriptionDelivery(ctx, candidates, lineCandidate);
 		if (!atLeastOneSubscription)
 		{
-			candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_WITH_NEXT_SUBSCRIPTION));
-			inOutLine.setDiscarded();
-			return 1;
+			logger.debug("Discard lineCandidate because there is no subscription delivery to piggyback on");
+			candidates.addStatusInfo(lineCandidate, Services.get(IMsgBL.class).getMsg(ctx, MSG_WITH_NEXT_SUBSCRIPTION));
+			lineCandidate.setDiscarded();
 		}
-
-		return 0;
 	}
 
 	private boolean hasSubscriptionDelivery(
 			final Properties ctx,
 			final IShipmentSchedulesDuringUpdate candidates,
-			final DeliveryLineCandidate inOutLine,
-			final String trxName)
+			final DeliveryLineCandidate inOutLine)
 	{
 		final DeliveryGroupCandidate inOut = inOutLine.getGroup();
 
@@ -127,9 +126,9 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 			// (which means that it is to be delivered right now)
 			final TableRecordReference scheduleReference = inOutLine.getReferenced();
 
-			if(I_C_SubscriptionProgress.Table_Name.equals(scheduleReference.getTableName()))
+			if (I_C_SubscriptionProgress.Table_Name.equals(scheduleReference.getTableName()))
 			{
-				final I_C_SubscriptionProgress sp = scheduleReference.getModel(PlainContextAware.newWithTrxName(ctx, trxName), I_C_SubscriptionProgress.class);
+				final I_C_SubscriptionProgress sp = scheduleReference.getModel(PlainContextAware.newWithThreadInheritedTrx(ctx), I_C_SubscriptionProgress.class);
 				final String status = sp.getStatus();
 				Check.assume(X_C_SubscriptionProgress.STATUS_Open.equals(status),
 						"{} referenced by {} doesn't have status {}", sp, inOutLine, status);

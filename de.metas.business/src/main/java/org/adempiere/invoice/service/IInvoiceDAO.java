@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import de.metas.currency.Amount;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
@@ -54,7 +55,6 @@ public interface IInvoiceDAO extends ISingletonService
 	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
-	 *
 	 * @param invoice
 	 * @return
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}
@@ -99,16 +99,29 @@ public interface IInvoiceDAO extends ISingletonService
 	Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(I_AD_Org adOrg);
 
 	/**
-	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please not that the value
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
 	 * is:
 	 * <ul>
 	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
 	 * <li>absolute regarding if is a credit memo or not
 	 * </ul>
 	 *
-	 * @param invoice
 	 * @return open amount
 	 */
+	Amount retrieveOpenAmt(InvoiceId invoiceId);
+
+	/**
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
+	 * is:
+	 * <ul>
+	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
+	 * <li>absolute regarding if is a credit memo or not
+	 * </ul>
+	 *
+	 * @return open amount
+	 * @deprecated Please use {@link #retrieveOpenAmt(InvoiceId)}
+	 */
+	@Deprecated
 	BigDecimal retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice);

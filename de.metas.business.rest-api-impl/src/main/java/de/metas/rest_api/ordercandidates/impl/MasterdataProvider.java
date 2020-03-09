@@ -203,7 +203,7 @@ final class MasterdataProvider
 
 	public BPartnerInfo getCreateBPartnerInfo(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
-			final OrgId orgId)
+			@Nullable final OrgId orgId)
 	{
 		return bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, orgId);
 	}
@@ -235,14 +235,14 @@ final class MasterdataProvider
 		productPricesMasterDataProvider.createProductPrice(request);
 	}
 
-	public InputDataSourceId getDataSourceId(final String dataSourceIdentifier, final OrgId orgId)
+	public InputDataSourceId getDataSourceId(@Nullable final String dataSourceIdentifier, @NonNull final OrgId orgId)
 	{
-		final IInputDataSourceDAO dataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		if (dataSourceIdentifier == null)
+		if (Check.isEmpty(dataSourceIdentifier, true))
 		{
 			return null;
 		}
 
+		final IInputDataSourceDAO dataSourceDAO = Services.get(IInputDataSourceDAO.class);
 		final IdentifierString dataSource = IdentifierString.of(dataSourceIdentifier);
 
 		final InputDataSourceQueryBuilder queryBuilder = InputDataSourceQuery.builder();
@@ -269,9 +269,7 @@ final class MasterdataProvider
 		}
 
 		final Optional<InputDataSourceId> dataSourceId = dataSourceDAO.retrieveInputDataSourceIdBy(queryBuilder.build());
-
 		return dataSourceId.orElse(null);
-
 	}
 
 	public ShipperId getShipperId(final JsonOLCandCreateRequest request)

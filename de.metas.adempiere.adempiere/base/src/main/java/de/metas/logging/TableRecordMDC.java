@@ -1,5 +1,9 @@
 package de.metas.logging;
 
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -33,18 +37,37 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class TableRecordMDC
 {
-	public MDCCloseable withTableRecordReference(@NonNull final String tableName, @NonNull final RepoIdAware id)
+	public MDCCloseable putTableRecordReference(@NonNull final String tableName, @Nullable final RepoIdAware id)
 	{
-		return withTableRecordReference(TableRecordReference.of(tableName, id));
+		final String key = tableName + "_ID";
+		final String value = id == null ? "null" : Integer.toString(id.getRepoId());
+
+		return putKeyAndValue(key, value);
 	}
 
-	public MDCCloseable withTableRecordReference(@NonNull final Object recordModel)
+	public MDCCloseable putTableRecordReference(@NonNull final Object recordModel)
 	{
-		return withTableRecordReference(TableRecordReference.of(recordModel));
+		return putTableRecordReference(TableRecordReference.of(recordModel));
 	}
 
-	public MDCCloseable withTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
+	/**
+	 * @return {@code null} if the given {@code tableRecordReference} was put already.
+	 *         Thx to https://stackoverflow.com/a/35372185/1012103
+	 */
+	public MDCCloseable putTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return MDC.putCloseable(tableRecordReference.getTableName() + "_ID", Integer.toString(tableRecordReference.getRecord_ID()));
+		final String key = tableRecordReference.getTableName() + "_ID";
+		final String value = Integer.toString(tableRecordReference.getRecord_ID());
+
+		return putKeyAndValue(key, value);
+	}
+
+	private MDCCloseable putKeyAndValue(final String key, final String value)
+	{
+		if (Objects.equals(MDC.get(key), value))
+		{
+			return null;
+		}
+		return MDC.putCloseable(key, value);
 	}
 }

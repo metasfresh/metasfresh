@@ -1,31 +1,31 @@
 /**********************************************************************
- * This file is part of Adempiere ERP Bazaar                          *
- * http://www.adempiere.org                                           *
- *                                                                    *
- * Copyright (C) Trifon Trifonov.                                     *
- * Copyright (C) Contributors                                         *
- *                                                                    *
- * This program is free software; you can redistribute it and/or      *
- * modify it under the terms of the GNU General Public License        *
- * as published by the Free Software Foundation; either version 2     *
- * of the License, or (at your option) any later version.             *
- *                                                                    *
- * This program is distributed in the hope that it will be useful,    *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       *
- * GNU General Public License for more details.                       *
- *                                                                    *
- * You should have received a copy of the GNU General Public License  *
- * along with this program; if not, write to the Free Software        *
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         *
- * MA 02110-1301, USA.                                                *
- *                                                                    *
- * Contributors:                                                      *
- *  - Trifon Trifonov (trifonnt@users.sourceforge.net)                *
- *  - Antonio Cañaveral, e-Evolution								  *
- *                                                                    *
- * Sponsors:                                                          *
- *  - E-evolution (http://www.e-evolution.com/)                       *
+ * This file is part of Adempiere ERP Bazaar *
+ * http://www.adempiere.org *
+ * *
+ * Copyright (C) Trifon Trifonov. *
+ * Copyright (C) Contributors *
+ * *
+ * This program is free software; you can redistribute it and/or *
+ * modify it under the terms of the GNU General Public License *
+ * as published by the Free Software Foundation; either version 2 *
+ * of the License, or (at your option) any later version. *
+ * *
+ * This program is distributed in the hope that it will be useful, *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the *
+ * GNU General Public License for more details. *
+ * *
+ * You should have received a copy of the GNU General Public License *
+ * along with this program; if not, write to the Free Software *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, *
+ * MA 02110-1301, USA. *
+ * *
+ * Contributors: *
+ * - Trifon Trifonov (trifonnt@users.sourceforge.net) *
+ * - Antonio Cañaveral, e-Evolution *
+ * *
+ * Sponsors: *
+ * - E-evolution (http://www.e-evolution.com/) *
  *********************************************************************/
 package org.adempiere.process.rpl.exp;
 
@@ -172,9 +172,7 @@ public class ExportHelper
 		}
 		exportProcessor2.process(mExportProcessor, outDocument, po);
 
-		return outDocument == null ?
-				null :
-				outDocument.toString();
+		return outDocument == null ? null : outDocument.toString();
 	}
 
 	/**
@@ -536,7 +534,13 @@ public class ExportHelper
 					|| displayType == DisplayType.Search && column.getAD_Reference_Value_ID() > 0)
 			{
 				final int referenceId = column.getAD_Reference_Value_ID();
-				Check.assume(referenceId > 0, "AD_Reference_Value_ID > 0 for column {} (table {})", column, column.getAD_Table().getTableName());
+				if (referenceId <= 0)
+				{
+					// Check.assume(referenceId > 0, "AD_Reference_Value_ID > 0 for column {} (table {})", column, column.getAD_Table().getTableName());
+					final String columnName = column.getColumnName();
+					final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
+					throw new AdempiereException("AD_Reference_Value_ID > 0 for column " + tableName + "." + columnName);
+				}
 
 				final MRefTable refTable = MRefTable.get(masterPO.getCtx(), referenceId);
 				final MColumn embeddedKeyColumn = MColumn.get(masterPO.getCtx(), refTable.getAD_Key());
@@ -774,7 +778,7 @@ public class ExportHelper
 			}
 			else
 			{
-				//df = DisplayType.getDateFormat(displayType); // since we export to xsd:date, it makes no sense to by default use the current user's locale's (or whatever) dateFormat.
+				// df = DisplayType.getDateFormat(displayType); // since we export to xsd:date, it makes no sense to by default use the current user's locale's (or whatever) dateFormat.
 				df = new SimpleDateFormat("yyyy-MM-dd");
 				valueAttributes.put(RPL_Constants.XML_ATTR_DateFormat, df.toPattern());
 			}
@@ -814,7 +818,7 @@ public class ExportHelper
 	}
 
 	// NOTE: commented @Cached out because is no longer applied anyways (not a service)
-	// 	@Cached
+	// @Cached
 	public IReplicationAccessContext getDefaultIReplicationAccessContext()
 	{
 		final int limit = IQuery.NO_LIMIT;

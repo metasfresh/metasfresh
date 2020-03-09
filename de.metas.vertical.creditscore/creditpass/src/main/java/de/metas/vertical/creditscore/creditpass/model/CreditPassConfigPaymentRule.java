@@ -38,7 +38,6 @@ public class CreditPassConfigPaymentRule
 	@NonNull
 	private String paymentRule;
 
-	@NonNull
 	private int purchaseType;
 
 	private BigDecimal requestPrice;

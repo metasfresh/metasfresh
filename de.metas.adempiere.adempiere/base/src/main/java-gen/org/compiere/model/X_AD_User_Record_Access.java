@@ -14,7 +14,7 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -801643190L;
+	private static final long serialVersionUID = -1683909890L;
 
     /** Standard Constructor */
     public X_AD_User_Record_Access (Properties ctx, int AD_User_Record_Access_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 			setAccess (null);
 			setAD_Table_ID (0);
 			setAD_User_Record_Access_ID (0);
+			setPermissionIssuer (null);
 			setRecord_ID (0);
         } */
     }
@@ -74,18 +75,6 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_Access);
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -109,18 +98,6 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
 	}
 
 	/** Set Ansprechpartner.
@@ -171,7 +148,7 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_UserGroup getAD_UserGroup() throws RuntimeException
+	public org.compiere.model.I_AD_UserGroup getAD_UserGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class);
 	}
@@ -204,6 +181,63 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Parent.
+		@param Parent_ID 
+		Parent of Entity
+	  */
+	@Override
+	public void setParent_ID (int Parent_ID)
+	{
+		if (Parent_ID < 1) 
+			set_Value (COLUMNNAME_Parent_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_ID, Integer.valueOf(Parent_ID));
+	}
+
+	/** Get Parent.
+		@return Parent of Entity
+	  */
+	@Override
+	public int getParent_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Permission Issuer.
+		@param PermissionIssuer Permission Issuer	  */
+	@Override
+	public void setPermissionIssuer (java.lang.String PermissionIssuer)
+	{
+		set_Value (COLUMNNAME_PermissionIssuer, PermissionIssuer);
+	}
+
+	/** Get Permission Issuer.
+		@return Permission Issuer	  */
+	@Override
+	public java.lang.String getPermissionIssuer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PermissionIssuer);
+	}
+
 	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
@@ -224,6 +258,28 @@ public class X_AD_User_Record_Access extends org.compiere.model.PO implements I_
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Root Entry.
+		@param Root_ID Root Entry	  */
+	@Override
+	public void setRoot_ID (int Root_ID)
+	{
+		if (Root_ID < 1) 
+			set_Value (COLUMNNAME_Root_ID, null);
+		else 
+			set_Value (COLUMNNAME_Root_ID, Integer.valueOf(Root_ID));
+	}
+
+	/** Get Root Entry.
+		@return Root Entry	  */
+	@Override
+	public int getRoot_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Root_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -1,28 +1,5 @@
 package de.metas.banking.service.impl;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 import java.math.BigDecimal;
 import java.util.Properties;
 
@@ -40,9 +17,32 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
@@ -91,22 +91,29 @@ public class BankStatementBL implements IBankStatementBL
 	public void handleAfterComplete(final I_C_BankStatement bankStatement)
 	{
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
 		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
 		{
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
 
-			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
+			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
+			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
+		}
+	}
+
+	private void reconcilePaymentsFromBankStatementLine_Ref(final IBankStatementDAO bankStatementDAO, final I_C_BankStatementLine line)
+	{
+		if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
+		{
+			for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
 			{
-				for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
+				if (refLine.getC_Payment_ID() > 0)
 				{
-					if (refLine.getC_Payment_ID() > 0)
-					{
-						final I_C_Payment payment = refLine.getC_Payment();
-						payment.setIsReconciled(true);
-						InterfaceWrapperHelper.save(payment);
-					}
+					final I_C_Payment payment = refLine.getC_Payment();
+					payment.setIsReconciled(true);
+					InterfaceWrapperHelper.save(payment);
 				}
 			}
 		}
@@ -128,7 +135,7 @@ public class BankStatementBL implements IBankStatementBL
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 			{
 				// NOTE: for line, the payment is unlinked in MBankStatement.voidIt()
-				
+
 				for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
 				{
 					//
@@ -149,7 +156,7 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public void recalculateStatementLineAmounts(org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	public void recalculateStatementLineAmounts(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
 	{
 		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(bankStatementLine, I_C_BankStatementLine.class);
 		if (!bsl.isMultiplePaymentOrInvoice())
@@ -190,11 +197,11 @@ public class BankStatementBL implements IBankStatementBL
 						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
 						ClientId.ofRepoId(bsl.getAD_Client_ID()), // AD_Client_ID
 						OrgId.ofRepoId(bsl.getAD_Org_ID()) // AD_Org_ID
-						);
+				);
 
 				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
 				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
-				
+
 				final BigDecimal trxAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getTrxAmt(),
 						refLineCurrencyId, // CurFrom_ID,
@@ -215,7 +222,7 @@ public class BankStatementBL implements IBankStatementBL
 						refLineCurrencyId, // CurFrom_ID,
 						bslCurrencyId) // CurTo_ID
 						.getAmount();
-				
+
 				totalStmtAmt = totalStmtAmt.add(trxAmt);
 				totalTrxAmt = totalTrxAmt.add(trxAmt);
 				totalDiscountAmt = totalDiscountAmt.add(discountAmt);
@@ -255,7 +262,7 @@ public class BankStatementBL implements IBankStatementBL
 
 		bankStatement.setEndingBalance(endingBalance);
 	}
-	
+
 	@Override
 	public void unpost(final I_C_BankStatement bankStatement)
 	{
@@ -264,7 +271,7 @@ public class BankStatementBL implements IBankStatementBL
 		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
 		Services.get(IFactAcctDAO.class).deleteForDocumentModel(bankStatement);
-		
+
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);
 	}

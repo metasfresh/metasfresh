@@ -38,8 +38,6 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.jasper.JasperEngine;
-import de.metas.report.server.IReportServer;
-import de.metas.report.server.OutputType;
 import de.metas.report.xls.engine.XlsReportEngine;
 import de.metas.util.Check;
 import de.metas.util.Services;

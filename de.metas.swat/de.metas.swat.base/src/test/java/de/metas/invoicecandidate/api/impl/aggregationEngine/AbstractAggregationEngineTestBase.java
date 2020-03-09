@@ -259,7 +259,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 		final String messagePrefix = message + " - IC=" + POJOWrapper.getInstanceName(fromIC);
 
-		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getAD_Org_ID());
+		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getOrgId().getRepoId());
 
 		if (fromIC.getM_PriceList_Version_ID() > 0)
 		{

@@ -45,7 +45,7 @@ import lombok.NonNull;
 public class QueryBL implements IQueryBL
 {
 	@Override
-	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, final String trxName)
+	public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, @Nullable final String trxName)
 	{
 		return new QueryBuilder<>(modelClass, null)
 				.setContext(ctx, trxName);
@@ -162,9 +162,9 @@ public class QueryBL implements IQueryBL
 			@NonNull final Class<T> clazz,
 			@NonNull final String next)
 	{
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
-			return POJOQuery.getPage(clazz,next);
+			return POJOQuery.getPage(clazz, next);
 		}
 		return Adempiere
 				.getBean(PaginationService.class)

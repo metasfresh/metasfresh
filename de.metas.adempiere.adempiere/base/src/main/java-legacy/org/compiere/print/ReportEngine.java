@@ -37,6 +37,7 @@ import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.print.DocFlavor;
 import javax.print.StreamPrintService;
 import javax.print.StreamPrintServiceFactory;
@@ -146,13 +147,19 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param info print info
 	 * @param trxName
 	 */
-	public ReportEngine(Properties ctx, @NonNull final MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
+	public ReportEngine(Properties ctx, @Nullable final MPrintFormat pf, MQuery query, PrintInfo info, String trxName)
 	{
-		Check.assumeNotNull(pf.getLanguage(), "Param {} has a language set", pf);
+
+		if(pf != null)
+		{
+			Check.assumeNotNull(pf.getLanguage(), "Param {} has a language set", pf);
+			log.info(pf + " -- " + query);
+		}
+
 
 		m_printerName = Services.get(IPrinterRoutingBL.class).getDefaultPrinterName(); // metas: us319
 
-		log.info(pf + " -- " + query);
+
 		m_ctx = ctx;
 		//
 		m_printFormat = pf;
@@ -242,7 +249,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	private void setPrintData()
 	{
-		if (m_query == null)
+		if (m_query == null || m_printFormat == null)
 			return;
 
 		final DataEngine de = new DataEngine(m_printFormat.getLanguage(), m_trxName);
@@ -992,8 +999,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 	{
 		try
 		{
+
 			// 03744: begin
-			if (getPrintFormat().getJasperProcess_ID() > 0)
+			if (getPrintFormat() != null && getPrintFormat().getJasperProcess_ID() > 0)
 			{
 				return createPdfDataInvokeReportProcess();
 			}
@@ -1313,7 +1321,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			getTableId(I_C_Project.class),
 			I_C_DunningRunEntry.Table_ID,
 			Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
-			Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name) };
+			Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name)};
 
 	/**************************************************************************
 	 * Get Document Print Engine for Document Type.

@@ -60,13 +60,12 @@ import de.metas.util.Services;
  * Alert Processor
  *
  * @author Jorg Janke
- * @version $Id: AlertProcessor.java,v 1.4 2006/07/30 00:53:33 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>FR [ 1894573 ] Alert Processor Improvements
- *         <li>FR [ 2453882 ] Alert Processor : attached file name improvement
+ * <li>FR [ 1894573 ] Alert Processor Improvements
+ * <li>FR [ 2453882 ] Alert Processor : attached file name improvement
  * @author Kubotti
- *         <li>BF [ 2785633 ] Adding a Notice in Alert Processor
+ * <li>BF [ 2785633 ] Adding a Notice in Alert Processor
+ * @version $Id: AlertProcessor.java,v 1.4 2006/07/30 00:53:33 jjanke Exp $
  */
 public class AlertProcessor extends AdempiereServer
 {
@@ -74,15 +73,21 @@ public class AlertProcessor extends AdempiereServer
 
 	public AlertProcessor(MAlertProcessor model)
 	{
-		super(model, 180);		// 3 minute delay
+		super(model, 180);        // 3 minute delay
 		m_model = model;
-	}	// AlertProcessor
+	}    // AlertProcessor
 
-	/** The Concrete Model */
+	/**
+	 * The Concrete Model
+	 */
 	private MAlertProcessor m_model = null;
-	/** Last Summary */
+	/**
+	 * Last Summary
+	 */
 	private StringBuffer m_summary = new StringBuffer();
-	/** Last Error Msg */
+	/**
+	 * Last Error Msg
+	 */
 	private StringBuffer m_errors = new StringBuffer();
 
 	/**
@@ -117,7 +122,7 @@ public class AlertProcessor extends AdempiereServer
 		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 		pLog.setTextMsg(m_errors.toString());
 		pLog.save();
-	}	// doWork
+	}    // doWork
 
 	private boolean isSendAttachmentsAsXls()
 	{
@@ -164,7 +169,7 @@ public class AlertProcessor extends AdempiereServer
 					valid = false;
 					break;
 				}
-			}	// Pre
+			}    // Pre
 
 			// The processing
 			try
@@ -210,8 +215,8 @@ public class AlertProcessor extends AdempiereServer
 					valid = false;
 					break;
 				}
-			}	// Post
-		}	// for all rules
+			}    // Post
+		}    // for all rules
 
 		// Update header if error
 		if (!valid)
@@ -240,7 +245,7 @@ public class AlertProcessor extends AdempiereServer
 
 		m_summary.append(alert.getName()).append(" - ");
 		return valid;
-	}	// processAlert
+	}    // processAlert
 
 	private void notifyUsers(
 			final Set<UserId> userIds,
@@ -272,10 +277,10 @@ public class AlertProcessor extends AdempiereServer
 
 	/**
 	 * Get Plain Text Report (old functionality)
-	 * 
-	 * @param rule (ignored)
-	 * @param sql sql select
-	 * @param trxName transaction
+	 *
+	 * @param rule        (ignored)
+	 * @param sql         sql select
+	 * @param trxName     transaction
 	 * @param attachments (ignored)
 	 * @return list of rows & values
 	 * @throws Exception
@@ -302,7 +307,7 @@ public class AlertProcessor extends AdempiereServer
 					result.append(meta.getColumnLabel(col)).append(" = ");
 					result.append(rs.getString(col));
 					result.append(Env.NL);
-				}	// for all columns
+				}    // for all columns
 			}
 			if (result.length() == 0)
 				log.debug("No rows selected");
@@ -332,7 +337,7 @@ public class AlertProcessor extends AdempiereServer
 
 	/**
 	 * Get Excel Report
-	 * 
+	 *
 	 * @param rule
 	 * @param sql
 	 * @param trxName
@@ -347,6 +352,7 @@ public class AlertProcessor extends AdempiereServer
 		final List<List<Object>> data = excelExporterService.getDataFromSQL(sql);
 		if (data.size() <= 1)
 		{
+			// if there's just the header and no other rows
 			return null;
 		}
 
@@ -358,19 +364,19 @@ public class AlertProcessor extends AdempiereServer
 				.build()
 				.exportToFile(file);
 		attachments.add(file);
-		
+
 		final String msg = rule.getName() + " (@SeeAttachment@ " + file.getName() + ")" + Env.NL;
 		return Msg.parseTranslation(Env.getCtx(), msg);
 	}
 
 	/**
 	 * Get Server Info
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
 	public String getServerInfo()
 	{
 		return "#" + getRunCount() + " - Last=" + m_summary.toString();
-	}	// getServerInfo
+	}    // getServerInfo
 }

@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -34,18 +35,28 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ShipmentSchedulesMDC
 {
-	public MDCCloseable withShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public MDCCloseable putShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return TableRecordMDC.withTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		return TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
 	}
 
-	public MDCCloseable withShipmentScheduleUpdateRunNo(final int runNo)
+	public MDCCloseable putShipmentScheduleUpdateRunNo(final int runNo)
 	{
 		return MDC.putCloseable("ShipmentScheduleUpdater-Run#", Integer.toString(runNo));
 	}
 
-	public MDCCloseable withRevalidationId(@NonNull final PInstanceId selectionId)
+	public MDCCloseable putRevalidationId(@NonNull final PInstanceId selectionId)
 	{
-		return MDC.putCloseable("AD_PInstance_ID", Integer.toString(selectionId.getRepoId()));
+		return MDC.putCloseable("RevalidationId", Integer.toString(selectionId.getRepoId()));
+	}
+
+	/** Remove shipment schedule ID from MDC just to add it back when the closable is closed. */
+	public IAutoCloseable removeCurrentShipmentScheduleId()
+	{
+		final String value = MDC.get(I_M_ShipmentSchedule.Table_Name);
+		MDC.remove(I_M_ShipmentSchedule.Table_Name);
+
+		final IAutoCloseable result = () -> MDC.put(I_M_ShipmentSchedule.Table_Name, value);
+		return result;
 	}
 }

@@ -50,7 +50,7 @@ public class M_Shipment_Constraint
 		}
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.invalidateStorageSegments(affectedStorageSegments);
+		invalidSchedulesInvalidator.flagSegmentForRecompute(affectedStorageSegments);
 	}
 
 	private static final Set<IShipmentScheduleSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)

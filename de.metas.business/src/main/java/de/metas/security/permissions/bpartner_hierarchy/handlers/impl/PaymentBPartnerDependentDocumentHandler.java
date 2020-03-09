@@ -7,11 +7,14 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /*
@@ -37,7 +40,8 @@ import de.metas.util.Services;
  */
 
 @Component
-class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 	@Override
 	public String getDocumentTableName()
@@ -60,6 +64,7 @@ class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(paymentRecord.getUpdatedBy()))
 				.build();
 	}
 

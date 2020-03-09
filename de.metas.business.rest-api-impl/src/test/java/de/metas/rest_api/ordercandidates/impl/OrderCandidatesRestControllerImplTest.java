@@ -7,6 +7,9 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_Loc
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,9 +36,12 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.MimeType;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -94,7 +100,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -118,11 +123,9 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class OrderCandidatesRestControllerImplTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
@@ -140,12 +143,21 @@ public class OrderCandidatesRestControllerImplTest
 
 	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
 
-	@Mocked
-	private PermissionService permissionService;
-
 	private OLCandBL olCandBL;
 
-	@Before
+	@BeforeAll
+	public static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	public static void afterAll()
+	{
+		validateSnapshots();
+	}
+
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -188,6 +200,9 @@ public class OrderCandidatesRestControllerImplTest
 		final DocTypeService docTypeService = new DocTypeService();
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
+		final PermissionService permissionService = Mockito.mock(PermissionService.class);
+		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
+
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				jsonConverters,
 				new OLCandRepository());
@@ -196,7 +211,7 @@ public class OrderCandidatesRestControllerImplTest
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
 	}
 
-	// NOTE: Shall be called programatically by each test
+	// NOTE: Shall be called programmatically by each test
 	private void startInterceptors()
 	{
 		final DefaultOLCandValidator defaultOLCandValidator = new DefaultOLCandValidator(
@@ -277,6 +292,7 @@ public class OrderCandidatesRestControllerImplTest
 
 			assertThat(uom.getX12DE355()).isEqualTo(request.getProduct().getUomCode());
 		}
+		expect(olCands).toMatchSnapshot();
 	}
 
 	/**
@@ -315,6 +331,8 @@ public class OrderCandidatesRestControllerImplTest
 				attachmentEntry);
 
 		assertThat(jsonAttachment.getType().toString()).isEqualTo(AttachmentEntry.Type.URL.toString());
+
+		expect(jsonAttachment).toMatchSnapshot();
 	}
 
 	@Test
@@ -326,8 +344,6 @@ public class OrderCandidatesRestControllerImplTest
 				.build();
 
 		testMasterdata.createProduct("productCode", uomId);
-
-
 
 		testDateOrdered(null);
 		testDateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1));
@@ -417,7 +433,7 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: pricing
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
-		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
+		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem("pricingSystemCode");
 		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
 		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testMasterdata.createPricingRules();
@@ -468,6 +484,7 @@ public class OrderCandidatesRestControllerImplTest
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
+				.pricingSystemCode("pricingSystemCode")
 				.invoiceDocType(JsonDocTypeInfo.builder()
 						.docBaseType("ARI")
 						.docSubType("KV")
@@ -482,12 +499,15 @@ public class OrderCandidatesRestControllerImplTest
 		assertThat(olCands).hasSize(1);
 
 		final JsonOLCand olCand = olCands.get(0);
-		System.out.println(olCand);
-
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
-	}
+		assertThat(olCand.getPricingSystemId()).isEqualTo(pricingSystemId.getRepoId());
 
+		expect(olCand).toMatchSnapshot();
+
+		final I_C_OLCand olCandRecord = load(olCand.getId(), I_C_OLCand.class);
+		assertThat(olCandRecord.getM_PricingSystem_ID()).isEqualByComparingTo(pricingSystemId.getRepoId());
+	}
 
 	@Test
 	public void test_CreateProductPrice_WarehouseDestId_DirectDebit()
@@ -495,7 +515,7 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: pricing
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
-		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
+		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem("pricingSystemCode");
 		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
 		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testMasterdata.createPricingRules();
@@ -560,21 +580,19 @@ public class OrderCandidatesRestControllerImplTest
 		assertThat(olCands).hasSize(1);
 
 		final JsonOLCand olCand = olCands.get(0);
-		System.out.println(olCand);
 
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
+
+		expect(olCand).toMatchSnapshot();
 	}
 
 	@Test
 	public void test_sameBPartner_DifferentLocations()
 	{
-		//
 		// Masterdata
 		testMasterdata.createProduct("productCode", uomId);
 
-		//
-		//
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
@@ -637,6 +655,7 @@ public class OrderCandidatesRestControllerImplTest
 						.build())
 				.build());
 
+		// invoke the mthod under test
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(request)
 				.getBody();
@@ -645,12 +664,13 @@ public class OrderCandidatesRestControllerImplTest
 		assertThat(olCands).hasSize(1);
 
 		final JsonOLCand olCand = olCands.get(0);
-		System.out.println(olCand);
 
 		final MetasfreshId bpartnerMetasfreshId = olCand.getBpartner().getBpartner().getMetasfreshId();
 		assertThat(olCand.getBillBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
-		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
+		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
+
+		expect(olCand).toMatchSnapshot();
 	}
 
 	@Test
@@ -659,7 +679,7 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: pricing
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
-		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
+		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem("pricingSystemCode");
 		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
 		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testMasterdata.createPricingRules();
@@ -693,7 +713,7 @@ public class OrderCandidatesRestControllerImplTest
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
-				.dataDest("int-" +DATA_DEST_INVOICECANDIDATE)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
@@ -706,7 +726,6 @@ public class OrderCandidatesRestControllerImplTest
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 
-
 				.product(JsonProductInfo.builder()
 						.code("productCode")
 						.name("productName")
@@ -758,8 +777,9 @@ public class OrderCandidatesRestControllerImplTest
 
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
-	}
 
+		expect(olCand).toMatchSnapshot();
+	}
 
 	@Test
 	public void test_no_location_specified_DirectDebit()
@@ -767,7 +787,7 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		// Masterdata: pricing
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
-		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem();
+		final PricingSystemId pricingSystemId = testMasterdata.createPricingSystem("pricingSystemCode");
 		final PriceListId priceListId = testMasterdata.createSalesPriceList(pricingSystemId, countryId_DE, currencyId_EUR, taxCategoryId);
 		testMasterdata.createPriceListVersion(priceListId, LocalDate.of(2019, Month.SEPTEMBER, 1));
 		testMasterdata.createPricingRules();
@@ -801,7 +821,7 @@ public class OrderCandidatesRestControllerImplTest
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
-				.dataDest("int-" +DATA_DEST_INVOICECANDIDATE)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
@@ -813,7 +833,6 @@ public class OrderCandidatesRestControllerImplTest
 				.paymentRule(JSONPaymentRule.DirectDebit)
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
-
 
 				.product(JsonProductInfo.builder()
 						.code("productCode")
@@ -866,8 +885,9 @@ public class OrderCandidatesRestControllerImplTest
 
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
-	}
 
+		expect(olCand).toMatchSnapshot();
+	}
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 	{

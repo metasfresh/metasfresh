@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineNoInfo;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -152,7 +153,7 @@ public class ShipmentLineBuilderTest
 				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -160,9 +161,43 @@ public class ShipmentLineBuilderTest
 		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
 
 		assertThat(shipmentLine).isNotNull();
+		assertThat(shipmentLine.getMovementQty()).isEqualTo("1");
 		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(shipmentSchedule.getC_OrderLine_ID());
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
 		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo("1");
+
+		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
+		assertThat(isNull(shipmentLine, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch)).isTrue();
+	}
+
+	@Test
+	public void createShipmentLine_shipmentScheduleWithoutHu_qtyZero_noCatchQty()
+	{
+		final StockQtyAndUOMQty zeroWithoutCatch = StockQtyAndUOMQtys.createZero(huTestHelper.pTomatoProductId, null);
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
+				.qtyCUsPerTU(8)
+				.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
+				.build();
+
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+				huContext,
+				shipmentSchedule,
+				zeroWithoutCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
+		shipmentLineBuilder.setManualPackingMaterial(true);
+
+		// invoke the methods under test
+		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		assertThat(shipmentLine).isNotNull();
+		assertThat(shipmentLine.getMovementQty()).isEqualTo("0");
+		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(shipmentSchedule.getC_OrderLine_ID());
+		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
+		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo("0");
 
 		assertThat(shipmentLine.getCatch_UOM_ID()).isEqualTo(huTestHelper.uomKgId.getRepoId());
 		assertThat(isNull(shipmentLine, I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch)).isTrue();
@@ -184,7 +219,7 @@ public class ShipmentLineBuilderTest
 				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
@@ -218,7 +253,7 @@ public class ShipmentLineBuilderTest
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -253,7 +288,7 @@ public class ShipmentLineBuilderTest
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
@@ -287,7 +322,7 @@ public class ShipmentLineBuilderTest
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
-		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader());
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
 		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 

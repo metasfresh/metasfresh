@@ -3,6 +3,9 @@ package de.metas.banking.bankstatement.match.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -59,9 +62,16 @@ public class BankStatementLine implements IBankStatementLine
 		Check.assumeNotNull(bankStatementLinePO, "bankStatementLinePO not empty");
 		trxAmt = bankStatementLinePO.getTrxAmt();
 
-		final I_C_BPartner bpartner = bankStatementLinePO.getC_BPartner();
-		bpartnerId = bpartner != null ? bpartner.getC_BPartner_ID() : -1;
-		bpartnerName = bpartner != null ? bpartner.getName() : null;
+		bpartnerId = bankStatementLinePO.getC_BPartner_ID();
+		if (bpartnerId != 0)
+		{
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(BPartnerId.ofRepoId(bpartnerId));
+			bpartnerName = bpartner.getName();
+		}
+		else
+		{
+			bpartnerName = null;
+		}
 
 		final I_C_BankStatement bankStatement = bankStatementLinePO.getC_BankStatement();
 
@@ -70,7 +80,7 @@ public class BankStatementLine implements IBankStatementLine
 
 		statementDate = bankStatement.getStatementDate();
 	}
-	
+
 	@Override
 	public String toString()
 	{

@@ -13,12 +13,12 @@ package de.metas.tourplanning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,7 +59,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 {
 	/**
 	 * Creates {@link I_M_DeliveryDay} filter which will match delivery days for given parameters.
-	 * 
+	 *
 	 * @param params
 	 * @return filter
 	 */
@@ -73,27 +73,28 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				// Only active delivery days
 				.addOnlyActiveRecordsFilter()
 				//
-				// for given BP Location
-				.addInArrayFilter(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, null, params.getBPartnerLocationId())
+				// for given BP & Location
+				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID , null, params.getBPartnerLocationId().getBpartnerId())
+				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, null, params.getBPartnerLocationId())
 				//
 				// DeliveryDateTimeMax <= given DeliveryDate
-				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.LESS_OR_EQUAL, params.getDeliveryDate())
+				.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDateTimeMax, Operator.LESS_OR_EQUAL, params.getDeliveryDate())
 				//
 				// IsToBeFetched flag shall match
-				.addEqualsFilter(I_M_DeliveryDay.COLUMN_IsToBeFetched, params.isToBeFetched());
+				.addEqualsFilter(I_M_DeliveryDay.COLUMNNAME_IsToBeFetched, params.isToBeFetched());
 
 		// task 09004 : In case calculation time is set, fetch the next date that fits.
 		final LocalDate preparationDay = params.getPreparationDay();
 
 		if (preparationDay != null)
 		{
-			filter.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.GREATER_OR_EQUAL, preparationDay);
+			filter.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDateTimeMax, Operator.GREATER_OR_EQUAL, preparationDay);
 		}
 
 		final Boolean processed = params.getProcessed();
 		if (processed != null)
 		{
-			filter.addEqualsFilter(I_M_DeliveryDay.COLUMN_Processed, processed);
+			filter.addEqualsFilter(I_M_DeliveryDay.COLUMNNAME_Processed, processed);
 		}
 
 		return filter;

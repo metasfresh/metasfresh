@@ -51,9 +51,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -84,9 +84,11 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -107,9 +109,9 @@ import lombok.NonNull;
  */
 /* package */class ShipmentLineBuilder
 {
-	//
-	// Services
 	private static final Logger logger = LogManager.getLogger(ShipmentLineBuilder.class);
+
+	// Services
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
@@ -160,13 +162,18 @@ import lombok.NonNull;
 	private final TreeSet<IAttributeValue> //
 	attributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
+	private final ShipmentLineNoInfo shipmentLineNoInfo;
+
 	/**
 	 *
 	 * @param shipment shipment on which the new shipment line will be created
 	 */
-	public ShipmentLineBuilder(@NonNull final I_M_InOut shipment)
+	public ShipmentLineBuilder(
+			@NonNull final I_M_InOut shipment,
+			@NonNull final ShipmentLineNoInfo shipmentLineNoInfo)
 	{
-		currentShipment = shipment;
+		this.currentShipment = shipment;
+		this.shipmentLineNoInfo = shipmentLineNoInfo;
 	}
 
 	/**
@@ -449,6 +456,8 @@ import lombok.NonNull;
 		// Order Line Link (retrieved from current Shipment)
 		shipmentLine.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(orderLineId));
 
+		optimisticallySetLineNo(shipmentLine);
+
 		//
 		// Qty Entered and UOM
 		shipmentLine.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
@@ -517,18 +526,38 @@ import lombok.NonNull;
 		// Save Shipment Line
 		save(shipmentLine);
 
-		//
-		// Notify candidates that we have a shipment line
-		for (final ShipmentScheduleWithHU candidate : getCandidates())
+		try (final MDCCloseable shipmentLineMDC = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
-			candidate.setM_InOutLine(shipmentLine);
+			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), shipmentLine.getLine());
+
+			//
+			// Notify candidates that we have a shipment line
+			for (final ShipmentScheduleWithHU candidate : getCandidates())
+			{
+				candidate.setM_InOutLine(shipmentLine);
+			}
+
+			//
+			// Create HU Assignments
+			createShipmentLineHUAssignments(shipmentLine);
+			return shipmentLine;
 		}
+	}
 
-		//
-		// Create HU Assignments
-		createShipmentLineHUAssignments(shipmentLine);
+	private void optimisticallySetLineNo(@NonNull final I_M_InOutLine shipmentLineRecord)
+	{
+		if (shipmentLineRecord.getC_OrderLine_ID() > 0)
+		{
+			// consider adding "Line" from the respective C_OrderLine (or other source) directly to the shipmentSchedule
+			final int lineNo = shipmentLineRecord.getC_OrderLine().getLine();
 
-		return shipmentLine;
+			logger.debug("inoutLine has C_OrderLine_ID={} which has LineNo={}", shipmentLineRecord.getC_OrderLine_ID(), lineNo);
+			shipmentLineRecord.setLine(lineNo); // if we hit a collision, we'll unset it later
+		}
+		else
+		{
+			logger.debug("inoutLine has C_OrderLine_ID=0");
+		}
 	}
 
 	@Nullable

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.printing.process;
 
@@ -13,69 +13,52 @@ package de.metas.printing.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.IQuery;
+import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.compiere.model.Query;
-
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.util.Check;
+import de.metas.security.permissions.Access;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Process all {@link I_C_Printing_Queue}s from user selection and create corresponding {@link I_C_Print_Job}s
- * 
- * @author cg
- * 
+ *
  */
 public class C_Print_Job_Create extends AbstractPrintJobCreate
 {
-	@Override
-	protected void prepare()
-	{
-		// nothing
-	}
+	private static final Logger logger = LogManager.getLogger(C_Print_Job_Create.class);
 
 	@Override
-	protected int createSelection(final String trxName)
+	protected int createSelection()
 	{
-		final StringBuilder sqlWhere = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
-
-		final String gtWhereClause = getProcessInfo().getWhereClause();
-		if (!Check.isEmpty(gtWhereClause, true))
-		{
-			sqlWhere.append(gtWhereClause);
-		}
-		else
-		{
-			sqlWhere.append("1=1");
-		}
-
-		sqlWhere.append(" AND ").append(I_C_Printing_Queue.COLUMNNAME_Processed).append("=?");
-		params.add(false);
-
-		final Query query = new Query(getCtx(), I_C_Printing_Queue.Table_Name, sqlWhere.toString(), trxName)
-				.setParameters(params)
-				.setClient_ID()
-				.setOnlyActiveRecords(true);
+		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Printing_Queue.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(getProcessInfo().getQueryFilterOrElseFalse())
+				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)
+				.create()
+				.setRequiredAccess(Access.WRITE)
+				.setClient_ID();
 		final int count = query.createSelection(getPinstanceId());
 
-		log.info("Query: {}", query);
-		log.info("Count: {}", count);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Created selection of {} C_Printing_Queue records; query={}", count, query);
 
 		return count;
 	}

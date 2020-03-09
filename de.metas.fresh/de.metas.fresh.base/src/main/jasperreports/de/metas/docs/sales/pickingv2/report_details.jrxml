@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="release.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="305"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="688"/>
@@ -47,6 +47,9 @@
 	<field name="qtyordered" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="qtyordered"/>
 	</field>
+	<field name="qtypicked" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtypicked"/>
+	</field>
 	<field name="c_uom_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="c_uom_id"/>
 	</field>
@@ -61,6 +64,18 @@
 	</field>
 	<field name="locator" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="locator"/>
+	</field>
+	<field name="x" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="x"/>
+	</field>
+	<field name="y" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="y"/>
+	</field>
+	<field name="z" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="z"/>
+	</field>
+	<field name="x1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="x1"/>
 	</field>
 	<pageHeader>
 		<band height="36">
@@ -122,7 +137,7 @@
 				<textElement textAlignment="Center">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{qtyordered}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{qtypicked}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="416" y="4" width="58" height="13" uuid="577e51fc-b61f-429f-afdb-957a7cf90263"/>

@@ -13,10 +13,12 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfigId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -53,6 +55,9 @@ public class ConfigTestRecord
 	int pointsPrecision = 2;
 
 	@NonNull
+	ProductId commissionProductId;
+
+	@NonNull
 	Boolean subtractLowerLevelCommissionFromBase;
 
 	@Singular
@@ -65,6 +70,7 @@ public class ConfigTestRecord
 	{
 		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
 		settingsRecord.setPointsPrecision(pointsPrecision);
+		settingsRecord.setCommission_Product_ID(commissionProductId.getRepoId());
 		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(subtractLowerLevelCommissionFromBase);
 		saveRecord(settingsRecord);
 
@@ -85,7 +91,7 @@ public class ConfigTestRecord
 		final HashMap<String, I_C_BPartner> name2bpartnerRecord = new HashMap<>(); // used just locally in this method
 		for (final ContractTestRecord contractTestRecord : contractTestRecords)
 		{
-			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(conditionsRecord.getC_Flatrate_Conditions_ID());
+			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(conditionsRecord.getC_Flatrate_Conditions_ID(), commissionProductId);
 			bpartnerId2flatrateTermId.put(
 					BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()),
 					FlatrateTermId.ofRepoId(termRecord.getC_Flatrate_Term_ID()));
@@ -106,12 +112,16 @@ public class ConfigTestRecord
 			}
 		}
 
-		return new ConfigData(bpartnerId2flatrateTermId.build(), name2bpartnerId.build());
+		return new ConfigData(
+				HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()),
+				bpartnerId2flatrateTermId.build(),
+				name2bpartnerId.build());
 	}
 
 	@Value
 	public static class ConfigData
 	{
+		HierarchyConfigId hierarchyConfigId;
 		ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId;
 		ImmutableMap<String, BPartnerId> name2BPartnerId;
 	}

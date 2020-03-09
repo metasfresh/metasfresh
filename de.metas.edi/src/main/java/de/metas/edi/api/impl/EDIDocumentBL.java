@@ -83,30 +83,30 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		// EDI applies only for customer invoices and shipments
-		if (!document.isSOTrx())
+		if (!document.isSOTrx() && document.isEdiEnabled())
 		{
-			loggable.addLog("IsSoTrx=false; => set IsEdiEnabled to false");
+			loggable.addLog("IsSoTrx=false; => update IsEdiEnabled to false");
 			document.setIsEdiEnabled(false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
 			return document.isEdiEnabled();
 		}
 
 		// task 05721: Set isEDIEnabled to false and disable the button for reversals
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(document.getDocStatus());
-		if (docStatus.isReversed())
+		if (docStatus.isReversed() && document.isEdiEnabled())
 		{
-			loggable.addLog("DocStatus={} is reversed; => set IsEdiEnabled to false", docStatus);
+			loggable.addLog("DocStatus={} is reversed; => update IsEdiEnabled to false", docStatus);
 			document.setIsEdiEnabled(false);
 			return document.isEdiEnabled();
 		}
 
-		if (document.getReversal_ID() > 0)
+		if (document.getReversal_ID() > 0 && document.isEdiEnabled())
 		{
-			loggable.addLog("Reversal_ID={} (i.e. >0); => set IsEdiEnabled to false", docStatus);
+			loggable.addLog("Reversal_ID={} (i.e. >0); => update IsEdiEnabled to false", docStatus);
 			document.setIsEdiEnabled(false);
 			return document.isEdiEnabled();
 		}
 
-		loggable.addLog("return non-updated isEdiEnabled={}", document.isEdiEnabled());
+		logger.debug("return non-updated isEdiEnabled={}", document.isEdiEnabled());
 		return document.isEdiEnabled();
 	}
 

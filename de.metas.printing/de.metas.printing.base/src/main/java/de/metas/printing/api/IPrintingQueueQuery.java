@@ -10,12 +10,12 @@ package de.metas.printing.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,7 @@ import de.metas.security.permissions.Access;
 /**
  * Used in {@link IPrintingQueueBL#createPrintingQueueSources(java.util.Properties, IPrintingQueueQuery)} to specify which printing queue items shall be returned by the source.<br>
  * Use {@link IPrintingQueueBL#createPrintingQueueQuery()} to create an instance.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -38,19 +38,19 @@ public interface IPrintingQueueQuery
 {
 	IPrintingQueueQuery copy();
 
-	Boolean getIsPrinted();
+	Boolean getFilterByProcessedQueueItems();
 
 	/**
-	 * Filter by if item was printed or not
-	 * 
-	 * @param printed
+	 * Filter by if item was processed or not
+	 *
+	 * @param filterByProcessedQueueItems
 	 *            <ul>
-	 *            <li>if true, only queue items which were already printed are selected
-	 *            <li>if false, only queue items which were not printed are selected
+	 *            <li>if true, only queue items which were already processed are selected
+	 *            <li>if false, only queue items which were not processed are selected
 	 *            <li>if null, no filtering will be applied
 	 *            </ul>
 	 */
-	void setIsPrinted(Boolean printed);
+	void setFilterByProcessedQueueItems(Boolean filterByProcessedQueueItems);
 
 	PInstanceId getOnlyAD_PInstance_ID();
 
@@ -72,7 +72,7 @@ public interface IPrintingQueueQuery
 
 	/**
 	 * Explicitly exclude the given printing queue ID form the result.
-	 * 
+	 *
 	 * @param ignoreC_Printing_Queue_ID
 	 */
 	void setIgnoreC_Printing_Queue_ID(int ignoreC_Printing_Queue_ID);
@@ -102,7 +102,7 @@ public interface IPrintingQueueQuery
 	void setRequiredAccess(Access requiredAccess);
 
 	/**
-	 * 
+	 *
 	 * @return the number of copies to filter by, or <code>null</code> if there is no such constraint.
 	 */
 	Integer getCopies();

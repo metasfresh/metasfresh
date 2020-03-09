@@ -10,18 +10,17 @@ package de.metas.tourplanning.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.LinkedHashMap;
@@ -29,25 +28,26 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
+import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -57,16 +57,14 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	// Services
 	private final IDeliveryDayDAO deliveryDayDAO = Services.get(IDeliveryDayDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
-	private int p_M_ShipperTransportation_ID = -1;
+	private final PurchaseOrderToShipperTransportationRepository orderToShipperTransportationRepo = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationRepository.class);
 
-	public static final String PARAM_M_Tour_ID = "M_Tour_ID";
-	private int p_M_Tour_ID = -1;
+	@Param(parameterName = I_M_Tour.COLUMNNAME_M_Tour_ID)
+	private TourId p_M_Tour_ID;
 
 	private static final String CreateFromPickingSlots_MSG_DOC_PROCESSED = "CreateFromPickingSlots_Msg_Doc_Processed";
-
-	private I_M_ShipperTransportation shipperTransportation;
-	private ShipperId shipperId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -77,39 +75,12 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	}
 
 	@Override
-	protected void prepare()
-	{
-		if (I_M_ShipperTransportation.Table_Name.equals(getTableName()))
-		{
-			p_M_ShipperTransportation_ID = getRecord_ID();
-		}
-
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			if (para.getParameter() == null)
-			{
-				continue;
-			}
-			final String parameterName = para.getParameterName();
-
-			if (PARAM_M_Tour_ID.equals(parameterName))
-			{
-				p_M_Tour_ID = para.getParameterAsInt();
-			}
-		}
-	}
-
-	@Override
 	protected String doIt() throws Exception
 	{
-		//
-		// Load M_ShipperTransportation and M_Shipper
-		if (p_M_ShipperTransportation_ID <= 0)
-		{
-			throw new FillMandatoryException(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID);
-		}
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(getRecord_ID());
 
-		shipperTransportation = InterfaceWrapperHelper.create(getCtx(), p_M_ShipperTransportation_ID, I_M_ShipperTransportation.class, get_TrxName());
+		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
+
 		Check.assumeNotNull(shipperTransportation, "shipperTransportation not null");
 
 		//
@@ -119,9 +90,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 			throw new AdempiereException("@" + CreateFromPickingSlots_MSG_DOC_PROCESSED + "@");
 		}
 
-		shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
-
-		final I_M_Tour tour = InterfaceWrapperHelper.create(getCtx(), p_M_Tour_ID, I_M_Tour.class, getTrxName());
+		final I_M_Tour tour = Services.get(ITourDAO.class).getById(p_M_Tour_ID);
 		Check.assumeNotNull(tour, "tour not null");
 
 		//
@@ -144,10 +113,10 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 			{
 				continue; // nothing to do
 			}
-			
+
 			// skip generic delivery days
 			final I_C_BPartner_Location bpLocation = dd.getC_BPartner_Location();
-			if(bpLocation == null)
+			if (bpLocation == null)
 			{
 				continue;
 			}
@@ -168,30 +137,12 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 		// Iterate collected orders and create shipment packages for them
 		for (final I_C_Order order : orderId2order.values())
 		{
-			createShippingPackage(order);
+			orderToShipperTransportationRepo.addPurchaseOrderToShipperTransportation(
+					OrderId.ofRepoId(order.getC_Order_ID()),
+					ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 		}
 
 		return "OK";
 	}
 
-	private I_M_ShippingPackage createShippingPackage(final I_C_Order order)
-	{
-		final Timestamp deliverydate = order.getDatePromised();
-
-		// create package
-		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(shipperId.getRepoId());
-		mpackage.setShipDate(deliverydate);
-		mpackage.setC_BPartner_ID(order.getC_BPartner_ID());
-		mpackage.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		InterfaceWrapperHelper.save(mpackage);
-
-		// create shipping package
-		final I_M_ShippingPackage shippingPackage = Services.get(IShipperTransportationBL.class)
-				.createShippingPackage(shipperTransportation, mpackage);
-		shippingPackage.setC_Order_ID(order.getC_Order_ID());
-		InterfaceWrapperHelper.save(shippingPackage);
-
-		return shippingPackage;
-	}
 }

@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,11 +51,13 @@ import de.metas.product.ProductId;
 	@Override
 	protected final void step10_createShipmentSchedules()
 	{
+		final Integer orderLineNo = null; // not relevant for our tests by default
+
 		shipmentSchedules = Arrays.asList(
 				createShipmentSchedule(true, // on new order
-						pTomato, productUOM, BigDecimal.valueOf(30)), // shipment schedule 0
+						pTomato, productUOM, BigDecimal.valueOf(30), orderLineNo), // shipment schedule 0
 				createShipmentSchedule(false, // on new order
-						pSalad, productUOM, BigDecimal.valueOf(50)) // shipment schedule 1
+						pSalad, productUOM, BigDecimal.valueOf(50), orderLineNo) // shipment schedule 1
 		);
 	}
 
@@ -210,7 +212,7 @@ import de.metas.product.ProductId;
 				.huStatus(X_M_HU.HUSTATUS_Picked)
 				.huPI(piTU)
 				.bPartner(bpartner)
-				.bPartnerLocation(bpartnerLocation)				
+				.bPartnerLocation(bpartnerLocation)
 				.newHUItemExpectation()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
@@ -270,7 +272,7 @@ import de.metas.product.ProductId;
 	/**
 	 * Creates and executes an {@link IHUSplitBuilder} to split the given {@code qty} of the given {@code product}
 	 * from the given {@code tuHU} onto an LU.
-	 * 
+	 *
 	 * @param tuHU
 	 * @param productId
 	 * @param qty

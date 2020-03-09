@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,7 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
@@ -57,8 +57,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -194,12 +194,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 *
 	 * @param dateInvoiced new value to be set.
 	 * @param selectionId id of the <code>T_Selection</code> containing the candidates that shall be updated.
-	 * @param updateOnlyIfNull if true then the DateInvoiced column will be updated only if is null
 	 */
-	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId, boolean updateOnlyIfNull);
+	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
 	 *
 	 * @task 08437
 	 */
@@ -208,7 +207,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateNullDateAcctFromDateInvoiced(PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, String)}, but updates the <code>POReference</code> column.
 	 */
 	void updatePOReference(String poReference, PInstanceId selectionId);
 
@@ -225,9 +224,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * amounts are converted to the currency which is set in the accounting schema of the bPartner's clients AD_ClientInfo.
 	 *
 	 */
-	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, Timestamp date);
+	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, LocalDate date);
 
-	BigDecimal retrieveInvoicableAmount(Properties ctx, InvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
+	/**
+	 * @param query needs to have a non-null orgId
+	 */
+	BigDecimal retrieveInvoicableAmount(Properties ctx, InvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, String amountColumnName, String trxName);
 
 	List<I_M_InOutLine> retrieveInOutLines(Properties ctx, int C_OrderLine_ID, String trxName);
 
@@ -379,7 +381,15 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
-	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
+	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
+
+	@Value
+	public static class InvoiceableInvoiceCandIdResult
+	{
+		InvoiceCandidateId firstInvoiceableInvoiceCandId;
+
+		boolean orderHasInvoiceCandidatesToWaitFor;
+	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 }

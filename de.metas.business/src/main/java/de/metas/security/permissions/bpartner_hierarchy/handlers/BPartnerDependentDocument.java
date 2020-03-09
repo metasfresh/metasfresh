@@ -7,6 +7,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.jgoodies.common.base.Objects;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,6 +45,9 @@ public final class BPartnerDependentDocument
 	BPartnerId newBPartnerId;
 	@Nullable
 	BPartnerId oldBPartnerId;
+	
+	@NonNull
+	UserId updatedBy;
 
 	public boolean isBPartnerChanged()
 	{

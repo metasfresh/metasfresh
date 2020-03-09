@@ -61,6 +61,7 @@ import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -512,7 +513,7 @@ public class FreshPackingMd
 		keyBuilder.warehouseDestId(-1);
 		keyBuilder.bpartnerAddress(null);
 
-		final String deliveryVia = item.getDeliveryVia();
+		final DeliveryViaRule deliveryVia = item.getDeliveryViaRule();
 
 		final ZonedDateTime deliveryDate = item.getDeliveryDate(); // customer01676
 		final ShipmentScheduleId shipmentScheduleId = item.getShipmentScheduleId();
@@ -548,7 +549,7 @@ public class FreshPackingMd
 				.bpartnerLocationId(bpartnerLocationId.getRepoId())
 				.bpartnerLocationName(bPartnerLocationName)
 				.warehouseName(warehouseName)
-				.deliveryVia(deliveryVia)
+				.deliveryVia(DeliveryViaRule.toCodeOrNull(deliveryVia))
 				.shipper(shipper)
 				.displayed(isDisplayed)
 				.key(key)

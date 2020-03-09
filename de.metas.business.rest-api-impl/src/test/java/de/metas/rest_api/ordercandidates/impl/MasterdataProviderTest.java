@@ -13,12 +13,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.organization.IOrgDAO;
@@ -62,9 +61,6 @@ public class MasterdataProviderTest
 {
 	private MasterdataProvider masterdataProvider;
 
-	@Mock
-	private PermissionService permissionService;
-
 	private JsonRequestBPartner jsonBPartner;
 
 	private JsonRequestBPartnerLocationAndContact jsonBPartnerInfo;
@@ -75,25 +71,21 @@ public class MasterdataProviderTest
 
 	private I_C_Country countryRecord;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterAll()
 	{
 		validateSnapshots();
 	}
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
-		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
-		// then eclipse can't find my test methods anymore
-		MockitoAnnotations.initMocks(this);
-
 		AdempiereTestHelper.get().init();
 
 		UserId loggedUserId = UserId.ofRepoId(1234567);
@@ -103,6 +95,7 @@ public class MasterdataProviderTest
 		countryRecord.setCountryCode("DE");
 		saveRecord(countryRecord);
 
+		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		masterdataProvider = MasterdataProvider.builder()
 				.permissionService(permissionService)
 				.build();

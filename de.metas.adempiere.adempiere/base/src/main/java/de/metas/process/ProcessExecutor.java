@@ -15,6 +15,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.print.ReportCtl;
@@ -31,6 +34,9 @@ import com.google.common.base.Stopwatch;
 import de.metas.i18n.IMsgBL;
 // import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.organization.OrgId;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -39,6 +45,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.session.jaxrs.IServerService;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,7 +74,8 @@ public final class ProcessExecutor
 		return s_currentProcess_ID.get();
 	}
 
-	//
+	private static final String AD_PROCESS_EXECUTION_DONE_MSG = "AD_Process_Execution_Done";
+
 	// Thread locals
 	private static final ThreadLocal<AdProcessId> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
 	private static final ThreadLocal<OrgId> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
@@ -77,6 +85,8 @@ public final class ProcessExecutor
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private final IProcessExecutionListener listener;
 	private final ProcessInfo pi;
@@ -85,7 +95,7 @@ public final class ProcessExecutor
 
 	private Thread m_thread; // metas
 
-	private ProcessExecutor(final Builder builder)
+	private ProcessExecutor(@NonNull final Builder builder)
 	{
 		pi = builder.getProcessInfo();
 
@@ -138,11 +148,13 @@ public final class ProcessExecutor
 		{
 			final Thread thread = new Thread(() -> executeNow());
 			thread.setName(buildThreadName());
+			logger.debug("Starting thread with name={}", thread.getName());
 			thread.start();
 
 			try
 			{
 				thread.join();
+				logger.debug("Join returned for thread with name={}", thread.getName());
 			}
 			catch (final InterruptedException ex)
 			{
@@ -332,7 +344,12 @@ public final class ProcessExecutor
 			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
 			if (access == null || !access.booleanValue())
 			{
-				throw new AdempiereException("Cannot access Process " + adProcessId + " with role: " + permissions.getName());
+				// get the process value, such that an admin can directly insert the right process
+				final I_AD_Process processRecord = adProcessDAO.getById(adProcessId);
+				final String processValue = processRecord != null ? processRecord.getValue() : "<NULL>";
+				throw new AdempiereException("Cannot access AD_Process.Value=" + processValue + " with role: " + permissions.getName())
+						.appendParametersToMessage()
+						.setParameter("AD_Process_ID", adProcessId.getRepoId());
 			}
 		}
 	}
@@ -554,7 +571,22 @@ public final class ProcessExecutor
 		try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
 		{
 			process.startProcess(pi, trx);
+
+			if (pi.isNotifyUserAfterExecution())
+			{
+				final UserId loggedUserId = Env.getLoggedUserId();
+				logger.debug("ProcessInfo.isNotifyUserAfterExecution is true, so we notify loggedUserId={}", loggedUserId.getRepoId());
+
+				final String processName = pi.getTitle();
+				final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+						.contentADMessage(AD_PROCESS_EXECUTION_DONE_MSG)
+						.contentADMessageParam(processName)
+						.recipientUserId(loggedUserId)
+						.targetAction(TargetRecordAction.of(TableRecordReference.of(I_AD_PInstance.Table_Name, pi.getPinstanceId())))
+						.build();
+				notificationBL.send(userNotificationRequest);
 		}
+	}
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package de.metas.product.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -48,7 +49,6 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_UOM;
-import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -66,6 +66,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
@@ -182,36 +183,10 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isItem(final I_M_Product product)
-	{
-		if (X_M_Product.PRODUCTTYPE_Item.equals(product.getProductType()))
-		{
-			return true;
-		}
-
-// @formatter:off
-// task 07246: IsDiverse does not automatically mean that the product is an item!
-//		final de.metas.adempiere.model.I_M_Product productToUse = InterfaceWrapperHelper.create(product, de.metas.adempiere.model.I_M_Product.class);
-//		if (productToUse.isDiverse())
-//		{
-//			return true;
-//		}
-// @formatter:on
-		return false;
-	}
-
-	@Override
-	public boolean isItem(@NonNull final ProductId productId)
-	{
-		final I_M_Product product = getById(productId);
-		return isItem(product);
-	}
-
-	@Override
 	public boolean isService(final I_M_Product product)
 	{
 		// i.e. PRODUCTTYPE_Service, PRODUCTTYPE_Resource, PRODUCTTYPE_Online
-		return !isItem(product);
+		return ProductType.ofCode(product.getProductType()).isService();
 	}
 
 	@Override
@@ -219,10 +194,15 @@ public final class ProductBL implements IProductBL
 	{
 		if (!product.isStocked())
 		{
+			logger.debug("M_Product_ID={} has isStocked=false; -> return false", product.getM_Product_ID());
 			return false;
 		}
 
-		return isItem(product);
+		final ProductType productType = ProductType.ofCode(product.getProductType());
+		final boolean result = productType.isItem();
+
+		logger.debug("M_Product_ID={} is has isStocked=true and type={}; -> return {}", product.getM_Product_ID(), productType, result);
+		return result;
 	}
 
 	@Override
@@ -230,6 +210,7 @@ public final class ProductBL implements IProductBL
 	{
 		if (productId == null)
 		{
+			logger.debug("productId=null; -> return false");
 			return false;
 		}
 
@@ -448,16 +429,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isFreightCostProduct(@NonNull final ProductId productId)
-	{
-		final I_M_Product product = getById(productId);
-
-		final String productType = product.getProductType();
-
-		return X_M_Product.PRODUCTTYPE_FreightCost.equals(productType);
-	}
-
-	@Override
 	public Optional<UomId> getCatchUOMId(@NonNull final ProductId productId)
 	{
 		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
@@ -473,7 +444,7 @@ public final class ProductBL implements IProductBL
 				.sorted()
 				.collect(ImmutableList.toImmutableList());
 
-		if(catchWeightUomIds.isEmpty())
+		if (catchWeightUomIds.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -481,5 +452,12 @@ public final class ProductBL implements IProductBL
 		{
 			return Optional.of(catchWeightUomIds.get(0));
 		}
+	}
+
+	@Override
+	public ProductType getProductType(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = assumeNotNull(getById(productId), "M_Product record with M_Product_ID={} needs to exist", productId.getRepoId());
+		return ProductType.ofCode(product.getProductType());
 	}
 }
