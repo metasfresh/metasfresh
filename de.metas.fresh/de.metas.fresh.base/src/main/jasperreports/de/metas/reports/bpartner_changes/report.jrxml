@@ -90,7 +90,7 @@ order By bpc.bpValue, bpc.tablename;]]>
 		<band height="138" splitType="Stretch">
 
 			<textField>
-				<reportElement uuid="dde1f5c7-5f99-4c18-95b5-2b7816ad2154" x="0" y="0" width="225" height="20"/>
+				<reportElement uuid="dde1f5c7-5f99-4c18-95b5-2b7816ad2154" x="0" y="0" width="600" height="20"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
