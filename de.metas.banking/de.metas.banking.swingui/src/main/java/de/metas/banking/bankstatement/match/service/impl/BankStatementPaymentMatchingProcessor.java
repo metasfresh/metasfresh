@@ -11,7 +11,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
 import org.compiere.util.TrxRunnable;
 
 import com.google.common.collect.ImmutableList;
@@ -22,6 +21,8 @@ import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -38,11 +39,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -58,6 +59,7 @@ public class BankStatementPaymentMatchingProcessor
 	// services
 	private final transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IPaymentBL paymentService = Services.get(IPaymentBL.class);
 
 	// Parameters
 	private Properties ctx;
@@ -80,16 +82,8 @@ public class BankStatementPaymentMatchingProcessor
 	public void process()
 	{
 		markAsProcessed();
-		
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnable()
-		{
 
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				processInTrx();
-			}
-		});
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> processInTrx());
 	}
 
 	private final void processInTrx()
@@ -123,7 +117,7 @@ public class BankStatementPaymentMatchingProcessor
 		{
 			final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.create(getCtx(), I_C_BankStatementLine_Ref.class, ITrx.TRXNAME_ThreadInherited);
 			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(bankStatementLineRef, true); // disable recalculation because we shall NOT change the bank statement
-																																// line
+																															 // line
 
 			bankStatementLineRef.setC_BankStatementLine(bankStatementLinePO);
 			bankStatementLineRef.setLine(nextReferenceLineNo);
@@ -145,7 +139,7 @@ public class BankStatementPaymentMatchingProcessor
 			// bankStatementLineRef.setProcessed(true); // virtual column
 			InterfaceWrapperHelper.save(bankStatementLineRef);
 			nextReferenceLineNo += 10;
-			
+
 			// Payment batch linking
 			final IPaymentBatch paymentBatch = payment.getPaymentBatch();
 			if (paymentBatch != null)
@@ -155,9 +149,8 @@ public class BankStatementPaymentMatchingProcessor
 
 			//
 			// Update the payment
-			final I_C_Payment paymentPO = bankStatementLineRef.getC_Payment();
-			paymentPO.setIsReconciled(true);
-			InterfaceWrapperHelper.save(paymentPO);
+			final PaymentId paymentId = PaymentId.ofRepoId(bankStatementLineRef.getC_Payment_ID());
+			paymentService.markReconciled(paymentId);
 		}
 
 		//
