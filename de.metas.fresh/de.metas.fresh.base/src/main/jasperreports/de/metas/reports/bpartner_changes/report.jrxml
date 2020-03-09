@@ -88,13 +88,14 @@ order By bpc.bpValue, bpc.tablename;]]>
 	</background>
 	<title>
 		<band height="138" splitType="Stretch">
-			<staticText>
+
+			<textField>
 				<reportElement uuid="dde1f5c7-5f99-4c18-95b5-2b7816ad2154" x="0" y="0" width="225" height="20"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<text><![CDATA[Revisionsstelle Geschäftspartner]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{reportName}]]></textFieldExpression>
+			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement uuid="0915ffcd-95d0-495a-a086-48b740900673" x="41" y="20" width="50" height="12"/>
 				<textElement>
