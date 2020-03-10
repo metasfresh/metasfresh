@@ -14,14 +14,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.GreetingRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GreetingRepository.class })
 public class AddressBuilderTest
 {
 	OrgId orgId;
@@ -645,6 +653,26 @@ public class AddressBuilderTest
 	 */
 	@Test
 	public void test_buildBPartnerAddressStringBPartnerBlock_0110()
+	{
+
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
+				prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+
+		Assert.assertEquals(
+				"LOCAL:  \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
+	}
+	
+	/**
+	 * task https://github.com/metasfresh/metasfresh/issues/6331 <br>
+	 * check if after the greeting is translated
+	 */
+	@Test
+	public void test_buildBPartnerAddressStringBPartnerBlock_0120()
 	{
 
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
