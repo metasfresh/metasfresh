@@ -140,6 +140,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE, client);
 
+		engine.addModelValidator(new org.adempiere.model.validator.AD_Table_AttachmentListener(), client);
+
 		//
 		// Currency
 		{

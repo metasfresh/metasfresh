@@ -24,7 +24,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.metas.attachments.AttachmentEntry;
 import de.metas.banking.api.BankAccountId;
+import de.metas.payment.esr.api.RunESRImportCriteria;
+import de.metas.payment.esr.dataimporter.*;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -72,11 +75,6 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
-import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
-import de.metas.payment.esr.dataimporter.ESRStatement;
-import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -1246,6 +1244,26 @@ public class ESRImportBL implements IESRImportBL
 		{
 			unlinkESRImportLineFromBankStatement(esrImportLine);
 		}
+	}
+
+	public void runESRImportFor(final RunESRImportCriteria runESRImportCriteria)
+	{
+		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportCriteria.getAttachmentEntryId());
+
+		ESRImportEnqueuer.newInstance()
+				.esrImport(runESRImportCriteria.getEsrImport())
+				.fromDataSource(
+						ESRImportEnqueuerDataSource.builder()
+								.filename(fromAttachmentEntry.getFilename())
+								.content(attachmentEntryService.retrieveData(fromAttachmentEntry.getId()))
+								.attachmentEntryId(fromAttachmentEntry.getId())
+								.build())
+				.asyncBatchName(runESRImportCriteria.getAsyncBatchName())
+				.asyncBatchDesc(runESRImportCriteria.getAsyncBatchDesc())
+				.pinstanceId(runESRImportCriteria.getPInstanceId())
+				.loggable(runESRImportCriteria.getLoggableClass())
+				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
+				.execute();
 	}
 
 	private final void unlinkESRImportLineFromBankStatement(final I_ESR_ImportLine esrImportLine)

@@ -1,19 +1,20 @@
 package de.metas.payment.esr.process;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
-import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
-import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDuplicateFilePolicy;
+import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.RunESRImportCriteria;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+
+import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_DESC;
+import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_NAME;
 
 /*
  * #%L
@@ -47,36 +48,26 @@ public class ESR_Import_LoadFromAttachmentEntry
 	private int p_AD_AttachmentEntry_ID;
 
 	@Param(mandatory = true, parameterName = I_C_Async_Batch.COLUMNNAME_Name)
-	private final String p_AsyncBatchName = "ESR Import";
+	private final String p_AsyncBatchName = ESR_ASYNC_BATCH_NAME;
 
 	@Param(mandatory = true, parameterName = I_C_Async_Batch.COLUMNNAME_Description)
-	private final String p_AsyncBatchDesc = "ESR Import process";
+	private final String p_AsyncBatchDesc = ESR_ASYNC_BATCH_DESC;
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
 		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID);
-		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(attachmentEntryId);
-
 		final I_ESR_Import esrImport = getRecord(I_ESR_Import.class);
-		ESRImportEnqueuer.newInstance()
-				.esrImport(esrImport)
-				.fromDataSource(ESRImportEnqueuerDataSource.builder()
-						.filename(fromAttachmentEntry.getFilename())
-						.content(attachmentEntryService.retrieveData(attachmentEntryId))
-						.attachmentEntryId(fromAttachmentEntry.getId())
-						.build())
-				//
-				.asyncBatchName(p_AsyncBatchName)
-				.asyncBatchDesc(p_AsyncBatchDesc)
-				.pinstanceId(getPinstanceId())
-				//
-				.loggable(this)
-				//
-				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
-				//
-				.execute();
+
+		final RunESRImportCriteria runESRImportCriteria = new RunESRImportCriteria(esrImport,
+				attachmentEntryId,
+				p_AsyncBatchName,
+				p_AsyncBatchDesc,
+				this,
+				getPinstanceId());
+
+		Services.get(IESRImportBL.class).runESRImportFor(runESRImportCriteria);
 
 		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(esrImport));
 

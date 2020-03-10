@@ -31,6 +31,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -294,7 +296,7 @@ public class ESRImportEnqueuer
 		return asyncBatchDesc;
 	}
 
-	public ESRImportEnqueuer pinstanceId(final PInstanceId pinstanceId)
+	public ESRImportEnqueuer pinstanceId(@Nullable final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
 		return this;
