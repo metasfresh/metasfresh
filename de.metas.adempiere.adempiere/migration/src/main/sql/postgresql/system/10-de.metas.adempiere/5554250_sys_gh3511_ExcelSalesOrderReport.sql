@@ -327,16 +327,6 @@ UPDATE AD_Process SET Name='Preisliste in Excel-Tabelle exportieren',Updated=TO_
 UPDATE AD_Process SET AllowProcessReRun='N', Classname='de.metas.impexp.excel.process.ExportToExcelProcess', IsTranslateExcelHeaders='N', IsUseBPartnerLanguage='N', JasperReport='', SQLStatement='', Type='Excel',Updated=TO_TIMESTAMP('2020-03-10 14:38:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
 ;
 
--- 2020-03-10T12:38:17.337Z
--- URL zum Konzept
-DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=584659
-;
-
--- 2020-03-10T12:38:17.556Z
--- URL zum Konzept
-DELETE FROM AD_Process WHERE AD_Process_ID=584659
-;
-
 -- 2020-03-10T13:00:34.972Z
 -- URL zum Konzept
 UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2020-03-10 15:00:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541733
