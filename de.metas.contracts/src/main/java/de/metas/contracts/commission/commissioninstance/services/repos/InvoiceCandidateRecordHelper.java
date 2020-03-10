@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -48,7 +49,6 @@ import java.math.BigDecimal;
 @Service
 public class InvoiceCandidateRecordHelper
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidateRecordHelper.class);
 
 	private final MoneyService moneyService;
@@ -129,6 +129,7 @@ public class InvoiceCandidateRecordHelper
 		}
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final int effectiveTaxRepoId = firstGreaterThanZero(icRecord.getC_Tax_Override_ID(), icRecord.getC_Tax_ID());
 		if (effectiveTaxRepoId <= 0)
@@ -139,11 +140,13 @@ public class InvoiceCandidateRecordHelper
 
 		final I_C_Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
 
+		final CurrencyPrecision precision = invoiceCandBL.extractPricePrecision(icRecord);
+
 		final BigDecimal taxAdjustedAmount = taxBL.calculateBaseAmt(
 				taxRecord,
 				commissionPoints.toBigDecimal(),
 				icRecord.isTaxIncluded(),
-				commissionPoints.toBigDecimal().scale());
+				precision.toInt());
 		return CommissionPoints.of(taxAdjustedAmount);
 	}
 

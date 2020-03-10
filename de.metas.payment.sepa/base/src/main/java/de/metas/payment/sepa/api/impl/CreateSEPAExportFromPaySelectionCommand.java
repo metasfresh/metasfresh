@@ -33,12 +33,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -146,7 +146,8 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
-		header.setSEPA_CreditorIdentifier(orgBP.getName());
+		header.setSEPA_CreditorName(orgBP.getName());
+		header.setSEPA_CreditorIdentifier(bpBankAccount.getSEPA_CreditorIdentifier());
 		header.setSwiftCode(bpBankAccount.getC_Bank().getSwiftCode());
 
 		final int paySelectionTableID = getTableId(I_C_PaySelection.class);

@@ -15,7 +15,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2085289787L;
+	private static final long serialVersionUID = 788115259L;
 
     /** Standard Constructor */
     public X_SEPA_Export_Line (Properties ctx, int SEPA_Export_Line_ID, String trxName)
@@ -95,6 +95,31 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 		return bd;
 	}
 
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
@@ -127,31 +152,6 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	public int getC_BP_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

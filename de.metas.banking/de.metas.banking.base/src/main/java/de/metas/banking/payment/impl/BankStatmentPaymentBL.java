@@ -111,14 +111,6 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		lineOrRef.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
 		lineOrRef.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
 		lineOrRef.setIsOverUnderPayment(payment.isOverUnderPayment());
-
-		//
-		// Bank Statement Line specific:
-		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
-		{
-			final org.compiere.model.I_C_BankStatementLine bsl = (org.compiere.model.I_C_BankStatementLine)lineOrRef;
-			bsl.setDescription(payment.getDescription());
-		}
 	}
 
 	@Override
