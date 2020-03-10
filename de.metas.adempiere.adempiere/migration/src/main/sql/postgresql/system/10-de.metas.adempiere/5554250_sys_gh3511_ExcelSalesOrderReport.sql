@@ -321,4 +321,102 @@ UPDATE AD_Process_Trl SET Name='Preisliste in Excel-Tabelle exportieren',Updated
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process SET Name='Preisliste in Excel-Tabelle exportieren',Updated=TO_TIMESTAMP('2020-03-10 11:38:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
 ;
+-- 2020-03-10T12:37:33.465Z
+-- URL zum Konzept
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540793
+;
 
+-- 2020-03-10T12:37:42.857Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541732
+;
+
+-- 2020-03-10T12:37:43.069Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541732
+;
+
+-- 2020-03-10T12:37:51.133Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541746
+;
+
+-- 2020-03-10T12:37:51.343Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541746
+;
+
+-- 2020-03-10T12:37:53.020Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541743
+;
+
+-- 2020-03-10T12:37:53.245Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541743
+;
+
+-- 2020-03-10T12:37:54.700Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541742
+;
+
+-- 2020-03-10T12:37:54.924Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541742
+;
+
+-- 2020-03-10T12:37:55.972Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541733
+;
+
+-- 2020-03-10T12:37:56.184Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541733
+;
+
+-- 2020-03-10T12:37:57.751Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541734
+;
+
+-- 2020-03-10T12:37:57.964Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541734
+;
+
+-- 2020-03-10T12:38:12.274Z
+-- URL zum Konzept
+UPDATE AD_Process SET AllowProcessReRun='N', Classname='de.metas.impexp.excel.process.ExportToExcelProcess', IsTranslateExcelHeaders='N', IsUseBPartnerLanguage='N', JasperReport='', SQLStatement='', Type='Excel',Updated=TO_TIMESTAMP('2020-03-10 14:38:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+
+-- 2020-03-10T12:38:17.337Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=584659
+;
+
+-- 2020-03-10T12:38:17.556Z
+-- URL zum Konzept
+DELETE FROM AD_Process WHERE AD_Process_ID=584659
+;
+
+-- 2020-03-10T13:00:34.972Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2020-03-10 15:00:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541733
+;
+
+-- 2020-03-10T13:01:44.535Z
+-- URL zum Konzept
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.fresh_pricelist_details_template_report(@C_BPartner_ID/NULL@, @M_PriceList_Version_ID/NULL@,@Alt_Pricelist_Version_ID/NULL@,''@#AD_Language@'');',Updated=TO_TIMESTAMP('2020-03-10 15:01:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+
+-- 2020-03-10T13:03:13.067Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsActive='N',Updated=TO_TIMESTAMP('2020-03-10 15:03:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541746
+;
+
+-- 2020-03-10T13:06:59.525Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsCentrallyMaintained='Y',Updated=TO_TIMESTAMP('2020-03-10 15:06:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541733
+;
