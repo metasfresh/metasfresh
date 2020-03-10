@@ -168,3 +168,14 @@ UPDATE AD_Message_Trl SET MsgText='Angehängte Datei wurde erfolgreich importier
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Message_Trl SET MsgText='Angehängte Datei wurde erfolgreich importiert.',Updated=TO_TIMESTAMP('2020-03-10 15:47:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=544969
 ;
+
+
+-- 2020-03-10T15:12:25.920Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Attached file was successfully imported.',Updated=TO_TIMESTAMP('2020-03-10 17:12:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544969
+;
+
+-- 2020-03-10T15:13:20.912Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Attached file was successfully imported.',Updated=TO_TIMESTAMP('2020-03-10 17:13:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544969
+;
