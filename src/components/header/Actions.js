@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import cx from 'classnames';
 
 import {
   actionsRequest,
@@ -220,14 +221,13 @@ class Actions extends Component {
     }
 
     return (
-      <div
+      <li
         key={identifier + key}
         tabIndex={0}
         id={`headerAction_${item.internalName}`}
-        className={
-          'subheader-item js-subheader-item' +
-          (item.disabled ? ' subheader-item-disabled' : '')
-        }
+        className={cx('subheader-item js-subheader-item', {
+          'subheader-item-disabled': item.disabled,
+        })}
         onClick={handleClick}
       >
         {item.caption}
@@ -236,7 +236,7 @@ class Actions extends Component {
             <small>({item.disabledReason})</small>
           </p>
         )}
-      </div>
+      </li>
     );
   };
 
@@ -262,13 +262,12 @@ class Actions extends Component {
     }
 
     return (
-      <div
+      <li
         key={identifier + key}
         tabIndex={0}
-        className={
-          'subheader-item js-subheader-item' +
-          (item.disabled ? ' subheader-item-disabled' : '')
-        }
+        className={cx('subheader-item js-subheader-item', {
+          'subheader-item-disabled': item.disabled,
+        })}
         onClick={handleClick}
       >
         {item.caption}
@@ -277,7 +276,7 @@ class Actions extends Component {
             <small>({item.disabledReason})</small>
           </p>
         )}
-      </div>
+      </li>
     );
   };
 
@@ -319,9 +318,9 @@ class Actions extends Component {
     }
 
     return (
-      <div className="subheader-item subheader-item-disabled">
+      <li className="subheader-item subheader-item-disabled">
         {counterpart.translate('window.actions.emptyText')}
-      </div>
+      </li>
     );
   };
 
@@ -338,7 +337,9 @@ class Actions extends Component {
           {counterpart.translate('window.actions.caption')}
         </div>
         <div className="subheader-break" />
-        {actions ? this.renderData() : <Loader />}
+        <ul className="subheader-items">
+          {actions ? this.renderData() : <Loader />}
+        </ul>
       </div>
     );
   }
