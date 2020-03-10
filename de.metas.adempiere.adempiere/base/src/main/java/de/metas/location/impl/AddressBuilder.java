@@ -42,7 +42,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.sun.istack.internal.NotNull;
 
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
@@ -656,7 +655,7 @@ public class AddressBuilder
 	 * @param trxName
 	 * @return
 	 */
-	private String buildUserBlock(@NotNull final org.compiere.model.I_C_BPartner bPartner,  final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
+	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner,  final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final boolean isPartnerCompany = bPartner.isCompany();
