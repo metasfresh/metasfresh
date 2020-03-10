@@ -2,7 +2,6 @@ package de.metas.payment.esr.process;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.RunESRImportCriteria;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -11,7 +10,6 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_DESC;
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_NAME;
@@ -41,9 +39,6 @@ import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_NAME;
 public class ESR_Import_LoadFromAttachmentEntry
 		extends JavaProcess
 {
-	// services
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-
 	@Param(mandatory = true, parameterName = "AD_AttachmentEntry_ID")
 	private int p_AD_AttachmentEntry_ID;
 
