@@ -1,16 +1,18 @@
 package de.metas.payment;
 
+import java.util.Collection;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Objects;
 
 /*
  * #%L
@@ -86,5 +88,10 @@ public class PaymentId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final PaymentId id1, final PaymentId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }
