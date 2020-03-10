@@ -27,6 +27,7 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
+import lombok.Builder;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GreetingRepository.class })
@@ -469,7 +470,12 @@ public class AddressBuilderTest
 
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "", prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Herr");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -484,7 +490,12 @@ public class AddressBuilderTest
 
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "", prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Herr");
 		final I_AD_User user = prepareUser("UserFN", "", "", greeting);
 
@@ -499,7 +510,12 @@ public class AddressBuilderTest
 
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "", prepareCountry("Germany", "@BP@ (z.L. @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Herr");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -518,7 +534,12 @@ public class AddressBuilderTest
 
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "", prepareCountry("Germany", "@BP@ (GR) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -538,7 +559,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -558,7 +584,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ \\(test\\) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -578,7 +609,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", true);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(true)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -598,7 +634,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ (GR @GR@) @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("CompanyAG", "", true);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("CompanyAG")
+				.name2("")
+				.isCompany(true)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -618,7 +659,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ @GR@ @FN@ @LN@ @CON@ @A2@ @A1@ @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -638,7 +684,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ (z.L. @GR@) @CON@ @A2@ @A1@ (PF @PB@) @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -658,7 +709,12 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
 				prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
 		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
+		final I_C_BPartner bPartner = builderBPartner()
+				.name("Name1")
+				.name2("Name2")
+				.isCompany(false)
+				.AD_Language("de_DE")
+				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
@@ -667,25 +723,6 @@ public class AddressBuilderTest
 				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 	
-	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/6331 <br>
-	 * check if after the greeting is translated
-	 */
-	@Test
-	public void test_buildBPartnerAddressStringBPartnerBlock_0120()
-	{
-
-		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
-				prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
-		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-		final I_C_BPartner bPartner = prepareBPartner("Name1", "Name2", false);
-		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
-
-		Assert.assertEquals(
-				"LOCAL:  \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
-	}
 
 	// prepraring methods
 
@@ -760,13 +797,15 @@ public class AddressBuilderTest
 		return bpLoc;
 	}
 
-	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany)
+	@Builder(builderMethodName = "builderBPartner")
+	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		bpartner.setName(name);
 		bpartner.setName2(name2);
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setIsCompany(isCompany);
+		bpartner.setAD_Language(AD_Language);
 		InterfaceWrapperHelper.save(bpartner);
 
 		return bpartner;
@@ -776,6 +815,7 @@ public class AddressBuilderTest
 	{
 		final I_C_Greeting greeting = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Greeting.class, ITrx.TRXNAME_None);
 		greeting.setName(name);
+		greeting.setGreeting(name);
 		greeting.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.save(greeting);
 
