@@ -638,7 +638,6 @@ public class AddressBuilderTest
 				.name("CompanyAG")
 				.name2("")
 				.isCompany(true)
-				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
@@ -663,7 +662,6 @@ public class AddressBuilderTest
 				.name("Name1")
 				.name2("Name2")
 				.isCompany(false)
-				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
@@ -688,7 +686,6 @@ public class AddressBuilderTest
 				.name("Name1")
 				.name2("Name2")
 				.isCompany(false)
-				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
@@ -713,7 +710,6 @@ public class AddressBuilderTest
 				.name("Name1")
 				.name2("Name2")
 				.isCompany(false)
-				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
 		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
