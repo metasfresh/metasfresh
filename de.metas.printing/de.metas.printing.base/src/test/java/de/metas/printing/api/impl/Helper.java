@@ -804,7 +804,7 @@ public class Helper
 	{
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
-		query.setIsPrinted(false);
+		query.setFilterByProcessedQueueItems(false);
 
 		final List<IPrintingQueueSource> sources = printingQueueBL.createPrintingQueueSources(getCtx(), query);
 

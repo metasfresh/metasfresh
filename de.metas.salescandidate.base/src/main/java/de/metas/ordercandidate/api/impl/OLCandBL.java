@@ -45,9 +45,11 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
@@ -92,6 +94,7 @@ public class OLCandBL implements IOLCandBL
 	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
@@ -323,7 +326,6 @@ public class OLCandBL implements IOLCandBL
 		// note that even with manual price and/or discount, we need to invoke the pricing engine, in order to get the tax category
 
 		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord);
-
 		final BPartnerInfo shipToPartnerInfo = effectiveValuesBL
 				.getDropShipPartnerInfo(olCandRecord)
 				.orElseGet(() -> effectiveValuesBL.getBuyerPartnerInfo(olCandRecord));
@@ -361,6 +363,9 @@ public class OLCandBL implements IOLCandBL
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
+
+		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(shipToPartnerInfo.getBpartnerLocationId());
+		pricingCtx.setCountryId(countryId);
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
 

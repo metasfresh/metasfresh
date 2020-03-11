@@ -1,13 +1,21 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -35,38 +43,61 @@ import lombok.NonNull;
 @Service
 public class CommissionAlgorithmInvoker
 {
-	public CommissionInstance applyCreateRequest(@NonNull final CreateInstanceRequest request)
+	public CommissionInstance applyCreateRequest(@NonNull final CreateCommissionSharesRequest request)
 	{
-		final CommissionType commissionType = request.getConfig().getCommissionType();
-		final CommissionAlgorithm algorithm;
 		try
 		{
-			algorithm = createAlgorithmInstance(commissionType);
+			final ImmutableList<CommissionType> commissionTypes = CollectionUtils.extractDistinctElements(
+					request.getConfigs(),
+					CommissionConfig::getCommissionType);
+
+			final CommissionInstanceBuilder result = CommissionInstance
+					.builder()
+					.currentTriggerData(request.getTrigger().getCommissionTriggerData());
+
+			for (final CommissionType commissionType : commissionTypes)
+			{
+				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
+				{
+					final CommissionAlgorithm algorithm;
+					algorithm = createAlgorithmInstance(commissionType);
+
+					// invoke the algorithm
+					final ImmutableList<SalesCommissionShare> shares = algorithm.createCommissionShares(request);
+					result.shares(shares);
+				}
+			}
+			return result.build();
 		}
 		catch (Exception e)
 		{
-			throw AdempiereException.wrapIfNeeded(e).setParameter("request", request);
+			throw AdempiereException.wrapIfNeeded(e).setParameter("request", request); // augment&rethrow
 		}
-
-		// invoke it
-		return algorithm.createInstance(request);
 	}
 
 	public void applyTriggerChangeToSharesOfInstance(@NonNull final CommissionTriggerChange change)
 	{
-		final CommissionAlgorithm algorithm;
 		try
 		{
-			final CommissionType commissionType = change.getInstanceToUpdate().getConfig().getCommissionType();
-			algorithm = createAlgorithmInstance(commissionType);
+			final ImmutableList<CommissionType> commissionTypes = CollectionUtils.extractDistinctElements(
+					change.getInstanceToUpdate().getShares(),
+					share -> share.getConfig().getCommissionType());
+
+			for (final CommissionType commissionType : commissionTypes)
+			{
+				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
+				{
+					final CommissionAlgorithm algorithm = createAlgorithmInstance(commissionType);
+
+					// invoke the algorithm
+					algorithm.applyTriggerChangeToShares(change);
+				}
+			}
 		}
 		catch (Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).setParameter("change", change);
 		}
-
-		// invoke the algorithm
-		algorithm.applyTriggerChangeToShares(change);
 	}
 
 	private CommissionAlgorithm createAlgorithmInstance(@NonNull final CommissionType commissionType)

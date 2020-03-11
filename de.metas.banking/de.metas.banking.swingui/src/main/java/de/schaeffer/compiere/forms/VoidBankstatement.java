@@ -144,7 +144,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		if (bankComboBox==null) {
 			List<Object[]> list = searchBank();
 	
-			bankIDList = new ArrayList<Integer>();
+			bankIDList = new ArrayList<>();
 			Object[] bankaccounts = new Object[list.size()];
 	
 			for (int i = 0; i < list.size(); i++) {
@@ -160,7 +160,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 	private Component getBankStatementComboBox(int bankId) {
 		List<Object[]> list = searchBankStatemens(bankId);
 
-		bankStatementIDList = new ArrayList<Integer>();
+		bankStatementIDList = new ArrayList<>();
 		Object[] statements = new Object[list.size()];
 
 		for (int i = 0; i < list.size(); i++) {
@@ -254,7 +254,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 			return null;
 		}
 		VBStTableModel tm = (VBStTableModel)bankStatementLineTable.getModel();
-		Vector<MBankStatementLine> lines = new Vector<MBankStatementLine>();
+		Vector<MBankStatementLine> lines = new Vector<>();
 		Integer[] selectedLineIds = tm.getSelectedLineIds();
 		if (selectedLineIds.length==0) {
 			return null;
@@ -335,7 +335,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 			voidLine.setInterestAmt(line.getInterestAmt().negate());
 			
 			voidLine.setLine(line.getLine());
-			voidLine.setDescription("voided");
+			//voidLine.setDescription("voided");
 			voidLine.setIsReversal(true);
 			voidLine.setDateAcct(line.getDateAcct()); 
 			voidLine.setC_Currency_ID(line.getC_Currency_ID());
@@ -461,7 +461,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
-		List<Object[]> accountList = new ArrayList<Object[]>();
+		List<Object[]> accountList = new ArrayList<>();
 
 		try {
 
@@ -495,11 +495,12 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 	private List<Object[]> searchBankStatementLines(int bankStatementId) {
 		MBankStatement statement = new MBankStatement(Env.getCtx(), bankStatementId, null);
 		MBankStatementLine[] lines = statement.getLines(false);
-		List<Object[]> statementList = new ArrayList<Object[]>();
+		List<Object[]> statementList = new ArrayList<>();
 		
-		for (int i = 0; i < lines.length; i++) {
-			Object[] a = {lines[i].get_ID(),
-					lines[i].getLine(), lines[i].getDescription(), lines[i].getStmtAmt()};
+		for (MBankStatementLine line : lines)
+		{
+			Object[] a = {line.get_ID(),
+					line.getLine(), line.getDescription(), line.getStmtAmt()};
 			statementList.add(a);
 		}
 		return statementList;
@@ -528,7 +529,7 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 	
-		List<Object[]> statementList = new ArrayList<Object[]>();
+		List<Object[]> statementList = new ArrayList<>();
 	
 		try {
 	
@@ -583,10 +584,11 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 
 
 		public Integer[] getSelectedLineIds() {
-			Vector<Integer> indices = new Vector<Integer>();
-			for (int i = 0; i < data.length; i++) {
-				if ((Boolean)data[i][3]) {
-					indices.add((Integer) data[i][4]);
+			Vector<Integer> indices = new Vector<>();
+			for (Object[] element : data)
+			{
+				if ((Boolean)element[3]) {
+					indices.add((Integer) element[4]);
 				}
 			}
 			Integer[] a = new Integer[indices.size()];
@@ -667,7 +669,11 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 			}
 			if (col==3) {
 				data[row][col] = value;
-			} else return;
+			}
+			else
+			{
+				return;
+			}
 			fireTableCellUpdated(row, col);
 		}
 

@@ -97,6 +97,13 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+		// If configured to not create accounting facts for Match PO documents then don't do it (08555)
+		// IMPORTANT: we shall do absolutelly nothing if the sysconfig is enabled (gh6287)
+		if (noFactRecords)
+		{
+			return ImmutableList.of();
+		}
+
 		//
 		if (docLine.getReceipt_InOutLine_ID() <= 0)
 		{
@@ -108,13 +115,6 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		//
 		// Mark sure inbound costs are created
 		docLine.createCostDetails(as);
-
-		// If configured to not create accounting facts for Match PO documents
-		// then don't do it (08555)
-		if (noFactRecords)
-		{
-			return ImmutableList.of();
-		}
 
 		if (docLine.getQty().signum() == 0)
 		{

@@ -1,7 +1,5 @@
 package org.adempiere.ad.wrapper;
 
-import static org.adempiere.model.InterfaceWrapperHelper.hasChanges;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -80,10 +78,13 @@ import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -91,9 +92,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private static final POJOLookupMap instance = new POJOLookupMap("GLOBAL");
 	private static final transient Logger logger = LogManager.getLogger(POJOLookupMap.class);
 	// NOTE: don't add services here, because in testing we are reseting the Services quite offen
-
-	private static final String COLUMNNAME_Created = "Created";
-	private static final String COLUMNNAME_Updated = "Updated";
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
@@ -190,6 +188,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		// Global instance
 		instance.clear();
 		instance.setCopyOnSave(true);
+		instance.setManageCreatedByAndUpdatedBy(true);
 		instance.unregisterAllInterceptors();
 	}
 
@@ -208,7 +207,14 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
 	Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
+	/** true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working. */
+	@Getter
+	@Setter
 	private boolean copyOnSave = true;
+
+	@Getter
+	@Setter
+	private boolean manageCreatedByAndUpdatedBy = true;
 
 	/**
 	 * Tool used to track how many object instances are released for a given table record.
@@ -228,21 +234,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		nextId++;
 		return nextId;
-	}
-
-	@Override
-	public boolean isCopyOnSave()
-	{
-		return copyOnSave;
-	}
-
-	/**
-	 *
-	 * @param copyOnSave true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working.
-	 */
-	public void setCopyOnSave(boolean copyOnSave)
-	{
-		this.copyOnSave = copyOnSave;
 	}
 
 	private <T> T copy(final T model)
@@ -397,13 +388,32 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				{
 					id = nextId(tableName);
 					wrapper.setId(id);
-
-					wrapper.setValue(COLUMNNAME_Created, now);
-					wrapper.setValue(COLUMNNAME_Updated, now);
 				}
-				if (hasChanges(model))
+
+				//
+				// Set Created/Updated
+				final boolean hasChanges = wrapper.hasChanges();
+				if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_Created))
 				{
-					wrapper.setValue(COLUMNNAME_Updated, now);
+					wrapper.setValue(POJOWrapper.COLUMNNAME_Created, now);
+				}
+				if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_Updated))
+				{
+					wrapper.setValue(POJOWrapper.COLUMNNAME_Updated, now);
+				}
+				if (manageCreatedByAndUpdatedBy)
+				{
+					final Integer loggedUserRepoId = Env.getLoggedUserIdIfExists(wrapper.getCtx())
+							.map(UserId::getRepoId)
+							.orElse(null);
+					if (isNew || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_CreatedBy))
+					{
+						wrapper.setValue(POJOWrapper.COLUMNNAME_CreatedBy, loggedUserRepoId);
+					}
+					if (isNew || hasChanges || wrapper.isNullNotStrict(POJOWrapper.COLUMNNAME_UpdatedBy))
+					{
+						wrapper.setValue(POJOWrapper.COLUMNNAME_UpdatedBy, loggedUserRepoId);
+					}
 				}
 
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);

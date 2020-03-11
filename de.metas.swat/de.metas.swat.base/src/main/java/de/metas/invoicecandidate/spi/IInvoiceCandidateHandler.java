@@ -262,10 +262,10 @@ public interface IInvoiceCandidateHandler
 	default void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		ic.setC_InvoiceSchedule_ID(bpartnerDAO.getById(ic.getBill_BPartner_ID()).getC_InvoiceSchedule_ID());
-
-		Services.get(IInvoiceCandBL.class).set_DateToInvoice_DefaultImpl(ic);
+		invoiceCandBL.set_DateToInvoice_DefaultImpl(ic);
 	}
 
 	/**

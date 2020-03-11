@@ -24,6 +24,7 @@ package de.metas.contracts.commission.commissioninstance.services;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.organization.OrgId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,6 +40,9 @@ public class CommissionTriggerRequest
 
 	@NonNull
 	Instant timestamp;
+
+	@NonNull
+	OrgId orgId;
 
 	InvoiceCandidateId invoiceCandidateId;
 

@@ -10,6 +10,62 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.141
+## Features
+* metasfresh
+  * [#6190](https://github.com/metasfresh/metasfresh/issues/6190) Jasper Report: Summary and balance list - Summen- und Saldenliste
+  * [#6283](https://github.com/metasfresh/metasfresh/issues/6283) Implement SEPA Direct Debit
+  * [#6289](https://github.com/metasfresh/metasfresh/issues/6289) Bankstatement improvements
+  * [#6291](https://github.com/metasfresh/metasfresh/issues/6291) User in generated invoice must be active
+
+* metasfresh-parent
+  * [#42](https://github.com/metasfresh/metasfresh-parent/pull/42) Use binary git after a test which i made yesterday
+
+# metasfresh 5.140
+## Features
+* metasfresh
+  * [#6191](https://github.com/metasfresh/metasfresh/issues/6191) Jasper: Customer Top Revenue
+  * [#6255](https://github.com/metasfresh/metasfresh/issues/6255) Create functions for easily creating default accounts fro M_Produc_category, M_Product, C_BP_Group and C_Bpartner
+
+## Fixes
+* metasfresh
+  * [#6214](https://github.com/metasfresh/metasfresh/issues/6214) Jasper Report: Customer/ Vendor Kontenblatt (Account details)
+  * [#6263](https://github.com/metasfresh/metasfresh/issues/6263) Error logging dunnings in DocOutBoundLog
+  * [#6277](https://github.com/metasfresh/metasfresh/issues/6277) Issues with payment endpoint
+
+* metasfresh-webui-frontend
+  * [#2626](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2626) Again: Orderlines only displayed after refresh
+
+# metasfresh 5.139
+## Features
+* metasfresh
+  * [#6133](https://github.com/metasfresh/metasfresh/issues/6133) Jasper: Customer Product Statistic
+  * [#6148](https://github.com/metasfresh/metasfresh/issues/6148) Jasper Report: Profit & Loss Report
+  * [#6150](https://github.com/metasfresh/metasfresh/issues/6150) Jasper: Product Top Sales
+  * [#6154](https://github.com/metasfresh/metasfresh/issues/6154) Backend: Send new object in JSON of available docaction dropdowns for VOID Action
+  * [#6156](https://github.com/metasfresh/metasfresh/issues/6156) Add clone action for "Transportation Order" window.
+  * [#6167](https://github.com/metasfresh/metasfresh/issues/6167) Rename 'Verrechnung Billcare' process
+  * [#6168](https://github.com/metasfresh/metasfresh/issues/6168) Enhance campaign pricing to apply also based on pricing system
+  * [#6182](https://github.com/metasfresh/metasfresh/issues/6182) Add IBAN structure for DK
+  * [#6197](https://github.com/metasfresh/metasfresh/issues/6197) Adjust timeout so that big report to be able to run
+  * [#6201](https://github.com/metasfresh/metasfresh/issues/6201) Support packing instructions for invoice line 'Batch entry'
+  * [#6207](https://github.com/metasfresh/metasfresh/issues/6207) Minor adjustments to customs invoice document
+  * [#6216](https://github.com/metasfresh/metasfresh/issues/6216) Filter for Virtual Column
+  * [#6219](https://github.com/metasfresh/metasfresh/issues/6219) Product Price creation for Price = 0
+  * [#6223](https://github.com/metasfresh/metasfresh/issues/6223) Material Tracking Copy action
+
+* metasfresh-webui-api
+  * [#1363](https://github.com/metasfresh/metasfresh-webui-api/issues/1363) Add possibility to turn off 'Area Search' filter
+
+## Fixes
+* metasfresh
+  * [#6157](https://github.com/metasfresh/metasfresh/issues/6157) Order: when setting the DocType, consider the default one first
+  * [#6174](https://github.com/metasfresh/metasfresh/issues/6174) Don't use delivery day with wrong bpartner
+  * [#6215](https://github.com/metasfresh/metasfresh/issues/6215) Exclude migration-cli from reports service
+
+* metasfresh-webui-api
+  * [#6174](https://github.com/metasfresh/metasfresh/issues/6175) webui-api: fix the webui.view.itemsSelected.caption AD_Message
+
 # metasfresh 5.138
 ## Features
 * metasfresh

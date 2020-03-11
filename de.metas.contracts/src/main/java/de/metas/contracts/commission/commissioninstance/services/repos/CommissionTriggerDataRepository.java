@@ -12,6 +12,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData.CommissionTriggerDataBuilder;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 
 /*
@@ -53,6 +54,7 @@ public class CommissionTriggerDataRepository
 		final CommissionTriggerRequest commissionTriggerRequest =
 				CommissionTriggerRequest
 						.builder()
+						.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
 						.candidateDeleted(candidateDeleted)
 						.invoiceCandidateId(invoiceCandidateId)
 						.forecastCommissionPoints( icRecordHelper.extractForecastCommissionPoints(icRecord) )
@@ -69,6 +71,7 @@ public class CommissionTriggerDataRepository
 	{
 		final CommissionTriggerDataBuilder builder = CommissionTriggerData
 				.builder()
+				.orgId(commissionTriggerRequest.getOrgId())
 				.invoiceCandidateWasDeleted( commissionTriggerRequest.isCandidateDeleted() )
 				.invoiceCandidateId( commissionTriggerRequest.getInvoiceCandidateId() )
 				.timestamp( commissionTriggerRequest.getTimestamp() );

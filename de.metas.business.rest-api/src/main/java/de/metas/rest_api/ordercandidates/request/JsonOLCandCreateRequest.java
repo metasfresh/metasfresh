@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.rest_api.bpartner.SwaggerDocConstants;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -56,7 +57,6 @@ public final class JsonOLCandCreateRequest
 	private JsonOrganization org;
 
 	@ApiModelProperty( //
-
 			required = true, //
 			value = "This translates to 'C_OLCand.externalLineId'.\n"
 					+ "'externalLineId' and 'dataSource' together need to be unique.")
@@ -70,12 +70,12 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			required = true, //
-			value = "Identifier of the 'AD_InputDataSource' record that tells where this OLCand came from.")
+			value = "Identifier of the `AD_InputDataSource` record that tells where this OLCand came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataSource;
 
 	@ApiModelProperty( //
 			required = true, //
-			value = "Identifier of the 'AD_InputDataSource' record that tells what shall be happen with this OLCand.")
+			value = "Identifier of the `AD_InputDataSource` record that tells what shall be happen with this OLCand.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataDest;
 
 	@ApiModelProperty( //
@@ -203,7 +203,6 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	LocalDate presetDateShipped;
 
-
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
 	OrderDocType orderDocType;
@@ -298,7 +297,6 @@ public final class JsonOLCandCreateRequest
 		Check.assumeNotNull(externalHeaderId, "externalHeaderId may not be null; this={}", this);
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
-
 
 		if (price != null)
 		{

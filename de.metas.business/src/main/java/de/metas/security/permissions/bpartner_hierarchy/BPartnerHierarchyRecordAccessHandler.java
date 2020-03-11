@@ -16,10 +16,14 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
+import de.metas.security.Principal;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.bpartner_hierarchy.BPartnerDependentDocumentEvent.EventType;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
+import de.metas.security.permissions.record_access.PermissionIssuer;
 import de.metas.security.permissions.record_access.RecordAccess;
+import de.metas.security.permissions.record_access.RecordAccessCopyRequest;
 import de.metas.security.permissions.record_access.RecordAccessFeature;
 import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
@@ -50,7 +54,7 @@ import lombok.NonNull;
  */
 
 @Component
-class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
+public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerHierarchyRecordAccessHandler.class);
 
@@ -92,6 +96,42 @@ class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 		return dependentDocumentHandlers.getTableNames();
 	}
 
+	public void onBPartnerSalesRepChanged(@NonNull final BPartnerSalesRepChangedEvent event)
+	{
+		if (!isEnabled())
+		{
+			return;
+		}
+
+		if (!event.isSalesRepChanged())
+		{
+			return;
+		}
+
+		if (event.getOldSalesRepId() != null)
+		{
+			service.revokeAccess(RecordAccessRevokeRequest.builder()
+					.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, event.getBpartnerId()))
+					.principal(Principal.userId(event.getOldSalesRepId()))
+					.revokeAllPermissions(true)
+					.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+					.requestedBy(event.getChangedBy())
+					.build());
+		}
+
+		if (event.getNewSalesRepId() != null)
+		{
+			service.grantAccess(RecordAccessGrantRequest.builder()
+					.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, event.getBpartnerId()))
+					.principal(Principal.userId(event.getNewSalesRepId()))
+					.permission(Access.READ)
+					.permission(Access.WRITE)
+					.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+					.requestedBy(event.getChangedBy())
+					.build());
+		}
+	}
+
 	public void onBPartnerDependentDocumentEvent(@NonNull final BPartnerDependentDocumentEvent event)
 	{
 		final TableRecordReference documentRef = event.getDocumentRef();
@@ -125,7 +165,13 @@ class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 			return;
 		}
 
-		service.copyAccess(documentRef, grantFrom, revokeFrom);
+		service.copyAccess(RecordAccessCopyRequest.builder()
+				.target(documentRef)
+				.grantFrom(grantFrom)
+				.revokeFrom(revokeFrom)
+				.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+				.requestedBy(event.getUpdatedBy())
+				.build());
 	}
 
 	@Override
@@ -141,6 +187,9 @@ class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 							.recordRef(recordRef)
 							.principal(access.getPrincipal())
 							.permission(access.getPermission())
+							.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+							.requestedBy(access.getCreatedBy())
+							.parentAccess(access)
 							.build())
 					.forEach(service::grantAccess);
 		}
@@ -159,6 +208,8 @@ class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 							.recordRef(recordRef)
 							.principal(access.getPrincipal())
 							.permission(access.getPermission())
+							.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+							.requestedBy(access.getCreatedBy())
 							.build())
 					.forEach(service::revokeAccess);
 		}

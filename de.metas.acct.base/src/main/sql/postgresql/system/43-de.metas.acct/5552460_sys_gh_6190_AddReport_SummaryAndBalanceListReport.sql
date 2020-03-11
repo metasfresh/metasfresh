@@ -1,6 +1,6 @@
 -- 2020-02-18T07:06:31.191Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,584655,'Y','N',TO_TIMESTAMP('2020-02-18 09:06:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','N','Y','Y',0,'SummaryAndBalanceListReport','N','N','Java',TO_TIMESTAMP('2020-02-18 09:06:30','YYYY-MM-DD HH24:MI:SS'),100,'SummaryAndBalanceListReport')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,584655,'Y','N',TO_TIMESTAMP('2020-02-18 09:06:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','Y','Y',0,'SummaryAndBalanceListReport','N','N','Java',TO_TIMESTAMP('2020-02-18 09:06:30','YYYY-MM-DD HH24:MI:SS'),100,'SummaryAndBalanceListReport')
 ;
 
 -- 2020-02-18T07:06:31.194Z

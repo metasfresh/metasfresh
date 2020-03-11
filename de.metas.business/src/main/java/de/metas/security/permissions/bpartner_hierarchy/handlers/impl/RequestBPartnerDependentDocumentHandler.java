@@ -7,11 +7,14 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_R_Request;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /*
@@ -37,6 +40,7 @@ import de.metas.util.Services;
  */
 
 @Component
+@VisibleForTesting
 public class RequestBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
@@ -56,6 +60,7 @@ public class RequestBPartnerDependentDocumentHandler implements BPartnerDependen
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(requestRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(requestRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(requestRecord.getUpdatedBy()))
 				.build();
 	}
 

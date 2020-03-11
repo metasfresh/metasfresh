@@ -182,7 +182,7 @@ public class InvoiceReferenceNosTest
 		bpBankAccount.setAD_Org_ID(partner.getAD_Org_ID());
 		bpBankAccount.setIsEsrAccount(true);
 
-		bpBankAccount.setC_BPartner(partner);
+		bpBankAccount.setC_BPartner_ID(partner.getC_BPartner_ID());
 		bpBankAccount.setAccountNo(accountNo);
 
 		InterfaceWrapperHelper.save(bpBankAccount);

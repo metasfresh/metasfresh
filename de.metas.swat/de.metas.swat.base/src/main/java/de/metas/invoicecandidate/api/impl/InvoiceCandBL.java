@@ -5,9 +5,11 @@ package de.metas.invoicecandidate.api.impl;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -45,6 +47,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -124,6 +128,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO.InvoiceableInvoiceCandIdResult;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -137,13 +142,13 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -152,6 +157,7 @@ import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -225,35 +231,34 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * @task 08542
 	 */
 	@Override
-	public void set_DateToInvoice_DefaultImpl(final I_C_Invoice_Candidate ic)
+	public void set_DateToInvoice_DefaultImpl(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final Timestamp dateToInvoice = computeDateToInvoice(ic);
-		ic.setDateToInvoice(dateToInvoice);
+		final Timestamp dateToInvoice = computeDateToInvoice(icRecord);
+		icRecord.setDateToInvoice(dateToInvoice);
 	}
 
-	private Timestamp computeDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	private Timestamp computeDateToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final InvoiceRule invoiceRule = getInvoiceRule(ic);
+		final InvoiceRule invoiceRule = getInvoiceRule(icRecord);
 		switch (invoiceRule)
 		{
 			case Immediate:
-				return ic.getDateOrdered();
+				return icRecord.getDateOrdered();
 
 			case AfterDelivery:
-				return computedateToInvoiceBasedOnDeliveryDate(ic);
+				return computedateToInvoiceBasedOnDeliveryDate(icRecord);
 
 			case AfterOrderDelivered:
-				return computedateToInvoiceBasedOnDeliveryDate(ic);
+				return computedateToInvoiceBasedOnDeliveryDate(icRecord);
 
 			case CustomerScheduleAfterDelivery:
-				if (ic.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
+				if (icRecord.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
 				{
 					return DATE_TO_INVOICE_MAX_DATE;
 				}
 				else
 				{
-
-					final LocalDate deliveryDate = TimeUtil.asLocalDate(ic.getDeliveryDate()); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
+					final LocalDate deliveryDate = TimeUtil.asLocalDate(icRecord.getDeliveryDate()); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
 					if (deliveryDate == null)
 					{
 						// task 08451: we have an invoice schedule, but no delivery yet. Set the date to the far future
@@ -262,9 +267,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					else
 					{
 						final InvoiceScheduleRepository invoiceScheduleRepository = SpringContextHolder.instance.getBean(InvoiceScheduleRepository.class);
-						final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(ic.getC_InvoiceSchedule());
+						final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(icRecord.getC_InvoiceSchedule());
 						final LocalDate nextDateToInvoice = invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
-						return TimeUtil.asTimestamp(nextDateToInvoice, orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID())));
+						return TimeUtil.asTimestamp(nextDateToInvoice, orgDAO.getTimeZone(OrgId.ofRepoId(icRecord.getAD_Org_ID())));
 					}
 				}
 			default:
@@ -272,10 +277,26 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private Timestamp computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate ic)
+	private Timestamp computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
+		final Timestamp deliveryDate = icRecord.getDeliveryDate();
+		if (deliveryDate != null)
+		{
+			logger.debug("computedateToInvoiceBasedOnDeliveryDate -> return deliveryDate={} as dateToInvoice", deliveryDate);
+			return deliveryDate;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
+		final IProductBL productBL = Services.get(IProductBL.class);
+		if (!productBL.isStocked(productId))
+		{
+			final Timestamp dateOrdered = icRecord.getDateOrdered();
+			logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is not stocked; -> return dateOrdered= {} as dateToInvoice", productId.getRepoId(), dateOrdered);
+			return dateOrdered;
+		}
+
 		// if there is no delivery yet, then we set the date to the far future
-		final Timestamp deliveryDate = ic.getDeliveryDate();
+		logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is stocked; -> return {} as dateToInvoice", productId.getRepoId(), DATE_TO_INVOICE_MAX_DATE);
 		return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
 	}
 
@@ -431,7 +452,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		final UomId icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
-		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.createZero(productId, icUomId);
+		StockQtyAndUOMQty qtyInvoicedSum = StockQtyAndUOMQtys.createZero(productId, icUomId);
 		final CurrencyId icCurrencyId = CurrencyId.ofRepoId(ic.getC_Currency_ID());
 
 		Money netAmtInvoiced = Money.zero(icCurrencyId);
@@ -451,12 +472,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //			{
 // @formatter:on
 
-			final StockQtyAndUOMQty qtysInvoiced = StockQtyAndUOMQtys.create(
+			final StockQtyAndUOMQty ilaQtysInvoiced = StockQtyAndUOMQtys.create(
 					ila.getQtyInvoiced(),
 					productId,
 					ila.getQtyInvoicedInUOM(),
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
-			qtyInvoiced = qtyInvoiced.add(qtysInvoiced);
+			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
 			//
 			// 07202: We update the net amount invoice according to price UOM.
@@ -485,7 +506,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 //			}
 // @formatter:on
 		}
-		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoiced, netAmtInvoiced);
+		final IPair<StockQtyAndUOMQty, Money> qtyAndNetAmtInvoiced = ImmutablePair.of(qtyInvoicedSum, netAmtInvoiced);
 		return Optional.of(qtyAndNetAmtInvoiced);
 	}
 
@@ -897,43 +918,72 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public CurrencyPrecision extractPricePrecision(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final I_M_PriceList pricelist = extractPriceListOrNull(icRecord);
+
+		if (pricelist != null && !isNull(pricelist, I_M_PriceList.COLUMNNAME_PricePrecision) && pricelist.getPricePrecision() >= 0)
+		{
+			return CurrencyPrecision.ofInt(pricelist.getPricePrecision());
+		}
+
+		// fall back: get the precision from the currency
+		final CurrencyPrecision result = getPrecisionFromCurrency(icRecord);
+		logger.debug("C_Invoice_Candidate has no M_PriceList with a PricePrecision; -> return currency's precision={}", result);
+		return result;
+	}
+
+	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+		if (icRecord.getM_PriceList_Version_ID() > 0)
+		{
+			final I_M_PriceList result = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(icRecord.getM_PriceList_Version_ID()));
+			logger.debug("C_Invoice_Candidate has M_PriceList_Version_ID={}; -> return M_PriceList={}", icRecord.getM_PriceList_Version_ID(), result);
+			return result;
+		}
+		else if (icRecord.getM_PricingSystem_ID() > 0)
+		{
+			// take the precision from the bpartner price list
+			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
+					BPartnerLocationId.ofRepoIdOrNull(
+							icRecord.getBill_BPartner_ID(),
+							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));
+
+			if (partnerLocation == null)
+			{
+				logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, but no partnerLocation; -> return M_PriceList=null", icRecord.getM_PricingSystem_ID());
+				return null;
+			}
+
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(icRecord.getDateOrdered());
+			final SOTrx soTrx = SOTrx.ofBoolean(icRecord.isSOTrx());
+
+			final I_M_PriceList result = priceListBL
+					.getCurrentPricelistOrNull(
+							PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
+							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
+							date,
+							soTrx);
+			logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
+					icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
+			return result;
+		}
+
+		logger.debug("C_Invoice_Candidate has neither M_PriceList_Version_ID nor M_PricingSystem_ID; -> return M_PriceList=null");
+		return null;
+	}
+
+	@Override
 	public CurrencyPrecision getPrecisionFromCurrency(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
 		return currencyId != null
 				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
 				: CurrencyPrecision.TWO;
-	}
-
-	@Override
-	public CurrencyPrecision getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
-	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-		// take the precision from the bpartner price list
-		final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
-				BPartnerLocationId.ofRepoIdOrNull(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
-
-		if (partnerLocation != null)
-		{
-			final ZonedDateTime date = TimeUtil.asZonedDateTime(ic.getDateOrdered());
-			final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
-
-			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
-					.getCurrentPricelistOrNull(
-							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
-							date,
-							soTrx);
-
-			if (pricelist != null)
-			{
-				return CurrencyPrecision.ofInt(pricelist.getPricePrecision());
-			}
-		}
-
-		// fall back: get the precision from the currency
-		return getPrecisionFromCurrency(ic);
 	}
 
 	@Override
@@ -1071,10 +1121,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	public I_C_Invoice_Line_Alloc createUpdateIla(
-			final I_C_Invoice_Candidate invoiceCand,
-			final I_C_InvoiceLine invoiceLine,
-			final StockQtyAndUOMQty qtysInvoiced,
-			final String note)
+			@NonNull final I_C_Invoice_Candidate invoiceCand,
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final StockQtyAndUOMQty qtysInvoiced,
+			@Nullable final String note)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");
@@ -1167,7 +1217,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
-			final CurrencyPrecision precision = getPrecisionFromPricelist(ic);
+			final CurrencyPrecision precision = extractPricePrecision(ic);
 			final ProductPrice priceEntered = getPriceEnteredEffective(ic);
 			final Percent discount = getDiscount(ic);
 
@@ -2017,51 +2067,44 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)
+	public void setQtyAndDateForFreightCost(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-		if (!ic.isFreightCost())
+		if (!icRecord.isFreightCost())
 		{
-			// nothing to do
-			return;
+			return;	// nothing to do
 		}
-		final OrderId orderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 
 		if (orderId == null)
 		{
-			// nothing to do;
-			return;
+			return; // nothing to do
 		}
 
-		final InvoiceCandidateId firstInvoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
+		final InvoiceableInvoiceCandIdResult invoiceableInvoiceCandIdResult = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
 
-		if (firstInvoiceableInvoiceCandId != null)
+		final boolean hasInvoiceableICs = invoiceableInvoiceCandIdResult.getFirstInvoiceableInvoiceCandId() != null;
+		final boolean hasICsToWaitFor = invoiceableInvoiceCandIdResult.isOrderHasInvoiceCandidatesToWaitFor();
+		if (hasInvoiceableICs)
 		{
-			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(ic.getC_OrderLine_ID());
-
-			if (orderLine == null)
+			if (icRecord.getC_OrderLine_ID() <= 0)
 			{
-				// nothing to do
-				return;
+				return; // nothing to do
 			}
 
-			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(firstInvoiceableInvoiceCandId);
+			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(invoiceableInvoiceCandIdResult.getFirstInvoiceableInvoiceCandId());
 
-			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
-			ic.setQtyToInvoice(ONE);
-			ic.setQtyDelivered(ONE);
-			ic.setQtyToInvoiceInUOM(ONE);
-			set_DateToInvoice_DefaultImpl(ic);
+			logger.debug("C_Order_ID={} of this freight-cost invoice candidate has other invoicable C_Invoice_Candidate_ID={}; -> set DeliveryDate its DeliveryDate={}",
+					orderId.getRepoId(), firstInvoiceableCandRecord.getC_Invoice_Candidate_ID(), firstInvoiceableCandRecord.getDeliveryDate());
+			icRecord.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 		}
-
-		else
+		else if (hasICsToWaitFor)
 		{
-			ic.setQtyToInvoice(ZERO);
-			ic.setQtyDelivered(ZERO);
-			ic.setQtyToInvoiceInUOM(ZERO);
-			set_DateToInvoice_DefaultImpl(ic);
+			logger.debug("C_Order_ID={} of this freight-cost invoice candidate has other not-yet-invoicable ICs to wait for; -> set QtyToInvoice to zero", orderId.getRepoId());
+			icRecord.setQtyToInvoice(ZERO); // ok, let's wait for those other ICs
+			icRecord.setQtyDelivered(ZERO);
+			icRecord.setQtyToInvoiceInUOM(ZERO);
 		}
 	}
 
