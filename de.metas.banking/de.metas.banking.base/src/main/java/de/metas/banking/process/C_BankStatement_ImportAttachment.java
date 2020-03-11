@@ -109,11 +109,13 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 
 	private Params computeImportProcessParams()
 	{
-		final I_C_BankStatement bankStatement = bankStatementDAO.getById(BankStatementId.ofRepoId(getRecord_ID()));
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(getRecord_ID());
+		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
 		final ImmutableMap<String, Object> paramsMap = ImmutableMap.<String, Object>builder()
 				.put(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, bankStatement.getC_BP_BankAccount_ID())
 				.put(I_I_BankStatement.COLUMNNAME_StatementDate, bankStatement.getStatementDate())
 				.put(I_I_BankStatement.COLUMNNAME_Name, bankStatement.getName())
+				.put(I_I_BankStatement.COLUMNNAME_C_BankStatement_ID, bankStatementId.getRepoId())
 				.build();
 
 		return Params.ofMap(paramsMap);
