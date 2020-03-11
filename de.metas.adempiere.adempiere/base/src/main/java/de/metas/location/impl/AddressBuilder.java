@@ -661,19 +661,21 @@ public class AddressBuilder
 		final boolean isPartnerCompany = bPartner.isCompany();
 		final Language language = Language.asLanguage(bPartner.getAD_Language());
 		
-		final String userGreeting;
+		String userGreeting = "";
 		if (user != null)
 		{
+			// Greeting
 			final GreetingId greetingId = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
-		{
+			if (greetingId != null)
+			{
 				final Greeting greeting = greetingRepository.getByIdAndLang(greetingId, language);
 				userGreeting = greeting.getGreeting();
 			}
+			
+			
 			final String userName = user.getLastname();
 			final String userVorname = user.getFirstname();
 			final String userTitle = user.getTitle();
-
-			// Greeting
 
 			//
 			// construct string
