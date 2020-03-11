@@ -35,6 +35,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.payment.impl.BankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
@@ -49,14 +50,13 @@ public class CashStatementBL implements ICashStatementBL
 	@Override
 	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
 	{
-		I_C_BankStatement bs = getCreateCashStatement(payment);
+		final I_C_BankStatement bs = getCreateCashStatement(payment);
 
 		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
 		bsl.setAD_Org_ID(bs.getAD_Org_ID());
 		bsl.setC_BankStatement_ID(bs.getC_BankStatement_ID());
 		bankStatementBL.setDate(bsl, bs.getStatementDate());
-		bankStatmentPaymentBL.setPayment(bsl, payment);
-
+		bankStatmentPaymentBL.setPayment(bsl, BankStatmentPaymentBL.toBankStatementPaymentInfo(payment));
 		bsl.setProcessed(true);
 		InterfaceWrapperHelper.save(bsl);
 

@@ -15,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -293818896L;
+	private static final long serialVersionUID = 370733819L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -325,6 +325,43 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public int getC_Payment_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaySelection getC_PaySelection()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaySelection_ID, org.compiere.model.I_C_PaySelection.class);
+	}
+
+	@Override
+	public void setC_PaySelection(org.compiere.model.I_C_PaySelection C_PaySelection)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaySelection_ID, org.compiere.model.I_C_PaySelection.class, C_PaySelection);
+	}
+
+	/** Set Zahlung Anweisen.
+		@param C_PaySelection_ID 
+		Zahlung Anweisen
+	  */
+	@Override
+	public void setC_PaySelection_ID (int C_PaySelection_ID)
+	{
+		if (C_PaySelection_ID < 1) 
+			set_Value (COLUMNNAME_C_PaySelection_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaySelection_ID, Integer.valueOf(C_PaySelection_ID));
+	}
+
+	/** Get Zahlung Anweisen.
+		@return Zahlung Anweisen
+	  */
+	@Override
+	public int getC_PaySelection_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaySelection_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -656,6 +693,28 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EftValutaDate);
 	}
 
+	/** Set ESR Zahlungsimport.
+		@param ESR_Import_ID ESR Zahlungsimport	  */
+	@Override
+	public void setESR_Import_ID (int ESR_Import_ID)
+	{
+		if (ESR_Import_ID < 1) 
+			set_Value (COLUMNNAME_ESR_Import_ID, null);
+		else 
+			set_Value (COLUMNNAME_ESR_Import_ID, Integer.valueOf(ESR_Import_ID));
+	}
+
+	/** Get ESR Zahlungsimport.
+		@return ESR Zahlungsimport	  */
+	@Override
+	public int getESR_Import_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ESR_Import_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Imported Bill Partner IBAN.
 		@param ImportedBillPartnerIBAN Imported Bill Partner IBAN	  */
 	@Override
@@ -863,6 +922,34 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * LineType AD_Reference_ID=541111
+	 * Reference name: C_BankStatementLineType
+	 */
+	public static final int LINETYPE_AD_Reference_ID=541111;
+	/** Payment = P */
+	public static final String LINETYPE_Payment = "P";
+	/** PaySelection = PS */
+	public static final String LINETYPE_PaySelection = "PS";
+	/** ESR_Import = ESR */
+	public static final String LINETYPE_ESR_Import = "ESR";
+	/** Set Zeilenart.
+		@param LineType Zeilenart	  */
+	@Override
+	public void setLineType (java.lang.String LineType)
+	{
+
+		set_Value (COLUMNNAME_LineType, LineType);
+	}
+
+	/** Get Zeilenart.
+		@return Zeilenart	  */
+	@Override
+	public java.lang.String getLineType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LineType);
 	}
 
 	@Override

@@ -1,12 +1,14 @@
 package de.metas.banking.payment;
 
-import java.util.Optional;
-
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_BankStatementLine;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.banking.model.BankStatementPaymentInfo;
 import de.metas.banking.model.IBankStatementLineOrRef;
+import de.metas.bpartner.BPartnerId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -15,7 +17,9 @@ public interface IBankStatmentPaymentBL extends ISingletonService
 {
 	void setPayment(@NonNull IBankStatementLineOrRef lineOrRef, @Nullable PaymentId paymentId);
 
-	void setPayment(@NonNull IBankStatementLineOrRef lineOrRef, @Nullable I_C_Payment payment);
+	void setPayment(@NonNull IBankStatementLineOrRef lineOrRef, @Nullable BankStatementPaymentInfo payment);
+
+	ImmutableSet<PaymentId> getAllNotReconciledPaymentsMatching(@NonNull I_C_BankStatementLine line, BPartnerId bpartnerId);
 
 	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(
 			org.compiere.model.I_C_BankStatement bankStatement,
@@ -26,11 +30,9 @@ public interface IBankStatmentPaymentBL extends ISingletonService
 	 * and link the payment to the BankStatementLine.
 	 *
 	 * @param paymentIdToSet - if not null, don't create a new payment but link this one to the BankStatementLine
-	 * @return the current paymentId of the line if it has a payment, null if the line does not have a payment
 	 */
-	Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(
+	void setOrCreateAndLinkPaymentToBankStatementLine(
 			@NonNull org.compiere.model.I_C_BankStatement bankStatement,
 			@NonNull de.metas.banking.model.I_C_BankStatementLine line,
 			@Nullable PaymentId paymentIdToSet);
-
 }

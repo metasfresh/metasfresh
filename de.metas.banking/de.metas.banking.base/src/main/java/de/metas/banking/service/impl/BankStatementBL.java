@@ -14,6 +14,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -105,12 +107,18 @@ public class BankStatementBL implements IBankStatementBL
 
 		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(bankStatementId, I_C_BankStatementLine.class))
 		{
-			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
-			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
+			handleAfterComplete(bankStatement, line);
 		}
 	}
 
-	private void reconcilePaymentsFromBankStatementLine_Ref(final IBankStatementDAO bankStatementDAO, final I_C_BankStatementLine line)
+	@VisibleForTesting
+	void handleAfterComplete(@NonNull final I_C_BankStatement bankStatement, @NonNull final I_C_BankStatementLine line)
+	{
+		bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
+		reconcilePaymentsFromBankStatementLine_Ref(line);
+	}
+
+	private void reconcilePaymentsFromBankStatementLine_Ref(final I_C_BankStatementLine line)
 	{
 		if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 		{

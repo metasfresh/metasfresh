@@ -1,5 +1,18 @@
 package de.metas.payment.api;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_Payment;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,6 +36,7 @@ package de.metas.payment.api;
  */
 
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.bpartner.BPartnerId;
@@ -32,18 +46,6 @@ import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_Payment;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
 
 public interface IPaymentDAO extends ISingletonService
 {
@@ -100,7 +102,7 @@ public interface IPaymentDAO extends ISingletonService
 	 */
 	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 
-	ImmutableSet<PaymentId> retrieveAllMatchingPayments(boolean isReceipt, @NonNull BPartnerId bPartnerId, @NonNull final Money money);
+	ImmutableSet<PaymentId> retrieveAllNotReconciledPaymentsMatching(boolean isReceipt, @NonNull BPartnerId bpartnerId, @NonNull final Money money);
 
 	void save(@NonNull final I_C_Payment payment);
 }

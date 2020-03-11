@@ -222,7 +222,10 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 
 	@Override
-	public ImmutableSet<PaymentId> retrieveAllMatchingPayments(final boolean isReceipt, @NonNull final BPartnerId bPartnerId, @NonNull final Money money)
+	public ImmutableSet<PaymentId> retrieveAllNotReconciledPaymentsMatching(
+			final boolean isReceipt,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final Money money)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment.class)
@@ -230,7 +233,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, false)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, money.toBigDecimal())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, money.getCurrencyId())
 				.create()

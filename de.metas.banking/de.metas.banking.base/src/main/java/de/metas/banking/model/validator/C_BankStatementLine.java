@@ -46,7 +46,6 @@ public class C_BankStatementLine
 
 	private C_BankStatementLine()
 	{
-		super();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Payment_ID)
