@@ -40,6 +40,9 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -99,14 +102,18 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
+	private final PerformanceMonitoringService perfMonService;
+
 	private PermissionServiceFactory permissionServiceFactory;
 
 	public OrderCandidatesRestControllerImpl(
 			@NonNull final JsonConverters jsonConverters,
-			@NonNull final OLCandRepository olCandRepo)
+			@NonNull final OLCandRepository olCandRepo,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
+		this.perfMonService = perfMonService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -139,13 +146,13 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
 			// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
-			trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
+			trxManager.runInNewTrx(() -> createOrUpdateMasterdataBulk(bulkRequest, masterdataProvider));
 			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
 
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			response = trxManager.callInNewTrx(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
+			response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -168,16 +175,39 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
-	private void createOrUpdateMasterdata(
+	private void createOrUpdateMasterdataBulk(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		bulkRequest.getRequests()
-				.stream()
-				.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CreateOrUpdateMasterDataBulk")
+				.type(Type.REST_API_PROCESSING.getCode())
+				.build();
+
+		perfMonService.monitorSpan(
+				() -> bulkRequest.getRequests()
+						.stream()
+						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
+				spanMetadata);
 	}
 
 	private void createOrUpdateMasterdata(
+			@NonNull final JsonOLCandCreateRequest json,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CreateOrUpdateMasterDataSingle")
+				.type(Type.REST_API_PROCESSING.getCode())
+				.label("externalHeaderId", json.getExternalHeaderId())
+				.label("externalLineId", json.getExternalLineId())
+				.build();
+
+		perfMonService.monitorSpan(
+				() -> createOrUpdateMasterdata0(json, masterdataProvider),
+				spanMetadata);
+	}
+
+	private void createOrUpdateMasterdata0(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
@@ -256,7 +286,21 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		return ExplainedOptional.of(request);
 	}
 
-	private JsonOLCandCreateBulkResponse creatOrderLineCandidates(
+	private JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
+			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CreatOrderLineCandidatesBulk")
+				.type(Type.REST_API_PROCESSING.getCode())
+				.build();
+
+		return perfMonService.monitorSpan(
+				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
+				spanMetadata);
+	}
+
+	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
