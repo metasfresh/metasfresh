@@ -1,5 +1,6 @@
 package de.metas.banking.impexp;
 
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
@@ -82,9 +83,11 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, -1);
 		final String bankStatementName = getParameters().getParameterAsString(I_I_BankStatement.COLUMNNAME_Name);
 		final LocalDate bankStatementDate = getParameters().getParameterAsLocalDate(I_I_BankStatement.COLUMNNAME_StatementDate);
+		final int bankStatementIdInt = getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BankStatement_ID, 0);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(bankStatementIdInt);
 
 		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, selection);
-		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, bankStatementName, bankStatementDate);
+		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, bankStatementName, bankStatementDate, bankStatementId);
 	}
 
 	@Override
@@ -166,6 +169,19 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	private int retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
+		final int bankStatementId = Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, importRecord.getC_BankStatement_ID())
+				.create()
+				.firstId();
+		if (bankStatementId >= 0)
+		{
+			return bankStatementId;
+
+		}
+
+		// I believe this fallback is not needed anymore due to the above query, as the record should already have a C_BankStatement_ID set from de.metas.banking.impexp.BankStatementImportTableSqlUpdater.updateBankStatement.
+		// Not sure if deleting this query will bring other bugs though.
+		// Note: there may be bank statements with same name, statement date and BP bank accounts, so the below query may return the wrong result, and also different results for different calls, since there is no order by
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
