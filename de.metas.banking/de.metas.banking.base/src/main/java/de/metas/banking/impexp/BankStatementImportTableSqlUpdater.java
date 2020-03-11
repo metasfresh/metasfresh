@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 
+import de.metas.banking.model.BankStatementId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.util.DB;
@@ -50,7 +51,7 @@ public class BankStatementImportTableSqlUpdater
 		updateBankAccount(bankAccountId, selection);
 	}
 
-	public void updateBankStatementImportTable(@NonNull final ImportRecordsSelection selection, @Nullable final String bankStatementName, @Nullable final LocalDate bankStatementDate)
+	public void updateBankStatementImportTable(final @NonNull ImportRecordsSelection selection, @Nullable final String bankStatementName, @Nullable final LocalDate bankStatementDate, @Nullable final BankStatementId bankStatementId)
 	{
 		updateBankAccountTo(selection);
 		updateStatementDate(selection, bankStatementDate);
@@ -64,7 +65,7 @@ public class BankStatementImportTableSqlUpdater
 		checkInvoiceBPartnerCombination(selection);
 		checkInvoiceBPartnerPaymentBPartnerCombination(selection);
 
-		updateBankStatement(selection);
+		updateBankStatement(selection, bankStatementId);
 
 		detectDuplicates(selection);
 
@@ -125,8 +126,20 @@ public class BankStatementImportTableSqlUpdater
 
 	}
 
-	private void updateBankStatement(final ImportRecordsSelection selection)
+	private void updateBankStatement(final ImportRecordsSelection selection, @Nullable final BankStatementId bankStatementId)
 	{
+		if (bankStatementId != null)
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE ")
+					.append(I_I_BankStatement.Table_Name + " i ")
+					.append(" SET " + I_I_BankStatement.COLUMNNAME_C_BankStatement_ID + " = " + bankStatementId.getRepoId())
+					.append(" WHERE " + I_I_BankStatement.COLUMNNAME_C_BankStatement_ID + " IS NULL ")
+					.append(" AND i.I_IsImported<>'Y' ")
+					.append(selection.toSqlWhereClause("i"));
+
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
+
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(I_I_BankStatement.Table_Name + " i ")
 				.append(" SET "
@@ -145,7 +158,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void updateBankAccount(final int bankAccountId, final ImportRecordsSelection selection)
@@ -206,7 +218,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void updateC_BPartner(final ImportRecordsSelection selection)
@@ -226,7 +237,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void updateBankAccountTo(final ImportRecordsSelection selection)
@@ -244,7 +254,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void updateCurrency(final ImportRecordsSelection selection)
@@ -276,7 +285,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void updateAmount(final ImportRecordsSelection selection)
@@ -312,7 +320,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void updateValutaDate(final ImportRecordsSelection selection)
@@ -357,7 +364,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void checkInvoiceBPartnerCombination(final ImportRecordsSelection selection)
@@ -374,7 +380,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void checkInvoiceBPartnerPaymentBPartnerCombination(final ImportRecordsSelection selection)
