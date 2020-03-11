@@ -1,6 +1,7 @@
 package de.metas.invoice;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -45,6 +46,11 @@ public class InvoiceId implements RepoIdAware
 	public static InvoiceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new InvoiceId(repoId) : null;
+	}
+
+	public static Optional<InvoiceId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;
