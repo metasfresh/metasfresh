@@ -10,12 +10,12 @@ package de.metas.edi.esb.xls;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -99,10 +99,6 @@ public class XlsToMapListConverter
 	 * Converts given XLS input stream to a list of maps (each row it's a map of HeaderName to Value).
 	 *
 	 * NOTE: this method it's also closing the stream.
-	 *
-	 * @param in
-	 * @return
-	 * @throws IOException
 	 */
 	public List<Map<String, Object>> convert(final InputStream in) throws IOException
 	{
@@ -210,7 +206,7 @@ public class XlsToMapListConverter
 
 	/**
 	 * Read rows of type {@link RowType#TableHeader}.
-	 * 
+	 *
 	 * @param cellIt
 	 * @return column index to header name map
 	 */
@@ -232,7 +228,7 @@ public class XlsToMapListConverter
 
 	/**
 	 * Read rows of type {@link RowType#TableRow}.
-	 * 
+	 *
 	 * @param cellIt
 	 * @return header name to value map
 	 */
@@ -274,7 +270,7 @@ public class XlsToMapListConverter
 
 	/**
 	 * Read rows of type {@link RowType#NameValuePair}.
-	 * 
+	 *
 	 * @param cellIt
 	 * @return key name to value map
 	 */
@@ -465,7 +461,7 @@ public class XlsToMapListConverter
 		return value == null ? null : value.toString();
 	}
 
-	public static enum RowType
+	public enum RowType
 	{
 		TableHeader("H"),
 		TableRow("R"),
@@ -577,7 +573,7 @@ public class XlsToMapListConverter
 		/**
 		 * If enabled, the XLS converter will look for first not null column and it will expect to have one of the codes from {@link RowType}.
 		 * If no row type would be found, the row would be ignored entirely.
-		 * 
+		 *
 		 * @param useTypeColumn
 		 * @task 09045
 		 */

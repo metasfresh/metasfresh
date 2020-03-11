@@ -24,6 +24,7 @@ package de.metas.edi.esb.route.imports;
 
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ import javax.xml.bind.JAXBElement;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,7 +146,8 @@ public class XLSOLCandRoute extends AbstractEDIRoute
 				.split(body())
 				.marshal(jaxb)
 				//
-				.log(LoggingLevel.TRACE, "XLS_OLCand: Sending XML Order document to metasfresh...")
+				.log(LoggingLevel.INFO, "XLS_OLCand: Sending XML Order document to metasfresh...")
+				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.ISO_8859_1.name())
 				.to(Constants.EP_AMQP_TO_MF);
 	}
 }

@@ -87,7 +87,6 @@ public final class XLSConfigurationContext
 	/** Constructs the configuration by fetching the values from given {@link Exchange} properties */
 	private XLSConfigurationContext(final Exchange exchange)
 	{
-		super();
 		this.CamelFileName = exchange.getProperty(Exchange.FILE_NAME, String.class);
 		// this.EDIMessageDatePattern = exchange.getProperty(CONTEXT_EDIMessageDatePattern, String.class);
 		this.AD_Client_Value = exchange.getProperty(CONTEXT_AD_Client_Value, String.class);
