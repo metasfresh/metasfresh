@@ -172,7 +172,7 @@ public class AttributePricing implements IPricingRule
 	 *
 	 * @param pricingCtx
 	 */
-	private final Optional<? extends I_M_ProductPrice> getProductPrice(final IPricingContext pricingCtx)
+	private final Optional<? extends I_M_ProductPrice> getProductPrice(@NonNull final IPricingContext pricingCtx)
 	{
 		//
 		// Use the explicit Product Price Attribute, if set and if it's valid.
@@ -214,8 +214,6 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Retrieves the {@link I_M_ProductPrice} by given ID and validates if is compatible with our pricing context.
 	 *
-	 * @param pricingCtx
-	 * @param productPriceId
 	 * @return product price attribute if exists and it's valid
 	 */
 	private static final Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
@@ -236,7 +234,7 @@ public class AttributePricing implements IPricingRule
 		// Make sure the product price attribute is still active.
 		if (!productPrice.isActive())
 		{
-			logger.debug("Returning null because M_ProductPrice is not active: {}", productPrice);
+			logger.debug("Returning null because M_ProductPrice_ID={} is not active: {}", productPriceId);
 			return Optional.empty();
 		}
 
@@ -247,6 +245,7 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
+		logger.debug("M_ProductPrice_ID={} is valid", productPriceId);
 		return Optional.of(productPrice);
 	}
 
