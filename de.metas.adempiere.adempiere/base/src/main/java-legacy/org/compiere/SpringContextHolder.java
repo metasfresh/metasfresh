@@ -153,14 +153,11 @@ public final class SpringContextHolder
 		final String message;
 		if (Adempiere.isUnitTestMode())
 		{
-			message = "This unit test requires a spring ApplicationContext; A known way to do that is to annotate the test class like this:\n"
+			message = "This unit test requires a spring ApplicationContext; \n"
 					+ "\n"
-					+ "@RunWith(SpringRunner.class)\n"
-					+ "@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, <further classes> })\n"
-					+ "public class YourTest ...\n"
-					+ "\n"
-					+ "Where the further configuration classes contain @ComponentScan annotations to discover spring components required by the actual tests"
-					+ "Also see https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-testing.html";
+					+ "Use org.compiere.SpringContextHolder.registerJUnitBean(T) to register your bean\n"
+					+ "E.g.\n"
+					+ "SpringContextHolder.registerJUnitBean(new GreetingRepository());\n"					;
 		}
 		else
 		{
