@@ -22,11 +22,14 @@
 
 package de.metas.materialtracking;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 
+import java.util.List;
 import java.util.Set;
 
 public class MaterialTrackingPOCopyRecordSupport extends GeneralCopyRecordSupport
@@ -45,6 +48,13 @@ public class MaterialTrackingPOCopyRecordSupport extends GeneralCopyRecordSuppor
 		}
 
 		return super.getValueToCopy(to, from, columnName);
+	}
+
+	@Override
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	{
+		//cloning without children
+		return ImmutableList.of();
 	}
 
 }
