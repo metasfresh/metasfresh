@@ -28,6 +28,7 @@ import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -41,16 +42,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
@@ -126,8 +122,6 @@ import lombok.Value;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GreetingRepository.class })
 @ExtendWith(AdempiereTestWatcher.class)
 class BpartnerRestControllerTest
 {
@@ -137,11 +131,11 @@ class BpartnerRestControllerTest
 	private CurrencyRepository currencyRepository;
 
 	@BeforeAll
-	static void initStatic()
+	static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
-
+	
 	@AfterAll
 	static void afterAll()
 	{
@@ -152,6 +146,8 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -177,7 +173,7 @@ class BpartnerRestControllerTest
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
 	}
-
+	
 	@Test
 	void retrieveBPartner_ext()
 	{
