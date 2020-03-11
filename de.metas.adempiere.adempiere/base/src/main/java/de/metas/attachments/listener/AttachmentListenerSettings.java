@@ -24,9 +24,10 @@ package de.metas.attachments.listener;
 
 import de.metas.i18n.AdMessageId;
 import de.metas.javaclasses.JavaClassId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_AD_Table_AttachmentListener;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -41,10 +42,19 @@ public class AttachmentListenerSettings
 	@Nullable
 	AdMessageId adMessageId;
 
-	public static AttachmentListenerSettings of(final I_AD_Table_AttachmentListener record)
+	@Builder
+	private AttachmentListenerSettings(
+			@NonNull final JavaClassId listenerJavaClassId,
+			final boolean isSendNotification,
+			@Nullable final AdMessageId adMessageId)
 	{
-		return new AttachmentListenerSettings(JavaClassId.ofRepoId(record.getAD_JavaClass_ID()),
-				record.isSendNotification(),
-				AdMessageId.ofRepoIdOrNull(record.getAD_Message_ID()) );
+		if (isSendNotification && adMessageId == null)
+		{
+			throw new AdempiereException("An AD_Message_ID must be set if notifications are enabled!");
+		}
+
+		this.listenerJavaClassId = listenerJavaClassId;
+		this.isSendNotification = isSendNotification;
+		this.adMessageId = adMessageId;
 	}
 }

@@ -3,7 +3,7 @@ package de.metas.payment.esr.process;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.payment.esr.api.IESRImportBL;
-import de.metas.payment.esr.api.RunESRImportCriteria;
+import de.metas.payment.esr.api.RunESRImportRequest;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -48,6 +48,8 @@ public class ESR_Import_LoadFromAttachmentEntry
 	@Param(mandatory = true, parameterName = I_C_Async_Batch.COLUMNNAME_Description)
 	private final String p_AsyncBatchDesc = ESR_ASYNC_BATCH_DESC;
 
+	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
@@ -55,14 +57,15 @@ public class ESR_Import_LoadFromAttachmentEntry
 		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID);
 		final I_ESR_Import esrImport = getRecord(I_ESR_Import.class);
 
-		final RunESRImportCriteria runESRImportCriteria = new RunESRImportCriteria(esrImport,
-				attachmentEntryId,
-				p_AsyncBatchName,
-				p_AsyncBatchDesc,
-				this,
-				getPinstanceId());
+		final RunESRImportRequest runESRImportRequest = RunESRImportRequest.builder()
+				.esrImport(esrImport)
+				.attachmentEntryId(attachmentEntryId)
+				.asyncBatchDescription(p_AsyncBatchDesc)
+				.asyncBatchName(p_AsyncBatchName)
+				.loggable(this)
+				.build();
 
-		Services.get(IESRImportBL.class).runESRImportFor(runESRImportCriteria);
+		esrImportBL.scheduleESRImportFor(runESRImportRequest);
 
 		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(esrImport));
 

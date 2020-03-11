@@ -27,5 +27,5 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 public interface AttachmentListener
 {
-	void afterPersist( AttachmentListenerSettings attachmentListenerSettings, AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference);
+	void afterPersist( AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference);
 }

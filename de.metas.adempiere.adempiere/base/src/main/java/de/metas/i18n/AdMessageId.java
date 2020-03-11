@@ -22,6 +22,8 @@
 
 package de.metas.i18n;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -34,6 +36,7 @@ public class AdMessageId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	private AdMessageId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Message_Id");
@@ -49,5 +52,11 @@ public class AdMessageId implements RepoIdAware
 	public static AdMessageId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

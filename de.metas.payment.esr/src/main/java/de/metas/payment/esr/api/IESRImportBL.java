@@ -1,8 +1,5 @@
 package de.metas.payment.esr.api;
 
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
@@ -10,6 +7,8 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.validator.ESR_ImportLine;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 
 public interface IESRImportBL extends ISingletonService
 {
@@ -125,7 +124,7 @@ public interface IESRImportBL extends ISingletonService
 
 	/**
 	 *
-	 * @param runESRImportCriteria
+	 * @param runESRImportRequest
 	 */
-	public void runESRImportFor(final RunESRImportCriteria runESRImportCriteria);
+	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest);
 }

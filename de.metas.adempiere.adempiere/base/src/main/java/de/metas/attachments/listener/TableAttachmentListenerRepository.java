@@ -24,6 +24,8 @@ package de.metas.attachments.listener;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.i18n.AdMessageId;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
@@ -42,9 +44,9 @@ public class TableAttachmentListenerRepository
 			.tableName(I_AD_Table_AttachmentListener.Table_Name)
 			.build();
 
-	public ImmutableList<AttachmentListenerSettings> findForId(final AdTableId adTableId)
+	public ImmutableList<AttachmentListenerSettings> getById(final AdTableId adTableId)
 	{
-		return cache.getOrLoad(adTableId, this::getOrLoad);
+		return cache.getOrLoad(adTableId, this::retrieveAttachmentListenerSettings);
 	}
 
 	/**
@@ -53,7 +55,7 @@ public class TableAttachmentListenerRepository
 	 * @param adTableId DB identifier of the table.
 	 * @return list of {@link AttachmentListenerSettings} ordered by {@link I_AD_Table_AttachmentListener#getSeqNo()}.
 	 */
-	private ImmutableList<AttachmentListenerSettings> getOrLoad(final AdTableId adTableId )
+	private ImmutableList<AttachmentListenerSettings> retrieveAttachmentListenerSettings(final AdTableId adTableId )
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Table_AttachmentListener.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -63,7 +65,16 @@ public class TableAttachmentListenerRepository
 				.create()
 				.list()
 				.stream()
-				.map(AttachmentListenerSettings::of)
+				.map(this::buildAttachmentListenerSettings)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private AttachmentListenerSettings buildAttachmentListenerSettings( final I_AD_Table_AttachmentListener record )
+	{
+		return AttachmentListenerSettings.builder()
+				.isSendNotification(record.isSendNotification())
+				.listenerJavaClassId(JavaClassId.ofRepoId(record.getAD_JavaClass_ID()))
+				.adMessageId(AdMessageId.ofRepoIdOrNull(record.getAD_Message_ID()))
+				.build();
 	}
 }

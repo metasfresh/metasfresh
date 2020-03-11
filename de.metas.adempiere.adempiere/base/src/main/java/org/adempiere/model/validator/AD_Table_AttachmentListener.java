@@ -22,13 +22,13 @@
 
 package org.adempiere.model.validator;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.model.ModelValidator;
 
-@Validator(I_AD_Table_AttachmentListener.class)
+@Interceptor(I_AD_Table_AttachmentListener.class)
 public class AD_Table_AttachmentListener
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })

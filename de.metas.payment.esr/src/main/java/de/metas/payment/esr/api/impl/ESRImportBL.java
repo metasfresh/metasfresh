@@ -24,8 +24,15 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.api.RunESRImportCriteria;
-import de.metas.payment.esr.dataimporter.*;
+import de.metas.payment.esr.api.RunESRImportRequest;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
+import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
+import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
+import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDuplicateFilePolicy;
+import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -66,10 +73,22 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Service
 public class ESRImportBL implements IESRImportBL
@@ -1232,22 +1251,22 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
-	public void runESRImportFor(final RunESRImportCriteria runESRImportCriteria)
+	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest)
 	{
-		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportCriteria.getAttachmentEntryId());
+		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportRequest.getAttachmentEntryId());
 
 		ESRImportEnqueuer.newInstance()
-				.esrImport(runESRImportCriteria.getEsrImport())
+				.esrImport(runESRImportRequest.getEsrImport())
 				.fromDataSource(
 						ESRImportEnqueuerDataSource.builder()
 								.filename(fromAttachmentEntry.getFilename())
 								.content(attachmentEntryService.retrieveData(fromAttachmentEntry.getId()))
 								.attachmentEntryId(fromAttachmentEntry.getId())
 								.build())
-				.asyncBatchName(runESRImportCriteria.getAsyncBatchName())
-				.asyncBatchDesc(runESRImportCriteria.getAsyncBatchDesc())
-				.pinstanceId(runESRImportCriteria.getPInstanceId())
-				.loggable(runESRImportCriteria.getLoggableClass())
+				.asyncBatchName(runESRImportRequest.getAsyncBatchName())
+				.asyncBatchDesc(runESRImportRequest.getAsyncBatchDescription())
+				.pinstanceId(runESRImportRequest.getPInstanceId())
+				.loggable(runESRImportRequest.getLoggable())
 				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
 				.execute();
 	}
