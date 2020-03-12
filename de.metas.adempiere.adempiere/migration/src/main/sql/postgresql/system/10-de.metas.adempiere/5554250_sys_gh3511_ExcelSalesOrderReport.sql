@@ -1,5 +1,5 @@
-drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, numeric, character varying, numeric);
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_alt_pricelist_version_id numeric, IN p_ad_language character varying,
+drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, character varying, numeric);
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
                                                                           IN p_c_bpartner_location_id numeric)
     RETURNS TABLE
             (
@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c
                 qty                     numeric,
                 uomsymbol               text,
                 pricestd                numeric,
-                m_product_price_id      integer,
+                m_productprice_id       integer,
                 c_bpartner_id           numeric,
                 m_hu_pi_item_product_id integer,
                 uom_x12de355            text,
@@ -34,19 +34,18 @@ SELECT plc.value                                                                
        plc.uomsymbol                                                             as uomsymbol,
        plc.pricestd                                                              as pricestd,
        plc.M_ProductPrice_ID                                                     as m_productprice_id,
-       $1                                                                        as c_bpartner_id,
+       p_c_bpartner_id                                                           as c_bpartner_id,
        plc.M_HU_PI_Item_Product_ID                                               as m_hu_pi_item_product_id,
        plc.UOM_X12DE355                                                          as uom_x12de355,
-       $5                                                                        as c_bpartner_location_id,
+       p_c_bpartner_location_id                                                  as c_bpartner_location_id,
        plc.qtycuspertu                                                           as qtycuspertu,
        plc.M_Product_ID                                                          as m_product_id
-FROM report.fresh_PriceList_Details_Report($1, $2, $3, $4) plc;
+FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_version_id, NULL, p_ad_language) plc
 --
 $BODY$
     LANGUAGE sql STABLE
                  COST 100
                  ROWS 1000;
-
 
 -- 2020-02-18T13:19:51.141Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -384,4 +383,36 @@ UPDATE AD_Process_Para SET IsActive='Y',Updated=TO_TIMESTAMP('2020-03-11 13:41:1
 -- 2020-03-11T11:41:41.656Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process SET SQLStatement='SELECT * FROM report.fresh_pricelist_details_template_report(@C_BPartner_ID/NULL@, @M_PriceList_Version_ID/NULL@,@Alt_Pricelist_Version_ID/NULL@,''@#AD_Language@'',@C_BPartner_Location_ID/NULL@);',Updated=TO_TIMESTAMP('2020-03-11 13:41:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+-- 2020-03-12T10:27:04.965Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.fresh_pricelist_details_template_report(@C_BPartner_ID/NULL@, @M_PriceList_Version_ID/NULL@,''@#AD_Language@'',@C_BPartner_Location_ID/NULL@);',Updated=TO_TIMESTAMP('2020-03-12 12:27:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+
+-- 2020-03-12T10:27:12.064Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsActive='N',Updated=TO_TIMESTAMP('2020-03-12 12:27:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541742
+;
+
+-- 2020-03-12T10:27:31.832Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsAutocomplete='N',Updated=TO_TIMESTAMP('2020-03-12 12:27:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541734
+;
+
+-- 2020-03-12T10:36:12.854Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsAutocomplete='Y',Updated=TO_TIMESTAMP('2020-03-12 12:36:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541734
+;
+-- 2020-03-12T10:40:07.045Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.report.jasper.client.process.JasperReportStarter', Type='JasperReportsSQL',Updated=TO_TIMESTAMP('2020-03-12 12:40:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+
+-- 2020-03-12T10:40:33.190Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report.xls',Updated=TO_TIMESTAMP('2020-03-12 12:40:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+-- 2020-03-12T10:46:20.857Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ReadOnlyLogic='',Updated=TO_TIMESTAMP('2020-03-12 12:46:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541734
 ;
