@@ -182,5 +182,5 @@ UPDATE AD_Message_Trl SET MsgText='Attached file was successfully imported.',Upd
 
 -- 2020-03-12T11:39:34.185Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET MandatoryLogic='@IsSendNotification@=''Y''',Updated=TO_TIMESTAMP('2020-03-12 13:39:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570102
+UPDATE AD_Column SET MandatoryLogic='@IsSendNotification/''N''@=''Y''',Updated=TO_TIMESTAMP('2020-03-12 13:39:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570102
 ;

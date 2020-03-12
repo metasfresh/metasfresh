@@ -27,6 +27,7 @@ import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageId;
 import de.metas.javaclasses.JavaClassId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,7 +45,7 @@ public class TableAttachmentListenerRepository
 			.tableName(I_AD_Table_AttachmentListener.Table_Name)
 			.build();
 
-	public ImmutableList<AttachmentListenerSettings> getById(final AdTableId adTableId)
+	public ImmutableList<AttachmentListenerSettings> getById(@NonNull final AdTableId adTableId)
 	{
 		return cache.getOrLoad(adTableId, this::retrieveAttachmentListenerSettings);
 	}

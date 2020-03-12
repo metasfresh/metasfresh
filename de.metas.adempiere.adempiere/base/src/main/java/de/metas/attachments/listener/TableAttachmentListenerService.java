@@ -30,6 +30,7 @@ import de.metas.javaclasses.IJavaClassBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
@@ -50,7 +51,7 @@ public class TableAttachmentListenerService
 		this.tableAttachmentListenerRepository = tableAttachmentListenerRepository;
 	}
 
-	public ImmutableList<AttachmentListenerActionResult> notifyAttachmentListeners(final AttachmentEntry attachmentEntry)
+	public ImmutableList<AttachmentListenerActionResult> notifyAttachmentListeners(@NonNull final AttachmentEntry attachmentEntry)
 	{
 		return attachmentEntry.getLinkedRecords()
 				.stream()

@@ -122,9 +122,5 @@ public interface IESRImportBL extends ISingletonService
 	 */
 	void unlinkESRImportLinesFor(I_C_BankStatementLine_Ref bankStatementLineRef);
 
-	/**
-	 *
-	 * @param runESRImportRequest
-	 */
-	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest);
+	void scheduleESRImportFor(RunESRImportRequest runESRImportRequest);
 }
