@@ -1,30 +1,47 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.IPeriodBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.lock.api.ILockManager;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.esr.ESRConstants;
+import de.metas.payment.esr.actionhandler.IESRActionHandler;
+import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.api.RunESRImportRequest;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
+import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
+import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
+import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDuplicateFilePolicy;
+import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.IESRDataImporter;
+import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
+import de.metas.payment.esr.exception.ESRImportLockedException;
+import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -49,43 +66,29 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.IPeriodBL;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.lock.api.ILockManager;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.payment.TenderType;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.actionhandler.IESRActionHandler;
-import de.metas.payment.esr.api.IESRImportBL;
-import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
-import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
-import de.metas.payment.esr.dataimporter.ESRStatement;
-import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.IESRDataImporter;
-import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
-import de.metas.payment.esr.exception.ESRImportLockedException;
-import de.metas.payment.esr.model.I_C_BP_BankAccount;
-import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.model.X_ESR_ImportLine;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Service
 public class ESRImportBL implements IESRImportBL
@@ -1246,6 +1249,26 @@ public class ESRImportBL implements IESRImportBL
 		{
 			unlinkESRImportLineFromBankStatement(esrImportLine);
 		}
+	}
+
+	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest)
+	{
+		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportRequest.getAttachmentEntryId());
+
+		ESRImportEnqueuer.newInstance()
+				.esrImport(runESRImportRequest.getEsrImport())
+				.fromDataSource(
+						ESRImportEnqueuerDataSource.builder()
+								.filename(fromAttachmentEntry.getFilename())
+								.content(attachmentEntryService.retrieveData(fromAttachmentEntry.getId()))
+								.attachmentEntryId(fromAttachmentEntry.getId())
+								.build())
+				.asyncBatchName(runESRImportRequest.getAsyncBatchName())
+				.asyncBatchDesc(runESRImportRequest.getAsyncBatchDescription())
+				.pinstanceId(runESRImportRequest.getPInstanceId())
+				.loggable(runESRImportRequest.getLoggable())
+				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
+				.execute();
 	}
 
 	private final void unlinkESRImportLineFromBankStatement(final I_ESR_ImportLine esrImportLine)
