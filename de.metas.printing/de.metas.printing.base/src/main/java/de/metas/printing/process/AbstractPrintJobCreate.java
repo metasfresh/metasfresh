@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -56,7 +55,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 	private final static String MSG_INVOICE_GENERATE_NO_PRINTING_QUEUE_0P = "CreatePrintJobs_No_Printing_Queue_Selected";
 
 	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	/**
 	 * Create {@link I_C_Printing_Queue} selection by using {@link #getAD_PInstance_ID()} as current instance
@@ -87,11 +85,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 			catch (final RuntimeException ex)
 			{
 				Loggables.withLogger(logger, Level.WARN).addLog("Failed creating print job for IPrintingQueueSource={}; exteption={}", source, ex);
-//				notificationBL.send(UserNotificationRequest.builder()
-//						.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
-//						.recipientUserId(Env.getLoggedUserId(getCtx()))
-//						.contentPlain(ex.getLocalizedMessage())
-//						.build());
 				throw ex;
 			}
 		}
