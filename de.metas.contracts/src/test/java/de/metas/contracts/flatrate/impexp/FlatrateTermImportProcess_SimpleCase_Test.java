@@ -27,6 +27,7 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.greeting.GreetingRepository;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -66,10 +67,12 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	@BeforeEach
 	public void before()
 	{
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		helper.setupModuleInterceptors_Contracts_Full();
 
 		//
 		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
+		
 		inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 		iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);

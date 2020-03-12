@@ -28,6 +28,7 @@ import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -130,11 +131,11 @@ class BpartnerRestControllerTest
 	private CurrencyRepository currencyRepository;
 
 	@BeforeAll
-	static void initStatic()
+	static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
-
+	
 	@AfterAll
 	static void afterAll()
 	{
@@ -145,6 +146,8 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -170,7 +173,7 @@ class BpartnerRestControllerTest
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
 	}
-
+	
 	@Test
 	void retrieveBPartner_ext()
 	{
