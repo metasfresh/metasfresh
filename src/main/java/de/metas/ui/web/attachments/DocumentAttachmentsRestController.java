@@ -1,11 +1,23 @@
 package de.metas.ui.web.attachments;
 
-import java.io.IOException;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.listener.TableAttachmentListenerService;
+import de.metas.security.IUserRolePermissions;
+import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
+import de.metas.ui.web.attachments.json.JSONAttachment;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.controller.WindowRestController;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,21 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.attachments.AttachmentEntry;
-import de.metas.security.IUserRolePermissions;
-import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
-import de.metas.ui.web.attachments.json.JSONAttachment;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.controller.WindowRestController;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
-import lombok.NonNull;
+import java.io.IOException;
+import java.util.List;
 
 /*
  * #%L
@@ -64,12 +63,28 @@ public class DocumentAttachmentsRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT + "/{windowId}/{documentId}/attachments";
 
-	@Autowired
 	private UserSession userSession;
-	@Autowired
+
 	private DocumentDescriptorFactory documentDescriptorFactory;
-	@Autowired
+
 	private DocumentWebsocketPublisher websocketPublisher;
+
+	private AttachmentEntryService attachmentEntryService;
+
+	private TableAttachmentListenerService tableAttachmentListenerService;
+
+	public DocumentAttachmentsRestController(final UserSession userSession,
+			final DocumentDescriptorFactory documentDescriptorFactory,
+			final DocumentWebsocketPublisher websocketPublisher,
+			final AttachmentEntryService attachmentEntryService,
+			final TableAttachmentListenerService tableAttachmentListenerService)
+	{
+		this.userSession = userSession;
+		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.websocketPublisher = websocketPublisher;
+		this.attachmentEntryService = attachmentEntryService;
+		this.tableAttachmentListenerService = tableAttachmentListenerService;
+	}
 
 	private DocumentAttachments getDocumentAttachments(final String windowIdStr, final String documentId)
 	{
@@ -92,6 +107,8 @@ public class DocumentAttachmentsRestController
 				.recordRef(recordRef)
 				.entityDescriptor(documentDescriptorFactory.getDocumentEntityDescriptor(documentPath))
 				.websocketPublisher(websocketPublisher)
+				.tableAttachmentListenerService(tableAttachmentListenerService)
+				.attachmentEntryService(attachmentEntryService)
 				.build();
 	}
 

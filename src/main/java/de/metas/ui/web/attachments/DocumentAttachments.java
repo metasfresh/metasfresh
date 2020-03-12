@@ -1,31 +1,15 @@
 package de.metas.ui.web.attachments;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.util.Env;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -37,6 +21,20 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.util.Env;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -76,7 +74,8 @@ final class DocumentAttachments
 	private static final Splitter ID_Splitter = Splitter.on(ID_SEPARATOR);
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
 
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final AttachmentEntryService attachmentEntryService;
+	private final TableAttachmentListenerService tableAttachmentListenerService;
 
 	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
@@ -88,12 +87,16 @@ final class DocumentAttachments
 			@NonNull final DocumentPath documentPath,
 			@NonNull final ITableRecordReference recordRef,
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
-			@NonNull final DocumentWebsocketPublisher websocketPublisher)
+			@NonNull final DocumentWebsocketPublisher websocketPublisher,
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.documentPath = documentPath;
 		this.recordRef = recordRef;
 		this.entityDescriptor = entityDescriptor;
 		this.websocketPublisher = websocketPublisher;
+		this.tableAttachmentListenerService = tableAttachmentListenerService;
+		this.attachmentEntryService = attachmentEntryService;
 	}
 
 	@Override
@@ -125,9 +128,11 @@ final class DocumentAttachments
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		attachmentEntryService.createNewAttachment(recordRef, name, data);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(recordRef, name, data);
 
 		notifyRelatedDocumentTabsChanged();
+
+		tableAttachmentListenerService.notifyAttachmentListeners(attachmentEntry);
 	}
 
 	public void addURLEntry(final String name, final URI url)
@@ -233,5 +238,4 @@ final class DocumentAttachments
 
 		websocketPublisher.staleTabs(documentPath.getWindowId(), documentPath.getDocumentId(), attachmentRelatedTabIds);
 	}
-
 }
