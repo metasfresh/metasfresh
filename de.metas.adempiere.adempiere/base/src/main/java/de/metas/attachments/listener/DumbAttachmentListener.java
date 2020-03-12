@@ -20,23 +20,20 @@
  * #L%
  */
 
-package org.adempiere.model.validator;
+package de.metas.attachments.listener;
 
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Table_AttachmentListener;
-import org.compiere.model.ModelValidator;
+import de.metas.attachments.AttachmentEntry;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-@Interceptor(I_AD_Table_AttachmentListener.class)
-public class AD_Table_AttachmentListener
+import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
+
+/**
+ *  Dumb attachment listener; created only for test purposes.
+ */
+public class DumbAttachmentListener implements AttachmentListener
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_AD_Table_AttachmentListener record)
+	@Override public AttachmentListenerConstants.ListenerWorkStatus afterPersist(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference)
 	{
-		if (record.isSendNotification() && record.getAD_Message_ID() <= 0)
-		{
-			throw new AdempiereException(" An AD_Message_ID must be set if notifications are enabled!");
-		}
+		return SUCCESS;
 	}
 }

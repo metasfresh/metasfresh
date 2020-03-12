@@ -22,6 +22,8 @@
 
 package de.metas.attachments.listener;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.javaclasses.IJavaClassBL;
@@ -32,6 +34,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 @Service
 public class TableAttachmentListenerService
@@ -46,22 +50,30 @@ public class TableAttachmentListenerService
 		this.tableAttachmentListenerRepository = tableAttachmentListenerRepository;
 	}
 
-	public void notifyAttachmentListeners(final AttachmentEntry attachmentEntry)
+	public ImmutableList<AttachmentListenerActionResult> notifyAttachmentListeners(final AttachmentEntry attachmentEntry)
 	{
-		attachmentEntry.getLinkedRecords().forEach(linkedRecord -> notifyAttachmentListenersFor(linkedRecord, attachmentEntry));
+		return attachmentEntry.getLinkedRecords()
+				.stream()
+		        .map(linkedRecord -> notifyAttachmentListenersFor(linkedRecord, attachmentEntry))
+				.flatMap(Collection::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private void notifyAttachmentListenersFor(final TableRecordReference tableRecordReference, final AttachmentEntry attachmentEntry)
+	private ImmutableList<AttachmentListenerActionResult> notifyAttachmentListenersFor(final TableRecordReference tableRecordReference, final AttachmentEntry attachmentEntry)
 	{
-		tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId())
-				.forEach(listenerSettings ->
+		return tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId())
+				.stream()
+				.map(listenerSettings ->
 				{
 					final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
 
-					attachmentListener.afterPersist(attachmentEntry, tableRecordReference);
+					final AttachmentListenerConstants.ListenerWorkStatus status = attachmentListener.afterPersist(attachmentEntry, tableRecordReference);
 
-					notifyUser(listenerSettings, tableRecordReference);
-				});
+					notifyUser(listenerSettings, tableRecordReference, status);
+
+					return new AttachmentListenerActionResult(attachmentListener, status);
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -70,8 +82,10 @@ public class TableAttachmentListenerService
 	 * @param attachmentListenerSettings data from {@link I_AD_Table_AttachmentListener}
 	 * @param tableRecordReference       reference of the table
 	 */
-	private void notifyUser(final AttachmentListenerSettings attachmentListenerSettings,
-							final TableRecordReference tableRecordReference)
+	@VisibleForTesting
+	void notifyUser(final AttachmentListenerSettings attachmentListenerSettings,
+					final TableRecordReference tableRecordReference,
+					final AttachmentListenerConstants.ListenerWorkStatus listenerWorkStatus)
 	{
 		if (attachmentListenerSettings.isSendNotification())
 		{
@@ -79,6 +93,7 @@ public class TableAttachmentListenerService
 
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.contentADMessage(adMessageContent)
+					.contentADMessageParam(listenerWorkStatus.getValue())
 					.recipientUserId(Env.getLoggedUserId())
 					.targetAction(UserNotificationRequest.TargetRecordAction.of(tableRecordReference))
 					.build();

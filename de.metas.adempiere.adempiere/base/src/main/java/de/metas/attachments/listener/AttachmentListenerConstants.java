@@ -22,13 +22,23 @@
 
 package de.metas.attachments.listener;
 
-import de.metas.attachments.AttachmentEntry;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-/**
- *  Listeners subscribed to attaching files to tables should implement this interface.
- */
-public interface AttachmentListener
+public interface AttachmentListenerConstants
 {
-	AttachmentListenerConstants.ListenerWorkStatus afterPersist( AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference);
+	enum ListenerWorkStatus
+	{
+		SUCCESS("OK"),
+		FAILURE("ERROR");
+
+		private final String value;
+
+		ListenerWorkStatus(final String value)
+		{
+			this.value = value;
+		}
+
+		public String getValue()
+		{
+			return value;
+		}
+	}
 }

@@ -22,13 +22,15 @@
 
 package de.metas.attachments.listener;
 
-import de.metas.attachments.AttachmentEntry;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.NonNull;
+import lombok.Value;
 
-/**
- *  Listeners subscribed to attaching files to tables should implement this interface.
- */
-public interface AttachmentListener
+@Value
+public class AttachmentListenerActionResult
 {
-	AttachmentListenerConstants.ListenerWorkStatus afterPersist( AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference);
+	@NonNull
+	AttachmentListener listener;
+
+	@NonNull
+	AttachmentListenerConstants.ListenerWorkStatus status;
 }

@@ -25,6 +25,7 @@ package de.metas.payment.esr.listener;
 import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.listener.AttachmentListener;
+import de.metas.attachments.listener.AttachmentListenerConstants;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.RunESRImportRequest;
@@ -35,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
+import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_DESC;
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_NAME;
 
@@ -45,7 +47,8 @@ public class ESRImportAttachmentListener implements AttachmentListener
 	private final transient IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
 	@Override
-	public void afterPersist(final AttachmentEntry attachmentEntry,
+	public AttachmentListenerConstants.ListenerWorkStatus afterPersist(
+							final AttachmentEntry attachmentEntry,
 							final TableRecordReference tableRecordReference)
 	{
 		final I_ESR_Import esrImport = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_ESR_Import.class);
@@ -59,5 +62,7 @@ public class ESRImportAttachmentListener implements AttachmentListener
 				.build();
 
 		esrImportBL.scheduleESRImportFor(runESRImportRequest);
+
+		return SUCCESS;
 	}
 }
