@@ -2,6 +2,8 @@ package de.metas.monitoring.adapter.apm;
 
 import java.util.concurrent.Callable;
 
+import org.springframework.stereotype.Service;
+
 import co.elastic.apm.api.ElasticApm;
 import co.elastic.apm.api.Scope;
 import co.elastic.apm.api.Span;
@@ -32,6 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class APMPerformanceMonitoringService implements PerformanceMonitoringService
 {
 
