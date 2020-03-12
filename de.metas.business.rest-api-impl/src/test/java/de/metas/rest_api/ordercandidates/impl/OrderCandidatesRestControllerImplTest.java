@@ -58,6 +58,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandRegistry;
@@ -207,7 +208,8 @@ public class OrderCandidatesRestControllerImplTest
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				jsonConverters,
-				new OLCandRepository());
+				new OLCandRepository(),
+				new NoopPerformanceMonitoringService());
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);

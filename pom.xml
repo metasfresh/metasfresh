@@ -197,7 +197,13 @@
 
 	<dependencyManagement>
 		<dependencies>
-
+<!-- note that going to this lombok version includes some additional fixes here and there. consider CPing the issue from master, or leave this branch a 1.16.x(?) which is the veresion managed by spring boot 1.5
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.10</version>
+			</dependency>
+-->			
 			<dependency>
 				<groupId>com.mchange</groupId>
 				<artifactId>c3p0</artifactId>
