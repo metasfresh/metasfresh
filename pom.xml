@@ -203,7 +203,7 @@
 				<artifactId>lombok</artifactId>
 				<version>1.18.10</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.mchange</groupId>
 				<artifactId>c3p0</artifactId>
