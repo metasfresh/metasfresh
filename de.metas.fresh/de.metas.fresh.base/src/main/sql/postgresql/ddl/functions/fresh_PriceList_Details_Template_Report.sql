@@ -1,5 +1,5 @@
-drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, numeric, character varying, numeric);
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_alt_pricelist_version_id numeric, IN p_ad_language character varying,
+drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, character varying, numeric);
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
                                                                           IN p_c_bpartner_location_id numeric)
     RETURNS TABLE
             (
@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c
                 qty                     numeric,
                 uomsymbol               text,
                 pricestd                numeric,
-                m_product_price_id      integer,
+                m_productprice_id       integer,
                 c_bpartner_id           numeric,
                 m_hu_pi_item_product_id integer,
                 uom_x12de355            text,
@@ -40,7 +40,7 @@ SELECT plc.value                                                                
        p_c_bpartner_location_id                                                  as c_bpartner_location_id,
        plc.qtycuspertu                                                           as qtycuspertu,
        plc.M_Product_ID                                                          as m_product_id
-FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_version_id, p_alt_pricelist_version_id, p_ad_language) plc;
+FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_version_id, NULL, p_ad_language) plc
 --
 $BODY$
     LANGUAGE sql STABLE
