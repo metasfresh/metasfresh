@@ -272,7 +272,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public List<IPrintingQueueSource> createPrintingQueueSources(final Properties ctx, final IPrintingQueueQuery printingQueueQuery)
+	public List<IPrintingQueueSource> createPrintingQueueSources(final Properties ctx, @NonNull final IPrintingQueueQuery printingQueueQuery)
 	{
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
@@ -314,12 +314,11 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void setPrintoutForOtherUsers(final I_C_Printing_Queue item,
+	public void setPrintoutForOtherUsers(@NonNull final I_C_Printing_Queue item,
 			final Set<Integer> userToPrintIds)
 	{
 		//
 		// Make sure the item is not null and it was not already printed (i.e. processed)
-		Check.assumeNotNull(item, "item not null");
 		Check.assume(!item.isProcessed(), "item not already printed: {}", item);
 
 		//
