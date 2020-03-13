@@ -33,6 +33,15 @@ export default function appHandler(state = initialState, action) {
         },
       };
 
+    case types.SET_LANGUAGES:
+      return {
+        ...state,
+        me: {
+          ...state.me,
+          language: action.data,
+        },
+      };
+
     case types.LOGIN_SUCCESS:
       return {
         ...state,

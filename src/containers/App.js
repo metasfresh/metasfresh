@@ -13,6 +13,7 @@ import {
   setProcessSaved,
   initHotkeys,
   initKeymap,
+  setLanguages,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
@@ -149,6 +150,9 @@ export default class App extends Component {
     getAvailableLang().then((response) => {
       const { defaultValue, values } = response.data;
       const valuesFlatten = values.map((item) => Object.keys(item)[0]);
+      if (!store.getState().appHandler.me.language) {
+        store.dispatch(setLanguages(values));
+      }
       const lang =
         valuesFlatten.indexOf(navigator.language) > -1
           ? navigator.language
