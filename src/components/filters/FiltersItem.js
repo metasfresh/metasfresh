@@ -358,7 +358,6 @@ class FiltersItem extends PureComponent {
   handleApply = () => {
     const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
     const { filter, activeFilter } = this.state;
-
     if (
       (filter &&
         filter.parametersLayoutType === 'singleOverlayField' &&
@@ -381,7 +380,16 @@ class FiltersItem extends PureComponent {
         }
       );
     } else {
-      applyFilters(activeFilter, () => {
+      // update the active filter with the defaultValue if value from active filter is empty
+      let activeFilterClone = _.cloneDeep(activeFilter);
+      activeFilterClone.parameters.map((afcItem, index) => {
+        afcItem.value = !afcItem.value
+          ? filter.parameters[index].defaultValue
+          : afcItem.value;
+        return afcItem;
+      });
+
+      applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
       });
@@ -435,7 +443,6 @@ class FiltersItem extends PureComponent {
       closeFilterMenu,
       captionValue,
       openedFilter,
-      panelCaption,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
@@ -444,6 +451,10 @@ class FiltersItem extends PureComponent {
       style.width = maxWidth;
       style.maxHeight = maxHeight;
     }
+
+    const panelCaption = this.props.panelCaption
+      ? this.props.panelCaption
+      : filter.caption;
 
     return (
       <div>

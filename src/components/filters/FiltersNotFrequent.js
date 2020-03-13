@@ -44,13 +44,26 @@ class FiltersNotFrequent extends PureComponent {
 
   /**
    * @method toggleDropdown
-   * @summary ToDo: Describe the method
+   * @summary Executed when you clock on a filter and dropdown should show up
    * @param {*} value
    * @todo Write the documentation
    */
   toggleDropdown = (value) => {
+    const { active, data } = this.props;
+    const toCheckAgainst = data.map((item) => item.filterId);
+    let openFilterIdValue;
+    if (active !== null) {
+      const foundInActive = active.filter((activeItem) =>
+        toCheckAgainst.includes(activeItem.filterId)
+      );
+      openFilterIdValue =
+        foundInActive.length && active ? active[0].filterId : null;
+    } else {
+      openFilterIdValue = null;
+    }
     this.setState({
       isOpenDropdown: value,
+      openFilterId: openFilterIdValue,
     });
   };
 
