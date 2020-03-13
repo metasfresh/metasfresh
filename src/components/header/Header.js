@@ -75,7 +75,8 @@ class Header extends Component {
     if (
       prevProps.me.language !== undefined &&
       JSON.stringify(prevProps.me.language) !==
-        JSON.stringify(this.props.me.language)
+        JSON.stringify(this.props.me.language) &&
+      !Array.isArray(prevProps.me.language)
     ) {
       // Need to reload page completely when current locale gets changed
       window.location.reload(false);

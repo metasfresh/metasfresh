@@ -1,6 +1,5 @@
 @import './variables.css';
 
-
 .header-sticky-distance{
     padding-top: 55px;
 }
@@ -163,10 +162,26 @@
 .subheader-container {
     display: none;
     width: 50%;
-    position: fixed;
+    position: absolute;
+    top: 0;
     z-index: 201;
     margin-top:55px;
     background-color: $brand-bright-color;
+
+    height: calc(100% - 55px);
+}
+
+@media (max-width: $breakpoint) {
+    .subheader-container {
+        width: 100%;
+        z-index: 201;
+        max-height: calc(100vh - 55px);
+        overflow: scroll;
+    }
+    .subheader-column {
+        width: 100%;
+        border-bottom: 1px solid $brand-border-color;
+    }
 }
 
 .subheader-open {
@@ -189,19 +204,6 @@
 }
 .subheader-column:focus {
     border-color: #e1e7ec;
-}
-
-@media (max-width: $breakpoint) {
-    .subheader-container {
-        width: 100%;
-        z-index: 201;
-        max-height: calc(100vh - 55px);
-        overflow: scroll;
-    }
-    .subheader-column {
-        width: 100%;
-        border-bottom: 1px solid $brand-border-color;
-    }
 }
 
 .subheader-item {
@@ -273,10 +275,11 @@
     font-size: 1.1rem;
     min-height: 51px;
 }
+
 .subheader-row {
     display: flex;
     align-items: stretch;
-    flex-flow: row wrap;
+    height: 100%;
 }
 
 .subheader-break {
@@ -286,6 +289,12 @@
     background-color: #e1e7ec;
 }
 
+.subheader-items {
+    /* subheader-row's height minus header & break */
+    height: calc(100% - 52px);
+    overflow-y: scroll;
+}
+
 .btn-subheader-open {
     position: relative;
     z-index:300;
@@ -293,9 +302,7 @@
 
 .btn-square {
     min-width: 55px;
-
 }
-
 
 .header-left-side {
     width: calc(50% - 75px);

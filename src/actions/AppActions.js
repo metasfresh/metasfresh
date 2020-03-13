@@ -374,6 +374,13 @@ export function userSessionUpdate(me) {
   };
 }
 
+export function setLanguages(data) {
+  return {
+    type: types.SET_LANGUAGES,
+    data,
+  };
+}
+
 export function initKeymap(keymap) {
   return {
     type: types.INIT_KEYMAP,

@@ -487,3 +487,9 @@ export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';
  * @type {string} removes tab's quick actions on unmount.
  */
 export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
+
+/**
+ * @constant
+ * @type {string} set languages in the app handler
+ */
+export const SET_LANGUAGES = 'SET_LANGUAGES';
