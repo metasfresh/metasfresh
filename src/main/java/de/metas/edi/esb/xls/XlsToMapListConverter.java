@@ -44,6 +44,8 @@ import org.apache.poi.ss.usermodel.Row;
 
 import com.google.common.io.Closeables;
 
+import lombok.NonNull;
+
 /**
  * Immutable XLS to {@link Map}s list converter.
  *
@@ -70,9 +72,8 @@ public class XlsToMapListConverter
 		return new Builder();
 	}
 
-	private XlsToMapListConverter(final Builder builder)
+	private XlsToMapListConverter(@NonNull final Builder builder)
 	{
-		super();
 		noNameHeaderPrefix = builder.noNameHeaderPrefix;
 		considerNullStringAsNull = builder.considerNullStringAsNull;
 		considerEmptyStringAsNull = builder.considerEmptyStringAsNull;

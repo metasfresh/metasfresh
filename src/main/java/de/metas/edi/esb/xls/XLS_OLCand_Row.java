@@ -106,7 +106,6 @@ public class XLS_OLCand_Row
 
 	/* package */XLS_OLCand_Row(final XLS_OLCand_Row_Builder builder)
 	{
-		super();
 		this.lineNo = builder.lineNo;
 
 		this.M_Product_ID = builder.M_Product_ID;
