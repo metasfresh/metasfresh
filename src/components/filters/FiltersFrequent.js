@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import counterpart from 'counterpart';
-import React, { PureComponent, Fragment } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import currentDevice from 'current-device';
@@ -140,21 +140,11 @@ class FiltersFrequent extends PureComponent {
                   tabIndex={modalVisible ? -1 : 0}
                 >
                   <i className="meta-icon-preview" />
-                  {item.isActive &&
-                  item.parameters &&
-                  item.parameters.length === 1 &&
-                  item.captionValue ? (
-                    <Fragment>
-                      {`${item.caption}: `}
-                      {item.captionValue}
-                    </Fragment>
-                  ) : (
-                    `${
-                      this.deviceType === 'desktop'
-                        ? counterpart.translate('window.filters.caption2')
-                        : ''
-                    }: ${item.caption}`
-                  )}
+                  {`${
+                    this.deviceType === 'desktop'
+                      ? counterpart.translate('window.filters.caption2')
+                      : ''
+                  }: ${item.caption}`}
                 </button>
 
                 {dateStepper && (

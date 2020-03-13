@@ -438,6 +438,10 @@ export class RawWidget extends Component {
       id,
     };
 
+    let selectedValue = widgetData[0].value
+      ? widgetData[0].value
+      : widgetData[0].defaultValue;
+
     switch (widgetType) {
       case 'Date':
         if (range) {
@@ -677,7 +681,7 @@ export class RawWidget extends Component {
             subentity={subentity}
             subentityId={subentityId}
             defaultValue={fields[0].emptyText}
-            selected={widgetData[0].value || null}
+            selected={selectedValue}
             properties={fields[0]}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
