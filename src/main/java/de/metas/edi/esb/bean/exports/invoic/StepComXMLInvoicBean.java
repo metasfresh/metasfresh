@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.edi.esb.bean.invoic;
+package de.metas.edi.esb.bean.exports.invoic;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
@@ -152,7 +152,7 @@ public class StepComXMLInvoicBean
 		headerXrech.setOWNERID(ownerId);
 		final String documentId = invoice.getInvoiceDocumentno();
 		headerXrech.setDOCUMENTID(documentId);
-		final DocumentType documentType = mapDocumentType(invoice);
+		final DocumentType documentType = mapDocumentType(invoice, settings);
 		if (documentType == null)
 		{
 			throw new RuntimeCamelException("Could not identify document type");
@@ -191,29 +191,31 @@ public class StepComXMLInvoicBean
 		return xrech4H;
 	}
 
-	private DocumentType mapDocumentType(@NonNull final EDICctopInvoicVType invoice)
+	private DocumentType mapDocumentType(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final StepComInvoicSettings settings)
 	{
 		final String eancomDoctype = invoice.getEancomDoctype();
 
 		if (DOC_CRNO_83.equals(eancomDoctype))
 		{
-			return DocumentType.CRNO;
+			return settings.getInvoicDocumentTypeCRNOAlias();
 		}
-		else if( DOC_CRNF_381.equals(eancomDoctype))
+		else if (DOC_CRNF_381.equals(eancomDoctype))
 		{
-			return DocumentType.CRNF;
+			return settings.getInvoicDocumentTypeCRNFAlias();
 		}
 		else if (DOC_DBNO_383.equals(eancomDoctype))
 		{
-			return DocumentType.DBNO;
+			return settings.getInvoicDocumentTypeDBNOAlias();
 		}
 		else if (DOC_DBNF_84.equals(eancomDoctype))
 		{
-			return DocumentType.DBNF;
+			return settings.getInvoicDocumentTypeDBNFAlias();
 		}
 		else if (DOC_CMIV_380.equals(eancomDoctype))
 		{
-			return DocumentType.CMIV;
+			return settings.getInvoicDocumentTypeCMIVAlias();
 		}
 
 		throw new RuntimeCamelException("@FillMandatory@ @C_Invoice_ID@=" + invoice.getInvoiceDocumentno() + " @EancomDoctype@");
@@ -776,7 +778,10 @@ public class StepComXMLInvoicBean
 		final HREFE1 buyerOrderRef = INVOIC_objectFactory.createHREFE1();
 		buyerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		buyerOrderRef.setREFERENCEQUAL(ReferenceQual.ORBU.name());
-		buyerOrderRef.setREFERENCE(invoice.getPOReference());
+
+		final String poReference = validateString(invoice.getPOReference(), "@FillMandatory@ @POReference@");
+		buyerOrderRef.setREFERENCE(poReference);
+
 		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
 		headerXrech.getHREFE1().add(buyerOrderRef);
 

@@ -33,6 +33,7 @@ import java.util.Date;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
+import de.metas.edi.esb.bean.imports.xls.XLS_OLCand_Row;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;

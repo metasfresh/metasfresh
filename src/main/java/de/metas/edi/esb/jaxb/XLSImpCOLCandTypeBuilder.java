@@ -28,6 +28,8 @@ import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import de.metas.edi.esb.bean.imports.xls.XLSConfigurationContext;
+import de.metas.edi.esb.bean.imports.xls.XLS_OLCand_Row;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
@@ -39,8 +41,6 @@ import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
-import de.metas.edi.esb.xls.XLSConfigurationContext;
-import de.metas.edi.esb.xls.XLS_OLCand_Row;
 
 /**
  * Builds {@link XLSImpCOLCandType}s.

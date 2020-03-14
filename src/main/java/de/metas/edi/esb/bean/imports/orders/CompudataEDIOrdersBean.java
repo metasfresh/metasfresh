@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.orders;
+package de.metas.edi.esb.bean.imports.orders;
 
 import java.util.ArrayList;
 import java.util.List;

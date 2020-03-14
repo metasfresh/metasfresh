@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.invoic;
+package de.metas.edi.esb.bean.exports.invoic;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +7,7 @@ import org.apache.camel.CamelContext;
 
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.pojo.common.MeasurementUnit;
+import de.metas.edi.esb.pojo.invoic.stepcom.qualifier.DocumentType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -70,6 +71,16 @@ public class StepComInvoicSettings
 				.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
 				.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
 
+				.invoicDocumentTypeCMIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CMIV.alias", "CMIV")))
+				.invoicDocumentTypeCRNOAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRNO.alias", "CRNO")))
+				.invoicDocumentTypeDBNOAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.DBNO.alias", "DBNO")))
+				.invoicDocumentTypeCRNFAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRNF.alias", "CRNF")))
+				.invoicDocumentTypeDBNFAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.DBNF.alias", "DBNF")))
+				.invoicDocumentTypeCSIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CSIV.alias", "CSIV")))
+				.invoicDocumentTypeCSCNAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CSCN.alias", "CSCN")))
+				.invoicDocumentTypePFIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.PFIV.alias", "PFIV")))
+				.invoicDocumentTypeCRIVAlias(DocumentType.valueOf(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.DocumentType.CRIV.alias", "CRIV")))
+
 				.invoicLineBUYRRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.BUYR.required", "false"))
 				.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
 				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
@@ -103,6 +114,16 @@ public class StepComInvoicSettings
 	boolean invoicIVCEStreet1Required;
 	boolean invoicIVCECityRequired;
 	boolean invoicIVCEPostaCodeRequired;
+
+	DocumentType invoicDocumentTypeCMIVAlias;
+	DocumentType invoicDocumentTypeCRNOAlias;
+	DocumentType invoicDocumentTypeDBNOAlias;
+	DocumentType invoicDocumentTypeCRNFAlias;
+	DocumentType invoicDocumentTypeDBNFAlias;
+	DocumentType invoicDocumentTypeCSIVAlias;
+	DocumentType invoicDocumentTypeCSCNAlias;
+	DocumentType invoicDocumentTypePFIVAlias;
+	DocumentType invoicDocumentTypeCRIVAlias;
 
 	boolean invoicLineBUYRRequired;
 

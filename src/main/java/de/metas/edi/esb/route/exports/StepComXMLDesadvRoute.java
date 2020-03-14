@@ -37,7 +37,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.bean.desadv.StepComXMLDesadvBean;
+import de.metas.edi.esb.bean.exports.desadv.StepComXMLDesadvBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;

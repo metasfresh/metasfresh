@@ -73,9 +73,6 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	 */
 	protected abstract void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat);
 
-	/**
-	 * <a href="http://www.smooks.org/mediawiki/index.php?title=V1.5:Smooks_v1.5_User_Guide#Apache_Camel_Integration"> Read more about Smooks Integration</a>
-	 */
 	@Override
 	public final void configure()
 	{

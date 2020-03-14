@@ -1,4 +1,4 @@
-package de.metas.edi.esb.xls;
+package de.metas.edi.esb.bean.imports.xls;
 
 /*
  * #%L
@@ -35,6 +35,7 @@ import java.util.TreeMap;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 
@@ -73,7 +74,7 @@ public class XLS_OLCand_Row_Builder
 	private static final String MAPKEY_POReference = "Bestellung Nr";
 	String POReference;
 	//
-	Date dateCandidate = new Date();
+	Date dateCandidate = SystemTime.asDate();
 	private static final String MAPKEY_DatePromised = "Liefertag";
 	Date datePromised = null;
 	//

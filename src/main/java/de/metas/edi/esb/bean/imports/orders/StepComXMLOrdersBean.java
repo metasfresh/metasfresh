@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.edi.esb.bean.orders;
+package de.metas.edi.esb.bean.imports.orders;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;

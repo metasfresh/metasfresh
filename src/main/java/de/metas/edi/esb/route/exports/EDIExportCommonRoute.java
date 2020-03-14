@@ -19,11 +19,11 @@ import org.springframework.stereotype.Component;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,9 +45,17 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
+		// disable spooling to disk
+		// i believe our ram is sufficient, and when we don'T disable we get (at least in unit tests on windows) an exception
+		// [...]
+		// Caused by: org.apache.camel.RuntimeCamelException: Cannot reset stream from file [...]camel\camel-tmp-06f3b5eb-436c-480b-9eff-d307d31801e6\cos3829183424344574052.tmp
+		// [...]
+		getContext().getStreamCachingStrategy().setSpoolThreshold(-1);
+
 		final String isXMLInvoice = Util.resolveProperty(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_STEPCOM_XML);
 		final String isXMLDesadv = Util.resolveProperty(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_STEPCOM_XML);
 		from(Constants.EP_AMQP_FROM_MF)
+				.streamCaching()
 				.routeId("XML-To-EDI-Common")
 
 				.log(LoggingLevel.INFO, "EDI: Processing XML body:\r\n" + body())

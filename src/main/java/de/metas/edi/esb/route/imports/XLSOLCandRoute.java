@@ -41,14 +41,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import de.metas.edi.esb.bean.imports.xls.XLSConfigurationContext;
+import de.metas.edi.esb.bean.imports.xls.XLS_OLCand_Row;
+import de.metas.edi.esb.bean.imports.xls.XLS_OLCand_Row_Builder;
+import de.metas.edi.esb.bean.imports.xls.XlsToMapListConverter;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.XLSImpCOLCandTypeBuilder;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 import de.metas.edi.esb.route.AbstractEDIRoute;
-import de.metas.edi.esb.xls.XLSConfigurationContext;
-import de.metas.edi.esb.xls.XLS_OLCand_Row;
-import de.metas.edi.esb.xls.XLS_OLCand_Row_Builder;
-import de.metas.edi.esb.xls.XlsToMapListConverter;
 
 /**
  * Camel Route for importing customer's Excel files to order candidates.

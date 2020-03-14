@@ -1,6 +1,6 @@
 package de.metas.edi.esb.route.imports;
 
-import de.metas.edi.esb.bean.orders.CompudataEDIOrdersBean;
+import de.metas.edi.esb.bean.imports.orders.CompudataEDIOrdersBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.processor.strategy.aggregation.ValidTypeAggregationStrategy;
@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+/**
+ * <a href="http://www.smooks.org/mediawiki/index.php?title=V1.5:Smooks_v1.5_User_Guide#Apache_Camel_Integration"> Read more about Smooks Integration</a>
+ */
 @Component
 public class CompuDataOrdersRoute extends AbstractEDIRoute
 {

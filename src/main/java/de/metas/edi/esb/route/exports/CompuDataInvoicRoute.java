@@ -11,7 +11,7 @@ import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.bean.invoic.CompuDataInvoicBean;
+import de.metas.edi.esb.bean.exports.invoic.CompuDataInvoicBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;

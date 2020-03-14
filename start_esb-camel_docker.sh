@@ -37,7 +37,7 @@ echo_variable_values()
 }
 
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
-run_metasfresh()
+run_edi()
 {
  if [ "$admin_url" != "NONE" ]; 
  then
@@ -77,5 +77,5 @@ then
 	set -x
 fi
 
-run_metasfresh
+run_edi
 exit 0 

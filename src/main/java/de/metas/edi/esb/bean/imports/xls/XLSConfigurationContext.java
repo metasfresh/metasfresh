@@ -1,4 +1,4 @@
-package de.metas.edi.esb.xls;
+package de.metas.edi.esb.bean.imports.xls;
 
 /*
  * #%L

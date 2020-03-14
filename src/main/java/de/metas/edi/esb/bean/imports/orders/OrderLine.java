@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.orders;
+package de.metas.edi.esb.bean.imports.orders;
 
 /*
  * #%L
@@ -26,24 +26,32 @@ package de.metas.edi.esb.bean.orders;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.edi.esb.pojo.order.compudata.H000;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.edi.esb.pojo.order.compudata.P100;
+import de.metas.edi.esb.pojo.order.compudata.P110;
 
-@Value
-public class OrderEDI
+public class OrderLine
 {
-	private final H000 h000;
+	private final P100 p100;
 
-	private final List<OrderHeader> orderHeaders = new ArrayList<OrderHeader>();
+	private final List<P110> p110Lines = new ArrayList<P110>();
 
-	public OrderEDI(@NonNull final H000 h000)
+	public OrderLine(final P100 p100)
 	{
-		this.h000 = h000;
+		this.p100 = p100;
 	}
 
-	public void addOrderHeader(@NonNull final OrderHeader orderHeader)
+	public void addP110(final P110 p110)
 	{
-		orderHeaders.add(orderHeader);
+		p110Lines.add(p110);
+	}
+
+	public P100 getP100()
+	{
+		return p100;
+	}
+
+	public List<P110> getP110Lines()
+	{
+		return p110Lines;
 	}
 }

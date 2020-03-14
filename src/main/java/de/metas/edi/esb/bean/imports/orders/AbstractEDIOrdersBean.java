@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.edi.esb.bean.orders;
+package de.metas.edi.esb.bean.imports.orders;
 
 import static de.metas.edi.esb.commons.Util.createCalendarDate;
 import static de.metas.edi.esb.commons.Util.createJaxbMessage;

@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.desadv;
+package de.metas.edi.esb.bean.exports.desadv;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;

@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.invoic;
+package de.metas.edi.esb.bean.exports.invoic;
 
 /*
  * #%L
