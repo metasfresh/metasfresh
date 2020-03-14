@@ -10,6 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.142
+## Features
+* metasfresh
+  * [#6298](https://github.com/metasfresh/metasfresh/issues/6298) Migrate `AD_Org_ID` process parameter to `Search` from whatever it is now
+  * [#6311](https://github.com/metasfresh/metasfresh/issues/6311) Rename jasper report Revisionsstelle Geschäftspartner to Stammdaten Mutationsprotokoll
+  * [#6328](https://github.com/metasfresh/metasfresh/issues/6328) ESR Import + processing autom. after upload via drag&drop
+
+## Fixes
+* metasfresh
+  * [#6231](https://github.com/metasfresh/metasfresh/issues/6231) UOM related error in invoice candidate updates
+  * [#6331](https://github.com/metasfresh/metasfresh/issues/6331) The Greeting of the contact is not translated in address block
+
+* metasfresh-webui-frontend
+  * [#2640](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2640) DevTools failed to parse SourceMap error
+
 # metasfresh 5.141
 ## Features
 * metasfresh
