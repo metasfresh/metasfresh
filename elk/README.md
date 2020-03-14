@@ -6,7 +6,7 @@ Many thanks to
 
 ```bash
 # build the docker image; the CACHEBUST build-arg is optional and merely makes sure that apt upgrade etc is performed at least once a day
-docker build --tag metasfresh-elk --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
+docker build --tag metasfresh-elk .
 ```
 
 ```bash
@@ -17,8 +17,5 @@ docker run --rm -d -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 metasfres
 
 You can then run metasfresh-app and/or metasfresh-webui-api with `-Dlogstash.enabled=true -Dlogstash.hort=localhost -Dlogstash.port=5000` to have it direct log messages to localhost.
 
-(note that i'm a total noob here)
-
-You can then go to Kibana on http://localhost:5601/ and there you can "discover the "index" %{[@metadata][tcp]}-* .
+With that you can go to Kibana on http://localhost:5601/ and there you can discover the "index pattern" logstash-* .
 There you can then do sortof olap on the log data that were send so far.
-...that's how far i got until now..

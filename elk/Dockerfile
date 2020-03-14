@@ -1,5 +1,5 @@
 # source: https://www.github.com/spujadas/elk-docker
-FROM sebp/elk:740
+FROM sebp/elk:760
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
