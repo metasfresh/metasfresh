@@ -5,7 +5,7 @@ FROM openjdk:8-jdk-alpine
 # thx to https://github.com/moby/moby/issues/1996#issuecomment-185872769
 ARG CACHEBUST=1
 
-RUN apk update && apk upgrade && apk add bash && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
+RUN apk update && apk upgrade && apk add bash && apk add curl && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
 COPY ./target/de-metas-edi-esb-camel.jar /opt/metasfresh-esb-camel/
 COPY ./start_esb-camel_docker.sh /opt/metasfresh-esb-camel/
