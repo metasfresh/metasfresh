@@ -43,11 +43,6 @@ public abstract class RESOURCE_Excel
 	/** How many data rows which are also valid and can be imported to metasfresh */
 	protected int count_ValidDataRows;
 
-	public RESOURCE_Excel()
-	{
-		super();
-	}
-
 	@Override
 	public String toString()
 	{
