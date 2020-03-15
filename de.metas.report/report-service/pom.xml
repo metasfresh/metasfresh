@@ -122,7 +122,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
+		<!-- Logging  -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+		</dependency>
+
 		<!-- Q/R code-->
 		<dependency>
 			<groupId>com.google.zxing</groupId>
