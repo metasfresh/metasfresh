@@ -115,12 +115,12 @@ public class PricingBL implements IPricingBL
 
 
 		if (quantity == null)
-		{			
-			pricingCtx.setQty(ONE);
-		} 
-		else 
 		{
-			pricingCtx.setQty(quantity.isZero() ? ONE: quantity.toBigDecimal());
+			pricingCtx.setQty(BigDecimal.ONE);
+		}
+		else
+		{
+			pricingCtx.setQty(quantity.isZero() ? BigDecimal.ONE: quantity.toBigDecimal());
 			pricingCtx.setUomId(quantity.getUomId());
 		}
 
