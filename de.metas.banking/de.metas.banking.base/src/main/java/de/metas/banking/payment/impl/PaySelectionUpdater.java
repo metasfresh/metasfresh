@@ -36,6 +36,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.InvoiceMatchingMode;
@@ -110,7 +111,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getC_PaySelection_ID())
+				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getPaySelectionId())
 				.addInArrayOrAllFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
 				.create()
 				.list();
@@ -609,7 +610,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private void cacheInvalidationForCurrentPaySelection()
 	{
 		modelCacheInvalidationService.invalidate(
-				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getC_PaySelection_ID()),
+				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getPaySelectionId().getRepoId()),
 				ModelCacheInvalidationTiming.CHANGE);
 	}
 
@@ -738,9 +739,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return _paySelection;
 	}
 
-	private int getC_PaySelection_ID()
+	private PaySelectionId getPaySelectionId()
 	{
-		return getC_PaySelection().getC_PaySelection_ID();
+		return PaySelectionId.ofRepoId(getC_PaySelection().getC_PaySelection_ID());
 	}
 
 	private Integer _nextLineNo = null;
@@ -749,7 +750,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		if (_nextLineNo == null)
 		{
-			final int lastLineNo = paySelectionsRepo.retrieveLastPaySelectionLineNo(getC_PaySelection_ID());
+			final int lastLineNo = paySelectionsRepo.retrieveLastPaySelectionLineNo(getPaySelectionId());
 			_nextLineNo = lastLineNo + 10;
 		}
 

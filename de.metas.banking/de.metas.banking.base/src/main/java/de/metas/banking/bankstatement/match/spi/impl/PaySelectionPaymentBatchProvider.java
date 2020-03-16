@@ -15,6 +15,7 @@ import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 /*
@@ -71,7 +72,13 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 			return;
 		}
 		
-		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLineForPayment(paySelection, bankStatementLineRef.getC_Payment_ID());
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLineRef.getC_Payment_ID());
+		if(paymentId == null)
+		{
+			return;
+		}
+		
+		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLineForPayment(paySelection, paymentId);
 		if(paySelectionLine == null)
 		{
 			return;

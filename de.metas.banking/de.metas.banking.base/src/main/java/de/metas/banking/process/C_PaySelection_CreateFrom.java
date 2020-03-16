@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 import org.compiere.model.I_C_PaySelection;
 
+import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -54,7 +55,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final I_C_PaySelection paySelection = paySelectionDAO.retrievePaySelectionById(context.getSingleSelectedRecordId());
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(context.getSingleSelectedRecordId());
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).orElse(null);
 		if (paySelection == null)
 		{
 			// to avoid NPE in case the document is new in webui, not yet saved
@@ -75,7 +77,8 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 	{
 		paySelectionUpdater = paySelectionBL.newPaySelectionUpdater();
 
-		final I_C_PaySelection paySelection = getRecord(I_C_PaySelection.class);
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(getRecord_ID());
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).get();
 		paySelectionUpdater.setC_PaySelection(paySelection);
 
 		for (final ProcessInfoParameter para : getParametersAsArray())

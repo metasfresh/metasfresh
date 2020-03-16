@@ -2,6 +2,7 @@ package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,8 +18,10 @@ import org.compiere.model.I_C_PaySelection;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -28,6 +31,21 @@ import lombok.NonNull;
  */
 public class PaySelectionDAO implements IPaySelectionDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public Optional<I_C_PaySelection> getById(@NonNull PaySelectionId paySelectionId)
+	{
+		// NOTE: use query by ID instead of load because we want to tolerate the case when we are asking for a pay selection which was not already saved by webui
+		final I_C_PaySelection paySelectionRecord = queryBL.createQueryBuilder(I_C_PaySelection.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID, paySelectionId)
+				.create()
+				.firstOnlyOrNull(I_C_PaySelection.class);
+
+		return Optional.ofNullable(paySelectionRecord);
+	}
+
 	@Override
 	public <T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(
 			final I_C_PaySelection paySelection,
@@ -47,7 +65,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public int retrieveLastPaySelectionLineNo(final int paySelectionId)
+	public int retrieveLastPaySelectionLineNo(@NonNull final PaySelectionId paySelectionId)
 	{
 		final BigDecimal lastLineNo = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PaySelectionLine.class)
@@ -151,17 +169,9 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public I_C_PaySelection retrievePaySelectionById(int paySelectionID)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelection.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID, paySelectionID)
-				.create()
-				.firstOnlyOrNull(I_C_PaySelection.class);
-	}
-
-	@Override
-	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(final I_C_PaySelection paySelection, final int paymentId)
+	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(
+			@NonNull final I_C_PaySelection paySelection,
+			@NonNull final PaymentId paymentId)
 	{
 		return createQueryBuilder(paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
