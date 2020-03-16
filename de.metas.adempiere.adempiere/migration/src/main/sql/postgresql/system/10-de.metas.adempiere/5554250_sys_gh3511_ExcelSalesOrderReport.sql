@@ -47,11 +47,6 @@ $BODY$
                  COST 100
                  ROWS 1000;
 
---First deleting the process and process params to be able to run the migration script again.
-DELETE FROM AD_Table_Process WHERE AD_Process_ID=584659;
-DELETE FROM AD_Process WHERE AD_Process_ID=584659;
-DELETE FROM AD_Process_Para WHERE AD_Process_ID=584659;
-
 -- 2020-02-18T13:19:51.141Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584657,'Y','de.metas.report.jasper.client.process.JasperReportStarter','N',TO_TIMESTAMP('2020-02-18 15:19:50','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','N','Y','N','Y','N','Y','Y','@PREFIX@de/metas/reports/purchase_trace/report.xls',0,'PricelistExcelExporter','N','Y','SELECT * FROM de_metas_endcustomer_fresh_reports.trace_report(@AD_Org_ID/NULL@, @C_Period_St_ID@, @C_Period_End_ID@,@C_Activity_ID/NULL@, @C_BPartner_ID/NULL@, @M_Product_ID/NULL@, ''N'', @M_AttributeSetInstance_ID/NULL@, ''@ad_language@'');','JasperReportsSQL',TO_TIMESTAMP('2020-02-18 15:19:50','YYYY-MM-DD HH24:MI:SS'),100,'RV_PricelistExporter')
