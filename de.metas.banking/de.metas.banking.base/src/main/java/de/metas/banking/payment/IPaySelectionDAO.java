@@ -26,6 +26,8 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	<T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(I_C_PaySelection paySelection, Class<T> clazz);
 
+	<T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(PaySelectionId paySelectionId, Class<T> clazz);
+
 	int retrievePaySelectionLinesCount(I_C_PaySelection paySelection);
 
 	int retrieveLastPaySelectionLineNo(PaySelectionId paySelectionId);

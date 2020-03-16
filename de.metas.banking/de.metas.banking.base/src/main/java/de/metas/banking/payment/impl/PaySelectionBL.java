@@ -25,7 +25,9 @@ package de.metas.banking.payment.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -37,6 +39,8 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_BankStatement;
@@ -44,6 +48,7 @@ import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
+import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -52,10 +57,12 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
@@ -462,6 +469,18 @@ public class PaySelectionBL implements IPaySelectionBL
 		paySelection.setProcessed(false);
 		paySelection.setDocAction(IDocument.ACTION_Complete);
 
+	}
+
+	@Override
+	public Set<PaymentId> getPaymentIds(@NonNull final PaySelectionId paySelectionId)
+	{
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+
+		return paySelectionDAO.retrievePaySelectionLines(paySelectionId, I_C_PaySelectionLine.class)
+				.stream()
+				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

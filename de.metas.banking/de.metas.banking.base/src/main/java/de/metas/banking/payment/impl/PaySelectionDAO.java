@@ -7,8 +7,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
@@ -51,15 +49,27 @@ public class PaySelectionDAO implements IPaySelectionDAO
 			final I_C_PaySelection paySelection,
 			final Class<T> clazz)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection);
-		queryBuilder.orderBy().addColumn(I_C_PaySelectionLine.COLUMNNAME_Line, Direction.Ascending, Nulls.Last).endOrderBy();
-		return queryBuilder.create().list(clazz);
+		return queryPaySelectionLines(paySelection)
+				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
+				.create()
+				.list(clazz);
+	}
+
+	@Override
+	public <T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(
+			@NonNull final PaySelectionId paySelectionId,
+			@NonNull final Class<T> clazz)
+	{
+		return queryPaySelectionLines(paySelectionId)
+				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
+				.create()
+				.list(clazz);
 	}
 
 	@Override
 	public int retrievePaySelectionLinesCount(final I_C_PaySelection paySelection)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection);
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = queryPaySelectionLines(paySelection);
 		return queryBuilder.create()
 				.count();
 	}
@@ -67,7 +77,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public int retrieveLastPaySelectionLineNo(@NonNull final PaySelectionId paySelectionId)
 	{
-		final BigDecimal lastLineNo = Services.get(IQueryBL.class)
+		final BigDecimal lastLineNo = queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionId)
 				.addOnlyActiveRecordsFilter()
@@ -84,7 +94,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public List<I_C_PaySelectionLine> retrievePaySelectionLinesMatchingInvoice(final I_C_PaySelection paySelection, final I_C_Invoice invoice)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection)
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = queryPaySelectionLines(paySelection)
 				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID());
 		return queryBuilder
 				.create()
@@ -94,7 +104,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public List<de.metas.banking.model.I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class, bankStatementLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.banking.model.I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
@@ -105,7 +115,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class, bankStatementLineRef)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.banking.model.I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineRef.getC_BankStatementLine_Ref_ID())
@@ -117,28 +127,31 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public boolean isPaySelectionLineMatchInvoice(final I_C_PaySelection paySelection, final I_C_Invoice invoice)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection)
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = queryPaySelectionLines(paySelection)
 				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID());
 		return queryBuilder.create()
 				.anyMatch();
 	}
 
-	private final IQueryBuilder<I_C_PaySelectionLine> createQueryBuilder(final I_C_PaySelection paySelection)
+	private final IQueryBuilder<I_C_PaySelectionLine> queryPaySelectionLines(@NonNull final I_C_PaySelection paySelection)
 	{
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection);
-
-		queryBuilder.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
+		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(InterfaceWrapperHelper.getCtx(paySelection));
-		return queryBuilder;
+	}
+
+	private final IQueryBuilder<I_C_PaySelectionLine> queryPaySelectionLines(@NonNull final PaySelectionId paySelectionId)
+	{
+		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionId)
+				.addOnlyActiveRecordsFilter();
 	}
 
 	@Override
-	public List<I_C_PaySelectionLine> retrievePaySelectionLines(final org.compiere.model.I_C_Invoice invoice)
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		Check.assumeNotNull(invoice, "Param 'invoice' is not null");
-
-		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, invoice)
+		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = queryBL.createQueryBuilder(I_C_PaySelectionLine.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID());
 
@@ -152,11 +165,9 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public I_C_PaySelection retrievePaySelection(final org.compiere.model.I_C_Payment payment)
+	public I_C_PaySelection retrievePaySelection(@NonNull final org.compiere.model.I_C_Payment payment)
 	{
-		Check.assumeNotNull(payment, "payment not null");
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, payment)
+		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class, payment)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
 				//
@@ -173,7 +184,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 			@NonNull final I_C_PaySelection paySelection,
 			@NonNull final PaymentId paymentId)
 	{
-		return createQueryBuilder(paySelection)
+		return queryPaySelectionLines(paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
 				.firstOnly(de.metas.banking.model.I_C_PaySelectionLine.class);
@@ -184,7 +195,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	{
 		Check.assumeNotEmpty(invoiceIds, "invoiceIds is not empty");
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID, invoiceIds)
 				.addOnlyActiveRecordsFilter()
