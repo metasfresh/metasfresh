@@ -20,7 +20,10 @@ $BODY$
 
 WITH factAcctSummaryInPeriod AS
          (
-             SELECT fas.*
+             SELECT --
+                    fas.amtacctdr,
+                    fas.amtacctcr,
+                    fas.dateacct
              FROM c_elementvalue ev
                       INNER JOIN fact_acct_summary fas ON fas.account_id = ev.c_elementvalue_id
              WHERE TRUE
