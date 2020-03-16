@@ -103,11 +103,12 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
   cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
 
   const path = createFieldPath(fieldName, modal);
-
+  
   cy.get(path)
     .find('.meta-icon-close-alt')
-    .click()
-    .waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
+    .click();
+
+  cy.get(path).waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
 });
 
 Cypress.Commands.add('clickOnIsActive', modal => {
@@ -208,6 +209,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     cy.get(path)
       .find('input')
       .type('{selectall}')
+      .clear()
       .type(stringValue)
       .type('{enter}');
   }
@@ -317,10 +319,23 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
   }
   const path = createFieldPath(fieldName, modal);
+
+  // clear the field before testing input
+  const fieldsWhereCloseNeedsToBeClicked = ['C_Currency_ID'];
+
+  if (fieldsWhereCloseNeedsToBeClicked.includes(fieldName)) {
+  cy.get(path)
+    .find('.meta-icon-close-alt')
+    .click();
+  }
+
   cy.get(path)
     .find('.input-dropdown')
-    .click();
-
+    .find('.js-input-field')
+    .clear({ force: true })
+    .type(listValue.substring(0.2), { force: true })
+    // .click();  // -- removed click as dropdown shows up when you clear and type
+  
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
   cy.get('.input-dropdown-list')
     .contains(listValue)
