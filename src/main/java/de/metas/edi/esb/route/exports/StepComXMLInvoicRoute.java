@@ -25,6 +25,7 @@ package de.metas.edi.esb.route.exports;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 import javax.xml.namespace.QName;
 
@@ -125,7 +126,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + endPointURIs)
+				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
 				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
 				.multicast().stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
