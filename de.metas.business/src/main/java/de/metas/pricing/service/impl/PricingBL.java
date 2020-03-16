@@ -114,18 +114,13 @@ public class PricingBL implements IPricingBL
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
 
 
-		if(quantity == null || quantity.signum() == 0)
+		if (quantity == null)
+		{			
+			pricingCtx.setQty(ONE);
+		} 
+		else 
 		{
-			pricingCtx.setQty(BigDecimal.ONE);
-		}
-
-		if (quantity != null)
-		{
-			if (quantity.signum() != 0)
-			{
-				pricingCtx.setQty(quantity.toBigDecimal());
-			}
-
+			pricingCtx.setQty(quantity.isZero() ? ONE: quantity.toBigDecimal());
 			pricingCtx.setUomId(quantity.getUomId());
 		}
 
