@@ -125,9 +125,9 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "Marshalling EDI XML Java Object to XML...")
 				.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}")
+				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + endPointURIs)
 				.log(LoggingLevel.INFO, "Sending STEPcom-XML to the endpoint(s):\r\n" + body())
-				.multicast().stopOnException().to(endPointURIs)
+				.multicast().stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
 
 				.log(LoggingLevel.INFO, "Creating metasfresh feedback XML Java Object...")
