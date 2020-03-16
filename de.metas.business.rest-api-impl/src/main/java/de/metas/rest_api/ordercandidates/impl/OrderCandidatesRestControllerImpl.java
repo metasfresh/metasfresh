@@ -52,6 +52,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -59,9 +61,8 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.utils.MissingResourceException;
-import de.metas.rest_api.utils.PermissionServiceFactories;
-import de.metas.rest_api.utils.PermissionServiceFactory;
+import de.metas.security.PermissionServiceFactories;
+import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -102,6 +103,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
+	private final BpartnerRestController bpartnerRestController;
 	private final PerformanceMonitoringService perfMonService;
 
 	private PermissionServiceFactory permissionServiceFactory;
@@ -109,10 +111,12 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	public OrderCandidatesRestControllerImpl(
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo,
+			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
+		this.bpartnerRestController = bpartnerRestController;
 		this.perfMonService = perfMonService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
@@ -140,6 +144,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
 					.permissionService(permissionServiceFactory.createPermissionService())
+					.bpartnerRestController(bpartnerRestController)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -213,10 +218,10 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), true/* billTo */, orgId);
+		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), true/* billTo */, orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), false/* billTo */, orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), false/* billTo */, orgId);
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 

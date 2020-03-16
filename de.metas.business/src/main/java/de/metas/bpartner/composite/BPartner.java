@@ -93,8 +93,8 @@ public class BPartner
 
 	private BPGroupId groupId;
 
-	private final boolean vendor;
-	private final boolean customer;
+	private boolean vendor;
+	private boolean customer;
 
 	private InvoiceRule invoiceRule;
 
