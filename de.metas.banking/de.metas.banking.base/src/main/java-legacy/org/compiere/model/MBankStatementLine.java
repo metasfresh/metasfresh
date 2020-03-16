@@ -26,6 +26,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.util.Services;
  
 /**
  *	Bank Statement Line Model
@@ -199,18 +202,18 @@ import org.compiere.util.Env;
 			setC_BPartner_ID(invoice.getC_BPartner_ID());
 		}
 		
-		//	Calculate Charge = Statement - trx - Interest  
-		BigDecimal amt = getStmtAmt();
-		amt = amt.subtract(getTrxAmt());
-		amt = amt.subtract(getInterestAmt());
-		if (amt.compareTo(getChargeAmt()) != 0)
-		 {
-			setChargeAmt (amt);
-		//
-		}
+		setChargeAmt(computeChargetAmt(this));
 		
 		return true;
 	}	//	beforeSave
+
+	private static BigDecimal computeChargetAmt(final I_C_BankStatementLine line)
+	{
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		
+		return line.getStmtAmt()
+				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(line));
+	}
 	
 	/** Parent					*/
 	private MBankStatement			m_parent = null;

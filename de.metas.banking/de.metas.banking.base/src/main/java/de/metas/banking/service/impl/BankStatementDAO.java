@@ -30,12 +30,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.payment.PaymentId;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -47,10 +41,17 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.payment.PaymentId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BankStatementDAO implements IBankStatementDAO
 {
@@ -69,7 +70,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 	@Deprecated
 	@Override
-	public de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId)
+	public de.metas.banking.model.I_C_BankStatementLine getLineById(@NonNull final BankStatementLineId lineId)
 	{
 		return load(lineId, de.metas.banking.model.I_C_BankStatementLine.class);
 	}

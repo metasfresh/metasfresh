@@ -1,19 +1,21 @@
 package de.metas.banking.service;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -67,11 +69,16 @@ public interface IBankStatementDAO extends ISingletonService
 
 	de.metas.banking.model.I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
 
+	de.metas.banking.model.I_C_BankStatementLine getLineById(BankStatementLineId lineId);
+
 	/**
-	 * @deprecated please use the repoIdAware version
+	 * @deprecated please use the {@link #getLineById(BankStatementLineId)}
 	 */
 	@Deprecated
-	de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId);
+	default de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId)
+	{
+		return getLineById(BankStatementLineId.ofRepoId(lineId));
+	}
 
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
