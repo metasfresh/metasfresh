@@ -1,6 +1,7 @@
 package de.metas.banking.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 import java.util.Date;
 
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -39,9 +41,9 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
+import com.ibm.icu.math.BigDecimal;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementId;
@@ -68,11 +70,16 @@ public class BankStatementDAO implements IBankStatementDAO
 		return load(bankStatementId, de.metas.banking.model.I_C_BankStatement.class);
 	}
 
-	@Deprecated
 	@Override
 	public de.metas.banking.model.I_C_BankStatementLine getLineById(@NonNull final BankStatementLineId lineId)
 	{
 		return load(lineId, de.metas.banking.model.I_C_BankStatementLine.class);
+	}
+
+	@Override
+	public List<de.metas.banking.model.I_C_BankStatementLine> getLineByIds(@NonNull final Set<BankStatementLineId> lineIds)
+	{
+		return loadByRepoIdAwares(lineIds, de.metas.banking.model.I_C_BankStatementLine.class);
 	}
 
 	@NonNull
@@ -189,7 +196,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		// Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
 		final IQueryBuilder<I_C_BankStatementLine> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatementLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, Env.ZERO);
+				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, BigDecimal.ZERO);
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)

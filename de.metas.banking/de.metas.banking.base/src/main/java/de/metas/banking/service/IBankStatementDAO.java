@@ -3,6 +3,7 @@ package de.metas.banking.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -70,6 +71,8 @@ public interface IBankStatementDAO extends ISingletonService
 	de.metas.banking.model.I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
 
 	de.metas.banking.model.I_C_BankStatementLine getLineById(BankStatementLineId lineId);
+
+	List<de.metas.banking.model.I_C_BankStatementLine> getLineByIds(@NonNull Set<BankStatementLineId> lineIds);
 
 	/**
 	 * @deprecated please use the {@link #getLineById(BankStatementLineId)}

@@ -53,8 +53,10 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -277,11 +279,27 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public boolean isReconciled(final org.compiere.model.I_C_BankStatementLine line)
+	public boolean isReconciled(@NonNull final org.compiere.model.I_C_BankStatementLine line)
 	{
-		final BigDecimal actualStmtAmt = line.getStmtAmt();
-		final BigDecimal expectedStmtAmt = computeStmtAmtExcludingChargeAmt(line);
-		return actualStmtAmt.compareTo(expectedStmtAmt) == 0;
+		if (line.isMultiplePaymentOrInvoice())
+		{
+			if (line.isMultiplePayment())
+			{
+				// NOTE: for performance reasons we are not checking if we have C_BankStatementLine_Ref records which have payments.
+				// If this flag is set we assume that we already have them
+				return true;
+			}
+			else
+			{
+				final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+				return paymentId != null;
+			}
+		}
+		else
+		{
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			return paymentId != null;
+		}
 	}
 
 	@Override
