@@ -33,19 +33,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.money.Money;
-import de.metas.organization.OrgId;
-import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -53,18 +46,25 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
@@ -74,7 +74,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	@Override
 	public Optional<I_C_Payment> getByExternalOrderId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
 	{
-		final I_C_Payment i_c_payment = Services.get(IQueryBL.class)
+		final I_C_Payment i_c_payment = queryBL
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalOrderId, externalId.getValue())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
@@ -102,11 +102,9 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_PaySelectionLine> getProcessedLines(final I_C_PaySelection paySelection)
+	public List<I_C_PaySelectionLine> getProcessedLines(@NonNull final I_C_PaySelection paySelection)
 	{
-		Check.assumeNotNull(paySelection, "Pay selection not null");
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
+		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -116,8 +114,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	@Override
 	public List<I_C_Payment> retrievePostedWithoutFactAcct(final Properties ctx, final Timestamp startTime)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL.createQueryBuilder(I_C_Payment.class, ctx, trxName)
@@ -156,44 +152,16 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_Payment> retrievePayments(final de.metas.adempiere.model.I_C_Invoice invoice)
+	public List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL.createQueryBuilder(I_C_Payment.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter();
-
-		final boolean isReceipt = invoice.isSOTrx();
-
-		queryBuilder
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID()) // C_BPartner_ID
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt); // Matching DocType
-
-		final IQuery<I_C_AllocationLine> allocationsQuery = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
-				.create();
-
-		final IQueryFilter<I_C_Payment> allocationFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class)
-				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, allocationsQuery);
-
-		final ICompositeQueryFilter<I_C_Payment> linkedPayments = queryBL.createCompositeQueryFilter(I_C_Payment.class).setJoinOr()
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
-				.addFilter(allocationFilter);
-
-		queryBuilder.filter(linkedPayments);
-
-		// ordering by DocumentNo
-		final IQueryOrderBy orderBy = queryBuilder.orderBy().addColumn(I_C_Payment.COLUMNNAME_DocumentNo).createQueryOrderBy();
-
-		return queryBuilder
+		return queryBL
+				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
 				.create()
-				.setOrderBy(orderBy)
 				.list();
 	}
 

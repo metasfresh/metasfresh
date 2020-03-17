@@ -23,10 +23,9 @@ package de.metas.payment.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
@@ -42,29 +41,25 @@ import de.metas.util.Services;
 
 public class PlainPaymentDAO extends AbstractPaymentDAO
 {
-	private final POJOLookupMap db = POJOLookupMap.get();
-
-	public POJOLookupMap getDB()
+	public PlainPaymentDAO()
 	{
-		return db;
+		Adempiere.assertUnitTestMode();
 	}
 
 	@Override
-	public BigDecimal getAvailableAmount(PaymentId paymentId)
+	public BigDecimal getAvailableAmount(final PaymentId paymentId)
 	{
+		Adempiere.assertUnitTestMode();
+
 		final I_C_Payment payment = getById(paymentId);
 		return payment.getPayAmt();
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Payment payment)
+	public BigDecimal getAllocatedAmt(final I_C_Payment payment)
 	{
-		return db.getRecords(I_C_AllocationLine.class, pojo -> pojo.getC_Payment_ID() == payment.getC_Payment_ID());
-	}
+		Adempiere.assertUnitTestMode();
 
-	@Override
-	public BigDecimal getAllocatedAmt(I_C_Payment payment)
-	{
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(payment))
 		{
@@ -72,7 +67,7 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 			final I_C_AllocationHdr ah = line.getC_AllocationHdr();
 			final BigDecimal lineAmt = line.getAmount();
 
-			if ((null != ah) && (ah.getC_Currency_ID() != payment.getC_Currency_ID()))
+			if (null != ah && ah.getC_Currency_ID() != payment.getC_Currency_ID())
 			{
 				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(
 						lineAmt, // Amt
@@ -94,8 +89,10 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 	}
 
 	@Override
-	public void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType)
+	public void updateDiscountAndPayment(final I_C_Payment payment, final int c_Invoice_ID, final I_C_DocType c_DocType)
 	{
+		Adempiere.assertUnitTestMode();
+
 		throw new UnsupportedOperationException();
 	}
 

@@ -1,5 +1,18 @@
 package de.metas.payment.api;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_Payment;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,7 +36,7 @@ package de.metas.payment.api;
  */
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_Invoice;
+
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.Money;
@@ -32,18 +45,6 @@ import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_Payment;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
 
 public interface IPaymentDAO extends ISingletonService
 {
@@ -66,6 +67,7 @@ public interface IPaymentDAO extends ISingletonService
 	/**
 	 * Return a list of active, processed lines in {@link I_C_PaySelection}
 	 */
+	@Deprecated
 	List<I_C_PaySelectionLine> getProcessedLines(I_C_PaySelection paySelection);
 
 	/**
@@ -81,11 +83,6 @@ public interface IPaymentDAO extends ISingletonService
 	 * @return never return <code>null</code>, even if there are no allocations
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
-
-	/**
-	 * retrieve allocated payments fro an invoice
-	 */
-	List<I_C_Payment> retrievePayments(I_C_Invoice invoice);
 
 	/**
 	 * Retrieve all the payments that are marked as posted but do not actually have fact accounts.

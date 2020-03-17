@@ -87,7 +87,7 @@ public class AllocationBLTest
 		AdempiereTestHelper.get().init();
 		dao = (PlainPaymentDAO)Services.get(IPaymentDAO.class);
 
-		db = dao.getDB();
+		db = POJOLookupMap.get();
 
 		paymentBL = Services.get(IPaymentBL.class);
 
