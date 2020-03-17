@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.compiere.model.I_AD_Process_Para;
@@ -73,7 +74,6 @@ import lombok.NonNull;
  * Helper class used to fill {@link WebuiHUTransformParameters} (default values, lookups etc).
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WebuiHUTransformParametersFiller
 {
@@ -260,6 +260,24 @@ public class WebuiHUTransformParametersFiller
 		return LookupValuesList.EMPTY;
 	}
 
+	public Optional<I_M_HU_PI_Item_Product> getDefaultM_HU_PI_Item_Product()
+	{
+		final HUEditorRow cuRow = getSelectedRow();
+		final ProductId productId = cuRow.getProductId();
+		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(cuRow.getM_HU());
+
+		final List<I_M_HU_PI_Item_Product> allPIs = WEBUI_ProcessHelper.retrieveHUPIItemProductRecords(
+				Env.getCtx(),
+				productId,
+				bpartnerId,
+				false
+		);
+
+		return allPIs.stream()
+				.filter(hu -> hu.isActive() && hu.isDefaultForProduct())
+				.min(Comparator.comparingInt(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
+	}
+
 	private static LookupValuesList retrieveHUPItemProductsForNewTU(final HUEditorRow cuRow)
 	{
 		final ProductId productId = cuRow.getProductId();
@@ -413,7 +431,7 @@ public class WebuiHUTransformParametersFiller
 				.collect(LookupValuesList.collect());
 	}
 
-	public I_M_HU_PI_Item getDefaultM_HU_PI_ItemOrNull()
+	public I_M_HU_PI_Item getDefaultM_LU_PI_ItemOrNull()
 	{
 		final List<I_M_HU_PI_Item> luPIItems = getAvailableLUPIItems();
 		final Optional<I_M_HU_PI_Item> defaultHUPIItem = luPIItems.stream()
@@ -432,8 +450,8 @@ public class WebuiHUTransformParametersFiller
 		Check.errorIf(effectivePIVersion == null, "tuHU is inconsistent; hu={}", tuHU);
 
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
-				effectivePIVersion.getM_HU_PI(), 
-				null, 
+				effectivePIVersion.getM_HU_PI(),
+				null,
 				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
 
 		return luPIItems;

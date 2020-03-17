@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
 import java.util.Objects;
+import java.util.Optional;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.Profiles;
@@ -188,7 +190,7 @@ public class WEBUI_M_HU_Transform
 
 	/**
 	 * @return For the two parameters {@link #PARAM_QtyTU} and {@value #PARAM_QtyCU}, this method returns the "maximum" (i.e. what's inside the currently selected source TU resp. CU).<br>
-	 *         For any other parameter, it returns {@link IProcessDefaultParametersProvider#DEFAULT_VALUE_NOTAVAILABLE}.
+	 * For any other parameter, it returns {@link IProcessDefaultParametersProvider#DEFAULT_VALUE_NOTAVAILABLE}.
 	 */
 	@Override
 	public final Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
@@ -284,7 +286,9 @@ public class WEBUI_M_HU_Transform
 		}
 	}
 
-	/** @return true if view was changed and needs invalidation */
+	/**
+	 * @return true if view was changed and needs invalidation
+	 */
 	private final boolean removeSelectedRowsIfHUDestoyed()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
@@ -334,16 +338,22 @@ public class WEBUI_M_HU_Transform
 
 		final String actionName = p_Action;
 
-		if (!ActionType.TU_To_NewLUs.toString().equals(actionName))
+		if (ActionType.TU_To_NewLUs.toString().equals(actionName))
 		{
-			// nothing to do
-			return;
+			onParameterChanged_ActionTUToNewLUs(parameterName);
 		}
 
+		if (PARAM_Action.equals(parameterName) && ActionType.CU_To_NewTUs.toString().equals(actionName))
+		{
+			onParameterChanged_ActionCUToNewTUs();
+		}
+	}
+
+	private void onParameterChanged_ActionTUToNewLUs(final String parameterName)
+	{
 		if (PARAM_Action.equals(parameterName))
 		{
-
-			final I_M_HU_PI_Item defaultHUPIItem = newParametersFiller().getDefaultM_HU_PI_ItemOrNull();
+			final I_M_HU_PI_Item defaultHUPIItem = newParametersFiller().getDefaultM_LU_PI_ItemOrNull();
 			p_M_HU_PI_Item = defaultHUPIItem;
 
 			if (defaultHUPIItem != null)
@@ -356,6 +366,16 @@ public class WEBUI_M_HU_Transform
 		{
 			p_QtyTU = p_M_HU_PI_Item.getQty();
 		}
+	}
 
+	private void onParameterChanged_ActionCUToNewTUs()
+	{
+		final Optional<I_M_HU_PI_Item_Product> packingItemOptional = newParametersFiller().getDefaultM_HU_PI_Item_Product();
+
+		if (packingItemOptional.isPresent())
+		{
+			p_M_HU_PI_Item_Product = packingItemOptional.get();
+			p_QtyCU = packingItemOptional.get().getQty();
+		}
 	}
 }
