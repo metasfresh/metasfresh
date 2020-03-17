@@ -6,7 +6,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,11 +38,14 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -48,6 +53,7 @@ import org.adempiere.ad.window.api.UIElementGroupId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
@@ -72,6 +78,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import lombok.ToString;
 
 public class ADWindowDAO implements IADWindowDAO
 {
@@ -153,8 +160,8 @@ public class ADWindowDAO implements IADWindowDAO
 	public void deleteTabsByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		retrieveTabsQuery(adWindowId)
-		.create()
-		.delete();
+				.create()
+				.delete();
 	}
 
 	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final AdWindowId adWindowId)
@@ -395,16 +402,16 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("Copying from: {} to: {}", sourceWindow, targetWindow);
 
 		copy()
-		.setSkipCalculatedColumns(true)
-		// skip it because other wise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
-		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
-		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
-		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
-		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
-		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
-		.setFrom(sourceWindow)
-		.setTo(targetWindow)
-		.copy();
+				.setSkipCalculatedColumns(true)
+				// skip it because other wise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
+				.setFrom(sourceWindow)
+				.setTo(targetWindow)
+				.copy();
 
 		save(targetWindow);
 
@@ -430,7 +437,10 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("AD_Window_Trl inserted: {}", countInsert);
 	}
 
-	private void copyUISections(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
+	private void copyUISections(
+			@NonNull final CopyContext copyCtx,
+			@NonNull final I_AD_Tab targetTab,
+			@NonNull final I_AD_Tab sourceTab)
 	{
 		final Map<String, I_AD_UI_Section> existingUISections = retrieveUISectionsQuery(Env.getCtx(), targetTab.getAD_Tab_ID()).create().map(I_AD_UI_Section.class, I_AD_UI_Section::getValue);
 		final Collection<I_AD_UI_Section> sourceUISections = retrieveUISections(sourceTab);
@@ -438,25 +448,26 @@ public class ADWindowDAO implements IADWindowDAO
 		for (final I_AD_UI_Section sourceUISection : sourceUISections)
 		{
 			final I_AD_UI_Section existingUISection = existingUISections.get(sourceUISection.getValue());
-			copyUISection(targetTab, existingUISection, sourceUISection);
+			copyUISection(copyCtx, targetTab, existingUISection, sourceUISection);
 		}
 	}
 
 	private void copyUISection(
+			final CopyContext copyCtx,
 			final I_AD_Tab targetTab,
 			final I_AD_UI_Section existingUISection,
 			final I_AD_UI_Section sourceUISection)
 	{
 		logger.debug("Copying UISection {} to {}", sourceUISection, targetTab);
 
-		final I_AD_UI_Section targetUISection = createUpdateUISection(targetTab, existingUISection, sourceUISection);
+		final I_AD_UI_Section targetUISection = createOrUpdateUISection(targetTab, existingUISection, sourceUISection);
 
 		copyUISectionTrl(targetUISection.getAD_UI_Section_ID(), sourceUISection.getAD_UI_Section_ID());
 
-		copyUIColumns(targetUISection, sourceUISection);
+		copyUIColumns(copyCtx, targetUISection, sourceUISection);
 	}
 
-	private I_AD_UI_Section createUpdateUISection(
+	private I_AD_UI_Section createOrUpdateUISection(
 			final I_AD_Tab targetTab,
 			final I_AD_UI_Section existingUISection,
 			final I_AD_UI_Section sourceUISection)
@@ -464,9 +475,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_Section targetUISection = existingUISection != null ? existingUISection : newInstance(I_AD_UI_Section.class);
 
 		copy()
-		.setFrom(sourceUISection)
-		.setTo(targetUISection)
-		.copy();
+				.setFrom(sourceUISection)
+				.setTo(targetUISection)
+				.copy();
 
 		targetUISection.setAD_Org_ID(sourceUISection.getAD_Org_ID());
 
@@ -513,7 +524,10 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("AD_UI_Section_Trl inserted: {}", countInsert);
 	}
 
-	private void copyUIElementGroups(final I_AD_UI_Column targetUIColumn, final I_AD_UI_Column sourceUIColumn)
+	private void copyUIElementGroups(
+			final CopyContext copyCtx,
+			final I_AD_UI_Column targetUIColumn,
+			final I_AD_UI_Column sourceUIColumn)
 	{
 		final Map<String, I_AD_UI_ElementGroup> existingUIElementGroups = retrieveUIElementGroupsQuery(targetUIColumn).create().map(I_AD_UI_ElementGroup.class, I_AD_UI_ElementGroup::getName);
 		final Collection<I_AD_UI_ElementGroup> sourceUIElementGroups = retrieveUIElementGroups(sourceUIColumn);
@@ -521,23 +535,24 @@ public class ADWindowDAO implements IADWindowDAO
 		for (final I_AD_UI_ElementGroup sourceUIElementGroup : sourceUIElementGroups)
 		{
 			final I_AD_UI_ElementGroup existingUIElementGroup = existingUIElementGroups.get(sourceUIElementGroup.getName());
-			copyUIElementGroup(targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
+			copyUIElementGroup(copyCtx, targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
 		}
 	}
 
 	private void copyUIElementGroup(
+			final CopyContext copyCtx,
 			final I_AD_UI_Column targetUIColumn,
 			final I_AD_UI_ElementGroup existingUIElementGroup,
 			final I_AD_UI_ElementGroup sourceUIElementGroup)
 	{
 		logger.debug("Copying UIElementGroup {} to {}", sourceUIElementGroup, targetUIColumn);
 
-		final I_AD_UI_ElementGroup targetUIElementGroup = createUpdateUIElementGroup(targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
+		final I_AD_UI_ElementGroup targetUIElementGroup = createOrUpdateUIElementGroup(targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
 
-		copyUIElements(targetUIElementGroup, sourceUIElementGroup);
+		copyUIElements(copyCtx, targetUIElementGroup, sourceUIElementGroup);
 	}
 
-	private I_AD_UI_ElementGroup createUpdateUIElementGroup(
+	private I_AD_UI_ElementGroup createOrUpdateUIElementGroup(
 			final I_AD_UI_Column targetUIColumn,
 			final I_AD_UI_ElementGroup existingUIElementGroup,
 			final I_AD_UI_ElementGroup sourceUIElementGroup)
@@ -545,9 +560,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_ElementGroup targetUIElementGroup = existingUIElementGroup != null ? existingUIElementGroup : newInstance(I_AD_UI_ElementGroup.class);
 
 		copy()
-		.setFrom(sourceUIElementGroup)
-		.setTo(targetUIElementGroup)
-		.copy();
+				.setFrom(sourceUIElementGroup)
+				.setTo(targetUIElementGroup)
+				.copy();
 
 		targetUIElementGroup.setAD_Org_ID(targetUIColumn.getAD_Org_ID());
 		targetUIElementGroup.setAD_UI_Column_ID(targetUIColumn.getAD_UI_Column_ID());
@@ -590,17 +605,17 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		logger.debug("Copying UI Element Field {} to {}", sourceUIElementField, targetUIElement);
 
-		createUpdateUIElementField(targetUIElement, existingTargetElementField, sourceUIElementField);
+		createOrUpdateUIElementField(targetUIElement, existingTargetElementField, sourceUIElementField);
 	}
 
-	private void createUpdateUIElementField(final I_AD_UI_Element targetUIElement, final I_AD_UI_ElementField existingTargetElementField, final I_AD_UI_ElementField sourceUIElementField)
+	private void createOrUpdateUIElementField(final I_AD_UI_Element targetUIElement, final I_AD_UI_ElementField existingTargetElementField, final I_AD_UI_ElementField sourceUIElementField)
 	{
 		final I_AD_UI_ElementField targetUIElementField = existingTargetElementField != null ? existingTargetElementField : newInstance(I_AD_UI_ElementField.class);
 
 		copy()
-		.setFrom(sourceUIElementField)
-		.setTo(targetUIElementField)
-		.copy();
+				.setFrom(sourceUIElementField)
+				.setTo(targetUIElementField)
+				.copy();
 
 		targetUIElementField.setAD_Org_ID(targetUIElement.getAD_Org_ID());
 		targetUIElementField.setSeqNo(sourceUIElementField.getSeqNo());
@@ -638,7 +653,10 @@ public class ADWindowDAO implements IADWindowDAO
 				.map(fieldRecord -> AdFieldId.ofRepoId(fieldRecord.getAD_Field_ID()));
 	}
 
-	private void copyUIElements(final I_AD_UI_ElementGroup targetUIElementGroup, final I_AD_UI_ElementGroup sourceUIElementGroup)
+	private void copyUIElements(
+			final CopyContext copyCtx,
+			final I_AD_UI_ElementGroup targetUIElementGroup,
+			final I_AD_UI_ElementGroup sourceUIElementGroup)
 	{
 		final Map<String, I_AD_UI_Element> existingTargetUIElements = retrieveUIElementsQuery(targetUIElementGroup).create().map(I_AD_UI_Element.class, I_AD_UI_Element::getName);
 		final Collection<I_AD_UI_Element> sourceUIElements = retrieveUIElements(sourceUIElementGroup);
@@ -646,21 +664,26 @@ public class ADWindowDAO implements IADWindowDAO
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
 			final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
-			copyUIElement(targetUIElementGroup, existingTargetElement, sourceUIElement);
+			copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
 		}
 
 	}
 
-	private void copyUIElement(final I_AD_UI_ElementGroup targetElementGroup, final I_AD_UI_Element existingTargetElement, final I_AD_UI_Element sourceUIElement)
+	private void copyUIElement(
+			final CopyContext copyCtx,
+			final I_AD_UI_ElementGroup targetElementGroup,
+			final I_AD_UI_Element existingTargetElement,
+			final I_AD_UI_Element sourceUIElement)
 	{
 		logger.debug("Copying UI Element {} to {}", sourceUIElement, targetElementGroup);
 
-		final I_AD_UI_Element targetUIElement = createUpdateUIElement(targetElementGroup, existingTargetElement, sourceUIElement);
+		final I_AD_UI_Element targetUIElement = createOrUpdateUIElement(copyCtx, targetElementGroup, existingTargetElement, sourceUIElement);
 
 		copyUIElementFields(targetUIElement, sourceUIElement);
 	}
 
-	private I_AD_UI_Element createUpdateUIElement(
+	private I_AD_UI_Element createOrUpdateUIElement(
+			final CopyContext copyCtx,
 			final I_AD_UI_ElementGroup targetElementGroup,
 			final I_AD_UI_Element existingTargetElement,
 			final I_AD_UI_Element sourceElement)
@@ -670,19 +693,35 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_Element targetElement = existingTargetElement != null ? existingTargetElement : newInstance(I_AD_UI_Element.class);
 
 		copy()
-		.setFrom(sourceElement)
-		.setTo(targetElement)
-		.copy();
+				.setFrom(sourceElement)
+				.setTo(targetElement)
+				.copy();
 
 		targetElement.setAD_Org_ID(targetElementGroup.getAD_Org_ID());
 		targetElement.setAD_UI_ElementGroup_ID(targetElementGroupId.getRepoId());
 
-		final AdTabId tabId = getTabId(targetElementGroup);
-		targetElement.setAD_Tab_ID(tabId.getRepoId());
+		final AdTabId targetTabId = getTabId(targetElementGroup);
+		targetElement.setAD_Tab_ID(targetTabId.getRepoId());
 
-		final AdFieldId targetFieldId = getTargetFieldId(sourceElement, tabId)
-				.orElseThrow(() -> new AdempiereException("No field found for " + sourceElement + " and " + tabId));
+		final AdFieldId targetFieldId = getTargetFieldId(sourceElement, targetTabId)
+				.orElseThrow(() -> new AdempiereException("No field found for " + sourceElement + " and " + targetTabId));
 		targetElement.setAD_Field_ID(targetFieldId.getRepoId());
+
+		//
+		// Labels
+		{
+			final int sourceLabelsTabId = sourceElement.getLabels_Tab_ID();
+			final int targetLabelsTabId = sourceLabelsTabId > 0
+					? copyCtx.getTargetTabIdBySourceTabId(sourceLabelsTabId)
+					: -1;
+			targetElement.setLabels_Tab_ID(targetLabelsTabId);
+
+			final int sourceLabelsSelectorFieldId = sourceElement.getLabels_Selector_Field_ID();
+			final int targetLabelsSelectorFieldId = sourceLabelsSelectorFieldId > 0
+					? copyCtx.getTargetFieldIdBySourceFieldId(sourceLabelsSelectorFieldId)
+					: -1;
+			targetElement.setLabels_Selector_Field_ID(targetLabelsSelectorFieldId);
+		}
 
 		if (targetElement.getSeqNo() <= 0)
 		{
@@ -738,7 +777,10 @@ public class ADWindowDAO implements IADWindowDAO
 		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
 
-	private void copyUIColumns(final I_AD_UI_Section targetUISection, final I_AD_UI_Section sourceUISection)
+	private void copyUIColumns(
+			final CopyContext copyCtx,
+			final I_AD_UI_Section targetUISection,
+			final I_AD_UI_Section sourceUISection)
 	{
 		final Map<Integer, I_AD_UI_Column> existingUIColumns = retrieveUIColumnsQuery(targetUISection).create().map(I_AD_UI_Column.class, I_AD_UI_Column::getSeqNo);
 		final Collection<I_AD_UI_Column> sourceUIColumns = retrieveUIColumns(sourceUISection);
@@ -746,29 +788,33 @@ public class ADWindowDAO implements IADWindowDAO
 		for (final I_AD_UI_Column sourceUIColumn : sourceUIColumns)
 		{
 			final I_AD_UI_Column existingUIColumn = existingUIColumns.get(sourceUIColumn.getSeqNo());
-			copyUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
+			copyUIColumn(copyCtx, targetUISection, existingUIColumn, sourceUIColumn);
 		}
 	}
 
-	private void copyUIColumn(final I_AD_UI_Section targetUISection, final I_AD_UI_Column existingUIColumn, final I_AD_UI_Column sourceUIColumn)
+	private void copyUIColumn(
+			final CopyContext copyCtx,
+			final I_AD_UI_Section targetUISection,
+			final I_AD_UI_Column existingUIColumn,
+			final I_AD_UI_Column sourceUIColumn)
 	{
 		logger.debug("Copying UIColumn {} to {}", sourceUIColumn, targetUISection);
 
-		final I_AD_UI_Column targetUIColumn = createUpdateUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
+		final I_AD_UI_Column targetUIColumn = createOrUpdateUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
 
-		copyUIElementGroups(targetUIColumn, sourceUIColumn);
+		copyUIElementGroups(copyCtx, targetUIColumn, sourceUIColumn);
 	}
 
-	private I_AD_UI_Column createUpdateUIColumn(final I_AD_UI_Section targetUISection, final I_AD_UI_Column existingUIColumn, final I_AD_UI_Column sourceUIColumn)
+	private I_AD_UI_Column createOrUpdateUIColumn(final I_AD_UI_Section targetUISection, final I_AD_UI_Column existingUIColumn, final I_AD_UI_Column sourceUIColumn)
 	{
 
 		final I_AD_UI_Column targetUIColumn = existingUIColumn != null ? existingUIColumn : newInstance(I_AD_UI_Column.class);
 
 		copy()
-		.addTargetColumnNameToSkip(I_AD_UI_Column.COLUMNNAME_SeqNo)
-		.setFrom(sourceUIColumn)
-		.setTo(targetUIColumn)
-		.copy();
+				.addTargetColumnNameToSkip(I_AD_UI_Column.COLUMNNAME_SeqNo)
+				.setFrom(sourceUIColumn)
+				.setTo(targetUIColumn)
+				.copy();
 
 		targetUIColumn.setAD_Org_ID(targetUISection.getAD_Org_ID());
 		targetUIColumn.setAD_UI_Section_ID(targetUISection.getAD_UI_Section_ID());
@@ -779,46 +825,112 @@ public class ADWindowDAO implements IADWindowDAO
 		return targetUIColumn;
 	}
 
-	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
+	@ToString
+	private static class CopyContext
 	{
-		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
-		final Map<Integer, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindowId)
-				.create()
-				.map(I_AD_Tab.class, I_AD_Tab::getAD_Table_ID);
+		private final HashMap<Integer, Integer> targetFieldIdsBySourceFieldId = new HashMap<>();
+		private final HashMap<Integer, Integer> targetTabIdsBySourceTabId = new HashMap<>();
 
-		final Collection<I_AD_Tab> sourceTabs = retrieveTabs(sourceWindow);
-
-		for (final I_AD_Tab sourceTab : sourceTabs)
+		public void put_SourceTabId_And_TargetTabId(final int sourceTabId, final int targetTabId)
 		{
-			final I_AD_Tab existingTargetTab = existingTargetTabs.get(sourceTab.getAD_Table_ID());
-			copyTab(targetWindow, existingTargetTab, sourceTab);
+			Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");
+			Check.assumeGreaterThanZero(targetTabId, "targetTabId");
+
+			targetTabIdsBySourceTabId.put(sourceTabId, targetTabId);
+		}
+
+		public int getTargetTabIdBySourceTabId(final int sourceTabId)
+		{
+			final Integer targetTabId = targetTabIdsBySourceTabId.get(sourceTabId);
+			if (targetTabId == null || targetTabId <= 0)
+			{
+				throw new AdempiereException("no Target tab ID found for sourceTabId=" + sourceTabId)
+						.setParameter("targetTabIdsBySourceTabId", targetTabIdsBySourceTabId)
+						.appendParametersToMessage();
+			}
+			return targetTabId;
+		}
+
+		public void put_SourceFieldId_And_TargetFieldId(final int sourceFieldId, final int targetFieldId)
+		{
+			Check.assumeGreaterThanZero(sourceFieldId, "sourceFieldId");
+			Check.assumeGreaterThanZero(targetFieldId, "targetFieldId");
+
+			targetFieldIdsBySourceFieldId.put(sourceFieldId, targetFieldId);
+		}
+
+		public int getTargetFieldIdBySourceFieldId(final int sourceFieldId)
+		{
+			final Integer targetFieldId = targetFieldIdsBySourceFieldId.get(sourceFieldId);
+			if (targetFieldId == null || targetFieldId <= 0)
+			{
+				throw new AdempiereException("no Target field ID found for sourceFieldId=" + sourceFieldId)
+						.setParameter("targetFieldIdsBySourceFieldId", targetFieldIdsBySourceFieldId)
+						.appendParametersToMessage();
+			}
+			return targetFieldId;
 		}
 	}
 
-	private void copyTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
+	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
+	{
+		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
+		final Map<AdTableId, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindowId)
+				.create()
+				.map(I_AD_Tab.class, adTab -> AdTableId.ofRepoId(adTab.getAD_Table_ID()));
+
+		final Collection<I_AD_Tab> sourceTabs = retrieveTabs(sourceWindow);
+
+		final CopyContext copyCtx = new CopyContext();
+
+		final ArrayList<ImmutablePair<I_AD_Tab, I_AD_Tab>> sourceAndTargetTabs = new ArrayList<>();
+
+		for (final I_AD_Tab sourceTab : sourceTabs)
+		{
+			final AdTableId adTableId = AdTableId.ofRepoId(sourceTab.getAD_Table_ID());
+			final I_AD_Tab existingTargetTab = existingTargetTabs.get(adTableId);
+			final I_AD_Tab targetTab = copyTab_SkipUISections(copyCtx, targetWindow, existingTargetTab, sourceTab);
+
+			sourceAndTargetTabs.add(ImmutablePair.of(sourceTab, targetTab));
+		}
+
+		for (final ImmutablePair<I_AD_Tab, I_AD_Tab> sourceAndTargetTab : sourceAndTargetTabs)
+		{
+			final I_AD_Tab sourceTab = sourceAndTargetTab.getLeft();
+			final I_AD_Tab targetTab = sourceAndTargetTab.getRight();
+
+			copyUISections(copyCtx, targetTab, sourceTab);
+		}
+	}
+
+	private I_AD_Tab copyTab_SkipUISections(
+			@NonNull final CopyContext copyCtx,
+			@NonNull final I_AD_Window targetWindow,
+			@Nullable final I_AD_Tab existingTargetTab,
+			@NonNull final I_AD_Tab sourceTab)
 	{
 		logger.debug("Copying tab {} to {}", sourceTab, targetWindow);
 
-		final I_AD_Tab targetTab = createUpdateTab(targetWindow, existingTargetTab, sourceTab);
+		final I_AD_Tab targetTab = createOrUpdateTab(targetWindow, existingTargetTab, sourceTab);
+		copyCtx.put_SourceTabId_And_TargetTabId(sourceTab.getAD_Tab_ID(), targetTab.getAD_Tab_ID());
 
 		copyTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
-
 		copyTabCallouts(targetTab, sourceTab);
+		copyFields(copyCtx, targetTab, sourceTab);
 
-		copyFields(targetTab, sourceTab);
-		copyUISections(targetTab, sourceTab);
+		return targetTab;
 	}
 
-	private I_AD_Tab createUpdateTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
+	private I_AD_Tab createOrUpdateTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
 	{
 		final int targetWindowId = targetWindow.getAD_Window_ID();
 
 		final I_AD_Tab targetTab = existingTargetTab != null ? existingTargetTab : newInstance(I_AD_Tab.class);
 
 		copy()
-		.setFrom(sourceTab)
-		.setTo(targetTab)
-		.copy();
+				.setFrom(sourceTab)
+				.setTo(targetTab)
+				.copy();
 
 		targetTab.setAD_Org_ID(targetWindow.getAD_Org_ID());
 		targetTab.setAD_Window_ID(targetWindowId);
@@ -887,9 +999,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Tab_Callout targetTabCallout = existingTabCallout != null ? existingTabCallout : newInstance(I_AD_Tab_Callout.class);
 
 		copy()
-		.setFrom(sourceTabCallout)
-		.setTo(targetTabCallout)
-		.copy();
+				.setFrom(sourceTabCallout)
+				.setTo(targetTabCallout)
+				.copy();
 		targetTabCallout.setAD_Org_ID(targetTab.getAD_Org_ID());
 		targetTabCallout.setAD_Tab_ID(targetTabId);
 		targetTabCallout.setEntityType(entityType);
@@ -897,8 +1009,10 @@ public class ADWindowDAO implements IADWindowDAO
 		save(targetTabCallout);
 	}
 
-
-	private void copyFields(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
+	private void copyFields(
+			final CopyContext copyCtx,
+			final I_AD_Tab targetTab,
+			final I_AD_Tab sourceTab)
 	{
 		final Map<Integer, I_AD_Field> existingTargetFields = retrieveFieldsQuery(targetTab).create().map(I_AD_Field.class, I_AD_Field::getAD_Column_ID);
 		final Collection<I_AD_Field> sourceFields = retrieveFields(sourceTab);
@@ -906,11 +1020,15 @@ public class ADWindowDAO implements IADWindowDAO
 		for (final I_AD_Field sourceField : sourceFields)
 		{
 			final I_AD_Field existingTargetField = existingTargetFields.get(sourceField.getAD_Column_ID());
-			copyField(targetTab, existingTargetField, sourceField);
+			copyField(copyCtx, targetTab, existingTargetField, sourceField);
 		}
 	}
 
-	private void copyField(final I_AD_Tab targetTab, final I_AD_Field existingTargetField, final I_AD_Field sourceField)
+	private void copyField(
+			final CopyContext copyCtx,
+			final I_AD_Tab targetTab,
+			final I_AD_Field existingTargetField,
+			final I_AD_Field sourceField)
 	{
 		logger.debug("Copying field {} to {}", sourceField, targetTab);
 
@@ -920,9 +1038,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Field targetField = existingTargetField != null ? existingTargetField : newInstance(I_AD_Field.class);
 
 		copy()
-		.setFrom(sourceField)
-		.setTo(targetField)
-		.copy();
+				.setFrom(sourceField)
+				.setTo(targetField)
+				.copy();
 		targetField.setAD_Org_ID(targetTab.getAD_Org_ID());
 		targetField.setAD_Tab_ID(targetTabId);
 		targetField.setEntityType(entityType);
@@ -934,6 +1052,8 @@ public class ADWindowDAO implements IADWindowDAO
 		}
 
 		save(targetField);
+
+		copyCtx.put_SourceFieldId_And_TargetFieldId(sourceField.getAD_Field_ID(), targetField.getAD_Field_ID());
 
 		copyFieldTrl(targetField.getAD_Field_ID(), sourceField.getAD_Field_ID());
 	}
@@ -966,7 +1086,6 @@ public class ADWindowDAO implements IADWindowDAO
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Field_Trl inserted: {}", countInsert);
 	}
-
 
 	@Override
 	@Cached(cacheName = I_AD_Tab_Callout.Table_Name + "#by#" + I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID)
@@ -1010,10 +1129,10 @@ public class ADWindowDAO implements IADWindowDAO
 	public void deleteFieldsByTabId(@NonNull final AdTabId tabId)
 	{
 		Services.get(IQueryBL.class)
-		.createQueryBuilder(I_AD_Field.class)
-		.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
-		.create()
-		.delete();
+				.createQueryBuilder(I_AD_Field.class)
+				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
+				.create()
+				.delete();
 	}
 
 	@Override
@@ -1022,10 +1141,10 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
 
 		Services.get(IQueryBL.class)
-		.createQueryBuilder(I_AD_Field.class)
-		.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Column_ID, adColumnId)
-		.create()
-		.delete();
+				.createQueryBuilder(I_AD_Field.class)
+				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Column_ID, adColumnId)
+				.create()
+				.delete();
 	}
 
 	@Override
@@ -1071,9 +1190,9 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Element.class)
-		.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
-		.create()
-		.delete();
+				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
+				.create()
+				.delete();
 	}
 
 	@Override
@@ -1081,9 +1200,9 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Section.class)
-		.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
-		.create()
-		.delete();
+				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
+				.create()
+				.delete();
 	}
 
 	@Override
