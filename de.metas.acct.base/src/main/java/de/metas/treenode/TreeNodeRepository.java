@@ -64,11 +64,6 @@ public class TreeNodeRepository
 			treeNodeRecord = newInstance(I_AD_TreeNode.class);
 		}
 
-		if (treeNodeRecord == null)
-		{
-			return null;
-		}
-
 		treeNodeRecord.setParent_ID(treeNode.getParentId().getRepoId());
 		treeNodeRecord.setSeqNo(treeNode.getSeqNo());
 		treeNodeRecord.setNode_ID(treeNode.getNodeId().getRepoId());

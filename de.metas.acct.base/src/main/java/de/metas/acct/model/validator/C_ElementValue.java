@@ -110,11 +110,11 @@ public class C_ElementValue
 				&& ChartOfAccountsId.equals(accountElement.getChartOfAccountsId(), chartOfAccountsId);
 	}
 	
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, 
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, 
 			ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
 	public void updateTreeNode(final I_C_ElementValue elementValueRecord)
 	{
-		final ElementValueId evId = ElementValueId.ofRepoIdOrNull(elementValueRecord.getC_Element_ID());
+		final ElementValueId evId = ElementValueId.ofRepoIdOrNull(elementValueRecord.getC_ElementValue_ID());
 		final ElementValue elementValue = evRepo.getById(evId);
 		
 		// treeNode base on all the data from element value

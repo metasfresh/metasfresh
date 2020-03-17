@@ -57,9 +57,9 @@ public class ElementValueRepository
 				.id(ElementValueId.ofRepoId(record.getC_ElementValue_ID()))
 				.elementId(ElementId.ofRepoId(record.getC_Element_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.value(record.getName())
+				.value(record.getValue())
 				.name(record.getName())
-				.parentId(ElementValueId.ofRepoId(record.getParent_ID()))
+				.parentId(ElementValueId.ofRepoIdOrNull(record.getParent_ID()))
 				.seqNo(record.getSeqNo())
 				.build();
 	}
