@@ -46,6 +46,7 @@ UPDATE AD_Process_Para SET IsMandatory='N',Updated=TO_TIMESTAMP('2020-03-16 15:2
 
 
 
+
 DROP FUNCTION IF EXISTS ProfitAndLossBalanceForAccountInPeriod(IN p_C_ElementValue_ID numeric, IN p_startDate timestamp, IN p_endDate timestamp)
 ;
 
@@ -54,8 +55,9 @@ DROP FUNCTION IF EXISTS ProfitAndLossBalanceForAccountInPeriod(IN p_C_ElementVal
 
 /**
   fact_acct_summary's amtacctdr and amtacctcr are always increasing, and exactly 1 per day per organisation per posting type.
-  Therefore calculating the balance for the winter sales period: 2019-12-20 -> 2020-02-01 is done by subtracting endDate balance - startDate balance as follows:
-  (2020-02-01.debit - 2020-02-01.credit) - (2019-12-20.debit - 2019-12-20.credit)
+  Therefore calculating the balance for the winter sales period: 2019-12-20 -> 2020-02-01 is done by subtracting endDate_balance - the_balance_before_startDate as follows:
+  (2020-02-01.debit - 2020-02-01.credit) - (2019-12-19.debit - 2019-12-19.credit)
+
  */
 CREATE OR REPLACE FUNCTION ProfitAndLossBalanceForAccountInPeriod(IN p_C_ElementValue_ID numeric,
                                                                   IN p_startDate         timestamp,
@@ -66,9 +68,12 @@ AS
 $BODY$
 
 
-WITH factAcctSummaryInPeriod AS
+WITH factAcctSummaryNoPeriod AS
          (
-             SELECT fas.*
+             SELECT --
+                    fas.amtacctdr,
+                    fas.amtacctcr,
+                    fas.dateacct
              FROM c_elementvalue ev
                       INNER JOIN fact_acct_summary fas ON fas.account_id = ev.c_elementvalue_id
              WHERE TRUE
@@ -77,25 +82,42 @@ WITH factAcctSummaryInPeriod AS
                AND fas.ad_org_id = p_AD_Org_ID
                -- only 'Actual' posting type is used
                AND fas.postingtype = 'A'
+         ),
+     factAcctSummaryInPeriod AS
+         (
+             SELECT --
+                    fas.amtacctdr,
+                    fas.amtacctcr,
+                    fas.dateacct
+             FROM factAcctSummaryNoPeriod fas
+             WHERE TRUE
                AND fas.dateacct >= p_startDate
                AND fas.dateacct <= p_endDate
          ),
-     minFactAcctSummary AS
+     balanceUpToStartDay AS
          (
-             SELECT fas.*
-             FROM factAcctSummaryInPeriod fas
-             WHERE fas.dateacct = (SELECT min(fas2.dateacct) FROM factAcctSummaryInPeriod fas2)
+             SELECT fas.amtacctdr - fas.amtacctcr balance
+             FROM factAcctSummaryNoPeriod fas
+             WHERE TRUE
+               AND fas.dateacct = (SELECT max(fas.dateacct)
+                                   FROM factAcctSummaryNoPeriod fas
+                                   WHERE fas.dateacct < p_startDate)
+             UNION ALL
+             (
+                 SELECT 0
+             )
+             LIMIT 1
          ),
-     maxFactAcctSummary AS
+     balanceUpToEndDate AS
          (
-             SELECT fas.*
+             SELECT fas.amtacctdr - fas.amtacctcr balance
              FROM factAcctSummaryInPeriod fas
              WHERE fas.dateacct = (SELECT max(fas2.dateacct) FROM factAcctSummaryInPeriod fas2)
          )
 
-SELECT (maxfas.amtacctdr - maxfas.amtacctcr) - (minfas.amtacctdr - minfas.amtacctcr)
-FROM minFactAcctSummary minfas,
-     maxFactAcctSummary maxfas
+SELECT maxBal.balance - minBal.balance
+FROM balanceUpToStartDay minBal,
+     balanceUpToEndDate maxBal
 
     /**
       Why is this union needed?
@@ -198,3 +220,6 @@ $BODY$
     LANGUAGE sql
     STABLE
 ;
+
+-- test: SELECT * FROM ProfitAndLossReport('1993-01-01'::Timestamp, '2992-01-01'::Timestamp, 1000000);
+-- test SELECT * FROM ProfitAndLossReport('2018-01-01'::Timestamp, '2018-07-01'::Timestamp, 1000000);
