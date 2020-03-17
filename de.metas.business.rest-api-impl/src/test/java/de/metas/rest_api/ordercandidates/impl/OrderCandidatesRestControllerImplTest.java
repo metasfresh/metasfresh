@@ -114,6 +114,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import mockit.Mocked;
 
 /*
@@ -181,6 +182,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		SystemTime.setTimeSource(() -> 1584400036193L); // some time at 2020-03-16
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
