@@ -1,8 +1,7 @@
-package de.metas.elementvalue.process;
+package de.metas.acct.process;
 
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_TreeNode;
-import org.compiere.model.I_C_ElementValue;
 
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueId;
@@ -61,9 +60,10 @@ public class C_ElementValue_Update extends JavaProcess implements IProcessPrecon
 	@Override
 	protected String doIt()
 	{
-		final I_C_ElementValue record = evRepo.getByIdInTrx(ElementValueId.ofRepoId(getRecord_ID()));
-		final ElementValue elementValue = evRepo.toElementValue(record);
-		evRepo.updateTreeNodeParentAndSeqNo(elementValue, p_parentId, p_seqNo);
+		final ElementValue elementValue = evRepo.getById(ElementValueId.ofRepoId(getRecord_ID()));
+		elementValue.setParentId(ElementValueId.ofRepoIdOrNull(p_parentId));
+		elementValue.setSeqNo(p_seqNo);
+		evRepo.save(elementValue);
 		
 		return "OK";
 	}

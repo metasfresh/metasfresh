@@ -24,6 +24,7 @@ package de.metas.acct.callout;
 
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -197,12 +198,12 @@ import de.metas.util.Services;
 			return null;
 		}
 
-		final I_C_Tax tax = account.getC_Tax();
-		if (tax == null || tax.getC_Tax_ID() <= 0)
+		final int taxId = account.getC_Tax_ID();
+		if (taxId <= 0)
 		{
 			return null;
 		}
-		return tax;
+		return InterfaceWrapperHelper.load(taxId, I_C_Tax.class);
 	}
 
 }

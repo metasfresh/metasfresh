@@ -1,16 +1,15 @@
 package de.metas.elementvalue;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_TreeNode;
 import org.compiere.model.I_C_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Repository;
 
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -37,11 +36,18 @@ import lombok.NonNull;
 @Repository
 public class ElementValueRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public I_C_ElementValue getByIdInTrx(final ElementValueId id)
+	public ElementValue getById(@NonNull final ElementValueId id)
 	{
-		return load(id, I_C_ElementValue.class);
+		final I_C_ElementValue record = load(id, I_C_ElementValue.class);
+
+		Check.assumeNotNull(record, "Element Value not null");
+
+		return toElementValue(record);
+	}
+	
+	public I_C_Element getElementRecordById(@NonNull final ElementId id)
+	{
+		return load(id, I_C_Element.class);
 	}
 
 	@NonNull
@@ -53,41 +59,33 @@ public class ElementValueRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.value(record.getName())
 				.name(record.getName())
+				.parentId(ElementValueId.ofRepoId(record.getParent_ID()))
+				.seqNo(record.getSeqNo())
 				.build();
 	}
 
-	public I_AD_TreeNode updateTreeNodeParentAndSeqNo(@NonNull final ElementValue elementValue, int parentId, int seqNo)
+	public ElementValue save(@NonNull final ElementValue elementValue)
 	{
-		final I_AD_TreeNode treeNodeRecord = getTreeNode(elementValue);
-		if (treeNodeRecord == null)
+		final I_C_ElementValue elementValueRecord;
+		if (elementValue.getId() == null)
 		{
-			return null;
+			elementValueRecord = newInstance(I_C_ElementValue.class);
 		}
+		else
+		{
+			elementValueRecord = load(elementValue.getId().getRepoId(), I_C_ElementValue.class);
+		}
+		elementValueRecord.setValue(elementValue.getValue());
+		elementValueRecord.setName(elementValue.getName());
+		elementValueRecord.setAD_Org_ID(elementValue.getOrgId().getRepoId());
+		elementValueRecord.setParent_ID(elementValue.getParentId().getRepoId());
+		elementValueRecord.setC_Element_ID(elementValue.getElementId().getRepoId());
+		elementValueRecord.setSeqNo(elementValue.getSeqNo());
+		saveRecord(elementValueRecord);
 
-		treeNodeRecord.setParent_ID(parentId);
-		treeNodeRecord.setSeqNo(seqNo);
-
-		saveRecord(treeNodeRecord);
-
-		return treeNodeRecord;
-	}
-
-	public I_AD_TreeNode getTreeNode(@NonNull final ElementValue elementValue)
-	{
-		final TreeId treeId = getTreeId(elementValue);
-
-		return queryBL.createQueryBuilder(I_AD_TreeNode.class)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Org_ID, elementValue.getOrgId())
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, treeId)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Node_ID, elementValue.getId())
-				.create()
-				.firstOnly(I_AD_TreeNode.class);
-	}
-
-	private TreeId getTreeId(@NonNull final ElementValue elementValue)
-	{
-		final I_C_ElementValue record = load(elementValue.getId(), I_C_ElementValue.class);
-		final I_C_Element element = record.getC_Element();
-		return TreeId.ofRepoId(element.getAD_Tree_ID());
+		return elementValue
+				.toBuilder()
+				.id(ElementValueId.ofRepoId(elementValueRecord.getC_ElementValue_ID()))
+				.build();
 	}
 }

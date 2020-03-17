@@ -1,4 +1,4 @@
-package de.metas.elementvalue;
+package de.metas.treenode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
