@@ -380,6 +380,15 @@ public class PricingBL implements IPricingBL
 			logger.info("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
 			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		}
+
+		// set pricing system from pricelist
+		if (pricingCtx.getPriceListId() != null && pricingCtx.getPricingSystemId() == null)
+		{
+			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
+			logger.info("Setting to context: PricingSystemId={} from M_PriceList={}", priceList.getM_PricingSystem_ID(), priceList);
+			pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
+
+		}
 	}
 
 	private void setPrecisionAndPriceScales(

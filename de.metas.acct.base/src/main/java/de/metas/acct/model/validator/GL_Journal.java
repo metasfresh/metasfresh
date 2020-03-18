@@ -4,6 +4,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;
@@ -21,9 +22,10 @@ public class GL_Journal
 	@Init
 	public void init()
 	{
+		CopyRecordFactory.enableForTableName(I_GL_Journal.Table_Name);
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_GLJournal.class, GLJournalImportProcess.class);
 	}
-	
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void assertAllGroupsAreBalances(final I_GL_Journal glJournal)
 	{
