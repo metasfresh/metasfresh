@@ -34,7 +34,7 @@ import org.compiere.model.IQuery;
  * @author Teo Sarca
  * 
  */
-public class DBMoreThenOneRecordsFoundException extends DBException
+public class DBMoreThanOneRecordsFoundException extends DBException
 {
 	/**
 	 * 
@@ -46,7 +46,7 @@ public class DBMoreThenOneRecordsFoundException extends DBException
 	/**
 	 * @param msg
 	 */
-	public DBMoreThenOneRecordsFoundException(String detailMessage)
+	public DBMoreThanOneRecordsFoundException(String detailMessage)
 	{
 		super("@" + AD_Message + "@ (" + detailMessage + ")");
 	}
