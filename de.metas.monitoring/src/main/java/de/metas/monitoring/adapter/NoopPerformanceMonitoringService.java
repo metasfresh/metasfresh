@@ -1,15 +1,12 @@
-package de.metas.rest_api.utils;
+package de.metas.monitoring.adapter;
 
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.i18n.ITranslatableString;
-import lombok.NonNull;
+import java.util.concurrent.Callable;
 
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.monitoring
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,17 +24,33 @@ import lombok.NonNull;
  * #L%
  */
 
-public class InvalidEntityException extends AdempiereException
+public class NoopPerformanceMonitoringService implements PerformanceMonitoringService
 {
-	private static final long serialVersionUID = 6604967036646252654L;
 
-	public InvalidEntityException(@NonNull final ITranslatableString message)
+	@Override
+	public <V> V monitorSpan(Callable<V> callable, SpanMetadata request)
 	{
-		super(message);
+		try
+		{
+			return callable.call();
+		}
+		catch (Exception e)
+		{
+			throw PerformanceMonitoringServiceUtil.asRTE(e);
+		}
 	}
 
-	public InvalidEntityException(@NonNull final ITranslatableString message, @NonNull final AdempiereException cause)
+	@Override
+	public <V> V monitorTransaction(Callable<V> callable, TransactionMetadata request)
 	{
-		super(message, cause);
+		try
+		{
+			return callable.call();
+		}
+		catch (Exception e)
+		{
+			throw PerformanceMonitoringServiceUtil.asRTE(e);
+		}
 	}
+
 }

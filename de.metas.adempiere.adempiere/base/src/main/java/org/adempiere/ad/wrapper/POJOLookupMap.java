@@ -60,7 +60,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -590,7 +590,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		throw new DBMoreThenOneRecordsFoundException("More than one record were found for " + clazz + ", filtered by " + filter + ": " + result);
+		throw new DBMoreThanOneRecordsFoundException("More than one record was found for " + clazz + ", filtered by " + filter + ": " + result);
 	}
 
 	public <T> T getFirst(Class<T> clazz, IQueryFilter<T> filter, final Comparator<T> orderByComparator)

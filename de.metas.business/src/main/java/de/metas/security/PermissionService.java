@@ -1,4 +1,4 @@
-package de.metas.rest_api.utils;
+package de.metas.security;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
@@ -10,9 +10,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import de.metas.organization.OrgId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -57,9 +54,6 @@ public class PermissionService
 	{
 		this.userRolePermissionsKey = userRolePermissionsKey;
 		this.defaultOrgId = defaultOrgId;
-		// final Properties ctxToUse = coalesceSuppliers(() -> ctx, () -> Env.getCtx());
-		// this.userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctxToUse);
-		// this.defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctxToUse)).orElse(OrgId.ANY);
 	}
 
 	public void assertCanCreateOrUpdate(final Object record)

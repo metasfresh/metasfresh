@@ -5,9 +5,11 @@ package de.metas.invoicecandidate.api.impl;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -145,6 +147,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -152,6 +155,7 @@ import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -892,43 +896,72 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public CurrencyPrecision extractPricePrecision(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final I_M_PriceList pricelist = extractPriceListOrNull(icRecord);
+
+		if (pricelist != null && !isNull(pricelist, I_M_PriceList.COLUMNNAME_PricePrecision) && pricelist.getPricePrecision() >= 0)
+		{
+			return CurrencyPrecision.ofInt(pricelist.getPricePrecision());
+		}
+
+		// fall back: get the precision from the currency
+		final CurrencyPrecision result = getPrecisionFromCurrency(icRecord);
+		logger.debug("C_Invoice_Candidate has no M_PriceList with a PricePrecision; -> return currency's precision={}", result);
+		return result;
+	}
+
+	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+		if (icRecord.getM_PriceList_Version_ID() > 0)
+		{
+			final I_M_PriceList result = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(icRecord.getM_PriceList_Version_ID()));
+			logger.debug("C_Invoice_Candidate has M_PriceList_Version_ID={}; -> return M_PriceList={}", icRecord.getM_PriceList_Version_ID(), result);
+			return result;
+		}
+		else if (icRecord.getM_PricingSystem_ID() > 0)
+		{
+			// take the precision from the bpartner price list
+			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
+					BPartnerLocationId.ofRepoIdOrNull(
+							icRecord.getBill_BPartner_ID(),
+							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));
+
+			if (partnerLocation == null)
+			{
+				logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, but no partnerLocation; -> return M_PriceList=null", icRecord.getM_PricingSystem_ID());
+				return null;
+			}
+
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(icRecord.getDateOrdered());
+			final SOTrx soTrx = SOTrx.ofBoolean(icRecord.isSOTrx());
+
+			final I_M_PriceList result = priceListBL
+					.getCurrentPricelistOrNull(
+							PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
+							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
+							date,
+							soTrx);
+			logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
+					icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
+			return result;
+		}
+
+		logger.debug("C_Invoice_Candidate has neither M_PriceList_Version_ID nor M_PricingSystem_ID; -> return M_PriceList=null");
+		return null;
+	}
+
+	@Override
 	public CurrencyPrecision getPrecisionFromCurrency(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
 		return currencyId != null
 				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
 				: CurrencyPrecision.TWO;
-	}
-
-	@Override
-	public CurrencyPrecision getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
-	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-		// take the precision from the bpartner price list
-		final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
-				BPartnerLocationId.ofRepoIdOrNull(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
-
-		if (partnerLocation != null)
-		{
-			final ZonedDateTime date = TimeUtil.asZonedDateTime(ic.getDateOrdered());
-			final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
-
-			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
-					.getCurrentPricelistOrNull(
-							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
-							date,
-							soTrx);
-
-			if (pricelist != null)
-			{
-				return CurrencyPrecision.ofInt(pricelist.getPricePrecision());
-			}
-		}
-
-		// fall back: get the precision from the currency
-		return getPrecisionFromCurrency(ic);
 	}
 
 	@Override
@@ -1156,7 +1189,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
-			final CurrencyPrecision precision = getPrecisionFromPricelist(ic);
+			final CurrencyPrecision precision = extractPricePrecision(ic);
 			final ProductPrice priceEntered = getPriceEnteredEffective(ic);
 			final Percent discount = getDiscount(ic);
 

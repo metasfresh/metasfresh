@@ -1,8 +1,11 @@
-package de.metas.monitoring.spi;
+/**
+ * 
+ */
+package org.adempiere.exceptions;
 
 /*
  * #%L
- * de.metas.monitoring
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -23,7 +26,29 @@ package de.metas.monitoring.spi;
  */
 
 
-public interface IAlarmListener
+import org.compiere.model.IQuery;
+
+/**
+ * Exception thrown by {@link IQuery} class when there were more records and only one was expected
+ * 
+ * @author Teo Sarca
+ * 
+ */
+public class DBMoreThanOneRecordsFoundException extends DBException
 {
-	void onAlarm();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3925120991619286612L;
+
+	private static final String AD_Message = "QueryMoreThanOneRecordsFound";
+
+	/**
+	 * @param msg
+	 */
+	public DBMoreThanOneRecordsFoundException(String detailMessage)
+	{
+		super("@" + AD_Message + "@ (" + detailMessage + ")");
+	}
+
 }

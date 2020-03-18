@@ -4,7 +4,6 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -34,7 +33,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestContactUpsertItem
 {

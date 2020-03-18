@@ -164,11 +164,11 @@ public class ProductDAO implements IProductDAO
 
 		if (!isEmpty(query.getValue(), true))
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue().trim());
 		}
 		if (query.getExternalId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
 		}
 
 		final int productRepoId = queryBuilder

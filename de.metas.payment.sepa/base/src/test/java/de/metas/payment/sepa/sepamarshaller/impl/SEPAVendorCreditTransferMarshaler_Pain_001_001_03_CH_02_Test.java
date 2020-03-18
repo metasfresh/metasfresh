@@ -43,47 +43,52 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	public void createDocument_batch() throws Exception
 	{
 		final I_SEPA_Export sepaExport = createSEPAExport(
-				"org", // SEPA_CreditorIdentifier
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
 				"INGBNL2A" // bic
 		);
-		createSEPAExportLine(sepaExport, "001",// SEPA_MandateRefNo
+		createSEPAExportLine(sepaExport,
+				"001",// SEPA_MandateRefNo
 				"NL31INGB0000000044",// IBAN
 				"INGBNL2A", // BIC
 				new BigDecimal("100"), // amount
 				eur);
-		createSEPAExportLine(sepaExport, "002", // SEPA_MandateRefNo
+		createSEPAExportLine(sepaExport,
+				"002", // SEPA_MandateRefNo
 				"NL31INGB0000000044", // IBAN
 				"INGBNL2A",// BIC
 				new BigDecimal("30"), // amount
 				eur);
 
-		createSEPAExportLine(sepaExport, "002", // SEPA_MandateRefNo
+		createSEPAExportLine(sepaExport,
+				"002", // SEPA_MandateRefNo
 				"NL31INGB0000000044", // IBAN
 				"INGBNL2A",// BIC
 				new BigDecimal("40"), // amount
 				chf);
 
+		// invoke the method under test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorIdentifier());
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 
 		// if no batch, it would be 3..
 		// assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(3);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
-
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 	}
 
 	private I_SEPA_Export createSEPAExport(
+			final String SEPA_CreditorName,
 			final String SEPA_CreditorIdentifier,
 			final String bic)
 	{
 		final I_SEPA_Export sepaExport = newInstance(I_SEPA_Export.class);
 		sepaExport.setSEPA_Protocol(SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.getCode());
+		sepaExport.setSEPA_CreditorName(SEPA_CreditorName);
 		sepaExport.setSEPA_CreditorIdentifier(SEPA_CreditorIdentifier);
 		sepaExport.setSwiftCode(bic);
 		sepaExport.setIsExportBatchBookings(true);

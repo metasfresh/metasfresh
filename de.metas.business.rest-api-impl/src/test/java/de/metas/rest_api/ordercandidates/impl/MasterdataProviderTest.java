@@ -6,33 +6,54 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
+import de.metas.greeting.GreetingRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
+import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
+import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.rest_api.utils.PermissionService;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.security.PermissionService;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 
@@ -75,19 +96,19 @@ public class MasterdataProviderTest
 
 	private I_C_Country countryRecord;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterAll()
 	{
 		validateSnapshots();
 	}
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
 		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
@@ -96,6 +117,8 @@ public class MasterdataProviderTest
 
 		AdempiereTestHelper.get().init();
 
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
 		UserId loggedUserId = UserId.ofRepoId(1234567);
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 
@@ -103,8 +126,32 @@ public class MasterdataProviderTest
 		countryRecord.setCountryCode("DE");
 		saveRecord(countryRecord);
 
+		// default bpartner group
+		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
+		groupRecord.setIsDefault(true);
+		groupRecord.setName("DefaultGroup");
+		InterfaceWrapperHelper.setValue(groupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		saveRecord(groupRecord);
+
+		// bpartnerRestController
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
+				new BPartnerQueryService(),
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository(),
+				currencyRepository);
+		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
+				new BPartnerEndpointService(jsonServiceFactory),
+				jsonServiceFactory,
+				new JsonRequestConsolidateService());
+
 		masterdataProvider = MasterdataProvider.builder()
 				.permissionService(permissionService)
+				.bpartnerRestController(bpartnerRestController)
 				.build();
 
 		jsonBPartner = JsonRequestBPartner.builder()
@@ -132,7 +179,7 @@ public class MasterdataProviderTest
 	}
 
 	@Test
-	public void getCreateOrgId_createIfNotExists()
+	void getCreateOrgId_createIfNotExists()
 	{
 		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
@@ -156,4 +203,56 @@ public class MasterdataProviderTest
 		assertThat(bpartnerRecord.getValue()).isEqualTo("jsonBPartner.code");
 		assertThat(bpartnerRecord.getName()).isEqualTo("jsonBPartner.name");
 	}
+
+	@Test
+	void getCreateBPartnerInfo()
+	{
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setValue("jsonBPartner.code");
+		bpartnerRecord.setName("jsonBPartner.name");
+		bpartnerRecord.setC_BP_Group_ID(20);
+		saveRecord(bpartnerRecord);
+
+		JsonRequestBPartner jsonBPartner = JsonRequestBPartner.builder()
+				.code("jsonBPartner.code")
+				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.FAIL).ifExists(IfExists.DONT_UPDATE).build())
+				.build();
+
+		JsonRequestLocation jsonBPartnerLocation = JsonRequestLocation.builder()
+				.externalId(JsonExternalId.of("externalId"))
+				.name("Dr. Evil")
+				.address1("Teufelgasse 1234")
+				.bpartnerName("Ärztezentrum Gesundheitsquadrat")
+				.city("Düsselldorf")
+				.postal("54321")
+				.countryCode("DE")
+				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
+				.build();
+
+		final JsonRequestContact jsonContact = JsonRequestContact.builder()
+				.externalId(JsonExternalId.of("externalId"))
+				.name("Dr. Evil")
+				.firstName("Dr.")
+				.lastName("Evil")
+				.phone("")
+				.fax("")
+				.email("")
+				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
+				.build();
+
+		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
+				.bpartner(jsonBPartner)
+				.location(jsonBPartnerLocation)
+				.contact(jsonContact)
+				.build();
+
+		masterdataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
+		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
+
+		masterdataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
+		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
+	}
+
 }

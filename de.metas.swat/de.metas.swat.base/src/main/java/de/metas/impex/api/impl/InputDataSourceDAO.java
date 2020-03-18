@@ -33,6 +33,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
@@ -125,7 +126,9 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_AD_InputDataSource> queryBuilder = queryBL.createQueryBuilder(I_AD_InputDataSource.class);
+		final IQueryBuilder<I_AD_InputDataSource> queryBuilder = queryBL
+				.createQueryBuilder(I_AD_InputDataSource.class)
+				.addOnlyActiveRecordsFilter();
 
 		Check.assumeNotNull(query.getOrgId(), "Org Id is missing from InputDataSourceQuery ", query);
 
@@ -151,11 +154,18 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 			queryBuilder.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_AD_InputDataSource_ID, query.getInputDataSourceId());
 		}
 
-		final InputDataSourceId firstId = queryBuilder
-				.create()
-				.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
-
-		return Optional.ofNullable(firstId);
+		try
+		{
+			final InputDataSourceId firstId = queryBuilder
+					.create()
+					.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
+			return Optional.ofNullable(firstId);
+		}
+		catch (final DBMoreThanOneRecordsFoundException e)
+		{
+			// augment and rethrow
+			throw e.appendParametersToMessage().setParameter("inputDataSourceQuery", query);
+		}
 	}
 
 }

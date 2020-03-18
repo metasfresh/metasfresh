@@ -40,6 +40,9 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -49,6 +52,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -56,9 +61,8 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.utils.MissingResourceException;
-import de.metas.rest_api.utils.PermissionServiceFactories;
-import de.metas.rest_api.utils.PermissionServiceFactory;
+import de.metas.security.PermissionServiceFactories;
+import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -99,14 +103,21 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
+	private final BpartnerRestController bpartnerRestController;
+	private final PerformanceMonitoringService perfMonService;
+
 	private PermissionServiceFactory permissionServiceFactory;
 
 	public OrderCandidatesRestControllerImpl(
 			@NonNull final JsonConverters jsonConverters,
-			@NonNull final OLCandRepository olCandRepo)
+			@NonNull final OLCandRepository olCandRepo,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
+		this.bpartnerRestController = bpartnerRestController;
+		this.perfMonService = perfMonService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -133,19 +144,20 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
 					.permissionService(permissionServiceFactory.createPermissionService())
+					.bpartnerRestController(bpartnerRestController)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
 			// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
-			trxManager.runInNewTrx(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
+			trxManager.runInNewTrx(() -> createOrUpdateMasterdataBulk(bulkRequest, masterdataProvider));
 			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
 
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			response = trxManager.callInNewTrx(() -> creatOrderLineCandidates(bulkRequest, masterdataProvider));
+			response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -168,25 +180,48 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
-	private void createOrUpdateMasterdata(
+	private void createOrUpdateMasterdataBulk(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		bulkRequest.getRequests()
-				.stream()
-				.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CreateOrUpdateMasterDataBulk")
+				.type(Type.REST_API_PROCESSING.getCode())
+				.build();
+
+		perfMonService.monitorSpan(
+				() -> bulkRequest.getRequests()
+						.stream()
+						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
+				spanMetadata);
 	}
 
 	private void createOrUpdateMasterdata(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CreateOrUpdateMasterDataSingle")
+				.type(Type.REST_API_PROCESSING.getCode())
+				.label("externalHeaderId", json.getExternalHeaderId())
+				.label("externalLineId", json.getExternalLineId())
+				.build();
+
+		perfMonService.monitorSpan(
+				() -> createOrUpdateMasterdata0(json, masterdataProvider),
+				spanMetadata);
+	}
+
+	private void createOrUpdateMasterdata0(
+			@NonNull final JsonOLCandCreateRequest json,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
-		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
+		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), true/* billTo */, orgId);
+		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), true/* billTo */, orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), false/* billTo */, orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), false/* billTo */, orgId);
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 
@@ -256,7 +291,21 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		return ExplainedOptional.of(request);
 	}
 
-	private JsonOLCandCreateBulkResponse creatOrderLineCandidates(
+	private JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
+			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CreatOrderLineCandidatesBulk")
+				.type(Type.REST_API_PROCESSING.getCode())
+				.build();
+
+		return perfMonService.monitorSpan(
+				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
+				spanMetadata);
+	}
+
+	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{

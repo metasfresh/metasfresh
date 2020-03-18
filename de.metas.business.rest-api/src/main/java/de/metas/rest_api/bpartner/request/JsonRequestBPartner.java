@@ -83,6 +83,12 @@ public class JsonRequestBPartner
 	@JsonInclude(Include.NON_NULL)
 	String companyName;
 
+	@JsonInclude(Include.NON_NULL)
+	Boolean vendor;
+
+	@JsonInclude(Include.NON_NULL)
+	Boolean customer;
+
 	@ApiModelProperty(position = 70, required = false, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
@@ -135,6 +141,8 @@ public class JsonRequestBPartner
 			@JsonProperty("name2") @Nullable final String name2,
 			@JsonProperty("name3") @Nullable final String name3,
 			@JsonProperty("companyName") @Nullable final String companyName,
+			@JsonProperty("vendor") @Nullable final Boolean vendor,
+			@JsonProperty("customer") @Nullable final Boolean customer,
 			@JsonProperty("parentId") @Nullable final MetasfreshId parentId,
 			@JsonProperty("phone") @Nullable final String phone,
 			@JsonProperty("language") @Nullable final String language,
@@ -154,6 +162,9 @@ public class JsonRequestBPartner
 		this.name3 = name3;
 
 		this.companyName = companyName;
+
+		this.vendor = vendor;
+		this.customer = customer;
 
 		this.parentId = parentId;
 
