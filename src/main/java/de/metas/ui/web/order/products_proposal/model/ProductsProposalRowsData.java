@@ -231,6 +231,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 			patchRow(existingRow.getId(), RowUpdate.builder()
 					.price(createPrice(request.getProductId(), request.getPriceListPrice()))
 					.lastShipmentDays(request.getLastShipmentDays())
+
 					.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 					.build());
 		}
@@ -257,6 +258,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
 				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
+				.packingMaterialId(request.getPackingMaterialId())
+				.packingDescription(request.getPackingDescription())
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 				.build()
