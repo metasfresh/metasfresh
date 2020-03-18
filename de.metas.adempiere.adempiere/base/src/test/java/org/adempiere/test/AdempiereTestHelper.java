@@ -42,6 +42,7 @@ import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -221,6 +222,24 @@ public class AdempiereTestHelper
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClient.getAD_Client_ID());
 	}
 
+	public void createClientInfo()
+	{
+		final Properties ctx = Env.getCtx();
+
+		final int clientId = Env.getAD_Client_ID(ctx);
+		if (clientId <= 0)
+		{
+			return;
+		}
+
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
+		
+		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class, contextProvider);
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, clientId);
+		InterfaceWrapperHelper.save(clientInfo);
+				
+	}
+	
 	private static void createSystemRecords()
 	{
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
