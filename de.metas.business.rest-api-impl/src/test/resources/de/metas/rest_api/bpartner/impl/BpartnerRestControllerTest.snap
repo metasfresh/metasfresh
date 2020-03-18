@@ -86,8 +86,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           }
         },
         "baseLanguage": true,
-        "decimalPoint": false,
-        "leftToRight": true
+        "leftToRight": true,
+        "decimalPoint": false
       },
       "name": "bPartner.name",
       "parentId": 1,
@@ -162,7 +162,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           "userId": 100017
         },
         "name": "c1_name",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "c1_phone"
       },
       {
@@ -230,7 +230,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           "userId": 100018
         },
         "name": "c2_name",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "c2_phone"
       }
     ],
@@ -488,7 +488,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "lastName": "contactRecord.lastName",
         "name": "contactRecord.name",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "contactRecord.phone",
         "value": "contactRecord.value"
       },
@@ -557,7 +557,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           "userId": 100010
         },
         "name": "newContact-_name",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "newContact-_phone"
       }
     ],
@@ -760,7 +760,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "lastName": "contactRecord.lastName",
         "name": "jsonContact.name-UPDATED",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "contactRecord.phone",
         "value": "contactRecord.value"
       }
@@ -964,7 +964,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "lastName": "contactRecord.lastName",
         "name": "jsonContact.name-UPDATED",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "contactRecord.phone",
         "value": "contactRecord.value"
       }
@@ -1168,7 +1168,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         },
         "lastName": "contactRecord.lastName",
         "name": "contactRecord.name",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "contactRecord.phone",
         "value": "contactRecord.value"
       }
@@ -1304,7 +1304,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerConta
     "lastName": "contactRecord.lastName",
     "email": "contactRecord.email",
     "phone": "contactRecord.phone",
-    "newsletter": true,
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -1406,7 +1406,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
         "lastName": "contactRecord.lastName",
         "email": "contactRecord.email",
         "phone": "contactRecord.phone",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -1482,7 +1482,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
         "lastName": "contactRecord.lastName",
         "email": "contactRecord.email",
         "phone": "contactRecord.phone",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -1558,7 +1558,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "lastName": "contactRecord.lastName",
         "email": "contactRecord.email",
         "phone": "contactRecord.phone",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -1640,7 +1640,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "lastName": "contactRecord.lastName",
             "email": "contactRecord.email",
             "phone": "contactRecord.phone",
-            "newsletter": true,
+            "newsletter": false,
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
@@ -1712,7 +1712,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "lastName": "contactRecord.lastName_1",
             "email": "contactRecord.email_1",
             "phone": "contactRecord.phone_1",
-            "newsletter": true,
+            "newsletter": false,
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
@@ -1792,7 +1792,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "lastName": "contactRecord.lastName_2",
             "email": "contactRecord.email_2",
             "phone": "contactRecord.phone_2",
-            "newsletter": true,
+            "newsletter": false,
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
@@ -1864,7 +1864,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "lastName": "contactRecord.lastName_3",
             "email": "contactRecord.email_3",
             "phone": "contactRecord.phone_3",
-            "newsletter": true,
+            "newsletter": false,
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
@@ -1943,7 +1943,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "lastName": "contactRecord.lastName_4",
             "email": "contactRecord.email_4",
             "phone": "contactRecord.phone_4",
-            "newsletter": true,
+            "newsletter": false,
             "shipToDefault": false,
             "billToDefault": false,
             "defaultContact": false,
