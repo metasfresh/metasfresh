@@ -62,7 +62,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
       "userId": 100010
     },
     "name": "jsonContact.name",
-    "newsletter": true
+    "newsletter": false
   }
 ]
 
@@ -135,7 +135,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
     },
     "lastName": "contactRecord.lastName",
     "name": "jsonContact.name-UPDATED",
-    "newsletter": true,
+    "newsletter": false,
     "phone": "contactRecord.phone"
   }
 ]
@@ -209,7 +209,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
     },
     "lastName": "contactRecord.lastName",
     "name": "jsonContact.name-UPDATED",
-    "newsletter": true,
+    "newsletter": false,
     "phone": "contactRecord.phone"
   }
 ]
@@ -283,7 +283,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_
     },
     "lastName": "contactRecord.lastName",
     "name": "jsonContact.name-UPDATED",
-    "newsletter": true,
+    "newsletter": false,
     "phone": "contactRecord.phone"
   }
 ]
@@ -300,7 +300,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
     "lastName": "contactRecord.lastName",
     "email": "contactRecord.email",
     "phone": "contactRecord.phone",
-    "newsletter": true,
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -330,7 +330,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
     "lastName": "contactRecord.lastName",
     "email": "contactRecord.email",
     "phone": "contactRecord.phone",
-    "newsletter": true,
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -360,7 +360,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id_uns
     "lastName": "contactRecord.lastName",
     "email": "contactRecord.email",
     "phone": "contactRecord.phone",
-    "newsletter": true,
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -396,7 +396,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
     "lastName": "contactRecord.lastName",
     "email": "contactRecord.email",
     "phone": "contactRecord.phone",
-    "newsletter": true,
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -432,7 +432,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "lastName": "contactRecord.lastName",
         "email": "contactRecord.email",
         "phone": "contactRecord.phone",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -458,7 +458,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "lastName": "contactRecord.lastName_1",
         "email": "contactRecord.email_1",
         "phone": "contactRecord.phone_1",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -491,7 +491,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "lastName": "contactRecord.lastName_2",
         "email": "contactRecord.email_2",
         "phone": "contactRecord.phone_2",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -516,7 +516,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "lastName": "contactRecord.lastName_3",
         "email": "contactRecord.email_3",
         "phone": "contactRecord.phone_3",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -547,7 +547,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "lastName": "contactRecord.lastName_4",
         "email": "contactRecord.email_4",
         "phone": "contactRecord.phone_4",
-        "newsletter": true,
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,

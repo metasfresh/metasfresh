@@ -124,7 +124,7 @@ public class BPartnerContact
 
 		this.externalId = externalId;
 
-		this.newsletter = coalesce(active, false);
+		this.newsletter = coalesce(newsletter, false);
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
 		this.description = description;

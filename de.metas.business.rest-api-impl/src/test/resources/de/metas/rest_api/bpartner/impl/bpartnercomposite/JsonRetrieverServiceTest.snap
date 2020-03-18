@@ -133,7 +133,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         },
         "lastName": "contactRecord.lastName",
         "name": "contactRecord.name",
-        "newsletter": true,
+        "newsletter": false,
         "phone": "contactRecord.phone"
       }
     ],
