@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
 
@@ -32,35 +31,46 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/** I think the methods of this service could/should rather be a methods of {@link ElementValue}.
+ * The flow would be:
+ * <li>get a ElementValue-instance from the {@link ElementValueRepository}. That instance would already contain its children.
+ * <li>invoke the ElementValue-instance's methods to do stuff, e.g. add another ElementValue-child, or resequence them
+ * <li>call {@link ElementValueRepository#save(ElementValue)} so persist the stuff you did
+ *
+ */
 @Service
 public class ElementValueService
 {
-	final ElementValueRepository evRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
-	
-		
+	private final ElementValueRepository evRepo;
+
+	public ElementValueService(@NonNull final ElementValueRepository evRepo)
+	{
+		this.evRepo = evRepo;
+	}
+
 	public void updateElementValueAndResetSequences(@NonNull final ElementValueRequest request)
 	{
 		final Map<String, I_C_ElementValue> children = evRepo.retrieveChildren(request.getParentId());
-		
+
 		final I_C_ElementValue record = updateElementValueAndDoNotSave(request);
-		
+
 		// add newly updated
-		final Map<String, I_C_ElementValue>  childrenSorted = new TreeMap<String, I_C_ElementValue>(children);
+		final Map<String, I_C_ElementValue> childrenSorted = new TreeMap<String, I_C_ElementValue>(children);
 		childrenSorted.put(record.getValue(), record);
-		
+
 		// update sequences
 		updateSequencesAndSave(request.getParentId(), childrenSorted);
 	}
-	
-	
+
 	private I_C_ElementValue updateElementValueAndDoNotSave(@NonNull final ElementValueRequest request)
 	{
 		final I_C_ElementValue record = evRepo.getElementValueRecordById(request.getElementValueId());
 		record.setParent_ID(request.getParentId().getRepoId());
-		
+
 		return record;
 	}
-	
+
 	public void updateSequencesAndSave(@NonNull final ElementValueId parentId, @NonNull final Map<String, I_C_ElementValue> childrenSorted)
 	{
 		final Map<String, Integer> sequences = createSequences(childrenSorted.keySet());
@@ -70,7 +80,7 @@ public class ElementValueService
 			evRepo.save(record);
 		});
 	}
-	
+
 	private Map<String, Integer> createSequences(@NonNull final Set<String> keys)
 	{
 		final Map<String, Integer> sequenceMap = new HashMap<String, Integer>();

@@ -39,8 +39,6 @@ import lombok.NonNull;
 @Repository
 public class ElementValueRepository
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	public ElementValue getById(@NonNull final ElementValueId id)
 	{
 		final I_C_ElementValue record = getElementValueRecordById(id);
@@ -50,11 +48,13 @@ public class ElementValueRepository
 		return toElementValue(record);
 	}
 
-	public I_C_ElementValue getElementValueRecordById(@NonNull final ElementValueId id)
+	/** TODO make private and only return ElementValue. */
+	I_C_ElementValue getElementValueRecordById(@NonNull final ElementValueId id)
 	{
 		return load(id, I_C_ElementValue.class);
 	}
 
+	/** TODO make private and only return ElementValue. */
 	public I_C_Element getElementRecordById(@NonNull final ElementId id)
 	{
 		return load(id, I_C_Element.class);
@@ -65,6 +65,10 @@ public class ElementValueRepository
 		saveRecord(record);
 	}
 
+	/**
+	 * If we never need the whole tree then make this method private and add the children directly to ElementValue.
+	 * Anyways, avoid returning {@link I_C_ElementValue}
+	 */
 	public Map<String, I_C_ElementValue> retrieveChildren(@NonNull final ElementValueId parentId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_ElementValue.class)

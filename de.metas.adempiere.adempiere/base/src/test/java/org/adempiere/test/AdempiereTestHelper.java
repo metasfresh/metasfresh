@@ -202,7 +202,7 @@ public class AdempiereTestHelper
 		return ctx;
 	}
 
-	public void setupContext_AD_Client_IfNotSet()
+	public static void setupContext_AD_Client_IfNotSet()
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -222,24 +222,6 @@ public class AdempiereTestHelper
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClient.getAD_Client_ID());
 	}
 
-	public void createClientInfo()
-	{
-		final Properties ctx = Env.getCtx();
-
-		final int clientId = Env.getAD_Client_ID(ctx);
-		if (clientId <= 0)
-		{
-			return;
-		}
-
-		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
-		
-		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class, contextProvider);
-		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, clientId);
-		InterfaceWrapperHelper.save(clientInfo);
-				
-	}
-	
 	private static void createSystemRecords()
 	{
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
@@ -255,9 +237,26 @@ public class AdempiereTestHelper
 		save(noAsi);
 	}
 
+	public static void createClientInfo()
+	{
+		final Properties ctx = Env.getCtx();
+
+		final int clientId = Env.getAD_Client_ID(ctx);
+		if (clientId <= 0)
+		{
+			return;
+		}
+
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
+
+		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class, contextProvider);
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, clientId);
+		InterfaceWrapperHelper.save(clientInfo);
+	}
+
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 * 
+	 *
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
 	 */
 	public static Function<Object, String> createSnapshotJsonFunction()

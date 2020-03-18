@@ -12,12 +12,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,10 +28,10 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
@@ -44,12 +44,19 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_C_ElementValue.class)
+@Component
 public class C_ElementValue
 {
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	final TreeNodeService treeNodeService = SpringContextHolder.instance.getBean(TreeNodeService.class);
+	private final TreeNodeService treeNodeService;
+
+	public C_ElementValue(@NonNull final TreeNodeService treeNodeService)
+	{
+		this.treeNodeService=treeNodeService;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_ElementValue elementValue)
@@ -104,8 +111,8 @@ public class C_ElementValue
 		return accountElement != null
 				&& ChartOfAccountsId.equals(accountElement.getChartOfAccountsId(), chartOfAccountsId);
 	}
-	
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, 
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
 	public void updateTreeNode(final I_C_ElementValue elementValueRecord)
 	{

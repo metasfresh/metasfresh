@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_TreeNode;
 import org.compiere.model.I_C_Element;
 import org.springframework.stereotype.Repository;
@@ -40,7 +39,12 @@ import lombok.NonNull;
 @Repository
 public class TreeNodeRepository
 {
-	final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+	private final ElementValueRepository elementValueRepo;
+
+	public TreeNodeRepository(@NonNull final ElementValueRepository elementValueRepo)
+	{
+		this.elementValueRepo = elementValueRepo;
+	}
 
 	@NonNull
 	private static TreeNode toTreeNode(@NonNull final I_AD_TreeNode record)
@@ -69,7 +73,6 @@ public class TreeNodeRepository
 
 	public void save(@NonNull final TreeNode treeNode)
 	{
-
 		I_AD_TreeNode treeNodeRecord = retrieveTreeNodeRecord(treeNode);
 
 		if (treeNodeRecord == null)

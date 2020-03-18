@@ -1,12 +1,12 @@
 package de.metas.treenode;
 
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
 
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueId;
 import de.metas.elementvalue.ElementValueRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,10 +32,18 @@ import de.metas.elementvalue.ElementValueRepository;
 @Service
 public class TreeNodeService
 {
-	final ElementValueRepository elementValueRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
-	final TreeNodeRepository treeNodeRepo = SpringContextHolder.instance.getBean(TreeNodeRepository.class);
+	private final ElementValueRepository elementValueRepo;
+	private final TreeNodeRepository treeNodeRepo;
 
-	public void updateTreeNode(final I_C_ElementValue elementValueRecord)
+	public TreeNodeService(
+			@NonNull final ElementValueRepository elementValueRepo,
+			@NonNull final TreeNodeRepository treeNodeRepo)
+	{
+		this.elementValueRepo = elementValueRepo;
+		this.treeNodeRepo = treeNodeRepo;
+	}
+
+	public void updateTreeNode(@NonNull final I_C_ElementValue elementValueRecord)
 	{
 		final ElementValueId evId = ElementValueId.ofRepoIdOrNull(elementValueRecord.getC_ElementValue_ID());
 		final ElementValue elementValue = elementValueRepo.getById(evId);

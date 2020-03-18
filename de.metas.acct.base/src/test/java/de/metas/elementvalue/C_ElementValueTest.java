@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.elementvalue;
 
@@ -35,57 +35,57 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public class C_ElementValueTest
 {
 
-	ElementValueService evService;
+	private ElementValueService elementValueService;
 
-	I_C_ElementValue parent;
-	I_C_ElementValue ev1;
-	I_C_ElementValue ev2;
-	I_C_ElementValue ev3;
-	I_AD_TreeNode node1;
-	I_AD_TreeNode node2;
-	I_AD_TreeNode node3;
+	private I_C_ElementValue parent;
+	private I_C_ElementValue ev1;
+	private I_C_ElementValue ev2;
+	private I_C_ElementValue ev3;
+	private I_AD_TreeNode node1;
+	private I_AD_TreeNode node2;
+	private I_AD_TreeNode node3;
 
 	@BeforeEach
-	public void init()
+	void init()
 	{
 		AdempiereTestHelper.get().init();
-		AdempiereTestHelper.get().setupContext_AD_Client_IfNotSet();
-		AdempiereTestHelper.get().createClientInfo();
+		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
+		AdempiereTestHelper.createClientInfo();
+
+		final ElementValueRepository elementValueRepository = new ElementValueRepository();
+		final TreeNodeRepository treeNodeRepository = new TreeNodeRepository(elementValueRepository);
+
+		final TreeNodeService treeNodeService = new TreeNodeService(elementValueRepository, treeNodeRepository);
+		elementValueService = new ElementValueService(elementValueRepository);
 
 		// register services
-		SpringContextHolder.registerJUnitBean(new ElementValueRepository());
-		SpringContextHolder.registerJUnitBean(new ElementValueService());
-		SpringContextHolder.registerJUnitBean(new TreeNodeRepository());
-		SpringContextHolder.registerJUnitBean(new TreeNodeService());
+		SpringContextHolder.registerJUnitBean(elementValueRepository);
+		SpringContextHolder.registerJUnitBean(elementValueService);
+		SpringContextHolder.registerJUnitBean(treeNodeRepository);
+		SpringContextHolder.registerJUnitBean(treeNodeService);
 
-		evService = SpringContextHolder.instance.getBean(ElementValueService.class);
-
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue());
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(treeNodeService));
 
 		prepareData();
 	}
 
 	@Test
-	public void test_PushingParentAndSeqNoToTreeNode()
+	void test_PushingParentAndSeqNoToTreeNode()
 	{
 
 		final ElementValueRequest request = ElementValueRequest.builder()
@@ -93,7 +93,7 @@ public class C_ElementValueTest
 				.parentId(ElementValueId.ofRepoId(parent.getC_ElementValue_ID()))
 				.build();
 
-		evService.updateElementValueAndResetSequences(request);
+		elementValueService.updateElementValueAndResetSequences(request);
 
 		InterfaceWrapperHelper.refresh(ev3);
 		InterfaceWrapperHelper.refresh(node3);
@@ -106,7 +106,7 @@ public class C_ElementValueTest
 	}
 
 	@Test
-	public void test_ResetSeqNo()
+	void test_ResetSeqNo()
 	{
 
 		final ElementValueRequest request = ElementValueRequest.builder()
@@ -114,7 +114,7 @@ public class C_ElementValueTest
 				.parentId(ElementValueId.ofRepoId(parent.getC_ElementValue_ID()))
 				.build();
 
-		evService.updateElementValueAndResetSequences(request);
+		elementValueService.updateElementValueAndResetSequences(request);
 
 		InterfaceWrapperHelper.refresh(node1);
 		InterfaceWrapperHelper.refresh(node2);
@@ -123,7 +123,7 @@ public class C_ElementValueTest
 		assertEquals(1, node1.getSeqNo());
 		assertEquals(3, node2.getSeqNo());
 		assertEquals(2, node3.getSeqNo());
-		
+
 	}
 
 	private void prepareData()
