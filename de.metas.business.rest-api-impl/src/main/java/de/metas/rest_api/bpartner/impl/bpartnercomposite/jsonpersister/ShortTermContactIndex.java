@@ -9,8 +9,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContact.BPartnerContactBuilder;
+import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.InvalidIdentifierException;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -43,6 +43,7 @@ public class ShortTermContactIndex
 {
 	Map<BPartnerContactId, BPartnerContact> id2Contact;
 	Map<ExternalId, BPartnerContact> externalId2Contact;
+	Map<String, BPartnerContact> value2Contact;
 
 	BPartnerId bpartnerId;
 	BPartnerComposite bpartnerComposite;
@@ -54,11 +55,13 @@ public class ShortTermContactIndex
 
 		this.id2Contact = new HashMap<>();
 		this.externalId2Contact = new HashMap<>();
+		this.value2Contact = new HashMap<>();
 
 		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
 		{
 			this.id2Contact.put(bpartnerContact.getId(), bpartnerContact);
 			this.externalId2Contact.put(bpartnerContact.getExternalId(), bpartnerContact);
+			this.value2Contact.put(bpartnerContact.getValue(), bpartnerContact);
 		}
 	}
 
@@ -78,6 +81,8 @@ public class ShortTermContactIndex
 				}
 			case EXTERNAL_ID:
 				return externalId2Contact.get(contactIdentifier.asExternalId());
+			case VALUE:
+				return value2Contact.get(contactIdentifier.asValue());
 			default:
 				throw new InvalidIdentifierException(contactIdentifier);
 		}
@@ -105,6 +110,10 @@ public class ShortTermContactIndex
 			case EXTERNAL_ID:
 				contact = contactBuilder.externalId(contactIdentifier.asExternalId()).build();
 				externalId2Contact.put(contactIdentifier.asExternalId(), contact);
+				break;
+			case VALUE:
+				contact = contactBuilder.value(contactIdentifier.asValue()).build();
+				value2Contact.put(contactIdentifier.asValue(), contact);
 				break;
 			default:
 				throw new InvalidIdentifierException(contactIdentifier);

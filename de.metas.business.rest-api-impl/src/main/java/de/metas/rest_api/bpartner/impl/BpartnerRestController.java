@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -32,14 +31,14 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert.JsonResponseBPartnerCompositeUpsertBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
-import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
@@ -85,12 +84,17 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
 
+	private final JsonRequestConsolidateService jsonRequestConsolidateService;
+
+
 	public BpartnerRestController(
 			@NonNull final BPartnerEndpointService bpartnerEndpointService,
-			@NonNull final JsonServiceFactory jsonServiceFactory)
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService)
 	{
-		this.jsonServiceFactory = jsonServiceFactory;
 		this.bpartnerEndpointService = bpartnerEndpointService;
+		this.jsonServiceFactory = jsonServiceFactory;
+		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 	}
 
 	//
@@ -203,29 +207,24 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@PutMapping
 	@Override
-	public ResponseEntity<JsonResponseUpsert> createOrUpdateBPartner(
+	public ResponseEntity<JsonResponseBPartnerCompositeUpsert> createOrUpdateBPartner(
 			@RequestBody @NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
 		final SyncAdvise defaultSyncAdvise = bpartnerUpsertRequest.getSyncAdvise();
 
-		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
+		final JsonResponseBPartnerCompositeUpsertBuilder response = JsonResponseBPartnerCompositeUpsert.builder();
 
 		for (final JsonRequestBPartnerUpsertItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
-			final BPartnerComposite syncToMetasfresh = persister.persist(
-					IdentifierString.of(requestItem.getBpartnerIdentifier()),
-					requestItem.getBpartnerComposite(),
+			final JsonRequestBPartnerUpsertItem consolidatedRequestItem = jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
+
+			final JsonResponseBPartnerCompositeUpsertItem persist = persister.persist(
+					IdentifierString.of(consolidatedRequestItem.getBpartnerIdentifier()),
+					consolidatedRequestItem.getBpartnerComposite(),
 					defaultSyncAdvise);
-
-			final MetasfreshId metasfreshId = MetasfreshId.of(syncToMetasfresh.getBpartner().getId());
-
-			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem.builder()
-					.identifier(requestItem.getBpartnerIdentifier())
-					.metasfreshId(metasfreshId)
-					.build();
-			response.responseItem(responseItem);
+			response.responseItem(persist);
 		}
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
@@ -241,7 +240,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@PutMapping("{bpartnerIdentifier}/location")
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
-
 			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
@@ -251,9 +249,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
+
+		final JsonRequestLocationUpsert consolicatedLocation = jsonRequestConsolidateService.consolidateWithIdentifier(jsonLocation);
 		final Optional<JsonResponseUpsert> jsonLocationId = persister.persistForBPartner(
 				bpartnerIdentifier,
-				jsonLocation,
+				consolicatedLocation,
 				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 		return createdOrNotFound(jsonLocationId);
@@ -279,14 +279,17 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
+
+		final JsonRequestContactUpsert consolicatedContact = jsonRequestConsolidateService.consolidateWithIdentifier(jsonContactUpsert);
+
 		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
 				bpartnerIdentifier,
-				jsonContactUpsert,
+				consolicatedContact,
 				SyncAdvise.CREATE_OR_MERGE);
 
 		return createdOrNotFound(response);
 	}
-	
+
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
@@ -314,7 +317,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		return createdOrNotFound(response);
 	}
-
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)
 	{

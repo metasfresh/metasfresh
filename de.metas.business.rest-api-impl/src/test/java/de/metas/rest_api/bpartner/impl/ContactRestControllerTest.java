@@ -53,6 +53,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
@@ -116,6 +117,7 @@ class ContactRestControllerTest
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(recordChangeLogRepository);
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
@@ -123,7 +125,10 @@ class ContactRestControllerTest
 				new RecordChangeLogRepository(),
 				new CurrencyRepository());
 
-		contactRestController = new ContactRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
+		contactRestController = new ContactRestController(
+				new BPartnerEndpointService(jsonServiceFactory),
+				jsonServiceFactory,
+				new JsonRequestConsolidateService());
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
@@ -295,6 +300,7 @@ class ContactRestControllerTest
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 		assertThat(resultBody.getResponseItems().get(0).getIdentifier()).isEqualTo(contactIdentifier);
+		assertThat(resultBody.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
 
 		final MetasfreshId insertedMetasfreshId = resultBody.getResponseItems().get(0).getMetasfreshId();
 

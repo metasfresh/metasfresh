@@ -85,9 +85,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "leftToRight": true,
         "baseLanguage": true,
-        "decimalPoint": false
+        "decimalPoint": false,
+        "leftToRight": true
       },
       "name": "bPartner.name",
       "parentId": 1,
@@ -489,7 +489,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "lastName": "contactRecord.lastName",
         "name": "contactRecord.name",
         "newsletter": true,
-        "phone": "contactRecord.phone"
+        "phone": "contactRecord.phone",
+        "value": "contactRecord.value"
       },
       {
         "active": true,
@@ -760,7 +761,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "lastName": "contactRecord.lastName",
         "name": "jsonContact.name-UPDATED",
         "newsletter": true,
-        "phone": "contactRecord.phone"
+        "phone": "contactRecord.phone",
+        "value": "contactRecord.value"
       }
     ],
     "locations": [
@@ -963,7 +965,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "lastName": "contactRecord.lastName",
         "name": "jsonContact.name-UPDATED",
         "newsletter": true,
-        "phone": "contactRecord.phone"
+        "phone": "contactRecord.phone",
+        "value": "contactRecord.value"
       }
     ],
     "locations": [
@@ -1166,7 +1169,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "lastName": "contactRecord.lastName",
         "name": "contactRecord.name",
         "newsletter": true,
-        "phone": "contactRecord.phone"
+        "phone": "contactRecord.phone",
+        "value": "contactRecord.value"
       }
     ],
     "locations": [
