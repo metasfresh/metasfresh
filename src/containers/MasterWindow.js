@@ -66,10 +66,10 @@ class MasterWindowContainer extends Component {
     if (stale) {
       // some tabs data got updated/row was added
       if (includedTabsInfo) {
-        const rows = this.getTabRows(includedTabsInfo);
+        const rowsRequests = this.getTabRowsRequests(includedTabsInfo);
 
         // wait for all the rows requests to finish
-        return await rows.then((res) => {
+        return await Promise.all(rowsRequests).then((res) => {
           this.mergeDataIntoIncludedTabs(res);
         });
       } else {
@@ -84,7 +84,8 @@ class MasterWindowContainer extends Component {
   }
 
   fireFullUpdateData() {
-    const { params } = this.props;
+    const { params, fireUpdateData } = this.props;
+
     fireUpdateData(
       'window',
       params.windowType,
@@ -96,7 +97,7 @@ class MasterWindowContainer extends Component {
     );
   }
 
-  getTabRows(includedTabsInfo) {
+  getTabRowsRequests(includedTabsInfo) {
     const requests = [];
 
     forEach(includedTabsInfo, (tab, tabId) => {
@@ -108,7 +109,7 @@ class MasterWindowContainer extends Component {
       }
     });
 
-    return Promise.all(requests);
+    return requests;
   }
 
   getTabRow(tabId, rowId) {
@@ -128,6 +129,7 @@ class MasterWindowContainer extends Component {
   }
 
   mergeDataIntoIncludedTabs(responses) {
+    const { updateTabRowsData } = this.props;
     const changedTabs = {};
 
     responses.forEach((response) => {
@@ -167,14 +169,13 @@ class MasterWindowContainer extends Component {
       }
     });
 
-    // FIXME i think we can remove the code below?!
     forEach(changedTabs, (rowsChanged, tabId) => {
       updateTabRowsData('master', tabId, rowsChanged);
     });
   }
 
   refreshActiveTab(tabIds) {
-    const { master, params } = this.props;
+    const { master, params, addRowData } = this.props;
 
     tabIds.forEach((tabId) => {
       const tabLayout =
