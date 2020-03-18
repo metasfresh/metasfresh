@@ -43,12 +43,12 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;

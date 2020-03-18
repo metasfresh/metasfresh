@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
@@ -309,5 +310,12 @@ public class BankStatementBL implements IBankStatementBL
 				.add(line.getInterestAmt())
 		// .add(line.getChargeAmt())
 		;
+	}
+
+	@Override
+	public String getDocumentNo(@NonNull final BankStatementId bankStatementId)
+	{
+		final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(bankStatementId);
+		return bankStatement.getDocumentNo();
 	}
 }

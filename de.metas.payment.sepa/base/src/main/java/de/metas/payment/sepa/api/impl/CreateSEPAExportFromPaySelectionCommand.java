@@ -9,8 +9,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.payment.api.IPaymentDAO;

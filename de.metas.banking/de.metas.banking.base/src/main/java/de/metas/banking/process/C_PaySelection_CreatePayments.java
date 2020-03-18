@@ -1,8 +1,8 @@
 package de.metas.banking.process;
 
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.process.IProcessPrecondition;

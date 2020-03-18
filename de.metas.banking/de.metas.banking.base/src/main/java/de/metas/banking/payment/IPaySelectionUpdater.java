@@ -25,8 +25,8 @@ package de.metas.banking.payment;
 import java.sql.Timestamp;
 
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.payment.PaymentRule;
 
 /**

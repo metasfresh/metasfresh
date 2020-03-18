@@ -6,6 +6,8 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+import de.metas.banking.model.BankStatementId;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -86,4 +88,6 @@ public interface IBankStatementBL extends ISingletonService
 	boolean isReconciled(I_C_BankStatementLine line);
 
 	BigDecimal computeStmtAmtExcludingChargeAmt(I_C_BankStatementLine line);
+
+	String getDocumentNo(BankStatementId bankStatementId);
 }

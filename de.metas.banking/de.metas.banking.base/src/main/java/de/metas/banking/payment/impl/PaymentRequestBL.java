@@ -28,8 +28,8 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;

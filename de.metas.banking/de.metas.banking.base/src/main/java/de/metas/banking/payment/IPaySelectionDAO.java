@@ -7,10 +7,10 @@ import java.util.Set;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.invoice.InvoiceId;
@@ -36,9 +36,9 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	boolean isPaySelectionLineMatchInvoice(I_C_PaySelection paySelection, I_C_Invoice invoice);
 
-	List<de.metas.banking.model.I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine);
 
-	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef);
+	I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef);
 
 	/**
 	 * Returns the given invoice's <code>C_PaySelectionLine</code>s
@@ -53,7 +53,7 @@ public interface IPaySelectionDAO extends ISingletonService
 	 */
 	I_C_PaySelection retrievePaySelection(I_C_Payment payment);
 
-	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, PaymentId paymentId);
+	I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, PaymentId paymentId);
 
 	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
 }

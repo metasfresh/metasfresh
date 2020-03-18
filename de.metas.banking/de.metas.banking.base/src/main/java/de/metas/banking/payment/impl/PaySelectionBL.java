@@ -30,12 +30,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
 
@@ -43,10 +46,11 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -83,6 +87,8 @@ public class PaySelectionBL implements IPaySelectionBL
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
+
 		I_C_BankStatementLine bankStatementLine = null;
 		int nextReferenceLineNo = 10;
 
@@ -105,9 +111,9 @@ public class PaySelectionBL implements IPaySelectionBL
 			// Create the bank statement line (if not already created)
 			if (bankStatementLine == null)
 			{
-				bankStatementLine = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class, paySelection);
+				bankStatementLine = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
 				bankStatementLine.setAD_Org_ID(paySelection.getAD_Org_ID());
-				bankStatementLine.setC_BankStatement(bankStatement);
+				bankStatementLine.setC_BankStatement_ID(bankStatementId.getRepoId());
 				bankStatementLine.setIsMultiplePaymentOrInvoice(true); // we have a reference line for each invoice
 				bankStatementLine.setIsMultiplePayment(true); // each invoice shall have it's own payment
 				bankStatementLine.setC_Currency_ID(bankStatement.getC_BP_BankAccount().getC_Currency_ID());
@@ -174,7 +180,11 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			//
 			// Update pay selection line => mark it as reconciled
-			linkBankStatementLine(psl, bankStatementLine, bankStatementLineRef);
+			linkBankStatementLine(
+					psl,
+					bankStatementId,
+					BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID()),
+					bankStatementLineRef.getC_BankStatementLine_Ref_ID());
 		}
 
 		//
@@ -186,22 +196,21 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	}
 
-	private boolean isInBankStatement(final I_C_PaySelectionLine psl)
+	private static boolean isInBankStatement(@NonNull final I_C_PaySelectionLine psl)
 	{
-		return psl.getC_BankStatementLine_ID() > 0 || psl.getC_BankStatementLine_Ref_ID() > 0;
+		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null
+				&& BankStatementLineId.ofRepoIdOrNull(psl.getC_BankStatementLine_ID()) != null;
 	}
 
 	@Override
 	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
 	{
-		final I_C_PaySelectionLine pslExt = InterfaceWrapperHelper.create(psl, I_C_PaySelectionLine.class);
-
-		if (Services.get(IPaymentRequestBL.class).isUpdatedFromPaymentRequest(pslExt))
+		if (Services.get(IPaymentRequestBL.class).isUpdatedFromPaymentRequest(psl))
 		{
 			return;
 		}
 
-		final I_C_Invoice invoice = pslExt.getC_Invoice();
+		final I_C_Invoice invoice = psl.getC_Invoice();
 
 		if (invoice == null)
 		{
@@ -210,14 +219,14 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(pslExt);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(psl);
 
 		final int partnerID = invoice.getC_BPartner_ID();
-		pslExt.setC_BPartner_ID(partnerID);
+		psl.setC_BPartner_ID(partnerID);
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
-		final int currencyID = pslExt.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
+		final int currencyID = psl.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
 
 		final boolean isSalesInvoice = invoice.isSOTrx();
 
@@ -281,11 +290,11 @@ public class PaySelectionBL implements IPaySelectionBL
 			}
 			if (primaryAcct != 0)
 			{
-				pslExt.setC_BP_BankAccount_ID(primaryAcct);
+				psl.setC_BP_BankAccount_ID(primaryAcct);
 			}
 			else if (secondaryAcct != 0)
 			{
-				pslExt.setC_BP_BankAccount_ID(secondaryAcct);
+				psl.setC_BP_BankAccount_ID(secondaryAcct);
 			}
 		}
 	}
@@ -367,20 +376,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void linkBankStatementLine(
-			final I_C_PaySelectionLine psl,
-			final org.compiere.model.I_C_BankStatementLine bankStatementLine,
-			final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		Check.assumeNotNull(bankStatementLine, "bankStatementLine not null");
-		Check.assume(bankStatementLine.getC_BankStatementLine_ID() > 0, "bankStatementLine is saved: {}", bankStatementLine);
-
-		psl.setC_BankStatementLine(bankStatementLine);
-		psl.setC_BankStatementLine_Ref(bankStatementLineRef);
-		InterfaceWrapperHelper.save(psl);
-	}
-
-	@Override
 	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine bankStatementLine)
 	{
 		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(bankStatementLine))
@@ -399,10 +394,24 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 	}
 
+	@Override
+	public void linkBankStatementLine(
+			@NonNull final I_C_PaySelectionLine psl,
+			@NonNull final BankStatementId bankStatementId,
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@Nullable final int bankStatementLineRefRepoId)
+	{
+		psl.setC_BankStatement_ID(bankStatementId.getRepoId());
+		psl.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
+		psl.setC_BankStatementLine_Ref_ID(bankStatementLineRefRepoId);
+		InterfaceWrapperHelper.save(psl);
+	}
+
 	private void unlinkBankStatementFromLine(final I_C_PaySelectionLine psl)
 	{
-		psl.setC_BankStatementLine(null);
-		psl.setC_BankStatementLine_Ref(null);
+		psl.setC_BankStatement_ID(-1);
+		psl.setC_BankStatementLine_ID(-1);
+		psl.setC_BankStatementLine_Ref_ID(-1);
 		InterfaceWrapperHelper.save(psl);
 	}
 
@@ -462,7 +471,16 @@ public class PaySelectionBL implements IPaySelectionBL
 		{
 			if (isInBankStatement(paySelectionLine))
 			{
-				throw new AdempiereException(MSG_CannotReactivate_PaySelectionLineInBankStatement_2P, new Object[] { paySelectionLine.getLine(), paySelectionLine.getC_BankStatementLine().getC_BankStatement().getDocumentNo() });
+				final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+
+				final BankStatementId bankStatementId = BankStatementId.ofRepoId(paySelectionLine.getC_BankStatement_ID());
+				final String bankStatementDocumentNo = bankStatementBL.getDocumentNo(bankStatementId);
+				throw new AdempiereException(
+						MSG_CannotReactivate_PaySelectionLineInBankStatement_2P,
+						new Object[] {
+								paySelectionLine.getLine(),
+								bankStatementDocumentNo
+						});
 			}
 		}
 

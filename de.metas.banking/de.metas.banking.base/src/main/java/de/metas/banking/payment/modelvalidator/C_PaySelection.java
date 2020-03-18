@@ -33,9 +33,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankingBL;

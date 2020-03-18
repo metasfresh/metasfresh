@@ -6,12 +6,15 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPaySelectionBL extends ISingletonService
 {
@@ -32,7 +35,7 @@ public interface IPaySelectionBL extends ISingletonService
 
 	/**
 	 * Create payments for each line of given pay selection. The payments are created only if they where not created before.<br>
-	 * For more informations, see {@link #createPaymentIfNeeded(de.metas.banking.model.I_C_PaySelectionLine)}.
+	 * For more informations, see {@link #createPaymentIfNeeded(I_C_PaySelectionLine)}.
 	 *
 	 * @param paySelection
 	 */
@@ -50,19 +53,12 @@ public interface IPaySelectionBL extends ISingletonService
 	 * @param line
 	 * @return newly created payment or <code>null</code> if no payment was generated.
 	 */
-	I_C_Payment createPaymentIfNeeded(de.metas.banking.model.I_C_PaySelectionLine line);
+	I_C_Payment createPaymentIfNeeded(I_C_PaySelectionLine line);
 
 	/**
 	 * Link given {@link I_C_BankStatementLine_Ref}/{@link I_C_BankStatementLine} to pay selection line
-	 *
-	 * @param psl
-	 * @param bankStatementLine
-	 * @param bankStatementLineRef
 	 */
-	void linkBankStatementLine(
-			final de.metas.banking.model.I_C_PaySelectionLine psl,
-			final org.compiere.model.I_C_BankStatementLine bankStatementLine,
-			final de.metas.banking.model.I_C_BankStatementLine_Ref bankStatementLineRef);
+	void linkBankStatementLine(@NonNull I_C_PaySelectionLine psl, @NonNull BankStatementId bankStatementId, @NonNull BankStatementLineId bankStatementLineId, int bankStatementLineRefRepoId);
 
 	/**
 	 * Unlink any pay selection line which points to given bank statement line or to one of it's references.
@@ -81,7 +77,7 @@ public interface IPaySelectionBL extends ISingletonService
 	/**
 	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code>, <code>C_BP_BankAccount_ID</code> and <code>Reference</code> from the <code>C_Invoice</code> which it references.
 	 * <p>
-	 * If the psl doesn't reference an invoice or if {@link IPaymentRequestBL#isUpdatedFromPaymentRequest(de.metas.adempiere.model.I_C_PaySelectionLine)} returns <code>true</code>,
+	 * If the psl doesn't reference an invoice or if {@link IPaymentRequestBL#isUpdatedFromPaymentRequest(I_C_PaySelectionLine)} returns <code>true</code>,
 	 * then the method does nothing.
 	 *
 	 * @param psl

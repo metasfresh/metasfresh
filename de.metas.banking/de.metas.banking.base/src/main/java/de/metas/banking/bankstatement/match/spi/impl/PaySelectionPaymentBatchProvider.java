@@ -4,14 +4,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.PaymentBatch;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.IMsgBL;
@@ -31,11 +33,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -71,20 +73,23 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 		{
 			return;
 		}
-		
+
 		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLineRef.getC_Payment_ID());
-		if(paymentId == null)
+		if (paymentId == null)
 		{
 			return;
 		}
-		
+
 		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLineForPayment(paySelection, paymentId);
-		if(paySelectionLine == null)
+		if (paySelectionLine == null)
 		{
 			return;
 		}
-		
+
 		final I_C_BankStatementLine bankStatementLine = bankStatementLineRef.getC_BankStatementLine();
-		Services.get(IPaySelectionBL.class).linkBankStatementLine(paySelectionLine, bankStatementLine, bankStatementLineRef);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID());
+		final int bankStatementLineRefRepoId = bankStatementLineRef.getC_BankStatementLine_Ref_ID();
+		Services.get(IPaySelectionBL.class).linkBankStatementLine(paySelectionLine, bankStatementId, bankStatementLineId, bankStatementLineRefRepoId);
 	}
 }

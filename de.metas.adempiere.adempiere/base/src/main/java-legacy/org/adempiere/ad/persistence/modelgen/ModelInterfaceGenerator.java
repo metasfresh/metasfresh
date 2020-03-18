@@ -153,6 +153,10 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_Activity")
 			.add("org.compiere.model.I_C_Charge")
 			//
+			.add("org.compiere.model.I_C_BankStatement")
+			.add("org.compiere.model.I_C_BankStatementLine")
+			.add("org.compiere.model.I_C_BankStatementLine_Ref")
+			//
 			.build();
 
 	public ModelInterfaceGenerator(final TableInfo tableInfo, String directory, String packageName)

@@ -12,9 +12,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -102,25 +102,25 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public List<de.metas.banking.model.I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine)
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class, bankStatementLine)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.banking.model.I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
 				.create()
-				.list(de.metas.banking.model.I_C_PaySelectionLine.class);
+				.list(I_C_PaySelectionLine.class);
 	}
 
 	@Override
-	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef)
+	public I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_PaySelectionLine.class, bankStatementLineRef)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.banking.model.I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineRef.getC_BankStatementLine_Ref_ID())
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineRef.getC_BankStatementLine_Ref_ID())
 				.create()
-				.firstOnly(de.metas.banking.model.I_C_PaySelectionLine.class);
+				.firstOnly(I_C_PaySelectionLine.class);
 
 	}
 
@@ -180,14 +180,14 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(
+	public I_C_PaySelectionLine retrievePaySelectionLineForPayment(
 			@NonNull final I_C_PaySelection paySelection,
 			@NonNull final PaymentId paymentId)
 	{
 		return queryPaySelectionLines(paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
-				.firstOnly(de.metas.banking.model.I_C_PaySelectionLine.class);
+				.firstOnly(I_C_PaySelectionLine.class);
 	}
 
 	@Override
