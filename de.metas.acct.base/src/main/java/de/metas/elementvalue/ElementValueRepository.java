@@ -3,12 +3,16 @@ package de.metas.elementvalue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Map;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Repository;
 
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -35,6 +39,8 @@ import lombok.NonNull;
 @Repository
 public class ElementValueRepository
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public ElementValue getById(@NonNull final ElementValueId id)
 	{
 		final I_C_ElementValue record = getElementValueRecordById(id);
@@ -43,12 +49,12 @@ public class ElementValueRepository
 
 		return toElementValue(record);
 	}
-	
+
 	public I_C_ElementValue getElementValueRecordById(@NonNull final ElementValueId id)
 	{
 		return load(id, I_C_ElementValue.class);
 	}
-	
+
 	public I_C_Element getElementRecordById(@NonNull final ElementId id)
 	{
 		return load(id, I_C_Element.class);
@@ -71,7 +77,15 @@ public class ElementValueRepository
 	public ElementValue save(@NonNull final I_C_ElementValue record)
 	{
 		saveRecord(record);
-		
+
 		return toElementValue(record);
 	}
+
+	public Map<String, I_C_ElementValue> retrieveChildren(@NonNull final ElementValueId parentId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_ElementValue.class)
+				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_Parent_ID, parentId)
+				.create()
+				.map(I_C_ElementValue.class, I_C_ElementValue::getValue);
+		}
 }

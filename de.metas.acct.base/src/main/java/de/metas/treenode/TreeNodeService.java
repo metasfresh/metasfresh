@@ -1,18 +1,12 @@
 package de.metas.treenode;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_TreeNode;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
 
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueId;
 import de.metas.elementvalue.ElementValueRepository;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -52,19 +46,4 @@ public class TreeNodeService
 		// save entire info from treenode to treenode record
 		treeNodeRepo.save(treeNode);
 	}
-	
-	public void shiftSeqNo(@NonNull final TreeNode treeNode)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_AD_TreeNode.class)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, treeNode.getTreeId())
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Parent_ID, treeNode.getParentId())
-				.addNotEqualsFilter(I_AD_TreeNode.COLUMNNAME_Node_ID, treeNode.getNodeId())
-				.addCompareFilter(I_AD_TreeNode.COLUMNNAME_SeqNo, Operator.GREATER_OR_EQUAL, treeNode.getSeqNo())
-				.create()
-				.update(tn -> {
-					tn.setSeqNo(tn.getSeqNo() + 1);
-					return IQueryUpdater.MODEL_UPDATED;
-				});
-	}
-
 }

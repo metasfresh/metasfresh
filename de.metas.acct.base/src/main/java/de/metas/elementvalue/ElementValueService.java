@@ -1,5 +1,10 @@
 package de.metas.elementvalue;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
@@ -31,12 +36,53 @@ import lombok.NonNull;
 public class ElementValueService
 {
 	final ElementValueRepository evRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+	
 		
-	public ElementValue updateElementValue(@NonNull final ElementValueRequest request)
+	public void updateElementValueAndResetSequences(@NonNull final ElementValueRequest request)
+	{
+		final Map<String, I_C_ElementValue> children = evRepo.retrieveChildren(request.getParentId());
+		
+		final I_C_ElementValue record = updateElementValue(request);
+		
+		// add newly updated
+		final Map<String, I_C_ElementValue>  childrenSorted = new TreeMap<String, I_C_ElementValue>(children);
+		childrenSorted.put(record.getValue(), record);
+		
+		// update sequences
+		updateSequences(request.getParentId(), childrenSorted);
+	}
+	
+	
+	private I_C_ElementValue updateElementValue(@NonNull final ElementValueRequest request)
 	{
 		final I_C_ElementValue record = evRepo.getElementValueRecordById(request.getElementValueId());
 		record.setParent_ID(request.getParentId().getRepoId());
-		record.setSeqNo(request.getSeqNo());
-		return evRepo.save(record);
+		evRepo.save(record);
+		
+		return record;
+	}
+	
+	public void updateSequences(@NonNull final ElementValueId parentId, @NonNull final Map<String, I_C_ElementValue> childrenSorted)
+	{
+		final Map<String, Integer> sequences = createSequences(childrenSorted.keySet());
+
+		childrenSorted.forEach((value, record) -> {
+			record.setSeqNo(sequences.get(value));
+			evRepo.save(record);
+		});
+	}
+	
+	private Map<String, Integer> createSequences(@NonNull final Set<String> keys)
+	{
+		final Map<String, Integer> sequenceMap = new HashMap<String, Integer>();
+
+		int seqNo = 1;
+		for (String key : keys)
+		{
+			sequenceMap.put(key, seqNo);
+			seqNo++;
+		}
+
+		return sequenceMap;
 	}
 }

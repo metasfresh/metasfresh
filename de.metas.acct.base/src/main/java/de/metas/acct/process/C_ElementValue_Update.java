@@ -41,9 +41,6 @@ public class C_ElementValue_Update extends JavaProcess implements IProcessPrecon
 	@Param(parameterName = I_AD_TreeNode.COLUMNNAME_Parent_ID, mandatory = true)
 	private int p_parentId;
 
-	@Param(parameterName = I_AD_TreeNode.COLUMNNAME_SeqNo, mandatory = true)
-	private int p_seqNo;
-
 	final ElementValueService evService = SpringContextHolder.instance.getBean(ElementValueService.class);
 
 	@Override
@@ -63,11 +60,10 @@ public class C_ElementValue_Update extends JavaProcess implements IProcessPrecon
 		final ElementValueRequest request = ElementValueRequest.builder()
 				.elementValueId(ElementValueId.ofRepoId(getRecord_ID()))
 				.parentId(ElementValueId.ofRepoIdOrNull(p_parentId))
-				.seqNo(p_seqNo)
 				.build();
 
-		evService.updateElementValue(request);
-
+		evService.updateElementValueAndResetSequences(request);
+		
 		return MSG_OK;
 	}
 }

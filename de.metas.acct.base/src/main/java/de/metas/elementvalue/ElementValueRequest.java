@@ -39,6 +39,4 @@ public class ElementValueRequest
 	final ElementValueId elementValueId;
 	
 	final ElementValueId parentId;
-	
-	final int seqNo;
 }
