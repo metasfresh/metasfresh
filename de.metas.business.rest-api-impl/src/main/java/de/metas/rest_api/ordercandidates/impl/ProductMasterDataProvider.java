@@ -21,7 +21,7 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
-import de.metas.rest_api.utils.PermissionService;
+import de.metas.security.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;

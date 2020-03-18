@@ -188,7 +188,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
 	 * @return a single bPartner or <code>null</code>
-	 * @throws org.adempiere.exceptions.DBMoreThenOneRecordsFoundException if there is more than one matching partner.
+	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
 	 */
 	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
 

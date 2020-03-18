@@ -42,7 +42,7 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.Adempiere;
@@ -490,7 +490,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			{
 				if (throwExIfMoreThenOneFound)
 				{
-					throw new DBMoreThenOneRecordsFoundException(this.toString());
+					throw new DBMoreThanOneRecordsFoundException(this.toString());
 				}
 				else
 				{

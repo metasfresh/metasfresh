@@ -1,13 +1,14 @@
-/**
- * 
- */
-package org.adempiere.exceptions;
+package de.metas.security;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.ordercandidate.rest-api-impl
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,29 +27,12 @@ package org.adempiere.exceptions;
  */
 
 
-import org.compiere.model.IQuery;
-
-/**
- * Exception thrown by {@link IQuery} class when there were more records and only one was expected
- * 
- * @author Teo Sarca
- * 
- */
-public class DBMoreThenOneRecordsFoundException extends DBException
+public class PermissionNotGrantedException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3925120991619286612L;
+	private static final long serialVersionUID = 8485777988689504117L;
 
-	private static final String AD_Message = "QueryMoreThanOneRecordsFound";
-
-	/**
-	 * @param msg
-	 */
-	public DBMoreThenOneRecordsFoundException(String detailMessage)
+	public PermissionNotGrantedException(@NonNull final String message)
 	{
-		super("@" + AD_Message + "@ (" + detailMessage + ")");
+		super(message);
 	}
-
 }
