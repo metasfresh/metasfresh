@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -257,6 +258,12 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
+	}
+
+	public AdempiereException(@NonNull final AdMessageKey messageKey)
+	{
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey.toAD_Message());
 	}
 
 	public AdempiereException(final String adLanguage, final String adMessage, final Object[] params)

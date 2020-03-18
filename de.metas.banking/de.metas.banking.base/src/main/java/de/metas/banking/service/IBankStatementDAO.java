@@ -46,6 +46,8 @@ public interface IBankStatementDAO extends ISingletonService
 
 	List<I_C_BankStatementLine_Ref> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
 
+	boolean hasLineReferences(BankStatementLineId bankStatementLineId);
+
 	/**
 	 * Checks if given payment is present on any {@link I_C_BankStatementLine} or {@link I_C_BankStatementLine_Ref}.
 	 * <p>
@@ -90,5 +92,5 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
-	void save(@NonNull final I_C_BankStatementLine_Ref lineOrRef);
+	void save(@NonNull final de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef);
 }

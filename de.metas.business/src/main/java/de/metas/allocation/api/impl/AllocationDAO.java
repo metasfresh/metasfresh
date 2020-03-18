@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -49,15 +50,21 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.util.DB;
 
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
+
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AllocationDAO implements IAllocationDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public final BigDecimal retrieveOpenAmt(
@@ -91,7 +98,7 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_AllocationLine.class, invoice)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID())
 				.addOnlyActiveRecordsFilter()
@@ -131,7 +138,7 @@ public class AllocationDAO implements IAllocationDAO
 			final boolean retrieveAll,
 			final @CacheTrx String trxName)
 	{
-		final IQueryBuilder<I_C_AllocationLine> builder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_AllocationLine> builder = queryBL
 				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
 				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, allocationHdrId);
 
@@ -152,7 +159,7 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public final List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice)
 	{
-		final IQueryBuilder<I_C_Payment> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
@@ -300,7 +307,6 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		// Exclude the entries that don't have either Amount, DiscountAmt, WriteOffAmt or OverUnderAmt. These entries will produce 0 in posting
@@ -354,8 +360,6 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public List<I_C_Payment> retrieveInvoicePayments(@NonNull final I_C_Invoice invoice)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		// add invoice check in allocation line
 		final IQuery<I_C_AllocationLine> invoiceAllocationLineFilter = queryBL.createQueryBuilder(I_C_AllocationLine.class)
 				.addOnlyActiveRecordsFilter()
@@ -380,5 +384,32 @@ public class AllocationDAO implements IAllocationDAO
 				.list();
 
 		return availablePayments;
+	}
+
+	@Override
+	public SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull final Collection<PaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final IQuery<I_C_AllocationHdr> completedAllocations = queryBL.createQueryBuilder(I_C_AllocationHdr.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID)
+				.addNotNull(I_C_AllocationLine.COLUMNNAME_C_Payment_ID)
+				.addInArrayFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentIds)
+				.addInSubQueryFilter(I_C_AllocationLine.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, completedAllocations)
+				.create()
+				.list()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						record -> PaymentId.ofRepoId(record.getC_Payment_ID()),
+						record -> InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID())));
 	}
 }

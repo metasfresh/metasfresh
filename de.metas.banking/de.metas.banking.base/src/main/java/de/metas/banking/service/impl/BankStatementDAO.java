@@ -107,7 +107,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void save(final @NonNull I_C_BankStatementLine_Ref lineOrRef)
+	public void save(final @NonNull de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef)
 	{
 		InterfaceWrapperHelper.save(lineOrRef);
 	}
@@ -139,6 +139,17 @@ public class BankStatementDAO implements IBankStatementDAO
 		return retrieveLineReferencesQuery(bankStatementLine)
 				.create()
 				.list(I_C_BankStatementLine_Ref.class);
+	}
+
+	@Override
+	public boolean hasLineReferences(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				// .addOnlyActiveRecordsFilter() // ALL
+				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
+				.create()
+				.anyMatch();
 	}
 
 	public IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
@@ -221,5 +232,4 @@ public class BankStatementDAO implements IBankStatementDAO
 				.list(I_C_BankStatement.class);
 
 	}
-
 }

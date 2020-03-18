@@ -377,12 +377,12 @@ public final class GuavaCollectors
 		return StreamSupport.stream(new BatchSpliterator<>(stream.spliterator(), batchSize), stream.isParallel());
 	}
 
-	public static <K, V, K2> Function<Map.Entry<K, V>, Map.Entry<K2, V>> mapKey(@NonNull final Function<K, K2> keyMapper)
+	public static <K, V, K2> Function<Map.Entry<K, V>, ImmutableMapEntry<K2, V>> mapKey(@NonNull final Function<K, K2> keyMapper)
 	{
 		return entry -> entry(keyMapper.apply(entry.getKey()), entry.getValue());
 	}
 
-	public static <K, V, V2> Function<Map.Entry<K, V>, Map.Entry<K, V2>> mapValue(@NonNull final Function<V, V2> valueMapper)
+	public static <K, V, V2> Function<Map.Entry<K, V>, ImmutableMapEntry<K, V2>> mapValue(@NonNull final Function<V, V2> valueMapper)
 	{
 		return entry -> entry(entry.getKey(), valueMapper.apply(entry.getValue()));
 	}

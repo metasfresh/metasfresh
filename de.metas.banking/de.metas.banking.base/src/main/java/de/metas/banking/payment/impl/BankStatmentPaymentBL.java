@@ -13,6 +13,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
@@ -55,9 +56,11 @@ import de.metas.banking.api.BankAccountId;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatement;
+import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -567,16 +570,16 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	/**
 	 * Create actual Payment.
 	 *
-	 * @param C_Invoice_ID        invoice
-	 * @param C_BPartner_ID       partner ignored when invoice exists
-	 * @param C_Currency_ID       currency
-	 * @param StmtAmt             statement amount may be <code>null</code>. If is is <code>null</code> and <code>TrxAmt</code> is also null, then the invoice's open ampount is used as pay amount
-	 * @param TrxAmt              maybe be <code>null</code>. If set, then it is used as the payment's payAmt. If <code>null</code>, then <code>StmAmt</code> is used instead
+	 * @param C_Invoice_ID invoice
+	 * @param C_BPartner_ID partner ignored when invoice exists
+	 * @param C_Currency_ID currency
+	 * @param StmtAmt statement amount may be <code>null</code>. If is is <code>null</code> and <code>TrxAmt</code> is also null, then the invoice's open ampount is used as pay amount
+	 * @param TrxAmt maybe be <code>null</code>. If set, then it is used as the payment's payAmt. If <code>null</code>, then <code>StmAmt</code> is used instead
 	 * @param C_BP_BankAccount_ID bank account
-	 * @param DateTrx             transaction date
-	 * @param DateAcct            accounting date
-	 * @param Description         description
-	 * @param AD_Org_ID           org
+	 * @param DateTrx transaction date
+	 * @param DateAcct accounting date
+	 * @param Description description
+	 * @param AD_Org_ID org
 	 * @return payment
 	 */
 	private MPayment createPayment(final Properties ctx,
@@ -722,4 +725,14 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		}
 		return payment;
 	}    // createPayment
+
+	@Override
+	public void reconcile(@NonNull final BankStatementLineReconcileRequest request)
+	{
+		BankStatementLineReconcileCommand.builder()
+				.currencyRepository(SpringContextHolder.instance.getBean(CurrencyRepository.class))
+				.request(request)
+				.build()
+				.execute();
+	}
 }

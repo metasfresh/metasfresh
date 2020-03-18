@@ -23,6 +23,7 @@ package de.metas.allocation.api;
  */
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -33,7 +34,12 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import com.google.common.collect.SetMultimap;
+
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IAllocationDAO extends ISingletonService
 {
@@ -47,7 +53,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * Check all the completed C_Payments with a "matching" doctype for the invoice and IsAutoAllocateAvailableAmt='Y' AND IsAllocated='N' for the partner given as param.
-
+	 * 
 	 * @task 04193
 	 */
 	List<I_C_Payment> retrieveAvailablePayments(I_C_Invoice invoice);
@@ -94,4 +100,6 @@ public interface IAllocationDAO extends ISingletonService
 	List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
 	List<I_C_Payment> retrieveInvoicePayments(I_C_Invoice invoice);
+
+	SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull Collection<PaymentId> paymentIds);
 }
