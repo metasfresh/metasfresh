@@ -49,7 +49,7 @@ public class ElementValueService
 		childrenSorted.put(record.getValue(), record);
 		
 		// update sequences
-		updateSequences(request.getParentId(), childrenSorted);
+		updateSequencesAndSave(request.getParentId(), childrenSorted);
 	}
 	
 	
@@ -61,7 +61,7 @@ public class ElementValueService
 		return record;
 	}
 	
-	public void updateSequences(@NonNull final ElementValueId parentId, @NonNull final Map<String, I_C_ElementValue> childrenSorted)
+	public void updateSequencesAndSave(@NonNull final ElementValueId parentId, @NonNull final Map<String, I_C_ElementValue> childrenSorted)
 	{
 		final Map<String, Integer> sequences = createSequences(childrenSorted.keySet());
 
