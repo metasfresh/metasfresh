@@ -1,12 +1,10 @@
-package de.metas.treenode;
+package de.metas.elementvalue;
 
-import de.metas.elementvalue.ElementValueId;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_ElementValue;
+import org.springframework.stereotype.Service;
+
 import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -29,20 +27,16 @@ import lombok.experimental.NonFinal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@Builder(toBuilder = true)
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class TreeNode
+@Service
+public class ElementValueService
 {
-	@NonNull
-	TreeId treeId;
-
-	@NonNull
-	ElementValueId nodeId;
-
-	@NonFinal
-	ElementValueId parentId;
-
-	@NonFinal
-	int seqNo;
+	final ElementValueRepository evRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+		
+	public ElementValue updateElementValue(@NonNull final ElementValueRequest request)
+	{
+		final I_C_ElementValue record = evRepo.getElementValueRecordById(request.getElementValueId());
+		record.setParent_ID(request.getParentId().getRepoId());
+		record.setSeqNo(request.getSeqNo());
+		return evRepo.save(record);
+	}
 }

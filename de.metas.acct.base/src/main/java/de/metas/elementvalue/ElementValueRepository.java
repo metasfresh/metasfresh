@@ -1,7 +1,6 @@
 package de.metas.elementvalue;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.compiere.model.I_C_Element;
@@ -38,11 +37,16 @@ public class ElementValueRepository
 {
 	public ElementValue getById(@NonNull final ElementValueId id)
 	{
-		final I_C_ElementValue record = load(id, I_C_ElementValue.class);
+		final I_C_ElementValue record = getElementValueRecordById(id);
 
 		Check.assumeNotNull(record, "Element Value not null");
 
 		return toElementValue(record);
+	}
+	
+	public I_C_ElementValue getElementValueRecordById(@NonNull final ElementValueId id)
+	{
+		return load(id, I_C_ElementValue.class);
 	}
 	
 	public I_C_Element getElementRecordById(@NonNull final ElementId id)
@@ -51,7 +55,7 @@ public class ElementValueRepository
 	}
 
 	@NonNull
-	public ElementValue toElementValue(@NonNull final I_C_ElementValue record)
+	private ElementValue toElementValue(@NonNull final I_C_ElementValue record)
 	{
 		return ElementValue.builder()
 				.id(ElementValueId.ofRepoId(record.getC_ElementValue_ID()))
@@ -64,28 +68,10 @@ public class ElementValueRepository
 				.build();
 	}
 
-	public ElementValue save(@NonNull final ElementValue elementValue)
+	public ElementValue save(@NonNull final I_C_ElementValue record)
 	{
-		final I_C_ElementValue elementValueRecord;
-		if (elementValue.getId() == null)
-		{
-			elementValueRecord = newInstance(I_C_ElementValue.class);
-		}
-		else
-		{
-			elementValueRecord = load(elementValue.getId().getRepoId(), I_C_ElementValue.class);
-		}
-		elementValueRecord.setValue(elementValue.getValue());
-		elementValueRecord.setName(elementValue.getName());
-		elementValueRecord.setAD_Org_ID(elementValue.getOrgId().getRepoId());
-		elementValueRecord.setParent_ID(elementValue.getParentId().getRepoId());
-		elementValueRecord.setC_Element_ID(elementValue.getElementId().getRepoId());
-		elementValueRecord.setSeqNo(elementValue.getSeqNo());
-		saveRecord(elementValueRecord);
-
-		return elementValue
-				.toBuilder()
-				.id(ElementValueId.ofRepoId(elementValueRecord.getC_ElementValue_ID()))
-				.build();
+		saveRecord(record);
+		
+		return toElementValue(record);
 	}
 }

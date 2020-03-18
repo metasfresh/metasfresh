@@ -41,20 +41,15 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.elementvalue.ElementValue;
-import de.metas.elementvalue.ElementValueId;
-import de.metas.elementvalue.ElementValueRepository;
 import de.metas.organization.OrgId;
-import de.metas.treenode.TreeNode;
-import de.metas.treenode.TreeNodeRepository;
+import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 
 @Interceptor(I_C_ElementValue.class)
 public class C_ElementValue
 {
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	final TreeNodeRepository treeNodeRepo = SpringContextHolder.instance.getBean(TreeNodeRepository.class);
-	final ElementValueRepository evRepo = SpringContextHolder.instance.getBean(ElementValueRepository.class);
+	final TreeNodeService treeNodeService = SpringContextHolder.instance.getBean(TreeNodeService.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_ElementValue elementValue)
@@ -114,13 +109,6 @@ public class C_ElementValue
 			ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
 	public void updateTreeNode(final I_C_ElementValue elementValueRecord)
 	{
-		final ElementValueId evId = ElementValueId.ofRepoIdOrNull(elementValueRecord.getC_ElementValue_ID());
-		final ElementValue elementValue = evRepo.getById(evId);
-		
-		// treeNode base on all the data from element value
-		final TreeNode treeNode =  treeNodeRepo.getTreeNode(elementValue);
-		
-		// save entire info from treenode to treenode record
-		treeNodeRepo.save(treeNode);
+		treeNodeService.updateTreeNode(elementValueRecord);
 	}
 }
