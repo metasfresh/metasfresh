@@ -5,13 +5,11 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.I_C_Payment;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineAndRefId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
@@ -24,36 +22,23 @@ public interface IPaySelectionDAO extends ISingletonService
 {
 	Optional<I_C_PaySelection> getById(PaySelectionId paySelectionId);
 
-	<T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(I_C_PaySelection paySelection, Class<T> clazz);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_PaySelection paySelection);
 
-	<T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(PaySelectionId paySelectionId, Class<T> clazz);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(PaySelectionId paySelectionId);
 
 	int retrievePaySelectionLinesCount(I_C_PaySelection paySelection);
 
 	int retrieveLastPaySelectionLineNo(PaySelectionId paySelectionId);
 
-	List<I_C_PaySelectionLine> retrievePaySelectionLinesMatchingInvoice(I_C_PaySelection paySelection, I_C_Invoice invoice);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(BankStatementLineId bankStatementLineId);
 
-	boolean isPaySelectionLineMatchInvoice(I_C_PaySelection paySelection, I_C_Invoice invoice);
+	Optional<I_C_PaySelectionLine> retrievePaySelectionLine(BankStatementLineAndRefId bankStatementLineAndRefId);
 
-	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(InvoiceId invoiceId);
 
-	I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef);
+	Optional<I_C_PaySelection> retrieveProcessedPaySelectionContainingPayment(PaymentId paymentId);
 
-	/**
-	 * Returns the given invoice's <code>C_PaySelectionLine</code>s
-	 *
-	 * @param invoice
-	 * @return
-	 */
-	List<I_C_PaySelectionLine> retrievePaySelectionLines(org.compiere.model.I_C_Invoice invoice);
-
-	/**
-	 * @return processed pay selection which contains given payment
-	 */
-	I_C_PaySelection retrievePaySelection(I_C_Payment payment);
-
-	I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, PaymentId paymentId);
+	Optional<I_C_PaySelectionLine> retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, PaymentId paymentId);
 
 	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
 }

@@ -51,7 +51,7 @@ public class C_PaySelection
 
 		StringJoiner joiner = new StringJoiner(",");
 
-		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection))
 		{
 			if (hasESRBankAccount(paySelectionLine) && (!isValidESRReference(paySelectionLine)))
 			{

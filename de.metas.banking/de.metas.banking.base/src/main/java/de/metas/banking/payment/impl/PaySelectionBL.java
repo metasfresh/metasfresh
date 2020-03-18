@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -92,7 +93,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		I_C_BankStatementLine bankStatementLine = null;
 		int nextReferenceLineNo = 10;
 
-		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class);
+		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionDAO.retrievePaySelectionLines(paySelection);
 		for (final I_C_PaySelectionLine psl : paySelectionLines)
 		{
 			// Skip if already in a bank statement
@@ -205,7 +206,9 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
 	{
-		if (Services.get(IPaymentRequestBL.class).isUpdatedFromPaymentRequest(psl))
+		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
+
+		if (paymentRequestBL.isUpdatedFromPaymentRequest(psl))
 		{
 			return;
 		}
@@ -230,7 +233,8 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final boolean isSalesInvoice = invoice.isSOTrx();
 
-		final boolean isCreditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 
 		final String accteptedBankAccountUsage;
 
@@ -309,7 +313,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	public void createPayments(final I_C_PaySelection paySelection)
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection))
 		{
 			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
 			createPaymentIfNeeded(paySelectionLine);
@@ -356,11 +360,13 @@ public class PaySelectionBL implements IPaySelectionBL
 	 */
 	private I_C_Payment createPayment(final I_C_PaySelectionLine line)
 	{
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final int ownBankAccountId = paySelection.getC_BP_BankAccount_ID();
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		final org.compiere.model.I_C_Payment payment = Services.get(IPaymentBL.class).newBuilderOfInvoice(line.getC_Invoice())
+		final org.compiere.model.I_C_Payment payment = paymentBL.newBuilderOfInvoice(line.getC_Invoice())
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.bpBankAccountId(BankAccountId.ofRepoId(ownBankAccountId))
 				.dateAcct(payDate)
@@ -376,18 +382,20 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine bankStatementLine)
+	public void unlinkPaySelectionLineForBankStatement(final BankStatementLineId bankStatementLineId)
 	{
-		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(bankStatementLine))
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(bankStatementLineId))
 		{
 			unlinkBankStatementFromLine(paySelectionLine);
 		}
 	}
 
 	@Override
-	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void unlinkPaySelectionLineForBankStatement(final BankStatementLineAndRefId bankStatementLineAndRefId)
 	{
-		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLine(bankStatementLineRef);
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		final I_C_PaySelectionLine paySelectionLine = paySelectionDAO.retrievePaySelectionLine(bankStatementLineAndRefId).orElse(null);
 		if (paySelectionLine != null)
 		{
 			unlinkBankStatementFromLine(paySelectionLine);
@@ -433,7 +441,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	private List<I_C_PaySelectionLine> getPaySelectionLines(final I_C_PaySelection paySelection)
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-		return paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class);
+		return paySelectionDAO.retrievePaySelectionLines(paySelection);
 	}
 
 	@Override
@@ -464,14 +472,13 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void reactivatePaySelection(final I_C_PaySelection paySelection)
 	{
-
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection))
 		{
 			if (isInBankStatement(paySelectionLine))
 			{
-				final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
 				final BankStatementId bankStatementId = BankStatementId.ofRepoId(paySelectionLine.getC_BankStatement_ID());
 				final String bankStatementDocumentNo = bankStatementBL.getDocumentNo(bankStatementId);
@@ -494,7 +501,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
-		return paySelectionDAO.retrievePaySelectionLines(paySelectionId, I_C_PaySelectionLine.class)
+		return paySelectionDAO.retrievePaySelectionLines(paySelectionId)
 				.stream()
 				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
 				.filter(Objects::nonNull)

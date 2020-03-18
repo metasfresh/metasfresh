@@ -48,13 +48,15 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 	@Override
 	public IPaymentBatch retrievePaymentBatch(final I_C_Payment payment)
 	{
-		final I_C_PaySelection paySelection = Services.get(IPaySelectionDAO.class).retrievePaySelection(payment);
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		final I_C_PaySelection paySelection = paySelectionDAO.retrieveProcessedPaySelectionContainingPayment(paymentId).orElse(null);
 		if (paySelection == null)
 		{
 			return null;
 		}
-
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		return PaymentBatch.builder()
 				.setRecord(paySelection)
@@ -80,7 +82,8 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 			return;
 		}
 
-		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLineForPayment(paySelection, paymentId);
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		final I_C_PaySelectionLine paySelectionLine = paySelectionDAO.retrievePaySelectionLineForPayment(paySelection, paymentId).orElse(null);
 		if (paySelectionLine == null)
 		{
 			return;

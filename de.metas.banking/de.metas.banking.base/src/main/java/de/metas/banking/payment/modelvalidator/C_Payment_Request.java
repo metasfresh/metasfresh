@@ -36,6 +36,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
 
 @Interceptor(I_C_Payment_Request.class)
@@ -59,12 +60,13 @@ public class C_Payment_Request
 			, ifColumnsChanged = { I_C_Payment.COLUMNNAME_IsActive })
 	public void checkDeactivationAllowed(final I_C_Payment_Request paymentRequest)
 	{
-		if (paymentRequest.isActive() || paymentRequest.getC_Invoice_ID() <= 0)
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(paymentRequest.getC_Invoice_ID());
+		if (paymentRequest.isActive() || invoiceId == null)
 		{
 			return; // nothing to do
 		}
 
-		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paymentRequest.getC_Invoice());
+		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(invoiceId);
 		if (paySelectionLines.isEmpty())
 		{
 			return; // nothing to do

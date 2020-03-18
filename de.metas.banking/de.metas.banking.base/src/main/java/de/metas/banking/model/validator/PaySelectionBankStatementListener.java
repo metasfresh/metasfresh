@@ -1,5 +1,7 @@
 package de.metas.banking.model.validator;
 
+import de.metas.banking.model.BankStatementLineAndRefId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -19,11 +21,11 @@ import de.metas.util.Services;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,13 +48,19 @@ class PaySelectionBankStatementListener extends BankStatementListenerAdapter
 	@Override
 	public void onBankStatementLineVoiding(I_C_BankStatementLine bankStatementLine)
 	{
-		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLine);
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
+
+		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLineId);
 	}
 
 	@Override
 	public void onBankStatementLineRefVoiding(I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
-		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLineRef);
+		final BankStatementLineAndRefId bankStatementLineAndRefId = BankStatementLineAndRefId.ofRepoIds(
+				bankStatementLineRef.getC_BankStatementLine_ID(),
+				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
+
+		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLineAndRefId);
 	}
 
 }
