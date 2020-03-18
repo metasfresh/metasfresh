@@ -42,7 +42,7 @@ public class ElementValueService
 	{
 		final Map<String, I_C_ElementValue> children = evRepo.retrieveChildren(request.getParentId());
 		
-		final I_C_ElementValue record = updateElementValue(request);
+		final I_C_ElementValue record = updateElementValueAndDoNotSave(request);
 		
 		// add newly updated
 		final Map<String, I_C_ElementValue>  childrenSorted = new TreeMap<String, I_C_ElementValue>(children);
@@ -53,11 +53,10 @@ public class ElementValueService
 	}
 	
 	
-	private I_C_ElementValue updateElementValue(@NonNull final ElementValueRequest request)
+	private I_C_ElementValue updateElementValueAndDoNotSave(@NonNull final ElementValueRequest request)
 	{
 		final I_C_ElementValue record = evRepo.getElementValueRecordById(request.getElementValueId());
 		record.setParent_ID(request.getParentId().getRepoId());
-		evRepo.save(record);
 		
 		return record;
 	}

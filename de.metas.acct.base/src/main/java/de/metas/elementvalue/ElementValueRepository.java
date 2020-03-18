@@ -60,6 +60,19 @@ public class ElementValueRepository
 		return load(id, I_C_Element.class);
 	}
 
+	public void save(@NonNull final I_C_ElementValue record)
+	{
+		saveRecord(record);
+	}
+
+	public Map<String, I_C_ElementValue> retrieveChildren(@NonNull final ElementValueId parentId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_ElementValue.class)
+				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_Parent_ID, parentId)
+				.create()
+				.map(I_C_ElementValue.class, I_C_ElementValue::getValue);
+	}
+
 	@NonNull
 	private ElementValue toElementValue(@NonNull final I_C_ElementValue record)
 	{
@@ -73,19 +86,4 @@ public class ElementValueRepository
 				.seqNo(record.getSeqNo())
 				.build();
 	}
-
-	public ElementValue save(@NonNull final I_C_ElementValue record)
-	{
-		saveRecord(record);
-
-		return toElementValue(record);
-	}
-
-	public Map<String, I_C_ElementValue> retrieveChildren(@NonNull final ElementValueId parentId)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_ElementValue.class)
-				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_Parent_ID, parentId)
-				.create()
-				.map(I_C_ElementValue.class, I_C_ElementValue::getValue);
-		}
 }
