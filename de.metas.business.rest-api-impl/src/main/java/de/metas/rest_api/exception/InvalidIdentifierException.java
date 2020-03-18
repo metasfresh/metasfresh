@@ -1,8 +1,10 @@
-package de.metas.rest_api.utils;
+package de.metas.rest_api.exception;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.rest_api.utils.IdentifierString;
 
 /*
  * #%L
