@@ -166,6 +166,18 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final PaymentId paymentId)
+	{
+		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.orderBy(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID)
+				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
+				.create()
+				.list();
+	}
+
+	@Override
 	public IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(@NonNull final Set<InvoiceId> invoiceIds)
 	{
 		Check.assumeNotEmpty(invoiceIds, "invoiceIds is not empty");

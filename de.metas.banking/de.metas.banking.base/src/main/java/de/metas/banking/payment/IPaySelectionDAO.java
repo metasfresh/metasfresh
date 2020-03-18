@@ -40,5 +40,7 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	Optional<I_C_PaySelectionLine> retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, PaymentId paymentId);
 
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(PaymentId paymentId);
+
 	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
 }
