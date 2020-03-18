@@ -209,7 +209,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     cy.get(path)
       .find('input')
       .type('{selectall}')
-      .clear()
+      .wait(500)
       .type(stringValue)
       .type('{enter}');
   }
@@ -244,6 +244,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
     const path = createFieldPath(fieldName, modal);
     cy.get(path)
       .find('textarea')
+      .wait(500)
       .type(`${stringValue}{enter}`);
   }
 
@@ -281,7 +282,9 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
             .get('input')
             // we can't use `clear` here as sometimes it triggers request to the server
             // and then the whole flow becomes flaky
+            .wait(500)
             .type('{selectall}')
+            .wait(500)
             .type(partialValue)
         );
       }
