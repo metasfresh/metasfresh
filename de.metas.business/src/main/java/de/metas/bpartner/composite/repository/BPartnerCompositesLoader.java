@@ -338,6 +338,7 @@ final class BPartnerCompositesLoader
 						.build())
 				.email(contactRecord.getEMail())
 				.externalId(ExternalId.ofOrNull(contactRecord.getExternalId()))
+				.value(contactRecord.getValue())
 				.firstName(contactRecord.getFirstname())
 				.lastName(contactRecord.getLastname())
 				.name(contactRecord.getName())

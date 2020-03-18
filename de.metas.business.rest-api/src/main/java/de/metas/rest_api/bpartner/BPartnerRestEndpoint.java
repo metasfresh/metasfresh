@@ -6,6 +6,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
@@ -50,7 +51,7 @@ public interface BPartnerRestEndpoint
 			Long epochTimestampMillis,
 			String next);
 
-	ResponseEntity<JsonResponseUpsert> createOrUpdateBPartner(JsonRequestBPartnerUpsert bpartners);
+	ResponseEntity<JsonResponseBPartnerCompositeUpsert> createOrUpdateBPartner(JsonRequestBPartnerUpsert bpartners);
 
 	ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 			String bpartnerIdentifier,

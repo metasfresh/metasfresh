@@ -11,6 +11,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -26,12 +27,15 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -51,11 +55,15 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
+import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -75,6 +83,11 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.attachment.JsonAttachmentType;
+import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
+import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
@@ -92,15 +105,18 @@ import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndC
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
-import de.metas.rest_api.utils.PermissionService;
-import de.metas.rest_api.utils.PermissionServiceFactories;
+import de.metas.security.PermissionService;
+import de.metas.security.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -163,6 +179,8 @@ public class OrderCandidatesRestControllerImplTest
 	{
 		AdempiereTestHelper.get().init();
 
+		SystemTime.setTimeSource(() -> 1584400036193L); // some time at 2020-03-16
+
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
@@ -201,13 +219,30 @@ public class OrderCandidatesRestControllerImplTest
 		final DocTypeService docTypeService = new DocTypeService();
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
-		final PermissionService permissionService = Mockito.mock(PermissionService.class);
-		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
+		// bpartnerRestController
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
+				new BPartnerQueryService(),
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository(),
+				currencyRepository);
+		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
+				new BPartnerEndpointService(jsonServiceFactory),
+				jsonServiceFactory,
+				new JsonRequestConsolidateService());
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				jsonConverters,
 				new OLCandRepository(),
+				bpartnerRestController,
 				new NoopPerformanceMonitoringService());
+
+		final PermissionService permissionService = Mockito.mock(PermissionService.class);
+		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
@@ -255,6 +290,12 @@ public class OrderCandidatesRestControllerImplTest
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		testMasterdata.createCountry("CH");
+
+		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
+		groupRecord.setIsDefault(true);
+		InterfaceWrapperHelper.setValue(groupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		groupRecord.setName("DefaultGroup");
+		saveRecord(groupRecord);
 
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
 		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
@@ -426,7 +467,7 @@ public class OrderCandidatesRestControllerImplTest
 		assertThat(responseBody.isError()).isTrue();
 
 		final JsonErrorItem error = responseBody.getError();
-		assertThat(error.getMessage()).contains("Found no existing BPartner");
+		assertThat(error.getMessage()).contains("The resource with resourceName=bpartner - which is identified by resourceIdentifier=val-bpCode -  could not be found.");
 	}
 
 	@Test
@@ -619,6 +660,7 @@ public class OrderCandidatesRestControllerImplTest
 								.code("bpCode")
 								.name("bpName")
 								.companyName("bpCompanyName")
+								.group("bpGroupName")
 								.build())
 						.location(JsonRequestLocation.builder()
 								.gln("gln-ship")

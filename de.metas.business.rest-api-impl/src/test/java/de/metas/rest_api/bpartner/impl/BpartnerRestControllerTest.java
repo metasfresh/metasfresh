@@ -82,14 +82,16 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -155,6 +157,7 @@ class BpartnerRestControllerTest
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
@@ -162,7 +165,10 @@ class BpartnerRestControllerTest
 				new RecordChangeLogRepository(),
 				currencyRepository);
 
-		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
+		bpartnerRestController = new BpartnerRestController(
+				new BPartnerEndpointService(jsonServiceFactory),
+				jsonServiceFactory,
+				new JsonRequestConsolidateService());
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
@@ -278,7 +284,7 @@ class BpartnerRestControllerTest
 
 		// JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
-		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
 		final MetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" + externalId);
 		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
@@ -450,18 +456,18 @@ class BpartnerRestControllerTest
 	}
 
 	private MetasfreshId assertUpsertResultOK(
-			@NonNull final ResponseEntity<JsonResponseUpsert> result,
+			@NonNull final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result,
 			@NonNull final String bpartnerIdentifier)
 	{
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
-		final JsonResponseUpsert resultBody = result.getBody();
+		final JsonResponseBPartnerCompositeUpsert resultBody = result.getBody();
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 
-		final JsonResponseUpsertItem responseItem = resultBody.getResponseItems().get(0);
-		assertThat(responseItem.getIdentifier()).isEqualTo(bpartnerIdentifier);
+		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().get(0);
+		assertThat(responseCompositeItem.getJsonResponseBPartnerUpsertItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
 
-		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+		final MetasfreshId metasfreshId = responseCompositeItem.getJsonResponseBPartnerUpsertItem().getMetasfreshId();
 		return metasfreshId;
 	}
 
@@ -479,15 +485,15 @@ class BpartnerRestControllerTest
 		final RecordCounts inititalCounts = new RecordCounts();
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
 		inititalCounts.assertCountsUnchanged();
 
 		assertThat(result.getBody().getResponseItems()).hasSize(1);
-		final JsonResponseUpsertItem jsonResponseUpsertItem = result.getBody().getResponseItems().get(0);
+		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().get(0);
 
-		assertThat(jsonResponseUpsertItem.getIdentifier()).isEqualTo("ext-1234567");
-		assertThat(jsonResponseUpsertItem.getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(jsonResponseCompositeUpsertItem.getJsonResponseBPartnerUpsertItem().getIdentifier()).isEqualTo("ext-1234567");
+		assertThat(jsonResponseCompositeUpsertItem.getJsonResponseBPartnerUpsertItem().getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
