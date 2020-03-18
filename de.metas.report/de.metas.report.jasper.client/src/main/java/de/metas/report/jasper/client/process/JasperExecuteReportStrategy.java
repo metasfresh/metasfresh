@@ -8,6 +8,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -54,7 +55,8 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 				processInfo);
 
 		final ReportsClient reportsClient = ReportsClient.get();
-		final byte[] reportData = reportsClient.report(processInfo, outputTypeEffective);
+		final ReportResult reportResult = reportsClient.report(processInfo, outputTypeEffective);
+		final byte[] reportData = reportResult.getReportContent();
 
 		return new ExecuteReportResult(outputTypeEffective, reportData);
 	}

@@ -1,9 +1,12 @@
 package de.metas.report.xls.engine;
 
 import java.util.Collection;
+import java.util.Optional;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
 
+import de.metas.util.StringUtils;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -32,22 +35,16 @@ import lombok.ToString;
 @ToString
 public class ObjectXlsDataSource implements IXlsDataSource
 {
-	public static final <T> ObjectXlsDataSource of(final Collection<T> rows)
-	{
-		if (rows == null || rows.isEmpty())
-		{
-			return EMPTY;
-		}
-		return new ObjectXlsDataSource(rows);
-	}
-
-	public static final ObjectXlsDataSource EMPTY = new ObjectXlsDataSource(ImmutableList.of());
-
 	private final Collection<?> rows;
+	private final Optional<String> reportFilename;
 
-	private ObjectXlsDataSource(@NonNull final Collection<?> collection)
+	@Builder
+	private ObjectXlsDataSource(
+			@NonNull final Collection<?> rows,
+			@Nullable final String reportFilename)
 	{
-		this.rows = collection;
+		this.rows = rows;
+		this.reportFilename = Optional.ofNullable(StringUtils.trimBlankToNull(reportFilename));
 	}
 
 	@Override
@@ -57,4 +54,9 @@ public class ObjectXlsDataSource implements IXlsDataSource
 		return (Collection<Object>)rows;
 	}
 
+	@Override
+	public Optional<String> getSuggestedFilename()
+	{
+		return reportFilename;
+	}
 }

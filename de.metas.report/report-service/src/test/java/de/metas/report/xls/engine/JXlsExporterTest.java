@@ -1,13 +1,19 @@
 package de.metas.report.xls.engine;
 
-import java.io.ByteArrayOutputStream;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import de.metas.report.server.ReportResult;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,80 +39,105 @@ import org.junit.Test;
 
 public class JXlsExporterTest
 {
-	/**
-	 * Simple test to make sure {@link JXlsExporter} can process a simple template and does not have errors.
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testProcessSimpleReport_XLS() throws Exception
+	private static final String RESOURCENAME_TestBPartners_xls = "/jxls/TestBPartners.xls";
+	private static final String RESOURCENAME_TestBPartners_xlsx = "/jxls/TestBPartners.xlsx";
+
+	private ObjectXlsDataSource createBPartnersDataSource(final int count)
 	{
-		final InputStream jxlsTemplate = JXlsExporterTest.class.getResourceAsStream("/jxls/TestBPartners.xls");
-		final IXlsDataSource dataSource = createBPartnersDataSource(10);
-
-		final OutputStream output = new ByteArrayOutputStream();
-		// final OutputStream output = new FileOutputStream("c:\\tmp\\TestBPartners_out.xls");
-
-		JXlsExporter.newInstance()
-				.setContext(new Properties())
-				.setTemplate(jxlsTemplate)
-				.setDataSource(dataSource)
-				.setOutput(output)
-				.export();
+		return ObjectXlsDataSource.builder()
+				.rows(createTestBPartners(count))
+				.build();
 	}
 
-	@Test
-	public void testProcessSimpleReport_XLSX() throws Exception
-	{
-		final InputStream jxlsTemplate = JXlsExporterTest.class.getResourceAsStream("/jxls/TestBPartners.xlsx");
-		final IXlsDataSource dataSource = createBPartnersDataSource(10);
-
-		final OutputStream output = new ByteArrayOutputStream();
-		// final OutputStream output = new FileOutputStream("c:\\tmp\\TestBPartners_out.xlsx");
-
-		JXlsExporter.newInstance()
-				.setContext(new Properties())
-				.setTemplate(jxlsTemplate)
-				.setDataSource(dataSource)
-				.setOutput(output)
-				.export();
-	}
-
-	private IXlsDataSource createBPartnersDataSource(final int count)
+	private List<TestBPartner> createTestBPartners(final int count)
 	{
 		final List<TestBPartner> list = new ArrayList<>();
 		for (int i = 1; i <= count; i++)
 		{
-			list.add(TestBPartner.of("BP" + count, "BPartner " + count));
+			list.add(TestBPartner.builder()
+					.value("BP" + count)
+					.name("BPartner " + count)
+					.build());
 		}
-
-		return ObjectXlsDataSource.of(list);
+		return list;
 	}
 
+	@Builder
+	@Value
 	public static class TestBPartner
 	{
-		public static final TestBPartner of(final String value, final String name)
-		{
-			return new TestBPartner(value, name);
-		}
-
 		private String value;
 		private String name;
+	}
 
-		public TestBPartner(String value, String name)
+	/**
+	 * Simple test to make sure {@link JXlsExporter} can process a simple template and does not have errors.
+	 */
+	@Test
+	public void testProcessSimpleReport_XLS()
+	{
+		final InputStream jxlsTemplate = JXlsExporterTest.class.getResourceAsStream(RESOURCENAME_TestBPartners_xls);
+		final ObjectXlsDataSource dataSource = createBPartnersDataSource(10);
+
+		JXlsExporter.newInstance()
+				.setContext(new Properties())
+				.setTemplate(jxlsTemplate)
+				.setDataSource(dataSource)
+				.export();
+	}
+
+	@Test
+	public void testProcessSimpleReport_XLSX()
+	{
+		final InputStream jxlsTemplate = JXlsExporterTest.class.getResourceAsStream(RESOURCENAME_TestBPartners_xlsx);
+		final ObjectXlsDataSource dataSource = createBPartnersDataSource(10);
+
+		JXlsExporter.newInstance()
+				.setContext(new Properties())
+				.setTemplate(jxlsTemplate)
+				.setDataSource(dataSource)
+				.export();
+	}
+
+	@Nested
+	public class getSuggestedFilename
+	{
+		private InputStream jxlsTemplate;
+
+		@BeforeEach
+		public void beforeEach()
 		{
-			this.value = value;
-			this.name = name;
+			jxlsTemplate = JXlsExporterTest.class.getResourceAsStream(RESOURCENAME_TestBPartners_xls);
 		}
 
-		public String getValue()
+		@Test
+		public void notSpecified()
 		{
-			return value;
+			final ReportResult report = JXlsExporter.newInstance()
+					.setContext(new Properties())
+					.setTemplate(jxlsTemplate)
+					.setDataSource(ObjectXlsDataSource.builder()
+							.rows(createTestBPartners(10))
+							.reportFilename(null)
+							.build())
+					.export();
+
+			assertThat(report.getReportFilename()).isNull();
 		}
 
-		public String getName()
+		@Test
+		public void specified()
 		{
-			return name;
+			final ReportResult report = JXlsExporter.newInstance()
+					.setContext(new Properties())
+					.setTemplate(jxlsTemplate)
+					.setDataSource(ObjectXlsDataSource.builder()
+							.rows(createTestBPartners(10))
+							.reportFilename("my_reportfile.xls")
+							.build())
+					.export();
+
+			assertThat(report.getReportFilename()).isEqualTo("my_reportfile.xls");
 		}
 	}
 }

@@ -1,13 +1,18 @@
-package de.metas.report.xls.engine;
+package de.metas.report.server;
 
-import java.util.Collection;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.report.jasper.server.base
+ * de.metas.report.jasper.commons
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,9 +30,21 @@ import java.util.Optional;
  * #L%
  */
 
-public interface IXlsDataSource
+@Value
+@Builder
+@ToString(exclude = "reportContent")
+@JsonDeserialize(builder = ReportResult.ReportResultBuilder.class)
+public class ReportResult
 {
-	Collection<Object> getRows();
+	String reportFilename;
 
-	Optional<String> getSuggestedFilename();
+	@NonNull
+	OutputType outputType;
+
+	byte[] reportContent;
+
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class ReportResultBuilder
+	{
+	}
 }

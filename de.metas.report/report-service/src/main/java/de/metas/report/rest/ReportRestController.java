@@ -26,6 +26,7 @@ import de.metas.report.server.IReportServer;
 import de.metas.report.server.JsonReportError;
 import de.metas.report.server.LocalReportServer;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -56,10 +57,10 @@ public class ReportRestController
 				final MDCCloseable c3 = MDC.putCloseable("output", String.valueOf(outputStr)))
 		{
 			final OutputType outputType = outputStr == null ? IReportServer.DEFAULT_OutputType : OutputType.valueOf(outputStr);
-			final String reportContentType = outputType.getContentType();
-			final String reportFilename = "report." + outputType.getFileExtension();
 
-			final byte[] reportData = server.report(processId, pinstanceId, adLanguage, outputType);
+			final ReportResult report = server.report(processId, pinstanceId, adLanguage, outputType);
+			final String reportContentType = report.getOutputType().getContentType();
+			final String reportFilename = extractReportFilename(report);
 
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.parseMediaType(reportContentType));
@@ -68,7 +69,7 @@ public class ReportRestController
 
 			return ResponseEntity.ok()
 					.headers(headers)
-					.body(reportData);
+					.body(report.getReportContent());
 		}
 		catch (final Throwable ex)
 		{
@@ -78,6 +79,19 @@ public class ReportRestController
 
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(toJsonReportError(ex, adLanguage));
+		}
+	}
+
+	private String extractReportFilename(final ReportResult report)
+	{
+		if (!Check.isBlank(report.getReportFilename()))
+		{
+			return report.getReportFilename();
+		}
+		else
+		{
+			final OutputType outputType = report.getOutputType();
+			return "report." + outputType.getFileExtension();
 		}
 	}
 

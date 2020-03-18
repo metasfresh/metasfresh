@@ -1,8 +1,8 @@
 package de.metas.report.xls.engine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 
 /*
@@ -44,11 +46,11 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -59,7 +61,7 @@ public class JXlsExporter
 	{
 		return new JXlsExporter();
 	}
-	
+
 	static
 	{
 		XlsCommentAreaBuilder.addCommandMapping(HideColumnIfCommand.NAME, HideColumnIfCommand.class);
@@ -75,7 +77,6 @@ public class JXlsExporter
 	private ClassLoader _loader;
 	private String _templateResourceName;
 	private InputStream _template;
-	private OutputStream _outputStream;
 	private IXlsDataSource _dataSource;
 	private String _adLanguage;
 	private ResourceBundle _resourceBundle;
@@ -86,19 +87,23 @@ public class JXlsExporter
 		super();
 	}
 
-	public void export()
+	public ReportResult export()
 	{
 		try
 		{
 			try (final InputStream is = getTemplate())
 			{
-				try (final OutputStream os = getOutputStream())
-				{
-					final Context context = createJXlsContext();
+				final Context context = createJXlsContext();
 
-					final Transformer transformer = createTransformer(is, os);
-					processTemplate(transformer, context);
-				}
+				final ByteArrayOutputStream os = new ByteArrayOutputStream();
+				final Transformer transformer = createTransformer(is, os);
+				processTemplate(transformer, context);
+
+				return ReportResult.builder()
+						.reportFilename(getDataSource().getSuggestedFilename().orElse(null))
+						.outputType(OutputType.XLS)
+						.reportContent(os.toByteArray())
+						.build();
 			}
 		}
 		catch (final Exception e)
@@ -106,38 +111,38 @@ public class JXlsExporter
 			throw new JXlsExporterException(e);
 		}
 	}
-	
+
 	private void processTemplate(final Transformer transformer, final Context context) throws IOException, InvalidFormatException
 	{
-		
+
 		//
 		// Find Areas which we will need to process
-	    final AreaBuilder areaBuilder = new XlsCommentAreaBuilder();
-        areaBuilder.setTransformer(transformer);
-        final List<Area> xlsAreaList = areaBuilder.build();
+		final AreaBuilder areaBuilder = new XlsCommentAreaBuilder();
+		areaBuilder.setTransformer(transformer);
+		final List<Area> xlsAreaList = areaBuilder.build();
 
-        //
-        // Process those areas
-        for (final Area xlsArea : xlsAreaList)
-        {
-        	// Process area
-            xlsArea.applyAt(new CellRef(xlsArea.getStartCellRef().getCellName()), context);
+		//
+		// Process those areas
+		for (final Area xlsArea : xlsAreaList)
+		{
+			// Process area
+			xlsArea.applyAt(new CellRef(xlsArea.getStartCellRef().getCellName()), context);
 
-            // Process formulas
-            xlsArea.setFormulaProcessor(new FastFormulaProcessor());
-            xlsArea.processFormulas();
-        }
+			// Process formulas
+			xlsArea.setFormulaProcessor(new FastFormulaProcessor());
+			xlsArea.processFormulas();
+		}
 
-        //
-        // Write the result
-        transformer.write();
+		//
+		// Write the result
+		transformer.write();
 	}
-	
-	private final Transformer createTransformer(final InputStream is, final OutputStream os) throws InvalidFormatException, IOException
+
+	private final Transformer createTransformer(final InputStream is, final ByteArrayOutputStream os) throws InvalidFormatException, IOException
 	{
 		final PoiTransformer transformer = PoiTransformer.createTransformer(is, os);
 		transformer.setLastCommentedColumn(250);
-		
+
 		// make sure our custom jexl functions are registered
 		final TransformationConfig config = transformer.getTransformationConfig();
 		JexlCustomFunctions.registerIfNeeded(config.getExpressionEvaluator());
@@ -161,8 +166,8 @@ public class JXlsExporter
 			if (valueOld != null)
 			{
 				throw new JxlsException("Cannot set context variable " + name + " because it was already defined"
-						+"\n Value to set: "+value
-						+"\n Previous value: "+valueOld);
+						+ "\n Value to set: " + value
+						+ "\n Previous value: " + valueOld);
 			}
 			xlsContext.putVar(name, value);
 		}
@@ -192,21 +197,21 @@ public class JXlsExporter
 	{
 		return _loader == null ? getClass().getClassLoader() : _loader;
 	}
-	
+
 	public JXlsExporter setAD_Language(final String adLanguage)
 	{
 		this._adLanguage = adLanguage;
 		return this;
 	}
-	
+
 	private Language getLanguage()
 	{
-		if(!Check.isEmpty(_adLanguage, true))
+		if (!Check.isEmpty(_adLanguage, true))
 		{
 			final Language language = Language.getLanguage(_adLanguage);
 			return language;
 		}
-		
+
 		return Env.getLanguage(getContext());
 	}
 
@@ -254,18 +259,6 @@ public class JXlsExporter
 		return this;
 	}
 
-	private OutputStream getOutputStream()
-	{
-		Check.assumeNotNull(_outputStream, "outputStream not null");
-		return _outputStream;
-	}
-
-	public JXlsExporter setOutput(final OutputStream outputStream)
-	{
-		this._outputStream = outputStream;
-		return this;
-	}
-
 	private IXlsDataSource getDataSource()
 	{
 		Check.assumeNotNull(_dataSource, "dataSource not null");
@@ -296,8 +289,8 @@ public class JXlsExporter
 			String baseName = null;
 			try
 			{
-			    final int dotIndex = _templateResourceName.lastIndexOf('.');
-			    baseName = dotIndex <= 0 ? _templateResourceName : _templateResourceName.substring(0, dotIndex);
+				final int dotIndex = _templateResourceName.lastIndexOf('.');
+				baseName = dotIndex <= 0 ? _templateResourceName : _templateResourceName.substring(0, dotIndex);
 
 				return ResourceBundle.getBundle(baseName, getLocale(), getLoader());
 			}

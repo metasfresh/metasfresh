@@ -1,5 +1,6 @@
 package de.metas.report.jasper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -27,7 +28,6 @@ import java.io.IOException;
 
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +58,7 @@ import de.metas.report.server.AbstractReportEngine;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportConstants;
 import de.metas.report.server.ReportContext;
+import de.metas.report.server.ReportResult;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
@@ -102,12 +103,12 @@ public class JasperEngine extends AbstractReportEngine
 	private final JsonDataSourceService jsonDSService = SpringContextHolder.instance.getBean(JsonDataSourceService.class);
 
 	@Override
-	public void report(@NonNull final ReportContext reportContext, @NonNull final OutputStream out)
+	public ReportResult report(@NonNull final ReportContext reportContext)
 	{
 		try
 		{
 			final JasperPrint jasperPrint = createJasperPrint(reportContext);
-			createOutput(out, jasperPrint, reportContext.getOutputType());
+			return createOutput(jasperPrint, reportContext.getOutputType());
 		}
 		catch (final Exception e)
 		{
@@ -503,7 +504,7 @@ public class JasperEngine extends AbstractReportEngine
 		return false; // not loaded
 	}
 
-	private void createOutput(final OutputStream out, final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
+	private ReportResult createOutput(final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
 	{
 		if (outputType == null)
 		{
@@ -513,7 +514,10 @@ public class JasperEngine extends AbstractReportEngine
 		if (OutputType.PDF == outputType)
 		{
 			final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
-			out.write(data);
+			return ReportResult.builder()
+					.outputType(outputType)
+					.reportContent(data)
+					.build();
 		}
 		else if (OutputType.HTML == outputType)
 		{
@@ -521,36 +525,54 @@ public class JasperEngine extends AbstractReportEngine
 			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
 			// TODO: handle image links
 
+			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			FileUtil.copy(file, out);
+
+			return ReportResult.builder()
+					.outputType(outputType)
+					.reportContent(out.toByteArray())
+					.build();
 		}
 		else if (OutputType.XML == outputType)
 		{
+			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			JasperExportManager.exportReportToXmlStream(jasperPrint, out);
+
+			return ReportResult.builder()
+					.outputType(outputType)
+					.reportContent(out.toByteArray())
+					.build();
 		}
 		else if (OutputType.JasperPrint == outputType)
 		{
-			exportAsJasperPrint(jasperPrint, out);
+			return exportAsJasperPrint(jasperPrint);
 		}
 		else if (OutputType.XLS == outputType)
 		{
-			exportAsExcel(jasperPrint, out);
+			return exportAsExcel(jasperPrint);
 		}
 		else
 		{
 			throw new RuntimeException("Output type " + outputType + " not supported");
 		}
-		out.flush();
-		out.close();
 	}
 
-	private void exportAsJasperPrint(final JasperPrint jasperPrint, final OutputStream out) throws IOException
+	private ReportResult exportAsJasperPrint(final JasperPrint jasperPrint) throws IOException
 	{
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ObjectOutputStream oos = new ObjectOutputStream(out);
 		oos.writeObject(jasperPrint);
+
+		return ReportResult.builder()
+				.outputType(OutputType.JasperPrint)
+				.reportContent(out.toByteArray())
+				.build();
 	}
 
-	private void exportAsExcel(final JasperPrint jasperPrint, final OutputStream out) throws JRException
+	private ReportResult exportAsExcel(final JasperPrint jasperPrint) throws JRException
 	{
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+
 		final MetasJRXlsExporter exporter = new MetasJRXlsExporter();
 		exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, out); // Output
 		exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint); // Input
@@ -576,5 +598,10 @@ public class JasperEngine extends AbstractReportEngine
 		}
 
 		exporter.exportReport();
+
+		return ReportResult.builder()
+				.outputType(OutputType.XLS)
+				.reportContent(out.toByteArray())
+				.build();
 	}
 }
