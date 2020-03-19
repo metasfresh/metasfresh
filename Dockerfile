@@ -10,6 +10,10 @@ RUN apk update && apk upgrade && apk add bash && apk add curl && apk add dos2uni
 COPY ./target/de-metas-edi-esb-camel.jar /opt/metasfresh-esb-camel/
 COPY ./start_esb-camel_docker.sh /opt/metasfresh-esb-camel/
 
+get the APM agent binary
+# the preceeding COPY created the target folder on-the-fly
+RUN curl -s -o /opt/metasfresh-esb-camel/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.12.0/elastic-apm-agent-1.12.0.jar
+
 RUN dos2unix /opt/metasfresh-esb-camel/start_esb-camel_docker.sh
 
 RUN chmod 700 /opt/metasfresh-esb-camel/start_esb-camel_docker.sh
