@@ -43,7 +43,7 @@ import lombok.NonNull;
 
 public interface IBankStatementDAO extends ISingletonService
 {
-	<T extends I_C_BankStatementLine> List<T> retrieveLines(I_C_BankStatement bankStatement, Class<T> clazz);
+	List<I_C_BankStatementLine> retrieveLines(I_C_BankStatement bankStatement);
 
 	List<I_C_BankStatementLine_Ref> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
 

@@ -92,7 +92,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
 	{
 		final I_C_BankStatement bankStatement = getById(bankStatementId);
-		final List<I_C_BankStatementLine> lines = retrieveLines(bankStatement, I_C_BankStatementLine.class);
+		final List<I_C_BankStatementLine> lines = retrieveLines(bankStatement);
 		return lines.stream()
 				.map(l -> PaymentId.ofRepoIdOrNull(l.getC_Payment_ID()))
 				.filter(Objects::nonNull)
@@ -118,11 +118,11 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public <T extends I_C_BankStatementLine> List<T> retrieveLines(final I_C_BankStatement bankStatement, final Class<T> clazz)
+	public List<I_C_BankStatementLine> retrieveLines(final I_C_BankStatement bankStatement)
 	{
 		return retrieveLinesQuery(bankStatement)
 				.create()
-				.list(clazz);
+				.list();
 	}
 
 	private IQueryBuilder<I_C_BankStatementLine> retrieveLinesQuery(final I_C_BankStatement bankStatement)

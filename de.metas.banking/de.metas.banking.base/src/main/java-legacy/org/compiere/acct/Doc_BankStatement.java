@@ -83,7 +83,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bs)
 	{
 		final List<DocLine_BankStatement> docLines = new ArrayList<>();
-		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs, I_C_BankStatementLine.class))
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 

@@ -258,7 +258,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		if (bankStatementLine.getLine() <= 0)
 		{
-			final List<I_C_BankStatementLine> bankStatementLines = bankStatementDAO.retrieveLines(bankStatementDAO.getById(bankStatementId), I_C_BankStatementLine.class);
+			final List<I_C_BankStatementLine> bankStatementLines = bankStatementDAO.retrieveLines(bankStatementDAO.getById(bankStatementId));
 
 			final int maxLineNo = bankStatementLines.stream()
 					.max(Comparator.comparing(line -> line.getLine()))
