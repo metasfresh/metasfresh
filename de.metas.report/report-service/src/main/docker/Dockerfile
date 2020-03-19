@@ -25,9 +25,10 @@ RUN apt update \
     && apt -y autoremove \
     && apt -y autoclean
 
-RUN curl -o /opt/metasfresh/metasfresh-report/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.12.0/elastic-apm-agent-1.12.0.jar
-
 COPY ./metasfresh-report-service-standalone.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
+
+# the preceeding COPY created the folder on-the-fly
+RUN curl -o /opt/metasfresh/metasfresh-report/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.12.0/elastic-apm-agent-1.12.0.jar
 
 # Explode the uber jar to make it easier to work with the docker image; 
 # e.g. with the exploded uber jar, we can later copy or overwrite config files into the docker image that change the applications behavior.
