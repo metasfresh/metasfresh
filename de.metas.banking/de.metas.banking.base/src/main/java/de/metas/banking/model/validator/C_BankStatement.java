@@ -25,9 +25,9 @@ package de.metas.banking.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.util.Services;
 

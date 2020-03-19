@@ -6,11 +6,8 @@ import java.util.Set;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.payment.PaymentId;
@@ -25,11 +22,6 @@ public interface IPaySelectionBL extends ISingletonService
 	IPaySelectionUpdater newPaySelectionUpdater();
 
 	/**
-	 * Create bank statement lines for the given <code>bankStatement</code>, using the pay selection lines of the given <code>paySelection</code>.
-	 */
-	void createBankStatementLines(I_C_BankStatement bankStatement, I_C_PaySelection paySelection);
-
-	/**
 	 * Create payments for each line of given pay selection. The payments are created only if they where not created before.<br>
 	 * For more informations, see {@link #createPaymentIfNeeded(I_C_PaySelectionLine)}.
 	 */
@@ -41,7 +33,7 @@ public interface IPaySelectionBL extends ISingletonService
 	 * A payment will be created only if
 	 * <ul>
 	 * <li>was not created before
-	 * <li>line is not linked to a {@link I_C_BankStatementLine} or {@link I_C_BankStatementLine_Ref}.
+	 * <li>line is not linked to a bank statement line ref
 	 * </ul>
 	 *
 	 * @return newly created payment or <code>null</code> if no payment was generated.

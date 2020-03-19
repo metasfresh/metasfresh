@@ -44,32 +44,14 @@ public interface IBankStatementBL extends ISingletonService
 	ModelDynAttributeAccessor<I_C_BankStatementLine_Ref, Boolean> DYNATTR_DisableBankStatementLineRecalculateFromReferences = new ModelDynAttributeAccessor<>(
 			"DisableBankStatementLineRecalculateFromReferences", Boolean.class);
 
-	/**
-	 * Handles:
-	 * <ul>
-	 * <li>{@link I_C_BankStatementLine_Ref#getC_Payment()}s
-	 * </ul>
-	 */
 	void handleAfterPrepare(I_C_BankStatement bankStatement);
 
-	/**
-	 * Handles:
-	 * <ul>
-	 * <li>{@link I_C_BankStatementLine_Ref#getC_Payment()}s
-	 * </ul>
-	 */
 	void handleAfterComplete(I_C_BankStatement bankStatement);
 
-	/**
-	 * Handles:
-	 * <ul>
-	 * <li>{@link I_C_BankStatementLine_Ref#getC_Payment()}s
-	 * </ul>
-	 */
 	void handleBeforeVoid(I_C_BankStatement bankStatement);
 
 	/**
-	 * Updates {@link I_C_BankStatementLine}'s amounts from {@link I_C_BankStatementLine_Ref} lines.
+	 * Updates {@link I_C_BankStatementLine}'s amounts from bank statement line references.
 	 * <p>
 	 * NOTE: this method it is also saving the given bank statement line.
 	 */

@@ -8,6 +8,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
@@ -40,9 +41,8 @@ import org.slf4j.Logger;
  */
 
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
@@ -69,10 +69,8 @@ public class BankStatementBL implements IBankStatementBL
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
-		for (final MBankStatementLine linePO : bankStatementPO.getLines(false))
+		for (final I_C_BankStatementLine line : bankStatementPO.getLines(false))
 		{
-			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO, I_C_BankStatementLine.class);
-
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 			{
 				// Payment in C_BankStatementLine_Ref are mandatory

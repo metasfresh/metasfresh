@@ -29,7 +29,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ConversionTypeMethod;

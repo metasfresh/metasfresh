@@ -1,7 +1,5 @@
 package de.metas.banking.bankstatement.match.spi.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
@@ -11,7 +9,7 @@ import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.PaymentBatch;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.IMsgBL;
@@ -65,17 +63,19 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 	}
 
 	@Override
-	public void linkBankStatementLine(final IPaymentBatch paymentBatch, final I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void linkBankStatementLine(
+			final IPaymentBatch paymentBatch,
+			final BankStatementAndLineAndRefId bankStatementLineRefId,
+			final PaymentId paymentId)
 	{
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(bankStatementLineRef);
-		final I_C_PaySelection paySelection = paymentBatch.getRecord().getModel(context, I_C_PaySelection.class);
-		if (paySelection == null)
+		if (paymentId == null)
 		{
 			return;
 		}
 
-		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLineRef.getC_Payment_ID());
-		if (paymentId == null)
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paymentBatch.getRecord().getRecord_ID());
+		final I_C_PaySelection paySelection = Services.get(IPaySelectionDAO.class).getById(paySelectionId).orElse(null);
+		if (paySelection == null)
 		{
 			return;
 		}
@@ -88,14 +88,6 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 		}
 
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
-		paySelectionBL.linkBankStatementLine(paySelectionLine, extractBankStatementAndLineAndRefId(bankStatementLineRef));
-	}
-
-	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		return BankStatementAndLineAndRefId.ofRepoIds(
-				bankStatementLineRef.getC_BankStatement_ID(),
-				bankStatementLineRef.getC_BankStatementLine_ID(),
-				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
+		paySelectionBL.linkBankStatementLine(paySelectionLine, bankStatementLineRefId);
 	}
 }

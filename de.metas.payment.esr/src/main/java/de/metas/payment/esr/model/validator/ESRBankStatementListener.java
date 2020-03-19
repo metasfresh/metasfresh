@@ -1,13 +1,12 @@
 package de.metas.payment.esr.model.validator;
 
+import org.compiere.model.I_C_BankStatementLine;
+
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.banking.service.BankStatementListenerAdapter;
+import de.metas.banking.service.IBankStatementListener;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -37,7 +36,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-class ESRBankStatementListener extends BankStatementListenerAdapter
+class ESRBankStatementListener implements IBankStatementListener
 {
 	public static final transient ESRBankStatementListener instance = new ESRBankStatementListener();
 
@@ -53,17 +52,8 @@ class ESRBankStatementListener extends BankStatementListenerAdapter
 	}
 
 	@Override
-	public void onBankStatementLineRefVoiding(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void onBankStatementLineRefVoiding(final BankStatementAndLineAndRefId bankStatementLineRefId)
 	{
-		final BankStatementAndLineAndRefId bankStatementLineRefId = extractBankStatementAndLineAndRefId(bankStatementLineRef);
 		Services.get(IESRImportBL.class).unlinkESRImportLinesFor(bankStatementLineRefId);
-	}
-
-	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(@NonNull final I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		return BankStatementAndLineAndRefId.ofRepoIds(
-				bankStatementLineRef.getC_BankStatement_ID(),
-				bankStatementLineRef.getC_BankStatementLine_ID(),
-				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
 	}
 }

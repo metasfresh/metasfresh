@@ -1,22 +1,7 @@
 package de.metas.banking.impexp;
 
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.service.IBankStatementDAO;
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_I_BankStatement;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_I_BankStatement;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -26,8 +11,24 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_I_BankStatement;
+
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.service.IBankStatementDAO;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
 
 /*
  * #%L

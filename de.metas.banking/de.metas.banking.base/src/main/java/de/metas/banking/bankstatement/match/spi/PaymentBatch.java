@@ -7,8 +7,9 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.i18n.IMsgBL;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 /*
@@ -24,11 +25,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,7 +42,7 @@ import de.metas.util.Services;
  */
 public final class PaymentBatch implements IPaymentBatch
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -64,20 +65,20 @@ public final class PaymentBatch implements IPaymentBatch
 	}
 
 	@Override
-	public final String toString()
+	public String toString()
 	{
 		// NOTE: this is used in list/combo/table renderers
 		return name;
 	}
 
 	@Override
-	public final int hashCode()
+	public int hashCode()
 	{
 		return id.hashCode();
 	}
 
 	@Override
-	public final boolean equals(final Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -96,25 +97,25 @@ public final class PaymentBatch implements IPaymentBatch
 	}
 
 	@Override
-	public final String getId()
+	public String getId()
 	{
 		return id;
 	}
 
 	@Override
-	public final Date getDate()
+	public Date getDate()
 	{
 		return date;
 	}
 
 	@Override
-	public final ITableRecordReference getRecord()
+	public ITableRecordReference getRecord()
 	{
 		return record;
 	}
 
 	@Override
-	public final void linkBankStatementLine(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void linkBankStatementLine(final BankStatementAndLineAndRefId bankStatementLineRefId, final PaymentId paymentId)
 	{
 		if (paymentBatchProvider == null)
 		{
@@ -124,8 +125,8 @@ public final class PaymentBatch implements IPaymentBatch
 		{
 			return;
 		}
-		
-		paymentBatchProvider.linkBankStatementLine(this, bankStatementLineRef);
+
+		paymentBatchProvider.linkBankStatementLine(this, bankStatementLineRefId, paymentId);
 	}
 
 	public static final class Builder
@@ -213,13 +214,13 @@ public final class PaymentBatch implements IPaymentBatch
 		{
 			return record;
 		}
-		
+
 		public Builder setPaymentBatchProvider(IPaymentBatchProvider paymentBatchProvider)
 		{
 			this.paymentBatchProvider = paymentBatchProvider;
 			return this;
 		}
-		
+
 		private IPaymentBatchProvider getPaymentBatchProvider()
 		{
 			return paymentBatchProvider;

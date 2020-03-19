@@ -1,32 +1,16 @@
 package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAllocationHdr;
-import org.compiere.model.MAllocationLine;
-import org.compiere.model.MBankStatementLine;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MPayment;
-import org.compiere.model.X_C_AllocationHdr;
-import org.compiere.model.X_C_Payment;
-import org.compiere.model.X_I_BankStatement;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 /*
  * #%L
@@ -53,19 +37,11 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileResult;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ICurrencyBL;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -75,34 +51,31 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
-
-	private static final transient Logger logger = LogManager.getLogger(BankStatmentPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
-	public void setC_Payment(@NonNull final IBankStatementLineOrRef lineOrRef, @Nullable final I_C_Payment payment)
+	public void setC_Payment(@NonNull final I_C_BankStatementLine line, @Nullable final I_C_Payment payment)
 	{
 		if (payment == null)
 		{
-			lineOrRef.setC_Payment_ID(0);
-			lineOrRef.setDiscountAmt(BigDecimal.ZERO);
-			lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
-			lineOrRef.setIsOverUnderPayment(false);
-			lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
-			setPayAmt(lineOrRef, BigDecimal.ZERO);
+			line.setC_Payment_ID(0);
+			line.setDiscountAmt(BigDecimal.ZERO);
+			line.setWriteOffAmt(BigDecimal.ZERO);
+			line.setIsOverUnderPayment(false);
+			line.setOverUnderAmt(BigDecimal.ZERO);
+			setPayAmt(line, BigDecimal.ZERO);
 			return;
 		}
 
-		lineOrRef.setC_Payment_ID(payment.getC_Payment_ID());
-		lineOrRef.setC_Currency_ID(payment.getC_Currency_ID());
-		lineOrRef.setC_BPartner_ID(payment.getC_BPartner_ID());
-		lineOrRef.setC_Invoice_ID(payment.getC_Invoice_ID());
+		line.setC_Payment_ID(payment.getC_Payment_ID());
+		line.setC_Currency_ID(payment.getC_Currency_ID());
+		line.setC_BPartner_ID(payment.getC_BPartner_ID());
+		line.setC_Invoice_ID(payment.getC_Invoice_ID());
 		//
 		BigDecimal multiplier = BigDecimal.ONE;
 		if (!payment.isReceipt())
@@ -112,17 +85,15 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 
 		final BigDecimal payAmt = payment.getPayAmt().multiply(multiplier);
 
-		setPayAmt(lineOrRef, payAmt);
-		lineOrRef.setDiscountAmt(payment.getDiscountAmt().multiply(multiplier));
-		lineOrRef.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
-		lineOrRef.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
-		lineOrRef.setIsOverUnderPayment(payment.isOverUnderPayment());
+		setPayAmt(line, payAmt);
+		line.setDiscountAmt(payment.getDiscountAmt().multiply(multiplier));
+		line.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
+		line.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
+		line.setIsOverUnderPayment(payment.isOverUnderPayment());
 	}
 
 	@Override
-	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(
-			@NonNull final org.compiere.model.I_C_BankStatement bankStatement,
-			@NonNull final de.metas.banking.model.I_C_BankStatementLine line)
+	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(@NonNull final I_C_BankStatement bankStatement, @NonNull final I_C_BankStatementLine line)
 	{
 		final boolean manualActionRequired = findAndLinkPaymentToBankStatementLineIfPossible(line);
 
@@ -136,7 +107,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	/**
 	 * @return true if the automatic flow should STOP as manual action is required; false if the automatic flow should continue
 	 */
-	private boolean findAndLinkPaymentToBankStatementLineIfPossible(final de.metas.banking.model.I_C_BankStatementLine line)
+	private boolean findAndLinkPaymentToBankStatementLineIfPossible(final I_C_BankStatementLine line)
 	{
 		// a payment is already linked
 		if (line.getC_Payment_ID() > 0)
@@ -172,8 +143,8 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 
 	@Override
 	public Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(
-			@NonNull final org.compiere.model.I_C_BankStatement bankStatement,
-			@NonNull final de.metas.banking.model.I_C_BankStatementLine line,
+			@NonNull final I_C_BankStatement bankStatement,
+			@NonNull final I_C_BankStatementLine line,
 			@Nullable final PaymentId paymentIdToSet)
 	{
 		// a payment is already linked
@@ -249,483 +220,14 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 				.createAndProcess();
 	}
 
-	public void setPayAmt(final IBankStatementLineOrRef lineOrRef, final BigDecimal payAmt)
+	private void setPayAmt(@NonNull final I_C_BankStatementLine line, final BigDecimal payAmt)
 	{
-		setPayAmt(lineOrRef, payAmt, false);
-	}
-
-	public void setPayAmt(final IBankStatementLineOrRef lineOrRef, final BigDecimal payAmt, final boolean updateStatementAmt)
-	{
-		Check.assumeNotNull(lineOrRef, "lineOrRef not null");
-
-		if (lineOrRef instanceof I_C_BankStatementLine)
+		line.setTrxAmt(payAmt);
+		if (line.getStmtAmt().signum() == 0)
 		{
-			final I_C_BankStatementLine bsl = (I_C_BankStatementLine)lineOrRef;
-			bsl.setTrxAmt(payAmt);
-			if (updateStatementAmt || bsl.getStmtAmt().signum() == 0)
-			{
-				bsl.setStmtAmt(payAmt);
-			}
-		}
-		else if (lineOrRef instanceof I_C_BankStatementLine_Ref)
-		{
-			((I_C_BankStatementLine_Ref)lineOrRef).setTrxAmt(payAmt);
-		}
-		else
-		{
-			throw new IllegalStateException("Object not supported: " + lineOrRef);
+			line.setStmtAmt(payAmt);
 		}
 	}
-
-	/**
-	 * Create Payment for Import
-	 *
-	 * @param ibs import bank statement
-	 * @return Message
-	 */
-	@Override
-	public String createPayment(final X_I_BankStatement ibs)
-	{
-		if (ibs == null || ibs.getC_Payment_ID() != 0)
-		{
-			return "--";
-		}
-		logger.debug(ibs.toString());
-		if (ibs.getC_Invoice_ID() == 0 && ibs.getC_BPartner_ID() == 0)
-		{
-			throw new AdempiereException("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@");
-		}
-		if (ibs.getC_BP_BankAccount_ID() == 0)
-		{
-			throw new AdempiereException("@NotFound@ @C_BP_BankAccount_ID@");
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ibs);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ibs);
-
-		//
-		final MPayment payment = createPayment(ctx,
-				ibs.getC_Invoice_ID(), ibs.getC_BPartner_ID(),
-				ibs.getC_Currency_ID(), ibs.getStmtAmt(), ibs.getTrxAmt(),
-				BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, // metas
-				ibs.getC_BP_BankAccount_ID(),
-				ibs.getStatementLineDate() == null ? ibs.getStatementDate() : ibs.getStatementLineDate(),
-				ibs.getDateAcct(), ibs.getDescription(), ibs.getAD_Org_ID(),
-				trxName);
-		if (payment == null)
-		{
-			throw new AdempiereException("Could not create Payment");
-		}
-
-		ibs.setC_Payment_ID(payment.getC_Payment_ID());
-		ibs.setC_Currency_ID(payment.getC_Currency_ID());
-		ibs.setTrxAmt(payment.getPayAmt());
-		ibs.save();
-		//
-		String retString = "@C_Payment_ID@ = " + payment.getDocumentNo();
-		if (payment.getOverUnderAmt().signum() != 0)
-		{
-			retString += " - @OverUnderAmt@=" + payment.getOverUnderAmt();
-		}
-		return retString;
-	}    // createPayment - Import
-
-	/**
-	 * Create Payment for BankStatement
-	 *
-	 * @return Message
-	 */
-	@Override
-	public String createPayment(final MBankStatementLine bslPO)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bslPO);
-		final String trxName = InterfaceWrapperHelper.getTrxName(bslPO);
-
-		Check.assumeNotNull(bslPO, "Param bslPO not null");
-		if (bslPO.getC_Payment_ID() > 0)
-		{
-			return "--";
-		}
-		logger.debug(bslPO.toString());
-
-		// CHANGED
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(bslPO, I_C_BankStatementLine.class);
-
-		final org.compiere.model.I_C_BankStatement bs = bsl.getC_BankStatement();
-		final MPayment payment;
-
-		if (!bsl.isMultiplePaymentOrInvoice()) // only one payment/invoice
-		{
-			if (bsl.getC_Invoice_ID() <= 0 && bsl.getC_BPartner_ID() <= 0)
-			{
-				throw new AdempiereException("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@");
-			}
-			//
-			payment = createPayment(ctx,
-					bsl.getC_Invoice_ID(),
-					bsl.getC_BPartner_ID(),
-					bsl.getC_Currency_ID(),
-					bsl.getStmtAmt(),
-					bsl.getTrxAmt(),
-					bsl.getDiscountAmt(),
-					bsl.getOverUnderAmt(),
-					bsl.getWriteOffAmt(),
-					bs.getC_BP_BankAccount_ID(),
-					bsl.getStatementLineDate(),
-					bsl.getDateAcct(),
-					bsl.getDescription(),
-					bsl.getAD_Org_ID(),
-					trxName);
-			if (payment == null)
-			{
-				throw new AdempiereException("Could not create Payment");
-			}
-			// update statement
-			bslPO.setPayment(payment);
-			bslPO.saveEx();
-		}
-		// multiple Invoices, one payment
-		// all Invoices must have the same BPartner!
-		else if (!bsl.isMultiplePayment())
-		{
-			final BigDecimal stmtAmt = bsl.getStmtAmt();
-			final BigDecimal trxAmt = bsl.getTrxAmt();
-			BigDecimal discountAmt = bsl.getDiscountAmt();
-			BigDecimal writeOffAmt = bsl.getWriteOffAmt();
-			BigDecimal overUnderAmt = bsl.getOverUnderAmt();
-
-			final List<I_C_BankStatementLine_Ref> refLines = bankStatementDAO.retrieveLineReferences(bsl);
-
-			//
-			// Get business partner, validate lines
-			int bpartnerId = -1;
-			for (final I_C_BankStatementLine_Ref refLine : refLines)
-			{
-				final int linePartnerId = refLine.getC_BPartner_ID();
-				if (bpartnerId > 0 && linePartnerId > 0 && linePartnerId != bpartnerId)
-				{
-					throw new AdempiereException("@Invalid@ @C_BPartner_ID@");
-				}
-				if (bpartnerId <= 0 && linePartnerId > 0)
-				{
-					bpartnerId = refLine.getC_BPartner_ID();
-				}
-				//
-				if (refLine.getC_Payment_ID() > 0)
-				{
-					throw new AdempiereException("Line " + refLine + " already paid"); // TODO: AD_Message
-				}
-			}
-
-			// create the payment
-			payment = createPayment(ctx,
-					0, bpartnerId,
-					bsl.getC_Currency_ID(), stmtAmt, trxAmt, discountAmt, overUnderAmt, writeOffAmt,
-					bs.getC_BP_BankAccount_ID(), bsl.getStatementLineDate(), bsl.getDateAcct(),
-					bsl.getDescription(), bsl.getAD_Org_ID(),
-					trxName);
-			if (payment == null)
-			{
-				throw new AdempiereException("Could not create Payment");
-			}
-			// update statement
-			bslPO.setPayment(payment);
-			bslPO.saveEx();
-
-			// allocate the payment
-			final MAllocationHdr alloc = new MAllocationHdr(ctx, true,
-					bsl.getDateAcct(), bsl.getC_Currency_ID(),
-					Env.getContext(Env.getCtx(), "#AD_User_Name"),
-					trxName);
-			alloc.setAD_Org_ID(bsl.getAD_Org_ID());
-			alloc.saveEx();
-			for (final I_C_BankStatementLine_Ref refLine : refLines)
-			{
-				final MInvoice inv = new MInvoice(ctx, refLine.getC_Invoice_ID(), trxName);
-				BigDecimal amount = refLine.getTrxAmt();
-				discountAmt = refLine.getDiscountAmt();
-				writeOffAmt = refLine.getWriteOffAmt();
-				overUnderAmt = refLine.getOverUnderAmt();
-				if (refLine.getC_Currency_ID() != bsl.getC_Currency_ID())
-				{
-					// convert amounts
-					final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-
-					final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
-					final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
-					final LocalDate dateConv = TimeUtil.asLocalDate(bsl.getDateAcct());
-					final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID());
-					final ClientId clientId = ClientId.ofRepoId(bsl.getAD_Client_ID());
-					final OrgId orgId = OrgId.ofRepoId(bsl.getAD_Org_ID());
-					amount = currencyConversionBL.convert(
-							amount,
-							refLineCurrencyId,
-							bslCurrencyId,
-							dateConv,
-							conversionTypeId,
-							clientId,
-							orgId);
-					discountAmt = currencyConversionBL.convert(
-							discountAmt,
-							refLineCurrencyId,
-							bslCurrencyId,
-							dateConv,
-							conversionTypeId,
-							clientId,
-							orgId);
-					writeOffAmt = currencyConversionBL.convert(
-							writeOffAmt,
-							refLineCurrencyId,
-							bslCurrencyId,
-							dateConv,
-							conversionTypeId,
-							clientId,
-							orgId);
-					overUnderAmt = currencyConversionBL.convert(
-							overUnderAmt,
-							refLineCurrencyId,
-							bslCurrencyId,
-							dateConv,
-							conversionTypeId,
-							clientId,
-							orgId);
-				}
-				final MAllocationLine aLine = new MAllocationLine(alloc, amount, discountAmt, writeOffAmt, overUnderAmt);
-				aLine.setDocInfo(inv.getC_BPartner_ID(), inv.getC_Order_ID(), inv.get_ID());
-				aLine.setC_Payment_ID(payment.get_ID());
-				aLine.saveEx();
-			}
-			final boolean ok = alloc.processIt(X_C_AllocationHdr.DOCACTION_Complete);
-			alloc.saveEx();
-			if (!ok)
-			{
-				throw new AdempiereException(alloc.getProcessMsg());
-			}
-		}
-		// multiple Invoices, multiple payments
-		else
-		{
-			throw new AdempiereException("@NotSupported@"); // TODO: implement... i.e. redirect to createPayment(ref)
-		}
-
-		//
-		String retString = "@C_Payment_ID@ = " + payment.getDocumentNo();
-		if (payment.getOverUnderAmt().signum() != 0)
-		{
-			retString += " - @OverUnderAmt@=" + payment.getOverUnderAmt();
-		}
-		return retString;
-	}    // createPayment
-
-	@Override
-	public String createPayment(final I_C_BankStatementLine_Ref ref)
-	{
-		if (ref == null || ref.getC_Payment_ID() > 0)
-		{
-			return "--";
-		}
-
-		if (ref.getC_Invoice_ID() <= 0 && ref.getC_BPartner_ID() > 0)
-		{
-			throw new AdempiereException("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@");
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ref);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ref);
-
-		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(ref.getC_BankStatementLine_ID());
-		final I_C_BankStatementLine bsl = bankStatementDAO.getLineById(bankStatementLineId);
-		if (!bsl.isMultiplePaymentOrInvoice() || !bsl.isMultiplePayment())
-		{
-			throw new AdempiereException("@IsMultiplePayment@=N");
-		}
-
-		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bsl.getC_BankStatement_ID());
-		final I_C_BankStatement bs = bankStatementDAO.getById(bankStatementId);
-
-		final MPayment payment = createPayment(ctx,
-				ref.getC_Invoice_ID(), ref.getC_BPartner_ID(),
-				ref.getC_Currency_ID(), ref.getTrxAmt(), ref.getTrxAmt(),
-				ref.getDiscountAmt(), ref.getOverUnderAmt(), ref.getWriteOffAmt(),
-				bs.getC_BP_BankAccount_ID(), bsl.getStatementLineDate(), bsl.getDateAcct(),
-				bsl.getDescription(), bsl.getAD_Org_ID(),
-				trxName);
-		if (payment == null)
-		{
-			throw new AdempiereException("Could not create Payment");
-		}
-		// update statement
-		ref.setC_Payment(payment);
-		bankStatementDAO.save(ref);
-		//
-		String retString = "@C_Payment_ID@ = " + payment.getDocumentNo();
-		if (payment.getOverUnderAmt().signum() != 0)
-		{
-			retString += " - @OverUnderAmt@=" + payment.getOverUnderAmt();
-		}
-		return retString;
-	}    // createPayment
-
-	// CHANGED - add discount/overunder/writeoff
-
-	/**
-	 * Create actual Payment.
-	 *
-	 * @param C_Invoice_ID invoice
-	 * @param C_BPartner_ID partner ignored when invoice exists
-	 * @param C_Currency_ID currency
-	 * @param StmtAmt statement amount may be <code>null</code>. If is is <code>null</code> and <code>TrxAmt</code> is also null, then the invoice's open ampount is used as pay amount
-	 * @param TrxAmt maybe be <code>null</code>. If set, then it is used as the payment's payAmt. If <code>null</code>, then <code>StmAmt</code> is used instead
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param DateTrx transaction date
-	 * @param DateAcct accounting date
-	 * @param Description description
-	 * @param AD_Org_ID org
-	 * @return payment
-	 */
-	private MPayment createPayment(final Properties ctx,
-			final int C_Invoice_ID,
-			final int C_BPartner_ID,
-			final int C_Currency_ID,
-			final BigDecimal StmtAmt,
-			final BigDecimal TrxAmt,
-			final BigDecimal discountAmt,
-			final BigDecimal overUnderAmt,
-			final BigDecimal writeOffAmt, // metas
-			final int C_BP_BankAccount_ID,
-			final Timestamp DateTrx,
-			final Timestamp DateAcct,
-			final String Description,
-			final int AD_Org_ID,
-			final String trxName)
-	{
-		if (logger.isDebugEnabled())
-		{
-			logger.debug(C_Invoice_ID + " - " + C_BPartner_ID + " - " + C_Currency_ID
-					+ " - " + StmtAmt + " - " + TrxAmt + " - " + discountAmt
-					+ " - " + overUnderAmt + " - " + writeOffAmt + " - " + C_BP_BankAccount_ID
-					+ " - " + DateTrx + " - " + DateAcct + " - " + Description + " - " + AD_Org_ID);
-		}
-
-		// Trx Amount = Payment overwrites Statement Amount if defined
-		BigDecimal PayAmt = TrxAmt;
-		if (PayAmt == null || PayAmt.signum() == 0)
-		{
-			PayAmt = StmtAmt;
-		}
-		if (C_Invoice_ID <= 0 && (PayAmt == null || PayAmt.signum() == 0))
-		{
-			throw new IllegalStateException("@PayAmt@ = 0");
-		}
-		if (PayAmt == null)
-		{
-			PayAmt = BigDecimal.ZERO;
-		}
-		//
-		final MPayment payment = new MPayment(ctx, 0, trxName);
-		payment.setAD_Org_ID(AD_Org_ID);
-		payment.setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-
-		// FIXME this is a weak workaround
-		if (C_BP_BankAccount_ID > 0)
-		{
-			payment.setTenderType(TenderType.DirectDeposit.getCode());
-		}
-		else
-		{
-			payment.setTenderType(TenderType.Cash.getCode());
-		}
-
-		if (DateTrx != null)
-		{
-			payment.setDateTrx(DateTrx);
-		}
-		else if (DateAcct != null)
-		{
-			payment.setDateTrx(DateAcct);
-		}
-		if (DateAcct != null)
-		{
-			payment.setDateAcct(DateAcct);
-		}
-		else
-		{
-			payment.setDateAcct(payment.getDateTrx());
-		}
-		payment.setDescription(Description);
-		//
-		if (C_Invoice_ID > 0)
-		{
-			final MInvoice invoice = new MInvoice(ctx, C_Invoice_ID, ITrx.TRXNAME_None);
-			payment.setIsReceiptAndUpdateDocType(invoice.isSOTrx());
-			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
-			payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-			if (PayAmt.signum() != 0)    // explicit Amount
-			{
-				payment.setC_Currency_ID(C_Currency_ID);
-				if (invoice.isSOTrx())
-				{
-					payment.setPayAmt(PayAmt);
-				}
-				else
-				{
-					payment.setPayAmt(PayAmt.negate());
-				}
-				// CHANGED - explicite discount/writeoff/overunder
-				payment.setDiscountAmt(discountAmt);
-				payment.setWriteOffAmt(writeOffAmt);
-				// payment.setOverUnderAmt(overUnderAmt);
-				// ensure correct overunder amount
-				payment.setOverUnderAmt(invoice.getOpenAmt(true, null)
-						.subtract(payment.getPayAmt())
-						.subtract(discountAmt)
-						.subtract(writeOffAmt));
-			}
-			else
-			// set Pay Amout from Invoice
-			{
-				payment.setC_Currency_ID(invoice.getC_Currency_ID());
-				payment.setPayAmt(invoice.getOpenAmt(true, null));
-				payment.setDiscountAmt(discountAmt);
-				payment.setWriteOffAmt(writeOffAmt);
-				// payment.setOverUnderAmt(overUnderAmt);
-			}
-		}
-		else if (C_BPartner_ID > 0)
-		{
-			payment.setC_BPartner_ID(C_BPartner_ID);
-			payment.setC_Currency_ID(C_Currency_ID);
-			if (PayAmt.signum() < 0)    // Payment
-			{
-				payment.setPayAmt(PayAmt.abs());
-				payment.setIsReceiptAndUpdateDocType(false);
-			}
-			else
-			// Receipt
-			{
-				payment.setPayAmt(PayAmt);
-				payment.setIsReceiptAndUpdateDocType(true);
-			}
-			// metas: begin
-			payment.setDiscountAmt(discountAmt);
-			payment.setWriteOffAmt(writeOffAmt);
-			payment.setOverUnderAmt(overUnderAmt);
-			// metas: end
-		}
-		else
-		{
-			throw new AdempiereException("@NotFound@ @C_Invoice_ID@ / @C_BPartner_ID@"); // metas
-		}
-		payment.saveEx(); // metas
-		//
-		final boolean ok = payment.processIt(X_C_Payment.DOCACTION_Complete);
-		payment.saveEx();
-		if (!ok)
-		{
-			throw new AdempiereException(payment.getProcessMsg());
-		}
-		return payment;
-	}    // createPayment
 
 	@Override
 	public BankStatementLineReconcileResult reconcile(@NonNull final BankStatementLineReconcileRequest request)

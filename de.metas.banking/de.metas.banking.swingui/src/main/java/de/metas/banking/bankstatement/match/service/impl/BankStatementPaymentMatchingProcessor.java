@@ -1,12 +1,10 @@
 package de.metas.banking.bankstatement.match.service.impl;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -17,10 +15,18 @@ import de.metas.banking.bankstatement.match.model.IBankStatementLine;
 import de.metas.banking.bankstatement.match.model.IBankStatementPaymentMatching;
 import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,7 +54,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Process {@link IBankStatementPaymentMatching}s and creates {@link I_C_BankStatementLine_Ref}s.
+ * Process {@link IBankStatementPaymentMatching}s and creates bank statement line references.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -115,42 +121,35 @@ public class BankStatementPaymentMatchingProcessor
 		int nextReferenceLineNo = 10;
 		for (final IPayment payment : payments)
 		{
-			final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
-			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(bankStatementLineRef, true); // disable recalculation because we shall NOT change the bank statement
-																															 // line
+			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 
-			bankStatementLineRef.setC_BankStatement_ID(bankStatementLinePO.getC_BankStatement_ID());
-			bankStatementLineRef.setC_BankStatementLine_ID(bankStatementLinePO.getC_BankStatementLine_ID());
-			bankStatementLineRef.setLine(nextReferenceLineNo);
-
-			bankStatementLineRef.setAD_Org_ID(bankStatementLinePO.getAD_Org_ID());
-
-			bankStatementLineRef.setC_BPartner_ID(payment.getC_BPartner_ID());
-			bankStatementLineRef.setC_Payment_ID(payment.getC_Payment_ID());
-			bankStatementLineRef.setC_Invoice_ID(payment.getC_Invoice_ID());
-			bankStatementLineRef.setC_Currency_ID(payment.getC_Currency_ID());
-
-			bankStatementLineRef.setTrxAmt(payment.getPayAmt());
-			bankStatementLineRef.setDiscountAmt(BigDecimal.ZERO);
-			bankStatementLineRef.setOverUnderAmt(BigDecimal.ZERO);
-			bankStatementLineRef.setIsOverUnderPayment(false);
-
-			//
-			// Save the bank statement line reference
-			// bankStatementLineRef.setProcessed(true); // virtual column
-			bankStatementDAO.save(bankStatementLineRef);
+			final BankStatementAndLineAndRefId bankStatementLineRefId = bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
+					.bankStatementId(BankStatementId.ofRepoId(bankStatementLinePO.getC_BankStatement_ID()))
+					.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLinePO.getC_BankStatementLine_ID()))
+					//
+					.orgId(OrgId.ofRepoId(bankStatementLinePO.getAD_Org_ID()))
+					//
+					.lineNo(nextReferenceLineNo)
+					//
+					.paymentId(paymentId)
+					.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
+					.invoiceId(InvoiceId.ofRepoIdOrNull(payment.getC_Invoice_ID()))
+					//
+					.trxAmt(extractPayAmt(payment))
+					//
+					.build());
 			nextReferenceLineNo += 10;
 
 			// Payment batch linking
 			final IPaymentBatch paymentBatch = payment.getPaymentBatch();
 			if (paymentBatch != null)
 			{
-				paymentBatch.linkBankStatementLine(bankStatementLineRef);
+				paymentBatch.linkBankStatementLine(bankStatementLineRefId, paymentId);
 			}
 
 			//
 			// Update the payment
-			final I_C_Payment paymentPO = bankStatementLineRef.getC_Payment();
+			final I_C_Payment paymentPO = paymentDAO.getById(paymentId);
 			paymentPO.setIsReconciled(true);
 			paymentDAO.save(paymentPO);
 		}
@@ -168,6 +167,11 @@ public class BankStatementPaymentMatchingProcessor
 		{
 			bankStatementsToUnpost.put(bankStatementId, bankStatementLinePO.getC_BankStatement());
 		}
+	}
+
+	private static Money extractPayAmt(final IPayment payment)
+	{
+		return Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
 	}
 
 	private final void assertNotProcessed()

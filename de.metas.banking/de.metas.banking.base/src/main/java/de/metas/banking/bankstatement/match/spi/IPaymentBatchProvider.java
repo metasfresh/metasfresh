@@ -2,7 +2,8 @@ package de.metas.banking.bankstatement.match.spi;
 
 import org.compiere.model.I_C_Payment;
 
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.payment.PaymentId;
 
 /*
  * #%L
@@ -42,5 +43,5 @@ public interface IPaymentBatchProvider
 	 * @param paymentBatch
 	 * @param bankStatementLineRef
 	 */
-	void linkBankStatementLine(final IPaymentBatch paymentBatch, final I_C_BankStatementLine_Ref bankStatementLineRef);
+	void linkBankStatementLine(final IPaymentBatch paymentBatch, final BankStatementAndLineAndRefId bankStatementLineRefId, PaymentId paymentId);
 }

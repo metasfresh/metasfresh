@@ -1,28 +1,5 @@
 package de.metas.banking.payment.impl;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -50,9 +27,6 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -60,14 +34,12 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -77,133 +49,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	private static final String MSG_PaySelectionLines_No_BankAccount = "C_PaySelection_PaySelectionLines_No_BankAccount";
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-
-	@Override
-	public void createBankStatementLines(
-			final I_C_BankStatement bankStatement,
-			final I_C_PaySelection paySelection)
-	{
-		Check.errorIf(bankStatement.getC_BP_BankAccount_ID() != paySelection.getC_BP_BankAccount_ID(),
-				"C_BankStatement {} with C_BP_BankAccount_ID={} and C_PaySelection {} with C_BP_BankAccount_ID={} need to have the same C_BP_BankAccount_ID",
-				bankStatement, bankStatement.getC_BP_BankAccount_ID(), paySelection, paySelection.getC_BP_BankAccount_ID());
-
-		// services
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
-		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-
-		I_C_BankStatementLine bankStatementLine = null;
-		int nextReferenceLineNo = 10;
-
-		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionDAO.retrievePaySelectionLines(paySelection);
-		for (final I_C_PaySelectionLine psl : paySelectionLines)
-		{
-			// Skip if already in a bank statement
-			if (isInBankStatement(psl))
-			{
-				continue;
-			}
-
-			// Skip if no invoice
-			if (psl.getC_Invoice_ID() <= 0)
-			{
-				continue;
-			}
-
-			//
-			// Create the bank statement line (if not already created)
-			if (bankStatementLine == null)
-			{
-				bankStatementLine = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine.class);
-				bankStatementLine.setAD_Org_ID(paySelection.getAD_Org_ID());
-				bankStatementLine.setC_BankStatement_ID(bankStatementId.getRepoId());
-				bankStatementLine.setIsMultiplePaymentOrInvoice(true); // we have a reference line for each invoice
-				bankStatementLine.setIsMultiplePayment(true); // each invoice shall have it's own payment
-				bankStatementLine.setC_Currency_ID(bankStatement.getC_BP_BankAccount().getC_Currency_ID());
-				bankStatementLine.setValutaDate(paySelection.getPayDate());
-				bankStatementLine.setDateAcct(paySelection.getPayDate());
-				bankStatementLine.setStatementLineDate(paySelection.getPayDate());
-				bankStatementLine.setReferenceNo(null); // no ReferenceNo at this level
-				bankStatementLine.setC_BPartner_ID(0); // no partner because we will have it on "line reference" level
-				bankStatementLine.setStmtAmt(BigDecimal.ZERO); // will be updated at the end
-				bankStatementLine.setTrxAmt(BigDecimal.ZERO); // will be updated at the end
-				bankStatementLine.setChargeAmt(BigDecimal.ZERO);
-				bankStatementLine.setInterestAmt(BigDecimal.ZERO);
-				bankStatementDAO.save(bankStatementLine);
-			}
-
-			//
-			// Create new bank statement line reference for our current pay selection line.
-			final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
-			bankStatementLineRef.setAD_Org_ID(bankStatementLine.getAD_Org_ID());
-			bankStatementLineRef.setC_BankStatement_ID(bankStatementLine.getC_BankStatement_ID());
-			bankStatementLineRef.setC_BankStatementLine_ID(bankStatementLine.getC_BankStatementLine_ID());
-			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(bankStatementLineRef, true); // disable recalculation. we will do it at the end
-
-			//
-			// Set Invoice from pay selection line
-			bankStatementLineRef.setC_BPartner_ID(psl.getC_BPartner_ID());
-			final I_C_Invoice invoice = psl.getC_Invoice();
-			bankStatementLineRef.setC_Invoice(invoice);
-			bankStatementLineRef.setC_Currency_ID(invoice.getC_Currency_ID());
-
-			//
-			// Get pay schedule line amounts:
-			final boolean isReceipt;
-			if (invoiceBL.isCreditMemo(invoice))
-			{
-				// SOTrx=Y, but credit memo => receipt=N
-				isReceipt = !invoice.isSOTrx();
-			}
-			else
-			{
-				// SOTrx=Y => receipt=Y
-				isReceipt = invoice.isSOTrx();
-			}
-			final BigDecimal factor = isReceipt ? BigDecimal.ONE : BigDecimal.ONE.negate();
-			final BigDecimal linePayAmt = psl.getPayAmt().multiply(factor);
-			final BigDecimal lineDiscountAmt = psl.getDiscountAmt().multiply(factor);
-
-			// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
-			bankStatementLineRef.setDiscountAmt(lineDiscountAmt);
-			bankStatementLineRef.setTrxAmt(linePayAmt);
-			bankStatementLineRef.setReferenceNo(psl.getReference());
-			bankStatementLineRef.setLine(nextReferenceLineNo);
-
-			//
-			// Set Payment from pay selection line.
-			// NOTE: In case the pay selection line does not already have a payment generated,
-			// we are generating it now because it's the most convenient for the user.
-			createPaymentIfNeeded(psl);
-			bankStatementLineRef.setC_Payment_ID(psl.getC_Payment_ID());
-
-			//
-			// Save the bank statement line reference
-			bankStatementDAO.save(bankStatementLineRef);
-			nextReferenceLineNo += 10;
-
-			//
-			// Update pay selection line => mark it as reconciled
-			linkBankStatementLine(psl, extractBankStatementAndLineAndRefId(bankStatementLineRef));
-		}
-
-		//
-		// Update Bank Statement Line's totals:
-		if (bankStatementLine != null)
-		{
-			bankStatementBL.recalculateStatementLineAmounts(bankStatementLine);
-		}
-	}
-
-	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		return BankStatementAndLineAndRefId.ofRepoIds(
-				bankStatementLineRef.getC_BankStatement_ID(),
-				bankStatementLineRef.getC_BankStatementLine_ID(),
-				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
-	}
 
 	private static boolean isInBankStatement(@NonNull final I_C_PaySelectionLine psl)
 	{

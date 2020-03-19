@@ -26,9 +26,9 @@ package de.metas.banking.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_DocType;
 
-import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;

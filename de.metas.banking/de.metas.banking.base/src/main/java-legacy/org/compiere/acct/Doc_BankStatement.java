@@ -22,14 +22,14 @@ import java.util.List;
 
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MAccount;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;

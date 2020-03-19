@@ -26,17 +26,19 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Code moved here form de.metas.swat de.metas.banking.model.MBankStatementLineRef.
@@ -110,6 +112,14 @@ public class C_BankStatementLine_Ref
 		Services.get(IBankStatementBL.class).recalculateStatementLineAmounts(bankStatementLine);
 	}
 
+	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(@NonNull final I_C_BankStatementLine_Ref record)
+	{
+		return BankStatementAndLineAndRefId.ofRepoIds(
+				record.getC_BankStatement_ID(),
+				record.getC_BankStatementLine_ID(),
+				record.getC_BankStatementLine_Ref_ID());
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
@@ -127,7 +137,7 @@ public class C_BankStatementLine_Ref
 		// Notify listeners that our bank statement line reference will become void (i.e. we are deleting it)
 		Services.get(IBankStatementListenerService.class)
 				.getListeners()
-				.onBankStatementLineRefVoiding(bankStatementLineRef);
+				.onBankStatementLineRefVoiding(extractBankStatementAndLineAndRefId(bankStatementLineRef));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableMap;
@@ -12,8 +14,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileRequest.PaymentToReconcile;
 import de.metas.banking.payment.BankStatementLineReconcileResult;

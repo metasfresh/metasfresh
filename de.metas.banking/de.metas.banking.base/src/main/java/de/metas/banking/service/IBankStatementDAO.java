@@ -11,10 +11,10 @@ import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -50,7 +50,7 @@ public interface IBankStatementDAO extends ISingletonService
 	boolean hasLineReferences(BankStatementLineId bankStatementLineId);
 
 	/**
-	 * Checks if given payment is present on any {@link I_C_BankStatementLine} or {@link I_C_BankStatementLine_Ref}.
+	 * Checks if given payment is present on any line or line reference.
 	 * <p>
 	 * This method is NOT checking the {@link I_C_Payment#isReconciled()} flag but instead is doing a lookup in bank statement lines.
 	 *
@@ -69,19 +69,19 @@ public interface IBankStatementDAO extends ISingletonService
 	 * @deprecated Please use {@link #getById(BankStatementId)}
 	 */
 	@Deprecated
-	de.metas.banking.model.I_C_BankStatement getById(int id);
+	I_C_BankStatement getById(int id);
 
-	de.metas.banking.model.I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
+	I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
 
-	de.metas.banking.model.I_C_BankStatementLine getLineById(BankStatementLineId lineId);
+	I_C_BankStatementLine getLineById(BankStatementLineId lineId);
 
-	List<de.metas.banking.model.I_C_BankStatementLine> getLineByIds(@NonNull Set<BankStatementLineId> lineIds);
+	List<I_C_BankStatementLine> getLineByIds(@NonNull Set<BankStatementLineId> lineIds);
 
 	/**
 	 * @deprecated please use the {@link #getLineById(BankStatementLineId)}
 	 */
 	@Deprecated
-	default de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId)
+	default I_C_BankStatementLine getLineById(int lineId)
 	{
 		return getLineById(BankStatementLineId.ofRepoId(lineId));
 	}

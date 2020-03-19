@@ -22,19 +22,20 @@
 
 package de.metas.banking;
 
-import de.metas.banking.api.BankAccountId;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyId;
-import lombok.experimental.UtilityClass;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+
+import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.BankStatementId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class BankStatementTestHelper

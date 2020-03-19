@@ -28,11 +28,11 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
