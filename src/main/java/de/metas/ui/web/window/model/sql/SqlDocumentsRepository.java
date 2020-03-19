@@ -20,7 +20,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -251,7 +251,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (documents.size() > 1)
 		{
-			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query + " on " + this
+			throw new DBMoreThanOneRecordsFoundException("More than one record found for " + query + " on " + this
 					+ "\n First " + limit + " records: " + Joiner.on("\n").join(documents.toList()));
 		}
 		else
