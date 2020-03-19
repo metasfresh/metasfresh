@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -39,7 +39,7 @@ import de.metas.util.Services;
 
 public class BPBankAccountDAOTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -105,7 +105,6 @@ public class BPBankAccountDAOTest
 
 		final String unimportantAccountNo = "0000000";
 
-	
 		final I_C_BP_BankAccount account1 = createAccount(true, esrAcctNo1, unimportantAccountNo);
 		final I_C_BP_BankAccount account2 = createAccount(true, esrAcctNo2, unimportantAccountNo);
 
@@ -134,7 +133,7 @@ public class BPBankAccountDAOTest
 		assertThat(esrBPBankAccounts).contains(account1);
 
 	}
-	
+
 	@Test
 	public void retrieveESRBPBankAccounts_OneAccount_NumberFitsBPBankAccountButNoESR()
 	{

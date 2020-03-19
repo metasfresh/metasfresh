@@ -3,8 +3,7 @@ package de.metas.payment.esr;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -38,6 +37,7 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -51,11 +51,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
@@ -77,31 +76,26 @@ import de.metas.payment.api.C_Payment_ProcessInterceptor;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.impl.ESRImportBL;
-import de.metas.payment.esr.api.impl.PlainESRImportDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.payment.esr.model.validator.ESR_Main_Validator;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class ESRTestBase
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
 	private Properties ctx;
-	protected PlainESRImportDAO dao;
+	protected IESRImportDAO dao;
 	private I_AD_Client client;
 	private I_AD_Org org;
 	protected ITrxManager trxManager;
@@ -111,12 +105,12 @@ public class ESRTestBase
 
 	protected ESRImportBL esrImportBL;
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
 
-		dao = (PlainESRImportDAO)Services.get(IESRImportDAO.class);
+		dao = Services.get(IESRImportDAO.class);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
@@ -187,10 +181,10 @@ public class ESRTestBase
 		// nothing
 	}
 
-	@After
+	@AfterEach
 	public final void afterTest()
 	{
-		dao.dumpStatus();
+		POJOLookupMap.get().dumpStatus();
 		Services.clear();
 	}
 
@@ -198,20 +192,6 @@ public class ESRTestBase
 	{
 		return ctx;
 	}
-
-	// protected I_ESR_ImportLine createImportLine(final String esrImportLineText)
-	// {
-	// final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
-	// esrImport.setDataType(X_ESR_Import.DATATYPE_V11);
-	// save(esrImport);
-	//
-	// final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class);
-	// esrImportLine.setESR_Import(esrImport);
-	// esrImportLine.setESRLineText(esrImportLineText);
-	// save(esrImportLine);
-	//
-	// return esrImportLine;
-	// }
 
 	protected I_ESR_Import createImport()
 	{
@@ -231,11 +211,12 @@ public class ESRTestBase
 
 		for (final I_ESR_ImportLine line : lines)
 		{
-			final String importErrorMsg = line.getImportErrorMsg();
-			assertThat("ImportError message '" + importErrorMsg + "' found on line " + line, Check.isEmpty(importErrorMsg), is(true));
-
-			final String matchErrorMsg = line.getMatchErrorMsg();
-			assertThat("MatchError message '" + matchErrorMsg + "' found on line " + line, Check.isEmpty(matchErrorMsg), is(true));
+			assertThat(line.getImportErrorMsg())
+					.as("ImportError message found on line " + line)
+					.isEmpty();
+			assertThat(line.getMatchErrorMsg())
+					.as("MatchError message found on line " + line)
+					.isEmpty();
 		}
 	}
 

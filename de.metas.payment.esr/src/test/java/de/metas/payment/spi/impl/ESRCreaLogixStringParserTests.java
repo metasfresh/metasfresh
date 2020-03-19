@@ -1,9 +1,9 @@
 package de.metas.payment.spi.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.compiere.util.Env;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+import org.junit.jupiter.api.Test;
 
 import de.metas.banking.payment.IPaymentString;
 
@@ -35,16 +35,16 @@ public class ESRCreaLogixStringParserTests
 	public void parseRegular()
 	{
 		final IPaymentString result = ESRCreaLogixStringParser.instance.parse(Env.getCtx(), "042>000000162591872680005352198+ 012000007>");
-		assertThat(result.getReferenceNoComplete(), is("000000162591872680005352198"));
-		assertThat(result.getPostAccountNo(), is("012000007"));
+		assertThat(result.getReferenceNoComplete()).isEqualTo("000000162591872680005352198");
+		assertThat(result.getPostAccountNo()).isEqualTo("012000007");
 	}
-	
+
 	@Test
 	public void parseShorter()
 	{
 		final IPaymentString result = ESRCreaLogixStringParser.instance.parse(Env.getCtx(), "0100000214000>10360022841297+ 010001456>");
-		assertThat(result.getReferenceNoComplete(), is("000000000000010360022841297"));
-		assertThat(result.getPostAccountNo(), is("010001456"));
+		assertThat(result.getReferenceNoComplete()).isEqualTo("000000000000010360022841297");
+		assertThat(result.getPostAccountNo()).isEqualTo("010001456");
 	}
-	
+
 }

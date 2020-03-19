@@ -1,7 +1,7 @@
 package de.metas.payment.esr;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class ESRTestUtil
 	public I_ESR_ImportLine retrieveSingleLine(final I_ESR_Import esrImport)
 	{
 		final List<I_ESR_ImportLine> esrImportLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
-		assertThat(esrImportLines.size(), is(1));
+		assertThat(esrImportLines).hasSize(1);
 		final I_ESR_ImportLine esrImportLine = esrImportLines.get(0);
 		return esrImportLine;
 	}

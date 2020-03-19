@@ -1,5 +1,7 @@
 package de.metas.payment.esr;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -13,16 +15,14 @@ package de.metas.payment.esr;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import static org.junit.Assert.assertTrue;
 
 import org.adempiere.ad.validationRule.impl.PlainValidationContext;
 import org.compiere.util.NamePair;
@@ -108,12 +108,16 @@ public final class ESRValidationRuleTools
 	public static void assertAccepted(final String action, final PlainValidationContext plainValidationCtx)
 	{
 		final boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(action, plainValidationCtx);
-		assertTrue("Action " + action + " with validationCtx " + plainValidationCtx + "was not accepted", accepted);
+		assertThat(accepted)
+				.as("action=" + action + ", validationCtx=" + plainValidationCtx)
+				.isTrue();
 	}
 
 	public static void assertRejected(final String action, final PlainValidationContext plainValidationCtx)
 	{
 		final boolean rejected = !ESRValidationRuleTools.evaluatePaymentAction(action, plainValidationCtx);
-		assertTrue("Action " + action + " with validationCtx " + plainValidationCtx + "was not rejected", rejected);
+		assertThat(rejected)
+				.as("action=" + action + ", validationCtx=" + plainValidationCtx)
+				.isTrue();
 	}
 }

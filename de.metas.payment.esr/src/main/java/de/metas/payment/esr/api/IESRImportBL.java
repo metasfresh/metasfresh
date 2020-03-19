@@ -1,14 +1,19 @@
 package de.metas.payment.esr.api;
 
+import java.util.Set;
+
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.payment.PaymentId;
+import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.validator.ESR_ImportLine;
 import de.metas.util.ISingletonService;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
 
 public interface IESRImportBL extends ISingletonService
 {
@@ -123,4 +128,6 @@ public interface IESRImportBL extends ISingletonService
 	void unlinkESRImportLinesFor(I_C_BankStatementLine_Ref bankStatementLineRef);
 
 	void scheduleESRImportFor(RunESRImportRequest runESRImportRequest);
+
+	Set<PaymentId> getPaymentIds(ESRImportId esrImportId);
 }

@@ -13,11 +13,11 @@ package de.metas.payment.esr.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
@@ -33,37 +35,20 @@ import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.organization.OrgId;
+import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;
 
-import javax.annotation.Nullable;
-
 public interface IESRImportDAO extends ISingletonService
 {
-
-	/**
-	 * Retrieve all the ESR Import Lines of the given <code>esrImport</code>.
-	 *
-	 * @param esrImport
-	 * @return
-	 */
 	List<I_ESR_ImportLine> retrieveLines(I_ESR_Import esrImport);
 
-	/**
-	 * Retrieve all the ESR Import Lines of the given <code>esrImport</code>, optionally filtered by type.
-	 *
-	 * @param esrImport
-	 * @param esrTrxTypes may be <code>null</code>. If not null and not empty, then only those lines are returned whose <code>ESRTrxType</code> is one one the given types.
-	 * @return
-	 */
-	List<I_ESR_ImportLine> retrieveLinesForTrxTypes(I_ESR_Import esrImport, List<String> esrTrxTypes);
+	List<I_ESR_ImportLine> retrieveLines(ESRImportId esrImportId);
 
 	/**
 	 * Retrieve all ESR import lines that have the same <code>ESR_Import</code> and reference the given <code>invoice</code>.
 	 *
-	 *
-	 * @param invoice
 	 * @return the lines that reference the given invoice and the given {@code esrImportLine}'s {@link I_ESR_Import}.<br>
 	 *         <b>IMPORTANT</b>: Note that the given <code>esrImportLine</code> itself will <b>always</b> be included in the list, even if it doesn't reference the given invoice when this method is
 	 *         called! If the list loaded from storage already contains a line with the same ID, then that line will be replaced with the given <code>esrImportLine</code>.
@@ -72,8 +57,6 @@ public interface IESRImportDAO extends ISingletonService
 
 	/**
 	 * Delete all the lines of the ESR Import given as parameter.
-	 *
-	 * @param esrImport
 	 */
 	void deleteLines(I_ESR_Import esrImport);
 
@@ -84,36 +67,27 @@ public interface IESRImportDAO extends ISingletonService
 
 	/**
 	 * Retrieve the existing esr imports of the organization given as parameter (through ID)
-	 *
-	 * @param ctx
-	 * @param orgID
-	 * @return
 	 */
 	Iterator<I_ESR_Import> retrieveESRImports(Properties ctx, int orgID);
 
 	/**
 	 * Retrieve {@link I_ESR_ImportLine}s which are linked to given bank statement line.
-	 *
-	 * @param line
 	 */
 	List<I_ESR_ImportLine> retrieveLinesForBankStatementLine(I_C_BankStatementLine line);
 
 	/**
 	 * Retrieve {@link I_ESR_ImportLine}s which are linked to given bank statement line reference. Also inactive ones.
-	 *
-	 * @param lineRef
 	 */
 	List<I_ESR_ImportLine> retrieveAllLinesForBankStatementLineRef(I_C_BankStatementLine_Ref lineRef);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
-
 
 	/**
 	 * count lines
 	 *
 	 * @param esrImport
 	 * @param processed 3 possible values: null = ignore processed status; true = only count processed lines; false = only count unprocessed lines
-	 * @return
+	 * @return lines count
 	 */
 	int countLines(I_ESR_Import esrImport, @Nullable Boolean processed);
 
@@ -122,7 +96,6 @@ public interface IESRImportDAO extends ISingletonService
 	 *
 	 * @param import1
 	 * @param esrImportLineText
-	 * @return
 	 */
 	I_ESR_ImportLine fetchLineForESRLineText(I_ESR_Import import1, String esrImportLineText);
 }

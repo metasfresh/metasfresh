@@ -1,11 +1,9 @@
 package de.metas.payment.esr.dataimporter;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
 import de.metas.payment.esr.model.X_ESR_Import;
 
 /*
@@ -44,11 +42,11 @@ public class ESRDataLoaderFactoryTests
 
 	private void assertCamt54(final String complicatedFileNamePrefix1)
 	{
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".xml"), is(X_ESR_Import.DATATYPE_Camt54));
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".XML"), is(X_ESR_Import.DATATYPE_Camt54));
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".camt"), is(X_ESR_Import.DATATYPE_Camt54));
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".camt54"), is(X_ESR_Import.DATATYPE_Camt54));
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".camt.54"), is(X_ESR_Import.DATATYPE_Camt54));
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".xml")).isEqualTo(X_ESR_Import.DATATYPE_Camt54);
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".XML")).isEqualTo(X_ESR_Import.DATATYPE_Camt54);
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".camt")).isEqualTo(X_ESR_Import.DATATYPE_Camt54);
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".camt54")).isEqualTo(X_ESR_Import.DATATYPE_Camt54);
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".camt.54")).isEqualTo(X_ESR_Import.DATATYPE_Camt54);
 	}
 
 	@Test
@@ -63,7 +61,7 @@ public class ESRDataLoaderFactoryTests
 
 	private void assertv11(final String complicatedFileNamePrefix1)
 	{
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".v11"), is(X_ESR_Import.DATATYPE_V11));
-		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".V11"), is(X_ESR_Import.DATATYPE_V11));
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".v11")).isEqualTo(X_ESR_Import.DATATYPE_V11);
+		assertThat(ESRDataLoaderFactory.guessTypeFromFileName(complicatedFileNamePrefix1 + ".V11")).isEqualTo(X_ESR_Import.DATATYPE_V11);
 	}
 }

@@ -3,6 +3,8 @@
  */
 package de.metas.payment.esr;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -46,8 +48,6 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
-import org.adempiere.util.test.RepeatRule;
-import org.adempiere.util.test.RepeatRule.Repeat;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
@@ -55,9 +55,8 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
@@ -1009,11 +1008,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
-	@Rule
-	public RepeatRule repeatRule = new RepeatRule();
-
-	@Test
-	@Repeat(times = 50)
+	@RepeatedTest(50)
 	public void testStandardCase_T01_diffThreads()
 	{
 		Services.get(IESRImportDAO.class);
@@ -1084,8 +1079,7 @@ public class ESRImportTest extends ESRTestBase
 		// System.out.println("Payment " + payment.getC_Payment_ID() + " Allocated " + payment.isAllocated());
 		// }
 
-		Assert.assertEquals("Shall be only 1 payment", 1, payments.size());
-
+		assertThat(payments).hasSize(1);
 	}
 
 	/**

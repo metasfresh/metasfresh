@@ -3,9 +3,7 @@ package de.metas.payment.esr.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 
@@ -40,8 +38,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -98,7 +95,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		Assert.assertEquals("Invalid IsValid", false, esrImport.isValid());
+		assertThat(esrImport.isValid()).isFalse();
 	}
 
 	// task 09861
@@ -132,14 +129,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
+		assertThat(esrImportLine.getC_BPartner())
+				.as("BPartner not the same in ESR Line and Invoice")
+				.isEqualTo(bp);
 	}
 
 	// task 09861
@@ -174,14 +173,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
+		assertThat(esrImportLine.getC_BPartner())
+				.as("BPartner not the same in ESR Line and Invoice")
+				.isEqualTo(bp);
 	}
 
 	// task 09861
@@ -215,14 +216,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
+		assertThat(esrImportLine.getC_BPartner())
+				.as("BPartner not the same in ESR Line and Invoice")
+				.isEqualTo(bp);
 	}
 
 	/**
@@ -259,13 +262,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
+		assertThat(esrImportLine.getC_BPartner())
+				.as("BPartner not the same in ESR Line and Invoice")
+				.isEqualTo(bp);
 	}
 
 	@Test
@@ -287,9 +292,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		assertThat("Invalid IsValid", esrImportLine.isValid(), is(false));
-		assertThat(esrImportLine.getMatchErrorMsg(), nullValue());
-		assertThat(esrImportLine.getImportErrorMsg(), is("ESR_Wrong_Regular_Line_Length_[103]"));
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.getMatchErrorMsg()).isNull();
+		assertThat(esrImportLine.getImportErrorMsg()).isEqualTo("ESR_Wrong_Regular_Line_Length_[103]");
 	}
 
 	@Test
@@ -319,7 +324,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
 		final String unrenderedPostAccountNo = unrenderedAccountNoParts[0] + unrenderedAccountNoParts[1] + unrenderedAccountNoParts[2];
 
-		Assert.assertTrue("Wrong rendered account number", esrImportLine.getESRPostParticipantNumber().equals(unrenderedPostAccountNo));
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(unrenderedPostAccountNo);
 	}
 
 	@Test
@@ -347,7 +352,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
 		final String unrenderedPostAccountNo = unrenderedAccountNoParts[0] + unrenderedAccountNoParts[1] + unrenderedAccountNoParts[2];
 
-		Assert.assertTrue("Rendered account numbers are equal.", !esrImportLine.getESRPostParticipantNumber().equals(unrenderedPostAccountNo));
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isNotEqualTo(unrenderedPostAccountNo);
 	}
 
 	@Test
@@ -407,7 +412,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(unRenderedEsrNoForPostFinanceUser);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_regularLine_RenderedAccountNo_From_ESRPostFinanceUserNumber_RenderedWrong()
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
@@ -429,7 +434,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		assertThatThrownBy(() -> esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes())))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("01-0599310 contains three '-' separated parts");
 	}
 
 	@Test
@@ -565,7 +572,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		// System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
 
-		Assert.assertTrue("Org not found.", org.equals(esrImportLine.getOrg()));
+		assertThat(esrImportLine.getOrg()).isEqualTo(org);
 	}
 
 	@Test
@@ -629,9 +636,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		Assert.assertTrue("Is not manual referenceNO", esrImportLine.isESR_IsManual_ReferenceNo());
-		Assert.assertTrue("Org not found.", org.equals(esrImportLine.getAD_Org()));
-		Assert.assertTrue("Partner not found.", partner.equals(esrImportLine.getC_BPartner()));
-		Assert.assertTrue("Invoice not found.", invoice.equals(esrImportLine.getC_Invoice()));
+		assertThat(esrImportLine.isESR_IsManual_ReferenceNo()).isTrue();
+		assertThat(esrImportLine.getAD_Org()).isEqualTo(org);
+		assertThat(esrImportLine.getC_BPartner()).isEqualTo(partner);
+		assertThat(esrImportLine.getC_Invoice()).isEqualTo(invoice);
 	}
 }
