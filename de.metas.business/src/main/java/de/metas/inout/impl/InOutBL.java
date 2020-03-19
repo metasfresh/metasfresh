@@ -57,11 +57,12 @@ import org.compiere.util.CacheMgt;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
+import lombok.NonNull;
 
 public class InOutBL implements IInOutBL
 {
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
-	
+
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
 	@Override
@@ -226,10 +227,8 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public boolean isReversal(final org.compiere.model.I_M_InOutLine inoutLine)
+	public boolean isReversal(@NonNull final org.compiere.model.I_M_InOutLine inoutLine)
 	{
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
-
 		final int recordId = inoutLine.getM_InOutLine_ID();
 		final int recordReversalId = inoutLine.getReversalLine_ID();
 		return isReversal(recordId, recordReversalId);
@@ -437,7 +436,7 @@ public class InOutBL implements IInOutBL
 			InterfaceWrapperHelper.delete(matchInv);
 		}
 	}
-	
+
 	@Override
 	public void invalidateStatistics(final I_M_InOut inout)
 	{
@@ -450,13 +449,26 @@ public class InOutBL implements IInOutBL
 			.forEach(inoutLineId -> CacheMgt.get().reset(InOutBL.VIEW_M_Shipment_Statistics_V, inoutLineId));
 		}
 	}
-	
+
 	@Override
-	public void invalidateStatistics(final I_M_InOutLine inoutLine)
+	public void invalidateStatistics(@NonNull final I_M_InOutLine inoutLine)
 	{
 		if (inoutLine.getM_InOut().isSOTrx())
 		{
 			CacheMgt.get().reset(VIEW_M_Shipment_Statistics_V, inoutLine.getM_InOutLine_ID());
 		}
+	}
+
+	@Override
+	public BigDecimal negateIfReturnMovmenType(
+			@NonNull final I_M_InOutLine iol,
+			@NonNull final BigDecimal qty)
+	{
+		final I_M_InOut inoutRecord = InterfaceWrapperHelper.load(iol.getM_InOut_ID(), I_M_InOut.class);
+		if(isReturnMovementType(inoutRecord.getMovementType()))
+		{
+			return qty.negate();
+		}
+		return qty;
 	}
 }

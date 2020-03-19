@@ -1,5 +1,7 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,11 +15,11 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,7 +31,7 @@ import org.compiere.Adempiere;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 
-/*package */class HUHandlingUnitsInfo implements IHandlingUnitsInfo
+/* package */class HUHandlingUnitsInfo implements IHandlingUnitsInfo
 {
 	public static HUHandlingUnitsInfo cast(final IHandlingUnitsInfo handlingUnitsInfo)
 	{
@@ -42,12 +44,12 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
 
 	private final boolean _isQtyWritable;
 
-	/* package */HUHandlingUnitsInfo(final I_M_HU_PI tuPI, final int qtyTU)
+	/* package */ HUHandlingUnitsInfo(final I_M_HU_PI tuPI, final int qtyTU)
 	{
 		this(tuPI, qtyTU, false);
 	}
 
-	/* package */HUHandlingUnitsInfo(final I_M_HU_PI tuPI, final int qtyTU, final boolean isReadWrite)
+	/* package */ HUHandlingUnitsInfo(final I_M_HU_PI tuPI, final int qtyTU, final boolean isReadWrite)
 	{
 		// task 09688: currently, when in unit testing mode, we allow tuPI to be null
 		Check.assume(tuPI != null || Adempiere.isUnitTestMode(), "tuPI not null");
@@ -78,22 +80,21 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
 	}
 
 	@Override
-	public IHandlingUnitsInfo add(final IHandlingUnitsInfo infoToAdd)
+	public IHandlingUnitsInfo add(@Nullable final IHandlingUnitsInfo infoToAdd)
 	{
 		if (infoToAdd == null)
 		{
 			return this;
 		}
 
-		//
 		// TU PI
 		final I_M_HU_PI tuPI = getTU_HU_PI();
 		// TODO make sure tuPIs are compatible
 
-		//
 		// Qty TU
 		final int qtyTU = getQtyTU();
 		final int qtyTU_ToAdd = infoToAdd.getQtyTU();
+
 		final int qtyTU_New = qtyTU + qtyTU_ToAdd;
 
 		final boolean isReadWrite = false;

@@ -126,11 +126,11 @@ public interface IInOutBL extends ISingletonService
 	boolean getSOTrxFromMovementType(String movementType);
 
 	/**
-	 *
-	 * @param movementType
 	 * @return true if Customer or Vendor Returns
 	 */
 	boolean isReturnMovementType(String movementType);
+
+	BigDecimal negateIfReturnMovmenType(I_M_InOutLine iol, BigDecimal qty);
 
 	/**
 	 * Sort the given inOut's lines by their referenced order lines and configured sorting criteria.
@@ -142,15 +142,11 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
-	 *
-	 * @param inout
 	 */
 	void deleteMatchInvs(I_M_InOut inout);
 
 	/**
 	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
-	 *
-	 * @param iol
 	 */
 	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
 
@@ -163,14 +159,14 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * Refresh all the lines for the given shipment in the Shipment Statistics view window
-	 * 
+	 *
 	 * @param inout
 	 */
 	void invalidateStatistics(I_M_InOut inout);
 
 	/**
 	 * Refresh the line for the given shipment line in the Shipment Statistics view window
-	 * 
+	 *
 	 * @param inoutLine
 	 */
 	void invalidateStatistics(I_M_InOutLine inoutLine);

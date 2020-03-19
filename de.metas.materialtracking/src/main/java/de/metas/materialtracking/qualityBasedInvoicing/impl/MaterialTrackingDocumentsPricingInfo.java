@@ -274,14 +274,10 @@ import lombok.NonNull;
 
 		/**
 		 * The created vendor receipt contains only those iols that do not belong to a PP_Order that are already invoiced.
-		 *
-		 * @param plv
-		 * @return
 		 */
-		private IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
+		private IVendorReceipt<I_M_InOutLine> createVendorReceipt(@NonNull final I_M_PriceList_Version plv)
 		{
-			//
-			// now get *all* the receipt lines that took place while the PLV was valid
+			// now get *all* the inout lines that took place while the PLV was valid
 			final ICompositeQueryFilter<I_M_InOut> inOutFilter = queryBL.createCompositeQueryFilter(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)

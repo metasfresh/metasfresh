@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,15 +29,19 @@ import java.util.List;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -48,17 +52,16 @@ import lombok.NonNull;
 /**
  * {@link IVendorReceipt} implementation which takes the values from the wrapped {@link I_M_InOutLine}.
  *
- * @author tsa
- *
  */
 /* package */class InOutLineAsVendorReceipt implements IVendorReceipt<I_M_InOutLine>
 {
-	private static final transient Logger logger = LogManager.getLogger(InOutLineAsVendorReceipt.class);
+	private static final Logger logger = LogManager.getLogger(InOutLineAsVendorReceipt.class);
 
 	// services
-	// private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHandlingUnitsInfoFactory handlingUnitsInfoFactory = Services.get(IHandlingUnitsInfoFactory.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private final List<I_M_InOutLine> inOutLines = new ArrayList<I_M_InOutLine>();
 
@@ -70,9 +73,9 @@ import lombok.NonNull;
 	private IHandlingUnitsInfo _handlingUnitsInfo = null;
 	private I_M_PriceList_Version plv;
 
-	public InOutLineAsVendorReceipt(final I_M_Product vendorProduct)
+
+	public InOutLineAsVendorReceipt(@NonNull final I_M_Product vendorProduct)
 	{
-		Check.assumeNotNull(vendorProduct, "Param 'vendorProduct' is not null");
 		this._product = vendorProduct;
 	}
 
@@ -186,15 +189,19 @@ import lombok.NonNull;
 				continue;
 			}
 
+			final I_M_InOut inOutRecord = inoutLine.getM_InOut();
+			final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+
 			// task 09117: we only may count iol that are not reversed, in progress of otherwise "not relevant"
-			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-			if (!docActionBL.isDocumentStatusOneOf(inoutLine.getM_InOut(), IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+			if (!docActionBL.isDocumentStatusOneOf(inOutRecord, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 			{
-				Loggables.get().addLog("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
+				loggable.addLog("Not counting {} because its M_InOut has docstatus {}", inoutLine, inOutRecord.getDocStatus());
 				continue;
 			}
 
-			final BigDecimal qtyReceived = inoutLine.getMovementQty();
+			final BigDecimal qtyReceived = inoutBL.negateIfReturnMovmenType(inoutLine, inoutLine.getMovementQty());
+			logger.debug("M_InOut_ID={} has MovementType={}; -> proceeding with qtyReceived={}", inOutRecord.getM_InOut_ID(), inOutRecord.getMovementType(), qtyReceived);
+
 			final BigDecimal qtyReceivedConv = uomConversionBL.convertQty(uomConversionCtx, qtyReceived, productUOM, qtyReceivedTotalUOM);
 			qtyReceivedTotal = qtyReceivedTotal.add(qtyReceivedConv);
 
