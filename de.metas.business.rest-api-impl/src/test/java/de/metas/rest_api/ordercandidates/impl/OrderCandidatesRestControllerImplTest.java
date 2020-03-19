@@ -34,6 +34,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_UOM;
@@ -116,7 +117,6 @@ import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -182,6 +182,7 @@ public class OrderCandidatesRestControllerImplTest
 		SystemTime.setTimeSource(() -> 1584400036193L); // some time at 2020-03-16
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);

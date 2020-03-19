@@ -12,6 +12,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -110,6 +111,7 @@ public class MasterdataProviderTest
 		AdempiereTestHelper.get().init();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		UserId loggedUserId = UserId.ofRepoId(1234567);
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
