@@ -1,6 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -69,20 +70,32 @@ import lombok.NonNull;
 
 public class ESRImportDAO implements IESRImportDAO
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Used to order lines by <code>LineNo, ESR_ImportLine_ID</code>.
 	 */
 	private final ComparatorChain<I_ESR_ImportLine> esrImportLineDefaultComparator = new ComparatorChain<I_ESR_ImportLine>()
-			.addComparator(
-					new AccessorComparator<I_ESR_ImportLine, Integer>(
-							new ComparableComparator<Integer>(),
-							o -> ((I_ESR_ImportLine)o).getLineNo()))
-			.addComparator(
-					new AccessorComparator<I_ESR_ImportLine, Integer>(
-							new ComparableComparator<Integer>(),
-							o -> ((I_ESR_ImportLine)o).getESR_ImportLine_ID()));
+			.addComparator(new AccessorComparator<>(new ComparableComparator<>(), o -> ((I_ESR_ImportLine)o).getLineNo()))
+			.addComparator(new AccessorComparator<>(new ComparableComparator<>(), o -> ((I_ESR_ImportLine)o).getESR_ImportLine_ID()));
+
+	@Override
+	public void save(@NonNull final I_ESR_Import esrImport)
+	{
+		saveRecord(esrImport);
+	}
+
+	@Override
+	public void saveOutOfTrx(@NonNull final I_ESR_Import esrImport)
+	{
+		InterfaceWrapperHelper.save(esrImport, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public void save(@NonNull final I_ESR_ImportLine esrImportLine)
+	{
+		saveRecord(esrImportLine);
+	}
 
 	@Override
 	public List<I_ESR_ImportLine> retrieveLinesForInvoice(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)

@@ -45,6 +45,8 @@ public interface IPaymentBL extends ISingletonService
 
 	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
 
+	void save(I_C_Payment payment);
+
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
 	DefaultPaymentBuilder newOutboundPaymentBuilder();

@@ -62,26 +62,29 @@ import lombok.NonNull;
 public class PaymentBL implements IPaymentBL
 {
 	private static final Logger log = LogManager.getLogger(PaymentBL.class);
-
-	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
-		return Services.get(IPaymentDAO.class).getById(paymentId);
+		return paymentDAO.getById(paymentId);
 	}
 
 	@Override
 	public List<I_C_Payment> getByIds(@NonNull final Set<PaymentId> paymentIds)
 	{
-		return Services.get(IPaymentDAO.class).getByIds(paymentIds);
+		return paymentDAO.getByIds(paymentIds);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_Payment payment)
+	{
+		paymentDAO.save(payment);
 	}
 
 	/**
 	 * Get Invoice Currency
-	 *
-	 * @param payment
-	 * @return
 	 */
 	private CurrencyId fetchC_Currency_Invoice_ID(final I_C_Payment payment)
 	{
@@ -116,7 +119,7 @@ public class PaymentBL implements IPaymentBL
 
 		if (C_Invoice_ID > 0)
 		{
-			InvoiceOpenAmt = Services.get(IPaymentDAO.class).getInvoiceOpenAmount(payment, creditMemoAdjusted);
+			InvoiceOpenAmt = paymentDAO.getInvoiceOpenAmount(payment, creditMemoAdjusted);
 		}
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
@@ -377,7 +380,7 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public boolean isMatchInvoice(final I_C_Payment payment, final I_C_Invoice invoice)
 	{
-		final List<I_C_AllocationLine> allocations = Services.get(IPaymentDAO.class).retrieveAllocationLines(payment);
+		final List<I_C_AllocationLine> allocations = paymentDAO.retrieveAllocationLines(payment);
 		final List<I_C_Invoice> invoices = new ArrayList<>();
 		for (final I_C_AllocationLine alloc : allocations)
 		{
@@ -398,8 +401,7 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public boolean testAllocation(final I_C_Payment payment)
 	{
-		//
-		BigDecimal alloc = Services.get(IPaymentDAO.class).getAllocatedAmt(payment);
+		BigDecimal alloc = paymentDAO.getAllocatedAmt(payment);
 		final boolean hasAllocations = alloc != null; // metas: tsa: 01955
 		if (alloc == null)
 		{

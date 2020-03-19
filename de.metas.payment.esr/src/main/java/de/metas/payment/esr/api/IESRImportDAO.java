@@ -42,9 +42,16 @@ import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IESRImportDAO extends ISingletonService
 {
+	void save(@NonNull I_ESR_Import esrImport);
+
+	void saveOutOfTrx(@NonNull I_ESR_Import esrImport);
+
+	void save(@NonNull I_ESR_ImportLine esrImportLine);
+
 	List<I_ESR_ImportLine> retrieveLines(I_ESR_Import esrImport);
 
 	List<I_ESR_ImportLine> retrieveLines(ESRImportId esrImportId);

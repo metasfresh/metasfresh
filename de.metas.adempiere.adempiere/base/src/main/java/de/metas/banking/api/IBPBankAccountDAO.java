@@ -45,6 +45,8 @@ public interface IBPBankAccountDAO extends ISingletonService
 {
 	I_C_BP_BankAccount getById(final int bpBankAccountId);
 
+	<T extends I_C_BP_BankAccount> T getById(final int bpBankAccountId, Class<T> modelType);
+
 	/**
 	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>
 	 * In case the currencyID is not set (<=0) just retrieve all accounts of the bpartner

@@ -55,8 +55,14 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	@Override
 	public I_C_BP_BankAccount getById(final int bpBankAccountId)
 	{
+		return getById(bpBankAccountId, I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public <T extends I_C_BP_BankAccount> T getById(final int bpBankAccountId, @NonNull final Class<T> modelType)
+	{
 		Check.assumeGreaterThanZero(bpBankAccountId, "bpBankAccountId");
-		return loadOutOfTrx(bpBankAccountId, I_C_BP_BankAccount.class);
+		return loadOutOfTrx(bpBankAccountId, modelType);
 	}
 
 	@Override
@@ -112,7 +118,6 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 
 		return Optional.ofNullable(bankAccountId);
 	}
-
 
 	@Override
 	public Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @NonNull final String iban)
