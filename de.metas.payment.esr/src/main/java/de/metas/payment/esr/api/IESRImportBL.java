@@ -1,5 +1,6 @@
 package de.metas.payment.esr.api;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.compiere.model.I_C_Invoice;
@@ -134,4 +135,6 @@ public interface IESRImportBL extends ISingletonService
 	void scheduleESRImportFor(RunESRImportRequest runESRImportRequest);
 
 	Set<PaymentId> getPaymentIds(ESRImportId esrImportId);
+
+	void linkBankStatementLinesByPaymentIds(Map<PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdIndexByPaymentId);
 }

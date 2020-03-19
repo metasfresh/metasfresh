@@ -25,6 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +46,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.api.IReferenceNoDAO;
@@ -53,6 +56,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -79,7 +83,7 @@ public class ESRImportDAO implements IESRImportDAO
 					new AccessorComparator<I_ESR_ImportLine, Integer>(
 							new ComparableComparator<Integer>(),
 							o -> ((I_ESR_ImportLine)o).getESR_ImportLine_ID()));
-	
+
 	@Override
 	public List<I_ESR_ImportLine> retrieveLinesForInvoice(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
 	{
@@ -154,6 +158,24 @@ public class ESRImportDAO implements IESRImportDAO
 				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, esrImportId)
 				.orderBy(I_ESR_ImportLine.COLUMNNAME_LineNo)
 				.orderBy(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID) // LineNo should suffice, but who knows :-)
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<I_ESR_ImportLine> retrieveLines(@NonNull final Collection<PaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_C_Payment_ID, paymentIds)
+				.orderBy(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID)
+				.orderBy(I_ESR_ImportLine.COLUMNNAME_LineNo)
+				.orderBy(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID)
 				.create()
 				.list();
 	}

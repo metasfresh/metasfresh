@@ -59,6 +59,7 @@ import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
+import de.metas.banking.payment.BankStatementLineReconcileResult;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
@@ -727,9 +728,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	}    // createPayment
 
 	@Override
-	public void reconcile(@NonNull final BankStatementLineReconcileRequest request)
+	public BankStatementLineReconcileResult reconcile(@NonNull final BankStatementLineReconcileRequest request)
 	{
-		BankStatementLineReconcileCommand.builder()
+		return BankStatementLineReconcileCommand.builder()
 				.moneyService(SpringContextHolder.instance.getBean(MoneyService.class))
 				.request(request)
 				.build()

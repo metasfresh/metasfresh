@@ -49,7 +49,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
@@ -1277,6 +1279,30 @@ public class ESRImportBL implements IESRImportBL
 				.loggable(runESRImportRequest.getLoggable())
 				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
 				.execute();
+	}
+
+	@Override
+	public void linkBankStatementLinesByPaymentIds(@NonNull final Map<PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdIndexByPaymentId)
+	{
+		if (bankStatementLineRefIdIndexByPaymentId.isEmpty())
+		{
+			return;
+		}
+
+		final Set<PaymentId> paymentIds = bankStatementLineRefIdIndexByPaymentId.keySet();
+
+		final ImmutableMap<PaymentId, I_ESR_ImportLine> paySelectionLinesByPaymentId = Maps.uniqueIndex(
+				esrImportDAO.retrieveLines(paymentIds),
+				esrImportLine -> PaymentId.ofRepoId(esrImportLine.getC_Payment_ID()));
+
+		for (final Map.Entry<PaymentId, I_ESR_ImportLine> e : paySelectionLinesByPaymentId.entrySet())
+		{
+			final PaymentId paymentId = e.getKey();
+			final I_ESR_ImportLine esrImportLine = e.getValue();
+			final BankStatementAndLineAndRefId bankStatementLineRefId = bankStatementLineRefIdIndexByPaymentId.get(paymentId);
+
+			linkESRImportLineToBankStatement(esrImportLine, bankStatementLineRefId);
+		}
 	}
 
 	@Override

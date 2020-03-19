@@ -40,6 +40,6 @@ public interface IBankStatmentPaymentBL extends ISingletonService
 			@NonNull de.metas.banking.model.I_C_BankStatementLine line,
 			@Nullable PaymentId paymentIdToSet);
 
-	void reconcile(@NonNull BankStatementLineReconcileRequest request);
+	BankStatementLineReconcileResult reconcile(@NonNull BankStatementLineReconcileRequest request);
 
 }

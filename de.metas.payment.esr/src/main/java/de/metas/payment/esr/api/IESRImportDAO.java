@@ -1,5 +1,7 @@
 package de.metas.payment.esr.api;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -35,6 +37,7 @@ import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -45,6 +48,8 @@ public interface IESRImportDAO extends ISingletonService
 	List<I_ESR_ImportLine> retrieveLines(I_ESR_Import esrImport);
 
 	List<I_ESR_ImportLine> retrieveLines(ESRImportId esrImportId);
+
+	List<I_ESR_ImportLine> retrieveLines(Collection<PaymentId> paymentIds);
 
 	/**
 	 * Retrieve all ESR import lines that have the same <code>ESR_Import</code> and reference the given <code>invoice</code>.

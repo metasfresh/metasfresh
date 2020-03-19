@@ -1,7 +1,7 @@
 package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Payment;
@@ -16,6 +16,8 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileRequest.PaymentToReconcile;
+import de.metas.banking.payment.BankStatementLineReconcileResult;
+import de.metas.banking.payment.BankStatementLineReconcileResult.PaymentReconciled;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
@@ -74,7 +76,7 @@ final class BankStatementLineReconcileCommand
 	//
 	// State
 	private ImmutableMap<PaymentId, I_C_Payment> paymentsCache; // lazy
-	private final HashMap<PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdsByPaymentId = new HashMap<>();
+	private final ArrayList<PaymentReconciled> reconciledPayments = new ArrayList<>();
 
 	@Builder
 	private BankStatementLineReconcileCommand(
@@ -86,9 +88,10 @@ final class BankStatementLineReconcileCommand
 		this.request = request;
 	}
 
-	public void execute()
+	public BankStatementLineReconcileResult execute()
 	{
-		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(request.getBankStatementLineId());
+		final BankStatementLineId bankStatementLineId = request.getBankStatementLineId();
+		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
 
 		assertBankStatementLineIsStillValid(bankStatementLine);
 		for (final PaymentToReconcile paymentToReconcile : request.getPaymentsToReconcile())
@@ -105,7 +108,17 @@ final class BankStatementLineReconcileCommand
 			lineNo += 10;
 		}
 
-		paySelectionBL.linkBankStatementLinesByPaymentIds(bankStatementLineRefIdsByPaymentId);
+		final BankStatementLineReconcileResult result = BankStatementLineReconcileResult.builder()
+				.bankStatementLineId(bankStatementLineId)
+				.reconciledPayments(reconciledPayments)
+				.build();
+
+		if (!result.isEmpty())
+		{
+			paySelectionBL.linkBankStatementLinesByPaymentIds(result.getBankStatementLineRefIdIndexByPaymentId());
+		}
+
+		return result;
 	}
 
 	private void assertBankStatementLineIsStillValid(final I_C_BankStatementLine bankStatementLine)
@@ -218,6 +231,7 @@ final class BankStatementLineReconcileCommand
 	{
 		final PaymentId paymentId = paymentToReconcile.getPaymentId();
 		final I_C_Payment payment = getPaymentById(paymentId);
+		final Amount statementLineAmt = paymentToReconcile.getStatementLineAmt();
 
 		final BankStatementAndLineAndRefId bankStatementLineRefId = bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
 				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
@@ -231,7 +245,7 @@ final class BankStatementLineReconcileCommand
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.invoiceId(InvoiceId.ofRepoIdOrNull(payment.getC_Invoice_ID()))
 				//
-				.trxAmt(moneyService.toMoney(paymentToReconcile.getStatementLineAmt()))
+				.trxAmt(moneyService.toMoney(statementLineAmt))
 				//
 				.build());
 
@@ -241,8 +255,10 @@ final class BankStatementLineReconcileCommand
 		paymentDAO.save(payment);
 
 		//
-		// Remember paymentId -> bank statement line ref connection
-		// we will need it later to link pay selections and ESR imports
-		bankStatementLineRefIdsByPaymentId.put(paymentId, bankStatementLineRefId);
+		reconciledPayments.add(PaymentReconciled.builder()
+				.bankStatementLineRefId(bankStatementLineRefId)
+				.paymentId(paymentId)
+				.statementLineAmt(statementLineAmt)
+				.build());
 	}
 }
