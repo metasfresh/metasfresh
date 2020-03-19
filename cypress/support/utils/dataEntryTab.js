@@ -92,7 +92,8 @@ export class DataEntrySubTab {
 
 function applyDataEntryTab(dataEntryTab) {
   cy.visitWindow('540571', 'NEW');
-
+  // Modified the oredr in which we input things, put  "Eingabefenster" to be the first one - test passes
+  cy.writeIntoLookupListField('DataEntry_TargetWindow_ID', dataEntryTab.targetWindowName, dataEntryTab.targetWindowName);
   if (dataEntryTab.seqNo) {
     cy.getStringFieldValue('SeqNo').then(currentValue => {
       if (currentValue !== dataEntryTab.seqNo) {
@@ -104,7 +105,7 @@ function applyDataEntryTab(dataEntryTab) {
 
   cy.writeIntoStringField('Name', dataEntryTab.name);
   cy.writeIntoStringField('TabName', dataEntryTab.tabName);
-  cy.writeIntoLookupListField('DataEntry_TargetWindow_ID', dataEntryTab.targetWindowName, dataEntryTab.targetWindowName);
+
 
   if (dataEntryTab.description) {
     cy.writeIntoTextField('Description', dataEntryTab.description);
