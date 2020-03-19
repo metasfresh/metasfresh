@@ -326,15 +326,16 @@ This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href
 This build triggered the <b>metasfresh-dist</b> jenkins job <a href="${metasFreshDistBuildResult.absoluteUrl}">${metasFreshDistBuildResult.displayName}</a>
 				"""
 		}
-	/*, zapier: {
-      invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
-        MF_UPSTREAM_BRANCH, // upstreamBranch
-        MF_ARTIFACT_VERSIONS['metasfresh'], // metasfreshVersion
-        MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'], // metasfreshProcurementWebuiVersion
-        MF_ARTIFACT_VERSIONS['metasfresh-webui'], // metasfreshWebuiApiVersion
-        MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] // metasfreshWebuiFrontendVersion
-      )
-    }*/
+		// we currently don't invoke zapier, because the things we invoke are legacy and we don't need them be build from master anymore
+		// , zapier: {
+		// 	invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
+		// 		MF_UPSTREAM_BRANCH, // upstreamBranch
+		// 		MF_ARTIFACT_VERSIONS['metasfresh'], // metasfreshVersion
+		// 		MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'], // metasfreshProcurementWebuiVersion
+		// 		MF_ARTIFACT_VERSIONS['metasfresh-webui'], // metasfreshWebuiApiVersion
+		// 		MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] // metasfreshWebuiFrontendVersion
+		// 	)
+		// }
 	)
 } // stage
 } // timestamps
@@ -375,7 +376,8 @@ Map invokeDownStreamJobs(
 	final def misc = new de.metas.jenkins.Misc();
 	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 
-	final buildResult = build job: jobName,
+	final buildResult = build job: jobName, 
+		propagate: false,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
@@ -388,66 +390,65 @@ Map invokeDownStreamJobs(
 	return buildResult;
 }
 
-/*
-void invokeZapier(
-  final String upstreamBuildNo,
-  final String upstreamBranch,
-  final String metasfreshVersion,
-  final String metasfreshProcurementWebuiVersion,
-  final String metasfreshWebuiApiVersion,
-  final String metasfreshWebuiFrontendVersion
-    )
-{
-  // now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-  // note: even with "skiptodist=true we do this, because we still want to make the notifcations
+// Currently not invoked. Might be used again it future though
+// void invokeZapier(
+//   final String upstreamBuildNo,
+//   final String upstreamBranch,
+//   final String metasfreshVersion,
+//   final String metasfreshProcurementWebuiVersion,
+//   final String metasfreshWebuiApiVersion,
+//   final String metasfreshWebuiFrontendVersion
+//     )
+// {
+//   // now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+//   // note: even with "skiptodist=true we do this, because we still want to make the notifcations
 
-  echo "Going to notify external systems via zapier webhook"
+//   echo "Going to notify external systems via zapier webhook"
 
-    final def hook = registerWebhook()
-    echo "Waiting for POST to ${hook.getURL()}"
+//     final def hook = registerWebhook()
+//     echo "Waiting for POST to ${hook.getURL()}"
 
-		final jsonPayload = """{
-				\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
-				\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
-				\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
-				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
-				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
-				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
-				\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
-		}"""
+// 		final jsonPayload = """{
+// 				\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
+// 				\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
+// 				\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
+// 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
+// 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
+// 				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
+// 				\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
+// 		}"""
 
-		// invoke zapier to trigger external jobs
-  	nodeIfNeeded('linux')
-  	{
-  			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
-  	}
-	waitForWebhookCall(hook);
-}
+// 		// invoke zapier to trigger external jobs
+//   	nodeIfNeeded('linux')
+//   	{
+//   			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
+//   	}
+// 		waitForWebhookCall(hook);
+// }
 
-String createZapierUrl()
-{
-	  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
-	  {
-	    // the zapier secret contains a trailing slash and another slash that is somewhere in the middle.
-	  	return "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
-		}
-}
+// String createZapierUrl()
+// {
+// 	  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
+// 	  {
+// 	    // the zapier secret contains a trailing slash and another slash that is somewhere in the middle.
+// 	  	return "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
+// 		}
+// }
 
-void waitForWebhookCall(final def hook)
-{
-	    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
-	    timeout(time: 30, unit: 'MINUTES')
-	    {
-				// stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-	      final def message = waitForWebhook hook ?: '<webhook returned NULL>'
-	      if(message.trim() == 'OK')
-	      {
-					echo "The external jobs that were invoked by zapier succeeeded; message='${message}'; hook-URL=${hook.getURL()}"
-	      }
-				else
-				{
-					error "An external job that was invoked by zapier failed; message='${message}'; hook-URL=${hook.getURL()}"
-				}
-	    }
-}
-*/
+// void waitForWebhookCall(final def hook)
+// {
+// 	    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
+// 	    timeout(time: 30, unit: 'MINUTES')
+// 	    {
+// 				// stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
+// 	      final def message = waitForWebhook hook ?: '<webhook returned NULL>'
+// 	      if(message.trim() == 'OK')
+// 	      {
+// 					echo "The external jobs that were invoked by zapier succeeeded; message='${message}'; hook-URL=${hook.getURL()}"
+// 	      }
+// 				else
+// 				{
+// 					error "An external job that was invoked by zapier failed; message='${message}'; hook-URL=${hook.getURL()}"
+// 				}
+// 	    }
+// }
