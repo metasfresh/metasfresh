@@ -54,4 +54,6 @@ public final class ReportConstants
 	public static final String REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder = "@AD_PInstance_ID@";
 
 	public static final String REPORT_PARAM_BARCODE_URL = "barcodeURL";
+
+	public static final String REPORT_PARAM_REPORT_FORMAT = "ReportFormat";
 }

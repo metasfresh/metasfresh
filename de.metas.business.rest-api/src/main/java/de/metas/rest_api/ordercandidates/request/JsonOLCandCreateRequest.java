@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.rest_api.bpartner.SwaggerDocConstants;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -56,7 +57,6 @@ public final class JsonOLCandCreateRequest
 	private JsonOrganization org;
 
 	@ApiModelProperty( //
-
 			required = true, //
 			value = "This translates to 'C_OLCand.externalLineId'.\n"
 					+ "'externalLineId' and 'dataSource' together need to be unique.")
@@ -70,12 +70,12 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty( //
 			required = true, //
-			value = "Identifier of the 'AD_InputDataSource' record that tells where this OLCand came from.")
+			value = "Identifier of the `AD_InputDataSource` record that tells where this OLCand came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataSource;
 
 	@ApiModelProperty( //
 			required = true, //
-			value = "Identifier of the 'AD_InputDataSource' record that tells what shall be happen with this OLCand.")
+			value = "Identifier of the `AD_InputDataSource` record that tells what shall be happen with this OLCand.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataDest;
 
 	@ApiModelProperty( //
@@ -151,8 +151,8 @@ public final class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
 			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
-			+ "Also note that:n"
-			+ "- the pricing system also needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
+			+ "Also note that:\n"
+			+ "- the pricing system needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
 			+ "- if a new business partner is created on the fly, the detault business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
 	@JsonInclude(Include.NON_NULL)
 	String pricingSystemCode;
@@ -203,7 +203,6 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	LocalDate presetDateShipped;
 
-
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
 	OrderDocType orderDocType;
@@ -212,7 +211,7 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
 
-	@ApiModelProperty(value = "Specifies the value for the sales rep that will propagate to the created order")
+	@ApiModelProperty(value = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String salesPartnerCode;
 
@@ -298,7 +297,6 @@ public final class JsonOLCandCreateRequest
 		Check.assumeNotNull(externalHeaderId, "externalHeaderId may not be null; this={}", this);
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
-
 
 		if (price != null)
 		{

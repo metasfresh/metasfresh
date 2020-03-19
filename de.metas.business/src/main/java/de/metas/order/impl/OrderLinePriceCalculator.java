@@ -116,6 +116,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}
 
@@ -150,6 +151,8 @@ final class OrderLinePriceCalculator
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
+		orderLine.setBase_Commission_Points_Per_Price_UOM( pricingResult.getBaseCommissionPointsPerPriceUOM() );
+		orderLine.setTraded_Commission_Percent( Percent.toBigDecimalOrNull( pricingResult.getTradedCommissionPercent() ) );
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
@@ -514,7 +517,8 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			final I_C_OrderLine orderLine = request.getOrderLine();
-			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
+			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.setParameter("log", pricingResult.getLoggableMessages());
 		}
 
 		return pricingResult.getTaxCategoryId();

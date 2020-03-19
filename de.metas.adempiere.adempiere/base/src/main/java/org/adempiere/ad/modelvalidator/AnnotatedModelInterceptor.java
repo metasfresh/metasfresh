@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 
@@ -152,15 +153,13 @@ import lombok.NonNull;
 	@Override
 	public final void onModelChange(final Object model, final ModelChangeType changeType)
 	{
-		final int type = changeType.getChangeType();
-		execute(PointcutType.ModelChange, model, type);
+		execute(PointcutType.ModelChange, model, changeType.toInt());
 	}
 
 	@Override
 	public final void onDocValidate(final Object model, final DocTimingType timing)
 	{
-		final int timingCode = timing.getTiming();
-		execute(PointcutType.DocValidate, model, timingCode);
+		execute(PointcutType.DocValidate, model, timing.toInt());
 	}
 
 	private void execute(final PointcutType type, final Object po, final int timing)
@@ -238,7 +237,7 @@ import lombok.NonNull;
 		// ... or schedule it to be executed after commit
 		else
 		{
-			logger.debug("Scheduling to be executed after commit: {}", pointcut);
+			logger.trace("Scheduling to be executed after commit: {}", pointcut);
 			final String trxName = InterfaceWrapperHelper.getTrxName(po);
 
 			Services.get(ITrxManager.class)
@@ -283,7 +282,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private AdempiereException appendAndLogHowtoDisableMessage(
+	private static AdempiereException appendAndLogHowtoDisableMessage(
 			@NonNull final Exception e,
 			@NonNull final Pointcut pointcut)
 	{
@@ -313,8 +312,7 @@ import lombok.NonNull;
 			method.setAccessible(true);
 		}
 
-		logger.debug("Executing: {}", pointcut);
-
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		if (pointcut.isMethodRequiresTiming())
 		{
 			final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
@@ -324,6 +322,8 @@ import lombok.NonNull;
 		{
 			method.invoke(annotatedObject, model);
 		}
+
+		logger.trace("Executed in {}: {} (timing={}) on {}", stopwatch, pointcut, timing, model);
 	}
 
 	/**

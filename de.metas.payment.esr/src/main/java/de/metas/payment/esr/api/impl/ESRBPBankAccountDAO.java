@@ -1,10 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-
 import java.util.List;
 import java.util.Properties;
 
@@ -18,12 +13,17 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 {
@@ -70,6 +70,8 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	}
 
 	/**
+	 * Explode the given {@code esrString} into a number of syntactically equivalent strings that can be matched against {@code C_BP_BankAccount.ESR_RenderedAccountNo}.
+	 * <p>
 	 * Formatting done according to https://www.gkb.ch/de/Documents/DC/Beratung-Produkte/Factsheets-Flyers/Handbuch-ESR/ESR-Handbuch-Postfinance-DE.pdf
 	 * <p>
 	 * 01-1067-4
@@ -118,7 +120,6 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 
 		return builder.build();
 	}
-
 
 	@Override
 	public final List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(@NonNull final I_C_BP_BankAccount bankAcct)

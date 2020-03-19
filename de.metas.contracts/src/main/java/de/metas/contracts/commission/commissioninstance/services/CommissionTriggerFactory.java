@@ -1,8 +1,17 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.time.LocalDate;
 import java.util.Optional;
 
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.util.lang.Percent;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -42,9 +51,13 @@ public class CommissionTriggerFactory
 {
 	private final CommissionTriggerDataRepository commissionTriggerDataRepository;
 
-	public CommissionTriggerFactory(@NonNull final CommissionTriggerDataRepository commissionTriggerDataRepository)
+	private final MoneyService moneyService;
+
+	public CommissionTriggerFactory(@NonNull final CommissionTriggerDataRepository commissionTriggerDataRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		this.commissionTriggerDataRepository = commissionTriggerDataRepository;
+		this.moneyService = moneyService;
 	}
 
 	public Optional<CommissionTrigger> createForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
@@ -69,12 +82,38 @@ public class CommissionTriggerFactory
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
 				.customer(Customer.of(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID())))
-				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()))
 				.beneficiary(Beneficiary.of(salesRepId))
-				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId, false/* candidateDeleted */))
+				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandidateId(invoiceCandidateId, false/* candidateDeleted */))
 				.build();
 
 		return Optional.of(trigger);
+	}
+
+	public CommissionTrigger createForForecastQtyAndPrice(
+			@NonNull final OrgId orgId,
+			@NonNull final ProductPrice productPrice,
+			@NonNull final Quantity forecastQty,
+			@NonNull final BPartnerId salesRepId,
+			@NonNull final BPartnerId customerId)
+	{
+		final Money forecastNetAmt = moneyService.multiply(forecastQty, productPrice);
+
+		final CommissionTriggerRequest commissionTriggerRequest = CommissionTriggerRequest
+				.builder()
+				.orgId(orgId)
+				.forecastCommissionPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
+				.invoicedCommissionPoints(CommissionPoints.ZERO)
+				.commissionPointsToInvoice(CommissionPoints.ZERO)
+				.tradedCommissionPercent(Percent.ZERO)
+				.candidateDeleted(Boolean.FALSE)
+				.timestamp(TimeUtil.asInstant(LocalDate.now()))
+				.build();
+
+		return CommissionTrigger.builder()
+				.customer(Customer.of(customerId))
+				.beneficiary(Beneficiary.of(salesRepId))
+				.commissionTriggerData(commissionTriggerDataRepository.createForRequest(commissionTriggerRequest))
+				.build();
 	}
 
 }

@@ -66,13 +66,9 @@ import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
-import de.metas.util.ConsoleLoggable;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Standard test:
@@ -109,7 +105,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		this.locksDatabase = lockManager.getLockDatabase();
 
 		this.ctx = Env.getCtx();
-		this.loggable = new ConsoleLoggable();
+		this.loggable = Loggables.console();
 
 		this.bpartner1 = icTestSupport.bpartner("test-bp");
 	}

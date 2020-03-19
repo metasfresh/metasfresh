@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.response;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -28,6 +29,7 @@ import lombok.Value;
  * #L%
  */
 
+@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
 public final class JsonResponseUpsert

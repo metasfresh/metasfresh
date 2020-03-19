@@ -1,6 +1,22 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -22,19 +38,6 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -70,12 +73,16 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		if (shipperTransportation == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@");
+			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", shipperTransportationId.getRepoId());
 		}
 		// Make sure Shipper Transportation is still open
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", shipperTransportationId);
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
@@ -149,7 +156,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		// Make sure Shipper Transportation is still open
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@", new Object[] { shipperTransportation.getM_ShipperTransportation_ID() });
 		}
 
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
@@ -208,18 +215,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		{
 			return false;
 		}
-
-		//
-		// @tobias using this is not good as when running the action "Generate Shipments" with "Quantity to deliver",
-		// 		a NEW (not existing!) VHU is created and added to the Shipment.
-		// 		If we leave this check here, we introduce a bug where the shipment is not created (don't have time to figure out why).
-		//
-		// HUs picked anonymously 'onTheFly' for Shipments should be rejected
-		//noinspection RedundantIfStatement
-		// if (handlingUnitsBL.isAnonymousHuPickedOnTheFly(hu))
-		// {
-		// 	return false;
-		// }
 
 		return true;
 	}
@@ -294,6 +289,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		return shippingPackagesMatchingHU;
 	}
 
+	@Nullable
 	@Override
 	public I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(final Collection<I_M_HU> hus)
 	{
@@ -329,7 +325,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		}
 
 		final I_M_ShippingPackage firstPackage = shippingPackages.iterator().next();
-		final I_M_ShipperTransportation shipperTransportation = firstPackage.getM_ShipperTransportation(); // get the common shipper transportation document of the HUs
-		return shipperTransportation;
+		return firstPackage.getM_ShipperTransportation();
 	}
 }

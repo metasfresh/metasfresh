@@ -53,7 +53,7 @@ import lombok.Value;
 public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
-	
+
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
 	String getBPartnerName(final BPartnerId bpartnerId);
@@ -168,6 +168,13 @@ public interface IBPartnerBL extends ISingletonService
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
+
+	/**
+	 * @return previous sales rep or null
+	 */
+	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
+
 	@Value
 	@Builder
 	public static class RetrieveContactRequest
@@ -176,6 +183,11 @@ public interface IBPartnerBL extends ISingletonService
 		{
 			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER;
 		}
+
+		public enum IfNotFound
+		{
+			RETURN_DEFAULT_CONTACT, RETURN_NULL
+		};
 
 		@NonNull
 		BPartnerId bpartnerId;
@@ -199,6 +211,11 @@ public interface IBPartnerBL extends ISingletonService
 		@Default
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
+
+		boolean onlyActive;
+
+		@Default
+		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
 	}
 
 	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);

@@ -86,6 +86,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private static final String DYNATTR_IsJustCreated = POJOWrapper.class.getName() + "#IsJustCreated";
 
+	static final String COLUMNNAME_Created = "Created";
+	static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	static final String COLUMNNAME_Updated = "Updated";
+	static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
 	public static <T> T create(final Properties ctx, final Class<T> cl)
 	{
 		return create(ctx, cl, POJOLookupMap.get());
@@ -224,7 +229,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
-
 
 	/**
 	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
@@ -690,6 +694,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				// value = idForNewModel(propertyNameLowerCase);
 				value = ID_ZERO;
 			}
+			else if (propertyNameLowerCase.equalsIgnoreCase(COLUMNNAME_CreatedBy)
+					|| propertyNameLowerCase.equals(COLUMNNAME_UpdatedBy))
+			{
+				value = ID_MINUS_ONE;
+			}
 			else
 			{
 				value = DEFAULT_VALUE_int;
@@ -984,7 +993,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return getValue(propertyName, returnType, strictValues);
 	}
 
-	private Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
+	Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
 	{
 		final Map<String, Object> values = getInnerValues();
 
@@ -1275,7 +1284,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return true;
 		}
 
-		final Object value = wrapper.getValue(columnName, Object.class);
+		return wrapper.isNull(columnName);
+	}
+
+	public boolean isNull(final String columnName)
+	{
+		return isNull(columnName, strictValues);
+	}
+
+	boolean isNullNotStrict(final String columnName)
+	{
+		return isNull(columnName, false /* enforceStrictValues */);
+	}
+
+	private boolean isNull(final String columnName, final boolean enforceStrictValues)
+	{
+		final Object value = getValue(columnName, Object.class, enforceStrictValues);
 		if (value == null)
 		{
 			return true;
@@ -1587,7 +1611,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final int valueInt = Integer.parseInt(value.toString());
 			return Integer.max(valueInt, idForNewModel(columnName));
 		}
-		else if(value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware)
 		{
 			return ((RepoIdAware)value).getRepoId();
 		}

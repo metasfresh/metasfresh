@@ -1,6 +1,22 @@
 package de.metas.order.model.interceptor;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.ModelValidator;
+
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.DeliveryViaRule;
@@ -15,22 +31,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.DB;
-
-import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -220,9 +220,13 @@ public class C_Order
 			return;
 		}
 
+		if (order.getC_Payment_ID() > 0)
+		{
+			return;
+		}
+
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false, order.getAD_Client_ID(), order.getAD_Org_ID());
-
 		if (!autoAssignEnabled)
 		{
 			return;

@@ -1,5 +1,9 @@
 package org.compiere.model;
 
+import java.util.OptionalInt;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -28,21 +32,65 @@ import lombok.Value;
 @Value
 public final class GridFieldDefaultFilterDescriptor
 {
-	private final int seqNo;
+	private final boolean defaultFilter;
+	private final int defaultFilterSeqNo;
 	private final boolean rangeFilter;
 	private final boolean showFilterIncrementButtons;
 	private final String defaultValue;
 
+	private final boolean facetFilter;
+	private final int facetFilterSeqNo;
+	private final OptionalInt maxFacetsToFetch;
+
 	@Builder
 	public GridFieldDefaultFilterDescriptor(
-			final int seqNo,
+			final boolean defaultFilter,
+			final int defaultFilterSeqNo,
 			final boolean rangeFilter,
 			final boolean showFilterIncrementButtons,
-			final String defaultValue)
+			final String defaultValue,
+			//
+			final boolean facetFilter,
+			final int facetFilterSeqNo,
+			final int maxFacetsToFetch)
 	{
-		this.seqNo = seqNo;
-		this.rangeFilter = rangeFilter;
-		this.showFilterIncrementButtons = showFilterIncrementButtons;
-		this.defaultValue = defaultValue;
+		if (!defaultFilter && !facetFilter)
+		{
+			throw new AdempiereException("defaultFilter or facetFilter shall be true");
+		}
+
+		//
+		// Default filter
+		if (defaultFilter)
+		{
+			this.defaultFilter = true;
+			this.defaultFilterSeqNo = defaultFilterSeqNo;
+			this.rangeFilter = rangeFilter;
+			this.showFilterIncrementButtons = showFilterIncrementButtons;
+			this.defaultValue = defaultValue;
+		}
+		else
+		{
+			this.defaultFilter = false;
+			this.defaultFilterSeqNo = 0;
+			this.rangeFilter = false;
+			this.showFilterIncrementButtons = false;
+			this.defaultValue = null;
+		}
+
+		//
+		// Facet filter
+		if (facetFilter)
+		{
+			this.facetFilter = true;
+			this.facetFilterSeqNo = facetFilterSeqNo;
+			this.maxFacetsToFetch = maxFacetsToFetch > 0 ? OptionalInt.of(maxFacetsToFetch) : OptionalInt.empty();
+		}
+		else
+		{
+			this.facetFilter = false;
+			this.facetFilterSeqNo = 0;
+			this.maxFacetsToFetch = OptionalInt.empty();
+		}
 	}
 }

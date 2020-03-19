@@ -15,6 +15,10 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionsMap;
+import de.metas.uom.UomId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;

@@ -1,35 +1,44 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
-
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForExistingInstance;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
+import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.NonNull;
 
 /*
@@ -56,6 +65,7 @@ import lombok.NonNull;
 
 class CommissionConfigFactoryTest
 {
+	private CommissionHierarchyFactory commissionHierarchyFactory;
 	private CommissionConfigFactory commissionConfigFactory;
 	private I_C_BPartner bpartnerRecord_EndCustomer;
 
@@ -65,14 +75,25 @@ class CommissionConfigFactoryTest
 	private BPartnerId endCustomerId;
 	private BPGroupId customerBPGroudId;
 
+	private ProductId commissionProduct1Id;
+	private ProductId commissionProduct2Id;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
+		final I_M_Product commissionProduct1Record = newInstance(I_M_Product.class);
+		saveRecord(commissionProduct1Record);
+		commissionProduct1Id = ProductId.ofRepoId(commissionProduct1Record.getM_Product_ID());
+
+		final I_M_Product commissionProduct2Record = newInstance(I_M_Product.class);
+		saveRecord(commissionProduct2Record);
+		commissionProduct2Id = ProductId.ofRepoId(commissionProduct2Record.getM_Product_ID());
+
+		commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		commissionConfigFactory = new CommissionConfigFactory(commissionHierarchyFactory, commissionConfigStagingDataService);
+		commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
 
 		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
 		saveRecord(customerBPGroupRecord);
@@ -93,13 +114,27 @@ class CommissionConfigFactoryTest
 		salesProductId = ProductId.ofRepoId(salesProductRecord.getM_Product_ID());
 
 		date = LocalDate.now();
+	}
 
+	@BeforeAll
+	static void beforeAll()
+	{
+		SnapshotMatcher.start(
+				AdempiereTestHelper.SNAPSHOT_CONFIG,
+				AdempiereTestHelper.createSnapshotJsonFunction());
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
 	void createFor()
 	{
 		final ConfigData configData = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
@@ -116,6 +151,7 @@ class CommissionConfigFactoryTest
 
 		// invoke method under test
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
@@ -143,6 +179,56 @@ class CommissionConfigFactoryTest
 		final HierarchyContract hierarchyContractLvl2 = HierarchyContract.cast(contractLvl2);
 		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl2.getPointsPrecision()).isEqualTo(3);
+
+		SnapshotMatcher.expect(config).toMatchSnapshot();
+	}
+
+	@Test
+	void createForNewCommissionInstances_multiple_contracts()
+	{
+		final ConfigData configData1 = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(1); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3); // guard
+
+		ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct2Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(6); // guard
+
+		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
+
+		// invoke method under test
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(salesProductId)
+				.date(date).build();
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		assertThat(configs).hasSize(2);
+		SnapshotMatcher.expect(configs).toMatchSnapshot();
 	}
 
 	@Test
@@ -151,6 +237,7 @@ class CommissionConfigFactoryTest
 		final ProductCategoryId someOtherProductCategoryId = ProductCategoryId.ofRepoId(34);
 
 		final ConfigData configData = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create an unrelated configLine
@@ -168,6 +255,7 @@ class CommissionConfigFactoryTest
 	void createForNewCommissionInstances_no_matching_configLines()
 	{
 		final ConfigData configData = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create no configLines
@@ -185,6 +273,7 @@ class CommissionConfigFactoryTest
 		final BPartnerId salesRepLvl0Id = configData.getName2BPartnerId().get("salesRep");
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
@@ -195,4 +284,80 @@ class CommissionConfigFactoryTest
 
 		assertThat(configs).isEmpty();
 	}
+
+	@Test
+	void createForExisingInstance()
+	{
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(1); // guard
+
+		ConfigData configData1 = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(1); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(4); // guard - 3 new sales reps
+
+		ConfigData configData2 = ConfigTestRecord.builder()
+				.commissionProductId(commissionProduct2Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(6); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(4); // guard - no additional new sales reps
+
+		// final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
+		// final BPartnerId salesRepLvl1Id = configData1.getName2BPartnerId().get("salesSupervisor");
+		// final BPartnerId salesRepLvl2Id = configData1.getName2BPartnerId().get("headOfSales");
+
+		final ImmutableCollection<FlatrateTermId> configData1ContractIds = configData1.getBpartnerId2FlatrateTermId().values();
+		final ImmutableCollection<FlatrateTermId> configData2ContractIds = configData2.getBpartnerId2FlatrateTermId().values();
+
+		final ImmutableList<FlatrateTermId> allSixContractIds = POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class).stream()
+				.map(record -> FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		final ConfigRequestForExistingInstance commissionConfigRequest = ConfigRequestForExistingInstance.builder()
+				.contractIds(allSixContractIds)
+				.customerBPartnerId(endCustomerId)
+				.salesProductId(salesProductId)
+				.build();
+
+		// invoke method under test
+		final ImmutableMap<FlatrateTermId, CommissionConfig> result = commissionConfigFactory.createForExisingInstance(commissionConfigRequest);
+		assertThat(result).hasSize(6);
+		assertThat(configData1ContractIds)
+				.as("check that all contracts of configData1 are mapped to to the config created from configData1")
+				.allSatisfy(contractId -> {
+					final CommissionConfig config = result.get(contractId);
+					assertThat(config).isInstanceOf(HierarchyConfig.class);
+					assertThat(HierarchyConfig.cast(config).getId()).isEqualTo(configData1.getHierarchyConfigId());
+				});
+		assertThat(configData2ContractIds)
+				.as("check that all contracts of configData2 are mapped to to the config created from configData2")
+				.allSatisfy(contractId -> {
+					final CommissionConfig config = result.get(contractId);
+					assertThat(config).isInstanceOf(HierarchyConfig.class);
+					assertThat(HierarchyConfig.cast(config).getId()).isEqualTo(configData2.getHierarchyConfigId());
+				});
+
+		SnapshotMatcher.expect(result).toMatchSnapshot();
+	}
+
 }

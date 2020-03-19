@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.I_M_Warehouse;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -108,6 +109,11 @@ final class TestMasterdata
 			@NonNull final CountryId countryId,
 			@Nullable final GLN gln)
 	{
+
+		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
+		groupRecord.setName(bpValue + "-name");
+		saveRecord(groupRecord);
+
 		final I_C_BPartner bpRecord = newInstance(I_C_BPartner.class);
 		bpRecord.setValue(bpValue);
 		bpRecord.setName(bpValue + "-name");
@@ -115,6 +121,7 @@ final class TestMasterdata
 		bpRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(salesPricingSystemId));
 		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
+		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()
@@ -157,9 +164,10 @@ final class TestMasterdata
 		saveRecord(record);
 	}
 
-	public PricingSystemId createPricingSystem()
+	public PricingSystemId createPricingSystem(@NonNull final String pricinSystemCode)
 	{
 		final I_M_PricingSystem record = newInstance(I_M_PricingSystem.class);
+		record.setValue(pricinSystemCode);
 		saveRecord(record);
 		return PricingSystemId.ofRepoId(record.getM_PricingSystem_ID());
 	}

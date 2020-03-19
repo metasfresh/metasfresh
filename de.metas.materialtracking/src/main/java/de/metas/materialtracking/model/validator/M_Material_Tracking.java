@@ -1,5 +1,19 @@
 package de.metas.materialtracking.model.validator;
 
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.MaterialTrackingPOCopyRecordSupport;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.CopyRecordFactory;
+import org.compiere.model.ModelValidator;
+
 import java.util.Optional;
 
 /*
@@ -24,19 +38,6 @@ import java.util.Optional;
  * #L%
  */
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.ModelValidator;
-
-import de.metas.materialtracking.IMaterialTrackingAttributeBL;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.util.Services;
-
 // TODO: AFAIU this whole MI is obsolete as soon as https://github.com/metasfresh/metasfresh/issues/4737 is done
 @Deprecated
 @Interceptor(I_M_Material_Tracking.class)
@@ -45,6 +46,10 @@ public class M_Material_Tracking
 	@Init
 	public void setupCallouts()
 	{
+
+		CopyRecordFactory.enableForTableName(I_M_Material_Tracking.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Material_Tracking.Table_Name, MaterialTrackingPOCopyRecordSupport.class);
+
 		// Setup callout M_Material_Tracking
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.materialtracking.ch.lagerkonf.callout.M_Material_Tracking());

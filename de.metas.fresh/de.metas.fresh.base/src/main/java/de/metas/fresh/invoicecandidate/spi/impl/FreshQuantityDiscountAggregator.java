@@ -240,8 +240,6 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	/**
 	 * Creates an aggregate with one {@link IInvoiceLineRW} having "minus" <code>qtyDiscount</code>.
 	 *
-	 * @param candidate
-	 * @param qtyDiscount
 	 * @param invoiceLineAttributes attributes to be used on new invoice line
 	 * @return resulting aggregate; never return <code>null</code>.
 	 */
@@ -290,7 +288,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		//
 		// Create a new aggregate with our discount invoice line and return it
 		final IInvoiceCandAggregate invoiceCandAggregate = aggregationBL.mkInvoiceCandAggregate();
-		invoiceCandAggregate.addAssociation(candidate, invoiceLine);
+		invoiceCandAggregate.addAssociation(candidate, invoiceLine, stockQtyAndUOMQtyToInvoice);
 		return invoiceCandAggregate;
 	}
 

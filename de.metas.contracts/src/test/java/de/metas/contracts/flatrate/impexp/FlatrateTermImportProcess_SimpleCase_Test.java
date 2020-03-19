@@ -1,8 +1,6 @@
 package de.metas.contracts.flatrate.impexp;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -11,19 +9,15 @@ import java.util.Set;
 
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionReferenceProvider;
@@ -33,17 +27,13 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.greeting.GreetingRepository;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
@@ -69,30 +59,27 @@ import de.metas.util.Services;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-
-		// note: we need to bring in theses classes because of setupModuleInterceptors_Contracts_Full()
-		InOutLinesWithMissingInvoiceCandidate.class,
-		ShipmentScheduleSubscriptionReferenceProvider.class,
-		OrderGroupRepository.class,
-		OrderGroupCompensationChangesHandler.class,
-		GroupTemplateRepository.class,
-		GroupCompensationLineCreateRequestFactory.class,
-		BPartnerBL.class,
-		UserRepository.class,
-		ContractLibraryConfiguration.class,
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
-	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	private IInvoiceCandDAO iinvoiceCandDAO;
+	private IShipmentScheduleHandlerBL inOutCandHandlerBL;
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		helper.setupModuleInterceptors_Contracts_Full();
+
+		//
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
+		
+		inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+
+		iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 	}
 
 	@Test
@@ -278,6 +265,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.masterEndDate(masterEndDate)
 				.build();
 
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
 		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
@@ -327,7 +316,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(invoiceCandidate.isTaxIncluded()).isEqualTo(flatrateTerm.isTaxIncluded());
 
 		final List<I_C_Invoice_Candidate> candsForTerm = iinvoiceCandDAO.retrieveReferencing(TableRecordReference.of(flatrateTerm));
-		assertThat(candsForTerm.size(), equalTo(1));
+		assertThat(candsForTerm).hasSize(1);
 	}
 
 	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)

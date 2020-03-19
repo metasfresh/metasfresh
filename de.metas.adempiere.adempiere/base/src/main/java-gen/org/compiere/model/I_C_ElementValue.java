@@ -82,10 +82,6 @@ public interface I_C_ElementValue
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_Client>(I_C_ElementValue.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -93,7 +89,7 @@ public interface I_C_ElementValue
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -103,18 +99,12 @@ public interface I_C_ElementValue
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_Org>(I_C_ElementValue.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -138,12 +128,6 @@ public interface I_C_ElementValue
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
-
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Activity>(I_C_ElementValue.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
@@ -196,12 +180,6 @@ public interface I_C_ElementValue
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Currency>(I_C_ElementValue.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -279,12 +257,6 @@ public interface I_C_ElementValue
 	 */
 	public int getC_Tax_ID();
 
-	public org.compiere.model.I_C_Tax getC_Tax();
-
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
-
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax>(I_C_ElementValue.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
     /** Column name C_Tax_ID */
     public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
@@ -313,8 +285,6 @@ public interface I_C_ElementValue
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User>(I_C_ElementValue.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -516,7 +486,6 @@ public interface I_C_ElementValue
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -526,7 +495,6 @@ public interface I_C_ElementValue
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -538,6 +506,35 @@ public interface I_C_ElementValue
     public static final org.adempiere.model.ModelColumn<I_C_ElementValue, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_ElementValue, Object>(I_C_ElementValue.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Parent.
+	 * Parent of Entity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setParent_ID (int Parent_ID);
+
+	/**
+	 * Get Parent.
+	 * Parent of Entity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getParent_ID();
+
+	public org.compiere.model.I_C_ElementValue getParent();
+
+	public void setParent(org.compiere.model.I_C_ElementValue Parent);
+
+    /** Column definition for Parent_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_ElementValue> COLUMN_Parent_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_ElementValue>(I_C_ElementValue.class, "Parent_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name Parent_ID */
+    public static final String COLUMNNAME_Parent_ID = "Parent_ID";
 
 	/**
 	 * Set Buchen "Ist".
@@ -640,6 +637,33 @@ public interface I_C_ElementValue
     public static final String COLUMNNAME_PostStatistical = "PostStatistical";
 
 	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_C_ElementValue, Object>(I_C_ElementValue.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -664,8 +688,6 @@ public interface I_C_ElementValue
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User>(I_C_ElementValue.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 

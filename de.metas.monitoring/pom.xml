@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -12,7 +13,7 @@
 	<version>10.0.0</version>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
+		<elastic-apm.version>1.13.0</elastic-apm.version>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
@@ -28,6 +29,22 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>co.elastic.apm</groupId>
+			<artifactId>apm-agent-api</artifactId>
+			<version>${elastic-apm.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 </project>

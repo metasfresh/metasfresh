@@ -16,6 +16,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -105,6 +106,7 @@ public class CustomsInvoiceServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		customsInvoiceRepo = new CustomsInvoiceRepository();
 		final OrderLineRepository orderLineRepo = new OrderLineRepository();

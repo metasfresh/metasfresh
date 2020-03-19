@@ -1,6 +1,9 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import de.metas.contracts.commission.commissioninstance.services.CommissionTriggerRequest;
+import de.metas.util.lang.Percent;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +12,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData.CommissionTriggerDataBuilder;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 
 /*
@@ -44,34 +47,50 @@ public class CommissionTriggerDataRepository
 		this.icRecordHelper = icRecordHelper;
 	}
 
-	public CommissionTriggerData getForInvoiceCandiateId(@NonNull final InvoiceCandidateId invoiceCandidateId, final boolean candidateDeleted)
+	public CommissionTriggerData getForInvoiceCandidateId(@NonNull final InvoiceCandidateId invoiceCandidateId, final boolean candidateDeleted)
 	{
-		return createCommissionTriggerData(load(invoiceCandidateId, I_C_Invoice_Candidate.class), candidateDeleted);
+		final I_C_Invoice_Candidate icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+
+		final CommissionTriggerRequest commissionTriggerRequest =
+				CommissionTriggerRequest
+						.builder()
+						.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
+						.candidateDeleted(candidateDeleted)
+						.invoiceCandidateId(invoiceCandidateId)
+						.forecastCommissionPoints( icRecordHelper.extractForecastCommissionPoints(icRecord) )
+						.commissionPointsToInvoice( icRecordHelper.extractCommissionPointsToInvoice(icRecord) )
+						.invoicedCommissionPoints( icRecordHelper.extractInvoicedCommissionPoints(icRecord) )
+						.tradedCommissionPercent( icRecordHelper.extractTradedCommissionPercent(icRecord) )
+						.timestamp( TimeUtil.asInstant( icRecord.getUpdated() ) )
+						.build();
+
+		return createForRequest(commissionTriggerRequest);
 	}
 
-	private CommissionTriggerData createCommissionTriggerData(@NonNull final I_C_Invoice_Candidate icRecord, final boolean candidateDeleted)
+	public CommissionTriggerData createForRequest(final CommissionTriggerRequest commissionTriggerRequest)
 	{
-		final Money forecastNetAmt = icRecordHelper.extractForecastNetAmt(icRecord);
-		final Money netAmtToInvoice = icRecordHelper.extractNetAmtToInvoice(icRecord);
-		final Money invoicedNetAmount = icRecordHelper.extractInvoicedNetAmt(icRecord);
+		final CommissionTriggerDataBuilder builder = CommissionTriggerData
+				.builder()
+				.orgId(commissionTriggerRequest.getOrgId())
+				.invoiceCandidateWasDeleted( commissionTriggerRequest.isCandidateDeleted() )
+				.invoiceCandidateId( commissionTriggerRequest.getInvoiceCandidateId() )
+				.timestamp( commissionTriggerRequest.getTimestamp() );
 
-		final CommissionTriggerDataBuilder builder = CommissionTriggerData.builder()
-				.invoiceCandidateWasDeleted(candidateDeleted)
-				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
-				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()));
-		if (candidateDeleted)
+		if ( commissionTriggerRequest.isCandidateDeleted() )
 		{
 			builder
 					.forecastedPoints(CommissionPoints.ZERO)
 					.invoiceablePoints(CommissionPoints.ZERO)
-					.invoicedPoints(CommissionPoints.ZERO);
+					.invoicedPoints(CommissionPoints.ZERO)
+					.tradedCommissionPercent(Percent.ZERO);
 		}
 		else
 		{
 			builder
-					.forecastedPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
-					.invoiceablePoints(CommissionPoints.of(netAmtToInvoice.toBigDecimal()))
-					.invoicedPoints(CommissionPoints.of(invoicedNetAmount.toBigDecimal()));
+					.forecastedPoints( commissionTriggerRequest.getForecastCommissionPoints() )
+					.invoiceablePoints( commissionTriggerRequest.getCommissionPointsToInvoice() )
+					.invoicedPoints( commissionTriggerRequest.getInvoicedCommissionPoints() )
+					.tradedCommissionPercent( commissionTriggerRequest.getTradedCommissionPercent() );
 		}
 		return builder.build();
 	}

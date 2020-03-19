@@ -102,9 +102,9 @@ BEGIN
 		-- * add M_DiscountSchemaLine.*_AddAmt
 		-- * apply M_DiscountSchemaLine.*_Discount
 		-- NOTE: task 08136, additional requirement: if a product price is zero in the base/source PLV, then it shall remain zero, even if an *_AddAmt was specified
-		v_result.PriceList = (CASE dsl.List_Base WHEN 'S' THEN p_PriceStd WHEN 'X' THEN p_PriceLimit ELSE p_PriceList END + CASE WHEN p_PriceList=0 THEN 0 ELSE dsl.List_AddAmt END) * (1 - dsl.List_Discount/100);
-		v_result.PriceStd = (CASE dsl.Std_Base WHEN 'L' THEN p_PriceList WHEN 'X' THEN p_PriceLimit ELSE p_PriceStd END  + CASE WHEN p_PriceStd=0 THEN 0 ELSE dsl.Std_AddAmt END) * (1 - dsl.Std_Discount/100);
-		v_result.PriceLimit = (CASE dsl.Limit_Base WHEN 'L' THEN p_PriceList WHEN 'S' THEN p_PriceStd ELSE p_PriceLimit END + CASE WHEN p_PriceLimit=0 THEN 0 ELSE dsl.Limit_AddAmt END) * (1 - dsl.Limit_Discount /100);
+		v_result.PriceList = (CASE dsl.List_Base WHEN 'S' THEN p_PriceStd WHEN 'X' THEN p_PriceLimit ELSE p_PriceList END +  dsl.List_AddAmt) * (1 - dsl.List_Discount/100);
+		v_result.PriceStd = (CASE dsl.Std_Base WHEN 'L' THEN p_PriceList WHEN 'X' THEN p_PriceLimit ELSE p_PriceStd END  +dsl.Std_AddAmt ) * (1 - dsl.Std_Discount/100);
+		v_result.PriceLimit = (CASE dsl.Limit_Base WHEN 'L' THEN p_PriceList WHEN 'S' THEN p_PriceStd ELSE p_PriceLimit END +  dsl.Limit_AddAmt) * (1 - dsl.Limit_Discount /100);
 
 		--
 		-- Apply discount schema line roundings

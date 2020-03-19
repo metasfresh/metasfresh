@@ -13,32 +13,26 @@ package org.adempiere.ad.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.compiere.model.ModelValidator;
 
-public enum ModelChangeType
+public enum ModelChangeType implements TimingType
 {
-	BEFORE_NEW(ModelValidator.TYPE_BEFORE_NEW),
-	AFTER_NEW(ModelValidator.TYPE_AFTER_NEW),
+	BEFORE_NEW(ModelValidator.TYPE_BEFORE_NEW), AFTER_NEW(ModelValidator.TYPE_AFTER_NEW),
 
-	BEFORE_CHANGE(ModelValidator.TYPE_BEFORE_CHANGE),
-	AFTER_CHANGE(ModelValidator.TYPE_AFTER_CHANGE),
+	BEFORE_CHANGE(ModelValidator.TYPE_BEFORE_CHANGE), AFTER_CHANGE(ModelValidator.TYPE_AFTER_CHANGE),
 
-	BEFORE_DELETE(ModelValidator.TYPE_BEFORE_DELETE),
-	AFTER_DELETE(ModelValidator.TYPE_AFTER_DELETE),
+	BEFORE_DELETE(ModelValidator.TYPE_BEFORE_DELETE), AFTER_DELETE(ModelValidator.TYPE_AFTER_DELETE),
 
-	AFTER_NEW_REPLICATION(ModelValidator.TYPE_AFTER_NEW_REPLICATION),
-	AFTER_CHANGE_REPLICATION(ModelValidator.TYPE_AFTER_CHANGE_REPLICATION),
-	BEFORE_DELETE_REPLICATION(ModelValidator.TYPE_BEFORE_DELETE_REPLICATION),
+	AFTER_NEW_REPLICATION(ModelValidator.TYPE_AFTER_NEW_REPLICATION), AFTER_CHANGE_REPLICATION(ModelValidator.TYPE_AFTER_CHANGE_REPLICATION), BEFORE_DELETE_REPLICATION(ModelValidator.TYPE_BEFORE_DELETE_REPLICATION),
 
 	BEFORE_SAVE_TRX(ModelValidator.TYPE_BEFORE_SAVE_TRX), // metas: tsa: 02380
 
@@ -53,8 +47,7 @@ public enum ModelChangeType
 	 */
 	// metas-ts 0176
 	@Deprecated
-	SUBSEQUENT(ModelValidator.TYPE_SUBSEQUENT)
-	;
+	SUBSEQUENT(ModelValidator.TYPE_SUBSEQUENT);
 
 	//
 	// Implementation
@@ -67,7 +60,8 @@ public enum ModelChangeType
 		this.changeType = changeType;
 	}
 
-	public final int getChangeType()
+	@Override
+	public int toInt()
 	{
 		return changeType;
 	}
@@ -77,7 +71,7 @@ public enum ModelChangeType
 		final ModelChangeType[] values = values();
 		for (final ModelChangeType value : values)
 		{
-			if (changeType == value.getChangeType())
+			if (changeType == value.changeType)
 			{
 				return value;
 			}
@@ -138,5 +132,12 @@ public enum ModelChangeType
 	public boolean isBeforeSaveTrx()
 	{
 		return this == BEFORE_SAVE_TRX;
+	}
+
+	public static boolean isBeforeSaveTrx(final TimingType timingType)
+	{
+		return timingType instanceof ModelChangeType
+				? ((ModelChangeType)timingType).isBeforeSaveTrx()
+				: false;
 	}
 }

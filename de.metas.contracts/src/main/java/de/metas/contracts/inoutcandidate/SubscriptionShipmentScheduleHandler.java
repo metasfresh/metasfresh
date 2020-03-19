@@ -164,7 +164,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.invalidateStorageSegment(segment);
+		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(segment);
 
 	}
 

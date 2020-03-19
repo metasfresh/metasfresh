@@ -48,6 +48,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -149,6 +150,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, orderLineId)
 				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override

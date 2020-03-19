@@ -1,37 +1,12 @@
 package de.metas.fresh.api.invoicecandidate.impl;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
 import de.metas.fresh.model.I_C_BPartner;
@@ -53,23 +28,15 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
+		final DocTypeId freshProduzentenabrechnung = Services.get(IDocTypeDAO.class).getDocTypeId(
+				DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
+				.docSubType(X_C_DocType.DOCSUBTYPE_VendorInvoice)
+				.adClientId(candidate.getAD_Client_ID())
+				.adOrgId(candidate.getAD_Org_ID())
+				.build());
 
-		final int adClientId = candidate.getAD_Client_ID();
-		final int adOrgId = candidate.getAD_Org_ID();
-
-		final String docBaseType = X_C_DocType.DOCBASETYPE_APInvoice;
-		final String docSubType = X_C_DocType.DOCSUBTYPE_VendorInvoice;
-
-		final int freshProduzentenabrechnung = Services.get(IDocTypeDAO.class).getDocTypeId(
-				ctx,
-				docBaseType,
-				docSubType,
-				adClientId,
-				adOrgId,
-				ITrx.TRXNAME_None);
-
-		if (freshProduzentenabrechnung <= 0)
+		if (freshProduzentenabrechnung == null)
 		{
 			// This means that no API - VI doc type was defined in db
 			// do nothing
@@ -84,7 +51,7 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 
 		if (!isFresh_Produzentenabrechnung)
 		{
-			if (freshProduzentenabrechnung == candidateDocTypeID)
+			if (freshProduzentenabrechnung.getRepoId() == candidateDocTypeID)
 			{
 				// the candidate was already freshProduzentenabrechnung but the partner was changed
 				// and the new partner is not freshProduzentenabrechnung
@@ -109,6 +76,6 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 			}
 		}
 
-		candidate.setC_DocTypeInvoice_ID(freshProduzentenabrechnung);
+		candidate.setC_DocTypeInvoice_ID(freshProduzentenabrechnung.getRepoId());
 	}
 }

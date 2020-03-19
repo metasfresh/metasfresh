@@ -135,7 +135,11 @@ public class QuerySelectionHelper
 		final StringBuilder sqlFromBuilder = new StringBuilder(" FROM ").append(tableName);
 
 		// be sure to only pass the "SELECT", not the "INSERT" sql to avoid invalid SQL when ORs are exploded to unions
-		final String sqlSelect = query.buildSQL(sqlSelectBuilder, sqlFromBuilder, true/* useOrderByClause */);
+		final String sqlSelect = query.buildSQL(
+				sqlSelectBuilder,
+				sqlFromBuilder,
+				null/* groupByClause */,
+				true/* useOrderByClause */);
 
 		return sqlInsertIntoBuilder.append(sqlSelect).toString();
 	}
@@ -148,6 +152,7 @@ public class QuerySelectionHelper
 		final String sqlInnerSelect = query.buildSQL(
 				"SELECT " + keyColumnName,
 				/* fromClause */ null,
+				/* groupByClause */ null,
 				/* useOrderByClause */true);
 
 		return new StringBuilder()

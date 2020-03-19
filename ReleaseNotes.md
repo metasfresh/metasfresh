@@ -5,10 +5,190 @@ This file contains the tasks/issues which we implement in metasfresh, in a chron
 
 Additional notes:
  * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
- * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
+ * The metasfresh website is at [metasfresh.com/en](https://metasfresh.com/en) (English), [metasfresh.com](https://metasfresh.com/) (German)
+ * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
 
 Here come the actual release notes:
+
+# metasfresh 5.142
+## Features
+* metasfresh
+  * [#6298](https://github.com/metasfresh/metasfresh/issues/6298) Migrate `AD_Org_ID` process parameter to `Search` from whatever it is now
+  * [#6311](https://github.com/metasfresh/metasfresh/issues/6311) Rename jasper report Revisionsstelle Geschäftspartner to Stammdaten Mutationsprotokoll
+  * [#6328](https://github.com/metasfresh/metasfresh/issues/6328) ESR Import + processing autom. after upload via drag&drop
+
+## Fixes
+* metasfresh
+  * [#6231](https://github.com/metasfresh/metasfresh/issues/6231) UOM related error in invoice candidate updates
+  * [#6331](https://github.com/metasfresh/metasfresh/issues/6331) The Greeting of the contact is not translated in address block
+
+* metasfresh-webui-frontend
+  * [#2640](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2640) DevTools failed to parse SourceMap error
+
+# metasfresh 5.141
+## Features
+* metasfresh
+  * [#6190](https://github.com/metasfresh/metasfresh/issues/6190) Jasper Report: Summary and balance list - Summen- und Saldenliste
+  * [#6283](https://github.com/metasfresh/metasfresh/issues/6283) Implement SEPA Direct Debit
+  * [#6289](https://github.com/metasfresh/metasfresh/issues/6289) Bankstatement improvements
+  * [#6291](https://github.com/metasfresh/metasfresh/issues/6291) User in generated invoice must be active
+
+* metasfresh-parent
+  * [#42](https://github.com/metasfresh/metasfresh-parent/pull/42) Use binary git after a test which i made yesterday
+
+# metasfresh 5.140
+## Features
+* metasfresh
+  * [#6191](https://github.com/metasfresh/metasfresh/issues/6191) Jasper: Customer Top Revenue
+  * [#6255](https://github.com/metasfresh/metasfresh/issues/6255) Create functions for easily creating default accounts fro M_Produc_category, M_Product, C_BP_Group and C_Bpartner
+
+## Fixes
+* metasfresh
+  * [#6214](https://github.com/metasfresh/metasfresh/issues/6214) Jasper Report: Customer/ Vendor Kontenblatt (Account details)
+  * [#6263](https://github.com/metasfresh/metasfresh/issues/6263) Error logging dunnings in DocOutBoundLog
+  * [#6277](https://github.com/metasfresh/metasfresh/issues/6277) Issues with payment endpoint
+
+* metasfresh-webui-frontend
+  * [#2626](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2626) Again: Orderlines only displayed after refresh
+
+# metasfresh 5.139
+## Features
+* metasfresh
+  * [#6133](https://github.com/metasfresh/metasfresh/issues/6133) Jasper: Customer Product Statistic
+  * [#6148](https://github.com/metasfresh/metasfresh/issues/6148) Jasper Report: Profit & Loss Report
+  * [#6150](https://github.com/metasfresh/metasfresh/issues/6150) Jasper: Product Top Sales
+  * [#6154](https://github.com/metasfresh/metasfresh/issues/6154) Backend: Send new object in JSON of available docaction dropdowns for VOID Action
+  * [#6156](https://github.com/metasfresh/metasfresh/issues/6156) Add clone action for "Transportation Order" window.
+  * [#6167](https://github.com/metasfresh/metasfresh/issues/6167) Rename 'Verrechnung Billcare' process
+  * [#6168](https://github.com/metasfresh/metasfresh/issues/6168) Enhance campaign pricing to apply also based on pricing system
+  * [#6182](https://github.com/metasfresh/metasfresh/issues/6182) Add IBAN structure for DK
+  * [#6197](https://github.com/metasfresh/metasfresh/issues/6197) Adjust timeout so that big report to be able to run
+  * [#6201](https://github.com/metasfresh/metasfresh/issues/6201) Support packing instructions for invoice line 'Batch entry'
+  * [#6207](https://github.com/metasfresh/metasfresh/issues/6207) Minor adjustments to customs invoice document
+  * [#6216](https://github.com/metasfresh/metasfresh/issues/6216) Filter for Virtual Column
+  * [#6219](https://github.com/metasfresh/metasfresh/issues/6219) Product Price creation for Price = 0
+  * [#6223](https://github.com/metasfresh/metasfresh/issues/6223) Material Tracking Copy action
+
+* metasfresh-webui-api
+  * [#1363](https://github.com/metasfresh/metasfresh-webui-api/issues/1363) Add possibility to turn off 'Area Search' filter
+
+## Fixes
+* metasfresh
+  * [#6157](https://github.com/metasfresh/metasfresh/issues/6157) Order: when setting the DocType, consider the default one first
+  * [#6174](https://github.com/metasfresh/metasfresh/issues/6174) Don't use delivery day with wrong bpartner
+  * [#6215](https://github.com/metasfresh/metasfresh/issues/6215) Exclude migration-cli from reports service
+
+* metasfresh-webui-api
+  * [#6174](https://github.com/metasfresh/metasfresh/issues/6175) webui-api: fix the webui.view.itemsSelected.caption AD_Message
+
+# metasfresh 5.138
+## Features
+* metasfresh
+  * [#6065](https://github.com/metasfresh/metasfresh/issues/6065) WebUI Window adjustment, Printing Queue
+  * [#6072](https://github.com/metasfresh/metasfresh/issues/6072) Tour in Purchase Order, Purchase Order as Transport order Lines for fetch entries
+  * [#6120](https://github.com/metasfresh/metasfresh/issues/6120) Make shipping more robust to certain use-cases
+  * [#6139](https://github.com/metasfresh/metasfresh/issues/6139) Soothe FUD regarding user login
+
+* metasfresh-parent
+  * [#38](https://github.com/metasfresh/metasfresh-parent/pull/38) Minor parent pom clienup
+
+## Fixes
+* metasfresh
+  * [#6125](https://github.com/metasfresh/metasfresh/issues/6125) Docaction Permission not taken properly for Bank Statement
+  * [#6129](https://github.com/metasfresh/metasfresh/issues/6129) Product Name change leads to update of all Translations already entered
+  * [#6130](https://github.com/metasfresh/metasfresh/issues/6130) BPartner Import bugfixes
+  * [#6137](https://github.com/metasfresh/metasfresh/pull/6137) Avoid NPE in ESRInfoProviderImpl
+
+# metasfresh 5.137
+## Features
+* metasfresh
+  * [#6054](https://github.com/metasfresh/metasfresh/pull/6054) only set C_OLCand.ProductDescription if different from product-name
+  * [#6077](https://github.com/metasfresh/metasfresh/issues/6077) Add grouping warehouse in Bestellkontrolle report
+  * [#6085](https://github.com/metasfresh/metasfresh/issues/6085) Presetting of Qty CU and default LU in action receipt
+  * [#6098](https://github.com/metasfresh/metasfresh/pull/6098) bump up lombok version to 1.18.10
+
+* metasfresh-edi
+  * [#8](https://github.com/metasfresh/metasfresh-edi/issues/8) EDI - add switch to disable delivery variance element
+
+* metasfresh-parent
+  * [#5](https://github.com/metasfresh/metasfresh-parent/issues/5) Generate git.properties
+
+# metasfresh 5.136
+## Features
+* metasfresh
+  * [#6045](https://github.com/metasfresh/metasfresh/issues/6045) Price Calculation as % of margin
+  * [#6106](https://github.com/metasfresh/metasfresh/issues/6106) Accounting misc fixes
+
+* metasfresh-webui-api
+  * [#1340](https://github.com/metasfresh/metasfresh-webui-api/issues/1340) Implement GET /rest/api/window/{windowId}/{documentId}/{tabId}?ids=comma separated rowIds
+
+## Fixes
+* metasfresh
+  * [#6064](https://github.com/metasfresh/metasfresh/issues/6064) Printing a Customs Invoice returns wrong number of decimals for kg quantity
+
+# metasfresh 5.135
+## Features
+* metasfresh
+  * [#5949](https://github.com/metasfresh/metasfresh/issues/5949) Automatic Shipping Label Printing (DPD)
+  * [#5965](https://github.com/metasfresh/metasfresh/pull/5965) Improve logging in pricing rules
+  * [#6001](https://github.com/metasfresh/metasfresh/issues/6001) measure and log how much each model interceptor took
+  * [#6028](https://github.com/metasfresh/metasfresh/issues/6028) Extract quotation logic in jasper-DB-functions
+  * [#6032](https://github.com/metasfresh/metasfresh/issues/6032) Excel SQL Process with qty of invoices per daterange
+  * [#6035](https://github.com/metasfresh/metasfresh/issues/6035) Make C_UOM editable in C_InvoiceLine
+  * [#6048](https://github.com/metasfresh/metasfresh/issues/6048) Improve Price Schema Excel Export
+  * [#6057](https://github.com/metasfresh/metasfresh/issues/6057) Show BOM in window Stücklistenbestandteile
+
+* metasfresh-parent
+  * [#33](https://github.com/metasfresh/metasfresh-parent/pull/33) Add git infos to each build artefact
+
+## Fixes
+* metasfresh 
+  * [#6030](https://github.com/metasfresh/metasfresh/issues/6030) Report Average Product Prices: Negate in case of Credit Memo
+  * [#6031](https://github.com/metasfresh/metasfresh/issues/6031) Update line-schema-id if updated in parent record
+
+* metasfresh-webui-api
+  * [#1343](https://github.com/metasfresh/metasfresh-webui-api/issues/1343) Add an unit test for how the selected rows ids are sent as parameters
+
+# metasfresh 5.134
+## Features
+* metasfresh
+  * [#5940](https://github.com/metasfresh/metasfresh/issues/5940) Packing Instruction in Batch Entry
+  * [#5987](https://github.com/metasfresh/metasfresh/issues/5987) Multiple Customs Invoices for the same Shipment
+  * [#5992](https://github.com/metasfresh/metasfresh/issues/5992) Improve DESADV Packs window
+  * [#6007](https://github.com/metasfresh/metasfresh/issues/6007) UOM Conversion check in Product Prices
+  * [#6024](https://github.com/metasfresh/metasfresh/issues/6024) Make sure shipto companyname is transferred to c_bpartner_location.bpartnername
+
+* edi
+  * [#6](https://github.com/metasfresh/metasfresh-edi/issues/6) STEPcom EDI - Convert between input charset and UTF-8
+  * [#7](https://github.com/metasfresh/metasfresh-edi/issues/7) STEPcom EDI - Support customizable output filename prefices
+
+## Fixes
+* metasfresh
+  * [#5931](https://github.com/metasfresh/metasfresh/issues/5931) ESR Import Hashvalue after double upload
+  * [#6006](https://github.com/metasfresh/metasfresh/issues/6006) Picklist cannot be printed
+  * [#6014](https://github.com/metasfresh/metasfresh/issues/6014) Compute properly sum catch weight in customs invoice document
+  * [#6017](https://github.com/metasfresh/metasfresh/issues/6017) Drop the wrong duplicate PayPal payment rule
+
+# metasfresh 5.133
+## Features
+* metasfresh
+  * [#5885](https://github.com/metasfresh/metasfresh/issues/5885) Tour dependent adjustments
+  * [#5896](https://github.com/metasfresh/metasfresh/issues/5896) SSCC label printing on Zebra printers
+  * [#5915](https://github.com/metasfresh/metasfresh/issues/5915) Support recording of weight also for TopLevel-CUs
+  * [#5922](https://github.com/metasfresh/metasfresh/issues/5922) Customer Order Excel in WebUI
+  * [#5929](https://github.com/metasfresh/metasfresh/issues/5929) Set by default metasfresh C_Element to IsNaturalAccount ='Y'
+  * [#5933](https://github.com/metasfresh/metasfresh/issues/5933) accounting: display Posted flag in ALL documents
+  * [#5958](https://github.com/metasfresh/metasfresh/pull/5958) SQL Process Excel Download: List all orderlines that could not be delivered although due
+  * [#5970](https://github.com/metasfresh/metasfresh/issues/5970) Process to update AD_User_Record_Access from BPartner Hierarchy
+  * [#5972](https://github.com/metasfresh/metasfresh/issues/5972) Set async connection pool size to 1
+
+## Fixes
+* metasfresh
+  * [#4879](https://github.com/metasfresh/metasfresh/issues/4870) Shipment schedule not updated when asi in orderline is updated
+  * [#5924](https://github.com/metasfresh/metasfresh/issues/5924) Accounting/ Costing Issues
+  * [#5947](https://github.com/metasfresh/metasfresh/issues/5947) DocActions displayed incorrectly
+  * [#5960](https://github.com/metasfresh/metasfresh/issues/5960) Shipmentschedule not updated after order reactivate and re-complete
+  * [#5962](https://github.com/metasfresh/metasfresh/issues/5962) Bug at material receipts with weight-unrelated products
 
 # metasfresh 5.132
 ## Features

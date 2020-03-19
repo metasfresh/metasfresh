@@ -15,7 +15,7 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1479964924L;
+	private static final long serialVersionUID = 968532036L;
 
     /** Standard Constructor */
     public X_C_Commission_Instance (Properties ctx, int C_Commission_Instance_ID, String trxName)
@@ -153,16 +153,16 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set MostRecentTriggerTimestamp.
-		@param MostRecentTriggerTimestamp MostRecentTriggerTimestamp	  */
+	/** Set Provisionsauslöser Zeitpunkt.
+		@param MostRecentTriggerTimestamp Provisionsauslöser Zeitpunkt	  */
 	@Override
 	public void setMostRecentTriggerTimestamp (java.sql.Timestamp MostRecentTriggerTimestamp)
 	{
 		set_Value (COLUMNNAME_MostRecentTriggerTimestamp, MostRecentTriggerTimestamp);
 	}
 
-	/** Get MostRecentTriggerTimestamp.
-		@return MostRecentTriggerTimestamp	  */
+	/** Get Provisionsauslöser Zeitpunkt.
+		@return Provisionsauslöser Zeitpunkt	  */
 	@Override
 	public java.sql.Timestamp getMostRecentTriggerTimestamp () 
 	{

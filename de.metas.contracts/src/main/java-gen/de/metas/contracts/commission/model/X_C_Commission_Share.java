@@ -15,7 +15,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -604773283L;
+	private static final long serialVersionUID = -1707190182L;
 
     /** Standard Constructor */
     public X_C_Commission_Share (Properties ctx, int C_Commission_Share_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 			setC_Commission_Instance_ID (0);
 			setC_Commission_Share_ID (0);
 			setC_Flatrate_Term_ID (0);
+			setCommission_Product_ID (0);
 			setLevelHierarchy (0);
 			setPointsSum_Forecasted (BigDecimal.ZERO); // 0
 			setPointsSum_Invoiceable (BigDecimal.ZERO); // 0
@@ -107,8 +108,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 		return ii.intValue();
 	}
 
-	/** Set C_Commission_Share.
-		@param C_Commission_Share_ID C_Commission_Share	  */
+	/** Set Buchauszug.
+		@param C_Commission_Share_ID Buchauszug	  */
 	@Override
 	public void setC_Commission_Share_ID (int C_Commission_Share_ID)
 	{
@@ -118,8 +119,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, Integer.valueOf(C_Commission_Share_ID));
 	}
 
-	/** Get C_Commission_Share.
-		@return C_Commission_Share	  */
+	/** Get Buchauszug.
+		@return Buchauszug	  */
 	@Override
 	public int getC_Commission_Share_ID () 
 	{
@@ -146,6 +147,31 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	public int getC_Flatrate_Term_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Provisionsprodukt.
+		@param Commission_Product_ID 
+		Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	  */
+	@Override
+	public void setCommission_Product_ID (int Commission_Product_ID)
+	{
+		if (Commission_Product_ID < 1) 
+			set_Value (COLUMNNAME_Commission_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Commission_Product_ID, Integer.valueOf(Commission_Product_ID));
+	}
+
+	/** Get Provisionsprodukt.
+		@return Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	  */
+	@Override
+	public int getCommission_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Commission_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

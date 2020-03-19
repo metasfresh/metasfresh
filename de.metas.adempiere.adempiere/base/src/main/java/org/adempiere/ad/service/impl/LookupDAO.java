@@ -1,29 +1,8 @@
 package org.adempiere.ad.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -63,12 +42,36 @@ import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairValidationInformation;
 import org.slf4j.Logger;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
@@ -467,13 +470,13 @@ public class LookupDAO implements ILookupDAO
 			return null;
 		}
 		final Object[] sqlParams = new Object[] { AD_Reference_ID };
-		final String sql = "SELECT t.TableName,ck.ColumnName AS KeyColumn,"				// 1..2
-				+ "cd.ColumnName AS DisplayColumn,rt.IsValueDisplayed,cd.IsTranslated,"	// 3..5
+		final String sql = "SELECT t.TableName,ck.ColumnName AS KeyColumn,"                // 1..2
+				+ "cd.ColumnName AS DisplayColumn,rt.IsValueDisplayed,cd.IsTranslated,"    // 3..5
 				+ "rt.WhereClause," // 6
 				+ "rt.OrderByClause," // 7
 				+ "t.AD_Window_ID," // 8
 				+ "t.PO_Window_ID, " // 9
-				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "					// 10..11
+				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "                    // 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", r.Name as ReferenceName"
@@ -775,7 +778,9 @@ public class LookupDAO implements ILookupDAO
 			this.entityTypeColumnIndex = entityTypeColumnIndex;
 		}
 
-		/** Fetch and return all data from this iterator (from current's position until the end) */
+		/**
+		 * Fetch and return all data from this iterator (from current's position until the end)
+		 */
 		public List<NamePair> fetchAll()
 		{
 			final List<NamePair> result = new LinkedList<>();
@@ -817,7 +822,8 @@ public class LookupDAO implements ILookupDAO
 			else
 			{
 				final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-				item = ValueNamePair.of(value, name, description);
+				final ValueNamePairValidationInformation validationInformation = getValidationInformation(rs);
+				item = ValueNamePair.of(value, name, description, validationInformation);
 			}
 
 			lastItemActive = isActive;
@@ -857,6 +863,23 @@ public class LookupDAO implements ILookupDAO
 				name = MLookup.INACTIVE_S + name + MLookup.INACTIVE_E;
 			}
 			return name;
+		}
+
+		private ValueNamePairValidationInformation getValidationInformation(final ResultSet rs) throws SQLException
+		{
+			final ResultSetMetaData metaData = rs.getMetaData();
+			if (metaData.getColumnCount() >= MLookupFactory.COLUMNINDEX_ValidationInformation)
+			{
+				final AdMessageKey question = AdMessageKey.ofNullable(rs.getString(MLookupFactory.COLUMNINDEX_ValidationInformation));
+				if (question != null)
+				{
+					return ValueNamePairValidationInformation.builder()
+							.question(question)
+							.build();
+				}
+			}
+
+			return null;
 		}
 
 		@Override
@@ -911,7 +934,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		return new SQLNamePairIterator(sql, numericKey, entityTypeColumnIndex);
-	}	// run
+	}    // run
 
 	@Override
 	public Object createValidationKey(final IValidationContext validationCtx, final MLookupInfo lookupInfo)
@@ -1117,5 +1140,5 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		return directValue;
-	}	// getDirect
+	}    // getDirect
 }

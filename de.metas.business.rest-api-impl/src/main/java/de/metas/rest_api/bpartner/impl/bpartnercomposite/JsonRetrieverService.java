@@ -13,6 +13,7 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -51,10 +52,10 @@ import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.rest_api.changelog.JsonChangeLogItem;
 import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.InvalidEntityException;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
@@ -114,6 +115,7 @@ public class JsonRetrieverService
 			.<String, String> builder()
 			.put(BPartnerContact.EMAIL, JsonResponseContact.EMAIL)
 			.put(BPartnerContact.EXTERNAL_ID, JsonResponseContact.EXTERNAL_ID)
+			.put(BPartnerContact.VALUE, JsonResponseContact.CODE)
 			.put(BPartnerContact.ACTIVE, JsonResponseContact.ACTIVE)
 			.put(BPartnerContact.FIRST_NAME, JsonResponseContact.FIRST_NAME)
 			.put(BPartnerContact.LAST_NAME, JsonResponseContact.LAST_NAME)
@@ -146,6 +148,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.ID, JsonResponseLocation.METASFRESH_ID)
 			.put(BPartnerLocation.ACTIVE, JsonResponseLocation.ACTIVE)
 			.put(BPartnerLocation.NAME, JsonResponseLocation.NAME)
+			.put(BPartnerLocation.BPARTNERNAME, JsonResponseLocation.BPARTNERNAME)
 			.put(BPartnerLocation.ADDRESS_1, JsonResponseLocation.ADDRESS_1)
 			.put(BPartnerLocation.ADDRESS_2, JsonResponseLocation.ADDRESS_2)
 			.put(BPartnerLocation.ADDRESS_3, JsonResponseLocation.ADDRESS_3)
@@ -368,6 +371,7 @@ public class JsonRetrieverService
 		return JsonResponseLocation.builder()
 				.active(location.isActive())
 				.name(location.getName())
+				.bpartnerName(location.getBpartnerName())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.address3(location.getAddress3())
@@ -425,10 +429,9 @@ public class JsonRetrieverService
 		{
 			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
-
-			throw new InvalidEntityException(TranslatableStrings.constant("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead"), e)
+			throw new InvalidEntityException(TranslatableStrings.constant("Unable to retrieve single BPartnerComposite"), e)
 					.appendParametersToMessage()
 					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
 		}

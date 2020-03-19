@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1010076500L;
+	private static final long serialVersionUID = 1062241078L;
 
     /** Standard Constructor */
     public X_C_Async_Batch (Properties ctx, int C_Async_Batch_ID, String trxName)
@@ -59,7 +43,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
     }
 
 	@Override
-	public org.compiere.model.I_AD_PInstance getAD_PInstance() throws RuntimeException
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
 	}
@@ -118,7 +102,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Async_Batch_Type getC_Async_Batch_Type() throws RuntimeException
+	public de.metas.async.model.I_C_Async_Batch_Type getC_Async_Batch_Type()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_Type_ID, de.metas.async.model.I_C_Async_Batch_Type.class);
 	}
@@ -273,7 +257,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_WorkPackage getLastProcessed_WorkPackage() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_WorkPackage getLastProcessed_WorkPackage()
 	{
 		return get_ValueAsPO(COLUMNNAME_LastProcessed_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
 	}
@@ -307,9 +291,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -317,8 +299,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -326,7 +307,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Async_Batch getParent_Async_Batch() throws RuntimeException
+	public de.metas.async.model.I_C_Async_Batch getParent_Async_Batch()
 	{
 		return get_ValueAsPO(COLUMNNAME_Parent_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
 	}
@@ -361,7 +342,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -370,7 +351,7 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

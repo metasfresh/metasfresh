@@ -87,7 +87,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
 	{
-		final T product = loadOutOfTrx(productId, productClass); // assume caching is configured on table level
+		final T product = load(productId, productClass); // we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
 		if (product == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
@@ -164,11 +164,11 @@ public class ProductDAO implements IProductDAO
 
 		if (!isEmpty(query.getValue(), true))
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue().trim());
 		}
 		if (query.getExternalId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
 		}
 
 		final int productRepoId = queryBuilder

@@ -39,7 +39,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	private static final String PARAMETERNAME_IsCompleteShipments = ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments;
 	private static final String PARAMETERNAME_InvoiceMode = "InvoiceMode";
 
-	public static enum BillAssociatedInvoiceCandidates
+	public enum BillAssociatedInvoiceCandidates
 	{
 		/**
 		 * don't invoice any associated ICs (the default)
@@ -51,7 +51,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		 * value allows this.
 		 */
 		IF_INVOICE_SCHEDULE_PERMITS,
-	};
+	}
 
 	//
 	// State
@@ -91,7 +91,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.setContext(ctx)
 				.newWorkpackage()
 				.bindToThreadInheritedTrx()
-				.setUserInChargeId(Env.getAD_User_ID(ctx)) // invoker
+				.setUserInChargeId(Env.getLoggedUserIdIfExists(ctx).orElse(null)) // invoker
 				.parameters()
 				.setParameter(PARAMETERNAME_AddToShipperTransportationId, addToShipperTransportationId > 0 ? addToShipperTransportationId : 0)
 				.setParameter(PARAMETERNAME_InvoiceMode, invoiceModeEffective.name())
@@ -123,7 +123,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 		final int addToShipperTransportationId = parameters.getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId, -1);
 		final boolean completeShipments = parameters.getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
-		final BillAssociatedInvoiceCandidates invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, BillAssociatedInvoiceCandidates.class, BillAssociatedInvoiceCandidates.NO);
+		final BillAssociatedInvoiceCandidates invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, BillAssociatedInvoiceCandidates.class).orElse(BillAssociatedInvoiceCandidates.NO);
 		HUShippingFacade.builder()
 				.hus(hus)
 				.addToShipperTransportationId(addToShipperTransportationId)

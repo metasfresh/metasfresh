@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import java.time.Instant;
-
 import javax.annotation.Nullable;
 
 import de.metas.contracts.commission.Beneficiary;
@@ -33,7 +31,7 @@ import lombok.Value;
  * #L%
  */
 
-/** "basically" an invoice candidate */
+/** "basically" an invoice candidate; but can be other things in future as well. */
 @Value
 public class CommissionTrigger
 {
@@ -42,12 +40,10 @@ public class CommissionTrigger
 	/** The direct beneficiary; usually the customer's "direct" sales rep. Will probably be part of a hierarchy. */
 	Beneficiary beneficiary;
 
-	@NonNull
 	CommissionTriggerData commissionTriggerData;
 
 	@Builder
 	private CommissionTrigger(
-			@NonNull final Instant timestamp,
 			@NonNull final Customer customer,
 			@NonNull final Beneficiary beneficiary,
 			@Nullable final CommissionTriggerData commissionTriggerData)

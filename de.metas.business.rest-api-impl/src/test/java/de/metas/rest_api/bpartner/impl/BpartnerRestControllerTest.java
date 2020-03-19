@@ -1,12 +1,14 @@
 package de.metas.rest_api.bpartner.impl;
 
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_LOCATION_GLN;
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_VALUE;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
@@ -26,6 +28,7 @@ import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -68,6 +71,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
@@ -78,14 +82,16 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -127,11 +133,11 @@ class BpartnerRestControllerTest
 	private CurrencyRepository currencyRepository;
 
 	@BeforeAll
-	static void initStatic()
+	static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
-
+	
 	@AfterAll
 	static void afterAll()
 	{
@@ -142,6 +148,8 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -149,6 +157,7 @@ class BpartnerRestControllerTest
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
@@ -156,7 +165,10 @@ class BpartnerRestControllerTest
 				new RecordChangeLogRepository(),
 				currencyRepository);
 
-		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
+		bpartnerRestController = new BpartnerRestController(
+				new BPartnerEndpointService(jsonServiceFactory),
+				jsonServiceFactory,
+				new JsonRequestConsolidateService());
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
@@ -167,7 +179,7 @@ class BpartnerRestControllerTest
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
 	}
-
+	
 	@Test
 	void retrieveBPartner_ext()
 	{
@@ -268,10 +280,11 @@ class BpartnerRestControllerTest
 				.build();
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
-		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
 		final MetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" + externalId);
 		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
@@ -353,6 +366,7 @@ class BpartnerRestControllerTest
 	void createOrUpdateBPartner_Update_BPartner_Name_Insert_Location()
 	{
 		SystemTime.setTimeSource(() -> 1563553074); // Fri, 19 Jul 2019 16:17:54 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BPartnerRestControllerTest_Update_BPartner_Name_Insert_Location.json");
 
@@ -442,18 +456,18 @@ class BpartnerRestControllerTest
 	}
 
 	private MetasfreshId assertUpsertResultOK(
-			@NonNull final ResponseEntity<JsonResponseUpsert> result,
+			@NonNull final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result,
 			@NonNull final String bpartnerIdentifier)
 	{
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
-		final JsonResponseUpsert resultBody = result.getBody();
+		final JsonResponseBPartnerCompositeUpsert resultBody = result.getBody();
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 
-		final JsonResponseUpsertItem responseItem = resultBody.getResponseItems().get(0);
-		assertThat(responseItem.getIdentifier()).isEqualTo(bpartnerIdentifier);
+		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().get(0);
+		assertThat(responseCompositeItem.getJsonResponseBPartnerUpsertItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
 
-		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+		final MetasfreshId metasfreshId = responseCompositeItem.getJsonResponseBPartnerUpsertItem().getMetasfreshId();
 		return metasfreshId;
 	}
 
@@ -471,15 +485,15 @@ class BpartnerRestControllerTest
 		final RecordCounts inititalCounts = new RecordCounts();
 
 		// invoke the method under test
-		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
 		inititalCounts.assertCountsUnchanged();
 
 		assertThat(result.getBody().getResponseItems()).hasSize(1);
-		final JsonResponseUpsertItem jsonResponseUpsertItem = result.getBody().getResponseItems().get(0);
+		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().get(0);
 
-		assertThat(jsonResponseUpsertItem.getIdentifier()).isEqualTo("ext-1234567");
-		assertThat(jsonResponseUpsertItem.getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(jsonResponseCompositeUpsertItem.getJsonResponseBPartnerUpsertItem().getIdentifier()).isEqualTo("ext-1234567");
+		assertThat(jsonResponseCompositeUpsertItem.getJsonResponseBPartnerUpsertItem().getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
@@ -540,6 +554,7 @@ class BpartnerRestControllerTest
 		final JsonRequestContactUpsertItem jsonContact = MockedDataUtil.createMockContact("newContact-");
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
@@ -567,12 +582,67 @@ class BpartnerRestControllerTest
 	}
 
 	@Test
+	void createOrUpdateContact_update_extContactIdentifier()
+	{
+		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + AD_USER_EXTERNAL_ID);
+		expect(persistedResult).toMatchSnapshot();
+	}
+
+	@Test
+	void createOrUpdateContact_update_idContactIdentifier()
+	{
+		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update(Integer.toString(AD_USER_ID));
+		expect(persistedResult).toMatchSnapshot();
+	}
+
+	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
+	{
+		final JsonRequestContact jsonContact = JsonRequestContact.builder()
+				.name("jsonContact.name-UPDATED")
+				.code("jsonContact.code-UPDATED")
+				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
+				.build();
+
+		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+
+		// invoke the method under test
+		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
+				"val-" + C_BPARTNER_VALUE,
+				JsonRequestContactUpsert.builder().requestItem(JsonRequestContactUpsertItem
+						.builder()
+						.contactIdentifier(contactIdentifier)
+						.contact(jsonContact)
+						.build()).build());
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+
+		final JsonResponseUpsert response = result.getBody();
+		assertThat(response.getResponseItems()).hasSize(1);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		assertThat(responseItem.getIdentifier()).isEqualTo(contactIdentifier);
+
+		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+
+		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().userId(UserId.ofRepoId(metasfreshId.getValue())).build();
+		final Optional<BPartnerCompositeAndContactId> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
+		assertThat(optContactIdAndBPartner).isPresent();
+
+		final BPartnerContactId resultContactId = optContactIdAndBPartner.get().getBpartnerContactId();
+		assertThat(resultContactId.getRepoId()).isEqualTo(metasfreshId.getValue());
+
+		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
+		return persistedResult;
+	}
+
+	@Test
 	void createOrUpdateLocation_create()
 	{
 		createCountryRecord("DE");
 		final JsonRequestLocationUpsertItem jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateLocation(
@@ -647,6 +717,7 @@ class BpartnerRestControllerTest
 		createBPartnerData(4);
 
 		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test

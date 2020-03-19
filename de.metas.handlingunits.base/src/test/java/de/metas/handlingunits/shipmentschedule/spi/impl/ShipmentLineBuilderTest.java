@@ -140,7 +140,7 @@ public class ShipmentLineBuilderTest
 	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_noCatchQty()
 	{
-		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
+		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId);
 
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
 				.qtyCUsPerTU(8)
@@ -206,7 +206,7 @@ public class ShipmentLineBuilderTest
 	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_QtyTypeBoth_noCatchQty()
 	{
-		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.create(ONE, huTestHelper.pTomatoProductId, null, null);
+		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId);
 
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
 				.qtyCUsPerTU(8)

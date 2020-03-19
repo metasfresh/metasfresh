@@ -57,7 +57,7 @@ public class ConfigLineTestRecord
 		settingsLineRecord.setC_HierarchyCommissionSettings_ID(C_HierarchyCommissionSettings);
 		settingsLineRecord.setSeqNo(seqNo);
 		settingsLineRecord.setPercentOfBasePoints(new java.math.BigDecimal(percentOfBasePoints));
-		settingsLineRecord.setC_BP_Group_ID(BPGroupId.toRepoId(customerBGroupId));
+		settingsLineRecord.setCustomer_Group_ID(BPGroupId.toRepoId(customerBGroupId));
 		settingsLineRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(salesProductCategoryId));
 
 		saveRecord(settingsLineRecord);

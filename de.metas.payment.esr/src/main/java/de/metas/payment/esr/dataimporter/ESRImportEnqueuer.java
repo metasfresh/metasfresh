@@ -31,6 +31,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -57,10 +59,12 @@ import lombok.NonNull;
  * Helper class to enqueue a given {@link I_ESR_Import} to be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ESRImportEnqueuer
 {
+
+	public static final String LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG = "de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR";
+
 	public static final ESRImportEnqueuer newInstance()
 	{
 		return new ESRImportEnqueuer();
@@ -92,6 +96,14 @@ public class ESRImportEnqueuer
 	public void execute()
 	{
 		final I_ESR_Import esrImport = getEsrImport();
+
+		final int existingLines = esrImportDAO.countLines(esrImport, null);
+		if (existingLines > 0)
+		{
+			final String msg = Services.get(IMsgBL.class).getMsg(getCtx(), LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG);
+			throw new AdempiereException(msg);
+		}
+
 		final ESRImportEnqueuerDataSource fromDataSource = getFromDataSource();
 
 		//
@@ -284,7 +296,7 @@ public class ESRImportEnqueuer
 		return asyncBatchDesc;
 	}
 
-	public ESRImportEnqueuer pinstanceId(final PInstanceId pinstanceId)
+	public ESRImportEnqueuer pinstanceId(@Nullable final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
 		return this;

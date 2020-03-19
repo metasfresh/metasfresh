@@ -18,10 +18,11 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Column SET FieldLength=1000,Updated=TO_TIMESTAMP('2019-12-16 18:01:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=50196
 ;
 
+-- moved to a dedicated file
 -- 2019-12-16T16:01:06.616Z
 -- URL zum KonzeptEDI_DesadvGenerateCSV_FileForSSCC_Label
-INSERT INTO t_alter_column values('ad_sysconfig','Value','VARCHAR(1000)',null,null)
-;
+--INSERT INTO t_alter_column values('ad_sysconfig','Value','VARCHAR(1000)',null,null)
+--;
 
 -- 2019-12-13T14:05:50.493Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

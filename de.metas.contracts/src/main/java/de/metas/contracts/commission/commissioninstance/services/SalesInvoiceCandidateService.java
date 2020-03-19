@@ -1,18 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionTriggerDataRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -40,6 +41,9 @@ import lombok.NonNull;
 @Service
 public class SalesInvoiceCandidateService
 {
+
+	private static final Logger logger = LogManager.getLogger(SalesInvoiceCandidateService.class);
+
 	private final CommissionInstanceRepository commissionInstanceRepository;
 	private final CommissionInstanceRequestFactory commissionInstanceRequestFactory;
 	private final CommissionAlgorithmInvoker commissionAlgorithmInvoker;
@@ -69,13 +73,18 @@ public class SalesInvoiceCandidateService
 			{
 				return; // nothing to do
 			}
+
 			// initially create commission data for the given invoice candidate;
-			// the list of requests might be empty, if there are no matching contracts and/or settings
-			final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestsForNewSalesInvoiceCandidate(invoiceCandidateId);
-			for (final CreateInstanceRequest request : requests)
+			// request might be not present, if there are no matching contracts and/or settings
+			final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestsForNewSalesInvoiceCandidate(invoiceCandidateId);
+			if (request.isPresent())
 			{
-				final CommissionInstance createdInstance = commissionAlgorithmInvoker.applyCreateRequest(request);
+				final CommissionInstance createdInstance = commissionAlgorithmInvoker.applyCreateRequest(request.get());
 				commissionInstanceRepository.save(createdInstance);
+			}
+			else
+			{
+				logger.debug("No existing instances and no CreateCommissionSharesRequest; -> doing nothing");
 			}
 			return;
 		}
@@ -83,7 +92,7 @@ public class SalesInvoiceCandidateService
 		// update existing commission data
 		for (final CommissionInstance instance : instances)
 		{
-			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId, candidateDeleted);
+			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandidateId(invoiceCandidateId, candidateDeleted);
 			final CommissionTriggerChange change = CommissionTriggerChange.builder()
 					.instanceToUpdate(instance)
 					.newCommissionTriggerData(newTriggerData)

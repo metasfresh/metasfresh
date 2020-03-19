@@ -58,6 +58,11 @@ public final class Loggables
 		return loggable != null ? loggable : logback(logger, logLevel);
 	}
 
+	public static ILoggable console()
+	{
+		return ConsoleLoggable.instance;
+	}
+
 	public static ILoggable logback(final Logger logger, final Level logLevel)
 	{
 		return new LogbackLoggable(logger, logLevel);
@@ -87,6 +92,11 @@ public final class Loggables
 	public static ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
 	{
 		return new LoggableWithLogger(get(), logger, level);
+	}
+
+	public static ILoggable withWarnLoggerToo(@NonNull final Logger logger)
+	{
+		return withLogger(logger, Level.WARN);
 	}
 
 	public static PlainStringLoggable newPlainStringLoggable()

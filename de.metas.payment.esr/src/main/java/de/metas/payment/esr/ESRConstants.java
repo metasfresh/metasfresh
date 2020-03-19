@@ -102,6 +102,10 @@ public final class ESRConstants
 
 	public static final String ESR_Reverse_Booking = "ESR_Reverse_Booking";
 
+	public static final String ESR_ASYNC_BATCH_NAME = "ESR Import";
+
+	public static final String ESR_ASYNC_BATCH_DESC = "ESR Import process";
+
 	private ESRConstants()
 	{
 	}

@@ -124,17 +124,18 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
             "present": true
           }
         },
-        "email": "bpartnerRecord.email",
-        "externalId": "abcde",
-        "firstName": "bpartnerRecord.firstName",
+        "email": "contactRecord.email",
+        "externalId": "contactRecord.externalId",
+        "firstName": "contactRecord.firstName",
         "id": {
           "bpartnerId": 20,
           "userId": 30
         },
-        "lastName": "bpartnerRecord.lastName",
-        "name": "bpartnerRecord.name",
-        "newsletter": true,
-        "phone": "bpartnerRecord.phone"
+        "lastName": "contactRecord.lastName",
+        "name": "contactRecord.name",
+        "newsletter": false,
+        "phone": "contactRecord.phone",
+        "value": "contactRecord.value"
       }
     ],
     "locations": [

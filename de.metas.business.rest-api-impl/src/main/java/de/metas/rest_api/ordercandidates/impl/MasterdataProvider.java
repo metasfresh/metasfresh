@@ -1,6 +1,7 @@
 package de.metas.rest_api.ordercandidates.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import javax.annotation.Nullable;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -27,14 +29,19 @@ import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.organization.OrgQuery;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.exception.InvalidIdentifierException;
+import de.metas.rest_api.exception.MissingPropertyException;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
@@ -42,10 +49,7 @@ import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.InvalidIdentifierException;
-import de.metas.rest_api.utils.MissingPropertyException;
-import de.metas.rest_api.utils.MissingResourceException;
-import de.metas.rest_api.utils.PermissionService;
+import de.metas.security.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
@@ -83,7 +87,7 @@ final class MasterdataProvider
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	private final PermissionService permissionService;
-	private final BPartnerMasterDataProvider bpartnerMasterDataProvider;
+	private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
 	private final ProductMasterDataProvider productMasterDataProvider;
 	private final ProductPriceMasterDataProvider productPricesMasterDataProvider;
 
@@ -91,10 +95,11 @@ final class MasterdataProvider
 
 	@Builder
 	private MasterdataProvider(
-			@NonNull final PermissionService permissionService)
+			@NonNull final PermissionService permissionService,
+			@NonNull final BpartnerRestController bpartnerRestController)
 	{
 		this.permissionService = permissionService;
-		this.bpartnerMasterDataProvider = new BPartnerMasterDataProvider(permissionService);
+		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.productMasterDataProvider = new ProductMasterDataProvider(permissionService);
 		this.productPricesMasterDataProvider = new ProductPriceMasterDataProvider();
 	}
@@ -175,7 +180,16 @@ final class MasterdataProvider
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)
 		{
-			bpartnerMasterDataProvider.getCreateOrgBPartnerInfo(json.getBpartner(), orgId);
+			final BPartnerInfo bpartnerInfo = bpartnerEndpointAdapter.getCreateBPartnerInfo(json.getBpartner(), true/* billTo */, orgRecord.getValue());
+
+			final I_C_BPartner bpartnerRecord = Services.get(IBPartnerDAO.class).getById(bpartnerInfo.getBpartnerId());
+			bpartnerRecord.setAD_OrgBP_ID(orgRecord.getAD_Org_ID());
+			saveRecord(bpartnerRecord);
+
+			orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+					.orgId(orgId)
+					.orgBPartnerLocationId(Optional.of(bpartnerInfo.getBpartnerLocationId()))
+					.build());
 		}
 
 		return orgId;
@@ -203,24 +217,29 @@ final class MasterdataProvider
 
 	public BPartnerInfo getCreateBPartnerInfo(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
-			final OrgId orgId)
+			final boolean billTo,
+			@Nullable final OrgId orgId)
 	{
-		return bpartnerMasterDataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, orgId);
+		return bpartnerEndpointAdapter.getCreateBPartnerInfo(jsonBPartnerInfo, billTo, orgDAO.retrieveOrgValue(orgId));
 	}
 
 	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
-		return bpartnerMasterDataProvider.getJsonBPartnerById(bpartnerId);
+		return bpartnerEndpointAdapter.getJsonBPartnerById(bpartnerId);
 	}
 
 	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
 	{
-		return bpartnerMasterDataProvider.getJsonBPartnerLocationById(bpartnerLocationId);
+		return bpartnerEndpointAdapter.getJsonBPartnerLocationById(bpartnerLocationId);
 	}
 
-	public JsonResponseContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(@Nullable final BPartnerContactId bpartnerContactId)
 	{
-		return bpartnerMasterDataProvider.getJsonBPartnerContactById(bpartnerContactId);
+		if (bpartnerContactId == null)
+		{
+			return null;
+		}
+		return bpartnerEndpointAdapter.getJsonBPartnerContactById(bpartnerContactId);
 	}
 
 	public ProductInfo getCreateProductInfo(
@@ -235,14 +254,14 @@ final class MasterdataProvider
 		productPricesMasterDataProvider.createProductPrice(request);
 	}
 
-	public InputDataSourceId getDataSourceId(final String dataSourceIdentifier, final OrgId orgId)
+	public InputDataSourceId getDataSourceId(@Nullable final String dataSourceIdentifier, @NonNull final OrgId orgId)
 	{
-		final IInputDataSourceDAO dataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		if (dataSourceIdentifier == null)
+		if (Check.isEmpty(dataSourceIdentifier, true))
 		{
 			return null;
 		}
 
+		final IInputDataSourceDAO dataSourceDAO = Services.get(IInputDataSourceDAO.class);
 		final IdentifierString dataSource = IdentifierString.of(dataSourceIdentifier);
 
 		final InputDataSourceQueryBuilder queryBuilder = InputDataSourceQuery.builder();
@@ -269,9 +288,7 @@ final class MasterdataProvider
 		}
 
 		final Optional<InputDataSourceId> dataSourceId = dataSourceDAO.retrieveInputDataSourceIdBy(queryBuilder.build());
-
 		return dataSourceId.orElse(null);
-
 	}
 
 	public ShipperId getShipperId(final JsonOLCandCreateRequest request)

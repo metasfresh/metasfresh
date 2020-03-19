@@ -23,11 +23,6 @@ public class ShipmentScheduleAttributeSegment
 		return new ShipmentScheduleAttributeSegment(attributeSetInstanceId, attributeId);
 	}
 
-	public static ShipmentScheduleAttributeSegment of(final AttributeSetInstanceId attributeSetInstanceId, final AttributeId attributeId)
-	{
-		return new ShipmentScheduleAttributeSegment(attributeSetInstanceId, attributeId);
-	}
-
 	AttributeSetInstanceId attributeSetInstanceId;
 	AttributeId attributeId;
 

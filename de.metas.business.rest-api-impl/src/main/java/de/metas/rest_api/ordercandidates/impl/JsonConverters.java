@@ -4,6 +4,8 @@ import static de.metas.util.Check.isEmpty;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -26,6 +28,8 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.MissingPropertyException;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
@@ -33,7 +37,6 @@ import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
-import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -104,28 +107,11 @@ class JsonConverters
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
-		final String dataSourceIdentifier = request.getDataSource();
+		final InputDataSourceId dataSourceId = retrieveDataSourceId(request, orgId, masterdataProvider);
 
-		if (Check.isEmpty(dataSourceIdentifier))
-		{
-			throw new MissingPropertyException("dataSource", request);
-		}
-
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
-
-		final String dataDestIdentifier = request.getDataDest();
-
-		if (Check.isEmpty(dataDestIdentifier))
-		{
-			throw new MissingPropertyException("dataDest", request);
-		}
-
-		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
-
+		final InputDataSourceId dataDestId = retrieveDataDestId(request, orgId, masterdataProvider);
 		final I_AD_InputDataSource dataDestRecord = inputDataSourceDAO.getById(dataDestId);
-
 		final String dataDestInternalName = dataDestRecord.getInternalName();
-
 		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
 		{
 			Check.assumeNotNull(request.getDateRequired(),
@@ -158,10 +144,10 @@ class JsonConverters
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
 				//
-				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
-				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
-				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
-				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
+				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), true/* billTo */, orgId))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), true/* billTo */, orgId))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), false/* billTo */, orgId))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), false/* billTo */, orgId))
 				//
 				.poReference(request.getPoReference())
 				//
@@ -198,9 +184,51 @@ class JsonConverters
 		;
 	}
 
+	private InputDataSourceId retrieveDataDestId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final String dataDestIdentifier = request.getDataDest();
+		if (Check.isEmpty(dataDestIdentifier))
+		{
+			throw new MissingPropertyException("dataDest", request);
+		}
+		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier, orgId);
+		if (dataDestId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataDest")
+					.resourceIdentifier(dataDestIdentifier)
+					.parentResource(request).build();
+		}
+		return dataDestId;
+	}
+
+	private InputDataSourceId retrieveDataSourceId(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final String dataSourceIdentifier = request.getDataSource();
+		if (Check.isEmpty(dataSourceIdentifier))
+		{
+			throw new MissingPropertyException("dataSource", request);
+		}
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier, orgId);
+		if (dataSourceId == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("dataSource")
+					.resourceIdentifier(dataSourceIdentifier)
+					.parentResource(request).build();
+		}
+		return dataSourceId;
+	}
+
 	private final JsonResponseBPartnerLocationAndContact toJson(
-			final BPartnerInfo bpartnerInfo,
-			final MasterdataProvider masterdataProvider)
+			@Nullable final BPartnerInfo bpartnerInfo,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		if (bpartnerInfo == null)
 		{
@@ -241,8 +269,8 @@ class JsonConverters
 				//
 				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
-				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
-				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo(), masterdataProvider))
+				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
+				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
