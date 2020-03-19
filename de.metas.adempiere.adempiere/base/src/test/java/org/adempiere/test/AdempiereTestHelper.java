@@ -42,6 +42,7 @@ import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -199,7 +200,7 @@ public class AdempiereTestHelper
 		return ctx;
 	}
 
-	public void setupContext_AD_Client_IfNotSet()
+	public static void setupContext_AD_Client_IfNotSet()
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -234,9 +235,26 @@ public class AdempiereTestHelper
 		save(noAsi);
 	}
 
+	public static void createClientInfo()
+	{
+		final Properties ctx = Env.getCtx();
+
+		final int clientId = Env.getAD_Client_ID(ctx);
+		if (clientId <= 0)
+		{
+			return;
+		}
+
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
+
+		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class, contextProvider);
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, clientId);
+		InterfaceWrapperHelper.save(clientInfo);
+	}
+
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 * 
+	 *
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
 	 */
 	public static Function<Object, String> createSnapshotJsonFunction()
