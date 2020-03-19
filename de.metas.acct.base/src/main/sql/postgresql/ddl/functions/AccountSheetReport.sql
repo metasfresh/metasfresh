@@ -1,21 +1,17 @@
 DROP FUNCTION IF EXISTS AccountSheetReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id numeric, p_c_project_id numeric)
 ;
 
-/*
-- DateFrom/To - mandatory
-- C_AcctSchema_ID - mandatory
-- AD_Org_ID - mandatory
-- Account_ID - optional
-- C_Activity_ID - optional
-- C_Project_ID - optional
-*/
+DROP FUNCTION IF EXISTS AccountSheetReport(p_dateFrom date, p_dateTo date, p_c_acctschema_id NUMERIC, p_ad_org_id numeric, p_account_id NUMERIC, p_c_activity_id numeric, p_c_project_id numeric, p_ad_language text)
+;
+
 CREATE OR REPLACE FUNCTION AccountSheetReport(p_dateFrom        date,
                                               p_dateTo          date,
                                               p_c_acctschema_id NUMERIC,
                                               p_ad_org_id       numeric,
                                               p_account_id      NUMERIC=NULL,
                                               p_c_activity_id   numeric=NULL,
-                                              p_c_project_id    numeric=NULL)
+                                              p_c_project_id    numeric=NULL,
+                                              p_ad_language     text = 'en_US')
     RETURNS table
             (
                 AccountValue     text,
@@ -124,14 +120,14 @@ BEGIN
                         ev.name                                       AccountName,
                         fa.dateacct,
                         fa.c_tax_id,
-                        t.name                                        taxName,
+                        coalesce(taxTrl.name, t.name)                 taxName,
                         fa.amtacctdr,
                         fa.amtacctcr,
                         fa.description,
                         fa.c_doctype_id,
-                        dt.name                                       docTypeName,
+                        coalesce(dtTrl.name, dt.name)                 docTypeName,
                         tc.c_taxcategory_id,
-                        tc.name                                       taxCategoryName,
+                        coalesce(tcTrl.name, tc.name)                 taxCategoryName,
                         coalesce(tmp_fa.beginningBalance::numeric, 0) beginningBalance,
                         coalesce(tmp_fa.endingBalance::numeric, 0)    endingBalance,
                         LINE_TYPE_TRANSACTION                         lineType
@@ -139,8 +135,11 @@ BEGIN
                           INNER JOIN c_elementvalue ev ON fa.account_id = ev.c_elementvalue_id
                           LEFT JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
+                          LEFT JOIN c_tax_trl taxTrl ON t.c_tax_id = taxTrl.c_tax_id AND taxTrl.ad_language = p_ad_language
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
+                          LEFT JOIN c_taxcategory_trl tcTrl ON tc.c_taxcategory_id = tcTrl.c_taxcategory_id AND tcTrl.ad_language = p_ad_language
                           LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id AND dt.c_doctype_id != 0
+                          LEFT JOIN c_doctype_trl dtTrl ON dt.c_doctype_id = dtTrl.c_doctype_id AND dtTrl.ad_language = p_ad_language
                  WHERE TRUE
                    AND (fa.amtacctdr != 0 OR fa.amtacctcr != 0)
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
