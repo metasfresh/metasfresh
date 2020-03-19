@@ -48,8 +48,8 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -239,21 +239,21 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> retrieveLinesForBankStatementLine(final I_C_BankStatementLine line)
+	public List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineId(@NonNull final BankStatementLineId bankStatementLineId)
 	{
-		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, line)
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
+				// .addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_ESR_ImportLine.class);
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> retrieveAllLinesForBankStatementLineRef(final I_C_BankStatementLine_Ref lineRef)
+	public List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineRefId(@NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)
 	{
-		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, lineRef)
-				.addEqualsFilter(I_ESR_ImportLine.COLUMN_C_BankStatementLine_Ref_ID, lineRef.getC_BankStatementLine_Ref_ID())
+		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineRefId.getBankStatementLineRefId())
+				// .addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_ESR_ImportLine.class);
 	}

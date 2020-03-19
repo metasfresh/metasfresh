@@ -60,8 +60,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
@@ -1244,18 +1243,18 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public void unlinkESRImportLinesFor(final I_C_BankStatementLine bankStatementLine)
+	public void unlinkESRImportLinesFor(@NonNull final BankStatementLineId bankStatementLineId)
 	{
-		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveLinesForBankStatementLine(bankStatementLine))
+		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesByBankStatementLineId(bankStatementLineId))
 		{
 			unlinkESRImportLineFromBankStatement(esrImportLine);
 		}
 	}
 
 	@Override
-	public void unlinkESRImportLinesFor(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void unlinkESRImportLinesFor(@NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)
 	{
-		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesForBankStatementLineRef(bankStatementLineRef))
+		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesByBankStatementLineRefId(bankStatementLineRefId))
 		{
 			unlinkESRImportLineFromBankStatement(esrImportLine);
 		}

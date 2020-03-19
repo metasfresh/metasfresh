@@ -33,8 +33,8 @@ import javax.annotation.Nullable;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -75,15 +75,9 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	Iterator<I_ESR_Import> retrieveESRImports(Properties ctx, int orgID);
 
-	/**
-	 * Retrieve {@link I_ESR_ImportLine}s which are linked to given bank statement line.
-	 */
-	List<I_ESR_ImportLine> retrieveLinesForBankStatementLine(I_C_BankStatementLine line);
+	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineId(BankStatementLineId bankStatementLineId);
 
-	/**
-	 * Retrieve {@link I_ESR_ImportLine}s which are linked to given bank statement line reference. Also inactive ones.
-	 */
-	List<I_ESR_ImportLine> retrieveAllLinesForBankStatementLineRef(I_C_BankStatementLine_Ref lineRef);
+	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineRefId(BankStatementAndLineAndRefId bankStatementLineRefId);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 
