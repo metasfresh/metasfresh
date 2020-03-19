@@ -9,9 +9,11 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -55,6 +57,14 @@ public class BPGroupRepository
 				.addInArrayFilter(I_C_BP_Group.COLUMN_AD_Org_ID, orgId, OrgId.ANY)
 				.create()
 				.firstOnly(I_C_BP_Group.class);
+
+		return ofRecord(groupRecord);
+	}
+
+	public Optional<BPGroup> getDefaultGroup()
+	{
+		final I_C_BP_Group groupRecord = Services.get(IBPGroupDAO.class)
+				.getDefaultByClientId(ClientId.METASFRESH);
 
 		return ofRecord(groupRecord);
 	}

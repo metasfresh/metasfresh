@@ -46,7 +46,7 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
@@ -189,7 +189,7 @@ public interface IQuery<T>
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
 	 *
 	 * @return first PO or null.
-	 * @throws DBMoreThenOneRecordsFoundException
+	 * @throws DBMoreThanOneRecordsFoundException
 	 * @see {@link #first()}
 	 */
 	@Nullable

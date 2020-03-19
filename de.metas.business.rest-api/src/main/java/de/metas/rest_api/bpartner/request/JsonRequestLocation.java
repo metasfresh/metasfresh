@@ -42,8 +42,7 @@ import lombok.Value;
 @Value
 public class JsonRequestLocation
 {
-	@ApiModelProperty(allowEmptyValue = true, //
-			dataType = "java.lang.String", //
+	@ApiModelProperty(dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	JsonExternalId externalId;
