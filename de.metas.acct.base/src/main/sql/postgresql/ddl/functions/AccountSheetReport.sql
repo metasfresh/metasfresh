@@ -129,7 +129,11 @@ BEGIN
                         fa.amtacctcr,
                         fa.description,
                         fa.c_doctype_id,
-                        dt.name                                       docTypeName,
+                        (SELECT dt.name
+                         FROM c_doctype dt
+                         WHERE TRUE
+                           AND dt.c_doctype_id != 0
+                           AND fa.c_doctype_id = dt.c_doctype_id)     docTypeName,
                         tc.c_taxcategory_id,
                         tc.name                                       taxCategoryName,
                         coalesce(tmp_fa.beginningBalance::numeric, 0) beginningBalance,
@@ -140,7 +144,6 @@ BEGIN
                           LEFT JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
-                          LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id
                  WHERE TRUE
                    AND (fa.amtacctdr != 0 OR fa.amtacctcr != 0)
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
