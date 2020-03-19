@@ -1,5 +1,6 @@
 package de.metas.report;
 
+import de.metas.report.server.ReportResult;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;

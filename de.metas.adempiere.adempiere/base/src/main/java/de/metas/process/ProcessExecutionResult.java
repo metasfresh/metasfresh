@@ -504,6 +504,7 @@ public class ProcessExecutionResult
 		reportFilename = reportResult.getReportFilename();
 		reportContentType = reportResult.getReportContentType();
 	}
+    //aici
 
 	public byte[] getReportData()
 	{

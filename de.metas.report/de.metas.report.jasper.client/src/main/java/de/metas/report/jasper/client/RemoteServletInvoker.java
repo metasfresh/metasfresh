@@ -7,12 +7,14 @@ import static de.metas.util.Check.assumeNotNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -33,6 +35,8 @@ import de.metas.util.Services;
 import de.metas.util.exceptions.ServiceConnectionException;
 import groovy.transform.ToString;
 import lombok.NonNull;
+
+import java.util.List;
 
 @ToString(includes = "reportsRootUrl")
 public class RemoteServletInvoker implements IReportServer
@@ -77,6 +81,10 @@ public class RemoteServletInvoker implements IReportServer
 				.setConnectTimeout(connectTimeout)
 				.setReadTimeout(readTimeout)
 				.build();
+
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+		converters.add(new ReportResultMessageConverter());
+		restTemplate.setMessageConverters(converters);
 	}
 
 	@Override
