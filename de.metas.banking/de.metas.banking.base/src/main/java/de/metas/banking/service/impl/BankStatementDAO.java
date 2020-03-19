@@ -3,6 +3,7 @@ package de.metas.banking.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /*
@@ -43,13 +44,17 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 
 import com.google.common.collect.ImmutableSet;
-import com.ibm.icu.math.BigDecimal;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.service.BankStatementLineRefCreateRequest;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -230,6 +235,41 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);
+	}
 
+	@Override
+	public BankStatementAndLineAndRefId createBankStatementLineRef(@NonNull final BankStatementLineRefCreateRequest request)
+	{
+		final I_C_BankStatementLine_Ref record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
+		IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(record, true); // disable recalculation. we will do it at the end
+
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());
+		record.setC_BankStatementLine_ID(request.getBankStatementLineId().getRepoId());
+		record.setLine(request.getLineNo());
+
+		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		record.setC_Payment_ID(PaymentId.toRepoId(request.getPaymentId()));
+		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
+
+		// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
+		record.setC_Currency_ID(request.getTrxAmt().getCurrencyId().getRepoId());
+		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+		record.setDiscountAmt(BigDecimal.ZERO);
+		record.setWriteOffAmt(BigDecimal.ZERO);
+		record.setIsOverUnderPayment(false);
+		record.setOverUnderAmt(BigDecimal.ZERO);
+
+		save(record);
+
+		return extractBankStatementAndLineAndRefId(record);
+	}
+
+	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(@NonNull final I_C_BankStatementLine_Ref record)
+	{
+		return BankStatementAndLineAndRefId.ofRepoIds(
+				record.getC_BankStatement_ID(),
+				record.getC_BankStatementLine_ID(),
+				record.getC_BankStatementLine_Ref_ID());
 	}
 }

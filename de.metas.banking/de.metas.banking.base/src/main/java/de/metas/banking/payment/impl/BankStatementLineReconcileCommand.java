@@ -3,26 +3,29 @@ package de.metas.banking.payment.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileRequest.PaymentToReconcile;
+import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
+import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -59,7 +62,7 @@ final class BankStatementLineReconcileCommand
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final CurrencyRepository currencyRepository;
+	private final MoneyService moneyService;
 
 	//
 	// Parameters
@@ -71,10 +74,10 @@ final class BankStatementLineReconcileCommand
 
 	@Builder
 	private BankStatementLineReconcileCommand(
-			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final MoneyService moneyService,
 			@NonNull final BankStatementLineReconcileRequest request)
 	{
-		this.currencyRepository = currencyRepository;
+		this.moneyService = moneyService;
 
 		this.request = request;
 	}
@@ -157,8 +160,7 @@ final class BankStatementLineReconcileCommand
 	private Amount extractStatementLineAmt(@NonNull final I_C_BankStatementLine record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(currencyId);
-		return Amount.of(record.getStmtAmt(), currencyCode);
+		return moneyService.toAmount(record.getStmtAmt(), currencyId);
 	}
 
 	private void assertPaymentToReconcileIsStillValid(@NonNull final PaymentToReconcile paymentToReconcile)
@@ -186,8 +188,7 @@ final class BankStatementLineReconcileCommand
 	private Amount extractPayAmt(@NonNull final I_C_Payment payment)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
-		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(currencyId);
-		return Amount.of(payment.getPayAmt(), currencyCode);
+		return moneyService.toAmount(payment.getPayAmt(), currencyId);
 	}
 
 	private void markAsMultiplePayments(final I_C_BankStatementLine bankStatementLine)
@@ -211,28 +212,21 @@ final class BankStatementLineReconcileCommand
 	{
 		final I_C_Payment payment = getPaymentById(paymentToReconcile.getPaymentId());
 
-		final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class, bankStatementLine);
-		IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(bankStatementLineRef, true); // disable recalculation. we will do it at the end
-
-		bankStatementLineRef.setAD_Org_ID(bankStatementLine.getAD_Org_ID());
-		bankStatementLineRef.setC_BankStatementLine_ID(bankStatementLine.getC_BankStatementLine_ID());
-		bankStatementLineRef.setLine(lineNo);
-
-		//
-		// Set Invoice from pay selection line
-		bankStatementLineRef.setC_BPartner_ID(payment.getC_BPartner_ID());
-		bankStatementLineRef.setC_Payment_ID(payment.getC_Payment_ID());
-		bankStatementLineRef.setC_Invoice_ID(payment.getC_Invoice_ID());
-		bankStatementLineRef.setC_Currency_ID(payment.getC_Currency_ID());
-
-		// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
-		bankStatementLineRef.setTrxAmt(paymentToReconcile.getStatementLineAmt().getAsBigDecimal());
-		bankStatementLineRef.setDiscountAmt(BigDecimal.ZERO);
-		bankStatementLineRef.setWriteOffAmt(BigDecimal.ZERO);
-		bankStatementLineRef.setIsOverUnderPayment(false);
-		bankStatementLineRef.setOverUnderAmt(BigDecimal.ZERO);
-
-		bankStatementDAO.save(bankStatementLineRef);
+		final BankStatementAndLineAndRefId bankStatementLineRefId = bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
+				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
+				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
+				//
+				.orgId(OrgId.ofRepoId(bankStatementLine.getAD_Org_ID()))
+				//
+				.lineNo(lineNo)
+				//
+				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
+				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+				.invoiceId(InvoiceId.ofRepoIdOrNull(payment.getC_Invoice_ID()))
+				//
+				.trxAmt(moneyService.toMoney(paymentToReconcile.getStatementLineAmt()))
+				//
+				.build());
 
 		//
 		// Mark payment as reconciled

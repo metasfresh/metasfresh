@@ -8,12 +8,13 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.model.BankStatementLineAndRefId;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  * @author al
@@ -21,6 +22,8 @@ import de.metas.util.ISingletonService;
 public interface IPaySelectionDAO extends ISingletonService
 {
 	Optional<I_C_PaySelection> getById(PaySelectionId paySelectionId);
+
+	void save(@NonNull I_C_PaySelectionLine psl);
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_PaySelection paySelection);
 
@@ -32,7 +35,7 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(BankStatementLineId bankStatementLineId);
 
-	Optional<I_C_PaySelectionLine> retrievePaySelectionLine(BankStatementLineAndRefId bankStatementLineAndRefId);
+	Optional<I_C_PaySelectionLine> retrievePaySelectionLine(BankStatementAndLineAndRefId bankStatementLineAndRefId);
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(InvoiceId invoiceId);
 

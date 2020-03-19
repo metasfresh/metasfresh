@@ -2,7 +2,6 @@ package de.metas.banking.bankstatement.match.form;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
@@ -11,14 +10,7 @@ import java.util.Properties;
 import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
-import net.miginfocom.layout.AC;
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
 
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -45,6 +37,10 @@ import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.banking.bankstatement.match.service.impl.BankStatementPaymentMatchingProcessor;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 /*
  * #%L
@@ -114,15 +110,7 @@ class BankStatementMatchPanel extends CPanel
 		//
 		// Query Panel
 		{
-			queryPanel.setOnQueryCallback(new Runnable()
-			{
-
-				@Override
-				public void run()
-				{
-					onQuery();
-				}
-			});
+			queryPanel.setOnQueryCallback(() -> onQuery());
 		}
 
 		//
@@ -132,14 +120,7 @@ class BankStatementMatchPanel extends CPanel
 				.setModel(bankStatementLinesTableModel)
 				.setCreateStandardSelectActions(false)
 				.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-				.addListSelectionListener(new ListSelectionListener()
-				{
-					@Override
-					public void valueChanged(final ListSelectionEvent e)
-					{
-						onBankStatementLineSelectionChanged(e);
-					}
-				})
+				.addListSelectionListener(e -> onBankStatementLineSelectionChanged(e))
 				.create();
 
 		//
@@ -149,14 +130,7 @@ class BankStatementMatchPanel extends CPanel
 				.setModel(paymentsTableModel)
 				.setCreateStandardSelectActions(false)
 				.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
-				.addListSelectionListener(new ListSelectionListener()
-				{
-					@Override
-					public void valueChanged(final ListSelectionEvent e)
-					{
-						onPaymentTableSelectionChanged(e);
-					}
-				})
+				.addListSelectionListener(e -> onPaymentTableSelectionChanged(e))
 				.addPopupAction(new SelectPaymentsWithSameBatchAction())
 				.addPopupAction(new OpenPaymentBatchWindowAction())
 				.addPopupAction(new OpenPaymentWindowAction())
@@ -169,24 +143,9 @@ class BankStatementMatchPanel extends CPanel
 				.setModel(matchingsTableModel)
 				.setCreateStandardSelectActions(false)
 				.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
-				.addListSelectionListener(new ListSelectionListener()
-				{
-
-					@Override
-					public void valueChanged(final ListSelectionEvent e)
-					{
-						onMatchingSelectionChanged(e);
-					}
-				})
+				.addListSelectionListener(e -> onMatchingSelectionChanged(e))
 				.create();
-		matchingsTableModel.addTableModelListener(new TableModelListener()
-		{
-			@Override
-			public void tableChanged(final TableModelEvent e)
-			{
-				onMatchingTableModelChanged(e);
-			}
-		});
+		matchingsTableModel.addTableModelListener(e -> onMatchingTableModelChanged(e));
 
 		//
 		// Payments of currently selected matching
@@ -212,26 +171,12 @@ class BankStatementMatchPanel extends CPanel
 			// Button: match
 			btnMatch.setText(msgBL.translate(ctx, "Match"));
 			btnMatch.setEnabled(false);
-			btnMatch.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					onMatch();
-				}
-			});
+			btnMatch.addActionListener(e -> onMatch());
 
 			// Button: match automatically
 			btnMatchAuto.setText(msgBL.translate(ctx, "MatchAuto"));
 			btnMatchAuto.setEnabled(false);
-			btnMatchAuto.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					onMatchAutomatically();
-				}
-			});
+			btnMatchAuto.addActionListener(e -> onMatchAutomatically());
 
 			// Layout
 			matchButtonsPanel.add(new JLabel(msgBL.translate(ctx, "PayAmt") + ": "), new CC());
@@ -252,14 +197,7 @@ class BankStatementMatchPanel extends CPanel
 
 			btnUnmatch.setText(msgBL.translate(ctx, "Unmatch"));
 			btnUnmatch.setEnabled(false);
-			btnUnmatch.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					onUnmatch();
-				}
-			});
+			btnUnmatch.addActionListener(e -> onUnmatch());
 
 			// Layout
 			unmatchButtonsPanel.add(btnUnmatch, new CC().width("100px").growX().wrap());
@@ -489,7 +427,6 @@ class BankStatementMatchPanel extends CPanel
 		try
 		{
 			BankStatementPaymentMatchingProcessor.newInstance()
-					.setContext(Env.getCtx())
 					.setBankStatementPaymentMatchings(matchingsTableModel.getRows())
 					.process();
 			matchingsTableModel.removeRows();

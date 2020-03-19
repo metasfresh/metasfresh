@@ -1,6 +1,6 @@
 package de.metas.banking.model.validator;
 
-import de.metas.banking.model.BankStatementLineAndRefId;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -56,11 +56,17 @@ class PaySelectionBankStatementListener extends BankStatementListenerAdapter
 	@Override
 	public void onBankStatementLineRefVoiding(I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
-		final BankStatementLineAndRefId bankStatementLineAndRefId = BankStatementLineAndRefId.ofRepoIds(
-				bankStatementLineRef.getC_BankStatementLine_ID(),
-				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
+		final BankStatementAndLineAndRefId bankStatementLineAndRefId = extractBankStatementAndLineAndRefId(bankStatementLineRef);
 
 		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLineAndRefId);
+	}
+
+	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		return BankStatementAndLineAndRefId.ofRepoIds(
+				bankStatementLineRef.getC_BankStatement_ID(),
+				bankStatementLineRef.getC_BankStatementLine_ID(),
+				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
 	}
 
 }

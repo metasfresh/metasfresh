@@ -324,20 +324,20 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 		int lineNo = 0;
 		int tableRow = 0;
 
-		for (int i = 0; i < objectList.size(); i++) {
+		for (Object[] element : objectList)
+		{
 
 			final MBankStatementLine linePO = new MBankStatementLine(Env
 					.getCtx(), 0, trx.getTrxName());
 			final I_C_BankStatementLine line = InterfaceWrapperHelper.create(linePO,
 					I_C_BankStatementLine.class);
 
-			final BankstatementLine mt940Line = (BankstatementLine) objectList
-					.get(i)[0];
+			final BankstatementLine mt940Line = (BankstatementLine) element[0];
 
 			line.setC_BankStatement_ID(newBankstatementPO.get_ID());
 			setLineData(lineNo, mt940Line, line);
 
-			final List<MatchablePO> invoiceExtendedList = (List<MatchablePO>) objectList.get(i)[1];
+			final List<MatchablePO> invoiceExtendedList = (List<MatchablePO>) element[1];
 
 			if (model.isTrxOk(tableRow)) {
 
@@ -458,6 +458,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							}
 							// TODO: Add c_order_id column to bslr?
 
+							bslr.setC_BankStatement_ID(line.getC_BankStatement_ID());
 							bslr.setC_BankStatementLine_ID(line.getC_BankStatementLine_ID());
 							bslr.setC_Currency_ID(matchingPO.getC_Currency_ID());
 							bslr.setC_BPartner_ID(matchingPO.getC_BPartner_ID());
@@ -556,10 +557,10 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 
 		final List<Object[]> objectList = model.getObjectList();
 
-		for (int i = 0; i < objectList.size(); i++) {
+		for (Object[] element : objectList)
+		{
 
-			final BankstatementLine mt940Line = (BankstatementLine) objectList
-					.get(i)[0];
+			final BankstatementLine mt940Line = (BankstatementLine) element[0];
 
 			lineNo += 10;
 
@@ -571,7 +572,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 			line.setC_BankStatement_ID(existingBankstatement.get_ID());
 			setLineData(lineNo, mt940Line, line);
 
-			final List<MatchablePO> invoiceExtendedList = (List<MatchablePO>) objectList.get(i)[1];
+			final List<MatchablePO> invoiceExtendedList = (List<MatchablePO>) element[1];
 
 			if (Boolean.TRUE.equals(model.getTableModel().getValueAt(tableRow,
 					7))) {
@@ -679,14 +680,10 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							}
 							// TODO: Add c_order_id column to bslr?
 
-							bslr.setC_BankStatementLine_ID(line
-									.getC_BankStatementLine_ID());
-							bslr
-									.setC_Currency_ID(matchingPO
-											.getC_Currency_ID());
-							bslr
-									.setC_BPartner_ID(matchingPO
-											.getC_BPartner_ID());
+							bslr.setC_BankStatement_ID(line.getC_BankStatement_ID());
+							bslr.setC_BankStatementLine_ID(line.getC_BankStatementLine_ID());
+							bslr.setC_Currency_ID(matchingPO.getC_Currency_ID());
+							bslr.setC_BPartner_ID(matchingPO.getC_BPartner_ID());
 							bslr.setDiscountAmt(discount);
 							bslr.setTrxAmt(matchingPO.getPAmt());
 							bslr.setWriteOffAmt(writeOff);

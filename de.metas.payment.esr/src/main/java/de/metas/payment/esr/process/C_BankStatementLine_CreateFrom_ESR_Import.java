@@ -269,7 +269,8 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 		// Create new bank statement line reference for our current pay selection line.
 		final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class, bankStatementLine);
 		bankStatementLineRef.setAD_Org_ID(bankStatementLine.getAD_Org_ID());
-		bankStatementLineRef.setC_BankStatementLine(bankStatementLine);
+		bankStatementLineRef.setC_BankStatement_ID(bankStatementLine.getC_BankStatement_ID());
+		bankStatementLineRef.setC_BankStatementLine_ID(bankStatementLine.getC_BankStatementLine_ID());
 		IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(bankStatementLineRef, true); // disable recalculation. we will do it at the end
 
 		bankStatementLineRef.setC_BPartner_ID(esrImportLine.getC_BPartner_ID());

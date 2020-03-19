@@ -2,7 +2,6 @@ package de.metas.banking.bankstatement.match.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
@@ -11,8 +10,7 @@ import org.compiere.util.Env;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.PaymentBatch;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -89,10 +87,15 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 			return;
 		}
 
-		final I_C_BankStatementLine bankStatementLine = bankStatementLineRef.getC_BankStatementLine();
-		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
-		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID());
-		final int bankStatementLineRefRepoId = bankStatementLineRef.getC_BankStatementLine_Ref_ID();
-		Services.get(IPaySelectionBL.class).linkBankStatementLine(paySelectionLine, bankStatementId, bankStatementLineId, bankStatementLineRefRepoId);
+		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+		paySelectionBL.linkBankStatementLine(paySelectionLine, extractBankStatementAndLineAndRefId(bankStatementLineRef));
+	}
+
+	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		return BankStatementAndLineAndRefId.ofRepoIds(
+				bankStatementLineRef.getC_BankStatement_ID(),
+				bankStatementLineRef.getC_BankStatementLine_ID(),
+				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
 	}
 }

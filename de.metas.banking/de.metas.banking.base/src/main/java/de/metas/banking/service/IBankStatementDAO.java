@@ -12,6 +12,7 @@ import org.compiere.model.I_C_Payment;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.payment.PaymentId;
@@ -93,4 +94,6 @@ public interface IBankStatementDAO extends ISingletonService
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
 	void save(@NonNull final de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef);
+
+	BankStatementAndLineAndRefId createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);
 }

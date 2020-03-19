@@ -6,8 +6,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineAndRefId;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -49,9 +48,9 @@ public interface IPaySelectionBL extends ISingletonService
 	I_C_Payment createPaymentIfNeeded(I_C_PaySelectionLine line);
 
 	/**
-	 * Link given {@link I_C_BankStatementLine_Ref}/{@link I_C_BankStatementLine} to pay selection line
+	 * Link given bank statement line reference to pay selection line
 	 */
-	void linkBankStatementLine(@NonNull I_C_PaySelectionLine psl, @NonNull BankStatementId bankStatementId, @NonNull BankStatementLineId bankStatementLineId, int bankStatementLineRefRepoId);
+	void linkBankStatementLine(@NonNull I_C_PaySelectionLine psl, @NonNull BankStatementAndLineAndRefId bankStatementAndLineAndRefId);
 
 	/**
 	 * Unlink any pay selection line which points to given bank statement line or to one of it's references.
@@ -61,7 +60,7 @@ public interface IPaySelectionBL extends ISingletonService
 	/**
 	 * Unlink any pay selection line which points to given bank statement line reference.
 	 */
-	void unlinkPaySelectionLineForBankStatement(BankStatementLineAndRefId bankStatementLineAndRefId);
+	void unlinkPaySelectionLineForBankStatement(BankStatementAndLineAndRefId bankStatementLineAndRefId);
 
 	/**
 	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code>, <code>C_BP_BankAccount_ID</code> and <code>Reference</code> from the <code>C_Invoice</code> which it references.

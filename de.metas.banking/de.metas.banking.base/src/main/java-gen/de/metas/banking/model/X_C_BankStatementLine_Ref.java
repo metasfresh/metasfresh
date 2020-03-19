@@ -15,7 +15,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1052922287L;
+	private static final long serialVersionUID = 816551690L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine_Ref (Properties ctx, int C_BankStatementLine_Ref_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
       super (ctx, C_BankStatementLine_Ref_ID, trxName);
       /** if (C_BankStatementLine_Ref_ID == 0)
         {
+			setC_BankStatement_ID (0);
 			setC_BankStatementLine_ID (0);
 			setC_BankStatementLine_Ref_ID (0);
 			setC_Currency_ID (0); // @SQL=SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=@C_BP_BankAccount_ID@
@@ -47,16 +48,29 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
       return poi;
     }
 
+	/** Set Bankauszug.
+		@param C_BankStatement_ID 
+		Bank Statement of account
+	  */
 	@Override
-	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine()
+	public void setC_BankStatement_ID (int C_BankStatement_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
+		if (C_BankStatement_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BankStatement_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BankStatement_ID, Integer.valueOf(C_BankStatement_ID));
 	}
 
+	/** Get Bankauszug.
+		@return Bank Statement of account
+	  */
 	@Override
-	public void setC_BankStatementLine(org.compiere.model.I_C_BankStatementLine C_BankStatementLine)
+	public int getC_BankStatement_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class, C_BankStatementLine);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatement_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Bank statement line.
@@ -340,7 +354,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -348,7 +362,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		throw new IllegalArgumentException ("Processed is virtual column");	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

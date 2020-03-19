@@ -30,8 +30,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,8 +44,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -59,6 +57,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.organization.OrgId;
@@ -87,6 +86,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 
@@ -127,14 +127,15 @@ public class PaySelectionBL implements IPaySelectionBL
 				bankStatementLine.setTrxAmt(BigDecimal.ZERO); // will be updated at the end
 				bankStatementLine.setChargeAmt(BigDecimal.ZERO);
 				bankStatementLine.setInterestAmt(BigDecimal.ZERO);
-				InterfaceWrapperHelper.save(bankStatementLine);
+				bankStatementDAO.save(bankStatementLine);
 			}
 
 			//
 			// Create new bank statement line reference for our current pay selection line.
-			final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class, bankStatementLine);
+			final I_C_BankStatementLine_Ref bankStatementLineRef = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
 			bankStatementLineRef.setAD_Org_ID(bankStatementLine.getAD_Org_ID());
-			bankStatementLineRef.setC_BankStatementLine(bankStatementLine);
+			bankStatementLineRef.setC_BankStatement_ID(bankStatementLine.getC_BankStatement_ID());
+			bankStatementLineRef.setC_BankStatementLine_ID(bankStatementLine.getC_BankStatementLine_ID());
 			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(bankStatementLineRef, true); // disable recalculation. we will do it at the end
 
 			//
@@ -176,16 +177,12 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			//
 			// Save the bank statement line reference
-			InterfaceWrapperHelper.save(bankStatementLineRef);
+			bankStatementDAO.save(bankStatementLineRef);
 			nextReferenceLineNo += 10;
 
 			//
 			// Update pay selection line => mark it as reconciled
-			linkBankStatementLine(
-					psl,
-					bankStatementId,
-					BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID()),
-					bankStatementLineRef.getC_BankStatementLine_Ref_ID());
+			linkBankStatementLine(psl, extractBankStatementAndLineAndRefId(bankStatementLineRef));
 		}
 
 		//
@@ -194,7 +191,14 @@ public class PaySelectionBL implements IPaySelectionBL
 		{
 			bankStatementBL.recalculateStatementLineAmounts(bankStatementLine);
 		}
+	}
 
+	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		return BankStatementAndLineAndRefId.ofRepoIds(
+				bankStatementLineRef.getC_BankStatement_ID(),
+				bankStatementLineRef.getC_BankStatementLine_ID(),
+				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
 	}
 
 	private static boolean isInBankStatement(@NonNull final I_C_PaySelectionLine psl)
@@ -340,7 +344,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		{
 			final I_C_Payment payment = createPayment(line);
 			line.setC_Payment(payment);
-			InterfaceWrapperHelper.save(line);
+			Services.get(IPaySelectionDAO.class).save(line);
 
 			return payment;
 		}
@@ -392,7 +396,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void unlinkPaySelectionLineForBankStatement(final BankStatementLineAndRefId bankStatementLineAndRefId)
+	public void unlinkPaySelectionLineForBankStatement(final BankStatementAndLineAndRefId bankStatementLineAndRefId)
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 		final I_C_PaySelectionLine paySelectionLine = paySelectionDAO.retrievePaySelectionLine(bankStatementLineAndRefId).orElse(null);
@@ -405,14 +409,12 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Override
 	public void linkBankStatementLine(
 			@NonNull final I_C_PaySelectionLine psl,
-			@NonNull final BankStatementId bankStatementId,
-			@NonNull final BankStatementLineId bankStatementLineId,
-			@Nullable final int bankStatementLineRefRepoId)
+			@NonNull final BankStatementAndLineAndRefId bankStatementAndLineAndRefId)
 	{
-		psl.setC_BankStatement_ID(bankStatementId.getRepoId());
-		psl.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
-		psl.setC_BankStatementLine_Ref_ID(bankStatementLineRefRepoId);
-		InterfaceWrapperHelper.save(psl);
+		psl.setC_BankStatement_ID(bankStatementAndLineAndRefId.getBankStatementId().getRepoId());
+		psl.setC_BankStatementLine_ID(bankStatementAndLineAndRefId.getBankStatementLineId().getRepoId());
+		psl.setC_BankStatementLine_Ref_ID(bankStatementAndLineAndRefId.getBankStatementLineRefId().getRepoId());
+		Services.get(IPaySelectionDAO.class).save(psl);
 	}
 
 	private void unlinkBankStatementFromLine(final I_C_PaySelectionLine psl)
@@ -420,7 +422,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		psl.setC_BankStatement_ID(-1);
 		psl.setC_BankStatementLine_ID(-1);
 		psl.setC_BankStatementLine_Ref_ID(-1);
-		InterfaceWrapperHelper.save(psl);
+		Services.get(IPaySelectionDAO.class).save(psl);
 	}
 
 	@Override

@@ -54,18 +54,20 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -530,17 +532,15 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ref);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ref);
 
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(ref.getC_BankStatementLine(), I_C_BankStatementLine.class);
-		final I_C_BankStatement bs = InterfaceWrapperHelper.create(bsl.getC_BankStatement(), I_C_BankStatement.class);
-		if (bsl == null || bsl.getC_BankStatementLine_ID() == 0 || bs == null || bs.getC_BankStatement_ID() == 0)
-		{
-			throw new AdempiereException("@NotFound@ MBankStatementLine/MBankStatement");
-		}
-
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(ref.getC_BankStatementLine_ID());
+		final I_C_BankStatementLine bsl = bankStatementDAO.getLineById(bankStatementLineId);
 		if (!bsl.isMultiplePaymentOrInvoice() || !bsl.isMultiplePayment())
 		{
 			throw new AdempiereException("@IsMultiplePayment@=N");
 		}
+
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bsl.getC_BankStatement_ID());
+		final I_C_BankStatement bs = bankStatementDAO.getById(bankStatementId);
 
 		final MPayment payment = createPayment(ctx,
 				ref.getC_Invoice_ID(), ref.getC_BPartner_ID(),
@@ -730,7 +730,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	public void reconcile(@NonNull final BankStatementLineReconcileRequest request)
 	{
 		BankStatementLineReconcileCommand.builder()
-				.currencyRepository(SpringContextHolder.instance.getBean(CurrencyRepository.class))
+				.moneyService(SpringContextHolder.instance.getBean(MoneyService.class))
 				.request(request)
 				.build()
 				.execute();

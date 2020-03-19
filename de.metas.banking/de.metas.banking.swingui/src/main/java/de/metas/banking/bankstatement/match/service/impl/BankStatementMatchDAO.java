@@ -47,11 +47,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -80,8 +80,8 @@ public class BankStatementMatchDAO implements IBankStatementMatchDAO
 			final IQuery<I_C_BankStatementLine_Ref> bankStatementLineRefQuery = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class, Env.getCtx(), ITrx.TRXNAME_None)
 					.create();
 
-			filters.addNotInSubQueryFilter(I_C_BankStatementLine.COLUMN_C_BankStatementLine_ID,
-					I_C_BankStatementLine_Ref.COLUMN_C_BankStatementLine_ID, bankStatementLineRefQuery);
+			filters.addNotInSubQueryFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID,
+					I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineRefQuery);
 		}
 
 		return filters;

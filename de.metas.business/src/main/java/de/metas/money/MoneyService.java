@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
@@ -128,18 +129,24 @@ public class MoneyService
 
 	public ITranslatableString toTranslatableString(@NonNull final Money money)
 	{
-		final Currency currency = currencyRepository.getById(money.getCurrencyId());
+		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(money.getCurrencyId());
 
 		return TranslatableStrings.builder()
 				.append(money.toBigDecimal(), DisplayType.Amount)
 				.append(" ")
-				.append(currency.getCurrencyCode().toThreeLetterCode())
+				.append(currencyCode.toThreeLetterCode())
 				.build();
 	}
 
 	public Amount toAmount(@NonNull final Money money)
 	{
-		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getCurrencyCode());
+		return money.toAmount(currencyRepository::getCurrencyCodeById);
+	}
+
+	public Amount toAmount(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
+	{
+		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(currencyId);
+		return Amount.of(value, currencyCode);
 	}
 
 	public Money toMoney(@NonNull final Amount amount)

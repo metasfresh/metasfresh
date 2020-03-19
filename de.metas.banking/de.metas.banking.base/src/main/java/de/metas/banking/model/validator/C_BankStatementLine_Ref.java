@@ -13,11 +13,11 @@ package de.metas.banking.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,8 +30,12 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 /**
@@ -55,9 +59,15 @@ public class C_BankStatementLine_Ref
 	{
 		final boolean newRecord = InterfaceWrapperHelper.isNew(bankStatementLineRef);
 
-		if (newRecord && bankStatementLineRef.getC_BankStatementLine().getC_Payment_ID() > 0)
+		if (newRecord)
 		{
-			throw new AdempiereException("@C_Payment_ID@"); // TODO: AD_Message
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID());
+			final I_C_BankStatementLine bankStatementLine = Services.get(IBankStatementDAO.class).getLineById(bankStatementLineId);
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
+			if (paymentId != null)
+			{
+				throw new AdempiereException("@C_Payment_ID@"); // TODO: AD_Message
+			}
 		}
 
 		if (bankStatementLineRef.getC_Invoice_ID() > 0)
@@ -94,18 +104,25 @@ public class C_BankStatementLine_Ref
 			return;
 		}
 
-		Services.get(IBankStatementBL.class).recalculateStatementLineAmounts(bankStatementLineRef.getC_BankStatementLine());
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID());
+		final I_C_BankStatementLine bankStatementLine = Services.get(IBankStatementDAO.class).getLineById(bankStatementLineId);
+
+		Services.get(IBankStatementBL.class).recalculateStatementLineAmounts(bankStatementLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_C_BankStatementLine_Ref bankStatementLineRef)
 	{
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID());
+		final I_C_BankStatementLine bankStatementLine = Services.get(IBankStatementDAO.class).getLineById(bankStatementLineId);
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
+
 		// Avoid deleting the bank statement line reference if there is a payment set
-		if (bankStatementLineRef.getC_BankStatementLine().getC_Payment_ID() > 0)
+		if (paymentId != null)
 		{
 			throw new AdempiereException("@C_Payment_ID@"); // TODO: AD_Message
 		}
-		
+
 		//
 		// Notify listeners that our bank statement line reference will become void (i.e. we are deleting it)
 		Services.get(IBankStatementListenerService.class)

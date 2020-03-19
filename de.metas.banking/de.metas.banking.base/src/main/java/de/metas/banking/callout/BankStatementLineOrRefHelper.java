@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -25,9 +24,11 @@ import org.compiere.util.TimeUtil;
 import com.google.common.base.MoreObjects;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -285,26 +286,22 @@ public class BankStatementLineOrRefHelper
 
 	private static Timestamp getTrxDate(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
-		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
+		final I_C_BankStatementLine line = getBankStatementLine(lineOrRef);
+		return MoreObjects.firstNonNull(line.getStatementLineDate(), SystemTime.asTimestamp());
+	}
+
+	private static I_C_BankStatementLine getBankStatementLine(@NonNull final IBankStatementLineOrRef lineOrRef)
+	{
+		if (InterfaceWrapperHelper.isInstanceOf(lineOrRef, I_C_BankStatementLine.class))
 		{
-			final I_C_BankStatementLine line = (I_C_BankStatementLine)lineOrRef;
-			return MoreObjects.firstNonNull(line.getStatementLineDate(), SystemTime.asTimestamp());
+			return InterfaceWrapperHelper.create(lineOrRef, I_C_BankStatementLine.class);
 		}
 		else
 		{
-			final I_C_BankStatementLine_Ref ref = (I_C_BankStatementLine_Ref)lineOrRef;
-			return getStatementLineDateOrCurrentDate(ref);
+			final I_C_BankStatementLine_Ref ref = InterfaceWrapperHelper.create(lineOrRef, I_C_BankStatementLine_Ref.class);
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(ref.getC_BankStatementLine_ID());
+			return Services.get(IBankStatementDAO.class).getLineById(bankStatementLineId);
 		}
-	}
-
-	private static Timestamp getStatementLineDateOrCurrentDate(@NonNull final I_C_BankStatementLine_Ref ref)
-	{
-		final Optional<org.compiere.model.I_C_BankStatementLine> line = Optional.ofNullable(ref.getC_BankStatementLine());
-		if (line.isPresent())
-		{
-			return MoreObjects.firstNonNull(line.get().getStatementLineDate(), SystemTime.asTimestamp());
-		}
-		return SystemTime.asTimestamp();
 	}
 
 	private static void computeInvoiceOpenAmtIfNeeded(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final Amounts paymentAmounts)
@@ -318,7 +315,7 @@ public class BankStatementLineOrRefHelper
 		{
 			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
 			final CurrencyPrecision precision = currency.getPrecision();
-			
+
 			final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
 			BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
 			invoiceOpenAmt = precision.round(invoiceOpenAmt.multiply(currencyRate));

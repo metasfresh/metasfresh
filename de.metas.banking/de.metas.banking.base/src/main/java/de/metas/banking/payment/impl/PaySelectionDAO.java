@@ -1,5 +1,7 @@
 package de.metas.banking.payment.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +15,7 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.model.BankStatementLineAndRefId;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -41,6 +43,12 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.firstOnlyOrNull(I_C_PaySelection.class);
 
 		return Optional.ofNullable(paySelectionRecord);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_PaySelectionLine psl)
+	{
+		saveRecord(psl);
 	}
 
 	@Override
@@ -97,11 +105,11 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public Optional<I_C_PaySelectionLine> retrievePaySelectionLine(@NonNull final BankStatementLineAndRefId bankStatementLineAndRefId)
+	public Optional<I_C_PaySelectionLine> retrievePaySelectionLine(@NonNull final BankStatementAndLineAndRefId bankStatementLineAndRefId)
 	{
 		final I_C_PaySelectionLine psl = queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineAndRefId.getBankStatementLineRefRepoId())
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_Ref_ID, bankStatementLineAndRefId.getBankStatementLineRefId())
 				.create()
 				.firstOnly(I_C_PaySelectionLine.class);
 
