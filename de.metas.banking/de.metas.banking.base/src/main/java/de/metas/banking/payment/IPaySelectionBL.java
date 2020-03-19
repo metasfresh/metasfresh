@@ -1,5 +1,6 @@
 package de.metas.banking.payment;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.compiere.model.I_C_PaySelection;
@@ -51,6 +52,8 @@ public interface IPaySelectionBL extends ISingletonService
 	 * Link given bank statement line reference to pay selection line
 	 */
 	void linkBankStatementLine(@NonNull I_C_PaySelectionLine psl, @NonNull BankStatementAndLineAndRefId bankStatementAndLineAndRefId);
+
+	void linkBankStatementLinesByPaymentIds(@NonNull Map<PaymentId, BankStatementAndLineAndRefId> bankStatementAndLineAndRefIds);
 
 	/**
 	 * Unlink any pay selection line which points to given bank statement line or to one of it's references.

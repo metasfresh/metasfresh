@@ -3,6 +3,7 @@ package de.metas.banking.payment.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -14,6 +15,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
@@ -174,11 +177,16 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final PaymentId paymentId)
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final Collection<PaymentId> paymentIds)
 	{
+		if (paymentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_Payment_ID, paymentIds)
 				.orderBy(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID)
 				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
 				.create()

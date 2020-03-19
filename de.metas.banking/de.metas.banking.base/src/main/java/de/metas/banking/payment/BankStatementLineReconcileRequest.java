@@ -1,6 +1,9 @@
 package de.metas.banking.payment;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.currency.Amount;
@@ -49,9 +52,20 @@ public class BankStatementLineReconcileRequest
 	{
 		Check.assumeNotEmpty(paymentsToReconcile, "paymentsToReconcile is not empty");
 		Amount.assertSameCurrency(paymentsToReconcile, PaymentToReconcile::getStatementLineAmt);
+		assertUniquePaymentIds(paymentsToReconcile);
 
 		this.bankStatementLineId = bankStatementLineId;
 		this.paymentsToReconcile = paymentsToReconcile;
+	}
+
+	private static void assertUniquePaymentIds(@NonNull final ImmutableList<PaymentToReconcile> paymentsToReconcile)
+	{
+		final ImmutableList<@NonNull PaymentId> paymentIds = paymentsToReconcile.stream().map(PaymentToReconcile::getPaymentId).collect(ImmutableList.toImmutableList());
+		final ImmutableSet<@NonNull PaymentId> paymentIdsUnique = ImmutableSet.copyOf(paymentIds);
+		if (paymentIdsUnique.size() != paymentIds.size())
+		{
+			throw new AdempiereException("paymentIds are not unique: " + paymentIds);
+		}
 	}
 
 	public Amount getStatementLineAmtToReconcile()

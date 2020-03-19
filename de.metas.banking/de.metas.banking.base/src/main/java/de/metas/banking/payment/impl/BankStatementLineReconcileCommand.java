@@ -1,6 +1,7 @@
 package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Payment;
@@ -15,6 +16,7 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileRequest.PaymentToReconcile;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
@@ -43,12 +45,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,6 +64,7 @@ final class BankStatementLineReconcileCommand
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 	private final MoneyService moneyService;
 
 	//
@@ -70,7 +73,8 @@ final class BankStatementLineReconcileCommand
 
 	//
 	// State
-	private ImmutableMap<PaymentId, I_C_Payment> paymentsCache;
+	private ImmutableMap<PaymentId, I_C_Payment> paymentsCache; // lazy
+	private final HashMap<PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdsByPaymentId = new HashMap<>();
 
 	@Builder
 	private BankStatementLineReconcileCommand(
@@ -100,6 +104,8 @@ final class BankStatementLineReconcileCommand
 			createBankStatementLineRef(paymentToReconcile, bankStatementLine, lineNo);
 			lineNo += 10;
 		}
+
+		paySelectionBL.linkBankStatementLinesByPaymentIds(bankStatementLineRefIdsByPaymentId);
 	}
 
 	private void assertBankStatementLineIsStillValid(final I_C_BankStatementLine bankStatementLine)
@@ -210,7 +216,8 @@ final class BankStatementLineReconcileCommand
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			final int lineNo)
 	{
-		final I_C_Payment payment = getPaymentById(paymentToReconcile.getPaymentId());
+		final PaymentId paymentId = paymentToReconcile.getPaymentId();
+		final I_C_Payment payment = getPaymentById(paymentId);
 
 		final BankStatementAndLineAndRefId bankStatementLineRefId = bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
 				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
@@ -220,8 +227,8 @@ final class BankStatementLineReconcileCommand
 				//
 				.lineNo(lineNo)
 				//
+				.paymentId(paymentId)
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
-				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.invoiceId(InvoiceId.ofRepoIdOrNull(payment.getC_Invoice_ID()))
 				//
 				.trxAmt(moneyService.toMoney(paymentToReconcile.getStatementLineAmt()))
@@ -234,8 +241,8 @@ final class BankStatementLineReconcileCommand
 		paymentDAO.save(payment);
 
 		//
-		// TODO:
-		// Update pay selection line or ESR Import
-		// linkBankStatementLine(psl, bankStatementLine, bankStatementLineRef);
+		// Remember paymentId -> bank statement line ref connection
+		// we will need it later to link pay selections and ESR imports
+		bankStatementLineRefIdsByPaymentId.put(paymentId, bankStatementLineRefId);
 	}
 }
