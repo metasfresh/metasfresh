@@ -140,7 +140,7 @@ BEGIN
                           LEFT JOIN TMP_AccountSheetReport tmp_fa ON tmp_fa.account_id = fa.account_id
                           LEFT JOIN c_tax t ON fa.c_tax_id = t.c_tax_id
                           LEFT JOIN c_taxcategory tc ON t.c_taxcategory_id = tc.c_taxcategory_id
-                          LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id
+                          LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id AND dt.c_doctype_id != 0
                  WHERE TRUE
                    AND (fa.amtacctdr != 0 OR fa.amtacctcr != 0)
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
