@@ -97,9 +97,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public final I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, int bPartnerID)
+	public final I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, BPartnerId bpartnerId)
 	{
-		if (bPartnerID <= 0)
+		if (bpartnerId == null)
 		{
 			return null;
 		}
@@ -113,7 +113,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, invoiceNo)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bPartnerID)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.firstOnly(I_C_Invoice.class);
 	}

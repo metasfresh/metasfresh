@@ -155,7 +155,7 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_C_BankStatement")
 			.add("org.compiere.model.I_C_BankStatementLine")
-			.add("org.compiere.model.I_C_BankStatementLine_Ref")
+			.add("de.metas.banking.model.I_C_BankStatementLine_Ref")
 			//
 			.build();
 

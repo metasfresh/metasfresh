@@ -57,6 +57,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.bpartner.BPartnerId;
@@ -918,14 +919,14 @@ public class ESRImportBL implements IESRImportBL
 			}
 
 			// check partners first
-			final I_C_BPartner esrPartner = line.getC_BPartner();
+			final BPartnerId esrPartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
 			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0 ? line.getC_Invoice().getC_BPartner() : null;
 			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? InterfaceWrapperHelper.load(line.getC_Payment().getC_BPartner_ID(), I_C_BPartner.class) : null;
-			if (esrPartner != null)
+			if (esrPartnerId != null)
 			{
 				if (invPartner != null)
 				{
-					if (invPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
+					if (invPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
 					{
 						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
 						logger.warn(ex.getLocalizedMessage(), ex);
@@ -937,7 +938,7 @@ public class ESRImportBL implements IESRImportBL
 
 				if (paymentPartner != null)
 				{
-					if (paymentPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
+					if (paymentPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
 					{
 						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
 						logger.warn(ex.getLocalizedMessage(), ex);
@@ -1278,10 +1279,20 @@ public class ESRImportBL implements IESRImportBL
 				.execute();
 	}
 
-	private final void unlinkESRImportLineFromBankStatement(final I_ESR_ImportLine esrImportLine)
+	@Override
+	public void linkESRImportLineToBankStatement(@NonNull final I_ESR_ImportLine esrImportLine, @NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)
 	{
-		esrImportLine.setC_BankStatementLine(null);
-		esrImportLine.setC_BankStatementLine_Ref(null);
+		esrImportLine.setC_BankStatement_ID(bankStatementLineRefId.getBankStatementId().getRepoId());
+		esrImportLine.setC_BankStatementLine_ID(bankStatementLineRefId.getBankStatementLineId().getRepoId());
+		esrImportLine.setC_BankStatementLine_Ref_ID(bankStatementLineRefId.getBankStatementLineRefId().getRepoId());
+		save(esrImportLine);
+	}
+
+	private void unlinkESRImportLineFromBankStatement(final I_ESR_ImportLine esrImportLine)
+	{
+		esrImportLine.setC_BankStatement_ID(-1);
+		esrImportLine.setC_BankStatementLine_ID(-1);
+		esrImportLine.setC_BankStatementLine_Ref_ID(-1);
 		save(esrImportLine);
 	}
 

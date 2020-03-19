@@ -15,7 +15,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1770319772L;
+	private static final long serialVersionUID = -560601068L;
 
     /** Standard Constructor */
     public X_ESR_Import (Properties ctx, int ESR_Import_ID, String trxName)
@@ -47,8 +47,8 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
       return poi;
     }
 
-	/** Set Attachment entry.
-		@param AD_AttachmentEntry_ID Attachment entry	  */
+	/** Set Anhang.
+		@param AD_AttachmentEntry_ID Anhang	  */
 	@Override
 	public void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID)
 	{
@@ -58,8 +58,8 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, Integer.valueOf(AD_AttachmentEntry_ID));
 	}
 
-	/** Get Attachment entry.
-		@return Attachment entry	  */
+	/** Get Anhang.
+		@return Anhang	  */
 	@Override
 	public int getAD_AttachmentEntry_ID () 
 	{
@@ -70,7 +70,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -324,7 +324,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -333,7 +333,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

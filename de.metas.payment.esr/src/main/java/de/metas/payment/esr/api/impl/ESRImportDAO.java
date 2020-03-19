@@ -79,7 +79,7 @@ public class ESRImportDAO implements IESRImportDAO
 					new AccessorComparator<I_ESR_ImportLine, Integer>(
 							new ComparableComparator<Integer>(),
 							o -> ((I_ESR_ImportLine)o).getESR_ImportLine_ID()));
-
+	
 	@Override
 	public List<I_ESR_ImportLine> retrieveLinesForInvoice(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
 	{
@@ -220,7 +220,7 @@ public class ESRImportDAO implements IESRImportDAO
 	public List<I_ESR_ImportLine> retrieveLinesForBankStatementLine(final I_C_BankStatementLine line)
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, line)
-				.addEqualsFilter(I_ESR_ImportLine.COLUMN_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatementLine_ID, line.getC_BankStatementLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.create()

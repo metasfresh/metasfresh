@@ -13,6 +13,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -136,7 +137,7 @@ public class ESRDataLoaderUtil
 			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(esrReferenceNumberDocument.getAD_Table_ID());
 			if (I_C_Invoice.Table_Name.equalsIgnoreCase(tableName))
 			{
-				importLine.setC_ReferenceNo(esrReferenceNumberDocument.getC_ReferenceNo());
+				importLine.setC_ReferenceNo_ID(esrReferenceNumberDocument.getC_ReferenceNo_ID());
 
 				final int invoiceID = esrReferenceNumberDocument.getRecord_ID();
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), invoiceID, I_C_Invoice.class, ITrx.TRXNAME_None);
@@ -200,12 +201,12 @@ public class ESRDataLoaderUtil
 		final I_AD_Org organization = Services.get(IOrgDAO.class).retrieveOrganizationByValue(Env.getCtx(), orgValue);
 		if (organization != null)
 		{
-			importLine.setOrg(organization);
+			importLine.setOrg_ID(organization.getAD_Org_ID());
 			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 		}
 
 		// BPartner value (without initial zeros)
-		final int bPartnerId;
+		final BPartnerId bpartnerId;
 
 		final String bpValue = removeLeftZeros(completeEsrReferenceNumberStr.substring(10, 18));
 
@@ -221,36 +222,36 @@ public class ESRDataLoaderUtil
 				.setFailOnError(false)
 				.build();
 
-		I_C_BPartner bPartner = null;
+		I_C_BPartner bpartner = null;
 		if (!Check.isEmpty(formattedBPValue, true))
 		{
-			bPartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), formattedBPValue);
+			bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), formattedBPValue);
 		}
 
 		importLine.setBPartner_Value(bpValue);
 
-		if (bPartner != null)
+		if (bpartner != null)
 		{
-			final boolean match = Services.get(IESRLineHandlersService.class).applyESRMatchingBPartner(bPartner, importLine);
+			final boolean match = Services.get(IESRLineHandlersService.class).applyESRMatchingBPartner(bpartner, importLine);
 
 			// check the org: should not match with invoices from other orgs
 			if (match)
 			{
-				bPartnerId = bPartner.getC_BPartner_ID();
-				importLine.setC_BPartner(bPartner);
+				bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+				importLine.setC_BPartner_ID(bpartnerId.getRepoId());
 				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
 
 			}
 			else
 			{
-				importLine.setC_BPartner(null);
-				bPartnerId = -1;
+				importLine.setC_BPartner_ID(-1);
+				bpartnerId = null;
 			}
 		}
 		else
 		{
-			importLine.setC_BPartner(null);
-			bPartnerId = -1;
+			importLine.setC_BPartner_ID(-1);
+			bpartnerId = null;
 		}
 
 		// Document number (e.g. of the invoice, without initial zeros)
@@ -285,7 +286,7 @@ public class ESRDataLoaderUtil
 						// if we have a match with bpValueleftZero, then we need to make sure that 'importLine' references invoice's partner
 						// (the one with the leading '0')
 						importLine.setBPartner_Value(bpValueleftZero);
-						importLine.setC_BPartner(invoicePartner);
+						importLine.setC_BPartner_ID(invoicePartner.getC_BPartner_ID());
 					}
 					// task 09861
 					// Make sure the bpartners with values bigger than 1000 are correctly handled.
@@ -293,7 +294,7 @@ public class ESRDataLoaderUtil
 					else if (invoicePartner.getValue().endsWith(bpValue))
 					{
 						importLine.setBPartner_Value(bpValue);
-						importLine.setC_BPartner(invoicePartner);
+						importLine.setC_BPartner_ID(invoicePartner.getC_BPartner_ID());
 					}
 					else
 					{
@@ -325,7 +326,7 @@ public class ESRDataLoaderUtil
 		else
 		{
 			// Try to get the invoice via bpartner and document no
-			final I_C_Invoice invoiceFallback = Services.get(IInvoiceDAO.class).retrieveInvoiceByInvoiceNoAndBPartnerID(Env.getCtx(), documentNo, bPartnerId);
+			final I_C_Invoice invoiceFallback = Services.get(IInvoiceDAO.class).retrieveInvoiceByInvoiceNoAndBPartnerID(Env.getCtx(), documentNo, bpartnerId);
 			if (invoiceFallback != null)
 			{
 				// check the org: should not match with invoices from other orgs

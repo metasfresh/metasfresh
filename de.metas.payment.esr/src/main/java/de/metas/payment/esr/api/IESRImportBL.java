@@ -5,6 +5,7 @@ import java.util.Set;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.payment.PaymentId;
@@ -14,6 +15,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.validator.ESR_ImportLine;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IESRImportBL extends ISingletonService
 {
@@ -112,6 +114,8 @@ public interface IESRImportBL extends ISingletonService
 	 * @return
 	 */
 	boolean isProcessed(I_ESR_Import esrImport);
+
+	void linkESRImportLineToBankStatement(@NonNull I_ESR_ImportLine esrImportLine, @NonNull BankStatementAndLineAndRefId bankStatementLineRefId);
 
 	/**
 	 * Iterate the {@link ESR_ImportLine}s for the given <code>bankStatementLine</code> and set <code>C_BankStatementLine</code> and <code>C_BankStatementLine_Ref</code> to <code>null</code> for each

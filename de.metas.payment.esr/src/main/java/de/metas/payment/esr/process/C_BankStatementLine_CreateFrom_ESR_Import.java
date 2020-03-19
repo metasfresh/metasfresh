@@ -39,10 +39,12 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.collect.Ordering;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -63,6 +65,7 @@ import de.metas.util.Services;
 public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess implements IProcessPrecondition
 {
 	// services
+	private final transient IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 	private final transient IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
@@ -308,13 +311,19 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 		count_BankStatementLine_Refs++;
 
 		//
-		// Update pay selection line => mark it as reconciled
-		esrImportLine.setC_BankStatementLine(bankStatementLine);
-		esrImportLine.setC_BankStatementLine_Ref(bankStatementLineRef);
-		InterfaceWrapperHelper.save(esrImportLine);
+		// Update ESR import line => mark it as reconciled
+		esrImportBL.linkESRImportLineToBankStatement(esrImportLine, extractBankStatementAndLineAndRefId(bankStatementLineRef));
+	}
+	
+	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(I_C_BankStatementLine_Ref bankStatementLineRef)
+	{
+		return BankStatementAndLineAndRefId.ofRepoIds(
+				bankStatementLineRef.getC_BankStatement_ID(),
+				bankStatementLineRef.getC_BankStatementLine_ID(),
+				bankStatementLineRef.getC_BankStatementLine_Ref_ID());
 	}
 
-	private final ArrayKey mkBankStatementLineKey(final I_ESR_ImportLine esrImportLine)
+	private static final ArrayKey mkBankStatementLineKey(final I_ESR_ImportLine esrImportLine)
 	{
 		final Timestamp dateAcct = esrImportLine.getAccountingDate();
 		Check.assumeNotNull(dateAcct, "dateAcct not null");

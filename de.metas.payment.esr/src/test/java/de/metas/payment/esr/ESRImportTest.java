@@ -830,7 +830,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
-		esrImportLine.setC_BPartner(partner);
+		esrImportLine.setC_BPartner_ID(partner.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(esrImportLine);
 		lines.add(esrImportLine);
 
@@ -841,13 +841,13 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrImportLine);
 
 		// check import line
-		assertThat(esrImportLine.isValid(), is(false));
-		assertThat(esrImportLine.isProcessed(), is(false));
-		assertThat(esrImportLine.getC_BPartner(), notNullValue());
-		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
-		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
-		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.isProcessed()).isFalse();
+		assertThat(esrImportLine.getC_BPartner_ID()).isGreaterThan(0);
+		assertThat(esrImportLine.getESR_Payment_Action()).isNull();
+		assertThat(esrImportLine.getESR_Document_Status()).isEqualTo(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+		assertThat(esrImportLine.getImportErrorMsg()).isNull();
+		assertThat(esrImportLine.getMatchErrorMsg()).isNotNull();
 
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
@@ -961,7 +961,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		esrImportLine.setC_BPartner(partner);
+		esrImportLine.setC_BPartner_ID(partner.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(esrImportLine);
 		lines.add(esrImportLine);
 
@@ -1187,13 +1187,13 @@ public class ESRImportTest extends ESRTestBase
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
-		assertThat(esrImportLine.isValid(), is(false));
-		assertThat(esrImportLine.isProcessed(), is(false));
-		assertThat(esrImportLine.getC_Invoice(), nullValue());
-		assertThat(esrImportLine.getC_BPartner(), nullValue());
-		assertThat(esrImportLine.getC_Payment(), nullValue());
-		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.isProcessed()).isFalse();
+		assertThat(esrImportLine.getC_Invoice_ID()).isLessThanOrEqualTo(0);
+		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0);
+		assertThat(esrImportLine.getC_Payment_ID()).isLessThanOrEqualTo(0);
+		assertThat(esrImportLine.getImportErrorMsg()).isNull();
+		assertThat(esrImportLine.getMatchErrorMsg()).isNotNull();
 
 	}
 
@@ -1304,14 +1304,13 @@ public class ESRImportTest extends ESRTestBase
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
-		assertThat(esrImportLine.isValid(), is(false));
-		assertThat(esrImportLine.isProcessed(), is(false));
-		assertThat(esrImportLine.getC_Invoice(), nullValue());
-		assertThat(esrImportLine.getC_BPartner(), nullValue());
-		assertThat(esrImportLine.getC_Payment(), nullValue());
-		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
-
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.isProcessed()).isFalse();
+		assertThat(esrImportLine.getC_Invoice_ID()).isLessThanOrEqualTo(0);
+		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0);
+		assertThat(esrImportLine.getC_Payment_ID()).isLessThanOrEqualTo(0);
+		assertThat(esrImportLine.getImportErrorMsg()).isNull();
+		assertThat(esrImportLine.getMatchErrorMsg()).isNotNull();
 	}
 
 	/**

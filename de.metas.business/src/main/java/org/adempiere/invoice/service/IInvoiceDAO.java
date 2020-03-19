@@ -90,7 +90,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @param bPartnerID
 	 * @return the I_C_Invoice object if the value was found, null otherwise
 	 */
-	I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, int bPartnerID);
+	I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, BPartnerId bpartnerId);
 
 	/**
 	 * Gets all open invoices for the specific organization.<br>

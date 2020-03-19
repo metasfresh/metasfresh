@@ -129,16 +129,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat(esrImportLine.getC_BPartner())
+		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
-				.isEqualTo(bp);
+				.isEqualTo(bp.getC_BPartner_ID());
 	}
 
 	// task 09861
@@ -173,16 +173,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat(esrImportLine.getC_BPartner())
+		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
-				.isEqualTo(bp);
+				.isEqualTo(bp.getC_BPartner_ID());
 	}
 
 	// task 09861
@@ -216,16 +216,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat(esrImportLine.getC_BPartner())
+		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
-				.isEqualTo(bp);
+				.isEqualTo(bp.getC_BPartner_ID());
 	}
 
 	/**
@@ -262,15 +262,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		assertThat(esrImportLine.getC_BPartner()).isNull(); // guard. we assume that the matcher did not know how to find 'bp'
+		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		assertThat(esrImportLine.getC_BPartner())
+		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
-				.isEqualTo(bp);
+				.isEqualTo(bp.getC_BPartner_ID());
 	}
 
 	@Test
@@ -572,7 +572,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		// System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
 
-		assertThat(esrImportLine.getOrg()).isEqualTo(org);
+		assertThat(esrImportLine.getOrg_ID()).isEqualTo(org.getAD_Org_ID());
 	}
 
 	@Test
@@ -601,7 +601,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		partner.setAD_Org_ID(org.getAD_Org_ID());
 		save(partner);
 
-		esrImport.setAD_Org(org);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
@@ -637,8 +637,8 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.isESR_IsManual_ReferenceNo()).isTrue();
-		assertThat(esrImportLine.getAD_Org()).isEqualTo(org);
-		assertThat(esrImportLine.getC_BPartner()).isEqualTo(partner);
-		assertThat(esrImportLine.getC_Invoice()).isEqualTo(invoice);
+		assertThat(esrImportLine.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
+		assertThat(esrImportLine.getC_BPartner_ID()).isEqualTo(partner.getC_BPartner_ID());
+		assertThat(esrImportLine.getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
 	}
 }

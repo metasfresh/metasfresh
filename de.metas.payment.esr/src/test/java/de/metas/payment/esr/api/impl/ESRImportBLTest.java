@@ -1,10 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * de.metas.payment.esr
@@ -27,6 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -58,7 +57,6 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.money.CurrencyId;
@@ -162,7 +160,7 @@ public class ESRImportBLTest extends ESRTestBase
 		partner.setAD_Org_ID(org.getAD_Org_ID());
 		save(partner);
 
-		esrImport.setAD_Org(org);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 
 		save(esrImport);
 
@@ -201,7 +199,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		assertThat(esrImportLine.getAmount(), comparesEqualTo(FOURTY)); // guard
+		assertThat(esrImportLine.getAmount()).isEqualByComparingTo(FOURTY); // guard
 		// guards
 		assertThat(esrImportLine.getC_Invoice_ID()).as("Invoice not set correctly").isEqualTo(invoice.getC_Invoice_ID());
 		assertThat(esrImportLine.getESR_Invoice_Grandtotal()).as("Incorrect grandtotal").isEqualByComparingTo(HUNDRET);
@@ -271,7 +269,7 @@ public class ESRImportBLTest extends ESRTestBase
 		org.setValue("105");
 		save(org);
 
-		esrImport.setAD_Org(org);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
@@ -333,10 +331,8 @@ public class ESRImportBLTest extends ESRTestBase
 		// invoke the code under test
 		esrImportBL.setInvoice(esrImportLine, invoice2);
 
-		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
-		assertThat("Wrong message", esrImportLine.getMatchErrorMsg(),
-				is(Services.get(IMsgBL.class).getMsg(getCtx(), ESR_NO_HAS_WRONG_ORG_2P, new Object[] { org2.getValue(), esrImportLine.getAD_Org().getValue() })));
-
+		assertThat(esrImportLine.getImportErrorMsg()).isNull();
+		assertThat(esrImportLine.getMatchErrorMsg()).isEqualTo("de.metas.payment.esr.EsrNoHasWrongOrg_[org2, 105]");
 	}
 
 	/**
@@ -655,10 +651,10 @@ public class ESRImportBLTest extends ESRTestBase
 		if (lineNo1 > 0)
 		{
 			final I_ESR_ImportLine esrImportLine1 = newInstance(I_ESR_ImportLine.class);
-			esrImportLine1.setESR_Import(esrImport);
-			esrImportLine1.setC_BPartner(partner);
-			esrImportLine1.setC_Invoice(invoice);
-			esrImportLine1.setAD_Org(org);
+			esrImportLine1.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine1.setC_BPartner_ID(partner.getC_BPartner_ID());
+			esrImportLine1.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			esrImportLine1.setAD_Org_ID(org.getAD_Org_ID());
 			esrImportLine1.setAmount(ESR_LINE_1_AMOUNT);
 			esrImportLine1.setESR_Invoice_Openamt(invoiceGrandTotal);
 			esrImportLine1.setLineNo(lineNo1);
@@ -668,10 +664,10 @@ public class ESRImportBLTest extends ESRTestBase
 		if (lineNo2 > 0)
 		{
 			final I_ESR_ImportLine esrImportLine2 = newInstance(I_ESR_ImportLine.class);
-			esrImportLine2.setESR_Import(esrImport);
-			esrImportLine2.setC_BPartner(partner);
-			esrImportLine2.setC_Invoice(invoice);
-			esrImportLine2.setAD_Org(org);
+			esrImportLine2.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine2.setC_BPartner_ID(partner.getC_BPartner_ID());
+			esrImportLine2.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			esrImportLine2.setAD_Org_ID(org.getAD_Org_ID());
 			esrImportLine2.setAmount(new BigDecimal("31.5"));
 			esrImportLine2.setESR_Invoice_Openamt(invoiceGrandTotal);
 			esrImportLine2.setLineNo(lineNo2);
@@ -681,10 +677,10 @@ public class ESRImportBLTest extends ESRTestBase
 		if (lineNo3 > 0)
 		{
 			final I_ESR_ImportLine esrImportLine3 = newInstance(I_ESR_ImportLine.class);
-			esrImportLine3.setESR_Import(esrImport);
-			esrImportLine3.setC_BPartner(partner);
-			esrImportLine3.setC_Invoice(invoice);
-			esrImportLine3.setAD_Org(org);
+			esrImportLine3.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine3.setC_BPartner_ID(partner.getC_BPartner_ID());
+			esrImportLine3.setC_Invoice_ID(invoice.getC_Invoice_ID());
+			esrImportLine3.setAD_Org_ID(org.getAD_Org_ID());
 			esrImportLine3.setAmount(invoiceGrandTotal);
 			esrImportLine3.setESR_Invoice_Openamt(invoiceGrandTotal);
 			esrImportLine3.setLineNo(lineNo3);

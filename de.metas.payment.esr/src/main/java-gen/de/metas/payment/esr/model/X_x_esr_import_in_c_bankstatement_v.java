@@ -14,7 +14,7 @@ public class X_x_esr_import_in_c_bankstatement_v extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 310319026L;
+	private static final long serialVersionUID = -1545080102L;
 
     /** Standard Constructor */
     public X_x_esr_import_in_c_bankstatement_v (Properties ctx, int x_esr_import_in_c_bankstatement_v_ID, String trxName)
@@ -39,18 +39,6 @@ public class X_x_esr_import_in_c_bankstatement_v extends org.compiere.model.PO i
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BankStatement getC_BankStatement() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class);
-	}
-
-	@Override
-	public void setC_BankStatement(org.compiere.model.I_C_BankStatement C_BankStatement)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class, C_BankStatement);
-	}
 
 	/** Set Bankauszug.
 		@param C_BankStatement_ID 
@@ -97,7 +85,7 @@ public class X_x_esr_import_in_c_bankstatement_v extends org.compiere.model.PO i
 	}
 
 	@Override
-	public de.metas.payment.esr.model.I_ESR_Import getESR_Import() throws RuntimeException
+	public de.metas.payment.esr.model.I_ESR_Import getESR_Import()
 	{
 		return get_ValueAsPO(COLUMNNAME_ESR_Import_ID, de.metas.payment.esr.model.I_ESR_Import.class);
 	}
