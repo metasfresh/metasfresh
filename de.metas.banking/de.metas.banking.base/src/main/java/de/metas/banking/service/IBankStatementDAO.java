@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -45,7 +45,9 @@ public interface IBankStatementDAO extends ISingletonService
 {
 	List<I_C_BankStatementLine> retrieveLines(I_C_BankStatement bankStatement);
 
-	List<I_C_BankStatementLine_Ref> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
+	List<BankStatementLineReference> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
+
+	int deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
 
 	boolean hasLineReferences(BankStatementLineId bankStatementLineId);
 
@@ -93,7 +95,7 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
-	void save(@NonNull final de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef);
+	void save(@NonNull BankStatementLineReference lineRef);
 
 	BankStatementAndLineAndRefId createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);
 }

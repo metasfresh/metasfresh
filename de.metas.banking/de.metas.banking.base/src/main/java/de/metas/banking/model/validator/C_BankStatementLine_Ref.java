@@ -33,7 +33,6 @@ import org.compiere.model.ModelValidator;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.PaymentId;
@@ -90,28 +89,6 @@ public class C_BankStatementLine_Ref
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		recalculateStatementLineAmountsIfNotDisabled(bankStatementLineRef);
-	}
-
-	private final void recalculateStatementLineAmountsIfNotDisabled(final I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		//
-		// Skip updating the bank statement line if recalculation is disabled
-		final boolean recalculationDisabled = IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.getValue(bankStatementLineRef, false);
-		if (recalculationDisabled)
-		{
-			return;
-		}
-
-		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLineRef.getC_BankStatementLine_ID());
-		final I_C_BankStatementLine bankStatementLine = Services.get(IBankStatementDAO.class).getLineById(bankStatementLineId);
-
-		Services.get(IBankStatementBL.class).recalculateStatementLineAmounts(bankStatementLine);
-	}
-
 	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(@NonNull final I_C_BankStatementLine_Ref record)
 	{
 		return BankStatementAndLineAndRefId.ofRepoIds(
@@ -138,11 +115,5 @@ public class C_BankStatementLine_Ref
 		Services.get(IBankStatementListenerService.class)
 				.getListeners()
 				.onBankStatementLineRefVoiding(extractBankStatementAndLineAndRefId(bankStatementLineRef));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
-	protected void afterDelete(final I_C_BankStatementLine_Ref bankStatementLineRef)
-	{
-		recalculateStatementLineAmountsIfNotDisabled(bankStatementLineRef);
 	}
 }

@@ -6,11 +6,12 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
@@ -81,19 +82,16 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 			bankStatementLine.setC_Payment(null);
 			InterfaceWrapperHelper.save(bankStatementLine);
 		}
+		
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 		// Delete references
-		for (final I_C_BankStatementLine_Ref lineRef : bankStatementDAO.retrieveLineReferences(bankStatementLine))
+		for (final BankStatementLineReference lineRef : bankStatementDAO.retrieveLineReferences(bankStatementLine))
 		{
-			// make sure we are not changing the bank statement line amounts when we will delete the line reference
-			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(lineRef, true);
-
-			final I_C_Payment payment = lineRef.getC_Payment();
-			if (payment != null)
+			if (lineRef.getPaymentId() != null)
 			{
-				payment.setIsReconciled(false);
-				InterfaceWrapperHelper.save(payment);
-				addLog("@C_Payment_ID@ " + payment.getDocumentNo());
+				paymentBL.markNotReconciled(lineRef.getPaymentId());
+				addLog("@C_Payment_ID@ " + lineRef.getPaymentId());
 			}
 
 			InterfaceWrapperHelper.delete(lineRef);

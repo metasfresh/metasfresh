@@ -43,18 +43,21 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -112,12 +115,6 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void save(final @NonNull de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef)
-	{
-		InterfaceWrapperHelper.save(lineOrRef);
-	}
-
-	@Override
 	public List<I_C_BankStatementLine> retrieveLines(final I_C_BankStatement bankStatement)
 	{
 		return retrieveLinesQuery(bankStatement)
@@ -139,11 +136,32 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public List<I_C_BankStatementLine_Ref> retrieveLineReferences(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	public List<BankStatementLineReference> retrieveLineReferences(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
 	{
 		return retrieveLineReferencesQuery(bankStatementLine)
 				.create()
-				.list(I_C_BankStatementLine_Ref.class);
+				.stream(I_C_BankStatementLine_Ref.class)
+				.map(record -> toBankStatementLineReference(record))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static BankStatementLineReference toBankStatementLineReference(final I_C_BankStatementLine_Ref record)
+	{
+		return BankStatementLineReference.builder()
+				.id(extractBankStatementAndLineAndRefId(record))
+				.lineNo(record.getLine())
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.paymentId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
+				.trxAmt(Money.of(record.getTrxAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.build();
+	}
+
+	@Override
+	public int deleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		return retrieveLineReferencesQuery(bankStatementLineId)
+				.create()
+				.delete();
 	}
 
 	@Override
@@ -157,7 +175,7 @@ public class BankStatementDAO implements IBankStatementDAO
 				.anyMatch();
 	}
 
-	public IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	private IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final I_C_BankStatementLine bankStatementLine)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BankStatementLine_Ref.class, bankStatementLine)
@@ -167,6 +185,16 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addColumn(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
 				.addColumn(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID)
 				.endOrderBy();
+	}
+
+	private IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final BankStatementLineId bankStatementLineId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID);
 	}
 
 	@Override
@@ -241,7 +269,6 @@ public class BankStatementDAO implements IBankStatementDAO
 	public BankStatementAndLineAndRefId createBankStatementLineRef(@NonNull final BankStatementLineRefCreateRequest request)
 	{
 		final I_C_BankStatementLine_Ref record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
-		IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(record, true); // disable recalculation. we will do it at the end
 
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());
@@ -259,10 +286,38 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setWriteOffAmt(BigDecimal.ZERO);
 		record.setIsOverUnderPayment(false);
 		record.setOverUnderAmt(BigDecimal.ZERO);
-
-		save(record);
+		saveRecord(record);
 
 		return extractBankStatementAndLineAndRefId(record);
+	}
+
+	@Override
+	public void save(@NonNull final BankStatementLineReference lineRef)
+	{
+		final I_C_BankStatementLine_Ref record = load(lineRef.getId().getBankStatementLineRefId(), I_C_BankStatementLine_Ref.class);
+
+		record.setAD_Org_ID(lineRef.getOrgId().getRepoId());
+		record.setC_BankStatement_ID(lineRef.getId().getBankStatementId().getRepoId());
+		record.setC_BankStatementLine_ID(lineRef.getId().getBankStatementLineId().getRepoId());
+		record.setLine(lineRef.getLineNo());
+
+		record.setC_BPartner_ID(BPartnerId.toRepoId(lineRef.getBpartnerId()));
+		record.setC_Payment_ID(PaymentId.toRepoId(lineRef.getPaymentId()));
+		record.setC_Invoice_ID(InvoiceId.toRepoId(lineRef.getInvoiceId()));
+
+		// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
+		record.setC_Currency_ID(lineRef.getTrxAmt().getCurrencyId().getRepoId());
+		record.setTrxAmt(lineRef.getTrxAmt().toBigDecimal());
+		record.setDiscountAmt(BigDecimal.ZERO);
+		record.setWriteOffAmt(BigDecimal.ZERO);
+		record.setIsOverUnderPayment(false);
+		record.setOverUnderAmt(BigDecimal.ZERO);
+		saveRecord(record);
+	}
+
+	private void saveRecord(final @NonNull de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef)
+	{
+		InterfaceWrapperHelper.saveRecord(lineOrRef);
 	}
 
 	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(@NonNull final I_C_BankStatementLine_Ref record)

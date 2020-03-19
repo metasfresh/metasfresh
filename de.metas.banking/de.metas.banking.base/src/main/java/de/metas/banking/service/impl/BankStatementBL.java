@@ -1,22 +1,21 @@
 package de.metas.banking.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -42,45 +41,38 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyBL;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
-import de.metas.util.Check;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
 	public void handleAfterPrepare(final I_C_BankStatement bankStatement)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
 		for (final I_C_BankStatementLine line : bankStatementPO.getLines(false))
 		{
 			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 			{
 				// Payment in C_BankStatementLine_Ref are mandatory
-				for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
+				for (final BankStatementLineReference refLine : bankStatementDAO.retrieveLineReferences(line))
 				{
-					if (refLine.getC_Payment_ID() <= 0)
+					if (refLine.getPaymentId() == null)
 					{
 						// TODO -> AD_Message
 						throw new AdempiereException("Missing payment in reference line "
-								+ refLine.getLine() + " of line "
+								+ refLine.getLineNo() + " of line "
 								+ line.getLine());
 					}
 				}
@@ -91,7 +83,6 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public void handleAfterComplete(final I_C_BankStatement bankStatement)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 
 		final MBankStatement bankStatementPO = LegacyAdapters.convertToPO(bankStatement);
@@ -108,15 +99,13 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
 		{
-			for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
-			{
-				if (refLine.getC_Payment_ID() > 0)
-				{
-					final I_C_Payment payment = refLine.getC_Payment();
-					payment.setIsReconciled(true);
-					InterfaceWrapperHelper.save(payment);
-				}
-			}
+			final ImmutableSet<PaymentId> paymentIds = bankStatementDAO.retrieveLineReferences(line)
+					.stream()
+					.map(BankStatementLineReference::getPaymentId)
+					.filter(Objects::nonNull)
+					.collect(ImmutableSet.toImmutableSet());
+
+			paymentBL.markReconciled(paymentIds);
 		}
 	}
 
@@ -137,120 +126,26 @@ public class BankStatementBL implements IBankStatementBL
 			{
 				// NOTE: for line, the payment is unlinked in MBankStatement.voidIt()
 
-				for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(line))
+				final ArrayList<PaymentId> paymentIds = new ArrayList<>();
+
+				for (final BankStatementLineReference lineRef : bankStatementDAO.retrieveLineReferences(line))
 				{
 					//
 					// Unlink payment
-					if (refLine.getC_Payment_ID() > 0)
+					final PaymentId paymentId = lineRef.getPaymentId();
+					if (paymentId != null)
 					{
-						final I_C_Payment payment = refLine.getC_Payment();
-						payment.setIsReconciled(false);
-						InterfaceWrapperHelper.save(payment);
-						refLine.setC_Payment(null);
+						paymentIds.add(paymentId);
 
-						InterfaceWrapperHelper.save(refLine);
+						lineRef.setPaymentId(null);
+						bankStatementDAO.save(lineRef);
 					}
 				}
+
+				paymentBL.markNotReconciled(paymentIds);
 			}
 		}
 
-	}
-
-	@Override
-	public void recalculateStatementLineAmounts(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
-	{
-		if (!bankStatementLine.isMultiplePaymentOrInvoice())
-		{
-			return;
-		}
-
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-
-		//
-		// Aggregated amounts from reference lines:
-		BigDecimal totalStmtAmt = BigDecimal.ZERO;
-		BigDecimal totalTrxAmt = BigDecimal.ZERO;
-		BigDecimal totalDiscountAmt = BigDecimal.ZERO;
-		BigDecimal totalWriteOffAmt = BigDecimal.ZERO;
-		BigDecimal totalOverUnderAmt = BigDecimal.ZERO;
-
-		//
-		// Iterate all reference lines and build up the aggregated amounts
-		for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(bankStatementLine))
-		{
-			if (refLine.getC_Currency_ID() == bankStatementLine.getC_Currency_ID())
-			{
-				totalStmtAmt = totalStmtAmt.add(refLine.getTrxAmt());
-				totalTrxAmt = totalTrxAmt.add(refLine.getTrxAmt());
-				totalDiscountAmt = totalDiscountAmt.add(refLine.getDiscountAmt());
-				totalWriteOffAmt = totalWriteOffAmt.add(refLine.getWriteOffAmt());
-				totalOverUnderAmt = totalOverUnderAmt.add(refLine.getOverUnderAmt());
-			}
-			else
-			{
-				Check.assume(refLine.getC_Invoice_ID() > 0, "@NotFound@ @C_Invoice_ID@");
-				final I_C_Invoice inv = refLine.getC_Invoice();
-
-				final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						TimeUtil.asLocalDate(bankStatementLine.getDateAcct()), // ConvDate,
-						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
-						ClientId.ofRepoId(bankStatementLine.getAD_Client_ID()), // AD_Client_ID
-						OrgId.ofRepoId(bankStatementLine.getAD_Org_ID()) // AD_Org_ID
-				);
-
-				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
-				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bankStatementLine.getC_Currency_ID());
-
-				final BigDecimal trxAmt = currencyConversionBL.convert(conversionCtx,
-						refLine.getTrxAmt(),
-						refLineCurrencyId, // CurFrom_ID,
-						bslCurrencyId) // CurTo_ID
-						.getAmount();
-				final BigDecimal discountAmt = currencyConversionBL.convert(conversionCtx,
-						refLine.getDiscountAmt(),
-						refLineCurrencyId, // CurFrom_ID,
-						bslCurrencyId) // CurTo_ID
-						.getAmount();
-				final BigDecimal writeOffAmt = currencyConversionBL.convert(conversionCtx,
-						refLine.getWriteOffAmt(),
-						refLineCurrencyId, // CurFrom_ID,
-						bslCurrencyId) // CurTo_ID
-						.getAmount();
-				final BigDecimal overUnderAmt = currencyConversionBL.convert(conversionCtx,
-						refLine.getOverUnderAmt(),
-						refLineCurrencyId, // CurFrom_ID,
-						bslCurrencyId) // CurTo_ID
-						.getAmount();
-
-				totalStmtAmt = totalStmtAmt.add(trxAmt);
-				totalTrxAmt = totalTrxAmt.add(trxAmt);
-				totalDiscountAmt = totalDiscountAmt.add(discountAmt);
-				totalWriteOffAmt = totalWriteOffAmt.add(writeOffAmt);
-				totalOverUnderAmt = totalOverUnderAmt.add(overUnderAmt);
-			}
-		}
-
-		//
-		// Update the bank statement line with calculated aggregated amounts
-		if (logger.isDebugEnabled())
-		{
-			logger.debug(" stmtAmt: " + totalStmtAmt + " discountAmt: " + totalDiscountAmt + " writeOffAmt: " + totalWriteOffAmt + " overUnderAmt: " + totalOverUnderAmt);
-		}
-		bankStatementLine.setStmtAmt(totalStmtAmt);
-		bankStatementLine.setTrxAmt(totalTrxAmt);
-		bankStatementLine.setDiscountAmt(totalDiscountAmt);
-		bankStatementLine.setWriteOffAmt(totalWriteOffAmt);
-		bankStatementLine.setOverUnderAmt(totalOverUnderAmt);
-		if (totalOverUnderAmt.signum() != 0)
-		{
-			bankStatementLine.setIsOverUnderPayment(true);
-		}
-		else
-		{
-			bankStatementLine.setIsOverUnderPayment(false);
-		}
-		InterfaceWrapperHelper.save(bankStatementLine);
 	}
 
 	@Override

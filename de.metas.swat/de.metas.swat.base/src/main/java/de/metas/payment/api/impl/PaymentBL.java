@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -31,6 +32,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.bpartner.BPGroupId;
@@ -483,4 +486,43 @@ public class PaymentBL implements IPaymentBL
 
 		return allocHdrRef.getValue();
 	}
+
+	@Override
+	public void markNotReconciled(@NonNull final PaymentId paymentId)
+	{
+		markNotReconciled(ImmutableSet.of(paymentId));
+	}
+
+	@Override
+	public void markNotReconciled(@NonNull final Collection<PaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
+		for (final I_C_Payment payment : payments)
+		{
+			payment.setIsReconciled(false);
+			paymentDAO.save(payment);
+		}
+	}
+
+	@Override
+	public void markReconciled(@NonNull final Collection<PaymentId> paymentIds)
+	{
+		if (paymentIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
+		for (final I_C_Payment payment : payments)
+		{
+			payment.setIsReconciled(true);
+			paymentDAO.save(payment);
+		}
+	}
+
 }

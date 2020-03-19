@@ -27,14 +27,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.PaymentId;
@@ -96,10 +94,7 @@ public class C_BankStatementLine
 
 		//
 		// Delete all bank statement line references
-		for (final I_C_BankStatementLine_Ref lineRef : Services.get(IBankStatementDAO.class).retrieveLineReferences(bankStatementLine))
-		{
-			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(lineRef, true);
-			InterfaceWrapperHelper.delete(lineRef);
-		}
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
+		Services.get(IBankStatementDAO.class).deleteReferences(bankStatementLineId);
 	}
 }
