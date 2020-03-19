@@ -161,8 +161,7 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public void recalculateStatementLineAmounts(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
 	{
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(bankStatementLine, I_C_BankStatementLine.class);
-		if (!bsl.isMultiplePaymentOrInvoice())
+		if (!bankStatementLine.isMultiplePaymentOrInvoice())
 		{
 			return;
 		}
@@ -180,9 +179,9 @@ public class BankStatementBL implements IBankStatementBL
 
 		//
 		// Iterate all reference lines and build up the aggregated amounts
-		for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(bsl))
+		for (final I_C_BankStatementLine_Ref refLine : bankStatementDAO.retrieveLineReferences(bankStatementLine))
 		{
-			if (refLine.getC_Currency_ID() == bsl.getC_Currency_ID())
+			if (refLine.getC_Currency_ID() == bankStatementLine.getC_Currency_ID())
 			{
 				totalStmtAmt = totalStmtAmt.add(refLine.getTrxAmt());
 				totalTrxAmt = totalTrxAmt.add(refLine.getTrxAmt());
@@ -196,14 +195,14 @@ public class BankStatementBL implements IBankStatementBL
 				final I_C_Invoice inv = refLine.getC_Invoice();
 
 				final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						TimeUtil.asLocalDate(bsl.getDateAcct()), // ConvDate,
+						TimeUtil.asLocalDate(bankStatementLine.getDateAcct()), // ConvDate,
 						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
-						ClientId.ofRepoId(bsl.getAD_Client_ID()), // AD_Client_ID
-						OrgId.ofRepoId(bsl.getAD_Org_ID()) // AD_Org_ID
+						ClientId.ofRepoId(bankStatementLine.getAD_Client_ID()), // AD_Client_ID
+						OrgId.ofRepoId(bankStatementLine.getAD_Org_ID()) // AD_Org_ID
 				);
 
 				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
-				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
+				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bankStatementLine.getC_Currency_ID());
 
 				final BigDecimal trxAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getTrxAmt(),
@@ -240,20 +239,20 @@ public class BankStatementBL implements IBankStatementBL
 		{
 			logger.debug(" stmtAmt: " + totalStmtAmt + " discountAmt: " + totalDiscountAmt + " writeOffAmt: " + totalWriteOffAmt + " overUnderAmt: " + totalOverUnderAmt);
 		}
-		bsl.setStmtAmt(totalStmtAmt);
-		bsl.setTrxAmt(totalTrxAmt);
-		bsl.setDiscountAmt(totalDiscountAmt);
-		bsl.setWriteOffAmt(totalWriteOffAmt);
-		bsl.setOverUnderAmt(totalOverUnderAmt);
+		bankStatementLine.setStmtAmt(totalStmtAmt);
+		bankStatementLine.setTrxAmt(totalTrxAmt);
+		bankStatementLine.setDiscountAmt(totalDiscountAmt);
+		bankStatementLine.setWriteOffAmt(totalWriteOffAmt);
+		bankStatementLine.setOverUnderAmt(totalOverUnderAmt);
 		if (totalOverUnderAmt.signum() != 0)
 		{
-			bsl.setIsOverUnderPayment(true);
+			bankStatementLine.setIsOverUnderPayment(true);
 		}
 		else
 		{
-			bsl.setIsOverUnderPayment(false);
+			bankStatementLine.setIsOverUnderPayment(false);
 		}
-		InterfaceWrapperHelper.save(bsl);
+		InterfaceWrapperHelper.save(bankStatementLine);
 	}
 
 	@Override
