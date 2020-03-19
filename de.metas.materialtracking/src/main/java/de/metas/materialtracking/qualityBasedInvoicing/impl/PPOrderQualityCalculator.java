@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.inout.IInOutBL;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -181,8 +182,8 @@ public class PPOrderQualityCalculator
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
-		Check.assumeNotNull(product, "product not null");
 		final int receivedProductId = product.getM_Product_ID();
 
 		final I_C_UOM productUOM = uomDAO.getById(product.getC_UOM_ID());
@@ -218,7 +219,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			final BigDecimal qty = inoutLine.getMovementQty();
+			final BigDecimal qty = inOutBL.negateIfReturnMovmenType(inoutLine, inoutLine.getMovementQty());
 			final BigDecimal qtyConv = uomConversionBL.convertQty(uomConversionCtx, qty, productUOM, uomTo);
 			qtyReceivedTotal = qtyReceivedTotal.add(qtyConv);
 		}
