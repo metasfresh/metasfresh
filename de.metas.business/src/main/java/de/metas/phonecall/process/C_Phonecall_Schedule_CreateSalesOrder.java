@@ -1,7 +1,7 @@
 package de.metas.phonecall.process;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -45,7 +45,7 @@ import de.metas.util.Services;
 
 public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implements IProcessPrecondition
 {
-	private final PhonecallScheduleRepository phonecallSchedueRepo = Adempiere.getBean(PhonecallScheduleRepository.class);
+	private final PhonecallScheduleRepository phonecallSchedueRepo = SpringContextHolder.instance.getBean(PhonecallScheduleRepository.class);
 	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -64,7 +64,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 
 		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 
-		final I_C_BPartner partner = bpartnerDAO.getById(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId());
+		final I_C_BPartner partnerRecord = bpartnerDAO.getById(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId());
 
 		final I_C_Order draftOrder = OrderFactory.newSalesOrder()
 				.billBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId().getRepoId(),
@@ -74,7 +74,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 						phonecallSchedule.getBpartnerAndLocationId().getRepoId(),
 						phonecallSchedule.getContactId().getRepoId())
 				.docType(docTypeId)
-				.paymentTermId(partner.getC_PaymentTerm_ID())
+				.paymentTermId(partnerRecord.getC_PaymentTerm_ID())
 				.createDraftOrderHeader();
 
 		final String adWindowId = null; // auto
