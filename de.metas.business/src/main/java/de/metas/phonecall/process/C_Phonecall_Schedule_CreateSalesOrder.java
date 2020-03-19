@@ -46,8 +46,8 @@ import de.metas.util.Services;
 public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implements IProcessPrecondition
 {
 	private final PhonecallScheduleRepository phonecallSchedueRepo = SpringContextHolder.instance.getBean(PhonecallScheduleRepository.class);
-	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
