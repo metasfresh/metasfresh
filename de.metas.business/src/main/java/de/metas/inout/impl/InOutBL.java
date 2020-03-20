@@ -319,6 +319,19 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	}
 
 	@Override
+	public BigDecimal negateIfReturnMovmenType(
+			@NonNull final I_M_InOutLine iol,
+			@NonNull final BigDecimal qty)
+	{
+		final I_M_InOut inoutRecord = InterfaceWrapperHelper.load(iol.getM_InOut_ID(), I_M_InOut.class);
+		if(isReturnMovementType(inoutRecord.getMovementType()))
+		{
+			return qty.negate();
+		}
+		return qty;
+	}
+
+	@Override
 	public BigDecimal getEffectiveStorageChange(final I_M_InOutLine iol)
 	{
 

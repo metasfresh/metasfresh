@@ -1,7 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -32,7 +30,12 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
 import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutBL;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
@@ -43,6 +46,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,14 +54,16 @@ import lombok.NonNull;
 /**
  * {@link IVendorReceipt} implementation which takes the values from the wrapped {@link I_M_InOutLine}.
  *
- * @author tsa
- *
  */
 /* package */class InOutLineAsVendorReceipt implements IVendorReceipt<I_M_InOutLine>
 {
+
+	private static final Logger logger = LogManager.getLogger(InOutLineAsVendorReceipt.class);
+
 	// services
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHandlingUnitsInfoFactory handlingUnitsInfoFactory = Services.get(IHandlingUnitsInfoFactory.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	private final List<I_M_InOutLine> inOutLines = new ArrayList<>();
 
@@ -69,9 +75,8 @@ import lombok.NonNull;
 	private IHandlingUnitsInfo _handlingUnitsInfo = null;
 	private I_M_PriceList_Version plv;
 
-	public InOutLineAsVendorReceipt(final I_M_Product vendorProduct)
+	public InOutLineAsVendorReceipt(@NonNull final I_M_Product vendorProduct)
 	{
-		Check.assumeNotNull(vendorProduct, "Param 'vendorProduct' is not null");
 		this._product = vendorProduct;
 	}
 
@@ -179,24 +184,30 @@ import lombok.NonNull;
 		BigDecimal qtyReceivedTotal = BigDecimal.ZERO;
 		IHandlingUnitsInfo handlingUnitsInfoTotal = null;
 
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		for (final I_M_InOutLine inoutLine : inOutLines)
 		{
 			if (inoutLine.getM_Product_ID() != productId)
 			{
-				Loggables.addLog("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
+				loggable.addLog("Not counting {} because its M_Product_ID={} is not the ID of product {}", new Object[] { inoutLine, inoutLine.getM_Product_ID(), _product });
 				continue;
 			}
+
+			final I_M_InOut inOutRecord = inoutLine.getM_InOut();
 
 			// task 09117: we only may count iol that are not reversed, in progress of otherwise "not relevant"
 			final I_M_InOut inout = inoutLine.getM_InOut();
 			final DocStatus inoutDocStatus = DocStatus.ofCode(inout.getDocStatus());
-			if(!inoutDocStatus.isCompletedOrClosed())
+			if (!inoutDocStatus.isCompletedOrClosed())
 			{
-				Loggables.addLog("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutDocStatus });
+				loggable.addLog("Not counting {} because its M_InOut has docstatus {}", inoutLine, inOutRecord.getDocStatus());
 				continue;
 			}
 
-			final BigDecimal qtyReceived = inoutLine.getMovementQty();
+			final BigDecimal qtyReceived = inoutBL.negateIfReturnMovmenType(inoutLine, inoutLine.getMovementQty());
+			logger.debug("M_InOut_ID={} has MovementType={}; -> proceeding with qtyReceived={}", inOutRecord.getM_InOut_ID(), inOutRecord.getMovementType(), qtyReceived);
+
 			final BigDecimal qtyReceivedConv = uomConversionBL.convertQty(uomConversionCtx, qtyReceived, productUomId, qtyReceivedTotalUomId);
 			qtyReceivedTotal = qtyReceivedTotal.add(qtyReceivedConv);
 
