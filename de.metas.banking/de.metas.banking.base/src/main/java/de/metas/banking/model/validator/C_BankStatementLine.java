@@ -30,10 +30,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 
@@ -41,12 +39,9 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 @Interceptor(I_C_BankStatementLine.class)
@@ -85,38 +80,6 @@ public class C_BankStatementLine
 		final BigDecimal chargeAmt = bankStatementLine.getStmtAmt()
 				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(bankStatementLine));
 		bankStatementLine.setChargeAmt(chargeAmt);
-
-		//
-		if (changeType.isNew() || InterfaceWrapperHelper.isValueChanged(bankStatementLine, I_C_BankStatementLine.COLUMNNAME_C_Payment_ID))
-		{
-			updatePaymentDependentFields(bankStatementLine, changeType);
-		}
-	}
-
-	private void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
-	{
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-
-		//
-		// Do nothing if we are dealing with a new line which does not have an C_Payment_ID
-		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
-		if (changeType.isNew() && paymentId == null)
-		{
-			return;
-		}
-
-		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
-		if (paymentId != null)
-		{
-			final I_C_Payment payment = paymentBL.getById(paymentId);
-			bankStatmentPaymentBL.setC_Payment(bankStatementLine, payment);
-
-			paymentBL.markReconciled(payment);
-		}
-		else
-		{
-			bankStatmentPaymentBL.setC_Payment(bankStatementLine, null);
-		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

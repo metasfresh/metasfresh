@@ -66,8 +66,9 @@ public class CashStatementBL implements ICashStatementBL
 		final BigDecimal amt = payment.isReceipt()
 				? payment.getPayAmt()
 				: payment.getPayAmt().negate();
-		bsl.setTrxAmt(amt);
+
 		bsl.setStmtAmt(amt);
+		bsl.setTrxAmt(amt);
 
 		bsl.setProcessed(true);
 		bankStatementDAO.save(bsl);

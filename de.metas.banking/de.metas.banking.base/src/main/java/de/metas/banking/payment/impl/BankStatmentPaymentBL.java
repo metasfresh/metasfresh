@@ -2,10 +2,8 @@ package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 
-import javax.annotation.Nullable;
-
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -40,6 +38,7 @@ import de.metas.banking.api.BankAccountId;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileResult;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
@@ -56,168 +55,141 @@ import lombok.NonNull;
 
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
-	public void setC_Payment(@NonNull final I_C_BankStatementLine line, @Nullable final I_C_Payment payment)
+	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(
+			@NonNull final I_C_BankStatement bankStatement,
+			@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
-		if (payment == null)
+		// Bank Statement Line is already reconciled => do nothing
+		if (bankStatementBL.isReconciled(bankStatementLine))
 		{
-			line.setC_Payment_ID(-1);
-			line.setTrxAmt(BigDecimal.ZERO);
-			line.setDiscountAmt(BigDecimal.ZERO);
-			line.setWriteOffAmt(BigDecimal.ZERO);
-			line.setIsOverUnderPayment(false);
-			line.setOverUnderAmt(BigDecimal.ZERO);
+			return;
+		}
+
+		// if BPartner is not set, we cannot match it or generate a new payment
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bankStatementLine.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final Money statementAmt = extractStatementAmt(bankStatementLine);
+		final boolean expectInboundPayment = statementAmt.signum() >= 0;
+		final Money expectedPaymentAmount = statementAmt.negateIf(!expectInboundPayment);
+
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final ImmutableSet<PaymentId> matchingPayments = paymentDAO.retrieveAllMatchingPayments(expectInboundPayment, bpartnerId, expectedPaymentAmount);
+
+		if (matchingPayments.size() > 1)
+		{
+			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
+			// The user must fix this case manually by choosing the correct Payment
+		}
+		else if (matchingPayments.size() == 1)
+		{
+			final PaymentId paymentId = matchingPayments.iterator().next();
+			linkSinglePayment(bankStatement, bankStatementLine, paymentId);
 		}
 		else
 		{
-			line.setC_Payment_ID(payment.getC_Payment_ID());
-			line.setC_Currency_ID(payment.getC_Currency_ID());
-			line.setC_BPartner_ID(payment.getC_BPartner_ID());
-			line.setC_Invoice_ID(payment.getC_Invoice_ID());
-
-			//
-			BigDecimal multiplier = BigDecimal.ONE;
-			if (!payment.isReceipt())
-			{
-				multiplier = multiplier.negate();
-			}
-
-			line.setTrxAmt(payment.getPayAmt().multiply(multiplier));
-			line.setDiscountAmt(payment.getDiscountAmt().multiply(multiplier));
-			line.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
-			line.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
-			line.setIsOverUnderPayment(payment.isOverUnderPayment());
+			createSinglePaymentAndLink(bankStatement, bankStatementLine);
 		}
+	}
+
+	private static Money extractStatementAmt(final I_C_BankStatementLine line)
+	{
+		return Money.of(line.getStmtAmt(), CurrencyId.ofRepoId(line.getC_Currency_ID()));
 	}
 
 	@Override
-	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(@NonNull final I_C_BankStatement bankStatement, @NonNull final I_C_BankStatementLine line)
+	public void createSinglePaymentAndLink(final I_C_BankStatement bankStatement, final I_C_BankStatementLine bankStatementLine)
 	{
-		final boolean manualActionRequired = findAndLinkPaymentToBankStatementLineIfPossible(line);
-
-		if (!manualActionRequired)
-		{
-			final PaymentId paymentIdToSet = null;
-			setOrCreateAndLinkPaymentToBankStatementLine(bankStatement, line, paymentIdToSet);
-		}
+		final I_C_Payment payment = createPayment(bankStatement, bankStatementLine);
+		linkSinglePayment(bankStatement, bankStatementLine, payment);
 	}
 
-	/**
-	 * @return true if the automatic flow should STOP as manual action is required; false if the automatic flow should continue
-	 */
-	private boolean findAndLinkPaymentToBankStatementLineIfPossible(final I_C_BankStatementLine line)
-	{
-		// a payment is already linked
-		if (line.getC_Payment_ID() > 0)
-		{
-			return true;
-		}
-		if (line.getC_BPartner_ID() <= 0)
-		{
-			return true;
-		}
-
-		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
-		final BigDecimal expectedPaymentAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
-
-		final Money money = Money.of(expectedPaymentAmount, CurrencyId.ofRepoId(line.getC_Currency_ID()));
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
-		final ImmutableSet<PaymentId> possiblePayments = Services.get(IPaymentDAO.class).retrieveAllMatchingPayments(isReceipt, bPartnerId, money);
-
-		// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
-		// The user must fix this case manually by choosing the correct Payment
-		if (possiblePayments.size() > 1)
-		{
-			return true;
-		}
-
-		if (possiblePayments.size() == 1)
-		{
-			line.setC_Payment_ID(possiblePayments.iterator().next().getRepoId());
-			bankStatementDAO.save(line);
-		}
-		return false;
-	}
-
-	@Override
-	public Optional<PaymentId> setOrCreateAndLinkPaymentToBankStatementLine(
+	private I_C_Payment createPayment(
 			@NonNull final I_C_BankStatement bankStatement,
-			@NonNull final I_C_BankStatementLine line,
-			@Nullable final PaymentId paymentIdToSet)
+			@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
-		// a payment is already linked
-		if (line.getC_Payment_ID() > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bankStatementLine.getC_BPartner_ID());
+		if (bpartnerId == null)
 		{
-			return Optional.of(PaymentId.ofRepoId(line.getC_Payment_ID()));
+			throw new AdempiereException("Bank statement line's BPartner is not set");
 		}
 
-		if (paymentIdToSet != null)
-		{
-			final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-
-			final I_C_Payment payment = paymentDAO.getById(paymentIdToSet);
-			setC_Payment(line, payment);
-
-			bankStatementDAO.save(line);
-			paymentDAO.save(payment);
-			return Optional.of(paymentIdToSet);
-		}
-
-		if (line.getC_BPartner_ID() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(line.getC_BPartner_ID());
-		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
-		final LocalDate statementLineDate = TimeUtil.asLocalDate(line.getStatementLineDate());
+		// final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
+		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
+		final LocalDate statementLineDate = TimeUtil.asLocalDate(bankStatementLine.getStatementLineDate());
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
-		final boolean isReceipt = line.getStmtAmt().signum() >= 0;
-		final BigDecimal payAmount = isReceipt ? line.getStmtAmt() : line.getStmtAmt().negate();
-
-		final I_C_Payment createdPayment = createAndCompletePayment(orgBankAccountId, statementLineDate, payAmount, isReceipt, orgId, bpartnerId, currencyId);
-		setC_Payment(line, createdPayment);
-
-		bankStatementDAO.save(line);
-		return Optional.of(PaymentId.ofRepoId(createdPayment.getC_Payment_ID()));
-	}
-
-	private I_C_Payment createAndCompletePayment(
-			@NonNull final BankAccountId orgBankAccountId,
-			@NonNull final LocalDate dateAcct,
-			@NonNull final BigDecimal payAmt,
-			final boolean isReceipt,
-			@NonNull final OrgId adOrgId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final CurrencyId currencyId)
-	{
-		final DefaultPaymentBuilder paymentBuilder;
+		final Money statementAmt = extractStatementAmt(bankStatementLine);
+		final boolean inboundPayment = statementAmt.signum() >= 0;
+		final Money payAmount = statementAmt.negateIf(!inboundPayment);
 
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-		if (isReceipt)
-		{
-			paymentBuilder = paymentBL.newInboundReceiptBuilder();
-		}
-		else
-		{
-			paymentBuilder = paymentBL.newOutboundPaymentBuilder();
-		}
+
+		final DefaultPaymentBuilder paymentBuilder = inboundPayment
+				? paymentBL.newInboundReceiptBuilder()
+				: paymentBL.newOutboundPaymentBuilder();
 
 		return paymentBuilder
-				.adOrgId(adOrgId)
+				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
 				.bpBankAccountId(orgBankAccountId)
-				.currencyId(currencyId)
-				.payAmt(payAmt)
-				.dateAcct(dateAcct)
-				.dateTrx(dateAcct)
-				.description("Automatically created when BankStatement was completed.")
-				.tenderType(TenderType.DirectDeposit)
+				.currencyId(payAmount.getCurrencyId())
+				.payAmt(payAmount.toBigDecimal())
+				.dateAcct(statementLineDate)
+				.dateTrx(statementLineDate)
+				.tenderType(TenderType.Check)
 				.createAndProcess();
+	}
+
+	@Override
+	public void linkSinglePayment(
+			@NonNull final I_C_BankStatement bankStatement,
+			@NonNull final I_C_BankStatementLine bankStatementLine,
+			@NonNull final PaymentId paymentId)
+	{
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final I_C_Payment payment = paymentDAO.getById(paymentId);
+		linkSinglePayment(bankStatement, bankStatementLine, payment);
+	}
+
+	private void linkSinglePayment(
+			@NonNull final I_C_BankStatement bankStatement,
+			@NonNull final I_C_BankStatementLine bankStatementLine,
+			@NonNull final I_C_Payment payment)
+	{
+		// a payment is already linked
+		if (bankStatementBL.isReconciled(bankStatementLine))
+		{
+			throw new AdempiereException("Linking payment to an already reconciled bank statement line is not allowed");
+		}
+
+		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
+		bankStatementLine.setIsMultiplePayment(false);
+		bankStatementLine.setC_Payment_ID(payment.getC_Payment_ID());
+		bankStatementLine.setC_Currency_ID(payment.getC_Currency_ID());
+		bankStatementLine.setC_BPartner_ID(payment.getC_BPartner_ID());
+		bankStatementLine.setC_Invoice_ID(payment.getC_Invoice_ID());
+
+		//
+		final BigDecimal negateIfOutboundPayment = payment.isReceipt()
+				? BigDecimal.ONE
+				: BigDecimal.ONE.negate();
+
+		// NOTE: don't touch the StmtAmt!
+		bankStatementLine.setTrxAmt(payment.getPayAmt().multiply(negateIfOutboundPayment));
+		bankStatementLine.setDiscountAmt(payment.getDiscountAmt().multiply(negateIfOutboundPayment));
+		bankStatementLine.setWriteOffAmt(payment.getWriteOffAmt().multiply(negateIfOutboundPayment));
+		bankStatementLine.setIsOverUnderPayment(payment.isOverUnderPayment());
+		bankStatementLine.setOverUnderAmt(payment.getOverUnderAmt().multiply(negateIfOutboundPayment));
+
+		bankStatementDAO.save(bankStatementLine);
 	}
 
 	@Override
