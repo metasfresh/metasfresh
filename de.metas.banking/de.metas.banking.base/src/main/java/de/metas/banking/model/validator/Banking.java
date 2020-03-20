@@ -31,6 +31,7 @@ import org.compiere.model.I_I_BankStatement;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.banking.impexp.BankStatementImportProcess;
 import de.metas.banking.model.I_I_Datev_Payment;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.impexp.DatevPaymentImportProcess;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
@@ -46,13 +47,14 @@ import de.metas.util.Services;
 public class Banking extends AbstractModuleInterceptor
 {
 	@Override
-	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		super.onInit(engine, client);
 
 		//
 		// Register default bank statement listeners
-		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
+		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+		Services.get(IBankStatementListenerService.class).addListener(new PaySelectionBankStatementListener(paySelectionBL));
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Datev_Payment.class, DatevPaymentImportProcess.class);
 
@@ -69,13 +71,12 @@ public class Banking extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		// Bank statement:
 		{
 			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatement.instance, client);
 			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatementLine.instance, client);
-			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatementLine_Ref.instance, client);
 		}
 
 		// de.metas.banking.payment sub-module (code moved from swat main validator)

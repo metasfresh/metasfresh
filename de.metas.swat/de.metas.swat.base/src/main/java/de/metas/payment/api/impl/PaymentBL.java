@@ -520,9 +520,14 @@ public class PaymentBL implements IPaymentBL
 		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
 		for (final I_C_Payment payment : payments)
 		{
-			payment.setIsReconciled(true);
-			paymentDAO.save(payment);
+			markReconciled(payment);
 		}
 	}
 
+	@Override
+	public void markReconciled(@NonNull final I_C_Payment payment)
+	{
+		payment.setIsReconciled(true);
+		paymentDAO.save(payment);
+	}
 }

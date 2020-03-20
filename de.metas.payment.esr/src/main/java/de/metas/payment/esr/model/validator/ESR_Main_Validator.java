@@ -13,15 +13,14 @@ package de.metas.payment.esr.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -51,10 +50,10 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		super.onInit(engine, client);
-		
+
 		registerFactories();
 	}
-	
+
 	@Override
 	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
 	{
@@ -79,15 +78,15 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		// Register ESR Payment Parsers
 		Services.get(IPaymentStringParserFactory.class).registerParser(ESRRegularLineParser.TYPE, ESRRegularLineParser.instance);
 		Services.get(IPaymentStringParserFactory.class).registerParser(ESRCreaLogixStringParser.TYPE, ESRCreaLogixStringParser.instance);
-		
+
 		//
 		// Payment batch provider for Bank Statement matching
 		Services.get(IPaymentBatchFactory.class).addPaymentBatchProvider(new ESRPaymentBatchProvider());
-		
+
 		//
 		// Bank statement listener
-		Services.get(IBankStatementListenerService.class).addListener(ESRBankStatementListener.instance);
-		
+		Services.get(IBankStatementListenerService.class).addListener(new ESRBankStatementListener(esrImportBL));
+
 		//
 		// ESR match listener
 		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741

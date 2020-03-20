@@ -118,8 +118,6 @@ public interface IESRImportBL extends ISingletonService
 
 	void unlinkESRImportLinesFor(BankStatementLineId bankStatementLineId);
 
-	void unlinkESRImportLinesFor(BankStatementAndLineAndRefId bankStatementLineRefId);
-
 	void scheduleESRImportFor(RunESRImportRequest runESRImportRequest);
 
 	Set<PaymentId> getPaymentIds(ESRImportId esrImportId);

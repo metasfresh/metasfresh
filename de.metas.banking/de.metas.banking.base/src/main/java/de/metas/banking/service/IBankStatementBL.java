@@ -6,7 +6,9 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IBankStatementBL extends ISingletonService
 {
@@ -31,4 +33,9 @@ public interface IBankStatementBL extends ISingletonService
 	BigDecimal computeStmtAmtExcludingChargeAmt(I_C_BankStatementLine line);
 
 	String getDocumentNo(BankStatementId bankStatementId);
+
+	void unlinkPaymentsAndDeleteReferences(I_C_BankStatementLine bankStatementLine);
+
+	void deleteReferencesAndUnReconcilePayments(@NonNull BankStatementLineId bankStatementLineId);
+
 }

@@ -1,12 +1,12 @@
 package de.metas.banking.service.impl;
 
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.compiere.model.I_C_BankStatementLine;
-
-import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementListener;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,28 +34,19 @@ final class CompositeBankStatementListener implements IBankStatementListener
 {
 	private final CopyOnWriteArrayList<IBankStatementListener> listeners = new CopyOnWriteArrayList<>();
 
-	public void addListener(final IBankStatementListener listener)
+	public void addListener(@NonNull final IBankStatementListener listener)
 	{
-		Check.assumeNotNull(listener, "listener not null");
 		listeners.addIfAbsent(listener);
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(final I_C_BankStatementLine bankStatementLine)
+	public void onBankStatementLineVoiding(
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@NonNull final List<BankStatementLineReference> lineRefs)
 	{
 		for (final IBankStatementListener listener : listeners)
 		{
-			listener.onBankStatementLineVoiding(bankStatementLine);
+			listener.onBankStatementLineVoiding(bankStatementLineId, lineRefs);
 		}
 	}
-
-	@Override
-	public void onBankStatementLineRefVoiding(final BankStatementAndLineAndRefId bankStatementLineRefId)
-	{
-		for (final IBankStatementListener listener : listeners)
-		{
-			listener.onBankStatementLineRefVoiding(bankStatementLineRefId);
-		}
-	}
-
 }

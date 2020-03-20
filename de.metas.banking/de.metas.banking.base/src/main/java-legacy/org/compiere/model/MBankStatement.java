@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -21,19 +21,22 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -41,11 +44,15 @@ import de.metas.util.Services;
  * Bank Statement Model
  *
  * @author Eldir Tomassen/Jorg Janke
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>BF [ 1933645 ] Wrong balance Bank Statement
- * @see http://sourceforge.net/tracker/?func=detail&atid=879332&aid=1933645&group_id=176962 <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 <li>BF [ 2824951 ] The payments is not release when Bank Statement is void
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>BF [ 1933645 ] Wrong balance Bank Statement
+ * @see http://sourceforge.net/tracker/?func=detail&atid=879332&aid=1933645&group_id=176962
+ *      <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ *      <li>BF [ 2824951 ] The payments is not release when Bank Statement is void
  * @see http://sourceforge.net/tracker/?func=detail&aid=2824951&group_id=176962&atid=879332
- * @author Teo Sarca, http://www.arhipac.ro <li>FR [ 2616330 ] Use MPeriod.testPeriodOpen instead of isOpen https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2616330&group_id=176962
+ * @author Teo Sarca, http://www.arhipac.ro
+ *         <li>FR [ 2616330 ] Use MPeriod.testPeriodOpen instead of isOpen https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2616330&group_id=176962
  *
  * @version $Id: MBankStatement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
@@ -72,9 +79,9 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			setStatementDate(new Timestamp(System.currentTimeMillis()));	// @Date@
 			setDocAction(DOCACTION_Complete);	// CO
 			setDocStatus(DOCSTATUS_Drafted);	// DR
-			setBeginningBalance(Env.ZERO);
-			setStatementDifference(Env.ZERO);
-			setEndingBalance(Env.ZERO);
+			setBeginningBalance(BigDecimal.ZERO);
+			setStatementDifference(BigDecimal.ZERO);
+			setEndingBalance(BigDecimal.ZERO);
 			setIsApproved(false);	// N
 			setIsManual(true);	// Y
 			setPosted(false);	// N
@@ -94,12 +101,6 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		super(ctx, rs, trxName);
 	}	// MBankStatement
 
-	/**
-	 * Parent Constructor
-	 *
-	 * @param account Bank Account
-	 * @param isManual Manual statement
-	 **/
 	public MBankStatement(I_C_BP_BankAccount account, boolean isManual)
 	{
 		this(InterfaceWrapperHelper.getCtx(account), 0, InterfaceWrapperHelper.getTrxName(account));
@@ -111,50 +112,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		setIsManual(isManual);
 	}	// MBankStatement
 
-	/**
-	 * Create a new Bank Statement
-	 *
-	 * @param account Bank Account
-	 */
-	public MBankStatement(final I_C_BP_BankAccount account)
-	{
-		this(account, false);
-	}	// MBankStatement
-
-	/** Lines */
-	private MBankStatementLine[] m_lines = null;
-
-	/**
-	 * Get Bank Statement Lines
-	 *
-	 * @param requery requery
-	 * @return line array
-	 */
-	public MBankStatementLine[] getLines(boolean requery)
-	{
-		if (m_lines != null && !requery)
-		{
-			set_TrxName(m_lines, get_TrxName());
-			return m_lines;
-		}
-
-		// metas: replaced with Query API
-		List<MBankStatementLine> list = new Query(getCtx(), I_C_BankStatementLine.Table_Name, I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID + "=?", get_TrxName())
-				.setParameters(this.getC_BankStatement_ID())
-				.setOrderBy(I_C_BankStatementLine.COLUMNNAME_Line)
-				.list(MBankStatementLine.class);
-
-		MBankStatementLine[] retValue = new MBankStatementLine[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}	// getLines
-
-	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
-	public void addDescription(String description)
+	private void addDescription(String description)
 	{
 		String desc = getDescription();
 		if (desc == null)
@@ -165,13 +123,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		{
 			setDescription(desc + " | " + description);
 		}
-	}	// addDescription
+	}
 
-	/**
-	 * Set Processed. Propergate to Lines/Taxes
-	 *
-	 * @param processed processed
-	 */
 	@Override
 	public void setProcessed(boolean processed)
 	{
@@ -184,7 +137,6 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
 		int noLine = DB.executeUpdate(sql, get_TrxName());
-		m_lines = null;
 		log.debug("setProcessed - {} - Lines={}", processed, noLine);
 	}	// setProcessed
 
@@ -297,17 +249,19 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 		// Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
-		MBankStatementLine[] lines = getLines(true);
-		if (lines.length == 0)
+
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(this);
+		if (lines.isEmpty())
 		{
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
 		}
 		// Lines
-		BigDecimal total = Env.ZERO;
+		BigDecimal total = BigDecimal.ZERO;
 		Timestamp minDate = getStatementDate();
 		Timestamp maxDate = minDate;
-		for (MBankStatementLine line : lines)
+		for (final I_C_BankStatementLine line : lines)
 		{
 			total = total.add(line.getStmtAmt());
 			if (line.getDateAcct().before(minDate))
@@ -382,25 +336,23 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			}
 		}
 
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-		if (m_processMsg != null)
-		{
-			return IDocument.STATUS_Invalid;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 
 		// Implicit Approval
 		if (!isApproved())
 		{
 			approveIt();
 		}
-		log.debug("Completed: {}", this);
 
-		// Set Payment reconciled
-		MBankStatementLine[] lines = getLines(false);
-		for (MBankStatementLine line : lines)
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+
+		//
+		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(this);
+		final HashSet<PaymentId> paymentIdsToReconcile = new HashSet<>();
+		for (final I_C_BankStatementLine line : lines)
 		{
 			//
-			// metas: tsa: cash/bank transfer
+			// Cash/bank transfer
 			if (line.getC_BP_BankAccountTo_ID() > 0)
 			{
 				if (line.getLink_BankStatementLine_ID() > 0)
@@ -423,25 +375,24 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 					InterfaceWrapperHelper.save(lineFrom);
 				}
 			}
-			// metas: end
 
 			//
-			// Reconcile the payment
-			if (line.getC_Payment_ID() > 0)
+			// Collect payment to reconcile
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			if (paymentId != null)
 			{
-				I_C_Payment payment = line.getC_Payment();
-				payment.setIsReconciled(true);
-				InterfaceWrapperHelper.save(payment);
+				paymentIdsToReconcile.add(paymentId);
 			}
 		}
 
+		//
+		// Reconcile payments
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+		paymentBL.markReconciled(paymentIdsToReconcile);
+
 		// User Validation
-		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-		if (valid != null)
-		{
-			m_processMsg = valid;
-			return IDocument.STATUS_Invalid;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
@@ -456,228 +407,139 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 	@Override
 	public boolean voidIt()
 	{
-		log.debug("{}", this);
-
 		// Before Void
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 
-		if (DOCSTATUS_Closed.equals(getDocStatus())
-				|| DOCSTATUS_Reversed.equals(getDocStatus())
-				|| DOCSTATUS_Voided.equals(getDocStatus()))
+		final String docStatus = getDocStatus();
+		if (DOCSTATUS_Closed.equals(docStatus)
+				|| DOCSTATUS_Reversed.equals(docStatus)
+				|| DOCSTATUS_Voided.equals(docStatus))
 		{
-			m_processMsg = "Document Closed: " + getDocStatus();
-			setDocAction(DOCACTION_None);
-			return false;
+			throw new AdempiereException("Document Closed: " + docStatus);
 		}
 
 		// Not Processed
-		if (DOCSTATUS_Drafted.equals(getDocStatus())
-				|| DOCSTATUS_Invalid.equals(getDocStatus())
-				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Approved.equals(getDocStatus())
-				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
+		if (DOCSTATUS_Drafted.equals(docStatus)
+				|| DOCSTATUS_Invalid.equals(docStatus)
+				|| DOCSTATUS_InProgress.equals(docStatus)
+				|| DOCSTATUS_Approved.equals(docStatus)
+				|| DOCSTATUS_NotApproved.equals(docStatus))
 		{
-			
-		// Std Period open?
+
+			// Std Period open?
 		}
 		else
 		{
-			MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
 			Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		}
 
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+
 		// Set lines to 0
-		final MBankStatementLine[] lines = getLines(true);
-		for (final MBankStatementLine line : lines)
+		final HashSet<PaymentId> paymentIdsToUnReconcile = new HashSet<>();
+		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(this))
 		{
-			if (line.getStmtAmt().compareTo(Env.ZERO) != 0)
+			if (line.getStmtAmt().compareTo(BigDecimal.ZERO) != 0)
 			{
 				String description = Msg.getMsg(getCtx(), "Voided") + " ("
 						+ Msg.translate(getCtx(), "StmtAmt") + "=" + line.getStmtAmt();
-				if (line.getTrxAmt().compareTo(Env.ZERO) != 0)
+				if (line.getTrxAmt().compareTo(BigDecimal.ZERO) != 0)
 				{
 					description += ", " + Msg.translate(getCtx(), "TrxAmt") + "=" + line.getTrxAmt();
 				}
-				if (line.getChargeAmt().compareTo(Env.ZERO) != 0)
+				if (line.getChargeAmt().compareTo(BigDecimal.ZERO) != 0)
 				{
 					description += ", " + Msg.translate(getCtx(), "ChargeAmt") + "=" + line.getChargeAmt();
 				}
-				if (line.getInterestAmt().compareTo(Env.ZERO) != 0)
+				if (line.getInterestAmt().compareTo(BigDecimal.ZERO) != 0)
 				{
 					description += ", " + Msg.translate(getCtx(), "InterestAmt") + "=" + line.getInterestAmt();
 				}
 				description += ")";
-				line.addDescription(description);
+				addDescription(line, description);
 				//
-				line.setStmtAmt(Env.ZERO);
-				line.setTrxAmt(Env.ZERO);
-				line.setChargeAmt(Env.ZERO);
-				line.setInterestAmt(Env.ZERO);
+				line.setStmtAmt(BigDecimal.ZERO);
+				line.setTrxAmt(BigDecimal.ZERO);
+				line.setChargeAmt(BigDecimal.ZERO);
+				line.setInterestAmt(BigDecimal.ZERO);
 
 				//
-				// metas: tsa: cash/bank transfer
+				// Cash/bank transfer
 				if (line.getLink_BankStatementLine_ID() > 0)
 				{
 					final I_C_BankStatementLine lineFrom = line.getLink_BankStatementLine();
 					if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
 					{
 						lineFrom.setLink_BankStatementLine(null);
-						InterfaceWrapperHelper.save(lineFrom);
+						bankStatementDAO.save(lineFrom);
 					}
 				}
-				// metas: tsa: end
 
 				//
 				// Unlink payment
-				if (line.getC_Payment_ID() > 0)
+				final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+				if (paymentId != null)
 				{
-					final I_C_Payment payment = line.getC_Payment();
-					payment.setIsReconciled(false);
-					InterfaceWrapperHelper.save(payment);
-					line.setC_Payment(null);
+					paymentIdsToUnReconcile.add(paymentId);
 				}
 
-				line.saveEx();
+				bankStatementDAO.save(line);
 			}
 		}
+
+		//
+		// UnReconcile payments
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
+
 		addDescription(Msg.getMsg(getCtx(), "Voided"));
-		setStatementDifference(Env.ZERO);
+		setStatementDifference(BigDecimal.ZERO);
 
 		// After Void
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return true;
 	}	// voidIt
 
-	/**
-	 * Close Document.
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean closeIt()
 	{
 		log.debug("closeIt - {}", this);
-		// Before Close
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		// After Close
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		setDocAction(DOCACTION_None);
 		return true;
-	}	// closeIt
+	}
 
-	/**
-	 * Reverse Correction.
-	 *
-	 * @return false because it's not supported.
-	 */
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.debug("reverseCorrectIt - {}", this);
-		// Before reverseCorrect
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		// After reverseCorrect
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
 		throw new UnsupportedOperationException();
-	}	// reverseCorrectionIt
+	}
 
-	/**
-	 * Reverse Accrual
-	 *
-	 * @return false because it's not supported
-	 */
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.debug("reverseAccrualIt - {}", this);
-		// Before reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		// After reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
 		throw new UnsupportedOperationException();
-	}	// reverseAccrualIt
+	}
 
-	/**
-	 * Re-activate
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reActivateIt()
 	{
-		log.debug("reActivateIt - {}", this);
-		// Before reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		// After reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
 		throw new UnsupportedOperationException();
-	}	// reActivateIt
+	}
 
-	/*************************************************************************
-	 * Get Summary
-	 *
-	 * @return Summary of Document
-	 */
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(getName());
 		// : Total Lines = 123.00 (#1)
 		sb.append(": ")
-				.append(Msg.translate(getCtx(), "StatementDifference")).append("=").append(getStatementDifference())
-				.append(" (#").append(getLines(false).length).append(")");
+				.append(Msg.translate(getCtx(), "StatementDifference")).append("=").append(getStatementDifference());
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
 		{
@@ -692,51 +554,29 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		return TimeUtil.asLocalDate(getStatementDate());
 	}
 
-	/**
-	 * Get Process Message
-	 *
-	 * @return clear text error message
-	 */
 	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
-	}	// getProcessMsg
+	}
 
-	/**
-	 * Get Document Owner (Responsible)
-	 *
-	 * @return AD_User_ID
-	 */
 	@Override
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
-	}	// getDoc_User_ID
+	}
 
-	/**
-	 * Get Document Approval Amount. Statement Difference
-	 *
-	 * @return amount
-	 */
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
 		return getStatementDifference();
-	}	// getApprovalAmt
+	}
 
-	/**
-	 * Get Document Currency
-	 *
-	 * @return C_Currency_ID
-	 */
 	@Override
 	public int getC_Currency_ID()
 	{
-		// MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());
-		// return pl.getC_Currency_ID();
 		return 0;
-	}	// getC_Currency_ID
+	}
 
 	/**
 	 * Document Status is Complete or Closed
@@ -749,6 +589,19 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		return DOCSTATUS_Completed.equals(ds)
 				|| DOCSTATUS_Closed.equals(ds)
 				|| DOCSTATUS_Reversed.equals(ds);
-	}	// isComplete
+	}
 
-}	// MBankStatement
+	private static void addDescription(final I_C_BankStatementLine line, final String description)
+	{
+		String desc = line.getDescription();
+		if (desc == null)
+		{
+			line.setDescription(description);
+		}
+		else
+		{
+			line.setDescription(desc + " | " + description);
+		}
+	}
+
+}

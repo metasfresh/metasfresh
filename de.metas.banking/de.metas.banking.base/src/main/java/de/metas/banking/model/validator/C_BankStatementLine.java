@@ -1,7 +1,5 @@
 package de.metas.banking.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.banking.base
@@ -33,10 +31,9 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
-import de.metas.banking.service.IBankStatementDAO;
-import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 @Interceptor(I_C_BankStatementLine.class)
@@ -46,55 +43,43 @@ public class C_BankStatementLine
 
 	private C_BankStatementLine()
 	{
-		super();
 	}
 
-	/**
-	 *
-	 * @param bankStatementLine
-	 * @param timing
-	 * @task US025b
-	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Payment_ID)
-	public void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final int timing)
+	public void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 		//
 		// Do nothing if we are dealing with a new line which does not have an C_Payment_ID
-		final ModelChangeType changeType = ModelChangeType.valueOf(timing);
-		int paymentRecordId = bankStatementLine.getC_Payment_ID();
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
 
-		if (changeType.isNew() && paymentRecordId <= 0)
+		if (changeType.isNew() && paymentId == null)
 		{
 			return;
 		}
 
 		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
-		bankStatmentPaymentBL.setC_Payment(bankStatementLine, bankStatementLine.getC_Payment());
 
-		if (paymentRecordId > 0)
+		if (paymentId != null)
 		{
-			final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(paymentRecordId));
+			final I_C_Payment payment = paymentBL.getById(paymentId);
+			bankStatmentPaymentBL.setC_Payment(bankStatementLine, payment);
 
-			payment.setIsReconciled(true);
-			save(payment);
+			paymentBL.markReconciled(payment);
 		}
-
+		else
+		{
+			bankStatmentPaymentBL.setC_Payment(bankStatementLine, null);
+		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onBeforeDelete(final I_C_BankStatementLine bankStatementLine)
 	{
-		//
-		// Notify listeners that our bank statement line will become void (i.e. we are deleting it)
-		Services.get(IBankStatementListenerService.class)
-				.getListeners()
-				.onBankStatementLineVoiding(bankStatementLine);
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
-		//
-		// Delete all bank statement line references
 		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
-		Services.get(IBankStatementDAO.class).deleteReferences(bankStatementLineId);
+		bankStatementBL.deleteReferencesAndUnReconcilePayments(bankStatementLineId);
 	}
 }

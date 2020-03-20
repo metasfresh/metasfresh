@@ -16,8 +16,8 @@
  *****************************************************************************/
 package org.compiere.impexp;
 
-import org.compiere.model.MBankStatementLine;
-import org.compiere.model.X_I_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_I_BankStatement;
 
 /**
  *	Bank Statement Matcher Algorithm Interface
@@ -32,7 +32,7 @@ public interface BankStatementMatcherInterface
 	 *	@param bsl bank statement line
 	 *	@return found matches or null
 	 */
-	public BankStatementMatchInfo findMatch (MBankStatementLine bsl);
+	BankStatementMatchInfo findMatch (I_C_BankStatementLine bsl);
 
 
 	/**
@@ -40,7 +40,7 @@ public interface BankStatementMatcherInterface
 	 *	@param ibs bank statement import line
 	 *	@return found matches or null
 	 */
-	public BankStatementMatchInfo findMatch (X_I_BankStatement ibs);
+	BankStatementMatchInfo findMatch (I_I_BankStatement ibs);
 
 
 }	//	BankStatementMatcherInterface

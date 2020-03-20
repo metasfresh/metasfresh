@@ -1,12 +1,12 @@
 package de.metas.banking.model.validator;
 
-import org.compiere.model.I_C_BankStatementLine;
+import java.util.List;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.IBankStatementListener;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,24 +38,18 @@ import de.metas.util.Services;
  */
 class PaySelectionBankStatementListener implements IBankStatementListener
 {
-	public static final transient PaySelectionBankStatementListener instance = new PaySelectionBankStatementListener();
+	private final IPaySelectionBL paySelectionBL;
 
-	private PaySelectionBankStatementListener()
+	public PaySelectionBankStatementListener(@NonNull final IPaySelectionBL paySelectionBL)
 	{
-		super();
+		this.paySelectionBL = paySelectionBL;
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(final I_C_BankStatementLine bankStatementLine)
+	public void onBankStatementLineVoiding(
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@NonNull final List<BankStatementLineReference> lineRefs)
 	{
-		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
-
-		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLineId);
-	}
-
-	@Override
-	public void onBankStatementLineRefVoiding(final BankStatementAndLineAndRefId bankStatementLineAndRefId)
-	{
-		Services.get(IPaySelectionBL.class).unlinkPaySelectionLineForBankStatement(bankStatementLineAndRefId);
+		paySelectionBL.unlinkPaySelectionLineForBankStatement(bankStatementLineId);
 	}
 }

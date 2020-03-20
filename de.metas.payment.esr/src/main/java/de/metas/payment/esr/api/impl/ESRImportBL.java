@@ -1250,15 +1250,6 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
-	@Override
-	public void unlinkESRImportLinesFor(@NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)
-	{
-		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesByBankStatementLineRefId(bankStatementLineRefId))
-		{
-			unlinkESRImportLineFromBankStatement(esrImportLine);
-		}
-	}
-
 	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest)
 	{
 		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportRequest.getAttachmentEntryId());

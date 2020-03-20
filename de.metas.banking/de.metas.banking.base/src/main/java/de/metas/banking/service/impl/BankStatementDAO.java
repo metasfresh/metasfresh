@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 
 /*
@@ -43,13 +44,14 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineRefId;
 import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -65,6 +67,8 @@ import lombok.NonNull;
 
 public class BankStatementDAO implements IBankStatementDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	@Deprecated
 	public I_C_BankStatement getById(int id)
@@ -124,7 +128,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 	private IQueryBuilder<I_C_BankStatementLine> retrieveLinesQuery(final I_C_BankStatement bankStatement)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_BankStatementLine.class, bankStatement)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatement.getC_BankStatement_ID())
@@ -136,13 +140,30 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public List<BankStatementLineReference> retrieveLineReferences(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	public BankStatementLineReferenceList retrieveLineReferences(@NonNull final BankStatementLineId bankStatementLineId)
 	{
-		return retrieveLineReferencesQuery(bankStatementLine)
+		return retrieveLineReferences(ImmutableSet.of(bankStatementLineId));
+	}
+
+	@Override
+	public BankStatementLineReferenceList retrieveLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
+	{
+		if (bankStatementLineIds.isEmpty())
+		{
+			return BankStatementLineReferenceList.EMPTY;
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineIds)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID)
 				.create()
 				.stream(I_C_BankStatementLine_Ref.class)
 				.map(record -> toBankStatementLineReference(record))
-				.collect(ImmutableList.toImmutableList());
+				.collect(BankStatementLineReferenceList.collector());
 	}
 
 	private static BankStatementLineReference toBankStatementLineReference(final I_C_BankStatementLine_Ref record)
@@ -157,51 +178,26 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public int deleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
+	public void deleteReferences(@NonNull final Collection<BankStatementLineReference> lineRefs)
 	{
-		return retrieveLineReferencesQuery(bankStatementLineId)
-				.create()
-				.delete();
-	}
+		if (lineRefs.isEmpty())
+		{
+			return;
+		}
 
-	@Override
-	public boolean hasLineReferences(@NonNull final BankStatementLineId bankStatementLineId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
-				// .addOnlyActiveRecordsFilter() // ALL
-				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
-				.create()
-				.anyMatch();
-	}
+		final ImmutableSet<BankStatementLineRefId> lineRefIds = lineRefs.stream()
+				.map(BankStatementLineReference::getId)
+				.map(BankStatementAndLineAndRefId::getBankStatementLineRefId)
+				.collect(ImmutableSet.toImmutableSet());
 
-	private IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final I_C_BankStatementLine bankStatementLine)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine_Ref.class, bankStatementLine)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
-				.orderBy()
-				.addColumn(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
-				.addColumn(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID)
-				.endOrderBy();
-	}
-
-	private IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final BankStatementLineId bankStatementLineId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
-				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
-				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID);
+		final List<I_C_BankStatementLine_Ref> records = loadByRepoIdAwares(lineRefIds, I_C_BankStatementLine_Ref.class);
+		InterfaceWrapperHelper.deleteAll(records);
 	}
 
 	@Override
 	public boolean isPaymentOnBankStatement(final I_C_Payment payment)
 	{
 		final int paymentId = payment.getC_Payment_ID();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		//
 		// Check if payment is on any bank statement line reference, processed or not
@@ -233,8 +229,6 @@ public class BankStatementDAO implements IBankStatementDAO
 	@Override
 	public List<I_C_BankStatement> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		// Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
@@ -266,7 +260,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public BankStatementAndLineAndRefId createBankStatementLineRef(@NonNull final BankStatementLineRefCreateRequest request)
+	public BankStatementLineReference createBankStatementLineRef(@NonNull final BankStatementLineRefCreateRequest request)
 	{
 		final I_C_BankStatementLine_Ref record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
 
@@ -288,7 +282,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setOverUnderAmt(BigDecimal.ZERO);
 		saveRecord(record);
 
-		return extractBankStatementAndLineAndRefId(record);
+		return toBankStatementLineReference(record);
 	}
 
 	@Override

@@ -53,11 +53,6 @@ public interface IPaySelectionBL extends ISingletonService
 	void unlinkPaySelectionLineForBankStatement(BankStatementLineId bankStatementLineId);
 
 	/**
-	 * Unlink any pay selection line which points to given bank statement line reference.
-	 */
-	void unlinkPaySelectionLineForBankStatement(BankStatementAndLineAndRefId bankStatementLineAndRefId);
-
-	/**
 	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code>, <code>C_BP_BankAccount_ID</code> and <code>Reference</code> from the <code>C_Invoice</code> which it references.
 	 * <p>
 	 * If the psl doesn't reference an invoice or if {@link IPaymentRequestBL#isUpdatedFromPaymentRequest(I_C_PaySelectionLine)} returns <code>true</code>,

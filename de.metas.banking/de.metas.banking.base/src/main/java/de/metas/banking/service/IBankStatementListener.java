@@ -1,8 +1,10 @@
 package de.metas.banking.service;
 
-import org.compiere.model.I_C_BankStatementLine;
+import java.util.List;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineReference;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,11 +40,9 @@ import de.metas.banking.model.BankStatementAndLineAndRefId;
  */
 public interface IBankStatementListener
 {
-	default void onBankStatementLineVoiding(final I_C_BankStatementLine bankStatementLine)
-	{
-	}
-
-	default void onBankStatementLineRefVoiding(final BankStatementAndLineAndRefId bankStatementLineRefId)
+	default void onBankStatementLineVoiding(
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@NonNull final List<BankStatementLineReference> lineRefs)
 	{
 	}
 }

@@ -31,6 +31,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
@@ -85,7 +86,8 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
-		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
+		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(bankStatementLineId));
 
 		//
 		// Period

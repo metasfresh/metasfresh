@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.currency.Amount;
+import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,7 +54,7 @@ public class BankStatementLineReconcileResult
 		PaymentId paymentId;
 
 		@NonNull
-		Amount statementLineAmt;
+		Money amount;
 	}
 
 	@Builder

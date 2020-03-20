@@ -1,5 +1,6 @@
 package de.metas.banking.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -11,10 +12,10 @@ import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -45,11 +46,11 @@ public interface IBankStatementDAO extends ISingletonService
 {
 	List<I_C_BankStatementLine> retrieveLines(I_C_BankStatement bankStatement);
 
-	List<BankStatementLineReference> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
+	BankStatementLineReferenceList retrieveLineReferences(BankStatementLineId bankStatementLineId);
 
-	int deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
+	BankStatementLineReferenceList retrieveLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
 
-	boolean hasLineReferences(BankStatementLineId bankStatementLineId);
+	void deleteReferences(@NonNull Collection<BankStatementLineReference> lineRefs);
 
 	/**
 	 * Checks if given payment is present on any line or line reference.
@@ -97,5 +98,5 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void save(@NonNull BankStatementLineReference lineRef);
 
-	BankStatementAndLineAndRefId createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);
+	BankStatementLineReference createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);
 }

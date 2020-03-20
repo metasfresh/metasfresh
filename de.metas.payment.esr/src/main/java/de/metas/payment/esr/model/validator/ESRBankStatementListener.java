@@ -1,12 +1,12 @@
 package de.metas.payment.esr.model.validator;
 
-import org.compiere.model.I_C_BankStatementLine;
+import java.util.List;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.payment.esr.api.IESRImportBL;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,22 +38,18 @@ import de.metas.util.Services;
  */
 class ESRBankStatementListener implements IBankStatementListener
 {
-	public static final transient ESRBankStatementListener instance = new ESRBankStatementListener();
+	private final IESRImportBL esrImportBL;
 
-	private ESRBankStatementListener()
+	public ESRBankStatementListener(@NonNull final IESRImportBL esrImportBL)
 	{
+		this.esrImportBL = esrImportBL;
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(final I_C_BankStatementLine bankStatementLine)
+	public void onBankStatementLineVoiding(
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@NonNull final List<BankStatementLineReference> lineRefs)
 	{
-		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
-		Services.get(IESRImportBL.class).unlinkESRImportLinesFor(bankStatementLineId);
-	}
-
-	@Override
-	public void onBankStatementLineRefVoiding(final BankStatementAndLineAndRefId bankStatementLineRefId)
-	{
-		Services.get(IESRImportBL.class).unlinkESRImportLinesFor(bankStatementLineRefId);
+		esrImportBL.unlinkESRImportLinesFor(bankStatementLineId);
 	}
 }

@@ -267,16 +267,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void unlinkPaySelectionLineForBankStatement(final BankStatementAndLineAndRefId bankStatementLineAndRefId)
-	{
-		final I_C_PaySelectionLine paySelectionLine = paySelectionDAO.retrievePaySelectionLine(bankStatementLineAndRefId).orElse(null);
-		if (paySelectionLine != null)
-		{
-			unlinkBankStatementFromLine(paySelectionLine);
-		}
-	}
-
-	@Override
 	public void linkBankStatementLine(
 			@NonNull final I_C_PaySelectionLine psl,
 			@NonNull final BankStatementAndLineAndRefId bankStatementAndLineAndRefId)
