@@ -50,6 +50,13 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 	protected String doIt()
 	{
 		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(getRecord_ID());
+		unreconcile(bankStatementLineId);
+
+		return MSG_OK;
+	}
+
+	private void unreconcile(final BankStatementLineId bankStatementLineId)
+	{
 		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
 
 		//
@@ -63,10 +70,7 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 		}
 
 		bankStatementBL.unlinkPaymentsAndDeleteReferences(bankStatementLine);
-
 		bankStatementBL.unpost(bankStatement);
-
-		return MSG_OK;
 	}
 
 }

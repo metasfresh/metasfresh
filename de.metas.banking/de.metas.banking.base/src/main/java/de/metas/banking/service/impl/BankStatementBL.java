@@ -180,7 +180,7 @@ public class BankStatementBL implements IBankStatementBL
 		unlinkPaymentsAndDeleteReferences(ImmutableList.of(bankStatementLine));
 	}
 
-	public void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+	private void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
 	{
 		if (bankStatementLines.isEmpty())
 		{
