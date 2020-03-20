@@ -288,6 +288,13 @@ public class BankStatementDAO implements IBankStatementDAO
 				.updateDirectly()
 				.addSetColumnValue(I_C_BankStatementLine.COLUMNNAME_Processed, processed)
 				.execute();
+
+		queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_BankStatementLine_Ref.COLUMNNAME_Processed, processed)
+				.execute();
 	}
 
 	@Override
