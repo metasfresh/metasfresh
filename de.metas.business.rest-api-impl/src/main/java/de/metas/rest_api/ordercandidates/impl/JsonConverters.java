@@ -144,10 +144,10 @@ class JsonConverters
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
 				//
-				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), true/* billTo */, orgId))
-				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), true/* billTo */, orgId))
-				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), false/* billTo */, orgId))
-				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), false/* billTo */, orgId))
+				.bpartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getBpartner(), true/* billTo */, orgId))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getBillBPartner(), true/* billTo */, orgId))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getDropShipBPartner(), false/* billTo */, orgId))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getHandOverBPartner(), false/* billTo */, orgId))
 				//
 				.poReference(request.getPoReference())
 				//
