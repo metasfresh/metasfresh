@@ -170,11 +170,14 @@ public class C_BankStatementLine
 				.convertAmount(trxAmtFrom)
 				.negate();
 
-		//bsl.setStmtAmt(trxAmt); // never touch the statement amount after the line was created
+		// bsl.setStmtAmt(trxAmt); // never touch the statement amount after the line was created
 		bsl.setTrxAmt(trxAmt);
 		bsl.setCurrencyRate(currencyRate.getConversionRate());
 		bsl.setChargeAmt(BigDecimal.ZERO);
-		BankStatementLineOrRefHelper.setBankStatementLineOrRefAmountsToZero(bsl);
+		bsl.setDiscountAmt(BigDecimal.ZERO);
+		bsl.setWriteOffAmt(BigDecimal.ZERO);
+		bsl.setIsOverUnderPayment(false);
+		bsl.setOverUnderAmt(BigDecimal.ZERO);
 	}
 
 	@CalloutMethod(columnNames = {
