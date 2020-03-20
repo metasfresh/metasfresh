@@ -60,7 +60,8 @@ public class MBankStatement extends X_C_BankStatement
 		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getC_BankStatement_ID());
 		if (bankStatementId != null)
 		{
-			Services.get(IBankStatementDAO.class).updateBankStatementLinesProcessedFlag(bankStatementId, processed);
+			final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+			bankStatementDAO.updateBankStatementLinesProcessedFlag(bankStatementId, processed);
 		}
 	}
 }
