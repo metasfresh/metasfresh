@@ -57,7 +57,7 @@ public class MBankStatement extends X_C_BankStatement
 	{
 		super.setProcessed(processed);
 
-		BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getC_BankStatement_ID());
+		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getC_BankStatement_ID());
 		if (bankStatementId != null)
 		{
 			Services.get(IBankStatementDAO.class).updateBankStatementLinesProcessedFlag(bankStatementId, processed);
