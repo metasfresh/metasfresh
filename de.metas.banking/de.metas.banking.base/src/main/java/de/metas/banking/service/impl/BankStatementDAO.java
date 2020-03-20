@@ -2,6 +2,7 @@ package de.metas.banking.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -43,6 +44,7 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -53,9 +55,12 @@ import de.metas.banking.model.BankStatementLineRefId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
@@ -254,6 +259,64 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);
+	}
+
+	@Override
+	public BankStatementLineId createBankStatementLine(@NonNull final BankStatementLineCreateRequest request)
+	{
+		final I_C_BankStatementLine record = newInstance(I_C_BankStatementLine.class);
+		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+
+		record.setLine(request.getLineNo());
+		if (request.getLineNo() > 0)
+		{
+			record.setLine(request.getLineNo());
+		}
+		else
+		{
+			final int maxLineNo = retrieveLastLineNo(request.getBankStatementId());
+			record.setLine(maxLineNo + 10);
+		}
+
+		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		record.setImportedBillPartnerName(request.getImportedBillPartnerName());
+		record.setImportedBillPartnerIBAN(request.getImportedBillPartnerIBAN());
+
+		record.setReferenceNo(request.getReferenceNo());
+		record.setDescription(request.getLineDescription());
+		record.setMemo(request.getMemo());
+
+		record.setStatementLineDate(TimeUtil.asTimestamp(request.getStatementLineDate()));
+		record.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
+		record.setValutaDate(TimeUtil.asTimestamp(request.getValutaDate()));
+
+		record.setC_Currency_ID(request.getStatementAmt().getCurrencyId().getRepoId());
+		record.setStmtAmt(request.getStatementAmt().toBigDecimal());
+		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
+		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
+		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
+
+		final ElectronicFundsTransfer eft = request.getEft();
+		if (eft != null)
+		{
+			record.setEftTrxID(eft.getTrxId());
+			record.setEftTrxType(eft.getTrxType());
+			record.setEftCheckNo(eft.getCheckNo());
+			record.setEftReference(eft.getReference());
+			record.setEftMemo(eft.getMemo());
+			record.setEftPayee(eft.getPayee());
+			record.setEftPayeeAccount(eft.getPayeeAccount());
+			record.setEftStatementLineDate(TimeUtil.asTimestamp(eft.getStatementLineDate()));
+			record.setEftValutaDate(TimeUtil.asTimestamp(eft.getValutaDate()));
+			record.setEftCurrency(eft.getCurrency());
+			record.setEftAmt(eft.getAmt());
+		}
+
+		save(record);
+
+		return BankStatementLineId.ofRepoId(record.getC_BankStatementLine_ID());
 	}
 
 	@Override

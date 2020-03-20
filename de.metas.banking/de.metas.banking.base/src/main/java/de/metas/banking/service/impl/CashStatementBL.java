@@ -2,8 +2,6 @@ package de.metas.banking.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.banking.base
@@ -27,6 +25,7 @@ import java.math.BigDecimal;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -38,8 +37,16 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 public class CashStatementBL implements ICashStatementBL
@@ -48,32 +55,38 @@ public class CashStatementBL implements ICashStatementBL
 
 	// metas: us025b
 	@Override
-	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
+	public void createCashStatementLine(final I_C_Payment payment)
 	{
-		I_C_BankStatement bs = getCreateCashStatement(payment);
-		I_C_BankStatementLine bsl = newInstance(I_C_BankStatementLine.class);
-		bsl.setAD_Org_ID(bs.getAD_Org_ID());
-		bsl.setC_BankStatement_ID(bs.getC_BankStatement_ID());
-		bsl.setStatementLineDate(bs.getStatementDate());
-		bsl.setValutaDate(bs.getStatementDate());
-		bsl.setDateAcct(bs.getStatementDate());
+		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
 
-		bsl.setC_Payment_ID(payment.getC_Payment_ID());
-		bsl.setC_Currency_ID(payment.getC_Currency_ID());
-		bsl.setC_BPartner_ID(payment.getC_BPartner_ID());
-		bsl.setC_Invoice_ID(payment.getC_Invoice_ID());
-		//
-		final BigDecimal amt = payment.isReceipt()
-				? payment.getPayAmt()
-				: payment.getPayAmt().negate();
+		final I_C_BankStatement bs = getCreateCashStatement(payment);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bs.getC_BankStatement_ID());
+		final LocalDate statementDate = TimeUtil.asLocalDate(bs.getStatementDate());
 
-		bsl.setStmtAmt(amt);
-		bsl.setTrxAmt(amt);
+		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+		final Money paymentAmt = Money.of(payment.getPayAmt(), currencyId);
+		final Money statementAmt = paymentAmt.negateIf(!payment.isReceipt());
 
-		bsl.setProcessed(true);
-		bankStatementDAO.save(bsl);
+		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
+				.bankStatementId(bankStatementId)
+				.orgId(OrgId.ofRepoId(bs.getAD_Org_ID()))
+				//
+				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
+				//
+				.statementLineDate(statementDate)
+				.dateAcct(statementDate)
+				.valutaDate(statementDate)
+				//
+				.statementAmt(statementAmt)
+				.trxAmt(statementAmt)
+				.chargeAmt(Money.zero(currencyId))
+				.interestAmt(Money.zero(currencyId))
+				//
+				.build());
 
-		return bsl;
+		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
+		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
+		bankStatmentPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
 	}
 
 	// metas: us025b

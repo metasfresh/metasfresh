@@ -25,52 +25,58 @@ package de.metas.banking;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.util.TimeUtil;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class BankStatementTestHelper
 {
 
-	public static I_C_BankStatement createBankStatement(final BankAccountId bankAccountId, final String name, final Timestamp statementDate)
+	public static I_C_BankStatement createBankStatement(final BankAccountId bankAccountId, final String name, final LocalDate statementDate)
 	{
 		final I_C_BankStatement bankStatement = newInstanceOutOfTrx(I_C_BankStatement.class);
 		bankStatement.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
 		bankStatement.setName(name);
-		bankStatement.setStatementDate(statementDate);
+		bankStatement.setStatementDate(TimeUtil.asTimestamp(statementDate));
 		save(bankStatement);
 
 		return bankStatement;
 	}
 
 	public static I_C_BankStatementLine createBankStatementLine(final BankStatementId bankStatementId,
-			final BPartnerId bPartnerId,
+			final BPartnerId bpartnerId,
 			final int lineNumber,
-			final Timestamp statementLineDate,
-			final Timestamp valutaDate,
-			final BigDecimal stmtAmt,
-			final CurrencyId currencyId)
+			final LocalDate statementLineDate,
+			final LocalDate valutaDate,
+			final Money stmtAmt)
 	{
-		final I_C_BankStatementLine bsl = newInstanceOutOfTrx(I_C_BankStatementLine.class);
-		bsl.setC_BankStatement_ID(bankStatementId.getRepoId());
-		bsl.setC_BPartner_ID(bPartnerId.getRepoId());
-		bsl.setLine(lineNumber);
-		bsl.setStatementLineDate(statementLineDate);
-		bsl.setValutaDate(valutaDate);
-		bsl.setC_Currency_ID(currencyId.getRepoId());
-		bsl.setStmtAmt(stmtAmt);
-		bsl.setTrxAmt(stmtAmt);
-		save(bsl);
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
-		return bsl;
+		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
+				.bankStatementId(bankStatementId)
+				.orgId(OrgId.ANY)
+				.bpartnerId(bpartnerId)
+				.lineNo(lineNumber)
+				.statementLineDate(statementLineDate)
+				.valutaDate(valutaDate)
+				.statementAmt(stmtAmt)
+				.trxAmt(stmtAmt)
+				.build());
+
+		return bankStatementDAO.getLineById(bankStatementLineId);
 	}
 }

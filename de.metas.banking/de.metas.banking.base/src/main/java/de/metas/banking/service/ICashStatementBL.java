@@ -1,6 +1,5 @@
 package de.metas.banking.service;
 
-import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.util.ISingletonService;
@@ -13,7 +12,5 @@ import de.metas.util.ISingletonService;
  */
 public interface ICashStatementBL extends ISingletonService
 {
-
-	I_C_BankStatementLine createCashStatementLine(I_C_Payment payment);
-
+	void createCashStatementLine(I_C_Payment payment);
 }

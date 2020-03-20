@@ -160,7 +160,8 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		linkSinglePayment(bankStatement, bankStatementLine, payment);
 	}
 
-	private void linkSinglePayment(
+	@Override
+	public void linkSinglePayment(
 			@NonNull final I_C_BankStatement bankStatement,
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			@NonNull final I_C_Payment payment)
