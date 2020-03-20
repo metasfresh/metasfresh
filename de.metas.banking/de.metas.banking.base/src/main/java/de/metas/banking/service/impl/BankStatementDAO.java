@@ -169,7 +169,10 @@ public class BankStatementDAO implements IBankStatementDAO
 	private static BankStatementLineReference toBankStatementLineReference(final I_C_BankStatementLine_Ref record)
 	{
 		return BankStatementLineReference.builder()
-				.id(extractBankStatementAndLineAndRefId(record))
+				.id(BankStatementAndLineAndRefId.ofRepoIds(
+						record.getC_BankStatement_ID(),
+						record.getC_BankStatementLine_ID(),
+						record.getC_BankStatementLine_Ref_ID()))
 				.lineNo(record.getLine())
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.paymentId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
@@ -277,46 +280,10 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setWriteOffAmt(BigDecimal.ZERO);
 		record.setIsOverUnderPayment(false);
 		record.setOverUnderAmt(BigDecimal.ZERO);
-		saveRecord(record);
+
+		InterfaceWrapperHelper.saveRecord(record);
 
 		return toBankStatementLineReference(record);
-	}
-
-	@Override
-	public void save(@NonNull final BankStatementLineReference lineRef)
-	{
-		final I_C_BankStatementLine_Ref record = load(lineRef.getBankStatementLineRefId(), I_C_BankStatementLine_Ref.class);
-
-		record.setAD_Org_ID(lineRef.getOrgId().getRepoId());
-		record.setC_BankStatement_ID(lineRef.getBankStatementId().getRepoId());
-		record.setC_BankStatementLine_ID(lineRef.getBankStatementLineId().getRepoId());
-		record.setLine(lineRef.getLineNo());
-
-		record.setC_BPartner_ID(BPartnerId.toRepoId(lineRef.getBpartnerId()));
-		record.setC_Payment_ID(PaymentId.toRepoId(lineRef.getPaymentId()));
-		record.setC_Invoice_ID(InvoiceId.toRepoId(lineRef.getInvoiceId()));
-
-		// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
-		record.setC_Currency_ID(lineRef.getTrxAmt().getCurrencyId().getRepoId());
-		record.setTrxAmt(lineRef.getTrxAmt().toBigDecimal());
-		record.setDiscountAmt(BigDecimal.ZERO);
-		record.setWriteOffAmt(BigDecimal.ZERO);
-		record.setIsOverUnderPayment(false);
-		record.setOverUnderAmt(BigDecimal.ZERO);
-		saveRecord(record);
-	}
-
-	private void saveRecord(final @NonNull de.metas.banking.model.I_C_BankStatementLine_Ref lineOrRef)
-	{
-		InterfaceWrapperHelper.saveRecord(lineOrRef);
-	}
-
-	private static BankStatementAndLineAndRefId extractBankStatementAndLineAndRefId(@NonNull final I_C_BankStatementLine_Ref record)
-	{
-		return BankStatementAndLineAndRefId.ofRepoIds(
-				record.getC_BankStatement_ID(),
-				record.getC_BankStatementLine_ID(),
-				record.getC_BankStatementLine_Ref_ID());
 	}
 
 	@Override

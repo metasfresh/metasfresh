@@ -8,8 +8,8 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,28 +33,28 @@ import lombok.NonNull;
  * #L%
  */
 
-@Data
+@Value
 @Builder
 public class BankStatementLineReference
 {
 	@NonNull
-	private final BankStatementAndLineAndRefId id;
+	BankStatementAndLineAndRefId id;
 
-	private final OrgId orgId;
+	OrgId orgId;
 
-	private final int lineNo;
-
-	@Nullable
-	private final BPartnerId bpartnerId;
+	int lineNo;
 
 	@Nullable
-	private PaymentId paymentId;
-
-	@Nullable
-	private final InvoiceId invoiceId;
+	BPartnerId bpartnerId;
 
 	@NonNull
-	private final Money trxAmt;
+	PaymentId paymentId;
+
+	@Nullable
+	InvoiceId invoiceId;
+
+	@NonNull
+	Money trxAmt;
 
 	public BankStatementId getBankStatementId()
 	{
