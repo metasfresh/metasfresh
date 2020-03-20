@@ -75,7 +75,7 @@ public class CashStatementBL implements ICashStatementBL
 	 */
 	private void setPayment(final I_C_BankStatementLine bsl, final MPayment payment)
 	{
-		bsl.setC_Payment(payment);
+		bsl.setC_Payment_ID(payment.getC_Payment_ID());
 		bsl.setC_Currency_ID(payment.getC_Currency_ID());
 		bsl.setC_BPartner_ID(payment.getC_BPartner_ID()); // metas
 		bsl.setC_Invoice_ID(payment.getC_Invoice_ID()); // metas

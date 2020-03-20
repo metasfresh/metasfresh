@@ -153,6 +153,7 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_Activity")
 			.add("org.compiere.model.I_C_Charge")
 			//
+			.add("org.compiere.model.I_C_Payment")
 			.add("org.compiere.model.I_C_BankStatement")
 			.add("org.compiere.model.I_C_BankStatementLine")
 			.add("de.metas.banking.model.I_C_BankStatementLine_Ref")
@@ -279,7 +280,7 @@ public class ModelInterfaceGenerator
 
 		//
 		// Add: COLUMN_ColumnName = new ModelColumn...
-		if(!SKIP_ModelGettersAndSettersForReferencedClassNames.contains(referenceClassName))
+		if (!SKIP_ModelGettersAndSettersForReferencedClassNames.contains(referenceClassName))
 		{
 			// e.g. ModelColumn<I_C_Invoice, I_C_BPartner>
 			final StringBuilder modelColumnClassname = new StringBuilder()

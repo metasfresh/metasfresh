@@ -232,9 +232,10 @@ public class BankStatementDocumentHandler implements DocumentHandler
 			// Cash/bank transfer
 			if (line.getC_BP_BankAccountTo_ID() > 0)
 			{
-				if (line.getLink_BankStatementLine_ID() > 0)
+				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
+				if (linkedBankStatementLineId != null)
 				{
-					final I_C_BankStatementLine lineFrom = line.getLink_BankStatementLine();
+					final I_C_BankStatementLine lineFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
 					if (lineFrom.getLink_BankStatementLine_ID() > 0
 							&& lineFrom.getLink_BankStatementLine_ID() != line.getC_BankStatementLine_ID())
 					{
@@ -341,12 +342,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 				//
 				// Cash/bank transfer
-				if (line.getLink_BankStatementLine_ID() > 0)
+				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
+				if (linkedBankStatementLineId != null)
 				{
-					final I_C_BankStatementLine lineFrom = line.getLink_BankStatementLine();
+					final I_C_BankStatementLine lineFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
 					if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
 					{
-						lineFrom.setLink_BankStatementLine(null);
+						lineFrom.setLink_BankStatementLine_ID(-1);
 						bankStatementDAO.save(lineFrom);
 					}
 				}

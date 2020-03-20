@@ -31,6 +31,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -404,9 +406,10 @@ public class BankStatementLineOrRefHelper
 	public static void setPaymentDetails(I_C_BankStatementLine line)
 	{
 		I_C_Payment payment = null;
-		if (line.getC_Payment_ID() > 0)
+		PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		if (paymentId != null)
 		{
-			payment = line.getC_Payment();
+			payment = Services.get(IPaymentBL.class).getById(paymentId);
 		}
 		Services.get(IBankStatmentPaymentBL.class).setC_Payment(line, payment);
 	}

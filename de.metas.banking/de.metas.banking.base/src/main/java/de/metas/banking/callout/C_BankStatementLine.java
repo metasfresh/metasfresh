@@ -33,6 +33,8 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
@@ -55,11 +57,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -162,13 +164,15 @@ public class C_BankStatementLine
 	})
 	public void onLink_BankStatement_IDChangedResetAmounts(final I_C_BankStatementLine bsl, final ICalloutField calloutField)
 	{
-		if (bsl.getLink_BankStatementLine_ID() <= 0)
+		final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bsl.getLink_BankStatementLine_ID());
+		if (linkedBankStatementLineId == null)
 		{
 			bsl.setCurrencyRate(null);
 			return;
 		}
 
-		final org.compiere.model.I_C_BankStatementLine bslFrom = bsl.getLink_BankStatementLine();
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final org.compiere.model.I_C_BankStatementLine bslFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
 
 		final BigDecimal trxAmtFrom = bslFrom.getTrxAmt();
 		final CurrencyId trxAmtFromCurrencyId = CurrencyId.ofRepoId(bslFrom.getC_Currency_ID());

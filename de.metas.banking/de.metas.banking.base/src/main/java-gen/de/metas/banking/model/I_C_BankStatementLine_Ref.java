@@ -222,12 +222,6 @@ public interface I_C_BankStatementLine_Ref
 	 */
 	public int getC_Payment_ID();
 
-	public org.compiere.model.I_C_Payment getC_Payment();
-
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
-
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_C_Payment>(I_C_BankStatementLine_Ref.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 

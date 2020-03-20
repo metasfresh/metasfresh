@@ -15,7 +15,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 816551690L;
+	private static final long serialVersionUID = -1692568450L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine_Ref (Properties ctx, int C_BankStatementLine_Ref_ID, String trxName)
@@ -205,18 +205,6 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Payment getC_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
 	}
 
 	/** Set Zahlung.
