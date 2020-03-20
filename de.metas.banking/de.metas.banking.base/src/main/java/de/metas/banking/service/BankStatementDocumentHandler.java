@@ -20,6 +20,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
@@ -166,7 +167,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		// Std Period open?
 		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatement);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
+		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
 		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
@@ -225,7 +227,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 
 		//
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatement);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
+		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
 		for (final I_C_BankStatementLine line : lines)
 		{
 			//
@@ -322,7 +325,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 			factAcctDAO.deleteForDocumentModel(bankStatement);
 		}
 
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatement);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
+		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
 
 		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
 

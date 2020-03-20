@@ -29,6 +29,7 @@ import org.compiere.model.MAccount;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
@@ -80,10 +81,11 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		setDocLines(loadLines(bs));
 	}
 
-	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bs)
+	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bankStatement)
 	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<DocLine_BankStatement> docLines = new ArrayList<>();
-		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs))
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bankStatementId))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 

@@ -41,6 +41,7 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -190,6 +191,15 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		bankStatementLine.setOverUnderAmt(payment.getOverUnderAmt().multiply(negateIfOutboundPayment));
 
 		bankStatementDAO.save(bankStatementLine);
+
+		//
+		// ReConcile payment if bank statement is processed
+		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+		if (bankStatementDocStatus.isCompleted())
+		{
+			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+			paymentBL.markReconciled(payment);
+		}
 	}
 
 	@Override

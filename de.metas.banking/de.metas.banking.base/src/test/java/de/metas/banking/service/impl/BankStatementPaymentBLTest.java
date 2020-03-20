@@ -38,6 +38,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -93,6 +94,7 @@ class BankStatementPaymentBLTest
 	class ExistingPayments
 	{
 		@Test
+		@Disabled("not implemented")
 		void vendorOneMatchingPaymentExists_DifferentInvoiceOnBSL()
 		{
 			// TODO tbp: check with mark in a followup task about this usecase.
