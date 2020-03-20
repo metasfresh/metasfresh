@@ -75,13 +75,6 @@ public class BankStatementDAO implements IBankStatementDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	@Deprecated
-	public I_C_BankStatement getById(int id)
-	{
-		return load(id, I_C_BankStatement.class);
-	}
-
-	@Override
 	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
 	{
 		return load(bankStatementId, I_C_BankStatement.class);

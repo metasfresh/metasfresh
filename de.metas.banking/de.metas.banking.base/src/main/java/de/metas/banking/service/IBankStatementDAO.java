@@ -69,26 +69,11 @@ public interface IBankStatementDAO extends ISingletonService
 	 */
 	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
-	/**
-	 * @deprecated Please use {@link #getById(BankStatementId)}
-	 */
-	@Deprecated
-	I_C_BankStatement getById(int id);
-
 	I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
 
 	I_C_BankStatementLine getLineById(BankStatementLineId lineId);
 
 	List<I_C_BankStatementLine> getLineByIds(@NonNull Set<BankStatementLineId> lineIds);
-
-	/**
-	 * @deprecated please use the {@link #getLineById(BankStatementLineId)}
-	 */
-	@Deprecated
-	default I_C_BankStatementLine getLineById(int lineId)
-	{
-		return getLineById(BankStatementLineId.ofRepoId(lineId));
-	}
 
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
