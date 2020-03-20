@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.util.TimeUtil;
@@ -63,10 +62,6 @@ import de.metas.util.Services;
  * #L%
  */
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 @Callout(I_C_BankStatementLine.class)
 public class C_BankStatementLine
 {
@@ -104,7 +99,7 @@ public class C_BankStatementLine
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID)
-	public void onLink_BankStatement_IDChangedResetAmounts(final I_C_BankStatementLine bsl, final ICalloutField calloutField)
+	public void onLink_BankStatement_IDChangedResetAmounts(final I_C_BankStatementLine bsl)
 	{
 		final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bsl.getLink_BankStatementLine_ID());
 		if (linkedBankStatementLineId == null)
