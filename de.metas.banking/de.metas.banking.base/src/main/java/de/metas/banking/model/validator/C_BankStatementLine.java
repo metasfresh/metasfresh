@@ -30,11 +30,9 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
@@ -47,7 +45,6 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
@@ -58,6 +55,8 @@ public class C_BankStatementLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void onBeforeNewOrChange(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
 
 		if (changeType.isNew())
@@ -69,7 +68,7 @@ public class C_BankStatementLine
 				throw new AdempiereException("@ParentComplete@ @C_BankStatementLine_ID@");
 			}
 		}
-		
+
 		if (bankStatementLine.getChargeAmt().signum() != 0 && bankStatementLine.getC_Charge_ID() <= 0)
 		{
 			throw new FillMandatoryException(I_C_BankStatementLine.COLUMNNAME_C_Charge_ID);
@@ -82,26 +81,6 @@ public class C_BankStatementLine
 			final int lineNo = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, bankStatementId);
 			bankStatementLine.setLine(lineNo);
 		}
-
-		// Set References
-		if (bankStatementLine.getC_Payment_ID() > 0 && bankStatementLine.getC_BPartner_ID() <= 0)
-		{
-			final PaymentId paymentId = PaymentId.ofRepoId(bankStatementLine.getC_Payment_ID());
-			final I_C_Payment payment = Services.get(IPaymentBL.class).getById(paymentId);
-			bankStatementLine.setC_BPartner_ID(payment.getC_BPartner_ID());
-			if (payment.getC_Invoice_ID() > 0)
-			{
-				bankStatementLine.setC_Invoice_ID(payment.getC_Invoice_ID());
-			}
-		}
-		if (bankStatementLine.getC_Invoice_ID() > 0 && bankStatementLine.getC_BPartner_ID() <= 0)
-		{
-			final InvoiceId invoiceId = InvoiceId.ofRepoId(bankStatementLine.getC_Invoice_ID());
-			final I_C_Invoice invoice = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
-			bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		}
-
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
 		final BigDecimal chargeAmt = bankStatementLine.getStmtAmt()
 				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(bankStatementLine));
