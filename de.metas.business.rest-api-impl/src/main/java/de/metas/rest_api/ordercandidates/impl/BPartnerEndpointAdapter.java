@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.http.ResponseEntity;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -39,6 +40,7 @@ import de.metas.rest_api.exception.InvalidEntityException;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
@@ -67,13 +69,14 @@ import lombok.NonNull;
 final class BPartnerEndpointAdapter
 {
 	private final BpartnerRestController bpartnerRestController;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public BPartnerEndpointAdapter(@NonNull final BpartnerRestController bpartnerRestController)
 	{
 		this.bpartnerRestController = bpartnerRestController;
 	}
 
-	public BPartnerInfo getCreateBPartnerInfo(
+	public BPartnerInfo getCreateBPartnerInfoInTrx(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
 			@Nullable final String orgCode)
@@ -85,8 +88,9 @@ final class BPartnerEndpointAdapter
 		// repackage request
 		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = asJsonRequestBPartnerUpsert(orgCode, jsonBPartnerInfo);
 
-		// invoke bpartner-endpoint
-		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response = bpartnerRestController.createOrUpdateBPartner(jsonRequestBPartnerUpsert);
+		// Invoke bpartner-endpoint in trx to make sure it is committed and can be found on the next invokation.
+		// Otherwise we would need to give them all at once to the endpoint but then we'd need to sort out which is which
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> response = trxManager.callInNewTrx(() -> bpartnerRestController.createOrUpdateBPartner(jsonRequestBPartnerUpsert));
 
 		// repackage result
 		return asBPartnerInfo(response, billTo);

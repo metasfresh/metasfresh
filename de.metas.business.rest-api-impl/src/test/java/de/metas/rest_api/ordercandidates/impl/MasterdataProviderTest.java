@@ -246,11 +246,11 @@ public class MasterdataProviderTest
 				.contact(jsonContact)
 				.build();
 
-		masterdataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 
-		masterdataProvider.getCreateBPartnerInfo(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 	}

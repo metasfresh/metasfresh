@@ -188,7 +188,6 @@ public class InventoryLineRecordService
 		{
 			final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
 
-			// final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 			final Quantity qtyDiff = inventoryLine.getMovementQty();
 
 			final IAllocationSource source = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
