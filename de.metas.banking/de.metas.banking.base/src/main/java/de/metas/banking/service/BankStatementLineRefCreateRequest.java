@@ -1,5 +1,7 @@
 package de.metas.banking.service;
 
+import javax.annotation.Nullable;
+
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.bpartner.BPartnerId;
@@ -49,7 +51,9 @@ public class BankStatementLineRefCreateRequest
 
 	@NonNull
 	PaymentId paymentId;
+	@NonNull
 	BPartnerId bpartnerId;
+	@Nullable
 	InvoiceId invoiceId;
 
 	@NonNull

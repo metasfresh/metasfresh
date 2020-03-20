@@ -15,7 +15,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1692568450L;
+	private static final long serialVersionUID = -339778470L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine_Ref (Properties ctx, int C_BankStatementLine_Ref_ID, String trxName)
@@ -26,8 +26,9 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 			setC_BankStatement_ID (0);
 			setC_BankStatementLine_ID (0);
 			setC_BankStatementLine_Ref_ID (0);
-			setC_Currency_ID (0); // @SQL=SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=@C_BP_BankAccount_ID@
-			setIsOverUnderPayment (false); // N
+			setC_BPartner_ID (0);
+			setC_Currency_ID (0);
+			setC_Payment_ID (0);
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine_Ref WHERE C_BankStatementLine_ID=@C_BankStatementLine_ID@
 			setTrxAmt (BigDecimal.ZERO);
         } */
@@ -232,70 +233,6 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	/** Set Create Payment.
-		@param CreatePayment Create Payment	  */
-	@Override
-	public void setCreatePayment (java.lang.String CreatePayment)
-	{
-		set_Value (COLUMNNAME_CreatePayment, CreatePayment);
-	}
-
-	/** Get Create Payment.
-		@return Create Payment	  */
-	@Override
-	public java.lang.String getCreatePayment () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreatePayment);
-	}
-
-	/** Set Skonto.
-		@param DiscountAmt 
-		Calculated amount of discount
-	  */
-	@Override
-	public void setDiscountAmt (java.math.BigDecimal DiscountAmt)
-	{
-		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
-	}
-
-	/** Get Skonto.
-		@return Calculated amount of discount
-	  */
-	@Override
-	public java.math.BigDecimal getDiscountAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Over/Under Payment.
-		@param IsOverUnderPayment 
-		Over-Payment (unallocated) or Under-Payment (partial payment)
-	  */
-	@Override
-	public void setIsOverUnderPayment (boolean IsOverUnderPayment)
-	{
-		set_Value (COLUMNNAME_IsOverUnderPayment, Boolean.valueOf(IsOverUnderPayment));
-	}
-
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment)
-	  */
-	@Override
-	public boolean isOverUnderPayment () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsOverUnderPayment);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Line No.
 		@param Line 
 		Unique line for this document
@@ -316,28 +253,6 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Over/Under Payment.
-		@param OverUnderAmt 
-		Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	  */
-	@Override
-	public void setOverUnderAmt (java.math.BigDecimal OverUnderAmt)
-	{
-		set_Value (COLUMNNAME_OverUnderAmt, OverUnderAmt);
-	}
-
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	  */
-	@Override
-	public java.math.BigDecimal getOverUnderAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Verarbeitet.
@@ -401,28 +316,6 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	public java.math.BigDecimal getTrxAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TrxAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Write-off Amount.
-		@param WriteOffAmt 
-		Amount to write-off
-	  */
-	@Override
-	public void setWriteOffAmt (java.math.BigDecimal WriteOffAmt)
-	{
-		set_Value (COLUMNNAME_WriteOffAmt, WriteOffAmt);
-	}
-
-	/** Get Write-off Amount.
-		@return Amount to write-off
-	  */
-	@Override
-	public java.math.BigDecimal getWriteOffAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

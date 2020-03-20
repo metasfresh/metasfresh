@@ -44,7 +44,7 @@ public class BankStatementLineReference
 
 	int lineNo;
 
-	@Nullable
+	@NonNull
 	BPartnerId bpartnerId;
 
 	@NonNull

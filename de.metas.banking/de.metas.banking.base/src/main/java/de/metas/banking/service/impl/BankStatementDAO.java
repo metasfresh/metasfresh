@@ -174,8 +174,9 @@ public class BankStatementDAO implements IBankStatementDAO
 						record.getC_BankStatementLine_ID(),
 						record.getC_BankStatementLine_Ref_ID()))
 				.lineNo(record.getLine())
-				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-				.paymentId(PaymentId.ofRepoIdOrNull(record.getC_Payment_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.paymentId(PaymentId.ofRepoId(record.getC_Payment_ID()))
+				.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
 				.trxAmt(Money.of(record.getTrxAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
 				.build();
 	}
@@ -269,17 +270,13 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setC_BankStatementLine_ID(request.getBankStatementLineId().getRepoId());
 		record.setLine(request.getLineNo());
 
-		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
-		record.setC_Payment_ID(PaymentId.toRepoId(request.getPaymentId()));
+		record.setC_BPartner_ID(request.getBpartnerId().getRepoId());
+		record.setC_Payment_ID(request.getPaymentId().getRepoId());
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
 
 		// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
 		record.setC_Currency_ID(request.getTrxAmt().getCurrencyId().getRepoId());
 		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
-		record.setDiscountAmt(BigDecimal.ZERO);
-		record.setWriteOffAmt(BigDecimal.ZERO);
-		record.setIsOverUnderPayment(false);
-		record.setOverUnderAmt(BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.saveRecord(record);
 
