@@ -54,6 +54,8 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public interface IHandlingUnitsDAO extends ISingletonService
 {
 	IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
@@ -72,7 +74,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
 	 */
 	Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
-			.<I_M_HU_Item, Integer> comparing(
+			.<I_M_HU_Item, Integer>comparing(
 					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
 			.thenComparing(
 					queryOrderBy.getComparator(I_M_HU_Item.class));
@@ -182,7 +184,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
-	 * @param version mandatory. Only return items that reference this version.
+	 * @param version   mandatory. Only return items that reference this version.
 	 * @param partnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMN_C_BPartner_ID}.
 	 * @return
 	 */

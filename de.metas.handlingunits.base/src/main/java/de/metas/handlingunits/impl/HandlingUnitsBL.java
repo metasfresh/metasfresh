@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.util.GuavaCollectors;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -61,6 +62,8 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -544,6 +547,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.includeAll(false)
 				.build();
 		return getTopLevelHUs(query).get(0);
+	}
+
+	@Override
+	public ImmutableSet<HuId> getTopLevelHUs(final @NonNull Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		final TopLevelHusQuery query = TopLevelHusQuery.builder()
+				.hus(ImmutableList.copyOf(hus))
+				.includeAll(false)
+				.build();
+
+		return getTopLevelHUs(query).stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
 	@Override

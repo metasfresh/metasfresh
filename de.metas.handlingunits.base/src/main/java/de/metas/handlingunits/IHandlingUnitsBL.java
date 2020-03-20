@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -40,6 +41,8 @@ import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder.Default;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
@@ -222,6 +225,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return top level parent; never return null
 	 */
 	I_M_HU getTopLevelParent(I_M_HU hu);
+
+	ImmutableSet<HuId> getTopLevelHUs(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).

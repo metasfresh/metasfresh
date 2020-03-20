@@ -6,6 +6,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public final class LUTUCUPair
 {
 	public static LUTUCUPair ofLU(@NonNull I_M_HU luHU)
