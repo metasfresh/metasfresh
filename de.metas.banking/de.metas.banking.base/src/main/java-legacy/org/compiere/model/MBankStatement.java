@@ -32,6 +32,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -56,24 +57,16 @@ import de.metas.util.Services;
  *
  * @version $Id: MBankStatement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
+@SuppressWarnings("serial")
 public class MBankStatement extends X_C_BankStatement implements IDocument
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -859925588789443186L;
+	/** Just Prepared Flag */
+	private boolean m_justPrepared = false;
 
-	/**
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param C_BankStatement_ID id
-	 * @param trxName transaction
-	 */
 	public MBankStatement(Properties ctx, int C_BankStatement_ID, String trxName)
 	{
 		super(ctx, C_BankStatement_ID, trxName);
-		if (C_BankStatement_ID == 0)
+		if (is_new())
 		{
 			// setC_BP_BankAccount_ID (0); // parent
 			setStatementDate(new Timestamp(System.currentTimeMillis()));	// @Date@
@@ -87,42 +80,11 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			setPosted(false);	// N
 			super.setProcessed(false);
 		}
-	}	// MBankStatement
+	}
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx Current context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MBankStatement(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MBankStatement
-
-	public MBankStatement(I_C_BP_BankAccount account, boolean isManual)
-	{
-		this(InterfaceWrapperHelper.getCtx(account), 0, InterfaceWrapperHelper.getTrxName(account));
-		setAD_Org_ID(account.getAD_Org_ID());
-		setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
-		setStatementDate(new Timestamp(System.currentTimeMillis()));
-
-		setName(getStatementDate().toString());
-		setIsManual(isManual);
-	}	// MBankStatement
-
-	private void addDescription(String description)
-	{
-		String desc = getDescription();
-		if (desc == null)
-		{
-			setDescription(description);
-		}
-		else
-		{
-			setDescription(desc + " | " + description);
-		}
 	}
 
 	@Override
@@ -160,92 +122,40 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		return documentInfo.toString();
 	}
 
-	/**
-	 * Create PDF
-	 *
-	 * @return File or null
-	 */
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (Exception e)
-		{
-			log.error("Could not create PDF", e);
-		}
 		return null;
-	}	// getPDF
-
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	public File createPDF(File file)
-	{
-		// ReportEngine re = ReportEngine.get (getCtx(), ReportEngine.INVOICE, getC_Invoice_ID());
-		// if (re == null)
-		return null;
-		// return re.getPDF(file);
-	}	// createPDF
+	}
 
 	@Override
 	public boolean processIt(final String processAction)
 	{
-		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
-	/** Process Message */
-	private String m_processMsg = null;
-	/** Just Prepared Flag */
-	private boolean m_justPrepared = false;
-
-	/**
-	 * Unlock Document.
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean unlockIt()
 	{
 		log.debug("unlockIt - {}", this);
 		setProcessing(false);
 		return true;
-	}	// unlockIt
+	}
 
-	/**
-	 * Invalidate Document
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean invalidateIt()
 	{
 		log.debug("invalidateIt - {}", this);
 		setDocAction(DOCACTION_Prepare);
 		return true;
-	}	// invalidateIt
+	}
 
-	/**
-	 * Prepare Document
-	 *
-	 * @return new status (In Progress or Invalid)
-	 */
 	@Override
 	public String prepareIt()
 	{
 		log.debug("Prepare: {}", this);
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
-		if (m_processMsg != null)
-		{
-			return IDocument.STATUS_Invalid;
-		}
+
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 
 		// Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
@@ -254,8 +164,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(this);
 		if (lines.isEmpty())
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw new AdempiereException("@NoLines@");
 		}
 		// Lines
 		BigDecimal total = BigDecimal.ZERO;
@@ -278,11 +187,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), minDate, MDocType.DOCBASETYPE_BankStatement, 0);
 		MPeriod.testPeriodOpen(getCtx(), maxDate, MDocType.DOCBASETYPE_BankStatement, 0);
 
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
-		if (m_processMsg != null)
-		{
-			return IDocument.STATUS_Invalid;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
@@ -290,26 +195,16 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			setDocAction(DOCACTION_Complete);
 		}
 		return IDocument.STATUS_InProgress;
-	}	// prepareIt
+	}
 
-	/**
-	 * Approve Document
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean approveIt()
 	{
 		log.debug("approveIt - {}", this);
 		setIsApproved(true);
 		return true;
-	}	// approveIt
+	}
 
-	/**
-	 * Reject Approval
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean rejectIt()
 	{
@@ -318,11 +213,6 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		return true;
 	}	// rejectIt
 
-	/**
-	 * Complete Document
-	 *
-	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
-	 */
 	@Override
 	public String completeIt()
 	{
@@ -397,13 +287,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
-	}	// completeIt
+	}
 
-	/**
-	 * Void Document.
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean voidIt()
 	{
@@ -557,7 +442,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 	@Override
 	public String getProcessMsg()
 	{
-		return m_processMsg;
+		return null;
 	}
 
 	@Override
@@ -578,17 +463,23 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		return 0;
 	}
 
-	/**
-	 * Document Status is Complete or Closed
-	 *
-	 * @return true if CO, CL or RE
-	 */
 	public boolean isComplete()
 	{
-		String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds)
-				|| DOCSTATUS_Closed.equals(ds)
-				|| DOCSTATUS_Reversed.equals(ds);
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
+	}
+
+	private void addDescription(String description)
+	{
+		String desc = getDescription();
+		if (desc == null)
+		{
+			setDescription(description);
+		}
+		else
+		{
+			setDescription(desc + " | " + description);
+		}
 	}
 
 	private static void addDescription(final I_C_BankStatementLine line, final String description)
@@ -603,5 +494,4 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			line.setDescription(desc + " | " + description);
 		}
 	}
-
 }

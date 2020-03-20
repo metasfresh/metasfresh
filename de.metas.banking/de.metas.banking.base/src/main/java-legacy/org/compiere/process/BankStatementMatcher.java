@@ -17,12 +17,14 @@
 package org.compiere.process;
 
 import org.compiere.impexp.BankStatementMatchInfo;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
+import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.MBankStatementMatcher;
 import org.compiere.model.X_I_BankStatement;
 
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -80,17 +82,21 @@ public class BankStatementMatcher extends JavaProcess
 		log.info("doIt - Table_Name=" + tableName + ", Record_ID=" + Record_ID
 				+ ", Matchers=" + m_matchers.length);
 
-		if (X_I_BankStatement.Table_Name.equals(tableName))
+		if (I_I_BankStatement.Table_Name.equals(tableName))
 		{
 			return match(new X_I_BankStatement(getCtx(), Record_ID, get_TrxName()));
 		}
-		else if (MBankStatement.Table_Name.equals(tableName))
+		else if (I_C_BankStatement.Table_Name.equals(tableName))
 		{
-			return match(new MBankStatement(getCtx(), Record_ID, get_TrxName()));
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(Record_ID);
+			final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
+			return match(bankStatement);
 		}
-		else if (MBankStatementLine.Table_Name.equals(tableName))
+		else if (I_C_BankStatementLine.Table_Name.equals(tableName))
 		{
-			return match(new MBankStatementLine(getCtx(), Record_ID, get_TrxName()));
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(Record_ID);
+			final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
+			return match(bankStatementLine);
 		}
 
 		return "??";
@@ -188,7 +194,7 @@ public class BankStatementMatcher extends JavaProcess
 	 * @param bs bank statement
 	 * @return Message
 	 */
-	private String match(MBankStatement bs)
+	private String match(I_C_BankStatement bs)
 	{
 		if (m_matchers == null || bs == null)
 		{

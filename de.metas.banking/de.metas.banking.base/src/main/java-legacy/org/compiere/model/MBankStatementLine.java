@@ -22,11 +22,12 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.util.Services;
 
@@ -43,20 +44,12 @@ import de.metas.util.Services;
  *         <li>BF [ 1896880 ] Unlink Payment if TrxAmt is zero
  *         <li>BF [ 1896885 ] BS Line: don't update header if after save/delete fails
  */
+@SuppressWarnings("serial")
 public class MBankStatementLine extends X_C_BankStatementLine
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1914411222159254809L;
+	/** Parent */
+	private MBankStatement m_parent = null;
 
-	/**
-	 * Standard Constructor
-	 * 
-	 * @param ctx context
-	 * @param C_BankStatementLine_ID id
-	 * @param trxName transaction
-	 */
 	public MBankStatementLine(Properties ctx, int C_BankStatementLine_ID, String trxName)
 	{
 		super(ctx, C_BankStatementLine_ID, trxName);
@@ -66,52 +59,20 @@ public class MBankStatementLine extends X_C_BankStatementLine
 			// setC_Charge_ID (0);
 			// setC_Currency_ID (0); // Bank Acct Currency
 			// setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_BankStatementLine WHERE C_BankStatement_ID=@C_BankStatement_ID@
-			setStmtAmt(Env.ZERO);
-			setTrxAmt(Env.ZERO);
-			setInterestAmt(Env.ZERO);
-			setChargeAmt(Env.ZERO);
+			setStmtAmt(BigDecimal.ZERO);
+			setTrxAmt(BigDecimal.ZERO);
+			setInterestAmt(BigDecimal.ZERO);
+			setChargeAmt(BigDecimal.ZERO);
 			setIsReversal(false);
 			// setValutaDate (new Timestamp(System.currentTimeMillis())); // @StatementDate@
 			// setDateAcct (new Timestamp(System.currentTimeMillis())); // @StatementDate@
 		}
 	}	// MBankStatementLine
 
-	/**
-	 * Load Constructor
-	 * 
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MBankStatementLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MBankStatementLine
-
-	/**
-	 * Parent Constructor
-	 * 
-	 * @param statement Bank Statement that the line is part of
-	 */
-	public MBankStatementLine(MBankStatement statement)
-	{
-		this(statement.getCtx(), 0, statement.get_TrxName());
-		setClientOrg(statement);
-		setC_BankStatement_ID(statement.getC_BankStatement_ID());
-		setStatementLineDate(statement.getStatementDate());
-	}	// MBankStatementLine
-
-	/**
-	 * Parent Constructor
-	 * 
-	 * @param statement Bank Statement that the line is part of
-	 * @param lineNo position of the line within the statement
-	 */
-	public MBankStatementLine(MBankStatement statement, int lineNo)
-	{
-		this(statement);
-		setLine(lineNo);
-	}	// MBankStatementLine
+	}
 
 	/**
 	 * Set Statement Line Date and all other dates (Valuta, Acct)
@@ -125,23 +86,6 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		setValutaDate(StatementLineDate);
 		setDateAcct(StatementLineDate);
 	}	// setStatementLineDate
-
-	/**
-	 * Set Payment
-	 * 
-	 * @param payment payment
-	 */
-	public void setPayment(final MPayment payment)
-	{
-		setC_Payment(payment);
-		setC_Currency_ID(payment.getC_Currency_ID());
-		setC_BPartner_ID(payment.getC_BPartner_ID()); // metas
-		setC_Invoice_ID(payment.getC_Invoice_ID()); // metas
-		//
-		final BigDecimal amt = payment.getPayAmt(true);
-		setTrxAmt(amt);
-		setStmtAmt(amt);
-	}	// setPayment
 
 	@Override
 	protected boolean beforeSave(boolean newRecord)
@@ -163,7 +107,7 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		// Set Line No
 		if (getLine() == 0)
 		{
-			String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_BankStatementLine WHERE C_BankStatement_ID=?";
+			final String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_BankStatementLine WHERE C_BankStatement_ID=?";
 			int ii = DB.getSQLValue(get_TrxName(), sql, getC_BankStatement_ID());
 			setLine(ii);
 		}
@@ -187,7 +131,7 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		setChargeAmt(computeChargetAmt(this));
 
 		return true;
-	}	// beforeSave
+	}
 
 	private static BigDecimal computeChargetAmt(final I_C_BankStatementLine line)
 	{
@@ -197,81 +141,56 @@ public class MBankStatementLine extends X_C_BankStatementLine
 				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(line));
 	}
 
-	/** Parent */
-	private MBankStatement m_parent = null;
-
-	/**
-	 * Get Parent
-	 * 
-	 * @return parent
-	 */
-	public MBankStatement getParent()
+	private MBankStatement getParent()
 	{
 		if (m_parent == null)
 		{
 			m_parent = new MBankStatement(getCtx(), getC_BankStatement_ID(), get_TrxName());
 		}
 		return m_parent;
-	}	// getParent
+	}
 
-	/**
-	 * After Save
-	 * 
-	 * @param newRecord new
-	 * @param success success
-	 * @return success
-	 */
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
 		{
-			return success;
+			return false;
 		}
-		return updateHeader();
-	}	// afterSave
 
-	/**
-	 * After Delete
-	 * 
-	 * @param success success
-	 * @return success
-	 */
+		updateHeader();
+		return true;
+	}
+
 	@Override
 	protected boolean afterDelete(boolean success)
 	{
 		if (!success)
 		{
-			return success;
+			return false;
 		}
-		return updateHeader();
-	}	// afterSave
 
-	/**
-	 * Update Header
-	 */
-	private boolean updateHeader()
-	{
-		String sql = "UPDATE C_BankStatement bs"
-				+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
-				+ "WHERE bsl.C_BankStatement_ID=bs.C_BankStatement_ID AND bsl.IsActive='Y') "
-				+ "WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
-		if (no != 1)
-		{
-			log.warn("StatementDifference #" + no);
-			return false;
-		}
-		sql = "UPDATE C_BankStatement bs"
-				+ " SET EndingBalance=BeginningBalance+StatementDifference "
-				+ "WHERE C_BankStatement_ID=" + getC_BankStatement_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
-		if (no != 1)
-		{
-			log.warn("Balance #" + no);
-			return false;
-		}
+		updateHeader();
 		return true;
-	}	// updateHeader
+	}
 
-}	// MBankStatementLine
+	private void updateHeader()
+	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(getC_BankStatement_ID());
+
+		{
+			final String sql = "UPDATE C_BankStatement bs"
+					+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
+					+ "WHERE bsl.C_BankStatement_ID=bs.C_BankStatement_ID AND bsl.IsActive='Y') "
+					+ "WHERE C_BankStatement_ID=?";
+			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+		}
+
+		{
+			final String sql = "UPDATE C_BankStatement bs"
+					+ " SET EndingBalance=BeginningBalance+StatementDifference "
+					+ "WHERE C_BankStatement_ID=?";
+			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+		}
+	}
+}
