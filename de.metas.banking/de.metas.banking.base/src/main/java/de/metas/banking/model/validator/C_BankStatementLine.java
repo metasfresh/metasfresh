@@ -30,11 +30,8 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
-import de.metas.banking.service.IBankStatementDAO;
-import de.metas.banking.service.IBankStatementListener;
-import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
@@ -80,14 +77,9 @@ public class C_BankStatementLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onBeforeDelete(final I_C_BankStatementLine bankStatementLine)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
 		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
-		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineId);
-
-		listeners.onBankStatementLineVoiding(lineRefs);
-
-		bankStatementDAO.deleteReferencesByIds(lineRefs.getBankStatementLineRefIds());
+		bankStatementBL.deleteReferences(bankStatementLineId);
 	}
 }

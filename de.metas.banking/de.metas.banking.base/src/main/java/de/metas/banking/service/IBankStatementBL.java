@@ -7,6 +7,7 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -28,5 +29,8 @@ public interface IBankStatementBL extends ISingletonService
 
 	String getDocumentNo(BankStatementId bankStatementId);
 
+	void deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
+
 	void unlinkPaymentsAndDeleteReferences(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+
 }

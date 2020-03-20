@@ -43,7 +43,7 @@ class PaySelectionBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
+	public void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		paySelectionBL.unlinkPaySelectionLineFromBankStatement(lineRefs.getBankStatementLineIds());
 	}

@@ -43,7 +43,7 @@ class ESRBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
+	public void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		esrImportBL.unlinkESRImportLinesFromBankStatement(lineRefs.getBankStatementLineIds());
 	}

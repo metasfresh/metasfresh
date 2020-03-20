@@ -38,11 +38,11 @@ final class CompositeBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
+	public void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		for (final IBankStatementListener listener : listeners)
 		{
-			listener.onBankStatementLineVoiding(lineRefs);
+			listener.onBeforeDeleteBankStatementLineReferences(lineRefs);
 		}
 	}
 }

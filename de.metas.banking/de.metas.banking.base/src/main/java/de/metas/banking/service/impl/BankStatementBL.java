@@ -146,11 +146,28 @@ public class BankStatementBL implements IBankStatementBL
 		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineIds);
 		paymentIdsToUnReconcile.addAll(lineRefs.getPaymentIds());
 
-		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
-		listeners.onBankStatementLineVoiding(lineRefs);
+		deleteReferences(lineRefs);
 
-		//
-		bankStatementDAO.deleteReferencesByIds(lineRefs.getBankStatementLineRefIds());
 		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
+	}
+
+	@Override
+	public void deleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineId);
+		deleteReferences(lineRefs);
+	}
+
+	private void deleteReferences(@NonNull final BankStatementLineReferenceList lineRefs)
+	{
+		if (lineRefs.isEmpty())
+		{
+			return;
+		}
+
+		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
+		listeners.onBeforeDeleteBankStatementLineReferences(lineRefs);
+
+		bankStatementDAO.deleteReferencesByIds(lineRefs.getBankStatementLineRefIds());
 	}
 }
