@@ -7,8 +7,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -21,6 +19,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BankStatement;
 
 import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
@@ -54,6 +53,8 @@ import lombok.NonNull;
 
 public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private int p_C_BP_BankAccount_ID = 0;
 
@@ -106,11 +107,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	@Override
 	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly) throws Exception
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final BankStatementId existingBankStatementId = retrieveExistingBankStatementId(importRecord);
 
-		final int existingBankStatementId = retrieveExistingBankStatementId(importRecord);
-
-		final boolean isNewBankStatement = existingBankStatementId <= 0;
+		final boolean isNewBankStatement = existingBankStatementId == null;
 
 		if (!isNewBankStatement && isInsertOnly)
 		{
@@ -131,7 +130,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		}
 		else
 		{
-			importRecord.setC_BankStatement_ID(existingBankStatementId);
+			importRecord.setC_BankStatement_ID(existingBankStatementId.getRepoId());
 			save(importRecord);
 
 			final I_C_BankStatement bankStatement = bankStatementDAO.getById(existingBankStatementId);
@@ -168,13 +167,13 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		return isNewBankStatement ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private int retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
+	private BankStatementId retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
-		final int bankStatementId = Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
+		final BankStatementId bankStatementId = queryBL.createQueryBuilder(I_C_BankStatement.class)
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, importRecord.getC_BankStatement_ID())
 				.create()
-				.firstId();
-		if (bankStatementId >= 0)
+				.firstId(BankStatementId::ofRepoIdOrNull);
+		if (bankStatementId != null)
 		{
 			return bankStatementId;
 
@@ -183,23 +182,22 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		// I believe this fallback is not needed anymore due to the above query, as the record should already have a C_BankStatement_ID set from de.metas.banking.impexp.BankStatementImportTableSqlUpdater.updateBankStatement.
 		// Not sure if deleting this query will bring other bugs though.
 		// Note: there may be bank statements with same name, statement date and BP bank accounts, so the below query may return the wrong result, and also different results for different calls, since there is no order by
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
+		return queryBL.createQueryBuilder(I_C_BankStatement.class)
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
 				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, importRecord.getC_BP_BankAccount_ID())
 				.create()
-				.firstId();
+				.firstId(BankStatementId::ofRepoIdOrNull);
 	}
 
 	private void createUpdateBankStatementLine(final I_I_BankStatement importRecord)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final int importLineId = importRecord.getC_BankStatementLine_ID();
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoIdOrNull(importRecord.getC_BankStatementLine_ID());
 
 		final I_C_BankStatementLine bankStatementLine;
-		if (importLineId > 0)
+		if (bankStatementLineId != null)
 		{
-			bankStatementLine = bankStatementDAO.getLineById(importLineId);
+			bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
 		}
 		else
 		{
@@ -207,16 +205,13 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		}
 
 		updateBankStatementLine(bankStatementLine, importRecord);
-
 	}
 
 	private void updateBankStatementLine(final I_C_BankStatementLine bankStatementLine, final I_I_BankStatement importRecord)
 	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(importRecord.getC_BankStatement_ID());
 
-		final int bankStatementId = importRecord.getC_BankStatement_ID();
-
-		bankStatementLine.setC_BankStatement_ID(bankStatementId);
+		bankStatementLine.setC_BankStatement_ID(bankStatementId.getRepoId());
 		bankStatementLine.setImportedBillPartnerName(importRecord.getBill_BPartner_Name());
 		bankStatementLine.setImportedBillPartnerIBAN(importRecord.getIBAN_To());
 		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
@@ -254,13 +249,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		if (bankStatementLine.getLine() <= 0)
 		{
-			final List<I_C_BankStatementLine> bankStatementLines = bankStatementDAO.retrieveLines(bankStatementDAO.getById(bankStatementId));
-
-			final int maxLineNo = bankStatementLines.stream()
-					.max(Comparator.comparing(line -> line.getLine()))
-					.map(line -> line.getLine())
-					.orElse(0);
-
+			final int maxLineNo = bankStatementDAO.retrieveLastLineNo(bankStatementId);
 			bankStatementLine.setLine(maxLineNo + 10);
 		}
 

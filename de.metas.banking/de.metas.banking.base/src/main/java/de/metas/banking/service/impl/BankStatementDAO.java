@@ -293,4 +293,15 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addSetColumnValue(I_C_BankStatementLine.COLUMNNAME_Processed, processed)
 				.execute();
 	}
+
+	@Override
+	public int retrieveLastLineNo(@NonNull final BankStatementId bankStatementId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BankStatementLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.create()
+				.maxInt(I_C_BankStatementLine.COLUMNNAME_Line);
+	}
 }

@@ -101,4 +101,5 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void updateBankStatementLinesProcessedFlag(@NonNull BankStatementId bankStatementId, boolean processed);
 
+	int retrieveLastLineNo(@NonNull BankStatementId bankStatementId);
 }

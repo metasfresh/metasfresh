@@ -56,6 +56,7 @@ public class C_BankStatementLine
 	public void onBeforeNewOrChange(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
 
@@ -75,11 +76,10 @@ public class C_BankStatementLine
 		}
 
 		// Set Line No
-		if (bankStatementLine.getLine() == 0)
+		if (bankStatementLine.getLine() <= 0)
 		{
-			final String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_BankStatementLine WHERE C_BankStatement_ID=?";
-			final int lineNo = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, bankStatementId);
-			bankStatementLine.setLine(lineNo);
+			final int lastLineNo = bankStatementDAO.retrieveLastLineNo(bankStatementId);
+			bankStatementLine.setLine(lastLineNo + 10);
 		}
 
 		final BigDecimal chargeAmt = bankStatementLine.getStmtAmt()
