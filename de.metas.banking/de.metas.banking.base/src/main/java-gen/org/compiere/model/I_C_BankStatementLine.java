@@ -286,35 +286,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
-	 * Set Zahlung Anweisen.
-	 * Zahlung Anweisen
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_PaySelection_ID (int C_PaySelection_ID);
-
-	/**
-	 * Get Zahlung Anweisen.
-	 * Zahlung Anweisen
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_PaySelection_ID();
-
-	public org.compiere.model.I_C_PaySelection getC_PaySelection();
-
-	public void setC_PaySelection(org.compiere.model.I_C_PaySelection C_PaySelection);
-
-    /** Column definition for C_PaySelection_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_PaySelection> COLUMN_C_PaySelection_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_PaySelection>(I_C_BankStatementLine.class, "C_PaySelection_ID", org.compiere.model.I_C_PaySelection.class);
-    /** Column name C_PaySelection_ID */
-    public static final String COLUMNNAME_C_PaySelection_ID = "C_PaySelection_ID";
-
-	/**
 	 * Set Gebühr.
 	 *
 	 * <br>Type: Amount
@@ -364,29 +335,6 @@ public interface I_C_BankStatementLine
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Zahlung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCreatePayment (java.lang.String CreatePayment);
-
-	/**
-	 * Get Zahlung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCreatePayment();
-
-    /** Column definition for CreatePayment */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_CreatePayment = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "CreatePayment", null);
-    /** Column name CreatePayment */
-    public static final String COLUMNNAME_CreatePayment = "CreatePayment";
 
 	/**
 	 * Set Wechselkurs.
@@ -762,29 +710,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_EftValutaDate = "EftValutaDate";
 
 	/**
-	 * Set ESR Zahlungsimport.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setESR_Import_ID (int ESR_Import_ID);
-
-	/**
-	 * Get ESR Zahlungsimport.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getESR_Import_ID();
-
-    /** Column definition for ESR_Import_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ESR_Import_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ESR_Import_ID", null);
-    /** Column name ESR_Import_ID */
-    public static final String COLUMNNAME_ESR_Import_ID = "ESR_Import_ID";
-
-	/**
 	 * Set Imported Bill Partner IBAN.
 	 *
 	 * <br>Type: String
@@ -1033,29 +958,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Zeilenart.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLineType (java.lang.String LineType);
-
-	/**
-	 * Get Zeilenart.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getLineType();
-
-    /** Column definition for LineType */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_LineType = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "LineType", null);
-    /** Column name LineType */
-    public static final String COLUMNNAME_LineType = "LineType";
-
-	/**
 	 * Set Linked Statement Line.
 	 *
 	 * <br>Type: Search
@@ -1075,29 +977,6 @@ public interface I_C_BankStatementLine
 
     /** Column name Link_BankStatementLine_ID */
     public static final String COLUMNNAME_Link_BankStatementLine_ID = "Link_BankStatementLine_ID";
-
-	/**
-	 * Set Match Statement.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMatchStatement (java.lang.String MatchStatement);
-
-	/**
-	 * Get Match Statement.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMatchStatement();
-
-    /** Column definition for MatchStatement */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_MatchStatement = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "MatchStatement", null);
-    /** Column name MatchStatement */
-    public static final String COLUMNNAME_MatchStatement = "MatchStatement";
 
 	/**
 	 * Set Memo.

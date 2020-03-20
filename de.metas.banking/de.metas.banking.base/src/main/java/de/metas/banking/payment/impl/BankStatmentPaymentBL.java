@@ -69,27 +69,28 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			line.setIsOverUnderPayment(false);
 			line.setOverUnderAmt(BigDecimal.ZERO);
 			setPayAmt(line, BigDecimal.ZERO);
-			return;
 		}
-
-		line.setC_Payment_ID(payment.getC_Payment_ID());
-		line.setC_Currency_ID(payment.getC_Currency_ID());
-		line.setC_BPartner_ID(payment.getC_BPartner_ID());
-		line.setC_Invoice_ID(payment.getC_Invoice_ID());
-		//
-		BigDecimal multiplier = BigDecimal.ONE;
-		if (!payment.isReceipt())
+		else
 		{
-			multiplier = multiplier.negate();
+			line.setC_Payment_ID(payment.getC_Payment_ID());
+			line.setC_Currency_ID(payment.getC_Currency_ID());
+			line.setC_BPartner_ID(payment.getC_BPartner_ID());
+			line.setC_Invoice_ID(payment.getC_Invoice_ID());
+			//
+			BigDecimal multiplier = BigDecimal.ONE;
+			if (!payment.isReceipt())
+			{
+				multiplier = multiplier.negate();
+			}
+
+			final BigDecimal payAmt = payment.getPayAmt().multiply(multiplier);
+
+			setPayAmt(line, payAmt);
+			line.setDiscountAmt(payment.getDiscountAmt().multiply(multiplier));
+			line.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
+			line.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
+			line.setIsOverUnderPayment(payment.isOverUnderPayment());
 		}
-
-		final BigDecimal payAmt = payment.getPayAmt().multiply(multiplier);
-
-		setPayAmt(line, payAmt);
-		line.setDiscountAmt(payment.getDiscountAmt().multiply(multiplier));
-		line.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
-		line.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
-		line.setIsOverUnderPayment(payment.isOverUnderPayment());
 	}
 
 	@Override

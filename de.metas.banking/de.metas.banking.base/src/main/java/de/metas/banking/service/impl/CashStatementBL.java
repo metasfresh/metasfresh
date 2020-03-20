@@ -31,12 +31,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
@@ -60,30 +58,22 @@ public class CashStatementBL implements ICashStatementBL
 		bsl.setValutaDate(bs.getStatementDate());
 		bsl.setDateAcct(bs.getStatementDate());
 
-		setPayment(bsl, LegacyAdapters.convertToPO(payment));
+		bsl.setC_Payment_ID(payment.getC_Payment_ID());
+		bsl.setC_Currency_ID(payment.getC_Currency_ID());
+		bsl.setC_BPartner_ID(payment.getC_BPartner_ID());
+		bsl.setC_Invoice_ID(payment.getC_Invoice_ID());
+		//
+		final BigDecimal amt = payment.isReceipt()
+				? payment.getPayAmt()
+				: payment.getPayAmt().negate();
+		bsl.setTrxAmt(amt);
+		bsl.setStmtAmt(amt);
 
 		bsl.setProcessed(true);
 		bankStatementDAO.save(bsl);
 
 		return bsl;
 	}
-
-	/**
-	 * Set Payment
-	 * 
-	 * @param payment payment
-	 */
-	private void setPayment(final I_C_BankStatementLine bsl, final MPayment payment)
-	{
-		bsl.setC_Payment_ID(payment.getC_Payment_ID());
-		bsl.setC_Currency_ID(payment.getC_Currency_ID());
-		bsl.setC_BPartner_ID(payment.getC_BPartner_ID()); // metas
-		bsl.setC_Invoice_ID(payment.getC_Invoice_ID()); // metas
-		//
-		final BigDecimal amt = payment.getPayAmt(true);
-		bsl.setTrxAmt(amt);
-		bsl.setStmtAmt(amt);
-	}	// setPayment
 
 	// metas: us025b
 	private I_C_BankStatement getCreateCashStatement(final I_C_Payment payment)
