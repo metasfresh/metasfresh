@@ -125,8 +125,6 @@ public interface IPaymentBL extends ISingletonService
 
 	void markReconciled(@NonNull I_C_Payment payment);
 
-	void markNotReconciled(@NonNull PaymentId paymentId);
-
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 
 }

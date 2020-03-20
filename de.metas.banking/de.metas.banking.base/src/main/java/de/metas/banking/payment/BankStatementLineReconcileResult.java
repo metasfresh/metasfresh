@@ -41,11 +41,11 @@ public class BankStatementLineReconcileResult
 	BankStatementLineId bankStatementLineId;
 
 	@NonNull
-	ImmutableList<PaymentReconciled> reconciledPayments;
+	ImmutableList<PaymentResult> payments;
 
 	@Value
 	@Builder
-	public static class PaymentReconciled
+	public static class PaymentResult
 	{
 		@NonNull
 		BankStatementAndLineAndRefId bankStatementLineRefId;
@@ -55,28 +55,30 @@ public class BankStatementLineReconcileResult
 
 		@NonNull
 		Money amount;
+
+		boolean paymentMarkedAsReconciled;
 	}
 
 	@Builder
 	private BankStatementLineReconcileResult(
 			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull @Singular final ImmutableList<PaymentReconciled> reconciledPayments)
+			@NonNull @Singular final ImmutableList<PaymentResult> payments)
 	{
 		this.bankStatementLineId = bankStatementLineId;
-		this.reconciledPayments = reconciledPayments;
+		this.payments = payments;
 	}
 
 	public boolean isEmpty()
 	{
-		return reconciledPayments.isEmpty();
+		return payments.isEmpty();
 	}
 
 	public ImmutableMap<PaymentId, BankStatementAndLineAndRefId> getBankStatementLineRefIdIndexByPaymentId()
 	{
-		return getReconciledPayments()
+		return getPayments()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						PaymentReconciled::getPaymentId,
-						PaymentReconciled::getBankStatementLineRefId));
+						PaymentResult::getPaymentId,
+						PaymentResult::getBankStatementLineRefId));
 	}
 }

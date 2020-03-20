@@ -488,12 +488,6 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void markNotReconciled(@NonNull final PaymentId paymentId)
-	{
-		markNotReconciled(ImmutableSet.of(paymentId));
-	}
-
-	@Override
 	public void markNotReconciled(@NonNull final Collection<PaymentId> paymentIds)
 	{
 		if (paymentIds.isEmpty())

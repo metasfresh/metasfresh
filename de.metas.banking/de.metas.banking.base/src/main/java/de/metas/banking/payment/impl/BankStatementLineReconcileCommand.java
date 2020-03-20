@@ -17,7 +17,6 @@ import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.payment.BankStatementLineReconcileRequest;
 import de.metas.banking.payment.BankStatementLineReconcileRequest.PaymentToReconcile;
 import de.metas.banking.payment.BankStatementLineReconcileResult;
-import de.metas.banking.payment.BankStatementLineReconcileResult.PaymentReconciled;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
@@ -78,7 +77,8 @@ final class BankStatementLineReconcileCommand
 	//
 	// State
 	private ImmutableMap<PaymentId, I_C_Payment> paymentsCache; // lazy
-	private final ArrayList<PaymentReconciled> reconciledPayments = new ArrayList<>();
+	private boolean doReconcilePayments = false;
+	private final ArrayList<BankStatementLineReconcileResult.PaymentResult> linkedPayments = new ArrayList<>();
 
 	@Builder
 	private BankStatementLineReconcileCommand(
@@ -98,7 +98,15 @@ final class BankStatementLineReconcileCommand
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
 		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
 
-		assertBankStatementLineIsStillValid(bankStatement, bankStatementLine);
+		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+		if (!docStatus.isDraftedInProgressOrCompleted())
+		{
+			throw new AdempiereException(BANK_STATEMENT_MUST_BE_COMPLETED_OR_IN_PROGRESS_MSG);
+		}
+		this.doReconcilePayments = docStatus.isCompleted();
+
+		assertBankStatementLineIsStillValid(bankStatementLine);
+
 		for (final PaymentToReconcile paymentToReconcile : request.getPaymentsToReconcile())
 		{
 			assertPaymentToReconcileIsStillValid(paymentToReconcile);
@@ -115,7 +123,7 @@ final class BankStatementLineReconcileCommand
 
 		final BankStatementLineReconcileResult result = BankStatementLineReconcileResult.builder()
 				.bankStatementLineId(bankStatementLineId)
-				.reconciledPayments(reconciledPayments)
+				.payments(linkedPayments)
 				.build();
 
 		bankStatementBL.unpost(bankStatement);
@@ -128,19 +136,11 @@ final class BankStatementLineReconcileCommand
 		return result;
 	}
 
-	private void assertBankStatementLineIsStillValid(
-			@NonNull final I_C_BankStatement bankStatement,
-			@NonNull final I_C_BankStatementLine bankStatementLine)
+	private void assertBankStatementLineIsStillValid(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		if (bankStatementBL.isReconciled(bankStatementLine))
 		{
 			throw new AdempiereException("Bank statement line is already reconciled");
-		}
-
-		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
-		if (!docStatus.isDraftedInProgressOrCompleted())
-		{
-			throw new AdempiereException(BANK_STATEMENT_MUST_BE_COMPLETED_OR_IN_PROGRESS_MSG);
 		}
 
 		final Amount statementLineAmt = extractStatementLineAmt(bankStatementLine);
@@ -257,13 +257,17 @@ final class BankStatementLineReconcileCommand
 
 		//
 		// Mark payment as reconciled
-		paymentBL.markReconciled(payment);
+		if (doReconcilePayments)
+		{
+			paymentBL.markReconciled(payment);
+		}
 
 		//
-		reconciledPayments.add(PaymentReconciled.builder()
+		linkedPayments.add(BankStatementLineReconcileResult.PaymentResult.builder()
 				.bankStatementLineRefId(lineRef.getId())
 				.paymentId(lineRef.getPaymentId())
 				.amount(lineRef.getTrxAmt())
+				.paymentMarkedAsReconciled(payment.isReconciled())
 				.build());
 	}
 }
