@@ -14,7 +14,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -95,10 +94,9 @@ public class BankStatementLineOrRefHelper
 
 	private static InvoiceInfoVO fetchInvoiceCurrencyBpartnerAndAmounts(@NonNull final I_C_BankStatementLine line)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 		final Timestamp dateTrx = getTrxDate(line);
 		final int invoiceId = line.getC_Invoice_ID();
-		final int invoicePayScheduleId = getC_InvoicePaySchedule_ID(ctx, invoiceId);
+		final int invoicePayScheduleId = getC_InvoicePaySchedule_ID(Env.getCtx(), invoiceId);
 		return fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
 	}
 

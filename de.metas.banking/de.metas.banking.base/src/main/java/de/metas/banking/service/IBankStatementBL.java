@@ -29,8 +29,6 @@ public interface IBankStatementBL extends ISingletonService
 
 	String getDocumentNo(BankStatementId bankStatementId);
 
-	void unlinkPaymentsAndDeleteReferences(I_C_BankStatementLine bankStatementLine);
-
 	void unlinkPaymentsAndDeleteReferences(@NonNull List<I_C_BankStatementLine> bankStatementLines);
 
 	void deleteReferencesAndUnReconcilePayments(@NonNull BankStatementLineId bankStatementLineId);

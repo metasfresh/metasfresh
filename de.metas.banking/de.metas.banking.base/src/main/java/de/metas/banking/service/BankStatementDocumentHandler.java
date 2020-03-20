@@ -250,7 +250,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 					lineFrom.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
 					lineFrom.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-					InterfaceWrapperHelper.save(lineFrom);
+					bankStatementDAO.save(lineFrom);
 				}
 			}
 

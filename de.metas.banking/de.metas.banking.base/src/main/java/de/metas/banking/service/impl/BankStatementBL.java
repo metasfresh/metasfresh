@@ -11,8 +11,6 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 
-import com.google.common.collect.ImmutableList;
-
 /*
  * #%L
  * de.metas.banking.base
@@ -113,12 +111,6 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(bankStatementId);
 		return bankStatement.getDocumentNo();
-	}
-
-	@Override
-	public void unlinkPaymentsAndDeleteReferences(@NonNull final I_C_BankStatementLine bankStatementLine)
-	{
-		unlinkPaymentsAndDeleteReferences(ImmutableList.of(bankStatementLine));
 	}
 
 	@Override
