@@ -51,13 +51,9 @@ public class CashStatementBL implements ICashStatementBL
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				//
 				.statementLineDate(statementDate)
-				.dateAcct(statementDate)
-				.valutaDate(statementDate)
 				//
 				.statementAmt(statementAmt)
 				.trxAmt(statementAmt)
-				.chargeAmt(Money.zero(currencyId))
-				.interestAmt(Money.zero(currencyId))
 				//
 				.build());
 
