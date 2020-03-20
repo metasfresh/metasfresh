@@ -218,10 +218,10 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
-		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), true/* billTo */, orgId);
-		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), true/* billTo */, orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), false/* billTo */, orgId);
-		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), false/* billTo */, orgId);
+		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgId);
+		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBillBPartner(), true/* billTo */, orgId);
+		masterdataProvider.getCreateBPartnerInfoInTrx(json.getDropShipBPartner(), false/* billTo */, orgId);
+		masterdataProvider.getCreateBPartnerInfoInTrx(json.getHandOverBPartner(), false/* billTo */, orgId);
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 
