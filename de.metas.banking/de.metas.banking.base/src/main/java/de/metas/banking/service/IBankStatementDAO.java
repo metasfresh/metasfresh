@@ -97,6 +97,8 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
+	BankStatementId createBankStatement(@NonNull BankStatementCreateRequest request);
+
 	BankStatementLineId createBankStatementLine(@NonNull BankStatementLineCreateRequest request);
 
 	BankStatementLineReference createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);

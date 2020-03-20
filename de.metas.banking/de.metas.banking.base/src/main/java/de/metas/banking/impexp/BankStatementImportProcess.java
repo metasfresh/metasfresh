@@ -1,9 +1,7 @@
 package de.metas.banking.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -19,8 +17,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
 import de.metas.banking.service.IBankStatementDAO;
@@ -32,7 +32,6 @@ import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -127,46 +126,16 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		if (isNewBankStatement)
 		{
-			final I_C_BankStatement bankStatement = createBankStatement(importRecord);
-
-			save(bankStatement);
-
-			final int bankStatementRecordId = bankStatement.getC_BankStatement_ID();
-			importRecord.setC_BankStatement_ID(bankStatementRecordId);
-			save(importRecord);
-
+			final BankStatementId bankStatementId = createBankStatement(importRecord);
+			importRecord.setC_BankStatement_ID(bankStatementId.getRepoId());
 		}
 		else
 		{
 			importRecord.setC_BankStatement_ID(existingBankStatementId.getRepoId());
-			save(importRecord);
-
-			final I_C_BankStatement bankStatement = bankStatementDAO.getById(existingBankStatementId);
-
-			if (bankStatement.getC_BP_BankAccount_ID() <= 0)
-			{
-				bankStatement.setC_BP_BankAccount_ID(importRecord.getC_BP_BankAccount_ID());
-			}
-
-			if (Check.isEmpty(bankStatement.getName()))
-			{
-				bankStatement.setName(importRecord.getName());
-			}
-
-			if (Check.isEmpty(bankStatement.getEftStatementReference()))
-			{
-				bankStatement.setEftStatementReference(importRecord.getEftStatementReference());
-			}
-
-			if (Check.isEmpty(bankStatement.getEftStatementDate()))
-			{
-				bankStatement.setEftStatementDate(importRecord.getEftStatementDate());
-			}
-
-			save(bankStatement);
 		}
 
 		createBankStatementLine(importRecord);
+
 		save(importRecord);
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, null, IImportInterceptor.TIMING_AFTER_IMPORT);
@@ -248,22 +217,21 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		importRecord.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
 	}
 
-	private I_C_BankStatement createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
+	private BankStatementId createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
 	{
-		final I_C_BankStatement bankStatement = newInstance(I_C_BankStatement.class);
+		// TODO add documentNo to import
 
-		bankStatement.setEndingBalance(BigDecimal.ZERO);
-		bankStatement.setAD_Org_ID(importBankStatement.getAD_Org_ID());
-		bankStatement.setC_BP_BankAccount_ID(importBankStatement.getC_BP_BankAccount_ID());
-		bankStatement.setDescription(importBankStatement.getDescription());
-		bankStatement.setDocumentNo(null); // TODO add documentNo to import
-		bankStatement.setEftStatementDate(importBankStatement.getEftStatementDate());
-		bankStatement.setEftStatementReference(importBankStatement.getEftStatementReference());
-		bankStatement.setMatchStatement(importBankStatement.getMatchStatement());
-		bankStatement.setName(importBankStatement.getName());
-		bankStatement.setStatementDate(importBankStatement.getStatementDate());
-
-		return bankStatement;
+		return bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+				.orgId(OrgId.ofRepoId(importBankStatement.getAD_Org_ID()))
+				.orgBankAccountId(BankAccountId.ofRepoId(importBankStatement.getC_BP_BankAccount_ID()))
+				.statementDate(TimeUtil.asLocalDate(importBankStatement.getStatementDate()))
+				.name(importBankStatement.getName())
+				.description(importBankStatement.getDescription())
+				.eft(BankStatementCreateRequest.ElectronicFundsTransfer.builder()
+						.statementDate(TimeUtil.asLocalDate(importBankStatement.getEftStatementDate()))
+						.statementReference(importBankStatement.getEftStatementReference())
+						.build())
+				.build());
 	}
 
 }

@@ -1359,9 +1359,9 @@ public class TimeUtil
 	}
 
 	/**
-	 * @deprecated please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
+	 * NOTE: please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
+	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
 	 */
-	@Deprecated
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		final ZoneId timezone = null;

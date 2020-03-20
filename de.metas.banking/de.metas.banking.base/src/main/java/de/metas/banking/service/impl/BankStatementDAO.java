@@ -55,8 +55,8 @@ import de.metas.banking.model.BankStatementLineRefId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
@@ -262,6 +262,30 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
+	public BankStatementId createBankStatement(@NonNull final BankStatementCreateRequest request)
+	{
+		final I_C_BankStatement record = newInstance(I_C_BankStatement.class);
+
+		record.setEndingBalance(BigDecimal.ZERO);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_BP_BankAccount_ID(request.getOrgBankAccountId().getRepoId());
+		record.setName(request.getName());
+		record.setDescription(request.getDescription());
+		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate()));
+
+		final BankStatementCreateRequest.ElectronicFundsTransfer eft = request.getEft();
+		if (eft != null)
+		{
+			record.setEftStatementDate(TimeUtil.asTimestamp(eft.getStatementDate()));
+			record.setEftStatementReference(eft.getStatementReference());
+		}
+
+		save(record);
+
+		return BankStatementId.ofRepoId(record.getC_BankStatement_ID());
+	}
+
+	@Override
 	public BankStatementLineId createBankStatementLine(@NonNull final BankStatementLineCreateRequest request)
 	{
 		final I_C_BankStatementLine record = newInstance(I_C_BankStatementLine.class);
@@ -298,7 +322,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
 
-		final ElectronicFundsTransfer eft = request.getEft();
+		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
 		{
 			record.setEftTrxID(eft.getTrxId());
