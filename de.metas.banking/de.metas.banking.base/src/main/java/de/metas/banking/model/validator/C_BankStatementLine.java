@@ -69,16 +69,10 @@ public class C_BankStatementLine
 				throw new AdempiereException("@ParentComplete@ @C_BankStatementLine_ID@");
 			}
 		}
+		
 		if (bankStatementLine.getChargeAmt().signum() != 0 && bankStatementLine.getC_Charge_ID() <= 0)
 		{
 			throw new FillMandatoryException(I_C_BankStatementLine.COLUMNNAME_C_Charge_ID);
-		}
-
-		// Un-link Payment if TrxAmt is zero - teo_sarca BF [ 1896880 ]
-		if (bankStatementLine.getTrxAmt().signum() == 0 && bankStatementLine.getC_Payment_ID() > 0)
-		{
-			bankStatementLine.setC_Payment_ID(-1);
-			bankStatementLine.setC_Invoice_ID(-1);
 		}
 
 		// Set Line No

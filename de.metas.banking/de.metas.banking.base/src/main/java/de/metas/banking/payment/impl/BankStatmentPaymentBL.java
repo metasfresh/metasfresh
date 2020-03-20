@@ -63,12 +63,12 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	{
 		if (payment == null)
 		{
-			line.setC_Payment_ID(0);
+			line.setC_Payment_ID(-1);
+			line.setTrxAmt(BigDecimal.ZERO);
 			line.setDiscountAmt(BigDecimal.ZERO);
 			line.setWriteOffAmt(BigDecimal.ZERO);
 			line.setIsOverUnderPayment(false);
 			line.setOverUnderAmt(BigDecimal.ZERO);
-			setPayAmt(line, BigDecimal.ZERO);
 		}
 		else
 		{
@@ -76,6 +76,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			line.setC_Currency_ID(payment.getC_Currency_ID());
 			line.setC_BPartner_ID(payment.getC_BPartner_ID());
 			line.setC_Invoice_ID(payment.getC_Invoice_ID());
+
 			//
 			BigDecimal multiplier = BigDecimal.ONE;
 			if (!payment.isReceipt())
@@ -83,9 +84,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 				multiplier = multiplier.negate();
 			}
 
-			final BigDecimal payAmt = payment.getPayAmt().multiply(multiplier);
-
-			setPayAmt(line, payAmt);
+			line.setTrxAmt(payment.getPayAmt().multiply(multiplier));
 			line.setDiscountAmt(payment.getDiscountAmt().multiply(multiplier));
 			line.setWriteOffAmt(payment.getWriteOffAmt().multiply(multiplier));
 			line.setOverUnderAmt(payment.getOverUnderAmt().multiply(multiplier));
@@ -219,15 +218,6 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 				.description("Automatically created when BankStatement was completed.")
 				.tenderType(TenderType.DirectDeposit)
 				.createAndProcess();
-	}
-
-	private void setPayAmt(@NonNull final I_C_BankStatementLine line, final BigDecimal payAmt)
-	{
-		line.setTrxAmt(payAmt);
-		if (line.getStmtAmt().signum() == 0)
-		{
-			line.setStmtAmt(payAmt);
-		}
 	}
 
 	@Override
