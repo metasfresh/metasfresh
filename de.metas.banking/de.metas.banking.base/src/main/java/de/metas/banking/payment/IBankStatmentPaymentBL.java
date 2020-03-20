@@ -15,5 +15,5 @@ public interface IBankStatmentPaymentBL extends ISingletonService
 
 	void linkSinglePayment(@NonNull I_C_BankStatement bankStatement, @NonNull I_C_BankStatementLine bankStatementLine, @NonNull PaymentId paymentId);
 
-	BankStatementLineReconcileResult reconcile(@NonNull BankStatementLineReconcileRequest request);
+	BankStatementLineMultiPaymentLinkResult linkMultiPayments(@NonNull BankStatementLineMultiPaymentLinkRequest request);
 }

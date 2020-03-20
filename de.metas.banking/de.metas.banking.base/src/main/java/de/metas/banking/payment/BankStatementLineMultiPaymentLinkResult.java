@@ -35,7 +35,7 @@ import lombok.Value;
  */
 
 @Value
-public class BankStatementLineReconcileResult
+public class BankStatementLineMultiPaymentLinkResult
 {
 	@NonNull
 	BankStatementLineId bankStatementLineId;
@@ -60,7 +60,7 @@ public class BankStatementLineReconcileResult
 	}
 
 	@Builder
-	private BankStatementLineReconcileResult(
+	private BankStatementLineMultiPaymentLinkResult(
 			@NonNull final BankStatementLineId bankStatementLineId,
 			@NonNull @Singular final ImmutableList<PaymentResult> payments)
 	{

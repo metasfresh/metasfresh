@@ -37,30 +37,30 @@ import lombok.Value;
  */
 
 @Value
-public class BankStatementLineReconcileRequest
+public class BankStatementLineMultiPaymentLinkRequest
 {
 	@NonNull
 	BankStatementLineId bankStatementLineId;
 
 	@NonNull
-	ImmutableList<PaymentToReconcile> paymentsToReconcile;
+	ImmutableList<PaymentToLink> paymentsToLink;
 
 	@Builder
-	private BankStatementLineReconcileRequest(
+	private BankStatementLineMultiPaymentLinkRequest(
 			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull @Singular("paymentToReconcile") final ImmutableList<PaymentToReconcile> paymentsToReconcile)
+			@NonNull @Singular("paymentToLink") final ImmutableList<PaymentToLink> paymentsToLink)
 	{
-		Check.assumeNotEmpty(paymentsToReconcile, "paymentsToReconcile is not empty");
-		Amount.assertSameCurrency(paymentsToReconcile, PaymentToReconcile::getStatementLineAmt);
-		assertUniquePaymentIds(paymentsToReconcile);
+		Check.assumeNotEmpty(paymentsToLink, "paymentsToLink is not empty");
+		Amount.assertSameCurrency(paymentsToLink, PaymentToLink::getStatementLineAmt);
+		assertUniquePaymentIds(paymentsToLink);
 
 		this.bankStatementLineId = bankStatementLineId;
-		this.paymentsToReconcile = paymentsToReconcile;
+		this.paymentsToLink = paymentsToLink;
 	}
 
-	private static void assertUniquePaymentIds(@NonNull final ImmutableList<PaymentToReconcile> paymentsToReconcile)
+	private static void assertUniquePaymentIds(@NonNull final ImmutableList<PaymentToLink> paymentsToLink)
 	{
-		final ImmutableList<@NonNull PaymentId> paymentIds = paymentsToReconcile.stream().map(PaymentToReconcile::getPaymentId).collect(ImmutableList.toImmutableList());
+		final ImmutableList<@NonNull PaymentId> paymentIds = paymentsToLink.stream().map(PaymentToLink::getPaymentId).collect(ImmutableList.toImmutableList());
 		final ImmutableSet<@NonNull PaymentId> paymentIdsUnique = ImmutableSet.copyOf(paymentIds);
 		if (paymentIdsUnique.size() != paymentIds.size())
 		{
@@ -68,17 +68,17 @@ public class BankStatementLineReconcileRequest
 		}
 	}
 
-	public Amount getStatementLineAmtToReconcile()
+	public Amount getTotalStatementLineAmt()
 	{
-		return paymentsToReconcile.stream()
-				.map(PaymentToReconcile::getStatementLineAmt)
+		return paymentsToLink.stream()
+				.map(PaymentToLink::getStatementLineAmt)
 				.reduce(Amount::add)
 				.get();
 	}
 
 	@Value
 	@Builder
-	public static class PaymentToReconcile
+	public static class PaymentToLink
 	{
 		@NonNull
 		PaymentId paymentId;

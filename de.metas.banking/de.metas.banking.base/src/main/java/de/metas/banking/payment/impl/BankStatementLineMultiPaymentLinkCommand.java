@@ -14,9 +14,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReference;
-import de.metas.banking.payment.BankStatementLineReconcileRequest;
-import de.metas.banking.payment.BankStatementLineReconcileRequest.PaymentToReconcile;
-import de.metas.banking.payment.BankStatementLineReconcileResult;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.PaymentToLink;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
@@ -59,7 +59,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class BankStatementLineReconcileCommand
+final class BankStatementLineMultiPaymentLinkCommand
 {
 	private static final AdMessageKey BANK_STATEMENT_MUST_BE_COMPLETED_OR_IN_PROGRESS_MSG = AdMessageKey.of("de.metas.banking.process.C_BankStatement_AddBpartnerAndPayment.BankStatement_must_be_Completed_or_In_Progress");
 
@@ -72,25 +72,25 @@ final class BankStatementLineReconcileCommand
 
 	//
 	// Parameters
-	private final BankStatementLineReconcileRequest request;
+	private final BankStatementLineMultiPaymentLinkRequest request;
 
 	//
 	// State
 	private ImmutableMap<PaymentId, I_C_Payment> paymentsCache; // lazy
 	private boolean doReconcilePayments = false;
-	private final ArrayList<BankStatementLineReconcileResult.PaymentResult> linkedPayments = new ArrayList<>();
+	private final ArrayList<BankStatementLineMultiPaymentLinkResult.PaymentResult> linkedPayments = new ArrayList<>();
 
 	@Builder
-	private BankStatementLineReconcileCommand(
+	private BankStatementLineMultiPaymentLinkCommand(
 			@NonNull final MoneyService moneyService,
-			@NonNull final BankStatementLineReconcileRequest request)
+			@NonNull final BankStatementLineMultiPaymentLinkRequest request)
 	{
 		this.moneyService = moneyService;
 
 		this.request = request;
 	}
 
-	public BankStatementLineReconcileResult execute()
+	public BankStatementLineMultiPaymentLinkResult execute()
 	{
 		final BankStatementLineId bankStatementLineId = request.getBankStatementLineId();
 		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
@@ -107,21 +107,21 @@ final class BankStatementLineReconcileCommand
 
 		assertBankStatementLineIsStillValid(bankStatementLine);
 
-		for (final PaymentToReconcile paymentToReconcile : request.getPaymentsToReconcile())
+		for (final PaymentToLink paymentToLink : request.getPaymentsToLink())
 		{
-			assertPaymentToReconcileIsStillValid(paymentToReconcile);
+			assertPaymentToLinkIsStillValid(paymentToLink);
 		}
 
 		markAsMultiplePayments(bankStatementLine);
 
 		int lineNo = 10;
-		for (final PaymentToReconcile paymentToReconcile : request.getPaymentsToReconcile())
+		for (final PaymentToLink paymentToLink : request.getPaymentsToLink())
 		{
-			createBankStatementLineRef(paymentToReconcile, bankStatementLine, lineNo);
+			createBankStatementLineRef(paymentToLink, bankStatementLine, lineNo);
 			lineNo += 10;
 		}
 
-		final BankStatementLineReconcileResult result = BankStatementLineReconcileResult.builder()
+		final BankStatementLineMultiPaymentLinkResult result = BankStatementLineMultiPaymentLinkResult.builder()
 				.bankStatementLineId(bankStatementLineId)
 				.payments(linkedPayments)
 				.build();
@@ -144,12 +144,12 @@ final class BankStatementLineReconcileCommand
 		}
 
 		final Amount statementLineAmt = extractStatementLineAmt(bankStatementLine);
-		final Amount statementLineAmtToReconcile = request.getStatementLineAmtToReconcile();
-		if (!statementLineAmt.subtract(statementLineAmtToReconcile).isZero())
+		final Amount statementLineAmtToLink = request.getTotalStatementLineAmt();
+		if (!statementLineAmt.subtract(statementLineAmtToLink).isZero())
 		{
 			throw new AdempiereException("Partial bank statement line reconciliation is not allowed")
 					.setParameter("statementLineAmt", statementLineAmt)
-					.setParameter("statementLineAmtToReconcile", statementLineAmtToReconcile);
+					.setParameter("statementLineAmtToLink", statementLineAmtToLink);
 		}
 	}
 
@@ -172,8 +172,8 @@ final class BankStatementLineReconcileCommand
 
 	private ImmutableMap<PaymentId, I_C_Payment> retrievePayments()
 	{
-		final ImmutableSet<PaymentId> paymentIds = request.getPaymentsToReconcile().stream()
-				.map(PaymentToReconcile::getPaymentId)
+		final ImmutableSet<PaymentId> paymentIds = request.getPaymentsToLink().stream()
+				.map(PaymentToLink::getPaymentId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return paymentDAO.getByIds(paymentIds)
@@ -189,9 +189,9 @@ final class BankStatementLineReconcileCommand
 		return moneyService.toAmount(record.getStmtAmt(), currencyId);
 	}
 
-	private void assertPaymentToReconcileIsStillValid(@NonNull final PaymentToReconcile paymentToReconcile)
+	private void assertPaymentToLinkIsStillValid(@NonNull final PaymentToLink paymentToLink)
 	{
-		final I_C_Payment payment = getPaymentById(paymentToReconcile.getPaymentId());
+		final I_C_Payment payment = getPaymentById(paymentToLink.getPaymentId());
 		final DocStatus docStatus = DocStatus.ofCode(payment.getDocStatus());
 		if (!docStatus.isCompleted())
 		{
@@ -204,7 +204,7 @@ final class BankStatementLineReconcileCommand
 		}
 
 		final Amount statementLineAmtExpected = extractPayAmt(payment).negateIfNot(payment.isReceipt());
-		if (!paymentToReconcile.getStatementLineAmt().isEqualByComparingTo(statementLineAmtExpected))
+		if (!paymentToLink.getStatementLineAmt().isEqualByComparingTo(statementLineAmtExpected))
 		{
 			throw new AdempiereException("Cannot partially reconcile the payment " + payment.getDocumentNo());
 		}
@@ -232,11 +232,11 @@ final class BankStatementLineReconcileCommand
 	}
 
 	private void createBankStatementLineRef(
-			@NonNull final PaymentToReconcile paymentToReconcile,
+			@NonNull final PaymentToLink paymentToLink,
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			final int lineNo)
 	{
-		final PaymentId paymentId = paymentToReconcile.getPaymentId();
+		final PaymentId paymentId = paymentToLink.getPaymentId();
 		final I_C_Payment payment = getPaymentById(paymentId);
 
 		final BankStatementLineReference lineRef = bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
@@ -251,7 +251,7 @@ final class BankStatementLineReconcileCommand
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.invoiceId(InvoiceId.ofRepoIdOrNull(payment.getC_Invoice_ID()))
 				//
-				.trxAmt(moneyService.toMoney(paymentToReconcile.getStatementLineAmt()))
+				.trxAmt(moneyService.toMoney(paymentToLink.getStatementLineAmt()))
 				//
 				.build());
 
@@ -263,7 +263,7 @@ final class BankStatementLineReconcileCommand
 		}
 
 		//
-		linkedPayments.add(BankStatementLineReconcileResult.PaymentResult.builder()
+		linkedPayments.add(BankStatementLineMultiPaymentLinkResult.PaymentResult.builder()
 				.bankStatementLineRefId(lineRef.getId())
 				.paymentId(lineRef.getPaymentId())
 				.amount(lineRef.getTrxAmt())

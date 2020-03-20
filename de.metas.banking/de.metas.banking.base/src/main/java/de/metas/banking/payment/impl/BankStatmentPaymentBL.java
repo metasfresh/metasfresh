@@ -35,8 +35,8 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
-import de.metas.banking.payment.BankStatementLineReconcileRequest;
-import de.metas.banking.payment.BankStatementLineReconcileResult;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
@@ -203,9 +203,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	}
 
 	@Override
-	public BankStatementLineReconcileResult reconcile(@NonNull final BankStatementLineReconcileRequest request)
+	public BankStatementLineMultiPaymentLinkResult linkMultiPayments(@NonNull final BankStatementLineMultiPaymentLinkRequest request)
 	{
-		return BankStatementLineReconcileCommand.builder()
+		return BankStatementLineMultiPaymentLinkCommand.builder()
 				.moneyService(SpringContextHolder.instance.getBean(MoneyService.class))
 				.request(request)
 				.build()
