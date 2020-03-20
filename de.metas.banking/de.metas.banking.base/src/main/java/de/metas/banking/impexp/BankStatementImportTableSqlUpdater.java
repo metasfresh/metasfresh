@@ -60,10 +60,7 @@ public class BankStatementImportTableSqlUpdater
 		updateAmount(selection);
 		updateValutaDate(selection);
 		updateC_BPartner(selection);
-		checkPaymentInvoiceCombination(selection);
-		checkPaymentBPartnerCombination(selection);
 		checkInvoiceBPartnerCombination(selection);
-		checkInvoiceBPartnerPaymentBPartnerCombination(selection);
 
 		updateBankStatement(selection, bankStatementId);
 
@@ -342,39 +339,6 @@ public class BankStatementImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void checkPaymentInvoiceCombination(final ImportRecordsSelection selection)
-	{
-		final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Payment<->Invoice, ' "
-				+ "WHERE I_BankStatement_ID IN "
-				+ "(SELECT I_BankStatement_ID "
-				+ "FROM I_BankStatement i"
-				+ " INNER JOIN C_Payment p ON (i.C_Payment_ID=p.C_Payment_ID) "
-				+ "WHERE i.C_Invoice_ID IS NOT NULL "
-				+ " AND p.C_Invoice_ID IS NOT NULL "
-				+ " AND p.C_Invoice_ID<>i.C_Invoice_ID) ")
-				.append(selection.toSqlWhereClause());
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-	}
-
-	private void checkPaymentBPartnerCombination(final ImportRecordsSelection selection)
-	{
-		final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Payment<->BPartner, ' "
-				+ "WHERE I_BankStatement_ID IN "
-				+ "(SELECT I_BankStatement_ID "
-				+ "FROM I_BankStatement i"
-				+ " INNER JOIN C_Payment p ON (i.C_Payment_ID=p.C_Payment_ID) "
-				+ "WHERE i.C_BPartner_ID IS NOT NULL "
-				+ " AND p.C_BPartner_ID IS NOT NULL "
-				+ " AND p.C_BPartner_ID<>i.C_BPartner_ID) ")
-				.append(selection.toSqlWhereClause());
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-	}
-
 	private void checkInvoiceBPartnerCombination(final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement "
@@ -389,23 +353,6 @@ public class BankStatementImportTableSqlUpdater
 				.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-	}
-
-	private void checkInvoiceBPartnerPaymentBPartnerCombination(final ImportRecordsSelection selection)
-	{
-		final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Invoice.BPartner<->Payment.BPartner, ' "
-				+ "WHERE I_BankStatement_ID IN "
-				+ "(SELECT I_BankStatement_ID "
-				+ "FROM I_BankStatement i"
-				+ " INNER JOIN C_Invoice v ON (i.C_Invoice_ID=v.C_Invoice_ID)"
-				+ " INNER JOIN C_Payment p ON (i.C_Payment_ID=p.C_Payment_ID) "
-				+ "WHERE p.C_Invoice_ID<>v.C_Invoice_ID"
-				+ " AND v.C_BPartner_ID<>p.C_BPartner_ID) ")
-				.append(selection.toSqlWhereClause());
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 	}
 
 	private void detectDuplicates(final ImportRecordsSelection selection)

@@ -163,7 +163,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		save(importRecord);
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getC_BankStatement(), IImportInterceptor.TIMING_AFTER_IMPORT);
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, null, IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		return isNewBankStatement ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
@@ -237,10 +237,6 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		bankStatementLine.setInterestAmt(importRecord.getInterestAmt());
 		bankStatementLine.setChargeAmt(importRecord.getChargeAmt());
 		bankStatementLine.setMemo(importRecord.getMemo());
-		if (importRecord.getC_Payment_ID() != 0)
-		{
-			bankStatementLine.setC_Payment_ID(importRecord.getC_Payment_ID());
-		}
 
 		bankStatementLine.setEftTrxID(importRecord.getEftTrxID());
 		bankStatementLine.setEftTrxType(importRecord.getEftTrxType());

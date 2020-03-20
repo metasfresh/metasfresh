@@ -110,7 +110,7 @@ public class BankStatementMatcher extends JavaProcess
 	 */
 	private String match(X_I_BankStatement ibs)
 	{
-		if (m_matchers == null || ibs == null || ibs.getC_Payment_ID() != 0)
+		if (m_matchers == null || ibs == null)
 		{
 			return "--";
 		}
@@ -124,10 +124,6 @@ public class BankStatementMatcher extends JavaProcess
 				info = m_matcher.getMatcher().findMatch(ibs);
 				if (info != null && info.isMatched())
 				{
-					if (info.getC_Payment_ID() > 0)
-					{
-						ibs.setC_Payment_ID(info.getC_Payment_ID());
-					}
 					if (info.getC_Invoice_ID() > 0)
 					{
 						ibs.setC_Invoice_ID(info.getC_Invoice_ID());
