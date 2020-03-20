@@ -31,8 +31,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ConversionTypeMethod;
@@ -42,7 +40,6 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -77,70 +74,36 @@ public class C_BankStatementLine
 
 	private C_BankStatementLine()
 	{
-		super();
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_BankStatementLine.COLUMNNAME_InterestAmt,
-			I_C_BankStatementLine.COLUMNNAME_StmtAmt,
-			I_C_BankStatementLine.COLUMNNAME_ChargeAmt
-	})
-	public void onAmountsChanged(final I_C_BankStatementLine bsl, final ICalloutField field)
+	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_StmtAmt)
+	public void onStmtAmtChanged(final I_C_BankStatementLine bsl)
 	{
-		final String columnName = field.getColumnName();
-
-		if (columnName.equals(I_C_BankStatementLine.COLUMNNAME_ChargeAmt))
-		{
-			final BigDecimal interesetAmt = computeInterestAmt(bsl);
-			bsl.setInterestAmt(interesetAmt);
-		}
-		else if (columnName.equals(I_C_BankStatementLine.COLUMNNAME_InterestAmt))
-		{
-			final BigDecimal chargeAmt = computeChargeAmt(bsl);
-			bsl.setChargeAmt(chargeAmt);
-		}
-		else
-		{
-			final BigDecimal trxAmt = computeTrxAmt(bsl);
-			bsl.setTrxAmt(trxAmt);
-		}
+		final BigDecimal trxAmt = bsl.getStmtAmt();
+		bsl.setTrxAmt(trxAmt);
 	}
 
-	private BigDecimal computeInterestAmt(@NonNull final I_C_BankStatementLine bsl)
+	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_ChargeAmt)
+	public void onChargeAmtChanged(final I_C_BankStatementLine bsl)
 	{
-		final BigDecimal bd = computeStmtAmount(bsl);
-		final BigDecimal charge = MoreObjects.firstNonNull(bsl.getChargeAmt(), BigDecimal.ZERO);
-		return bd.subtract(charge);
-	}
-
-	private BigDecimal computeChargeAmt(@NonNull final I_C_BankStatementLine bsl)
-	{
-		final BigDecimal bd = computeStmtAmount(bsl);
-		final BigDecimal interest = bsl.getInterestAmt();
-		return bd.subtract(interest);
-	}
-
-	private BigDecimal computeTrxAmt(@NonNull final I_C_BankStatementLine bsl)
-	{
-		final BigDecimal bd = computeStmtAmount(bsl);
+		final BigDecimal stmtAmt = bsl.getStmtAmt();
 		final BigDecimal trxAmt = bsl.getTrxAmt();
-		return trxAmt.add(bd);
+		final BigDecimal chargeAmt = bsl.getChargeAmt();
+		final BigDecimal interestAmt = stmtAmt.subtract(trxAmt).subtract(chargeAmt);
+		bsl.setInterestAmt(interestAmt);
 	}
 
-	private BigDecimal computeStmtAmount(@NonNull final I_C_BankStatementLine bsl)
+	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_InterestAmt)
+	public void onInterestAmtChanged(final I_C_BankStatementLine bsl)
 	{
-		final BigDecimal stmt = bsl.getStmtAmt();
-		final BigDecimal trx = bsl.getTrxAmt();
-		final BigDecimal discount = bsl.getDiscountAmt();
-		final BigDecimal writeOff = bsl.getWriteOffAmt();
-		final BigDecimal overUnder = bsl.isOverUnderPayment() ? bsl.getOverUnderAmt() : BigDecimal.ZERO;
-
-		return stmt.subtract(trx).subtract(discount).subtract(writeOff).subtract(overUnder);
+		final BigDecimal stmtAmt = bsl.getStmtAmt();
+		final BigDecimal trxAmt = bsl.getTrxAmt();
+		final BigDecimal interestAmt = bsl.getInterestAmt();
+		final BigDecimal chargeAmt = stmtAmt.subtract(trxAmt).subtract(interestAmt);
+		bsl.setChargeAmt(chargeAmt);
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID
-	})
+	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID)
 	public void onLink_BankStatement_IDChangedResetAmounts(final I_C_BankStatementLine bsl, final ICalloutField calloutField)
 	{
 		final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bsl.getLink_BankStatementLine_ID());
@@ -174,15 +137,9 @@ public class C_BankStatementLine
 		bsl.setTrxAmt(trxAmt);
 		bsl.setCurrencyRate(currencyRate.getConversionRate());
 		bsl.setChargeAmt(BigDecimal.ZERO);
-		bsl.setDiscountAmt(BigDecimal.ZERO);
-		bsl.setWriteOffAmt(BigDecimal.ZERO);
-		bsl.setIsOverUnderPayment(false);
-		bsl.setOverUnderAmt(BigDecimal.ZERO);
 	}
 
-	@CalloutMethod(columnNames = {
-			I_C_BankStatementLine.COLUMNNAME_C_BP_BankAccountTo_ID
-	})
+	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_C_BP_BankAccountTo_ID)
 	public void onC_BP_BankAccountTo_IDChanged(final I_C_BankStatementLine bsl)
 	{
 		if (bsl.getC_BP_BankAccountTo_ID() <= 0)

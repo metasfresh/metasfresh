@@ -410,31 +410,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Skonto.
-	 * Calculated amount of discount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
-
-	/**
-	 * Get Skonto.
-	 * Calculated amount of discount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getDiscountAmt();
-
-    /** Column definition for DiscountAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_DiscountAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "DiscountAmt", null);
-    /** Column name DiscountAmt */
-    public static final String COLUMNNAME_DiscountAmt = "DiscountAmt";
-
-	/**
 	 * Set ELV-Betrag.
 	 * Electronic Funds Transfer Amount
 	 *
@@ -883,31 +858,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_IsMultiplePaymentOrInvoice = "IsMultiplePaymentOrInvoice";
 
 	/**
-	 * Set Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsOverUnderPayment (boolean IsOverUnderPayment);
-
-	/**
-	 * Get Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isOverUnderPayment();
-
-    /** Column definition for IsOverUnderPayment */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsOverUnderPayment = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "IsOverUnderPayment", null);
-    /** Column name IsOverUnderPayment */
-    public static final String COLUMNNAME_IsOverUnderPayment = "IsOverUnderPayment";
-
-	/**
 	 * Set Umkehrung.
 	 * This is a reversing transaction
 	 *
@@ -1002,31 +952,6 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "Memo", null);
     /** Column name Memo */
     public static final String COLUMNNAME_Memo = "Memo";
-
-	/**
-	 * Set Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setOverUnderAmt (java.math.BigDecimal OverUnderAmt);
-
-	/**
-	 * Get Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getOverUnderAmt();
-
-    /** Column definition for OverUnderAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_OverUnderAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "OverUnderAmt", null);
-    /** Column name OverUnderAmt */
-    public static final String COLUMNNAME_OverUnderAmt = "OverUnderAmt";
 
 	/**
 	 * Set Verarbeitet.
@@ -1205,29 +1130,4 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ValutaDate = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ValutaDate", null);
     /** Column name ValutaDate */
     public static final String COLUMNNAME_ValutaDate = "ValutaDate";
-
-	/**
-	 * Set Write-off Amount.
-	 * Amount to write-off
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setWriteOffAmt (java.math.BigDecimal WriteOffAmt);
-
-	/**
-	 * Get Write-off Amount.
-	 * Amount to write-off
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getWriteOffAmt();
-
-    /** Column definition for WriteOffAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_WriteOffAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "WriteOffAmt", null);
-    /** Column name WriteOffAmt */
-    public static final String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
 }

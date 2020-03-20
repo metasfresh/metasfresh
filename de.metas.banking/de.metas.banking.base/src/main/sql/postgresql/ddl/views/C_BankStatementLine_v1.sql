@@ -44,10 +44,10 @@ select
 
 	-- Amounts
 	, l.TrxAmt
-	, l.DiscountAmt
-	, l.WriteOffAmt
-	, l.IsOverUnderPayment
-	, l.OverUnderAmt
+	, 0::numeric as DiscountAmt
+	, 0::numeric as WriteOffAmt
+	, 'N'::char(1) as IsOverUnderPayment
+	, 0::numeric as OverUnderAmt
 
 	, l.C_Currency_ID
 

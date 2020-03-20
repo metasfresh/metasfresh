@@ -185,10 +185,6 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 
 		// NOTE: don't touch the StmtAmt!
 		bankStatementLine.setTrxAmt(payment.getPayAmt().multiply(negateIfOutboundPayment));
-		bankStatementLine.setDiscountAmt(payment.getDiscountAmt().multiply(negateIfOutboundPayment));
-		bankStatementLine.setWriteOffAmt(payment.getWriteOffAmt().multiply(negateIfOutboundPayment));
-		bankStatementLine.setIsOverUnderPayment(payment.isOverUnderPayment());
-		bankStatementLine.setOverUnderAmt(payment.getOverUnderAmt().multiply(negateIfOutboundPayment));
 
 		bankStatementDAO.save(bankStatementLine);
 

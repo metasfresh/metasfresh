@@ -15,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1077761002L;
+	private static final long serialVersionUID = 594331729L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -31,7 +31,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @StatementDate@
 			setInterestAmt (BigDecimal.ZERO);
 			setIsManual (true); // Y
-			setIsOverUnderPayment (false); // N
 			setIsReversal (false);
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine WHERE C_BankStatement_ID=@C_BankStatement_ID@
 			setProcessed (false);
@@ -394,28 +393,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Skonto.
-		@param DiscountAmt 
-		Calculated amount of discount
-	  */
-	@Override
-	public void setDiscountAmt (java.math.BigDecimal DiscountAmt)
-	{
-		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
-	}
-
-	/** Get Skonto.
-		@return Calculated amount of discount
-	  */
-	@Override
-	public java.math.BigDecimal getDiscountAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set ELV-Betrag.
 		@param EftAmt 
 		Electronic Funds Transfer Amount
@@ -763,32 +740,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Over/Under Payment.
-		@param IsOverUnderPayment 
-		Over-Payment (unallocated) or Under-Payment (partial payment)
-	  */
-	@Override
-	public void setIsOverUnderPayment (boolean IsOverUnderPayment)
-	{
-		set_Value (COLUMNNAME_IsOverUnderPayment, Boolean.valueOf(IsOverUnderPayment));
-	}
-
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment)
-	  */
-	@Override
-	public boolean isOverUnderPayment () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsOverUnderPayment);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Umkehrung.
 		@param IsReversal 
 		This is a reversing transaction
@@ -876,28 +827,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public java.lang.String getMemo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Memo);
-	}
-
-	/** Set Over/Under Payment.
-		@param OverUnderAmt 
-		Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	  */
-	@Override
-	public void setOverUnderAmt (java.math.BigDecimal OverUnderAmt)
-	{
-		set_Value (COLUMNNAME_OverUnderAmt, OverUnderAmt);
-	}
-
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	  */
-	@Override
-	public java.math.BigDecimal getOverUnderAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Verarbeitet.
@@ -1025,27 +954,5 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getValutaDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValutaDate);
-	}
-
-	/** Set Write-off Amount.
-		@param WriteOffAmt 
-		Amount to write-off
-	  */
-	@Override
-	public void setWriteOffAmt (java.math.BigDecimal WriteOffAmt)
-	{
-		set_Value (COLUMNNAME_WriteOffAmt, WriteOffAmt);
-	}
-
-	/** Get Write-off Amount.
-		@return Amount to write-off
-	  */
-	@Override
-	public java.math.BigDecimal getWriteOffAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.banking.payment.impl;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -224,10 +223,6 @@ final class BankStatementLineMultiPaymentLinkCommand
 		bankStatementLine.setC_BPartner_ID(-1);
 		bankStatementLine.setC_Payment_ID(-1);
 		bankStatementLine.setC_Invoice_ID(-1);
-		bankStatementLine.setDiscountAmt(BigDecimal.ZERO);
-		bankStatementLine.setWriteOffAmt(BigDecimal.ZERO);
-		bankStatementLine.setIsOverUnderPayment(false);
-		bankStatementLine.setOverUnderAmt(BigDecimal.ZERO);
 		bankStatementDAO.save(bankStatementLine);
 	}
 
