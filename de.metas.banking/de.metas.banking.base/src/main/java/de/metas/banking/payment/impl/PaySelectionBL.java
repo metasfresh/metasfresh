@@ -221,7 +221,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final org.compiere.model.I_C_Payment payment = paymentBL.newBuilderOfInvoice(line.getC_Invoice())
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.bpBankAccountId(BankAccountId.ofRepoId(ownBankAccountId))
+				.orgBankAccountId(BankAccountId.ofRepoId(ownBankAccountId))
 				.dateAcct(payDate)
 				.dateTrx(payDate)
 				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))

@@ -140,7 +140,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		return paymentBuilder
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
-				.bpBankAccountId(orgBankAccountId)
+				.orgBankAccountId(orgBankAccountId)
 				.currencyId(payAmount.getCurrencyId())
 				.payAmt(payAmount.toBigDecimal())
 				.dateAcct(statementLineDate)

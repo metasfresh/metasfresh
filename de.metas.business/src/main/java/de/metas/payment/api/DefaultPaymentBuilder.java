@@ -175,16 +175,16 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder bpBankAccountId(@Nullable final BankAccountId bpBankAccountId)
+	public final DefaultPaymentBuilder orgBankAccountId(@Nullable final BankAccountId orgBankAccountId)
 	{
 		assertNotBuilt();
-		if (bpBankAccountId == null)
+		if (orgBankAccountId == null)
 		{
 			payment.setC_BP_BankAccount_ID(0);
 		}
 		else
 		{
-			payment.setC_BP_BankAccount_ID(bpBankAccountId.getRepoId());
+			payment.setC_BP_BankAccount_ID(orgBankAccountId.getRepoId());
 		}
 		return this;
 	}

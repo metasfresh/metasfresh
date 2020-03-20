@@ -665,7 +665,7 @@ public class ESRImportBL implements IESRImportBL
 
 		return paymentBL.newInboundReceiptBuilder()
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.bpBankAccountId(BankAccountId.ofRepoIdOrNull(line.getESR_Import().getC_BP_BankAccount_ID()))
+				.orgBankAccountId(BankAccountId.ofRepoIdOrNull(line.getESR_Import().getC_BP_BankAccount_ID()))
 				.accountNo(line.getAccountNo())
 				.dateAcct(TimeUtil.asLocalDate(line.getAccountingDate()))
 				.dateTrx(TimeUtil.asLocalDate(line.getPaymentDate()))

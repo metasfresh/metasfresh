@@ -107,7 +107,7 @@ public class JsonPaymentService
 				.bpartnerId(bPartnerId)
 				.payAmt(jsonInboundPaymentInfo.getAmount())
 				.currencyId(currencyId)
-				.bpBankAccountId(bankAccountIdOptional.get())
+				.orgBankAccountId(bankAccountIdOptional.get())
 				.adOrgId(orgId)
 				.tenderType(TenderType.DirectDeposit)
 				.dateAcct(dateTrx)
