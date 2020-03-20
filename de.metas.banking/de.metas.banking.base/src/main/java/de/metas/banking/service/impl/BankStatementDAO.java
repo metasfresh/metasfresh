@@ -321,4 +321,16 @@ public class BankStatementDAO implements IBankStatementDAO
 				record.getC_BankStatementLine_ID(),
 				record.getC_BankStatementLine_Ref_ID());
 	}
+
+	@Override
+	public void updateBankStatementLinesProcessedFlag(@NonNull final BankStatementId bankStatementId, final boolean processed)
+	{
+		queryBL.createQueryBuilder(I_C_BankStatementLine.class)
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_BankStatementLine.COLUMNNAME_Processed, processed)
+				.execute();
+	}
+
 }

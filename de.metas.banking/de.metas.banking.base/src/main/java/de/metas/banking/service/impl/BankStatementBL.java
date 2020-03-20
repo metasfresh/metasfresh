@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -13,7 +12,6 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -40,9 +38,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineReferenceList;
-import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -55,61 +51,6 @@ public class BankStatementBL implements IBankStatementBL
 {
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
-	@Override
-	public void handleAfterPrepare(final I_C_BankStatement bankStatement)
-	{
-		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(bankStatement))
-		{
-			if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
-			{
-				// Payment in C_BankStatementLine_Ref are mandatory
-				final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-				for (final BankStatementLineReference refLine : bankStatementDAO.retrieveLineReferences(bankStatementLineId))
-				{
-					if (refLine.getPaymentId() == null)
-					{
-						// TODO -> AD_Message
-						throw new AdempiereException("Missing payment in reference line "
-								+ refLine.getLineNo() + " of line "
-								+ line.getLine());
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public void handleAfterComplete(final I_C_BankStatement bankStatement)
-	{
-		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
-
-		for (final I_C_BankStatementLine line : bankStatementDAO.retrieveLines(bankStatement))
-		{
-			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
-			reconcilePaymentsFromBankStatementLine_Ref(bankStatementDAO, line);
-		}
-	}
-
-	private void reconcilePaymentsFromBankStatementLine_Ref(final IBankStatementDAO bankStatementDAO, final I_C_BankStatementLine line)
-	{
-		if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
-		{
-			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-			final ImmutableSet<PaymentId> paymentIds = bankStatementDAO
-					.retrieveLineReferences(bankStatementLineId)
-					.getPaymentIds();
-
-			paymentBL.markReconciled(paymentIds);
-		}
-	}
-
-	@Override
-	public void handleBeforeVoid(final I_C_BankStatement bankStatement)
-	{
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatement);
-		unlinkPaymentsAndDeleteReferences(lines);
-	}
 
 	@Override
 	public void updateEndingBalance(final I_C_BankStatement bankStatement)
@@ -180,7 +121,8 @@ public class BankStatementBL implements IBankStatementBL
 		unlinkPaymentsAndDeleteReferences(ImmutableList.of(bankStatementLine));
 	}
 
-	private void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+	@Override
+	public void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
 	{
 		if (bankStatementLines.isEmpty())
 		{
@@ -190,15 +132,16 @@ public class BankStatementBL implements IBankStatementBL
 		//
 		// Unlink payment from line
 		final ArrayList<BankStatementLineId> bankStatementLineIds = new ArrayList<>();
+		final ArrayList<PaymentId> paymentIdsToUnReconcile = new ArrayList<>();
 		for (final I_C_BankStatementLine bankStatementLine : bankStatementLines)
 		{
 			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
 			bankStatementLineIds.add(bankStatementLineId);
 
-			final PaymentId paymentId = PaymentId.ofRepoId(bankStatementLine.getC_Payment_ID());
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
 			if (paymentId != null)
 			{
-				paymentBL.markNotReconciled(paymentId);
+				paymentIdsToUnReconcile.add(paymentId);
 
 				bankStatementLine.setC_Payment_ID(-1);
 				bankStatementDAO.save(bankStatementLine);
@@ -207,8 +150,12 @@ public class BankStatementBL implements IBankStatementBL
 
 		// Delete references
 		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineIds);
-		paymentBL.markNotReconciled(lineRefs.getPaymentIds());
+		paymentIdsToUnReconcile.addAll(lineRefs.getPaymentIds());
 		bankStatementDAO.deleteReferences(lineRefs.toList());
+
+		//
+		// UnReconcile all payments
+		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
 	}
 
 	@Override

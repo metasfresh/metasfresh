@@ -29,6 +29,8 @@ import org.compiere.util.DB;
 
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 
 /**
@@ -47,13 +49,10 @@ import de.metas.util.Services;
 @SuppressWarnings("serial")
 public class MBankStatementLine extends X_C_BankStatementLine
 {
-	/** Parent */
-	private MBankStatement m_parent = null;
-
 	public MBankStatementLine(Properties ctx, int C_BankStatementLine_ID, String trxName)
 	{
 		super(ctx, C_BankStatementLine_ID, trxName);
-		if (C_BankStatementLine_ID == 0)
+		if (is_new())
 		{
 			// setC_BankStatement_ID (0); // Parent
 			// setC_Charge_ID (0);
@@ -85,14 +84,20 @@ public class MBankStatementLine extends X_C_BankStatementLine
 		super.setStatementLineDate(StatementLineDate);
 		setValutaDate(StatementLineDate);
 		setDateAcct(StatementLineDate);
-	}	// setStatementLineDate
+	}
 
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (newRecord && getParent().isComplete())
+		if (newRecord)
 		{
-			throw new AdempiereException("@ParentComplete@ @C_BankStatementLine_ID@");
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(getC_BankStatement_ID());
+			final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(bankStatementId);
+			final DocStatus docStatus = DocStatus.ofNullableCode(bankStatement.getDocStatus());
+			if (docStatus.isCompletedOrClosedOrReversed())
+			{
+				throw new AdempiereException("@ParentComplete@ @C_BankStatementLine_ID@");
+			}
 		}
 		if (getChargeAmt().signum() != 0 && getC_Charge_ID() <= 0)
 		{
@@ -139,15 +144,6 @@ public class MBankStatementLine extends X_C_BankStatementLine
 
 		return line.getStmtAmt()
 				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(line));
-	}
-
-	private MBankStatement getParent()
-	{
-		if (m_parent == null)
-		{
-			m_parent = new MBankStatement(getCtx(), getC_BankStatement_ID(), get_TrxName());
-		}
-		return m_parent;
 	}
 
 	@Override

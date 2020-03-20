@@ -1,6 +1,7 @@
 package de.metas.banking.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -12,12 +13,6 @@ import lombok.NonNull;
 
 public interface IBankStatementBL extends ISingletonService
 {
-	void handleAfterPrepare(I_C_BankStatement bankStatement);
-
-	void handleAfterComplete(I_C_BankStatement bankStatement);
-
-	void handleBeforeVoid(I_C_BankStatement bankStatement);
-
 	/**
 	 * Updates bank statement ending balance as "beginning balance" + "statement difference".
 	 */
@@ -36,6 +31,7 @@ public interface IBankStatementBL extends ISingletonService
 
 	void unlinkPaymentsAndDeleteReferences(I_C_BankStatementLine bankStatementLine);
 
-	void deleteReferencesAndUnReconcilePayments(@NonNull BankStatementLineId bankStatementLineId);
+	void unlinkPaymentsAndDeleteReferences(@NonNull List<I_C_BankStatementLine> bankStatementLines);
 
+	void deleteReferencesAndUnReconcilePayments(@NonNull BankStatementLineId bankStatementLineId);
 }

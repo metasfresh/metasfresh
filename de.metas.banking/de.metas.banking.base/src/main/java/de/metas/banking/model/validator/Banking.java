@@ -75,7 +75,6 @@ public class Banking extends AbstractModuleInterceptor
 	{
 		// Bank statement:
 		{
-			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatement.instance, client);
 			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatementLine.instance, client);
 		}
 
