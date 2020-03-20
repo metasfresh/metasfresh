@@ -2,7 +2,6 @@ package de.metas.banking.model;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collector;
 
@@ -66,16 +65,25 @@ public final class BankStatementLineReferenceList implements Iterable<BankStatem
 		return list.iterator();
 	}
 
-	public List<BankStatementLineReference> toList()
-	{
-		return list;
-	}
-
 	public ImmutableSet<PaymentId> getPaymentIds()
 	{
 		return list.stream()
 				.map(BankStatementLineReference::getPaymentId)
 				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public ImmutableSet<BankStatementLineId> getBankStatementLineIds()
+	{
+		return list.stream()
+				.map(BankStatementLineReference::getBankStatementLineId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public ImmutableSet<BankStatementLineRefId> getBankStatementLineRefIds()
+	{
+		return list.stream()
+				.map(BankStatementLineReference::getBankStatementLineRefId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

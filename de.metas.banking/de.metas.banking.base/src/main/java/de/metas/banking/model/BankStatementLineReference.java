@@ -55,4 +55,19 @@ public class BankStatementLineReference
 
 	@NonNull
 	private final Money trxAmt;
+
+	public BankStatementId getBankStatementId()
+	{
+		return getId().getBankStatementId();
+	}
+
+	public BankStatementLineId getBankStatementLineId()
+	{
+		return getId().getBankStatementLineId();
+	}
+
+	public BankStatementLineRefId getBankStatementLineRefId()
+	{
+		return getId().getBankStatementLineRefId();
+	}
 }

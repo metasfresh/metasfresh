@@ -82,7 +82,7 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	Iterator<I_ESR_Import> retrieveESRImports(Properties ctx, int orgID);
 
-	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineId(BankStatementLineId bankStatementLineId);
+	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineRefId(BankStatementAndLineAndRefId bankStatementLineRefId);
 

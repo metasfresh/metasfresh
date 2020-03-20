@@ -34,7 +34,9 @@ public interface IPaySelectionDAO extends ISingletonService
 
 	int retrieveLastPaySelectionLineNo(PaySelectionId paySelectionId);
 
-	List<I_C_PaySelectionLine> retrievePaySelectionLines(BankStatementLineId bankStatementLineId);
+	List<I_C_PaySelectionLine> retrievePaySelectionLinesByBankStatementLineId(BankStatementLineId bankStatementLineId);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
 	Optional<I_C_PaySelectionLine> retrievePaySelectionLine(BankStatementAndLineAndRefId bankStatementLineAndRefId);
 

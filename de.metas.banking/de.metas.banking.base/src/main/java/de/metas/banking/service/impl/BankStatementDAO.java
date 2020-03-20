@@ -178,20 +178,17 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void deleteReferences(@NonNull final Collection<BankStatementLineReference> lineRefs)
+	public void deleteReferencesByIds(@NonNull final Collection<BankStatementLineRefId> lineRefIds)
 	{
-		if (lineRefs.isEmpty())
+		if (lineRefIds.isEmpty())
 		{
 			return;
 		}
 
-		final ImmutableSet<BankStatementLineRefId> lineRefIds = lineRefs.stream()
-				.map(BankStatementLineReference::getId)
-				.map(BankStatementAndLineAndRefId::getBankStatementLineRefId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final List<I_C_BankStatementLine_Ref> records = loadByRepoIdAwares(lineRefIds, I_C_BankStatementLine_Ref.class);
-		InterfaceWrapperHelper.deleteAll(records);
+		queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addInArrayFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID, lineRefIds)
+				.create()
+				.delete();
 	}
 
 	@Override
@@ -288,11 +285,11 @@ public class BankStatementDAO implements IBankStatementDAO
 	@Override
 	public void save(@NonNull final BankStatementLineReference lineRef)
 	{
-		final I_C_BankStatementLine_Ref record = load(lineRef.getId().getBankStatementLineRefId(), I_C_BankStatementLine_Ref.class);
+		final I_C_BankStatementLine_Ref record = load(lineRef.getBankStatementLineRefId(), I_C_BankStatementLine_Ref.class);
 
 		record.setAD_Org_ID(lineRef.getOrgId().getRepoId());
-		record.setC_BankStatement_ID(lineRef.getId().getBankStatementId().getRepoId());
-		record.setC_BankStatementLine_ID(lineRef.getId().getBankStatementLineId().getRepoId());
+		record.setC_BankStatement_ID(lineRef.getBankStatementId().getRepoId());
+		record.setC_BankStatementLine_ID(lineRef.getBankStatementLineId().getRepoId());
 		record.setLine(lineRef.getLineNo());
 
 		record.setC_BPartner_ID(BPartnerId.toRepoId(lineRef.getBpartnerId()));

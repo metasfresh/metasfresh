@@ -31,6 +31,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -65,6 +66,7 @@ final class BankStatementLineReconcileCommand
 
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 	private final MoneyService moneyService;
@@ -255,8 +257,7 @@ final class BankStatementLineReconcileCommand
 
 		//
 		// Mark payment as reconciled
-		payment.setIsReconciled(true);
-		paymentDAO.save(payment);
+		paymentBL.markReconciled(payment);
 
 		//
 		reconciledPayments.add(PaymentReconciled.builder()

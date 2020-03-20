@@ -1,5 +1,6 @@
 package de.metas.payment.esr.api;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -116,7 +117,7 @@ public interface IESRImportBL extends ISingletonService
 
 	void linkESRImportLineToBankStatement(@NonNull I_ESR_ImportLine esrImportLine, @NonNull BankStatementAndLineAndRefId bankStatementLineRefId);
 
-	void unlinkESRImportLinesFor(BankStatementLineId bankStatementLineId);
+	void unlinkESRImportLinesFromBankStatement(Collection<BankStatementLineId> bankStatementLineIds);
 
 	void scheduleESRImportFor(RunESRImportRequest runESRImportRequest);
 

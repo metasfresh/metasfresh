@@ -1,5 +1,6 @@
 package de.metas.banking.payment;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ public interface IPaySelectionBL extends ISingletonService
 	/**
 	 * Unlink any pay selection line which points to given bank statement line or to one of it's references.
 	 */
-	void unlinkPaySelectionLineForBankStatement(BankStatementLineId bankStatementLineId);
+	void unlinkPaySelectionLineFromBankStatement(Collection<BankStatementLineId> bankStatementLineIds);
 
 	/**
 	 * Update the given <code>psl</code>'s <code>C_BPartner_ID</code>, <code>C_BP_BankAccount_ID</code> and <code>Reference</code> from the <code>C_Invoice</code> which it references.

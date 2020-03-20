@@ -1,9 +1,6 @@
 package de.metas.banking.model.validator;
 
-import java.util.List;
-
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.IBankStatementListener;
 import lombok.NonNull;
@@ -46,10 +43,8 @@ class PaySelectionBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(
-			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull final List<BankStatementLineReference> lineRefs)
+	public void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
-		paySelectionBL.unlinkPaySelectionLineForBankStatement(bankStatementLineId);
+		paySelectionBL.unlinkPaySelectionLineFromBankStatement(lineRefs.getBankStatementLineIds());
 	}
 }

@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineRefId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.payment.PaymentId;
@@ -50,7 +51,7 @@ public interface IBankStatementDAO extends ISingletonService
 
 	BankStatementLineReferenceList retrieveLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
 
-	void deleteReferences(@NonNull Collection<BankStatementLineReference> lineRefs);
+	void deleteReferencesByIds(@NonNull Collection<BankStatementLineRefId> lineRefIds);
 
 	/**
 	 * Checks if given payment is present on any line or line reference.
@@ -101,4 +102,5 @@ public interface IBankStatementDAO extends ISingletonService
 	BankStatementLineReference createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);
 
 	void updateBankStatementLinesProcessedFlag(@NonNull BankStatementId bankStatementId, boolean processed);
+
 }

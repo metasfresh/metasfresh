@@ -35,13 +35,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
@@ -101,16 +103,17 @@ public class C_Payment
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	public void onAfterReverse(final I_C_Payment payment)
 	{
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+
 		//
 		// Auto-reconcile the payment and it's reversal if the payment is not present on bank statements
-		if (!Services.get(IBankStatementDAO.class).isPaymentOnBankStatement(payment))
+		if (!bankStatementDAO.isPaymentOnBankStatement(payment))
 		{
-			payment.setIsReconciled(true);
-			InterfaceWrapperHelper.save(payment);
+			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+			paymentBL.markReconciled(payment);
 
-			final I_C_Payment reversal = payment.getReversal();
-			reversal.setIsReconciled(true);
-			InterfaceWrapperHelper.save(reversal);
+			final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
+			paymentBL.markReconciled(ImmutableList.of(reversalId));
 		}
 	}
 

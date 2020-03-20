@@ -252,10 +252,15 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineId(@NonNull final BankStatementLineId bankStatementLineId)
+	public List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineIds(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
 	{
+		if (bankStatementLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
+				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineIds)
 				// .addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_ESR_ImportLine.class);

@@ -1,9 +1,6 @@
 package de.metas.banking.service;
 
-import java.util.List;
-
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineReferenceList;
 import lombok.NonNull;
 
 /*
@@ -40,9 +37,7 @@ import lombok.NonNull;
  */
 public interface IBankStatementListener
 {
-	default void onBankStatementLineVoiding(
-			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull final List<BankStatementLineReference> lineRefs)
+	default void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 	}
 }

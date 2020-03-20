@@ -98,11 +98,22 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	}
 
 	@Override
-	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final BankStatementLineId bankStatementLineId)
+	public List<I_C_PaySelectionLine> retrievePaySelectionLinesByBankStatementLineId(@NonNull final BankStatementLineId bankStatementLineId)
 	{
+		return retrievePaySelectionLinesByBankStatementLineIds(ImmutableList.of(bankStatementLineId));
+	}
+
+	@Override
+	public List<I_C_PaySelectionLine> retrievePaySelectionLinesByBankStatementLineIds(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
+	{
+		if (bankStatementLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineId)
+				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineIds)
 				.create()
 				.list(I_C_PaySelectionLine.class);
 	}

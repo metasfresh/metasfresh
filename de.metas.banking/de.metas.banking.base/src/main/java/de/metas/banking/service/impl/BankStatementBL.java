@@ -39,6 +39,7 @@ import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -140,26 +141,16 @@ public class BankStatementBL implements IBankStatementBL
 			}
 		}
 
-		// Delete references
+		//
+		// Check references
 		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineIds);
 		paymentIdsToUnReconcile.addAll(lineRefs.getPaymentIds());
-		bankStatementDAO.deleteReferences(lineRefs.toList());
+
+		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
+		listeners.onBankStatementLineVoiding(lineRefs);
 
 		//
-		// UnReconcile all payments
+		bankStatementDAO.deleteReferencesByIds(lineRefs.getBankStatementLineRefIds());
 		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
-	}
-
-	@Override
-	public void deleteReferencesAndUnReconcilePayments(@NonNull final BankStatementLineId bankStatementLineId)
-	{
-		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineId);
-
-		Services.get(IBankStatementListenerService.class)
-				.getListeners()
-				.onBankStatementLineVoiding(bankStatementLineId, lineRefs.toList());
-
-		paymentBL.markNotReconciled(lineRefs.getPaymentIds());
-		bankStatementDAO.deleteReferences(lineRefs.toList());
 	}
 }

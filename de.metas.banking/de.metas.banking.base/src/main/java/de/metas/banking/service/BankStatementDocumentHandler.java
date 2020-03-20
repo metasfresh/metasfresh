@@ -3,9 +3,11 @@ package de.metas.banking.service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,8 +18,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.model.BankStatementLineId;
@@ -226,7 +226,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatement);
-		final HashSet<PaymentId> paymentIdsToReconcile = new HashSet<>();
 		for (final I_C_BankStatementLine line : lines)
 		{
 			//
@@ -255,21 +254,11 @@ public class BankStatementDocumentHandler implements DocumentHandler
 			}
 
 			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
-
-			//
-			// Collect payment to reconcile
-			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-			if (paymentId != null)
-			{
-				paymentIdsToReconcile.add(paymentId);
-			}
-
-			reconcilePaymentsFromBankStatementLineReferences(line);
 		}
 
 		//
 		// Reconcile payments
-		paymentBL.markReconciled(paymentIdsToReconcile);
+		paymentBL.markReconciled(getAllPaymentIds(lines));
 
 		//
 		bankStatement.setProcessed(true);
@@ -277,17 +266,32 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		return IDocument.STATUS_Completed;
 	}
 
-	private void reconcilePaymentsFromBankStatementLineReferences(final I_C_BankStatementLine line)
+	private Set<PaymentId> getAllPaymentIds(final List<I_C_BankStatementLine> lines)
 	{
-		if (line.isMultiplePaymentOrInvoice() && line.isMultiplePayment())
+		final ArrayList<BankStatementLineId> bankStatementLineIds = new ArrayList<>();
+		final HashSet<PaymentId> paymentIds = new HashSet<>();
+
+		for (final I_C_BankStatementLine line : lines)
 		{
 			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-			final ImmutableSet<PaymentId> paymentIds = bankStatementDAO
-					.retrieveLineReferences(bankStatementLineId)
-					.getPaymentIds();
+			bankStatementLineIds.add(bankStatementLineId);
 
-			paymentBL.markReconciled(paymentIds);
+			//
+			// Collect payment from line
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			if (paymentId != null)
+			{
+				paymentIds.add(paymentId);
+			}
 		}
+
+		//
+		// Collect payments from bank statement line references
+		paymentIds.addAll(bankStatementDAO
+				.retrieveLineReferences(bankStatementLineIds)
+				.getPaymentIds());
+
+		return paymentIds;
 	}
 
 	@Override

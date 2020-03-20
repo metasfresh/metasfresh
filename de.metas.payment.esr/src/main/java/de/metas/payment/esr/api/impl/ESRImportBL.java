@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1242,9 +1243,9 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public void unlinkESRImportLinesFor(@NonNull final BankStatementLineId bankStatementLineId)
+	public void unlinkESRImportLinesFromBankStatement(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
 	{
-		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesByBankStatementLineId(bankStatementLineId))
+		for (final I_ESR_ImportLine esrImportLine : esrImportDAO.retrieveAllLinesByBankStatementLineIds(bankStatementLineIds))
 		{
 			unlinkESRImportLineFromBankStatement(esrImportLine);
 		}

@@ -396,7 +396,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				final BPartnerId lineRefBPartnerId = lineRef.getBpartnerId();
 				fact.createLine()
 						.setDocLine(line)
-						.setSubLine_ID(lineRef.getId().getBankStatementLineRefId().getRepoId())
+						.setSubLine_ID(lineRef.getBankStatementLineRefId().getRepoId())
 						.setAccount(acct_BankInTransit)
 						.setAmtSourceDrOrCr(lineRef.getTrxAmt().toBigDecimal().negate())
 						.setCurrencyId(lineRef.getTrxAmt().getCurrencyId())

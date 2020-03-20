@@ -1,6 +1,7 @@
 package de.metas.banking.payment.impl;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -258,9 +259,9 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void unlinkPaySelectionLineForBankStatement(final BankStatementLineId bankStatementLineId)
+	public void unlinkPaySelectionLineFromBankStatement(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
 	{
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(bankStatementLineId))
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLinesByBankStatementLineIds(bankStatementLineIds))
 		{
 			unlinkBankStatementFromLine(paySelectionLine);
 		}

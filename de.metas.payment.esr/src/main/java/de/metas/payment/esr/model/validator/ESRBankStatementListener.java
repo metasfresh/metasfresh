@@ -1,9 +1,6 @@
 package de.metas.payment.esr.model.validator;
 
-import java.util.List;
-
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.payment.esr.api.IESRImportBL;
 import lombok.NonNull;
@@ -46,10 +43,8 @@ class ESRBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(
-			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull final List<BankStatementLineReference> lineRefs)
+	public void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
-		esrImportBL.unlinkESRImportLinesFor(bankStatementLineId);
+		esrImportBL.unlinkESRImportLinesFromBankStatement(lineRefs.getBankStatementLineIds());
 	}
 }

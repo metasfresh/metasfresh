@@ -1,10 +1,8 @@
 package de.metas.banking.service.impl;
 
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementListener;
 import lombok.NonNull;
 
@@ -40,13 +38,11 @@ final class CompositeBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(
-			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull final List<BankStatementLineReference> lineRefs)
+	public void onBankStatementLineVoiding(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		for (final IBankStatementListener listener : listeners)
 		{
-			listener.onBankStatementLineVoiding(bankStatementLineId, lineRefs);
+			listener.onBankStatementLineVoiding(lineRefs);
 		}
 	}
 }
