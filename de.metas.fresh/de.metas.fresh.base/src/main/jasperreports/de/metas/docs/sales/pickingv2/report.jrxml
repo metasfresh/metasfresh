@@ -120,7 +120,7 @@ where orderdocumentno = $P{OrderDocumentNo};]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{DoumentNo}+": "]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="340" y="120" width="210" height="16" uuid="22ed9a7d-7050-471e-aa71-9d974f6ea22f"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="12" isBold="true"/>
