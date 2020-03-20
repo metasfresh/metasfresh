@@ -82,9 +82,9 @@ public class RemoteServletInvoker implements IReportServer
 				.setReadTimeout(readTimeout)
 				.build();
 
-		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-		converters.add(new ReportResultMessageConverter());
-		restTemplate.setMessageConverters(converters);
+	//	List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+	//	converters.add(new ReportResultMessageConverter());
+	//	restTemplate.setMessageConverters(converters);
 	}
 
 	@Override

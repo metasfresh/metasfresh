@@ -69,7 +69,7 @@ public class ReportResultMessageConverter
 
 		final ReportResult report = ReportResult.builder()
 				.reportFilename("TEST_FILENAME")
-				.reportContent(requestBody.getBytes())
+				.reportContentBase64(requestBody)
 				.outputType(OutputType.XLS)
 				.build();
 		return report;

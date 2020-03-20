@@ -44,6 +44,7 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -516,7 +517,7 @@ public class JasperEngine extends AbstractReportEngine
 			final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
 			return ReportResult.builder()
 					.outputType(outputType)
-					.reportContent(data)
+					.reportContentBase64(Util.encodeBase64(data))
 					.build();
 		}
 		else if (OutputType.HTML == outputType)
@@ -530,7 +531,7 @@ public class JasperEngine extends AbstractReportEngine
 
 			return ReportResult.builder()
 					.outputType(outputType)
-					.reportContent(out.toByteArray())
+					.reportContentBase64(out.toString())
 					.build();
 		}
 		else if (OutputType.XML == outputType)
@@ -540,7 +541,7 @@ public class JasperEngine extends AbstractReportEngine
 
 			return ReportResult.builder()
 					.outputType(outputType)
-					.reportContent(out.toByteArray())
+					.reportContentBase64(out.toString())
 					.build();
 		}
 		else if (OutputType.JasperPrint == outputType)
@@ -565,7 +566,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return ReportResult.builder()
 				.outputType(OutputType.JasperPrint)
-				.reportContent(out.toByteArray())
+				.reportContentBase64(out.toString())
 				.build();
 	}
 
@@ -601,7 +602,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return ReportResult.builder()
 				.outputType(OutputType.XLS)
-				.reportContent(out.toByteArray())
+				.reportContentBase64(out.toString())
 				.build();
 	}
 }

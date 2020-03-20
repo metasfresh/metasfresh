@@ -47,7 +47,7 @@ public class ReportResultTest
 		testSerializeDeserialize(ReportResult.builder()
 				.reportFilename("some_filename.xls")
 				.outputType(OutputType.XLS)
-				.reportContent(new byte[] { 1, 2, 3, 4, 5 })
+				.reportContentBase64("1,2,3,4,5")
 				.build());
 	}
 

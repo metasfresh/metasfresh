@@ -57,7 +57,8 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 		final ReportsClient reportsClient = ReportsClient.get();
 		final ReportResult reportResult = reportsClient.report(processInfo, outputTypeEffective);
 		final byte[] reportData = reportResult.getReportContent();
+		final String reportFilename = reportResult.getReportFilename();
 
-		return new ExecuteReportResult(outputTypeEffective, reportData);
+		return new ExecuteReportResult(reportFilename, outputTypeEffective, reportData);
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.report.server;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
+import com.google.common.io.BaseEncoding;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -41,7 +42,11 @@ public class ReportResult
 	@NonNull
 	OutputType outputType;
 
-	byte[] reportContent;
+	String reportContentBase64;
+
+	public byte[] getReportContent() {
+		return BaseEncoding.base64().decode(reportContentBase64);
+	}
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class ReportResultBuilder

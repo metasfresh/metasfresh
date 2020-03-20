@@ -24,6 +24,7 @@ import org.jxls.transform.TransformationConfig;
 import org.jxls.transform.Transformer;
 import org.jxls.transform.poi.PoiTransformer;
 import org.slf4j.Logger;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -102,7 +103,7 @@ public class JXlsExporter
 				return ReportResult.builder()
 						.reportFilename(getDataSource().getSuggestedFilename().orElse(null))
 						.outputType(OutputType.XLS)
-						.reportContent(os.toByteArray())
+						.reportContentBase64(org.compiere.util.Util.encodeBase64(os.toByteArray())
 						.build();
 			}
 		}
