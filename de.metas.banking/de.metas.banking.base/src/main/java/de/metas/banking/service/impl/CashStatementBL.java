@@ -1,30 +1,5 @@
 package de.metas.banking.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Properties;
 
@@ -37,9 +12,11 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
@@ -95,7 +72,7 @@ public class CashStatementBL implements ICashStatementBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final int C_BP_BankAccount_ID = payment.getC_BP_BankAccount_ID();
-		final Timestamp statementDate = TimeUtil.getDay(payment.getDateTrx());
+		final LocalDate statementDate = TimeUtil.asLocalDate(payment.getDateTrx());
 
 		String whereClause = I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID + "=?"
 				+ " AND TRUNC(" + I_C_BankStatement.COLUMNNAME_StatementDate + ")=?"
@@ -118,23 +95,18 @@ public class CashStatementBL implements ICashStatementBL
 		}
 
 		// Create Statement
-		bs = createBankStatement(ba, statementDate);
-		return bs;
+		return createBankStatement(ba, statementDate);
 	}
 
-	private I_C_BankStatement createBankStatement(I_C_BP_BankAccount account, Timestamp statementDate)
+	private I_C_BankStatement createBankStatement(final I_C_BP_BankAccount account, final LocalDate statementDate)
 	{
-		final I_C_BankStatement bs = newInstance(I_C_BankStatement.class);
-		bs.setAD_Org_ID(account.getAD_Org_ID());
-		bs.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
-		bs.setStatementDate(statementDate);
+		final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+				.orgId(OrgId.ofRepoId(account.getAD_Org_ID()))
+				.orgBankAccountId(BankAccountId.ofRepoId(account.getC_BP_BankAccount_ID()))
+				.statementDate(statementDate)
+				.name(statementDate.toString())
+				.build());
 
-		bs.setName(bs.getStatementDate().toString());
-		bs.setIsManual(false);
-		bankStatementDAO.save(bs);
-		return bs;
+		return bankStatementDAO.getById(bankStatementId);
 	}
-
-	// metas end
-
 }
