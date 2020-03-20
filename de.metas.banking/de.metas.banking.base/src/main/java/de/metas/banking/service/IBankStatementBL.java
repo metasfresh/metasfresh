@@ -18,9 +18,6 @@ public interface IBankStatementBL extends ISingletonService
 	 */
 	void updateEndingBalance(I_C_BankStatement bankStatement);
 
-	/**
-	 * Un-post given bank statement.
-	 */
 	void unpost(I_C_BankStatement bankStatement);
 
 	boolean isReconciled(I_C_BankStatementLine line);
