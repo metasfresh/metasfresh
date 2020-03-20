@@ -139,15 +139,6 @@ public class C_BankStatementLine
 	}
 
 	@CalloutMethod(columnNames = {
-			I_C_BankStatementLine.COLUMNNAME_C_Payment_ID
-	})
-	public void onPaymentIdChanged(final I_C_BankStatementLine line, final ICalloutField field)
-	{
-		BankStatementLineOrRefHelper.setPaymentDetails(line);
-		onAmountsChanged(line, field);
-	}
-
-	@CalloutMethod(columnNames = {
 			I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID
 	})
 	public void onInvoiceIdChanged(final I_C_BankStatementLine line, final ICalloutField field)

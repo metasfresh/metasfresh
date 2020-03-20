@@ -8,31 +8,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.banking.payment.IBankStatmentPaymentBL;
-import de.metas.currency.Currency;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -212,16 +199,6 @@ public class BankStatementLineOrRefHelper
 		return pstmt;
 	}
 
-	public static void setBankStatementLineOrRefAmountsWhenSomeAmountChanged(@NonNull final I_C_BankStatementLine line, @NonNull final String colName)
-	{
-		final Amounts paymentAmounts = computeBankStatementLineOrRefAmounts(line, colName);
-
-		line.setTrxAmt(paymentAmounts.getPayAmt());
-		line.setOverUnderAmt(paymentAmounts.getOverUnderAmt());
-		line.setWriteOffAmt(paymentAmounts.getWriteOffAmt());
-		line.setDiscountAmt(paymentAmounts.getDiscountAmt());
-	}
-
 	@Data
 	@Builder
 	private static class Amounts
@@ -233,184 +210,8 @@ public class BankStatementLineOrRefHelper
 		private BigDecimal payAmt;
 	}
 
-	private static Amounts computeBankStatementLineOrRefAmounts(@NonNull final I_C_BankStatementLine line, @NonNull final String colName)
-	{
-		final InvoiceInfoVO invoiceInfo = fetchInvoiceCurrencyBpartnerAndAmounts(line);
-
-		final BigDecimal invoiceOpenAmt = invoiceInfo != null ? invoiceInfo.getOpenAmt() : BigDecimal.ZERO;
-		final BigDecimal discountAmt = line.getDiscountAmt();
-		final BigDecimal writeOffAmt = line.getWriteOffAmt();
-		final BigDecimal overUnderAmt = line.getOverUnderAmt();
-		final BigDecimal payAmt = line.getTrxAmt();
-
-		final Amounts paymentAmounts = Amounts.builder()
-				.payAmt(payAmt)
-				.invoiceOpenAmt(invoiceOpenAmt)
-				.discountAmt(discountAmt)
-				.writeOffAmt(writeOffAmt)
-				.overUnderAmt(overUnderAmt)
-				.build();
-
-		computeInvoiceOpenAmtIfNeeded(line, invoiceInfo, paymentAmounts);
-		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
-		{
-			computeAmountsWhenCurrencyChanged(line, invoiceInfo, paymentAmounts);
-		}
-		else if (colName.equals(I_C_BankStatementLine.COLUMNNAME_TrxAmt))
-		{
-			computeOverUnderAndWriteOffAmountsWhenTrxAmtChanged(line, paymentAmounts);
-		}
-		else if (colName.equals(I_C_BankStatementLine.COLUMNNAME_IsOverUnderPayment))
-		{
-			computeOverUnderAndWriteOffAmountsWhenIsOverUnderPaymentChanged(line, paymentAmounts);
-		}
-		else
-		{
-			computeTrxAmtAmount(line, paymentAmounts);
-		}
-		return paymentAmounts;
-	}
-
 	private static Timestamp getTrxDate(@NonNull final I_C_BankStatementLine line)
 	{
 		return MoreObjects.firstNonNull(line.getStatementLineDate(), SystemTime.asTimestamp());
-	}
-
-	private static void computeInvoiceOpenAmtIfNeeded(@NonNull final I_C_BankStatementLine line, final InvoiceInfoVO invoiceInfo, @NonNull final Amounts paymentAmounts)
-	{
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(line.getC_Currency_ID());
-
-		if (invoiceInfo != null
-				&& currencyId != null
-				&& invoiceInfo.getCurrencyId() != null
-				&& !CurrencyId.equals(currencyId, invoiceInfo.getCurrencyId()))
-		{
-			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
-			final CurrencyPrecision precision = currency.getPrecision();
-
-			final BigDecimal currencyRate = computeCurrencyRate(line, invoiceInfo);
-			BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-			invoiceOpenAmt = precision.round(invoiceOpenAmt.multiply(currencyRate));
-			paymentAmounts.setInvoiceOpenAmt(invoiceOpenAmt);
-		}
-	}
-
-	private static void computeAmountsWhenCurrencyChanged(@NonNull final I_C_BankStatementLine line, final InvoiceInfoVO invoiceInfo, @NonNull final Amounts paymentAmounts)
-	{
-		BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-		BigDecimal payAmt = paymentAmounts.getPayAmt();
-		BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
-		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
-		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
-
-		final BigDecimal currencyRate = computeCurrencyRate(line, invoiceInfo);
-		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
-		final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
-		final CurrencyPrecision precision = currency.getPrecision();
-
-		invoiceOpenAmt = precision.round(invoiceOpenAmt.multiply(currencyRate));
-		payAmt = precision.round(payAmt.multiply(currencyRate));
-		discountAmt = precision.round(discountAmt.multiply(currencyRate));
-		writeOffAmt = precision.round(writeOffAmt.multiply(currencyRate));
-		overUnderAmt = precision.round(overUnderAmt.multiply(currencyRate));
-
-		paymentAmounts.setPayAmt(payAmt);
-		paymentAmounts.setDiscountAmt(discountAmt);
-		paymentAmounts.setWriteOffAmt(writeOffAmt);
-		paymentAmounts.setOverUnderAmt(overUnderAmt);
-		paymentAmounts.setInvoiceOpenAmt(invoiceOpenAmt);
-	}
-
-	private static void computeOverUnderAndWriteOffAmountsWhenTrxAmtChanged(final I_C_BankStatementLine line, @NonNull final Amounts paymentAmounts)
-	{
-		final BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-		final BigDecimal payAmt = paymentAmounts.getPayAmt();
-		final BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
-		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
-		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
-
-		if (line.isOverUnderPayment())
-		{
-			overUnderAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt).subtract(writeOffAmt);
-		}
-		else
-		{
-			overUnderAmt = BigDecimal.ZERO;
-			writeOffAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt).subtract(overUnderAmt);
-		}
-
-		paymentAmounts.setOverUnderAmt(overUnderAmt);
-		paymentAmounts.setWriteOffAmt(writeOffAmt);
-
-	}
-
-	private static void computeOverUnderAndWriteOffAmountsWhenIsOverUnderPaymentChanged(final I_C_BankStatementLine line, @NonNull final Amounts paymentAmounts)
-	{
-		final BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-		final BigDecimal payAmt = paymentAmounts.getPayAmt();
-		final BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
-		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
-		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
-
-		if (line.isOverUnderPayment())
-		{
-			overUnderAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt);
-			writeOffAmt = BigDecimal.ZERO;
-		}
-		else
-		{
-			overUnderAmt = BigDecimal.ZERO;
-			writeOffAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt);
-		}
-
-		paymentAmounts.setWriteOffAmt(writeOffAmt);
-		paymentAmounts.setOverUnderAmt(overUnderAmt);
-	}
-
-	private static void computeTrxAmtAmount(@NonNull final I_C_BankStatementLine line, @NonNull final Amounts paymentAmounts)
-	{
-		final BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-		final BigDecimal discountAmt = line.getDiscountAmt();
-		final BigDecimal writeOffAmt = line.getWriteOffAmt();
-		final BigDecimal overUnderAmt = line.getOverUnderAmt();
-		final BigDecimal payAmt = invoiceOpenAmt.subtract(discountAmt).subtract(writeOffAmt).subtract(overUnderAmt);
-		paymentAmounts.setPayAmt(payAmt);
-	}
-
-	private static BigDecimal computeCurrencyRate(final I_C_BankStatementLine line, final InvoiceInfoVO invoiceInfo)
-	{
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(line.getC_Currency_ID());
-		final LocalDate convDate = TimeUtil.asLocalDate(getTrxDate(line));
-
-		BigDecimal currencyRate = BigDecimal.ONE;
-		if (invoiceInfo != null
-				&& currencyId != null
-				&& invoiceInfo.getCurrencyId() != null
-				&& !CurrencyId.equals(currencyId, invoiceInfo.getCurrencyId()))
-		{
-			currencyRate = currencyConversionBL.getRate(
-					invoiceInfo.getCurrencyId(),
-					currencyId,
-					convDate,
-					(CurrencyConversionTypeId)null, // conversionTypeId
-					ClientId.ofRepoId(line.getAD_Client_ID()),
-					OrgId.ofRepoId(line.getAD_Org_ID()));
-			if (currencyRate == null || currencyRate.signum() == 0)
-			{
-				throw new AdempiereException("@NoCurrencyConversion@");
-			}
-		}
-		return currencyRate;
-	}
-
-	public static void setPaymentDetails(I_C_BankStatementLine line)
-	{
-		I_C_Payment payment = null;
-		PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-		if (paymentId != null)
-		{
-			payment = Services.get(IPaymentBL.class).getById(paymentId);
-		}
-		Services.get(IBankStatmentPaymentBL.class).setC_Payment(line, payment);
 	}
 }
