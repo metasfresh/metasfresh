@@ -180,7 +180,7 @@ final class MasterdataProvider
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)
 		{
-			final BPartnerInfo bpartnerInfo = bpartnerEndpointAdapter.getCreateBPartnerInfo(json.getBpartner(), true/* billTo */, orgRecord.getValue());
+			final BPartnerInfo bpartnerInfo = bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgRecord.getValue());
 
 			final I_C_BPartner bpartnerRecord = Services.get(IBPartnerDAO.class).getById(bpartnerInfo.getBpartnerId());
 			bpartnerRecord.setAD_OrgBP_ID(orgRecord.getAD_Org_ID());
@@ -215,12 +215,12 @@ final class MasterdataProvider
 				.build();
 	}
 
-	public BPartnerInfo getCreateBPartnerInfo(
+	public BPartnerInfo getCreateBPartnerInfoInTrx(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
 			@Nullable final OrgId orgId)
 	{
-		return bpartnerEndpointAdapter.getCreateBPartnerInfo(jsonBPartnerInfo, billTo, orgDAO.retrieveOrgValue(orgId));
+		return bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, billTo, orgDAO.retrieveOrgValue(orgId));
 	}
 
 	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)

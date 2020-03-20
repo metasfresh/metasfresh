@@ -149,10 +149,13 @@ public class BPartner
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
-		if (isEmpty(value, true))
-		{
-			result.add(TranslatableStrings.constant("bpartner.value"));
-		}
+
+		// A missing "bpartner.value" is probably(=>can't be determined here) acceptable because
+		// for a new BPartner, org.compiere.model.PO.saveNew() will *most probably* create a new value on the fly (can be switched off, but usually makes no sense).
+		// if (isEmpty(value, true))
+		// {
+		// result.add(TranslatableStrings.constant("bpartner.value"));
+		// }
 		if (isEmpty(name, true))
 		{
 			result.add(TranslatableStrings.constant("bpartner.name"));
