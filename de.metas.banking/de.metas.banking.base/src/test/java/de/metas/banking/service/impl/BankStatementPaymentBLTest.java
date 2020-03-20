@@ -159,7 +159,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementPaymentBL = new BankStatmentPaymentBL();
-			testBankStatementPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
+			testBankStatementPaymentBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
 
 			//
 			// Checks
@@ -228,7 +228,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
+			testBankStatementBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
 
 			//
 			// Checks
@@ -279,7 +279,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
+			testBankStatementBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
 
 			//
 			// Checks
@@ -321,7 +321,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, bsl);
+			testBankStatementBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
 
 			//
 			// Checks

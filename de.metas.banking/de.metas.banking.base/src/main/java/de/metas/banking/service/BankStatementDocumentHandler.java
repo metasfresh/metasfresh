@@ -257,7 +257,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				}
 			}
 
-			bankStatmentPaymentBL.findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(bankStatement, line);
+			bankStatmentPaymentBL.findOrCreateSinglePaymentAndLink(bankStatement, line);
 		}
 
 		//

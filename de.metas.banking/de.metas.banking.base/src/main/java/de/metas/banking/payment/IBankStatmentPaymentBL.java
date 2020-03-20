@@ -9,7 +9,7 @@ import lombok.NonNull;
 
 public interface IBankStatmentPaymentBL extends ISingletonService
 {
-	void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(I_C_BankStatement bankStatement, I_C_BankStatementLine line);
+	void findOrCreateSinglePaymentAndLink(I_C_BankStatement bankStatement, I_C_BankStatementLine line);
 
 	void createSinglePaymentAndLink(I_C_BankStatement bankStatement, I_C_BankStatementLine bankStatementLine);
 

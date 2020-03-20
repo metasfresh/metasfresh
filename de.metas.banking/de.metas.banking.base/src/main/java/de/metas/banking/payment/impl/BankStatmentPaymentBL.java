@@ -60,7 +60,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
-	public void findOrCreateUnreconciledPaymentsAndLinkToBankStatementLine(
+	public void findOrCreateSinglePaymentAndLink(
 			@NonNull final I_C_BankStatement bankStatement,
 			@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
