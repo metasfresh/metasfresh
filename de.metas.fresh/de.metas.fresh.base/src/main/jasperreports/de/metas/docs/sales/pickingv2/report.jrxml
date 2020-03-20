@@ -70,17 +70,11 @@ where orderdocumentno = $P{OrderDocumentNo};]]>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("o")]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[($F{c_orderso_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_deliveryto.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-8" x="340" y="155" width="210" height="127" uuid="3d2f2844-1477-4ddb-8ae2-07c7b2e23bfa">
@@ -125,6 +119,13 @@ where orderdocumentno = $P{OrderDocumentNo};]]>
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{DoumentNo}+": "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="340" y="120" width="210" height="16" uuid="22ed9a7d-7050-471e-aa71-9d974f6ea22f"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packinglist}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
