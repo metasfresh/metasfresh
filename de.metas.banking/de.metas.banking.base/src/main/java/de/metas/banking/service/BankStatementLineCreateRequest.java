@@ -121,6 +121,7 @@ public class BankStatementLineCreateRequest
 		this.chargeAmt = chargeAmt != null ? chargeAmt : statementAmt.toZero();
 		this.interestAmt = interestAmt != null ? interestAmt : statementAmt.toZero();
 		this.chargeId = chargeId;
+		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
 		//
 		this.eft = eft;
 	}
