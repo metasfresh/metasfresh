@@ -1,10 +1,8 @@
-package de.metas.handlingunits;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -142,7 +142,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 
-	void setParentItem(I_M_HU hu, I_M_HU_Item parentItem);
+	void setParentItem(I_M_HU hu, @Nullable I_M_HU_Item parentItem);
 
 	/**
 	 * Creates and saves a {@link I_M_HU_Item} for the given {@code hu}, using the given {@code piItem} as its template.
@@ -307,11 +307,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve the packing materials of the given {@code hu}.<br>
 	 * Also takes into account the case that the given {@code hu} is an aggregate VHU (gh #460).
-	 *
+	 * <p>
 	 * NOTE
 	 * <ul>
 	 * <li>this method will return packing material(s) of this HU only and not for its included HUs.</li>
 	 * </ul>
+	 *
 	 * @return packing material and quantity pairs
 	 */
 	List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(I_M_HU hu);
@@ -321,7 +322,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * when empty
 	 *
 	 * @param ctx
-	 *
 	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
 	 */
 	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
