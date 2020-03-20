@@ -75,7 +75,7 @@ public class Banking extends AbstractModuleInterceptor
 	{
 		// Bank statement:
 		{
-			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatementLine.instance, client);
+			engine.addModelValidator(new de.metas.banking.model.validator.C_BankStatementLine(), client);
 		}
 
 		// de.metas.banking.payment sub-module (code moved from swat main validator)

@@ -329,5 +329,4 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addSetColumnValue(I_C_BankStatementLine.COLUMNNAME_Processed, processed)
 				.execute();
 	}
-
 }

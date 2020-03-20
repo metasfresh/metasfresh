@@ -45,7 +45,6 @@ import de.metas.banking.BankStatementTestHelper;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_Payment;
-import de.metas.banking.model.validator.C_BankStatementLine;
 import de.metas.banking.payment.impl.BankStatmentPaymentBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -70,7 +69,7 @@ class BankStatementPaymentBLTest
 		AdempiereTestHelper.get().init();
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		modelInterceptorRegistry.addModelInterceptor(C_BankStatementLine.instance);
+		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor());
 	}
 
 	private void paymentChecks(

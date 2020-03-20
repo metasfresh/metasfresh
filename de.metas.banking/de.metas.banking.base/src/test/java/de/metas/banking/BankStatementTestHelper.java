@@ -68,6 +68,7 @@ public class BankStatementTestHelper
 		bsl.setValutaDate(valutaDate);
 		bsl.setC_Currency_ID(currencyId.getRepoId());
 		bsl.setStmtAmt(stmtAmt);
+		bsl.setTrxAmt(stmtAmt);
 		save(bsl);
 
 		return bsl;
