@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.BaseEncoding;
 
 /*
  * #%L
@@ -47,7 +48,7 @@ public class ReportResultTest
 		testSerializeDeserialize(ReportResult.builder()
 				.reportFilename("some_filename.xls")
 				.outputType(OutputType.XLS)
-				.reportContentBase64("1,2,3,4,5")
+				.reportContentBase64(BaseEncoding.base64().encode(new byte[] { 1, 2, 3, 4, 5 }))
 				.build());
 	}
 

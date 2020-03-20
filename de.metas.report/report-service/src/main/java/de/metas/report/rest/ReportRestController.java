@@ -1,7 +1,19 @@
 package de.metas.report.rest;
 
-import java.util.Map;
-
+import de.metas.Profiles;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.report.server.IReportServer;
+import de.metas.report.server.JsonReportError;
+import de.metas.report.server.LocalReportServer;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Null;
 import org.compiere.util.Trace;
@@ -18,20 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.Profiles;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.report.server.IReportServer;
-import de.metas.report.server.JsonReportError;
-import de.metas.report.server.LocalReportServer;
-import de.metas.report.server.OutputType;
-import de.metas.report.server.ReportResult;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = ReportRestController.ENDPOINT)
@@ -63,13 +62,13 @@ public class ReportRestController
 			final String reportFilename = extractReportFilename(report);
 
 			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.parseMediaType(reportContentType));
+			headers.setContentType(MediaType.APPLICATION_JSON);
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilename + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
 			return ResponseEntity.ok()
 					.headers(headers)
-					.body(report.getReportContent());
+					.body(report);
 		}
 		catch (final Throwable ex)
 		{

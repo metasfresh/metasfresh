@@ -1,16 +1,11 @@
 package de.metas.report.xls.engine;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
+import de.metas.util.Check;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.compiere.util.Env;
 import org.jxls.area.Area;
@@ -24,15 +19,17 @@ import org.jxls.transform.TransformationConfig;
 import org.jxls.transform.Transformer;
 import org.jxls.transform.poi.PoiTransformer;
 import org.slf4j.Logger;
-import org.compiere.util.Util;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.report.server.OutputType;
-import de.metas.report.server.ReportResult;
-import de.metas.util.Check;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 /*
  * #%L
@@ -103,7 +100,7 @@ public class JXlsExporter
 				return ReportResult.builder()
 						.reportFilename(getDataSource().getSuggestedFilename().orElse(null))
 						.outputType(OutputType.XLS)
-						.reportContentBase64(org.compiere.util.Util.encodeBase64(os.toByteArray())
+						.reportContentBase64(org.compiere.util.Util.encodeBase64(os.toByteArray()))
 						.build();
 			}
 		}
