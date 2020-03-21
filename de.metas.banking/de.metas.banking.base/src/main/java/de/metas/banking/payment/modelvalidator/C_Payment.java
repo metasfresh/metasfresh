@@ -33,7 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -90,10 +89,13 @@ public class C_Payment
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID })
 	public void onBeforeVoid(final I_C_Payment payment)
 	{
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+
 		//
 		// Make sure we are not allowing a payment, which is on bank statement, to be voided.
 		// It shall be reversed if really needed.
-		if (Services.get(IBankStatementDAO.class).isPaymentOnBankStatement(payment))
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		if (bankStatementDAO.isPaymentOnBankStatement(paymentId))
 		{
 			throw new AdempiereException("@void.payment@");
 		}
@@ -107,7 +109,8 @@ public class C_Payment
 
 		//
 		// Auto-reconcile the payment and it's reversal if the payment is not present on bank statements
-		if (!bankStatementDAO.isPaymentOnBankStatement(payment))
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		if (!bankStatementDAO.isPaymentOnBankStatement(paymentId))
 		{
 			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 			paymentBL.markReconciled(payment);

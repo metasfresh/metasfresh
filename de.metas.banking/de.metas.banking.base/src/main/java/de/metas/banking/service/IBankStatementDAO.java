@@ -64,7 +64,7 @@ public interface IBankStatementDAO extends ISingletonService
 	 *
 	 * @return true if given payment is present on any bank statement line or reference.
 	 */
-	boolean isPaymentOnBankStatement(I_C_Payment payment);
+	boolean isPaymentOnBankStatement(PaymentId paymentId);
 
 	/**
 	 * Retrieve all the BankStatement documents that are marked as posted but do not actually have fact accounts.

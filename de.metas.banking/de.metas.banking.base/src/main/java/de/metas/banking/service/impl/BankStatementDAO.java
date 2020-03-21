@@ -44,7 +44,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.TimeUtil;
 
@@ -195,13 +194,11 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public boolean isPaymentOnBankStatement(final I_C_Payment payment)
+	public boolean isPaymentOnBankStatement(@NonNull final PaymentId paymentId)
 	{
-		final int paymentId = payment.getC_Payment_ID();
-
 		//
 		// Check if payment is on any bank statement line reference, processed or not
-		final boolean hasBankStatementLineRefs = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class, payment)
+		final boolean hasBankStatementLineRefs = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
@@ -213,7 +210,7 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		//
 		// Check if payment is on any bank statement line, processed or not
-		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class, payment)
+		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
