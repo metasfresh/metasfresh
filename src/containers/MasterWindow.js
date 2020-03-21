@@ -29,14 +29,7 @@ class MasterWindowContainer extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const {
-      master,
-      modal,
-      params,
-      updateTabRowsData,
-      fireUpdateData,
-      addRowData,
-    } = this.props;
+    const { master, modal, params, addRowData } = this.props;
 
     if (prevProps.master.websocket !== master.websocket && master.websocket) {
       // websockets are responsible for pushing info about any updates to the data
@@ -48,124 +41,7 @@ class MasterWindowContainer extends Component {
       // we go via it to Sales Order master.websocket is changed and by doing that we assure that
       // communication is set on the right master.websocket . disconnectWS clears the WS
       connectWS.call(this, master.websocket, async (msg) => {
-        const { includedTabsInfo, stale } = msg;
-        const { master } = this.props;
-
-        if (stale) {
-          // some tabs data got updated/row was added
-          if (includedTabsInfo) {
-            const requests = [];
-
-            forEach(includedTabsInfo, (tab, tabId) => {
-              const { staleRowIds } = tab;
-
-              // check if tab is active
-              if (tabId === master.layout.activeTab) {
-                staleRowIds.forEach((rowId) => {
-                  requests.push(
-                    getData(
-                      'window',
-                      params.windowType,
-                      params.docId,
-                      tabId,
-                      rowId
-                    ).catch(() => ({ rowId, tabId }))
-                  );
-                });
-              }
-            });
-
-            // wait for all the rows requests to finish
-            return await Promise.all(requests).then((res) => {
-              const changedTabs = {};
-
-              res.forEach((response) => {
-                const { data } = response;
-                let rowsById = null;
-                let removedRows = null;
-                let tabId;
-
-                // removed row
-                if (!data) {
-                  removedRows = removedRows || {};
-                  removedRows[response.rowId] = true;
-                  tabId = !tabId && response.tabId;
-                } else {
-                  rowsById = rowsById || {};
-                  const rowZero = data[0];
-                  tabId = !tabId && rowZero.tabId;
-
-                  data.forEach((row) => {
-                    rowsById[row.rowId] = { ...row };
-                  });
-                }
-
-                changedTabs[tabId] = get(changedTabs, `${tabId}`, {});
-
-                if (rowsById) {
-                  changedTabs[tabId].changed = {
-                    ...get(changedTabs, `${tabId}.changed`, {}),
-                    ...rowsById,
-                  };
-                }
-                if (removedRows) {
-                  changedTabs[tabId].removed = {
-                    ...get(changedTabs, `${tabId}.removed`, {}),
-                    ...removedRows,
-                  };
-                }
-              });
-
-              forEach(changedTabs, (rowsChanged, tabId) => {
-                updateTabRowsData('master', tabId, rowsChanged);
-              });
-            });
-
-            // Check my comment in https://github.com/metasfresh/me03/issues/3628 - Kuba
-          } else {
-            fireUpdateData(
-              'window',
-              params.windowType,
-              params.docId,
-              null,
-              null,
-              null,
-              null
-            );
-          }
-        }
-
-        if (includedTabsInfo) {
-          Object.keys(includedTabsInfo).forEach((tabId) => {
-            const tabLayout =
-              master.layout.tabs &&
-              master.layout.tabs.filter((tab) => tab.tabId === tabId)[0];
-            if (
-              tabLayout &&
-              tabLayout.queryOnActivate &&
-              master.layout.activeTab !== tabId
-            ) {
-              return;
-            }
-
-            const orderBy = tabLayout.orderBy;
-            let sortingOrder = null;
-
-            if (orderBy && orderBy.length) {
-              const ordering = orderBy[0];
-              sortingOrder =
-                (ordering.ascending ? '+' : '-') + ordering.fieldName;
-            }
-
-            if (includedTabsInfo[tabId]) {
-              getTab(tabId, params.windowType, master.docId, sortingOrder).then(
-                (tab) => {
-                  addRowData({ [tabId]: tab }, 'master');
-                }
-              );
-            }
-          });
-        }
+        this.onWebsocketEvent(msg);
       });
     }
 
@@ -182,6 +58,151 @@ class MasterWindowContainer extends Component {
         addRowData({ [tabId]: tab }, 'master');
       });
     }
+  }
+
+  async onWebsocketEvent(event) {
+    const { includedTabsInfo, stale } = event;
+
+    if (stale) {
+      // some tabs data got updated/row was added
+      if (includedTabsInfo) {
+        const rowsRequests = this.getTabRowsRequests(includedTabsInfo);
+
+        // wait for all the rows requests to finish
+        return await Promise.all(rowsRequests).then((res) => {
+          this.mergeDataIntoIncludedTabs(res);
+        });
+      } else {
+        this.fireFullUpdateData();
+      }
+    }
+
+    if (includedTabsInfo) {
+      const tabIds = Object.keys(includedTabsInfo);
+      this.refreshActiveTab(tabIds);
+    }
+  }
+
+  fireFullUpdateData() {
+    const { params, fireUpdateData } = this.props;
+
+    fireUpdateData(
+      'window',
+      params.windowType,
+      params.docId,
+      null,
+      null,
+      null,
+      null
+    );
+  }
+
+  getTabRowsRequests(includedTabsInfo) {
+    const requests = [];
+
+    forEach(includedTabsInfo, (tab, tabId) => {
+      if (this.isActiveTab(tabId)) {
+        const { staleRowIds } = tab;
+        staleRowIds.forEach((rowId) => {
+          requests.push(this.getTabRow(tabId, rowId));
+        });
+      }
+    });
+
+    return requests;
+  }
+
+  getTabRow(tabId, rowId) {
+    const { params } = this.props;
+    return getData(
+      'window',
+      params.windowType,
+      params.docId,
+      tabId,
+      rowId
+    ).catch(() => ({ rowId, tabId }));
+  }
+
+  isActiveTab(tabId) {
+    const { master } = this.props;
+    return tabId === master.layout.activeTab;
+  }
+
+  mergeDataIntoIncludedTabs(responses) {
+    const { updateTabRowsData } = this.props;
+    const changedTabs = {};
+
+    responses.forEach((response) => {
+      const { data } = response;
+      let rowsById = null;
+      let removedRows = null;
+      let tabId;
+
+      // removed row
+      if (!data) {
+        removedRows = removedRows || {};
+        removedRows[response.rowId] = true;
+        tabId = !tabId && response.tabId;
+      } else {
+        rowsById = rowsById || {};
+        const rowZero = data[0];
+        tabId = !tabId && rowZero.tabId;
+
+        data.forEach((row) => {
+          rowsById[row.rowId] = { ...row };
+        });
+      }
+
+      changedTabs[tabId] = get(changedTabs, `${tabId}`, {});
+
+      if (rowsById) {
+        changedTabs[tabId].changed = {
+          ...get(changedTabs, `${tabId}.changed`, {}),
+          ...rowsById,
+        };
+      }
+      if (removedRows) {
+        changedTabs[tabId].removed = {
+          ...get(changedTabs, `${tabId}.removed`, {}),
+          ...removedRows,
+        };
+      }
+    });
+
+    forEach(changedTabs, (rowsChanged, tabId) => {
+      updateTabRowsData('master', tabId, rowsChanged);
+    });
+  }
+
+  refreshActiveTab(tabIds) {
+    const { master, params, addRowData } = this.props;
+
+    tabIds.forEach((tabId) => {
+      const tabLayout =
+        master.layout.tabs &&
+        master.layout.tabs.filter((tab) => tab.tabId === tabId)[0];
+      if (
+        tabLayout &&
+        tabLayout.queryOnActivate &&
+        master.layout.activeTab !== tabId
+      ) {
+        return;
+      }
+
+      const orderBy = tabLayout.orderBy;
+      let sortingOrder = null;
+
+      if (orderBy && orderBy.length) {
+        const ordering = orderBy[0];
+        sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
+      }
+
+      getTab(tabId, params.windowType, master.docId, sortingOrder).then(
+        (tab) => {
+          addRowData({ [tabId]: tab }, 'master');
+        }
+      );
+    });
   }
 
   componentWillUnmount() {
