@@ -10,6 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.143
+## Features
+* metasfresh
+  * [#6346](https://github.com/metasfresh/metasfresh/issues/6346) Recording of customer complaints from Documents in the Shipment window
+  * [#6354](https://github.com/metasfresh/metasfresh/issues/6354) Create a process that allows to set a parent folder for an account
+
+## Fixes
+* metasfresh
+  * [#6348](https://github.com/metasfresh/metasfresh/issues/6348) NPE when reactivating Sales Order
+  * [#6359](https://github.com/metasfresh/metasfresh/issues/6359) NPE in invoice batch entry for partners allowed to campaign prices
+  * [#6363](https://github.com/metasfresh/metasfresh/issues/6363) Sales Order: Other product not found in Pricelist
+  * [#6370](https://github.com/metasfresh/metasfresh/issues/6370) Paymentterm not taken properly when creating order from Phoneschedule
+
 # metasfresh 5.142
 ## Features
 * metasfresh
