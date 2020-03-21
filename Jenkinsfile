@@ -63,7 +63,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
         nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-        withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository')
+		// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)])
         {
         stage('Set versions and build metasfresh-procurement-webui')
         {
