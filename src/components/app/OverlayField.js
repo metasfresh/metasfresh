@@ -35,6 +35,9 @@ class OverlayField extends Component {
       case 'Escape':
         closeOverlay();
         break;
+      case 'Tab':
+        handleSubmit();
+        break;
       default:
         onSelectBarcode(null);
         break;

@@ -417,6 +417,10 @@ body {
 
         .overlay-field {
             width: 100%;
+
+            .row {
+                justify-content: center;
+            }
         }
 
         .form-group {
