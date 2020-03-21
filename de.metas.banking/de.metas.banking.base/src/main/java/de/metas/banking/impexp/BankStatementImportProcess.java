@@ -3,7 +3,6 @@ package de.metas.banking.impexp;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Properties;
 
@@ -63,8 +62,6 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private int p_C_BP_BankAccount_ID = 0;
-
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
 	{
@@ -86,16 +83,14 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
-		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, -1);
+		final BankAccountId orgBankAccountId = BankAccountId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, -1));
 		final String bankStatementName = getParameters().getParameterAsString(I_I_BankStatement.COLUMNNAME_Name);
 		final LocalDate bankStatementDate = getParameters().getParameterAsLocalDate(I_I_BankStatement.COLUMNNAME_StatementDate);
-		final int bankStatementIdInt = getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BankStatement_ID, 0);
-		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(bankStatementIdInt);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BankStatement_ID, -1));
 
-		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, selection);
+		BankStatementImportTableSqlUpdater.updateBankAccount(orgBankAccountId, selection);
 		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, bankStatementName, bankStatementDate, bankStatementId);
 	}
 
@@ -106,13 +101,13 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected I_I_BankStatement retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	protected I_I_BankStatement retrieveImportRecord(Properties ctx, ResultSet rs)
 	{
 		return new X_I_BankStatement(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly)
 	{
 		final BankStatementId existingBankStatementId = retrieveExistingBankStatementId(importRecord);
 
@@ -145,8 +140,9 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	private BankStatementId retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
+		final BankStatementId existingBankStatementId = BankStatementId.ofRepoIdOrNull(importRecord.getC_BankStatement_ID());
 		final BankStatementId bankStatementId = queryBL.createQueryBuilder(I_C_BankStatement.class)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, importRecord.getC_BankStatement_ID())
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, existingBankStatementId)
 				.create()
 				.firstId(BankStatementId::ofRepoIdOrNull);
 		if (bankStatementId != null)

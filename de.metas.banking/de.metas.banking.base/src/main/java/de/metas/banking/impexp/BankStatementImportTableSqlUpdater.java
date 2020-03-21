@@ -12,6 +12,7 @@ import org.compiere.model.I_I_BankStatement;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.impexp.processing.ImportRecordsSelection;
@@ -46,12 +47,11 @@ public class BankStatementImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(BankStatementImportTableSqlUpdater.class);
 
-	public void updateBPBankAccount(final int bankAccountId, final ImportRecordsSelection selection)
-	{
-		updateBankAccount(bankAccountId, selection);
-	}
-
-	public void updateBankStatementImportTable(final @NonNull ImportRecordsSelection selection, @Nullable final String bankStatementName, @Nullable final LocalDate bankStatementDate, @Nullable final BankStatementId bankStatementId)
+	public void updateBankStatementImportTable(
+			@NonNull final ImportRecordsSelection selection,
+			@Nullable final String bankStatementName,
+			@Nullable final LocalDate bankStatementDate,
+			@Nullable final BankStatementId bankStatementId)
 	{
 		updateBankAccountTo(selection);
 		updateStatementDate(selection, bankStatementDate);
@@ -157,64 +157,67 @@ public class BankStatementImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void updateBankAccount(final int bankAccountId, final ImportRecordsSelection selection)
+	public void updateBankAccount(final BankAccountId orgBankAccountId, final ImportRecordsSelection selection)
 	{
-		StringBuilder sql;
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement i "
+					+ "SET C_BP_BankAccount_ID="
+					+ "( "
+					+ " SELECT C_BP_BankAccount_ID "
+					+ " FROM C_BP_BankAccount a "
+					+ " WHERE a." + I_C_BP_BankAccount.COLUMNNAME_IBAN
+					+ " = i." + I_I_BankStatement.COLUMNNAME_IBAN
+					+ " AND a.AD_Client_ID=i.AD_Client_ID "
+					+ " )"
+					+ "WHERE i.C_BP_BankAccount_ID IS NULL "
+					+ "AND i.I_IsImported<>'Y' "
+					+ "OR i.I_IsImported IS NULL")
+							.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 
-		sql = new StringBuilder("UPDATE I_BankStatement i "
-				+ "SET C_BP_BankAccount_ID="
-				+ "( "
-				+ " SELECT C_BP_BankAccount_ID "
-				+ " FROM C_BP_BankAccount a "
-				+ " WHERE a." + I_C_BP_BankAccount.COLUMNNAME_IBAN
-				+ " = i." + I_I_BankStatement.COLUMNNAME_IBAN
-				+ " AND a.AD_Client_ID=i.AD_Client_ID "
-				+ " )"
-				+ "WHERE i.C_BP_BankAccount_ID IS NULL "
-				+ "AND i.I_IsImported<>'Y' "
-				+ "OR i.I_IsImported IS NULL")
-				.append(selection.toSqlWhereClause("i"));
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement i "
+					+ "SET C_BP_BankAccount_ID="
+					+ "( "
+					+ " SELECT C_BP_BankAccount_ID "
+					+ " FROM C_BP_BankAccount a, C_Bank b "
+					+ " WHERE b.IsOwnBank='Y' "
+					+ " AND a.AD_Client_ID=i.AD_Client_ID "
+					+ " AND a.C_Bank_ID=b.C_Bank_ID "
+					+ " AND a.AccountNo=i.BankAccountNo "
+					+ " AND (b.RoutingNo=i.RoutingNo "
+					+ " OR b.SwiftCode=i.RoutingNo) "
+					+ ") "
+					+ "WHERE i.C_BP_BankAccount_ID IS NULL "
+					+ "AND i.I_IsImported<>'Y' "
+					+ "OR i.I_IsImported IS NULL")
+							.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (orgBankAccountId != null)
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement i "
+					+ "SET C_BP_BankAccount_ID=(SELECT C_BP_BankAccount_ID FROM C_BP_BankAccount a WHERE a.C_BP_BankAccount_ID=").append(orgBankAccountId.getRepoId());
+			sql.append(" and a.AD_Client_ID=i.AD_Client_ID) "
+					+ "WHERE i.C_BP_BankAccount_ID IS NULL "
+					+ "AND i.BankAccountNo IS NULL "
+					+ "AND i.I_isImported<>'Y' "
+					+ "OR i.I_isImported IS NULL")
+					.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 
-		sql = new StringBuilder("UPDATE I_BankStatement i "
-				+ "SET C_BP_BankAccount_ID="
-				+ "( "
-				+ " SELECT C_BP_BankAccount_ID "
-				+ " FROM C_BP_BankAccount a, C_Bank b "
-				+ " WHERE b.IsOwnBank='Y' "
-				+ " AND a.AD_Client_ID=i.AD_Client_ID "
-				+ " AND a.C_Bank_ID=b.C_Bank_ID "
-				+ " AND a.AccountNo=i.BankAccountNo "
-				+ " AND (b.RoutingNo=i.RoutingNo "
-				+ " OR b.SwiftCode=i.RoutingNo) "
-				+ ") "
-				+ "WHERE i.C_BP_BankAccount_ID IS NULL "
-				+ "AND i.I_IsImported<>'Y' "
-				+ "OR i.I_IsImported IS NULL")
-				.append(selection.toSqlWhereClause("i"));
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE I_BankStatement i "
-				+ "SET C_BP_BankAccount_ID=(SELECT C_BP_BankAccount_ID FROM C_BP_BankAccount a WHERE a.C_BP_BankAccount_ID=").append(bankAccountId);
-		sql.append(" and a.AD_Client_ID=i.AD_Client_ID) "
-				+ "WHERE i.C_BP_BankAccount_ID IS NULL "
-				+ "AND i.BankAccountNo IS NULL "
-				+ "AND i.I_isImported<>'Y' "
-				+ "OR i.I_isImported IS NULL")
-				.append(selection.toSqlWhereClause("i"));
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET I_isImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Bank Account, ' "
-				+ "WHERE C_BP_BankAccount_ID IS NULL "
-				+ "AND I_isImported<>'Y' "
-				+ "OR I_isImported IS NULL")
-				.append(selection.toSqlWhereClause());
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement "
+					+ "SET I_isImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Bank Account, ' "
+					+ "WHERE C_BP_BankAccount_ID IS NULL "
+					+ "AND I_isImported<>'Y' "
+					+ "OR I_isImported IS NULL")
+							.append(selection.toSqlWhereClause());
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 	}
 
 	private void updateC_BPartner(final ImportRecordsSelection selection)
@@ -231,7 +234,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
 				+ "AND i.I_IsImported<>'Y' "
 				+ "OR i.I_IsImported IS NULL")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -248,7 +251,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BP_BankAccountTo_ID + " IS NULL "
 				+ "AND i.I_IsImported<>'Y' "
 				+ "OR i.I_IsImported IS NULL")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -262,7 +265,7 @@ public class BankStatementImportTableSqlUpdater
 				+ " WHERE i.ISO_Code=c.ISO_Code AND c.AD_Client_ID IN (0,i.AD_Client_ID)) "
 				+ "WHERE C_Currency_ID IS NULL"
 				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
@@ -270,7 +273,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "SET C_Currency_ID=(SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=i.C_BP_BankAccount_ID) "
 				+ "WHERE i.C_Currency_ID IS NULL "
 				+ "AND i.ISO_Code IS NULL")
-				.append(selection.toSqlWhereClause("i"));
+						.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
@@ -279,7 +282,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "WHERE C_Currency_ID IS NULL "
 				+ "AND I_IsImported<>'E' "
 				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -292,14 +295,14 @@ public class BankStatementImportTableSqlUpdater
 				+ "SET ChargeAmt=0 "
 				+ "WHERE ChargeAmt IS NULL "
 				+ "AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE I_BankStatement "
 				+ "SET InterestAmt=0 "
 				+ "WHERE InterestAmt IS NULL "
 				+ "AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		// update StmtAmt from DebitStmtAmt and CreditStmtAmt
@@ -307,7 +310,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "SET StmtAmt = (coalesce(CreditStmtAmt, 0) - coalesce(DebitStmtAmt,0)) "
 				+ "WHERE (StmtAmt IS NULL OR StmtAmt = 0) "
 				+ "AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
@@ -315,7 +318,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "SET TrxAmt=StmtAmt - InterestAmt - ChargeAmt "
 				+ "WHERE (TrxAmt IS NULL OR TrxAmt = 0) "
 				+ "AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
@@ -323,7 +326,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "SET I_isImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Amount, ' "
 				+ "WHERE TrxAmt + ChargeAmt + InterestAmt <> StmtAmt "
 				+ "AND I_isImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -334,7 +337,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "SET ValutaDate=StatementLineDate "
 				+ "WHERE ValutaDate IS NULL "
 				+ "AND I_isImported<>'Y'")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -350,7 +353,7 @@ public class BankStatementImportTableSqlUpdater
 				+ "WHERE i.C_BPartner_ID IS NOT NULL "
 				+ " AND v.C_BPartner_ID IS NOT NULL "
 				+ " AND v.C_BPartner_ID<>i.C_BPartner_ID) ")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -372,7 +375,7 @@ public class BankStatementImportTableSqlUpdater
 		final StringBuilder updateSql = new StringBuilder("UPDATE I_Bankstatement "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Duplicate['||?||']' "
 				+ "WHERE I_BankStatement_ID=?")
-				.append(selection.toSqlWhereClause());
+						.append(selection.toSqlWhereClause());
 
 		PreparedStatement pupdt = DB.prepareStatement(updateSql.toString(), ITrx.TRXNAME_ThreadInherited);
 
