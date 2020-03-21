@@ -28,6 +28,8 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.MissingPropertyException;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
@@ -35,8 +37,6 @@ import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
-import de.metas.rest_api.utils.MissingPropertyException;
-import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -144,10 +144,10 @@ class JsonConverters
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
 				//
-				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
-				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
-				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
-				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
+				.bpartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getBpartner(), true/* billTo */, orgId))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getBillBPartner(), true/* billTo */, orgId))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getDropShipBPartner(), false/* billTo */, orgId))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfoInTrx(request.getHandOverBPartner(), false/* billTo */, orgId))
 				//
 				.poReference(request.getPoReference())
 				//

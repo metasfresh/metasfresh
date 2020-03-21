@@ -35,7 +35,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
@@ -82,7 +82,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 		}
 		if (typesWithClass.size() > 1)
 		{
-			throw new DBMoreThenOneRecordsFoundException("@C_ReferenceNo_Type@ with classname " + clazz.getName());
+			throw new DBMoreThanOneRecordsFoundException("@C_ReferenceNo_Type@ with classname " + clazz.getName());
 		}
 		return typesWithClass.get(0);
 	}
@@ -136,7 +136,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 		}
 		if (typesWithName.size() > 1)
 		{
-			throw new DBMoreThenOneRecordsFoundException("@C_ReferenceNo_Type@ with name " + typeName);
+			throw new DBMoreThanOneRecordsFoundException("@C_ReferenceNo_Type@ with name " + typeName);
 		}
 		return typesWithName.get(0);
 	}

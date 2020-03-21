@@ -1,13 +1,21 @@
 /**
  * 
  */
-package org.adempiere.exceptions;
+package de.metas.elementvalue;
+
+import de.metas.organization.OrgId;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,30 +33,34 @@ package org.adempiere.exceptions;
  * #L%
  */
 
-
-import org.compiere.model.IQuery;
-
 /**
- * Exception thrown by {@link IQuery} class when there were more records and only one was expected
- * 
- * @author Teo Sarca
- * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
-public class DBMoreThenOneRecordsFoundException extends DBException
+@Data
+@Builder(toBuilder = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class ElementValue
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3925120991619286612L;
 
-	private static final String AD_Message = "QueryMoreThanOneRecordsFound";
+	@NonFinal
+	ElementValueId id;
+	
+	@NonFinal
+	ElementId elementId;
+	
+	@NonNull
+	String value;
+	
+	@NonNull
+	String name;
 
-	/**
-	 * @param msg
-	 */
-	public DBMoreThenOneRecordsFoundException(String detailMessage)
-	{
-		super("@" + AD_Message + "@ (" + detailMessage + ")");
-	}
-
+	@NonNull
+	OrgId orgId;
+	
+	@NonFinal
+	ElementValueId parentId;
+	
+	@NonFinal
+	int seqNo;
 }

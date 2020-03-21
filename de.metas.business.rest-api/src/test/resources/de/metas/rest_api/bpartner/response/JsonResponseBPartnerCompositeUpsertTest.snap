@@ -1,0 +1,34 @@
+de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertTest.serializeDeserializeTest=[
+  {
+    "responseItems": [
+      {
+        "jsonResponseBPartnerUpsertItem": {
+          "identifier": "val-12345",
+          "metasfreshId": 23,
+          "syncOutcome": "CREATED"
+        },
+        "jsonResponseContactUpsertItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "UPDATED"
+          }
+        ],
+        "jsonResponseLocationUpsertItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "UPDATED"
+          }
+        ],
+        "jsonResponseBankAccountUpsertItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "NOTHING_DONE"
+          }
+        ]
+      }
+    ]
+  }
+]

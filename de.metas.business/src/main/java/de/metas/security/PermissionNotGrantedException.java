@@ -1,43 +1,38 @@
-package de.metas.rest_api.utils;
+package de.metas.security;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.i18n.ITranslatableString;
 import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.ordercandidate.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class InvalidEntityException extends AdempiereException
-{
-	private static final long serialVersionUID = 6604967036646252654L;
 
-	public InvalidEntityException(@NonNull final ITranslatableString message)
+public class PermissionNotGrantedException extends AdempiereException
+{
+	private static final long serialVersionUID = 8485777988689504117L;
+
+	public PermissionNotGrantedException(@NonNull final String message)
 	{
 		super(message);
-	}
-
-	public InvalidEntityException(@NonNull final ITranslatableString message, @NonNull final AdempiereException cause)
-	{
-		super(message, cause);
 	}
 }

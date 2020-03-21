@@ -128,6 +128,7 @@ public interface IInOutBL extends ISingletonService
 	 */
 	boolean isReturnMovementType(String movementType);
 
+	BigDecimal negateIfReturnMovmenType(I_M_InOutLine iol, BigDecimal qty);
 	/**
 	 * Sort the given inOut's lines by their referenced order lines and configured sorting criteria.
 	 *

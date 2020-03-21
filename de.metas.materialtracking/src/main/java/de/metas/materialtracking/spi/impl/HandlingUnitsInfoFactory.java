@@ -1,5 +1,7 @@
 package de.metas.materialtracking.spi.impl;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -30,6 +32,7 @@ import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.impl.PlainHandlingUnitsInfo;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Default implementation of {@link IHandlingUnitsInfoFactory} which does nothing.
@@ -61,16 +64,16 @@ public class HandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	 * @return and ad-hoc implementation that actually works; TODO: fuse with the one in de.metas.materialtracking.
 	 */
 	@Override
-	public IHandlingUnitsInfoWritableQty createHUInfoWritableQty(final IHandlingUnitsInfo ingored)
+	public IHandlingUnitsInfoWritableQty createHUInfoWritableQty(@NonNull final IHandlingUnitsInfo wrappedHUInfo)
 	{
 		return new IHandlingUnitsInfoWritableQty()
 		{
-			private int qtyTU = ingored.getQtyTU();
+			private int qtyTU = wrappedHUInfo.getQtyTU();
 
 			@Override
 			public String getTUName()
 			{
-				return ingored.getTUName();
+				return wrappedHUInfo.getTUName();
 			}
 
 			@Override
@@ -80,13 +83,13 @@ public class HandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			}
 
 			@Override
-			public IHandlingUnitsInfo add(IHandlingUnitsInfo infoToAdd)
+			public IHandlingUnitsInfo add(@NonNull final IHandlingUnitsInfo infoToAdd)
 			{
-				Check.assume(Check.equals(infoToAdd.getTUName(), this.getTUName()), "infoToAdd {} has a TUName that differs from ours {}", infoToAdd, this);
+				Check.assume(Objects.equals(infoToAdd.getTUName(), this.getTUName()), "infoToAdd {} has a TUName that differs from ours {}", infoToAdd, this);
 
 				return new PlainHandlingUnitsInfo(
-						ingored.getTUName(),
-						ingored.getQtyTU() + infoToAdd.getQtyTU());
+						wrappedHUInfo.getTUName(),
+						wrappedHUInfo.getQtyTU() + infoToAdd.getQtyTU());
 			}
 
 			@Override

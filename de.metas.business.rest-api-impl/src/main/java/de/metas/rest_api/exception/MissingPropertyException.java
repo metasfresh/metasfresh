@@ -1,4 +1,4 @@
-package de.metas.rest_api.utils;
+package de.metas.rest_api.exception;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
