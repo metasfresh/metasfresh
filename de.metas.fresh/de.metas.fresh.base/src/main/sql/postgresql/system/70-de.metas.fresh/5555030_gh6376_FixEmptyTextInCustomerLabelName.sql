@@ -16,7 +16,7 @@ CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
     nf.Name                                                 as nutritionName,
     pn.SeqNo                                                as NutritionSeqNo,
     pn.nutritionqty,
-    coalesce(NULLIF(bomProduct.CustomerLabelName,''), bomProduct.Name) as componentName,
+    coalesce(NULLIF(TRIM(bomProduct.CustomerLabelName),''), bomProduct.Name) as componentName,
     round(bomLine.qtybatch, 2)                              as qtybatch,
     bomLine.componenttype,
     bom_pc.ispackagingmaterial,
