@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 
@@ -32,6 +33,7 @@ import java.util.Date;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -48,6 +50,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
@@ -61,11 +64,13 @@ import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -252,6 +257,24 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);
+	}
+
+	@Override
+	public Optional<BankStatementId> retrieveFirstIdMatching(
+			@NonNull final BankAccountId orgBankAccountId,
+			@NonNull final LocalDate statementDate,
+			@NonNull final String name,
+			@NonNull final DocStatus docStatus)
+	{
+		Check.assumeNotEmpty(name, "name is not empty");
+
+		return Optional.ofNullable(queryBL.createQueryBuilder(I_C_BankStatement.class)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, orgBankAccountId)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, statementDate)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_DocStatus, docStatus.getCode())
+				.create()
+				.firstId(BankStatementId::ofRepoIdOrNull));
 	}
 
 	@Override

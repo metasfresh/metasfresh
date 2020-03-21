@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
@@ -25,12 +24,14 @@ import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTr
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -60,7 +61,6 @@ import lombok.NonNull;
 public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
@@ -90,8 +90,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		final LocalDate bankStatementDate = getParameters().getParameterAsLocalDate(I_I_BankStatement.COLUMNNAME_StatementDate);
 		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_I_BankStatement.COLUMNNAME_C_BankStatement_ID, -1));
 
-		BankStatementImportTableSqlUpdater.updateBankAccount(orgBankAccountId, selection);
-		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, bankStatementName, bankStatementDate, bankStatementId);
+		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(selection, orgBankAccountId, bankStatementName, bankStatementDate, bankStatementId);
 	}
 
 	@Override
@@ -110,7 +109,6 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly)
 	{
 		final BankStatementId existingBankStatementId = retrieveExistingBankStatementId(importRecord);
-
 		final boolean isNewBankStatement = existingBankStatementId == null;
 
 		if (!isNewBankStatement && isInsertOnly)
@@ -141,25 +139,31 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	private BankStatementId retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
 		final BankStatementId existingBankStatementId = BankStatementId.ofRepoIdOrNull(importRecord.getC_BankStatement_ID());
-		final BankStatementId bankStatementId = queryBL.createQueryBuilder(I_C_BankStatement.class)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, existingBankStatementId)
-				.create()
-				.firstId(BankStatementId::ofRepoIdOrNull);
-		if (bankStatementId != null)
+		if (existingBankStatementId != null)
 		{
-			return bankStatementId;
-
+			return existingBankStatementId;
 		}
 
 		// I believe this fallback is not needed anymore due to the above query, as the record should already have a C_BankStatement_ID set from de.metas.banking.impexp.BankStatementImportTableSqlUpdater.updateBankStatement.
 		// Not sure if deleting this query will bring other bugs though.
 		// Note: there may be bank statements with same name, statement date and BP bank accounts, so the below query may return the wrong result, and also different results for different calls, since there is no order by
-		return queryBL.createQueryBuilder(I_C_BankStatement.class)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, importRecord.getC_BP_BankAccount_ID())
-				.create()
-				.firstId(BankStatementId::ofRepoIdOrNull);
+		final BankAccountId orgBankAccountId = BankAccountId.ofRepoIdOrNull(importRecord.getC_BP_BankAccount_ID());
+		final LocalDate statementDate = TimeUtil.asLocalDate(importRecord.getStatementDate());
+		final String name = importRecord.getName();
+		if (orgBankAccountId != null
+				&& statementDate != null
+				&& !Check.isBlank(name))
+		{
+			final BankStatementId bankStatementId = bankStatementDAO.retrieveFirstIdMatching(orgBankAccountId, statementDate, name, DocStatus.Drafted)
+					.orElse(null);
+			if (bankStatementId != null)
+			{
+				return bankStatementId;
+			}
+		}
+
+		// Fallack: no existing bank statement found
+		return null;
 	}
 
 	private void createBankStatementLine(final I_I_BankStatement importRecord)
@@ -215,11 +219,10 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 	private BankStatementId createBankStatement(@NonNull final I_I_BankStatement importBankStatement)
 	{
-		// TODO add documentNo to import
-
 		return bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
 				.orgId(OrgId.ofRepoId(importBankStatement.getAD_Org_ID()))
 				.orgBankAccountId(BankAccountId.ofRepoId(importBankStatement.getC_BP_BankAccount_ID()))
+				// TODO add documentNo to import
 				.statementDate(TimeUtil.asLocalDate(importBankStatement.getStatementDate()))
 				.name(importBankStatement.getName())
 				.description(importBankStatement.getDescription())

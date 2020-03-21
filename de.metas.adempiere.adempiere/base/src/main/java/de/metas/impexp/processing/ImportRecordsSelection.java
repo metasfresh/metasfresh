@@ -53,11 +53,17 @@ public final class ImportRecordsSelection
 		this.selectionId = selectionId;
 	}
 
+	/**
+	 * @return `AND ...` where clause
+	 */
 	public String toSqlWhereClause()
 	{
 		return toSqlWhereClause(importTableName);
 	}
 
+	/**
+	 * @return `AND ...` where clause
+	 */
 	public String toSqlWhereClause(final String importTableAlias)
 	{
 		final StringBuilder whereClause = new StringBuilder();

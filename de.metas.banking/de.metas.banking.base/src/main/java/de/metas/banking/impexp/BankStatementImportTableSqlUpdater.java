@@ -49,10 +49,12 @@ public class BankStatementImportTableSqlUpdater
 
 	public void updateBankStatementImportTable(
 			@NonNull final ImportRecordsSelection selection,
+			@Nullable final BankAccountId orgBankAccountId,
 			@Nullable final String bankStatementName,
 			@Nullable final LocalDate bankStatementDate,
 			@Nullable final BankStatementId bankStatementId)
 	{
+		updateOrgBankAccount(orgBankAccountId, selection);
 		updateBankAccountTo(selection);
 		updateStatementDate(selection, bankStatementDate);
 		updateName(selection, bankStatementName);
@@ -65,7 +67,6 @@ public class BankStatementImportTableSqlUpdater
 		updateBankStatement(selection, bankStatementId);
 
 		detectDuplicates(selection);
-
 	}
 
 	private void updateName(final ImportRecordsSelection selection, @Nullable final String bankStatementName)
@@ -133,31 +134,31 @@ public class BankStatementImportTableSqlUpdater
 					.append(" WHERE " + I_I_BankStatement.COLUMNNAME_C_BankStatement_ID + " IS NULL ")
 					.append(" AND i.I_IsImported<>'Y' ")
 					.append(selection.toSqlWhereClause("i"));
-
 			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
-
-		final StringBuilder sql = new StringBuilder("UPDATE ")
-				.append(I_I_BankStatement.Table_Name + " i ")
-				.append(" SET "
-						+ I_I_BankStatement.COLUMNNAME_C_BankStatement_ID
-						+ " = (SELECT " + I_C_BankStatement.COLUMNNAME_C_BankStatement_ID
-						+ " FROM " + I_C_BankStatement.Table_Name + " s ")
-				.append(" WHERE i." + I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID
-						+ "=s." + I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID)
-				.append(" AND i." + I_I_BankStatement.COLUMNNAME_AD_Client_ID
-						+ " =s." + I_C_BankStatement.COLUMNNAME_AD_Client_ID)
-				.append(" AND i.name = s.Name ")
-				.append(" AND COALESCE(i.EftStatementReference, 'X') = COALESCE(s.EftStatementReference, 'X') ")
-				.append(" AND i.StatementDate = s.StatementDate  limit 1)")
-				.append(" WHERE " + I_I_BankStatement.COLUMNNAME_C_BankStatement_ID + " IS NULL ")
-				.append(" AND i.I_IsImported<>'Y' ")
-				.append(selection.toSqlWhereClause("i"));
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		else
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE ")
+					.append(I_I_BankStatement.Table_Name + " i ")
+					.append(" SET "
+							+ I_I_BankStatement.COLUMNNAME_C_BankStatement_ID
+							+ " = (SELECT " + I_C_BankStatement.COLUMNNAME_C_BankStatement_ID
+							+ " FROM " + I_C_BankStatement.Table_Name + " s ")
+					.append(" WHERE i." + I_I_BankStatement.COLUMNNAME_C_BP_BankAccount_ID
+							+ "=s." + I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID)
+					.append(" AND i." + I_I_BankStatement.COLUMNNAME_AD_Client_ID
+							+ " =s." + I_C_BankStatement.COLUMNNAME_AD_Client_ID)
+					.append(" AND i.name = s.Name ")
+					.append(" AND COALESCE(i.EftStatementReference, 'X') = COALESCE(s.EftStatementReference, 'X') ")
+					.append(" AND i.StatementDate = s.StatementDate  limit 1)")
+					.append(" WHERE " + I_I_BankStatement.COLUMNNAME_C_BankStatement_ID + " IS NULL ")
+					.append(" AND i.I_IsImported<>'Y' ")
+					.append(selection.toSqlWhereClause("i"));
+			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		}
 	}
 
-	public void updateBankAccount(final BankAccountId orgBankAccountId, final ImportRecordsSelection selection)
+	private void updateOrgBankAccount(final BankAccountId orgBankAccountId, final ImportRecordsSelection selection)
 	{
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement i "

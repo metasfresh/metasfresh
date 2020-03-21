@@ -1,8 +1,10 @@
 package de.metas.banking.service;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -12,11 +14,13 @@ import org.compiere.model.I_C_Payment;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineRefId;
 import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -70,6 +74,8 @@ public interface IBankStatementDAO extends ISingletonService
 	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
 	I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
+
+	Optional<BankStatementId> retrieveFirstIdMatching(@NonNull BankAccountId orgBankAccountId, @NonNull LocalDate statementDate, @NonNull String name, @NonNull DocStatus docStatus);
 
 	I_C_BankStatementLine getLineById(BankStatementLineId lineId);
 
