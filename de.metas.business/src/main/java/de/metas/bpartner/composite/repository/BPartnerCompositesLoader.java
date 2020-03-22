@@ -172,7 +172,7 @@ final class BPartnerCompositesLoader
 		final ImmutableList<Integer> postalIds = CollectionUtils.extractDistinctElements(locationRecords, I_C_Location::getC_Postal_ID);
 		final List<I_C_Postal> postalRecords = queryBL
 				.createQueryBuilder(I_C_Postal.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addInArrayFilter(I_C_Postal.COLUMNNAME_C_Postal_ID, postalIds)
 				.create()
 				.list();
@@ -182,7 +182,7 @@ final class BPartnerCompositesLoader
 		final ImmutableList<Integer> countryIds = CollectionUtils.extractDistinctElements(locationRecords, I_C_Location::getC_Country_ID);
 		final List<I_C_Country> countryRecords = queryBL
 				.createQueryBuilder(I_C_Country.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addInArrayFilter(I_C_Country.COLUMNNAME_C_Country_ID, countryIds)
 				.create()
 				.list();

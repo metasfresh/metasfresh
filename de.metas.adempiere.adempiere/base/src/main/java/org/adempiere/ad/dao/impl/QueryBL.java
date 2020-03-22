@@ -37,6 +37,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.dao.selection.pagination.PaginationService;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -166,7 +167,7 @@ public class QueryBL implements IQueryBL
 		{
 			return POJOQuery.getPage(clazz,next);
 		}
-		return Adempiere
+		return SpringContextHolder.instance
 				.getBean(PaginationService.class)
 				.loadPage(clazz, next);
 	}
