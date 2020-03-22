@@ -1403,10 +1403,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void handleCompleteForInvoice(final org.compiere.model.I_C_Invoice invoice)
+	public void handleCompleteForInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		if (!DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.isNull(invoice)
-				&& DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.getValue(invoice))
+		if (isCreatedByInvoicingJustNow(invoice))
 		{
 			return; // nothing to do for us
 		}
@@ -1526,6 +1525,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			}
 		}
+	}
+
+	@Override
+	public boolean isCreatedByInvoicingJustNow(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		if (!DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.isNull(invoice)
+				&& DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.getValue(invoice))
+		{
+			return true; // nothing to do for us
+		}
+		return false;
 	}
 
 	@Override

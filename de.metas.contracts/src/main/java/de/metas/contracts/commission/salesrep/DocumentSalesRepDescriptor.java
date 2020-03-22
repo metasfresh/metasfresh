@@ -69,6 +69,9 @@ public abstract class DocumentSalesRepDescriptor
 		this.orgId = orgId;
 		this.soTrx = soTrx;
 		this.customer = customer;
+		this.salesRep = salesRep;
+		this.salesPartnerCode = salesPartnerCode;
+		this.salesRepRequired = salesRepRequired;
 	}
 
 	public boolean validatesOK()

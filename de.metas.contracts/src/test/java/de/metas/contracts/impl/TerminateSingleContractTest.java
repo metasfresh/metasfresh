@@ -75,6 +75,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.process.PInstanceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -82,8 +83,10 @@ import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractLibraryConfiguration.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ContractLibraryConfiguration.class,
+		NoopPerformanceMonitoringService.class })
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);

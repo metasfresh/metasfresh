@@ -1,5 +1,6 @@
 package org.adempiere.invoice.service.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 /*
@@ -1169,9 +1170,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean isCreditMemo(final org.compiere.model.I_C_Invoice invoice)
+	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = getC_DocType(invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType",invoice.getC_Invoice_ID());
 		final String docBaseType = docType.getDocBaseType();
 		return isCreditMemo(docBaseType);
 	}

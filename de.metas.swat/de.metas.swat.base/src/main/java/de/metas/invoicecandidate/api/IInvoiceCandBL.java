@@ -397,8 +397,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * If the invoice candidates linked to an invoice have Processed_Override on true, the flag must be unset in case of invoice reversal
-	 *
-	 * @param invoice
 	 */
 	void candidates_unProcess(I_C_Invoice invoice);
 
@@ -422,4 +420,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	int createSelectionForInvoiceCandidates(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceId);
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
+
+	/** @return {@code true} if the given {@code invoiceRecord} is currently created via invoicing from invoice candidates. */
+	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 }

@@ -50,9 +50,12 @@ public class DocumentSalesRepDescriptorService
 
 	public void updateFromCustomer(@NonNull final DocumentSalesRepDescriptor documentSalesRepDescriptor)
 	{
-		if (documentSalesRepDescriptor.getCustomer() == null)
+		if (documentSalesRepDescriptor.getCustomer() == null || documentSalesRepDescriptor.getSoTrx().isPurchase())
 		{
-			return; // nothing to do
+			documentSalesRepDescriptor.setSalesPartnerCode(null);
+			documentSalesRepDescriptor.setSalesRep(null);
+			documentSalesRepDescriptor.setSalesRepRequired(false);
+			return;
 		}
 
 		final I_C_BPartner customerRecord = bpartnerDAO.getById(documentSalesRepDescriptor.getCustomer().getBPartnerId());
@@ -96,6 +99,7 @@ public class DocumentSalesRepDescriptorService
 		if (documentSalesRepDescriptor.getSalesRep() == null)
 		{
 			documentSalesRepDescriptor.setSalesPartnerCode(null);
+			return;
 		}
 
 		final I_C_BPartner salesBPartnerRecord = bpartnerDAO.getById(documentSalesRepDescriptor.getSalesRep().getBPartnerId());

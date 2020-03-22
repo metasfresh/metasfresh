@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import lombok.NonNull;
 
 @Service
@@ -45,10 +46,10 @@ public class CommissionInstanceService
 		this.commissionAlgorithmInvoker = commissionAlgorithmInvoker;
 	}
 
-	public Optional<CommissionInstance> computeCommissionInstanceFor(
-			@NonNull final CreateForecastCommissionInstanceRequest createForecastCommissionInstanceRequest)
+	public Optional<CommissionInstance> computeCommissionInstanceFor(@NonNull final CommissionTriggerDocument commissionTriggerDocument)
 	{
-		final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestFor(createForecastCommissionInstanceRequest);
+		// request might be not present, if there are no matching contracts and/or settings
+		final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestFor(commissionTriggerDocument);
 
 		if (request.isPresent())
 		{

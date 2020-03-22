@@ -2,8 +2,8 @@ package de.metas.contracts.commission.commissioninstance.businesslogic;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
 
 /*
  * #%L

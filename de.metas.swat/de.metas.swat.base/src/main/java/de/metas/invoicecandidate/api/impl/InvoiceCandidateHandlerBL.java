@@ -34,11 +34,13 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 import ch.qos.logback.classic.Level;
@@ -60,6 +62,8 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -172,7 +176,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	/**
-	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>.<p>
+	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>.
+	 * <p>
 	 * Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty list.<br>
 	 * That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
 	 *
@@ -278,7 +283,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		//
 		// Locking
-		final ILockManager lockManager = Services.get(ILockManager.class);
 		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
 
 		//
@@ -286,55 +290,82 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final List<I_C_Invoice_Candidate> invoiceCandidatesAll = new ArrayList<>();
 		while (models.hasNext())
 		{
-			//
-			// Create the initial request and then ask the handler to expand it to proper models to be used.
 			final Object model = models.next();
-			if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
-			{
-				continue;
-			}
-
-			final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
-
-			final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
-
-			//
-			// Iterate each request and generate the invoice candidates
-			for (final InvoiceCandidateGenerateRequest request : requests)
-			{
-				// Lock the "model" to make sure nobody else would generate invoice candidates for it.
-				final ILock lock = lockManager.lock()
-						.setOwner(lockOwner)
-						.setRecordByModel(model)
-						.setAutoCleanup(true)
-						.setFailIfAlreadyLocked(true)
-						.acquire();
-
-				try (final ILockAutoCloseable unlocker = lock.asAutoCloseable())
-				{
-					final IInvoiceCandidateHandler handler = request.getHandler();
-					final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
-
-					// Update generated invoice candidates
-					updateDefaultsAndSave(result);
-
-					// Collect candidates (we will invalidate them all together)
-					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
-				}
-				catch (final Exception e)
-				{
-					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
-
-					Loggables.addLog(msg, e.getClass(), request, requestInitial, e);
-					logger.error(msg, e.getClass(), request, requestInitial, e);
-				}
-			}
+			invoiceCandidatesAll.addAll(createForModel(model, lockOwner, invoiceCandiateHandler));
 		}
 
 		// Invalidate all generated invoice candidates in one run.
 		invalidateNewCandidates(invoiceCandidatesAll);
 
 		return invoiceCandidatesAll;
+	}
+
+	private ImmutableList<I_C_Invoice_Candidate> createForModel(
+			final Object model,
+			final LockOwner lockOwner,
+			final IInvoiceCandidateHandler invoiceCandiateHandler)
+	{
+		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
+		final SpanMetadata request = SpanMetadata.builder()
+				.type("createMissingInvoiceCandidates")
+				.name("createMissingInvoiceCandidatesForModel")
+				.build();
+		return performanceMonitoringService.monitorSpan(() -> createForModel0(model, lockOwner, invoiceCandiateHandler), request);
+
+	}
+
+	private ImmutableList<I_C_Invoice_Candidate> createForModel0(
+			final Object model,
+			final LockOwner lockOwner,
+			final IInvoiceCandidateHandler invoiceCandiateHandler)
+	{
+		if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
+		{
+			return ImmutableList.of();
+		}
+
+		final ILockManager lockManager = Services.get(ILockManager.class);
+
+		//
+		// Create the initial request and then ask the handler to expand it to proper models to be used.
+		final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+		final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
+
+		final ImmutableList.Builder<I_C_Invoice_Candidate> invoiceCandidatesAll = ImmutableList.builder();
+
+		//
+		// Iterate each request and generate the invoice candidates
+		for (final InvoiceCandidateGenerateRequest request : requests)
+		{
+			// Lock the "model" to make sure nobody else would generate invoice candidates for it.
+			final ILock lock = lockManager.lock()
+					.setOwner(lockOwner)
+					.setRecordByModel(model)
+					.setAutoCleanup(true)
+					.setFailIfAlreadyLocked(true)
+					.acquire();
+
+			try (final ILockAutoCloseable unlocker = lock.asAutoCloseable())
+			{
+				final IInvoiceCandidateHandler handler = request.getHandler();
+				final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
+
+				// Update generated invoice candidates
+				updateDefaultsAndSave(result);
+
+				// Collect candidates (we will invalidate them all together)
+				invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
+			}
+			catch (final Exception e)
+			{
+				final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
+
+				Loggables.addLog(msg, e.getClass(), request, requestInitial, e);
+				logger.error(msg, e.getClass(), request, requestInitial, e);
+			}
+		}
+
+		return invoiceCandidatesAll.build();
 	}
 
 	/**

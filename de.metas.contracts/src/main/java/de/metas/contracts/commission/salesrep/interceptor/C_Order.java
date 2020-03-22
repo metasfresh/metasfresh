@@ -57,12 +57,13 @@ public class C_Order
 			@NonNull final DocumentSalesRepDescriptorService documentSalesRepDescriptorService)
 	{
 		this.documentSalesRepDescriptorService = documentSalesRepDescriptorService;
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-
 		this.documentSalesRepDescriptorFactory = documentSalesRepDescriptorFactory;
+
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
 	public void updateSalesPartnerFromCustomer(@NonNull final I_C_Order orderRecord)
 	{
 		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(orderRecord);

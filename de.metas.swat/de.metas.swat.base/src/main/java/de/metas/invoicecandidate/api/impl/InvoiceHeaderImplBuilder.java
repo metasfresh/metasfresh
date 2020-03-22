@@ -98,7 +98,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setBill_Location_ID(getBill_Location_ID());
 		invoiceHeader.setBill_User_ID(getBill_User_ID());
 
-		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoId(getSales_BPartner_ID()));
+		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
 
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());

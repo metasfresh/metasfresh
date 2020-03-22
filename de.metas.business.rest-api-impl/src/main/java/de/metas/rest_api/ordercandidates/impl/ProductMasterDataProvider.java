@@ -16,7 +16,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
-import de.metas.product.IProductDAO.ProductQuery.ProductQueryBuilder;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -211,7 +210,8 @@ final class ProductMasterDataProvider
 
 		if (existingProductId == null && syncAdvise.getIfNotExists().isFail())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing product with orgId in ({}, 0); Search parameters - used if not null or empty: value={}; externalId={}", productValue, productExternalId, orgId);
+			final String msg = StringUtils.formatMessage("Found no existing product with orgId in ({}, 0); Search parameters - used if not null or empty: value={}; externalId={}",
+					OrgId.toRepoIdOrAny(orgId), productValue, productExternalId);
 			throw new ProductNotFoundException(msg);
 		}
 
