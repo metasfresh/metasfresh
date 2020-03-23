@@ -27,7 +27,6 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import de.metas.banking.api.BankAccountId;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -35,6 +34,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.api.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -43,8 +43,10 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -55,13 +57,13 @@ public class DefaultPaymentBuilder
 	public static DefaultPaymentBuilder newInboundReceiptBuilder()
 	{
 		return new DefaultPaymentBuilder()
-				.receipt(true);
+				.direction(PaymentDirection.INBOUND);
 	}
 
 	public static DefaultPaymentBuilder newOutboundPaymentBuilder()
 	{
 		return new DefaultPaymentBuilder()
-				.receipt(false);
+				.direction(PaymentDirection.OUTBOUND);
 	}
 
 	public static DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
@@ -168,10 +170,10 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	private final DefaultPaymentBuilder receipt(final boolean isReceipt)
+	private final DefaultPaymentBuilder direction(@NonNull final PaymentDirection direction)
 	{
 		assertNotBuilt();
-		payment.setIsReceipt(isReceipt);
+		payment.setIsReceipt(direction.isReceipt());
 		return this;
 	}
 
@@ -270,7 +272,10 @@ public class DefaultPaymentBuilder
 		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 		bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 		currencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-		receipt(computeIsReceiptFlag(invoice));
+
+		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
+		direction(PaymentDirection.ofSOTrxAndCreditMemo(soTrx, creditMemo));
 
 		return this;
 	}
@@ -280,20 +285,6 @@ public class DefaultPaymentBuilder
 		assertNotBuilt();
 		payment.setC_Invoice_ID(invoiceId.getRepoId());
 		return this;
-	}
-
-	private boolean computeIsReceiptFlag(@NonNull final I_C_Invoice invoice)
-	{
-		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
-		{
-			// SOTrx=Y, but credit memo => receipt=N
-			return !invoice.isSOTrx();
-		}
-		else
-		{
-			// SOTrx=Y => receipt=Y
-			return invoice.isSOTrx();
-		}
 	}
 
 	public final DefaultPaymentBuilder description(final String description)

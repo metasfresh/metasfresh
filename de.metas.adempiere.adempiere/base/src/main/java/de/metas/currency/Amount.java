@@ -60,6 +60,16 @@ public final class Amount implements Comparable<Amount>
 		return new Amount(value, currencyCode);
 	}
 
+	public static Amount of(final int value, @NonNull CurrencyCode currencyCode)
+	{
+		return of(BigDecimal.valueOf(value), currencyCode);
+	}
+
+	public static Amount of(@NonNull final String value, @NonNull final CurrencyCode currencyCode)
+	{
+		return of(new BigDecimal(value), currencyCode);
+	}
+
 	public static Amount zero(@NonNull final CurrencyCode currencyCode)
 	{
 		return new Amount(BigDecimal.ZERO, currencyCode);

@@ -1,6 +1,7 @@
 package de.metas.payment;
 
 import de.metas.currency.Amount;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import lombok.NonNull;
 
@@ -42,6 +43,18 @@ public enum PaymentDirection
 	public static PaymentDirection ofBankStatementAmount(@NonNull final Money statementAmt)
 	{
 		return statementAmt.signum() >= 0 ? INBOUND : OUTBOUND;
+	}
+
+	public static PaymentDirection ofSOTrxAndCreditMemo(@NonNull final SOTrx soTrx, final boolean creditMemo)
+	{
+		if (soTrx.isPurchase())
+		{
+			return !creditMemo ? PaymentDirection.OUTBOUND : PaymentDirection.INBOUND;
+		}
+		else // sales
+		{
+			return !creditMemo ? PaymentDirection.INBOUND : PaymentDirection.OUTBOUND;
+		}
 	}
 
 	public boolean isReceipt()

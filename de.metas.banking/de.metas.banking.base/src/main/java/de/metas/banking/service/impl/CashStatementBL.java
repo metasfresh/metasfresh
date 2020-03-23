@@ -24,6 +24,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.util.Services;
 
 public class CashStatementBL implements ICashStatementBL
@@ -40,9 +41,9 @@ public class CashStatementBL implements ICashStatementBL
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bs.getC_BankStatement_ID());
 		final LocalDate statementDate = TimeUtil.asLocalDate(bs.getStatementDate());
 
-		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
-		final Money paymentAmt = Money.of(payment.getPayAmt(), currencyId);
-		final Money statementAmt = paymentAmt.negateIf(!payment.isReceipt());
+		final Money paymentAmt = extractPayAmt(payment);
+		final PaymentDirection paymentDirection = PaymentDirection.ofReceiptFlag(payment.isReceipt());
+		final Money statementAmt = paymentDirection.convertPayAmtToStatementAmt(paymentAmt);
 
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
 				.bankStatementId(bankStatementId)
@@ -60,6 +61,12 @@ public class CashStatementBL implements ICashStatementBL
 		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
 		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
 		bankStatmentPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
+	}
+
+	private static Money extractPayAmt(final I_C_Payment payment)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+		return Money.of(payment.getPayAmt(), currencyId);
 	}
 
 	// metas: us025b
