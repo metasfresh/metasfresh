@@ -669,6 +669,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public void updateHURelatedValuesFromOrderLine(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
+		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
+
 		final HUPIItemProductId orderLinePackingMaterialId = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
 		if (shipmentSchedule.getC_OrderLine_ID() <= 0 || !HUPIItemProductId.isRegular(orderLinePackingMaterialId))
 		{
@@ -680,7 +682,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 
-		final I_M_ShipmentSchedule shipmentScheduleToUse = create(shipmentSchedule, I_M_ShipmentSchedule.class);
 
 		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
 		updateTuQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
